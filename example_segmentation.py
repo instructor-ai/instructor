@@ -1,8 +1,3 @@
-"""
-This example uses a nested object of Search and MultiSearch and 
-supports retries with tenacity.
-"""
-
 from openai_function_call import OpenAISchema
 from pydantic import Field
 from typing import List
@@ -31,7 +26,7 @@ def segment(data: str) -> MultiSearch:
         messages=[
             {
                 "role": "system",
-                "content": "You must use the `MultiSearch` tool to search for multiple requests at once. You must response with a list of search queries",
+                "content": "You must use the tool given to response.",
             },
             {
                 "role": "user",
@@ -49,6 +44,3 @@ if __name__ == "__main__":
     )
     for query in queries.searches:
         print(query)
-        
-    # title='Video about investment case study from last week' query='investment case study video last week'
-    # title='Documents about GPDR policy' query='GPDR policy documents'
