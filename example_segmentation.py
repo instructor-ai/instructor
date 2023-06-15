@@ -58,14 +58,15 @@ def segment(data: str) -> MultiSearch:
         model="gpt-3.5-turbo-0613",
         temperature=0,
         functions=[MultiSearch.openai_schema],
+        function_call={"name": MultiSearch.openai_schema['name']},
         messages=[
             {
                 "role": "system",
-                "content": "You must use the tool given to response.",
+                "content": "You are a helpful assistant.",
             },
             {
                 "role": "user",
-                "content": f"Consider the data below:\n{data} and segment it into multiple search queries. You must use `MultiStep` to do this.",
+                "content": f"Consider the data below:\n{data} and segment it into multiple search queries",
             },
         ],
         max_tokens=1000,
