@@ -3,6 +3,14 @@ from pydantic import Field
 from typing import List
 from tenacity import retry, stop_after_attempt
 import openai
+import enum
+
+# Enum of search type
+
+
+class SearchType(str, enum.Enum):
+    VIDEO = "video"
+    EMAIL = "email"
 
 
 class Search(OpenAISchema):
@@ -16,12 +24,15 @@ class Search(OpenAISchema):
 
     title: str = Field(..., description="Title of the request")
     query: str = Field(..., description="Query to search for relevant content")
+    type: SearchType = Field(..., description="Type of search")
 
     async def execute(self):
         import asyncio
 
         await asyncio.sleep(1)
-        print(f"Searching for `{self.title}` with query `{self.query}`")
+        print(
+            f"Searching for `{self.title}` with query `{self.query}` using `{self.type}`"
+        )
 
 
 class MultiSearch(OpenAISchema):
@@ -69,4 +80,6 @@ if __name__ == "__main__":
         "Please send me the video from last week about the investment case study and also documents about your GPDR policy?"
     )
 
-    results = queries.execute()
+    queries.execute()
+    # >>> Searching for `Video` with query `investment case study` using `SearchType.VIDEO`
+    # >>> Searching for `Documents` with query `GPDR policy` using `SearchType.EMAIL`
