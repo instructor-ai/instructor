@@ -82,6 +82,7 @@ class UserDetails(OpenAISchema):
 
 completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo-0613",
+    functions=[UserDetails.openai_schema]
     messages=[
         {"role": "system", "content": "I'm going to ask for user details. Use UserDetails to parse this data."},
         {"role": "user", "content": "My name is John Doe and I'm 30 years old."},
