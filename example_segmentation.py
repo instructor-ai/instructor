@@ -5,8 +5,6 @@ from tenacity import retry, stop_after_attempt
 import openai
 import enum
 
-# Enum of search type
-
 
 class SearchType(str, enum.Enum):
     VIDEO = "video"
