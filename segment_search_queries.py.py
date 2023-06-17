@@ -58,7 +58,7 @@ def segment(data: str) -> MultiSearch:
         model="gpt-3.5-turbo-0613",
         temperature=0,
         functions=[MultiSearch.openai_schema],
-        function_call={"name": MultiSearch.openai_schema['name']},
+        function_call={"name": MultiSearch.openai_schema["name"]},
         messages=[
             {
                 "role": "system",
