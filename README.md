@@ -1,53 +1,37 @@
-# Seamless Integration with OpenAI and Pydantic: A Powerful Duo for Output Parsing
+# OpenAI Function Call and Pydantic Integration Module
 
-Today, OpenAI introduced a Function Call API so we're going to dive into a much more structured and efficient way of handling output parsing when interacting with OpenAI. This method leverages the robustness of the Pydantic library in tandem with the recent improvements in OpenAI's API.
+This Python module provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner. This README will guide you through the installation, usage, and contribution processes of this module.
+If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco). 
 
-Historically, dealing with output parsing, especially with JSON responses, has been fraught with complexities. Ensuring the extracted data adheres to a specific schema or matches certain function calls often involves writing intricate and cumbersome error-checking code. Add to this the vagaries of AI and you often end up reasking and hoping it does a better job.
 
-However, Pydantic, a Python library that provides data validation through Python type annotations, comes to the rescue! And when combined with OpenAI's new function call capabilities, it allows us to handle output parsing in a much more structured and reliable way with a much better developer experience.
+## Installation
 
-## The Power of Pydantic
+To get started, clone the repository:
 
-Pydantic is a Python library that brings type checking, validation, and error handling to the forefront. By making use of Python type annotations, Pydantic allows you to define data models, validate input data against these models, and receive detailed error messages when data fails validation. This ensures that your data adheres to the correct types, constraints, and formats you specify.
+```bash
+git clone https://github.com/jxnl/openai_function_call.git
+```
 
-But why Pydantic? Pydantic offers several key benefits:
+Next, install the necessary Python packages from the requirements.txt file:
 
-**Type checking:** Pydantic uses Python type annotations to ensure the data you work with adheres to the correct types. This means less time debugging type-related issues and more confidence in the integrity of your data.
+```bash
+pip install -r requirements.txt
+```
 
-**Validation:** Pydantic allows you to apply additional validation rules to your data models. These could be simple constraints, like numerical ranges, or more complex custom validation functions.
+Note that there's no separate pip install command for this module. Simply copy and paste the module's code into your application.
 
-**Error handling:** When validation fails, Pydantic raises detailed exceptions. This gives you a clear understanding of what's gone wrong, making it easier to correct mistakes.
+## Usage
 
-**Ease of use:** Pydantic's data models are just Python classes. You define your data models with familiar Python type annotations, making Pydantic intuitive and easy to use.
+This module simplifies the interaction with the OpenAI API, enabling a more structured and predictable conversation with the AI. Below are examples showcasing the use of function calls and schemas with OpenAI and Pydantic.
 
-**Advanced Features:** Pydantic supports more advanced features like nested models, recursive models, and models with generics. This makes it a flexible and powerful tool for managing complex data.
-
-And when combined with the recent function call capabilities from OpenAI, it brings structured data handling to a whole new level!
-
-## Embracing OpenAI Function Calls
-
-The new function call capabilities introduced by OpenAI mark a significant shift in the way we interact with the OpenAI API. Instead of hoping that a chat message would parse correctly to JSON, we can now specify function calls and their expected inputs. This makes our conversation with the AI more structured and predictable.
-
-Here's where it gets even more interesting. By integrating Pydantic with OpenAI function calls, we can streamline the process of validating the output from OpenAI and handling it in our Python functions. This allows us to interact with the AI in a much more robust and efficient manner.
-
-Let's dive into how we can do this.
-
-## Part 1: Harnessing OpenAI Function Calls with Pydantic
-
-The crux of this approach lies in a simple decorator that handles the mapping between OpenAI function calls and Python functions. This decorator takes care of the input validation, the execution of the function, and the generation of the schema used for the OpenAI function call. Here's how it looks:
+### Example 1: Function Calls
 
 ```python
 @openai_function
 def sum(a:int, b:int) -> int:
     """Sum description adds a + b"""
     return a + b
-```
 
-In this example, we define a simple function that adds two numbers. We then decorate it with `@openai_function` which takes care of generating the schema for this function and validating the inputs and outputs.
-
-Once we've defined our function, we can interact with the OpenAI API as usual, using the function's schema to guide the conversation:
-
-```python
 completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
@@ -68,11 +52,7 @@ result = sum.from_response(completion)
 print(result)  # 9
 ```
 
-Here, we use sum.openai_schema to provide the schema for our function call. This ensures that the AI understands what function to call and what parameters to pass. After the completion is returned, we use sum.from_response(completion) to extract the result from the completion, validate it against our Pydantic model, and return it.
-
-## Part 2: Leveraging OpenAISchema for Data Extraction
-
-Often, we are interested in parsing the output of an OpenAI conversation to extract specific data without making an actual function call. In these cases, we can make use of our OpenAISchema class to define a schema that matches the data we want to extract. Let's look at an example:
+### Example 2: Schema Extraction
 
 ```python
 class UserDetails(OpenAISchema):
@@ -93,10 +73,74 @@ user_details = UserDetails.from_response(completion)
 print(user_details)  # UserDetails(name="John Doe", age=30)
 ```
 
-In this example, we define a Pydantic model that represents the data we want to extract. Then, we use UserDetails.from_response(completion) to extract and validate the data from the completion.
 
-## Light, Efficient, and Effective
+## Advanced Usage
 
-The key to this approach is its simplicity and efficiency. We make use of just a few lines of Python code to manage input validation, output parsing, and interaction with the OpenAI API. This code is so light that it's better to copy and paste it rather than installing a whole new package.
+### MultiSearch Function
 
-This methodology cuts down on unnecessary abstraction, letting you stay in control and fully understand the interaction with the underlying API. It's an elegant and powerful solution for working with the OpenAI API in a structured and reliable way, proving you can have your cake and eat it too!
+This advanced example showcases the power of the module in handling complex scenarios. In this case, we've defined a `MultiSearch` function that allows for segmenting a single request into multiple search queries. This powerful feature enables complex tasks like multitasking and request segmentation, facilitating even more sophisticated interactions with the OpenAI API.
+
+Each search query is defined by a `Search` class, consisting of a `title`, a `query`, and a `search` type.
+
+A request is then segmented into multiple search queries, by passing the request to the `segment` function. The function makes a call to the OpenAI API, instructing it to use the `MultiSearch` class to segment the request into multiple search queries.
+
+
+```python
+class MultiSearch(OpenAISchema):
+    """
+    Segment a request into multiple search queries
+
+    Tips:
+    - Do not overlap queries, e.g. "video" and "video clip" are too similar
+    """
+
+    searches: List[Search] = Field(..., description="List of searches")
+
+    def execute(self):
+        import asyncio
+
+        loop = asyncio.get_event_loop()
+
+        tasks = asyncio.gather(*[search.execute() for search in self.searches])
+        return loop.run_until_complete(tasks)
+
+def segment(data: str) -> MultiSearch:
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo-0613",
+        temperature=0,
+        functions=[MultiSearch.openai_schema],
+        function_call={"name": MultiSearch.openai_schema['name']},
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant.",
+            },
+            {
+                "role": "user",
+                "content": f"Consider the data below:\n{data} and segment it into multiple search queries",
+            },
+        ],
+        max_tokens=1000,
+    )
+    return MultiSearch.from_response(completion)
+
+queries = segment(
+        "Please send me the video from last week about the investment case study and also documents about your GPDR policy?"
+    )
+    
+queries.execute()
+# >>> Searching for `Video` with query `investment case study` using `SearchType.VIDEO`
+# >>> Searching for `Documents` with query `GPDR policy` using `SearchType.EMAIL`
+```
+
+## Contributing
+
+Your contributions are welcome! If you have great examples or find neat patterns, clone the repo and add another example_*.py file. The goal is to find great patterns and cool examples to highlight.
+
+If you encounter any issues or want to provide feedback, you can create an issue in this repository. You can also reach out to me on Twitter at @jxnlco.
+
+# License
+
+This project is licensed under the terms of the MIT license.
+
+For more details, refer to the LICENSE file in the repository.
