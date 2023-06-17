@@ -87,7 +87,7 @@ def segment(data: str) -> MultiSearch:
 
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
-        temperature=0,
+        temperature=0.1,
         functions=[MultiSearch.openai_schema],
         function_call={"name": MultiSearch.openai_schema["name"]},
         messages=[
