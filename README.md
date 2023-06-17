@@ -139,7 +139,7 @@ Your contributions are welcome! If you have great examples or find neat patterns
 
 If you encounter any issues or want to provide feedback, you can create an issue in this repository. You can also reach out to me on Twitter at @jxnlco.
 
-# License
+## License
 
 This project is licensed under the terms of the MIT license.
 
