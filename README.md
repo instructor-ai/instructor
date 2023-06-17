@@ -84,6 +84,13 @@ Each search query is defined by a `Search` class, consisting of a `title`, a `qu
 
 A request is then segmented into multiple search queries, by passing the request to the `segment` function. The function makes a call to the OpenAI API, instructing it to use the `MultiSearch` class to segment the request into multiple search queries.
 
+### DirectoryTree and Recursive Classes
+
+The `DirectoryTree` and `Node` classes in this example illustrated an advanced usage in understanding and manipulating hierarchical data structures with recursive data types. The script includes functionality for parsing a string representation of a filesystem into a structured directory tree, with the ability to distinguish between file and folder nodes.
+
+This recursion is handled by wrapping it in the `DirectoryTree` class, which is non-recursive.
+
+This is because Pydantic, the library used to generate schemas for these classes, encounters limitations when handling recursive schemas. Therefore, the workaround implemented here is to wrap the recursive Node class in the non-recursive `DirectoryTree` class.
 
 ```python
 class MultiSearch(OpenAISchema):
