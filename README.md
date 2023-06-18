@@ -76,69 +76,27 @@ print(user_details)  # UserDetails(name="John Doe", age=30)
 
 ## Advanced Usage
 
-### MultiSearch Function
+### Citation Alignment with QuestionAnswer and Fact Classes
 
-This advanced example showcases the power of the module in handling complex scenarios. In this case, we've defined a `MultiSearch` function that allows for segmenting a single request into multiple search queries. This powerful feature enables complex tasks like multitasking and request segmentation, facilitating even more sophisticated interactions with the OpenAI API.
+*Implications:* This usage provides a more robust and reliable method for fact extraction and citation. It enhances the reliability of AI outputs, promoting the transparency and traceability of the information. It also presents a method to prevent and minimize the AI's tendency to "hallucinate" or generate unsupported information.
 
-Each search query is defined by a `Search` class, consisting of a `title`, a `query`, and a `search` type.
+The script employs advanced schema usage to extract and cite specific details from a given context. The Fact class encapsulates each extracted detail, comprising the fact and a list of direct quotes from the context which act as supporting sources. Notably, the citation utilizes an approximate quote produced by the language model and leverages regex with edits to align the citation with an actual substring in the context. This mechanism significantly grounds the fact, ideally minimizing hallucinations. The substring methodology further enables flexible visualization of our citations, shifting from chunk-level references to more precise string-level references.
 
-A request is then segmented into multiple search queries, by passing the request to the `segment` function. The function makes a call to the OpenAI API, instructing it to use the `MultiSearch` class to segment the request into multiple search queries.
+### MultiSearch Function: Segmenting Single Requests into Multiple Search Queries
 
-### DirectoryTree and Recursive Classes
+*Implications:* The MultiSearch function allows complex tasks to be broken down into simpler, manageable queries, thus enabling parallel processing and potentially improving efficiency and speed. It also opens up possibilities for more complex interactions and more robust responses from the AI.
 
-The `DirectoryTree` and `Node` classes in this example illustrated an advanced usage in understanding and manipulating hierarchical data structures with recursive data types. The script includes functionality for parsing a string representation of a filesystem into a structured directory tree, with the ability to distinguish between file and folder nodes.
+The MultiSearch function is an advanced feature designed to handle complex scenarios by segmenting a single request into multiple search queries. This ability empowers complex tasks like multitasking and request segmentation, enabling more sophisticated interactions with the OpenAI API.
 
-This recursion is handled by wrapping it in the `DirectoryTree` class, which is non-recursive.
+The Search class defines each search query, consisting of a title, a query, and a search type. The segment function is then used to break the request into multiple search queries, engaging the OpenAI API to segment the request using the MultiSearch class.
 
-This is because Pydantic, the library used to generate schemas for these classes, encounters limitations when handling recursive schemas. Therefore, the workaround implemented here is to wrap the recursive Node class in the non-recursive `DirectoryTree` class.
+### Recursive Data Types in Hierarchical Structures: DirectoryTree and Node Classes
 
-```python
-class MultiSearch(OpenAISchema):
-    """
-    Segment a request into multiple search queries
+*Implications:* The demonstrated design pattern is crucial for manipulating hierarchical data in a variety of contexts. For example, in computer science, it can facilitate query planning in databases and task management in Directed Acyclic Graph (DAG) execution. Moreover, its utility extends beyond technical applications, proving valuable in organizing complex structures like biological taxonomies or corporate hierarchies.
 
-    Tips:
-    - Do not overlap queries, e.g. "video" and "video clip" are too similar
-    """
+The DirectoryTree and Node classes demonstrate an advanced usage in handling and manipulating hierarchical data structures with recursive data types. These classes parse a string representation of a filesystem into a structured directory tree, distinguishing between file and folder nodes.
 
-    searches: List[Search] = Field(..., description="List of searches")
-
-    def execute(self):
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-
-        tasks = asyncio.gather(*[search.execute() for search in self.searches])
-        return loop.run_until_complete(tasks)
-
-def segment(data: str) -> MultiSearch:
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        temperature=0,
-        functions=[MultiSearch.openai_schema],
-        function_call={"name": MultiSearch.openai_schema['name']},
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a helpful assistant.",
-            },
-            {
-                "role": "user",
-                "content": f"Consider the data below:\n{data} and segment it into multiple search queries",
-            },
-        ],
-        max_tokens=1000,
-    )
-    return MultiSearch.from_response(completion)
-
-queries = segment(
-        "Please send me the video from last week about the investment case study and also documents about your GPDR policy?"
-    )
-    
-queries.execute()
-# >>> Searching for `Video` with query `investment case study` using `SearchType.VIDEO`
-# >>> Searching for `Documents` with query `GPDR policy` using `SearchType.EMAIL`
-```
+Handling this recursion requires a non-recursive wrapper— in this case, the DirectoryTree class. This approach is due to Pydantic's limitations when dealing with recursive schemas. Wrapping the recursive Node class in a non-recursive DirectoryTree class is a practical workaround for this limitation.
 
 ## Contributing
 
