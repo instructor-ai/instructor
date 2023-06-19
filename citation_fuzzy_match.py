@@ -100,13 +100,13 @@ I also started the Data Science club at the University of Waterloo and I was the
 def highlight(text, span):
     return (
         "..."
-        + text[span[0] - 20 : span[0]]
-        + "*"
+        + text[span[0] - 50 : span[0]].replace("\n", "")
         + "\033[91m"
-        + text[span[0] : span[1]]
+        + "<"
+        + text[span[0] : span[1]].replace("\n", "")
+        + "> "
         + "\033[0m"
-        + "*"
-        + text[span[1] : span[1] + 20]
+        + text[span[1] : span[1] + 20].replace("\n", "")
         + "..."
     )
 
@@ -120,10 +120,13 @@ for fact in answer.answer:
     for span in fact.get_spans(context):
         print("Citation:", highlight(context, span))
     print()
-# >>> Question: What did the author do during college?
-# >>> Statement: In university, the author studied Computational Mathematics and physics.
-# >>> Citation: ...arts highschool but *in university I studied Computational
-# >>> Mathematics and physics*. As part of coop I ...
-# >>> Statement: The author started the Data Science club at the University of Waterloo and was the president of the club for 2 years.
-# >>> Citation: ...x, Facebook. I also *started the Data Science club at the University of Waterloo* and I was the presi...
-# >>> Citation: ...erloo and I was the *president of the club for 2 years*. ...
+    """
+    Question: What did the author do during college?
+
+    Statement: The author studied Computational Mathematics and physics in university.
+    Citation: ...s born in China.I went to an arts highschool but <in university I studied Computational Mathematics and physics> . As part of coop I...
+
+    Statement: The author started the Data Science club at the University of Waterloo and was the president of the club for 2 years.
+    Citation: ...y companies including Stitchfix, Facebook.I also <started the Data Science club at the University of Waterloo>  and I was the presi...
+    Citation: ... club at the University of Waterloo and I was the <president of the club for 2 years> ...
+    """
