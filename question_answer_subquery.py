@@ -82,8 +82,6 @@ def query_planner(question: str) -> QueryPlan:
 
     messages.append(completion.choices[0].message)
 
-    print(messages[-1])
-
     messages.append(
         {
             "role": "user",
@@ -111,13 +109,21 @@ if __name__ == "__main__":
     )
     pprint(plan.dict())
     """
-    {'question': {'dependancies': [{'dependancies': [],
-                                'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
-                                'question': 'What is the capital of Canada?'},
-                               {'dependancies': [],
-                                'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
-                                'question': "What is Jason's home country?"}],
-              'node_type': <QueryType.MERGE_MULTIPLE_RESPONSES: 'MERGE_MULTIPLE_RESPONSES'>,
-              'question': "What is of Canada and the Jason's "
-                          'home country?'}}
+    {'query_graph': [{'dependancies': [],
+                    'id': 1,
+                    'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
+                    'question': "Identify Jason's home country"},
+                    {'dependancies': [],
+                    'id': 2,
+                    'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
+                    'question': 'Find the population of Canada'},
+                    {'dependancies': [1],
+                    'id': 3,
+                    'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
+                    'question': "Find the population of Jason's home country"},
+                    {'dependancies': [2, 3],
+                    'id': 4,
+                    'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
+                    'question': 'Calculate the difference in populations between '
+                                "Canada and Jason's home country"}]}    
     """
