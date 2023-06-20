@@ -1,6 +1,6 @@
 import openai
 import enum
-import json
+import asyncio
 
 from pydantic import Field
 from typing import List, Tuple
@@ -16,6 +16,11 @@ class QueryType(str, enum.Enum):
     # When i call it anything beyond 'merge multiple responses' the accuracy drops significantly.
     SINGLE_QUESTION = "SINGLE"
     MERGE_MULTIPLE_RESPONSES = "MERGE_MULTIPLE_RESPONSES"
+
+
+class QueryAnswer(OpenAISchema):
+    question: str
+    answer: str
 
 
 class Query(OpenAISchema):
@@ -36,6 +41,10 @@ class Query(OpenAISchema):
     node_type: QueryType = Field(
         default=QueryType.SINGLE_QUESTION,
         description="Type of question we are asking, either a single question or a multi question merge when there are multiple questions",
+    )
+    original_question: bool = Field(
+        default=False,
+        description="the root question is the original question we are asking",
     )
 
 
