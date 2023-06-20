@@ -131,7 +131,7 @@ def query_planner(question: str, plan=False) -> QueryPlan:
         messages.append(
             {
                 "role": "assistant",
-                "content": "Lets think step by step to find the correct query plan that does not make any assuptions of what is known.",
+                "content": "Lets think step by step to find correct set of queries and its dependencies and not make any assuptions on what is known.",
             },
         )
         completion = openai.ChatCompletion.create(
