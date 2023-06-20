@@ -21,13 +21,22 @@ class QueryType(str, enum.Enum):
     MERGE_MULTIPLE_RESPONSES = "MERGE_MULTIPLE_RESPONSES"
 
 
-class QueryAnswer(OpenAISchema):
-    question: str
-    answer: str
+class ComputeQuery(OpenAISchema):
+    """
+    Models a computation of a query, assume this can be some RAG system like llamaindex
+    """
+
+    query: str
+    response: str = "..."
 
 
-class QueryAnswers(OpenAISchema):
-    queries: List[QueryAnswer]
+class MergedResponses(OpenAISchema):
+    """
+    Models a merged response of multiple queries.
+    Currently we just concatinate them but we can do much more complex things.
+    """
+
+    responses: List[ComputeQuery]
 
 
 class Query(OpenAISchema):
@@ -51,15 +60,14 @@ class Query(OpenAISchema):
     )
 
     async def execute(self, dependency_func):
-        print("Executing", self.question)
+        print("Executing", f"`self.question`")
         print("Executing with", len(self.dependancies), "dependancies")
-        await asyncio.sleep(1)
 
         if self.node_type == QueryType.SINGLE_QUESTION:
-            resp = QueryAnswer(
-                question=self.question,
-                answer=f"<Answer>",
+            resp = ComputeQuery(
+                query=self.question,
             )
+            await asyncio.sleep(1)
             pprint(resp.dict())
             return resp
 
@@ -67,12 +75,12 @@ class Query(OpenAISchema):
         computed_queries = await asyncio.gather(
             *[q.execute(dependency_func=dependency_func) for q in sub_queries]
         )
-        sub_answers = QueryAnswers(queries=computed_queries)
+        sub_answers = MergedResponses(responses=computed_queries)
         merged_query = f"{self.question}\nContext: {sub_answers.json()}"
-        resp = QueryAnswer(
-            question=merged_query,
-            answer=f"Answer to {self.question}",
+        resp = ComputeQuery(
+            query=merged_query,
         )
+        await asyncio.sleep(2)
         pprint(resp.dict())
         return resp
 
@@ -90,7 +98,7 @@ class QueryPlan(OpenAISchema):
     async def execute(self):
         # this should be done with a topological sort, but this is easier to understand
         original_question = self.query_graph[-1]
-        print(f"Executing query plan from {original_question.question}")
+        print(f"Executing query plan from `{original_question.question}`")
         return await original_question.execute(dependency_func=self.dependencies)
 
     def dependencies(self, idz: List[int]) -> List[Query]:
@@ -115,7 +123,7 @@ def query_planner(question: str, plan=False) -> QueryPlan:
         },
         {
             "role": "user",
-            "content": f"Consider: {question}\n Before you call the function, think step by step to get a correct query plan.",
+            "content": f"Consider: {question}\nGenerate the correct query plan.",
         },
     ]
 
@@ -184,21 +192,17 @@ if __name__ == "__main__":
 
     asyncio.run(plan.execute())
     """
-    Executing query plan from What is the difference in populations of Canada and Jason's home country?
-    Executing What is the difference in populations of Canada and Jason's home country?
+    Executing query plan from `What is the difference in populations of Canada and Jason's home country?`
+    Executing `What is the difference in populations of Canada and Jason's home country?`
     Executing with 2 dependancies
-    Executing What is the population of Canada?
-    Executing with 0 dependancies
-    Executing What is the population of Jason's home country?
-    Executing with 0 dependancies
-    {'answer': '<Answer>', 'question': 'What is the population of Canada?'}
-    {'answer': '<Answer>',
-    'question': "What is the population of Jason's home country?"}
-    {'answer': 'Answer to What is the difference in populations of Canada and '
-            "Jason's home country?",
-    'question': "What is the difference in populations of Canada and Jason's home "
-                'country?\n'
-                'Context: {"queries": [{"question": "What is the population of '
-                'Canada?", "answer": "<Answer>"}, {"question": "What is the '
-                'population of Jason\'s home country?", "answer": "<Answer>"}]}'}
-             """
+    Executing `What is the population of Canada?`
+    Executing `What is the population of Jason's home country?`
+    {'query': 'What is the population of Canada?', 'response': '...'}
+    {'query': "What is the population of Jason's home country?", 'response': '...'}
+    {'query': "What is the difference in populations of Canada and Jason's home "
+            'country?'
+            'Context: {"responses": [{"query": "What is the population of '
+            'Canada?", "response": "..."}, {"query": "What is the population of '
+            'Jason's home country?", "response": "..."}]}',
+    'response': '...'}
+    """
