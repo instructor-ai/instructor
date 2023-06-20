@@ -1,5 +1,7 @@
+from functools import lru_cache
 import openai
 import enum
+import json
 import asyncio
 
 from pydantic import Field
@@ -47,6 +49,25 @@ class Query(OpenAISchema):
         description="the root question is the original question we are asking",
     )
 
+    async def execute(self, dependency_func):
+        if self.node_type == QueryType.SINGLE_QUESTION:
+            print("Executing", self.question)
+            # If we are a single question, we can just compute the answer
+            return QueryAnswer(
+                question=self.question,
+                answer=f"Answer to {self.question}",
+            )
+        else:
+            print("Executing", self.question)
+            sub_queries = dependency_func(self.dependancies)
+            sub_answers = await asyncio.gather(*[q.execute() for q in sub_queries])
+            sub_answers_str = json.dumps(sub_answers, indent=4)
+            merged_query = f"{self.question}\nContext: {sub_answers_str}"
+            return QueryAnswer(
+                question=merged_query,
+                answer=f"Answer to {self.question}",
+            )
+
 
 class QueryPlan(OpenAISchema):
     """
@@ -57,6 +78,17 @@ class QueryPlan(OpenAISchema):
     query_graph: List[Query] = Field(
         ..., description="The original question we are asking"
     )
+
+    async def execute(self):
+        print("Executing query plan with root question")
+        original_question = [q for q in self.query_graph if q.original_question][0]
+        return await original_question.execute(dependency_func=self.dependencies)
+
+    def dependencies(self, idz: List[int]) -> List[Query]:
+        """
+        Returns the dependencies of the query with the given id.
+        """
+        return [q for q in self.query_graph if q.id in idz]
 
 
 Query.update_forward_refs()
@@ -136,3 +168,5 @@ if __name__ == "__main__":
                     'question': 'Calculate the difference in populations between '
                                 "Canada and Jason's home country"}]}    
     """
+
+    asyncio.run(plan.execute())
