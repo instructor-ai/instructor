@@ -73,8 +73,13 @@ user_details = UserDetails.from_response(completion)
 print(user_details)  # UserDetails(name="John Doe", age=30)
 ```
 
-
 ## Advanced Usage
+
+### Complex Query Planning and Execution
+
+*Implications:* This advanced implementation showcases how complex queries can be decomposed into simpler, dependent sub-queries, allowing the AI to tackle intricate tasks efficiently. This can substantially enhance the depth and accuracy of AI-generated responses, even in situations with multiple unknown variables. Such a tool can be used to drive complex research, provide in-depth answers in a QA system, or support comprehensive data analysis.
+
+The provided Python script demonstrates the construction of a query planner leveraging OpenAI's GPT model. It breaks down a given complex question into multiple smaller, dependent questions or tasks, which are subsequently handled in a specific order (as determined by the dependencies). Asynchronous execution enables the queries to be processed concurrently, and dependencies are taken into account to ensure the proper order of execution. This allows for a highly efficient computation, especially in scenarios with complex, multi-part questions.
 
 ### Citation Alignment with QuestionAnswer and Fact Classes
 
@@ -82,7 +87,7 @@ print(user_details)  # UserDetails(name="John Doe", age=30)
 
 The script employs advanced schema usage to extract and cite specific details from a given context. The Fact class encapsulates each extracted detail, comprising the fact and a list of direct quotes from the context which act as supporting sources. Notably, the citation utilizes an approximate quote produced by the language model and leverages regex with edits to align the citation with an actual substring in the context. This mechanism significantly grounds the fact, ideally minimizing hallucinations. The substring methodology further enables flexible visualization of our citations, shifting from chunk-level references to more precise string-level references.
 
-### MultiSearch Function: Segmenting Single Requests into Multiple Search Queries
+### Segmenting Single Requests into Multiple Search Queries
 
 *Implications:* The MultiSearch function allows complex tasks to be broken down into simpler, manageable queries, thus enabling parallel processing and potentially improving efficiency and speed. It also opens up possibilities for more complex interactions and more robust responses from the AI.
 
