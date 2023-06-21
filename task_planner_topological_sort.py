@@ -26,7 +26,7 @@ class Task(OpenAISchema):
     id: int = Field(..., description="Unique id of the task")
     task: str = Field(
         ...,
-        description="Contains the task in text form. If there are multiple tasks, this task can only be answered when all dependant subtasks have been answered.",
+        description="Contains the task in text form. If there are multiple tasks, this task can only be executed when all dependant subtasks have been answered.",
     )
     subtasks: List[int] = Field(
         default_factory=list,
