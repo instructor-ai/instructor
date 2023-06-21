@@ -75,6 +75,12 @@ print(user_details)  # UserDetails(name="John Doe", age=30)
 
 ## Advanced Usage
 
+### SQL Query Generation with a touch of Security
+
+**Implications:* This script showcases an advanced approach of using OpenAI's GPT-3.5 Turbo model to generate SQL queries based on user requests. Importantly, it also scrutinizes each query for potential security risks, specifically looking for SQL injection attempts. This dual utility brings a new level of automation and safety to data querying, significantly reducing the need for manual query construction and preliminary security assessment.
+
+The SQL class is designed to represent a single SQL query and its parameters, as well as assess the security risk associated with the query. The user-provided input is examined for potential SQL injection attempts or abusive queries, marking these as dangerous when identified. When it comes to generating SQL queries, this script always leans on using query parameters for user-defined inputs, adhering to best security practices.
+
 ### Complex Query Planning and Execution
 
 *Implications:* This advanced implementation showcases how complex queries can be decomposed into simpler, dependent sub-queries, allowing the AI to tackle intricate tasks efficiently. This can substantially enhance the depth and accuracy of AI-generated responses, even in situations with multiple unknown variables. Such a tool can be used to drive complex research, provide in-depth answers in a QA system, or support comprehensive data analysis.
