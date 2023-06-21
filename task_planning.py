@@ -11,54 +11,85 @@ from typing import List, Generator
 from openai_function_call import OpenAISchema
 
 
-class QueryAnswer(OpenAISchema):
-    query_id: int
+class TaskAnswer(OpenAISchema):
+    task_id: int
     answer: str
 
 
-class Query(OpenAISchema):
+class Task(OpenAISchema):
     """
-    Class representing a single query in a query plan.
+    Class representing a single task in a task plan.
     """
 
-    id: int = Field(..., description="Unique id of the query")
-    query: str = Field(
+    id: int = Field(..., description="Unique id of the task")
+    task: str = Field(
         ...,
-        description="Contains the query in text form. If there are multiple queries, this query can only be answered when all dependant subqueries have been answered.",
+        description="Contains the task in text form. If there are multiple tasks, this task can only be answered when all dependant subtasks have been answered.",
     )
-    subqueries: List[int] = Field(
+    subtasks: List[int] = Field(
         default_factory=list,
-        description="List of the IDs of subqueries that need to be answered before we can answer the main question. Use a subquery when anything may be unknown and we need to ask multiple questions to get the answer. Dependencies must only be other queries.",
+        description="List of the IDs of subtasks that need to be answered before we can answer the main question. Use a subtask when anything may be unknown and we need to ask multiple questions to get the answer. Dependencies must only be other tasks.",
     )
 
-    def execute(self, subquery_answers: List[QueryAnswer] | None) -> QueryAnswer:
-        return QueryAnswer(query_id=self.id, answer=f"Answer to {self.query}")
-
-    async def aexecute(self, subquery_answers: List[QueryAnswer] | None) -> QueryAnswer:
-        return QueryAnswer(query_id=self.id, answer=f"Answer to {self.query}")
+    async def aexecute(self, subtask_answers: List[TaskAnswer] | None) -> TaskAnswer:
+        return TaskAnswer(task_id=self.id, answer=f"Answer to {self.task}")
 
 
-class QueryPlan(OpenAISchema):
+class TaskPlan(OpenAISchema):
     """
-    Container class representing a tree of queries and subqueries.
+    Container class representing a tree of tasks and subtasks.
     Make sure every task is in the tree, and every task is done only once.
     """
 
-    query_graph: List[Query] = Field(
+    task_graph: List[Task] = Field(
         ...,
-        description="List of queries and subqueries that need to be done to complete the main query. Consists of the main query and its dependencies.",
+        description="List of tasks and subtasks that need to be done to complete the main task. Consists of the main task and its dependencies.",
     )
 
+    async def aexecute_tasks_in_order(self) -> dict[int, TaskAnswer]:
+        """
+        Executes the tasks in the task plan in the correct order using asyncio and chunks with answered dependencies.
+        """
+        execution_order = get_execution_order(self)
+        task_dict = {q.id: q for q in self.task_graph}
+        subtask_answers = {}
+        while True:
+            ready_to_execute = [
+                task_dict[i]
+                for i in execution_order
+                if i not in subtask_answers
+                and all(s in subtask_answers for s in task_dict[i].subtasks)
+            ]
+            print(ready_to_execute)
+            computed_answers = await asyncio.gather(
+                *[
+                    q.aexecute(
+                        subtask_answers=[
+                            a
+                            for a in subtask_answers.values()
+                            if a.task_id in q.subtasks
+                        ]
+                    )
+                    for q in ready_to_execute
+                ]
+            )
+            for answer in computed_answers:
+                subtask_answers[answer.task_id] = answer
+            if len(subtask_answers) == len(execution_order):
+                break
+        return subtask_answers
 
-Query.update_forward_refs()
-QueryPlan.update_forward_refs()
 
 
-def query_planner(question: str) -> QueryPlan:
+Task.update_forward_refs()
+TaskPlan.update_forward_refs()
+
+
+def task_planner(question: str) -> TaskPlan:
     messages = [
         {
             "role": "system",
-            "content": "You are a world class query planning algorithm capable of breaking apart queries into dependant subqueries, such that the answers can be used to enable the system completing the main query. Do not complete the user query, simply provide a correct compute graph with good specific queries to ask and relevant subqueries. Before completing the list of queries, think step by step to get a better understanding the problem.",
+            "content": "You are a world class task planning algorithm capable of breaking apart tasks into dependant subtasks, such that the answers can be used to enable the system completing the main task. Do not complete the user task, simply provide a correct compute graph with good specific tasks to ask and relevant subtasks. Before completing the list of tasks, think step by step to get a better understanding the problem.",
         },
         {
             "role": "user",
@@ -69,24 +100,24 @@ def query_planner(question: str) -> QueryPlan:
     completion = openai.ChatCompletion.create(
         model="gpt-4-0613",
         temperature=0,
-        functions=[QueryPlan.openai_schema],
-        function_call={"name": QueryPlan.openai_schema["name"]},
+        functions=[TaskPlan.openai_schema],
+        function_call={"name": TaskPlan.openai_schema["name"]},
         messages=messages,
         max_tokens=1000,
     )
-    root = QueryPlan.from_response(completion)
+    root = TaskPlan.from_response(completion)
 
     return root
 
 
-def get_execution_order(query_plan: QueryPlan) -> List[int]:
+def get_execution_order(task_plan: TaskPlan) -> List[int]:
     """
-    Returns the order in which the queries should be executed using topological sort.
+    Returns the order in which the tasks should be executed using topological sort.
     Inspired by https://gitlab.com/ericvsmith/toposort/-/blob/master/src/toposort.py
     """
     tmp_dep_graph = {
-        item["id"]: set(dep for dep in item["subqueries"])
-        for item in query_plan.dict()["query_graph"]
+        item["id"]: set(dep for dep in item["subtasks"])
+        for item in task_plan.dict()["task_graph"]
     }
 
     def topological_sort(
@@ -113,68 +144,18 @@ def get_execution_order(query_plan: QueryPlan) -> List[int]:
     return result
 
 
-def execute_queries_in_order(query_plan: QueryPlan) -> dict[int, QueryAnswer]:
-    """
-    Executes the queries in the query plan in the correct order.
-    """
-    execution_order = get_execution_order(query_plan)
-    query_dict = {q.id: q for q in query_plan.query_graph}
-    subquery_answers = {}
-    for query_id in execution_order:
-        subquery_answers[query_id] = query_dict[query_id].execute(
-            subquery_answers=[
-                subquery_answers[i] for i in query_dict[query_id].subqueries
-            ]
-        )
-    return subquery_answers
-
-
-async def aexecute_queries_in_order(query_plan: QueryPlan) -> dict[int, QueryAnswer]:
-    """
-    Executes the queries in the query plan in the correct order using asyncio and chunks with answered dependencies.
-    """
-    execution_order = get_execution_order(query_plan)
-    query_dict = {q.id: q for q in query_plan.query_graph}
-    subquery_answers = {}
-    while True:
-        ready_to_execute = [
-            query_dict[i]
-            for i in execution_order
-            if i not in subquery_answers
-            and all(s in subquery_answers for s in query_dict[i].subqueries)
-        ]
-        print(ready_to_execute)
-        computed_answers = await asyncio.gather(
-            *[
-                q.aexecute(
-                    subquery_answers=[
-                        a
-                        for a in subquery_answers.values()
-                        if a.query_id in q.subqueries
-                    ]
-                )
-                for q in ready_to_execute
-            ]
-        )
-        for answer in computed_answers:
-            subquery_answers[answer.query_id] = answer
-        if len(subquery_answers) == len(execution_order):
-            break
-    return subquery_answers
-
-
 if __name__ == "__main__":
     from pprint import pprint
 
-    plan = query_planner(
+    plan = task_planner(
         "What is the difference in populations of Canada and #the Jason's home country?"
     )
-    answers = execute_queries_in_order(plan)
-    # alternativ: asyncio.run(aexecute_queries_in_order(plan)
-    pprint(answers)
 
-    """{1: QueryAnswer(query_id=1, answer='Answer to What is the population of Canada?'),
-        2: QueryAnswer(query_id=2, answer="Answer to What is Jason's home country?"),
-        3: QueryAnswer(query_id=3, answer="Answer to What is the population of Jason's home country?"),
-        4: QueryAnswer(query_id=4, answer="Answer to What is the difference in populations of Canada and Jason's home country?")}
+    task_execution_order=asyncio.run(plan.aexecute_tasks_in_order())
+    pprint(task_execution_order)
+
+    """{1: TaskAnswer(task_id=1, answer='Answer to What is the population of Canada?'),
+        2: TaskAnswer(task_id=2, answer="Answer to What is Jason's home country?"),
+        3: TaskAnswer(task_id=3, answer="Answer to What is the population of Jason's home country?"),
+        4: TaskAnswer(task_id=4, answer="Answer to What is the difference in populations of Canada and Jason's home country?")}
     """
