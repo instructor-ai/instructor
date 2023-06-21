@@ -1,6 +1,6 @@
 # Proof of Concept for a task planning and execution system using
-# OpenAIs Functions and topological sort, based on the idea in 
-# question_answer_subquery.py. 
+# OpenAIs Functions and topological sort, based on the idea in
+# question_answer_subquery.py.
 # This version is simplified and centralizes the execution logic
 # in contrast tu the recursive approach in question_answer_subquery.py
 # Added by Jan Philipp Harries / @jpdus
@@ -10,6 +10,7 @@ import asyncio
 from pydantic import Field
 from typing import List, Generator
 from openai_function_call import OpenAISchema
+import random
 
 
 class TaskAnswer(OpenAISchema):
@@ -61,7 +62,7 @@ class TaskPlan(OpenAISchema):
                 if i not in subtask_answers
                 and all(s in subtask_answers for s in task_dict[i].subtasks)
             ]
-            #prints chunks to visualize execution order
+            # prints chunks to visualize execution order
             print(ready_to_execute)
             computed_answers = await asyncio.gather(
                 *[
@@ -80,7 +81,6 @@ class TaskPlan(OpenAISchema):
             if len(subtask_answers) == len(execution_order):
                 break
         return subtask_answers
-
 
 
 Task.update_forward_refs()
@@ -153,17 +153,41 @@ if __name__ == "__main__":
         "What is the difference in populations betweend the adjacent countries of Jan's home country and the adjacent countries of Jason's home country?"
     )
 
-    task_execution_order=asyncio.run(plan.aexecute_tasks_in_order())
-    pprint(task_execution_order)
+    # randomly shuffle items in the task graph to test execution order
+    random.shuffle(plan.task_graph)
+    # adjust IDs and subtask IDs
+    old_new_id_map = {task.id: i for i, task in enumerate(plan.task_graph)}
+    for i, task in enumerate(plan.task_graph):
+        task.subtasks = [old_new_id_map[s] for s in task.subtasks]
+        task.id = i
+    pprint({task.id: task.task for task in plan.task_graph})
+    print()
+    """
+    {0: "Identify the adjacent countries of Jason's home country",
+    1: "Calculate the total population of the adjacent countries of Jan's home country",
+    2: "Identify the adjacent countries of Jan's home country",
+    3: "Identify Jason's home country",
+    4: "Get the population of each adjacent country of Jan's home country",
+    5: "Get the population of each adjacent country of Jason's home country",
+    6: 'Calculate the difference in populations between the adjacent countries of Jan's home country and the adjacent countries of Jason's home country",
+    7: "Identify Jan's home country",
+    8: "Calculate the total population of the adjacent countries of Jason's home country'}
+    """
+
+    task_execution_order = asyncio.run(plan.aexecute_tasks_in_order())
+
+    pprint(task_execution_order, sort_dicts=False)
 
     """
-    {1: TaskAnswer(task_id=1, answer="Answer to Identify Jan's home country"),
-    2: TaskAnswer(task_id=2, answer="Answer to Identify Jason's home country"),
-    3: TaskAnswer(task_id=3, answer="Answer to Identify the adjacent countries of Jan's home country"),
-    4: TaskAnswer(task_id=4, answer="Answer to Identify the adjacent countries of Jason's home country"),
-    5: TaskAnswer(task_id=5, answer="Answer to Get the population of each adjacent country of Jan's home country"),
-    6: TaskAnswer(task_id=6, answer="Answer to Get the population of each adjacent country of Jason's home country"),
-    7: TaskAnswer(task_id=7, answer="Answer to Calculate the total population of the adjacent countries of Jan's home country"),
+    done in parallel where possible:
+
+    {3: TaskAnswer(task_id=3, answer="Answer to Identify Jason's home country"),
+    7: TaskAnswer(task_id=7, answer="Answer to Identify Jan's home country"),
+    0: TaskAnswer(task_id=0, answer="Answer to Identify the adjacent countries of Jason's home country"),
+    2: TaskAnswer(task_id=2, answer="Answer to Identify the adjacent countries of Jan's home country"),
+    4: TaskAnswer(task_id=4, answer="Answer to Get the population of each adjacent country of Jan's home country"),
+    5: TaskAnswer(task_id=5, answer="Answer to Get the population of each adjacent country of Jason's home country"),
+    1: TaskAnswer(task_id=1, answer="Answer to Calculate the total population of the adjacent countries of Jan's home country"),
     8: TaskAnswer(task_id=8, answer="Answer to Calculate the total population of the adjacent countries of Jason's home country"),
-    9: TaskAnswer(task_id=9, answer="Answer to Calculate the difference in populations between the adjacent countries of Jan's home country and the adjacent countries of Jason's home country")}
+    6: TaskAnswer(task_id=6, answer="Answer to Calculate the difference in populations between the adjacent countries of Jan's home country and the adjacent countries of Jason's home country")}
     """
