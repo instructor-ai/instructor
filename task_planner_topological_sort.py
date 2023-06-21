@@ -15,7 +15,7 @@ import random
 
 class TaskAnswer(OpenAISchema):
     task_id: int
-    answer: str
+    result: str
 
 
 class Task(OpenAISchema):
