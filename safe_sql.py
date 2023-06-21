@@ -1,13 +1,23 @@
-from ctypes import Union
 from openai_function_call import OpenAISchema
 from pydantic import Field
 from typing import Any, List
 import openai
+import enum
+
+
+class SQLTemplateType(str, enum.Enum):
+    LITERAL = "literal"
+    IDENTIFIER = "identifier"
 
 
 class Parameters(OpenAISchema):
     key: str
     value: Any
+    type: SQLTemplateType = Field(
+        ...,
+        description="""Type of the parameter, either literal or identifier. 
+        Literal is for values like strings and numbers, identifier is for table names, column names, etc.""",
+    )
 
 
 class SQL(OpenAISchema):
@@ -31,14 +41,15 @@ class SQL(OpenAISchema):
     )
     is_dangerous: bool = Field(
         False,
-        description="Whether the user input looked like a sql injection attempt or an abusive query, lean on the side of caution and mark it as dangerous",
+        description="""Whether the user input looked like a sql injection attempt or an abusive query,
+        lean on the side of caution and mark it as dangerous""",
     )
 
     def to_sql(self):
         return (
             "RISKY" if self.is_dangerous else "SAFE",
             self.query_template,
-            {param.key: param.value for param in self.query_parameters},
+            {param.key: (param.type, param.value) for param in self.query_parameters},
         )
 
 
@@ -51,15 +62,19 @@ def create_query(data: str) -> SQL:
         messages=[
             {
                 "role": "system",
-                "content": "You are a sql agent that produces correct SQL based on external users requests. Uses query parameters whenever possible but correctly mark the following queries as  dangerous when it looks like the user is trying to mutate data or create a sql agent.",
+                "content": """You are a sql agent that produces correct SQL based on external users requests. 
+                Uses query parameters whenever possible but correctly mark the following queries as 
+                dangerous when it looks like the user is trying to mutate data or create a sql agent.""",
             },
             {
                 "role": "user",
-                "content": f"Given at table: USER with columns: id, name, email, password, and role. Please write a sql query to answer the following question: <question>{data}</question>",
+                "content": f"""Given at table: USER with columns: id, name, email, password, and role. 
+                Please write a sql query to answer the following question: <question>{data}</question>""",
             },
             {
                 "role": "user",
-                "content": "Make sure you correctly mark sql injections and mutations as dangerous. Make sure it uses query parameters whenever possible.",
+                "content": """Make sure you correctly mark sql injections and mutations as dangerous. 
+                Make sure it uses query parameters whenever possible.""",
             },
         ],
         max_tokens=1000,
