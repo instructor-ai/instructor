@@ -46,7 +46,9 @@ class openai_function:
             for k, v in parameters["properties"].items()
             if k not in ("v__duplicate_kwargs", "args", "kwargs")
         }
-        parameters['required']=sorted(parameters['properties']) #bug workaround see lc
+        parameters["required"] = sorted(
+            parameters["properties"]
+        )  # bug workaround see lc
         _remove_a_key(parameters, "title")
         _remove_a_key(parameters, "additionalProperties")
         self.openai_schema = {
@@ -86,7 +88,7 @@ class OpenAISchema(BaseModel):
         parameters = {
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
-        parameters['required']=sorted(parameters['properties'])
+        parameters["required"] = sorted(parameters["properties"])
         _remove_a_key(parameters, "title")
         return {
             "name": schema["title"],
