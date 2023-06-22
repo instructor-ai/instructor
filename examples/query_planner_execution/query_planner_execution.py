@@ -1,14 +1,17 @@
-from functools import lru_cache
-import openai
-import enum
-import json
 import asyncio
+import enum
+import sys
+from os.path import abspath, dirname
+from typing import List
 
+import openai
 from pydantic import Field
-from typing import List, Tuple
+
+# Add the root directory of your project to the Python import search path
+root_dir = dirname(dirname(dirname(abspath(__file__))))
+sys.path.append(root_dir)
+
 from openai_function_call import OpenAISchema
-from tenacity import retry, stop_after_attempt
-from pprint import pprint
 
 
 class QueryType(str, enum.Enum):

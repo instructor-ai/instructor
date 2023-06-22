@@ -10,10 +10,18 @@ we will wait unnecessarily with my current implementation.
 Added by Jan Philipp Harries / @jpdus
 """
 
-import openai
 import asyncio
-from pydantic import Field, BaseModel
+import sys
+from os.path import abspath, dirname
 from typing import List, Generator
+
+import openai
+from pydantic import Field, BaseModel
+
+# Add the root directory of your project to the Python import search path
+root_dir = dirname(dirname(dirname(abspath(__file__))))
+sys.path.append(root_dir)
+
 from openai_function_call import OpenAISchema
 
 

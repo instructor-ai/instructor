@@ -40,13 +40,20 @@ Example usage:
 # >>> root/folder2/subfolder1/file4.txt     NodeType.FILE
 """
 
-import openai
 import enum
-
-from pydantic import Field
+import sys
+from os.path import abspath, dirname
 from typing import List
-from openai_function_call import OpenAISchema
+
+import openai
+from pydantic import Field
 from tenacity import retry, stop_after_attempt
+
+# Add the root directory of your project to the Python import search path
+root_dir = dirname(dirname(dirname(abspath(__file__))))
+sys.path.append(root_dir)
+
+from openai_function_call import OpenAISchema
 
 
 class NodeType(str, enum.Enum):

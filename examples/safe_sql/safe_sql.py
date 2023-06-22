@@ -1,8 +1,16 @@
-from openai_function_call import OpenAISchema
-from pydantic import Field
-from typing import Any, List
-import openai
 import enum
+import sys
+from os.path import abspath, dirname
+from typing import Any, List
+
+import openai
+from pydantic import Field
+
+# Add the root directory of your project to the Python import search path
+root_dir = dirname(dirname(dirname(abspath(__file__))))
+sys.path.append(root_dir)
+
+from openai_function_call import OpenAISchema
 
 
 class SQLTemplateType(str, enum.Enum):
