@@ -26,14 +26,33 @@ from typing import Any, Callable
 from pydantic import validate_arguments, BaseModel
 
 
+def _remove_a_key(d, remove_key) -> None:
+    """Remove a key from a dictionary recursively"""
+    if isinstance(d, dict):
+        for key in list(d.keys()):
+            if key == remove_key:
+                del d[key]
+            else:
+                _remove_a_key(d[key], remove_key)
+
+
 class openai_function:
     def __init__(self, func: Callable) -> None:
         self.func = func
         self.validate_func = validate_arguments(func)
+        parameters = self.validate_func.model.schema()
+        parameters["properties"] = {
+            k: v
+            for k, v in parameters["properties"].items()
+            if k not in ("v__duplicate_kwargs", "args", "kwargs")
+        }
+        parameters['required']=sorted(parameters['properties']) #bug workaround see lc
+        _remove_a_key(parameters, "title")
+        _remove_a_key(parameters, "additionalProperties")
         self.openai_schema = {
             "name": self.func.__name__,
             "description": self.func.__doc__,
-            "parameters": self.validate_func.model.schema(),
+            "parameters": parameters,
         }
         self.model = self.validate_func.model
 
@@ -64,10 +83,15 @@ class OpenAISchema(BaseModel):
     @property
     def openai_schema(cls):
         schema = cls.schema()
+        parameters = {
+            k: v for k, v in schema.items() if k not in ("title", "description")
+        }
+        parameters['required']=sorted(parameters['properties'])
+        _remove_a_key(parameters, "title")
         return {
             "name": schema["title"],
             "description": schema["description"],
-            "parameters": schema,
+            "parameters": parameters,
         }
 
     @classmethod
