@@ -5,6 +5,7 @@ from typing import Any, List
 
 import openai
 from pydantic import Field
+import erdantic as erd
 
 # Add the root directory of your project to the Python import search path
 root_dir = dirname(dirname(dirname(abspath(__file__))))
@@ -60,6 +61,8 @@ class SQL(OpenAISchema):
             {param.key: (param.type, param.value) for param in self.query_parameters},
         )
 
+diagram = erd.create(SQL)
+diagram.draw("examples/safe_sql/schema.png")
 
 def create_query(data: str) -> SQL:
     completion = openai.ChatCompletion.create(

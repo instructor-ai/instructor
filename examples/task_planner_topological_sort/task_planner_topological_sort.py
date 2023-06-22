@@ -17,6 +17,7 @@ from typing import List, Generator
 
 import openai
 from pydantic import Field, BaseModel
+import erdantic as erd
 
 # Add the root directory of your project to the Python import search path
 root_dir = dirname(dirname(dirname(abspath(__file__))))
@@ -145,6 +146,9 @@ class TaskPlan(OpenAISchema):
 
 Task.update_forward_refs()
 TaskPlan.update_forward_refs()
+
+diagram = erd.create(TaskPlan)
+diagram.draw("examples/task_planner_topological_sort/schema.png")
 
 
 def task_planner(question: str) -> TaskPlan:

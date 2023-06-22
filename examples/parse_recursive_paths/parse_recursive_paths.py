@@ -48,6 +48,7 @@ from typing import List
 import openai
 from pydantic import Field
 from tenacity import retry, stop_after_attempt
+import erdantic as erd
 
 # Add the root directory of your project to the Python import search path
 root_dir = dirname(dirname(dirname(abspath(__file__))))
@@ -124,6 +125,8 @@ class DirectoryTree(OpenAISchema):
 Node.update_forward_refs()
 DirectoryTree.update_forward_refs()
 
+diagram = erd.create(DirectoryTree)
+diagram.draw("examples/parse_recursive_paths/schema.png")
 
 @retry(stop=stop_after_attempt(3))
 def parse_tree_to_filesystem(data: str) -> DirectoryTree:

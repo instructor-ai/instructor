@@ -4,6 +4,7 @@ from typing import List
 
 import openai
 from pydantic import Field, BaseModel
+import erdantic as erd
 
 # Add the root directory of your project to the Python import search path
 root_dir = dirname(dirname(dirname(abspath(__file__))))
@@ -56,6 +57,8 @@ class QuestionAnswer(OpenAISchema):
         description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
     )
 
+diagram = erd.create(QuestionAnswer)
+diagram.draw("examples/citation_fuzzy_match/schema.png")
 
 def ask_ai(question: str, context: str) -> QuestionAnswer:
     """

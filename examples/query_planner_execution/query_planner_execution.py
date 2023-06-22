@@ -6,6 +6,7 @@ from typing import List
 
 import openai
 from pydantic import Field
+import erdantic as erd
 
 # Add the root directory of your project to the Python import search path
 root_dir = dirname(dirname(dirname(abspath(__file__))))
@@ -114,6 +115,8 @@ class QueryPlan(OpenAISchema):
 Query.update_forward_refs()
 QueryPlan.update_forward_refs()
 
+diagram = erd.create(QueryPlan)
+diagram.draw("examples/query_planner_execution/schema.png")
 
 def query_planner(question: str, plan=False) -> QueryPlan:
     PLANNING_MODEL = "gpt-4"
