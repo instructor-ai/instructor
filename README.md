@@ -75,25 +75,25 @@ print(user_details)  # UserDetails(name="John Doe", age=30)
 
 ## Advanced Usage
 
-### SQL Query Generation with a touch of Security
+### [SQL Query Generation with a touch of Security](examples/safe_sql/safe_sql.py)
 
-**Implications:* This script showcases an advanced approach of using OpenAI's GPT-3.5 Turbo model to generate SQL queries based on user requests. Importantly, it also scrutinizes each query for potential security risks, specifically looking for SQL injection attempts. This dual utility brings a new level of automation and safety to data querying, significantly reducing the need for manual query construction and preliminary security assessment.
+*Implications:* This script showcases an advanced approach of using OpenAI's GPT-3.5 Turbo model to generate SQL queries based on user requests. Importantly, it also scrutinizes each query for potential security risks, specifically looking for SQL injection attempts. This dual utility brings a new level of automation and safety to data querying, significantly reducing the need for manual query construction and preliminary security assessment.
 
 The SQL class is designed to represent a single SQL query and its parameters, as well as assess the security risk associated with the query. The user-provided input is examined for potential SQL injection attempts or abusive queries, marking these as dangerous when identified. When it comes to generating SQL queries, this script always leans on using query parameters for user-defined inputs, adhering to best security practices.
 
-### Complex Query Planning and Execution
+### [Complex Query Planning and Execution](examples/query_planner_execution/query_planner_execution.py)
 
 *Implications:* This advanced implementation showcases how complex queries can be decomposed into simpler, dependent sub-queries, allowing the AI to tackle intricate tasks efficiently. This can substantially enhance the depth and accuracy of AI-generated responses, even in situations with multiple unknown variables. Such a tool can be used to drive complex research, provide in-depth answers in a QA system, or support comprehensive data analysis.
 
 The provided Python script demonstrates the construction of a query planner leveraging OpenAI's GPT model. It breaks down a given complex question into multiple smaller, dependent questions or tasks, which are subsequently handled in a specific order (as determined by the dependencies). Asynchronous execution enables the queries to be processed concurrently, and dependencies are taken into account to ensure the proper order of execution. This allows for a highly efficient computation, especially in scenarios with complex, multi-part questions.
 
-### Citation Alignment with QuestionAnswer and Fact Classes
+### [Citation Alignment with QuestionAnswer and Fact Classes](examples/citation_fuzzy_match/citation_fuzzy_match.py)
 
 *Implications:* This usage provides a more robust and reliable method for fact extraction and citation. It enhances the reliability of AI outputs, promoting the transparency and traceability of the information. It also presents a method to prevent and minimize the AI's tendency to "hallucinate" or generate unsupported information.
 
 The script employs advanced schema usage to extract and cite specific details from a given context. The Fact class encapsulates each extracted detail, comprising the fact and a list of direct quotes from the context which act as supporting sources. Notably, the citation utilizes an approximate quote produced by the language model and leverages regex with edits to align the citation with an actual substring in the context. This mechanism significantly grounds the fact, ideally minimizing hallucinations. The substring methodology further enables flexible visualization of our citations, shifting from chunk-level references to more precise string-level references.
 
-### Segmenting Single Requests into Multiple Search Queries
+### [Segmenting Single Requests into Multiple Search Queries](examples/segment_search_queries/segment_search_queries.py)
 
 *Implications:* The MultiSearch function allows complex tasks to be broken down into simpler, manageable queries, thus enabling parallel processing and potentially improving efficiency and speed. It also opens up possibilities for more complex interactions and more robust responses from the AI.
 
@@ -101,7 +101,7 @@ The MultiSearch function is an advanced feature designed to handle complex scena
 
 The Search class defines each search query, consisting of a title, a query, and a search type. The segment function is then used to break the request into multiple search queries, engaging the OpenAI API to segment the request using the MultiSearch class.
 
-### Recursive Data Types in Hierarchical Structures: DirectoryTree and Node Classes
+### [Recursive Data Types in Hierarchical Structures: DirectoryTree and Node Classes](examples/parse_recursive_paths/parse_recursive_paths.py)
 
 *Implications:* The demonstrated design pattern is crucial for manipulating hierarchical data in a variety of contexts. For example, in computer science, it can facilitate query planning in databases and task management in Directed Acyclic Graph (DAG) execution. Moreover, its utility extends beyond technical applications, proving valuable in organizing complex structures like biological taxonomies or corporate hierarchies.
 
