@@ -1,10 +1,17 @@
-# OpenAI Function Call and Pydantic Integration Module
+# Pydantic is all you need: An OpenAI Function Call Pydantic Integration Module
 
-This Python module provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner. This README will guide you through the installation, usage, and contribution processes of this module.
+We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
 If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco). 
 
+This repo also contains a range of examples I've used in experimetnation and in production and I welcome new contributions for different types of schemas.
 
 ## Installation
+
+```python
+pip install openai_function_call
+```
+
+## Contributing
 
 To get started, clone the repository
 
@@ -18,13 +25,6 @@ Next, install the necessary Python packages from the requirements.txt file:
 pip install -r requirements.txt
 ```
 
-## Contributing
-
-Your contributions are welcome! If you have great examples or find neat patterns, clone the repo and add another example. 
-The goal is to find great patterns and cool examples to highlight.
-
-If you encounter any issues or want to provide feedback, you can create an issue in this repository. You can also reach out to me on Twitter at @jxnlco.
-
 ### Poetry
 
 We also use poetry if you'd like
@@ -33,7 +33,10 @@ We also use poetry if you'd like
 poetry build
 ```
 
-Note that there's no separate pip install command for this module. Simply copy and paste the module's code into your application.
+Your contributions are welcome! If you have great examples or find neat patterns, clone the repo and add another example.
+Check out the issues for any ideas if you want to learn. The goal is to find great patterns and cool examples to highlight.
+
+If you encounter any issues or want to provide feedback, you can create an issue in this repository. You can also reach out to me on Twitter at @jxnlco.
 
 ## Usage
 
