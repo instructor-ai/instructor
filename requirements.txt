@@ -1,3 +1,2 @@
 openai
 pydantic
-tenacity
