@@ -1,9 +1,16 @@
 # Pydantic is all you need: An OpenAI Function Call Pydantic Integration Module
 
+
 We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
 If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco). 
 
 This repo also contains a range of examples I've used in experimetnation and in production and I welcome new contributions for different types of schemas.
+
+## Support
+
+Follow me on twitter and consider helping pay for openai tokens!
+
+[![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/jxnlco.svg?style=social&label=Follow%20%40jxnlco)](https://twitter.com/jxnlco) [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/jxnl)
 
 ## Installation
 
