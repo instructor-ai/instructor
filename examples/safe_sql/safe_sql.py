@@ -1,15 +1,8 @@
 import enum
-import sys
-from os.path import abspath, dirname
 from typing import Any, List
 
 import openai
 from pydantic import Field
-import erdantic as erd
-
-# Add the root directory of your project to the Python import search path
-root_dir = dirname(dirname(dirname(abspath(__file__))))
-sys.path.append(root_dir)
 
 from openai_function_call import OpenAISchema
 
@@ -61,8 +54,6 @@ class SQL(OpenAISchema):
             {param.key: (param.type, param.value) for param in self.query_parameters},
         )
 
-diagram = erd.create(SQL)
-diagram.draw("examples/safe_sql/schema.png")
 
 def create_query(data: str) -> SQL:
     completion = openai.ChatCompletion.create(

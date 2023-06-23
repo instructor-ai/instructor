@@ -17,18 +17,11 @@ Examples:
 """
 
 import enum
-import sys
-from os.path import abspath, dirname
 from typing import List
 
 import openai
 from pydantic import Field
 from tenacity import retry, stop_after_attempt
-import erdantic as erd
-
-# Add the root directory of your project to the Python import search path
-root_dir = dirname(dirname(dirname(abspath(__file__))))
-sys.path.append(root_dir)
 
 from openai_function_call import OpenAISchema
 
@@ -81,8 +74,6 @@ class MultiSearch(OpenAISchema):
         tasks = asyncio.gather(*[search.execute() for search in self.searches])
         return loop.run_until_complete(tasks)
 
-diagram = erd.create(MultiSearch)
-diagram.draw("examples/segment_search_queries/schema.png")
 
 @retry(stop=stop_after_attempt(3))
 def segment(data: str) -> MultiSearch:
