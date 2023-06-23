@@ -6,7 +6,7 @@ If you have any feedback, leave an issue or hit me up on [twitter](https://twitt
 
 ## Installation
 
-To get started, clone the repository:
+To get started, clone the repository
 
 ```bash
 git clone https://github.com/jxnl/openai_function_call.git
@@ -16,6 +16,21 @@ Next, install the necessary Python packages from the requirements.txt file:
 
 ```bash
 pip install -r requirements.txt
+```
+
+## Contributing
+
+Your contributions are welcome! If you have great examples or find neat patterns, clone the repo and add another example. 
+The goal is to find great patterns and cool examples to highlight.
+
+If you encounter any issues or want to provide feedback, you can create an issue in this repository. You can also reach out to me on Twitter at @jxnlco.
+
+### Poetry
+
+We also use poetry if you'd like
+
+```bash
+poetry build
 ```
 
 Note that there's no separate pip install command for this module. Simply copy and paste the module's code into your application.
@@ -81,13 +96,7 @@ print(user_details)  # UserDetails(name="John Doe", age=30)
 
 ## Advanced Usage
 
-If you want to see more examples checkout the examples folder
-
-## Contributing
-
-Your contributions are welcome! If you have great examples or find neat patterns, clone the repo and add another example_*.py file. The goal is to find great patterns and cool examples to highlight.
-
-If you encounter any issues or want to provide feedback, you can create an issue in this repository. You can also reach out to me on Twitter at @jxnlco.
+If you want to see more examples checkout the examples folder!
 
 ## License
 
