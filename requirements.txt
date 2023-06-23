@@ -1,5 +1,4 @@
 openai
 pydantic
-tenacity
 pygraphviz
 erdantic
