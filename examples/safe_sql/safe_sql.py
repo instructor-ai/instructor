@@ -1,8 +1,10 @@
-from openai_function_call import OpenAISchema
-from pydantic import Field
-from typing import Any, List
-import openai
 import enum
+from typing import Any, List
+
+import openai
+from pydantic import Field
+
+from openai_function_call import OpenAISchema
 
 
 class SQLTemplateType(str, enum.Enum):

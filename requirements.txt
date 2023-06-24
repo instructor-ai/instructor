@@ -1,2 +1,4 @@
 openai
 pydantic
+pygraphviz
+erdantic

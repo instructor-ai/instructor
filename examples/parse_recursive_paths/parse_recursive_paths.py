@@ -40,13 +40,14 @@ Example usage:
 # >>> root/folder2/subfolder1/file4.txt     NodeType.FILE
 """
 
-import openai
 import enum
-
-from pydantic import Field
 from typing import List
-from openai_function_call import OpenAISchema
+
+import openai
+from pydantic import Field
 from tenacity import retry, stop_after_attempt
+
+from openai_function_call import OpenAISchema
 
 
 class NodeType(str, enum.Enum):

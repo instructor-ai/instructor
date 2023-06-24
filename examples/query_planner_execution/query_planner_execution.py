@@ -1,14 +1,11 @@
-from functools import lru_cache
-import openai
-import enum
-import json
 import asyncio
+import enum
+from typing import List
 
+import openai
 from pydantic import Field
-from typing import List, Tuple
+
 from openai_function_call import OpenAISchema
-from tenacity import retry, stop_after_attempt
-from pprint import pprint
 
 
 class QueryType(str, enum.Enum):

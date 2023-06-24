@@ -16,12 +16,14 @@ Examples:
 # >>> Searching for `Documents` with query `GPDR policy` using `SearchType.EMAIL`
 """
 
-from openai_function_call import OpenAISchema
-from pydantic import Field
-from typing import List
-from tenacity import retry, stop_after_attempt
-import openai
 import enum
+from typing import List
+
+import openai
+from pydantic import Field
+from tenacity import retry, stop_after_attempt
+
+from openai_function_call import OpenAISchema
 
 
 class SearchType(str, enum.Enum):

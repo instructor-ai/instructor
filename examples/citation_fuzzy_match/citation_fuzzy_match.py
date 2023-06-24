@@ -1,6 +1,8 @@
-import openai
 from typing import List
+
+import openai
 from pydantic import Field, BaseModel
+
 from openai_function_call import OpenAISchema
 
 

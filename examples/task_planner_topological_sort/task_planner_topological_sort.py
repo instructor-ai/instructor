@@ -10,10 +10,12 @@ we will wait unnecessarily with my current implementation.
 Added by Jan Philipp Harries / @jpdus
 """
 
-import openai
 import asyncio
-from pydantic import Field, BaseModel
 from typing import List, Generator
+
+import openai
+from pydantic import Field, BaseModel
+
 from openai_function_call import OpenAISchema
 
 
