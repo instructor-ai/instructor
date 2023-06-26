@@ -127,7 +127,15 @@ class ChatCompletion(BaseModel):
             messages.append(self.system_message.dict())
 
         if self.messages:
-            messages += [message.dict() for message in self.messages]
+            special_types = {
+                SystemMessage,
+                ChainOfThought,
+            }
+            messages += [
+                message.dict()
+                for message in self.messages
+                if type(message) not in special_types
+            ]
 
         if self.cot_message:
             messages.append(self.cot_message.dict())
@@ -211,28 +219,25 @@ if __name__ == "__main__":
         | ExpertSystem(task="Segment emails into search queries")
         | MultiTask(subtask_class=Search)
         | ChainOfThought()
-        | TaggedMessage(tag="email", content="Segment emails into search queries")
+        | TaggedMessage(
+            tag="email",
+            content="Can you find the video I sent last week and also the post about dogs",
+        )
     )
     assert isinstance(task, ChatCompletion)
 
-    import json
-
-    print(json.dumps(task.kwargs, indent=4))
+    print(task.kwargs)
     """
     {
         "messages": [
             {
                 "role": "system",
-                "content": "You are a world class, state of the art agent capable of correctly completing the task: `Segment emails into search queries`"
-            },
-            {
-                "role": "assistant",
-                "content": "Lets think step by step to get the correct answer:"
+                "content": "You are a world class, state of the art agent capable
+                of correctly completing the task: `Segment emails into search queries`"
             },
             {
                 "role": "user",
-                "content": "<email>Segment emails into search queries</email>"
-            },
+                "content": "<email>Can you find the video I sent last week and also the post about dogs</email>"
             {
                 "role": "assistant",
                 "content": "Lets think step by step to get the correct answer:"
@@ -248,39 +253,26 @@ if __name__ == "__main__":
                         "tasks": {
                             "description": "Correctly segmented list of `Search` tasks",
                             "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Search"
-                            }
+                            "items": {"$ref": "#/definitions/Search"}
                         }
                     },
                     "definitions": {
                         "Search": {
                             "type": "object",
                             "properties": {
-                                "id": {
-                                    "type": "integer"
-                                },
-                                "query": {
-                                    "type": "string"
-                                }
+                                "id": {"type": "integer"},
+                                "query": {"type": "string"}
                             },
-                            "required": [
-                                "id",
-                                "query"
-                            ]
+                            "required": ["id", "query"]
                         }
                     },
-                    "required": [
-                        "tasks"
-                    ]
+                    "required": ["tasks"]
                 }
             }
         ],
-        "function_call": {
-            "name": "MultiSearch"
-        },
+        "function_call": {"name": "MultiSearch"},
         "max_tokens": 1000,
         "temperature": 0.1,
-    "model": "gpt3.5-turbo-0613"
+        "model": "gpt3.5-turbo-0613"
     }
     """
