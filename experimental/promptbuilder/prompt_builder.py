@@ -67,6 +67,16 @@ class ExpertSystem(Message):
 
 
 @dataclass
+class TipsMessage(Message):
+    tips: List[str] = Field(default_factory=list)
+
+    def __post_init__(self):
+        self.role = MessageRole.USER
+        tips = "\n* ".join(self.tips)
+        self.content = f"Here are some tips to help you complete the task:\n* {tips}"
+
+
+@dataclass
 class ChainOfThought(Message):
     def __post_init__(self):
         self.role = MessageRole.ASSISTANT
@@ -223,10 +233,17 @@ if __name__ == "__main__":
             tag="email",
             content="Can you find the video I sent last week and also the post about dogs",
         )
+        | TipsMessage(
+            tips=[
+                "When unsure about the correct segmentation, try to think about the task as a whole",
+                "If acronyms are used expand them to their full form",
+                "Use multiple phrases to describe the same thing",
+            ]
+        )
     )
     assert isinstance(task, ChatCompletion)
 
-    print(task.kwargs)
+    pprint(task.kwargs, indent=3)
     """
     {
         "messages": [
@@ -238,6 +255,8 @@ if __name__ == "__main__":
             {
                 "role": "user",
                 "content": "<email>Can you find the video I sent last week and also the post about dogs</email>"
+            },
+            ...
             {
                 "role": "assistant",
                 "content": "Lets think step by step to get the correct answer:"

@@ -1,7 +1,6 @@
 from pydantic import Field
 from openai_function_call import OpenAISchema
 from enum import Enum, auto
-from typing import List
 
 
 class Source(Enum):
