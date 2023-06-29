@@ -102,9 +102,7 @@ class ChatCompletion(BaseModel):
         if isinstance(other, Message):
             if isinstance(other, SystemMessage):
                 if self.system_message:
-                    raise ValueError(
-                        "Only one system message can be used per completion"
-                    )
+                    self.system_message.content += "\n\n" + other.content
                 self.system_message = other
 
             if isinstance(other, ChainOfThought):
@@ -228,7 +226,6 @@ if __name__ == "__main__":
         ChatCompletion(name="Acme Inc Email Segmentation", model="gpt3.5-turbo-0613")
         | ExpertSystem(task="Segment emails into search queries")
         | MultiTask(subtask_class=Search)
-        | ChainOfThought()
         | TaggedMessage(
             tag="email",
             content="Can you find the video I sent last week and also the post about dogs",
@@ -240,6 +237,10 @@ if __name__ == "__main__":
                 "Use multiple phrases to describe the same thing",
             ]
         )
+        | user.prompts.LocationContext()
+        | user.prompts.ChatContext()
+        | user.prompts.BiographyPr()
+        | ChainOfThought()
     )
     assert isinstance(task, ChatCompletion)
 
