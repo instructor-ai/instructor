@@ -1,4 +1,4 @@
-from prompt_builder import *
+from openai_function_call.dsl import MultiTask
 from openai_function_call import OpenAISchema
 
 
