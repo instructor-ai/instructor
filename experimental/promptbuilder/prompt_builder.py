@@ -69,11 +69,12 @@ class ExpertSystem(Message):
 @dataclass
 class TipsMessage(Message):
     tips: List[str] = Field(default_factory=list)
+    header: str = "Here are some tips to help you complete the task"
 
     def __post_init__(self):
         self.role = MessageRole.USER
         tips = "\n* ".join(self.tips)
-        self.content = f"Here are some tips to help you complete the task:\n* {tips}"
+        self.content = f"{self.header}:\n\n* {tips}"
 
 
 @dataclass
