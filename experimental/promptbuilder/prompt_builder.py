@@ -237,9 +237,6 @@ if __name__ == "__main__":
                 "Use multiple phrases to describe the same thing",
             ]
         )
-        | user.prompts.LocationContext()
-        | user.prompts.ChatContext()
-        | user.prompts.BiographyPr()
         | ChainOfThought()
     )
     assert isinstance(task, ChatCompletion)
