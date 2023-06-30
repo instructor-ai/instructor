@@ -86,6 +86,8 @@ print(result)  # 9
 import openai
 from openai_function_call import OpenAISchema
 
+from pydantic import Field
+
 class UserDetails(OpenAISchema):
     """User Details"""
     name: str = Field(..., description="User's name")
@@ -93,7 +95,7 @@ class UserDetails(OpenAISchema):
 
 completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo-0613",
-    functions=[UserDetails.openai_schema]
+    functions=[UserDetails.openai_schema],
     messages=[
         {"role": "system", "content": "I'm going to ask for user details. Use UserDetails to parse this data."},
         {"role": "user", "content": "My name is John Doe and I'm 30 years old."},
