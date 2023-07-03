@@ -106,6 +106,101 @@ user_details = UserDetails.from_response(completion)
 print(user_details)  # UserDetails(name="John Doe", age=30)
 ```
 
+### Example 3: Using the DSL
+
+```python
+from openai_function_call import OpenAISchema
+from openai_function_call.dsl import ChatCompletion, MultiTask, messages as m
+
+# Define a subtask you'd like to extract from then,
+# We'll use MultTask to easily map it to a List[Search] 
+# so we can extract more than one
+class Search(OpenAISchema):
+    id: int
+    query: str
+
+task = (
+    ChatCompletion(name="Acme Inc Email Segmentation", model="gpt3.5-turbo-0613")
+    | m.ExpertSystem(task="Segment emails into search queries")
+    | MultiTask(subtask_class=Search)
+    | m.TaggedMessage(
+        tag="email",
+        content="Can you find the video I sent last week and also the post about dogs",
+    )
+    | m.TipsMessage(
+        tips=[
+            "When unsure about the correct segmentation, try to think about the task as a whole",
+            "If acronyms are used expand them to their full form",
+            "Use multiple phrases to describe the same thing",
+        ]
+    )
+    | m.ChainOfThought()
+)
+# Its important that this just builds you request,
+# all these | operators are overloaded and all we do is compile
+# it to the openai kwargs
+assert isinstance(task, ChatCompletion)
+pprint(task.kwargs, indent=3)
+"""
+{
+    "messages": [
+        {
+            "role": "system",
+            "content": "You are a world class, state of the art agent capable
+            of correctly completing the task: `Segment emails into search queries`"
+        },
+        {
+            "role": "user",
+            "content": "<email>Can you find the video I sent last week and also the post about dogs</email>"
+        },
+        ...
+        {
+            "role": "assistant",
+            "content": "Lets think step by step to get the correct answer:"
+        }
+    ],
+    "functions": [
+        {
+            "name": "MultiSearch",
+            "description": "Correct segmentation of `Search` tasks",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "tasks": {
+                        "description": "Correctly segmented list of `Search` tasks",
+                        "type": "array",
+                        "items": {"$ref": "#/definitions/Search"}
+                    }
+                },
+                "definitions": {
+                    "Search": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "query": {"type": "string"}
+                        },
+                        "required": ["id", "query"]
+                    }
+                },
+                "required": ["tasks"]
+            }
+        }
+    ],
+    "function_call": {"name": "MultiSearch"},
+    "max_tokens": 1000,
+    "temperature": 0.1,
+    "model": "gpt3.5-turbo-0613"
+}
+"""
+
+# Once we call .create we'll be returned with a multitask object that contains our list of task
+result = tasks.create()
+
+for task in result.tasks:
+    # We can now extract the list of tasks as we could normally 
+    assert isinstance(task, Search)
+```
+
 ## Advanced Usage
 
 If you want to see more examples checkout the examples folder!
