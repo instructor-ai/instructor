@@ -145,57 +145,53 @@ tasks = (
 assert isinstance(tasks, ChatCompletion)
 pprint(tasks.kwargs, indent=3)
 """
-{  'function_call': {'name': 'MultiSearch'},
-'functions': [  {  'description': 'Correct segmentation of `Search` tasks',
-    'name': 'MultiSearch',
-    'parameters': {  'definitions': {  'Search': {  'properties': {  'id': {  'type': 'integer'},
-                                                                    'query': {  'type': 'string'}},
-                                                    'required': [  'id',
-                                                                    'query'],
-                                                    'type': 'object'}},
-                    'properties': {  'tasks': {  'description': 'Correctly '
-                                                                'segmented '
-                                                                'list '
-                                                                'of '
-                                                                '`Search` '
-                                                                'tasks',
-                                                'items': {  '$ref': '#/definitions/Search'},
-                                                'type': 'array'}},
-                    'required': ['tasks'],
-                    'type': 'object'}}],
-   'max_tokens': 1000,
-   'messages': [  {  'content': 'Your personality is `Professional, clear and '
-                                'concise`\n'
-                                '\n'
-                                'You are a world class, state of the art agent '
-                                'capable of correctly completing the task: '
-                                '`Segment emails into search queries`\n'
-                                '\n'
-                                'These are the guidelines you consider when '
-                                'completing your task:\n'
-                                '\n'
-                                '* You never swear\n'
-                                '* You are polite\n'
-                                '* You say please and thank you often.\n'
-                                '\n'
-                                'Here are some tips to help you complete the '
-                                'task:\n'
-                                '\n'
-                                '* When unsure about the correct segmentation, '
-                                'try to think about the task as a whole\n'
-                                '* If acronyms are used expand them to their '
-                                'full form\n'
-                                '* Use multiple phrases to describe the same '
-                                'thing',
-                     'role': 'system'},
-                  {  'content': '<email>Can you find the video I sent last '
-                                'week and also the post about dogs</email>',
-                     'role': 'user'},
-                  {  'content': 'Lets think step by step to get the correct '
-                                'answer:',
-                     'role': 'assistant'}],
-   'model': 'gpt-3.5-turbo-0613',
-   'temperature': 0.1}
+{
+    "messages": [
+        {
+            "role": "system",
+            "content": "Your personality is: `Professional, clear and concise`\n\nYou are a world class, state of the art agent capable of correctly completing the task: `Segment emails into search queries`\n\nThese are the guidelines you consider when completing your task:\n\n* You never swear\n* You are polite\n* You say please and thank you often.\n\nHere are some tips to help you complete the task:\n\n* When unsure about the correct segmentation, try to think about the task as a whole\n* If acronyms are used expand them to their full form\n* Use multiple phrases to describe the same thing"
+        },
+        ...
+        {
+            "role": "user",
+            "content": "<email>Can you find the video I sent last week and also the post about dogs</email>"
+        },
+        {
+            "role": "assistant",
+            "content": "Lets think step by step to get the correct answer:"
+        }
+    ],
+    "functions": [
+        {
+            "name": "MultiSearch",
+            "description": "Correct segmentation of `Search` tasks",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "tasks": {
+                        "description": "Correctly segmented list of `Search` tasks",
+                        "type": "array",
+                        "items": {"$ref": "#/definitions/Search"}
+                    }
+                },
+                "definitions": {
+                    "Search": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "query": {"type": "string"}
+                        },
+                        "required": ["id", "query"]
+                    }
+                },
+                "required": ["tasks"]
+            }
+        }
+    ],
+    "function_call": {"name": "MultiSearch"},
+    "max_tokens": 1000,
+    "temperature": 0.1,
+    "model": "gpt-3.5-turbo-0613"
 """
 
 # Once we call .create we'll be returned with a multitask object that contains our list of task
