@@ -142,6 +142,8 @@ tasks = (
 # Its important that this just builds you request,
 # all these | operators are overloaded and all we do is compile
 # it to the openai kwargs
+# Also note that the System components are combined sequentially
+# so the order matters!
 assert isinstance(tasks, ChatCompletion)
 pprint(tasks.kwargs, indent=3)
 """

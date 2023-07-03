@@ -1,14 +1,15 @@
 from typing import List, Optional, Type, Union
-from pydantic import BaseModel, Field, create_model
+
 import openai
+from pydantic import BaseModel, Field, create_model
 
 from openai_function_call import OpenAISchema
 
 from .messages import (
+    ChainOfThought,
     Message,
     MessageRole,
     SystemMessage,
-    ChainOfThought,
     SystemTask,
     TaggedMessage,
     TipsMessage,
@@ -23,7 +24,7 @@ class ChatCompletion(BaseModel):
     stream: bool = Field(default=False)
 
     messages: List[Message] = Field(default_factory=list, repr=False)
-    system_message: SystemMessage = Field(default=SystemMessage(content=''), repr=False)
+    system_message: SystemMessage = Field(default=None, repr=False)
     cot_message: ChainOfThought = Field(default=None, repr=False)
     function: OpenAISchema = Field(default=None, repr=False)
 
@@ -33,10 +34,10 @@ class ChatCompletion(BaseModel):
     def __or__(self, other: Union[Message, OpenAISchema]) -> "ChatCompletion":
         if isinstance(other, Message):
             if other.role == MessageRole.SYSTEM:
-                if self.system_message.content:
-                    self.system_message.content += "\n\n" + other.content
+                if not self.system_message:
+                    self.system_message = other
                 else:
-                    self.system_message.content += other.content
+                    self.system_message.content += "\n\n" + other.content
             else:
                 if isinstance(other, ChainOfThought):
                     if self.cot_message:
@@ -105,4 +106,3 @@ class ChatCompletion(BaseModel):
         if self.function:
             return self.function.from_response(await completion)
         return await completion
-

@@ -1,7 +1,8 @@
 from enum import Enum, auto
-from pydantic.dataclasses import dataclass
+from typing import List, Optional
+
 from pydantic import Field
-from typing import Optional, List
+from pydantic.dataclasses import dataclass
 
 
 class MessageRole(Enum):
@@ -62,6 +63,7 @@ class SystemPersonality(Message):
         self.role = MessageRole.SYSTEM
         self.content = f"Your personality is: `{self.personality}`"
 
+
 @dataclass
 class SystemTask(Message):
     task: str = Field(default=None, repr=True)
@@ -70,15 +72,19 @@ class SystemTask(Message):
         self.role = MessageRole.SYSTEM
         self.content = f"You are a world class, state of the art agent capable of correctly completing the task: `{self.task}`"
 
+
 @dataclass
 class SystemGuidelines(Message):
     guidelines: List[str] = Field(default_factory=list)
-    header: str = "These are the guidelines you consider when completing your task"
+    header: str = (
+        "These are the guidelines you need to follow when answering user queries"
+    )
 
     def __post_init__(self):
         self.role = MessageRole.SYSTEM
         guidelines = "\n* ".join(self.guidelines)
         self.content = f"{self.header}:\n\n* {guidelines}"
+
 
 @dataclass
 class SystemTips(Message):
