@@ -119,8 +119,8 @@ class Search(OpenAISchema):
     id: int
     query: str
 
-task = (
-    ChatCompletion(name="Acme Inc Email Segmentation", model="gpt3.5-turbo-0613")
+tasks = (
+    ChatCompletion(name="Acme Inc Email Segmentation", model="gpt-3.5-turbo-0613")
     | m.ExpertSystem(task="Segment emails into search queries")
     | MultiTask(subtask_class=Search)
     | m.TaggedMessage(
@@ -139,8 +139,8 @@ task = (
 # Its important that this just builds you request,
 # all these | operators are overloaded and all we do is compile
 # it to the openai kwargs
-assert isinstance(task, ChatCompletion)
-pprint(task.kwargs, indent=3)
+assert isinstance(tasks, ChatCompletion)
+pprint(tasks.kwargs, indent=3)
 """
 {
     "messages": [
@@ -189,7 +189,7 @@ pprint(task.kwargs, indent=3)
     "function_call": {"name": "MultiSearch"},
     "max_tokens": 1000,
     "temperature": 0.1,
-    "model": "gpt3.5-turbo-0613"
+    "model": "gpt-3.5-turbo-0613"
 }
 """
 
