@@ -92,14 +92,14 @@ class ChatCompletion(BaseModel):
 
     def create(self):
         kwargs = self.kwargs
-        completion = openai.Completion.create(**kwargs)
+        completion = openai.ChatCompletion.create(**kwargs)
         if self.function:
             return self.function.from_response(completion)
 
     async def acreate(self):
         kwargs = self.kwargs
-        completion = openai.Completion.acreate(**kwargs)
+        completion = openai.ChatCompletion.acreate(**kwargs)
         if self.function:
             return self.function.from_response(await completion)
         return await completion
-      
+
