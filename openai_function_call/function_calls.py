@@ -112,6 +112,9 @@ class OpenAISchema(BaseModel):
 
 
 def openai_schema(cls):
+    if not issubclass(cls, BaseModel):
+        raise TypeError("Class must be a subclass of pydantic.BaseModel")
+
     class Wrapper(cls):
         @classmethod
         @property
