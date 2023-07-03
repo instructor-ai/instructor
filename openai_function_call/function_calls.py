@@ -109,3 +109,40 @@ class OpenAISchema(BaseModel):
         function_call = message["function_call"]
         arguments = json.loads(function_call["arguments"])
         return cls(**arguments)
+
+
+def openai_schema(cls):
+    class Wrapper(cls):
+        @classmethod
+        @property
+        def openai_schema(cls):
+            schema = cls.schema()
+            parameters = {
+                k: v for k, v in schema.items() if k not in ("title", "description")
+            }
+            parameters["required"] = sorted(parameters["properties"])
+            _remove_a_key(parameters, "title")
+            return {
+                "name": schema["title"],
+                "description": schema["description"],
+                "parameters": parameters,
+            }
+
+        @classmethod
+        def from_response(cls, completion, throw_error=True):
+            message = completion.choices[0].message
+
+            if throw_error:
+                assert "function_call" in message, "No function call detected"
+                assert (
+                    message["function_call"]["name"] == cls.openai_schema["name"]
+                ), "Function name does not match"
+
+            function_call = message["function_call"]
+            arguments = json.loads(function_call["arguments"])
+            return cls(**arguments)
+
+    Wrapper.__name__ = cls.__name__
+    Wrapper.__doc__ = cls.__doc__
+
+    return Wrapper
