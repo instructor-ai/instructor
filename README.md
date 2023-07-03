@@ -1,8 +1,7 @@
 # Pydantic is all you need: An OpenAI Function Call Pydantic Integration Module
 
-
 We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
-If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco). 
+If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco).
 
 This repo also contains a range of examples I've used in experimetnation and in production and I welcome new contributions for different types of schemas.
 
@@ -113,7 +112,7 @@ from openai_function_call import OpenAISchema
 from openai_function_call.dsl import ChatCompletion, MultiTask, messages as m
 
 # Define a subtask you'd like to extract from then,
-# We'll use MultTask to easily map it to a List[Search] 
+# We'll use MultTask to easily map it to a List[Search]
 # so we can extract more than one
 class Search(OpenAISchema):
     id: int
@@ -121,18 +120,22 @@ class Search(OpenAISchema):
 
 tasks = (
     ChatCompletion(name="Acme Inc Email Segmentation", model="gpt-3.5-turbo-0613")
-    | m.ExpertSystem(task="Segment emails into search queries")
+    | m.SystemPersonality(personality="Professional, clear and concise")
+    | m.SystemTask(task="Segment emails into search queries")
+    | m.SystemGuidelines(guidelines=[
+        'You never swear',
+        'You are polite',
+        'You say please and thank you often.'
+    ])
+    | m.SystemTips(tips=[
+        "When unsure about the correct segmentation, try to think about the task as a whole",
+        "If acronyms are used expand them to their full form",
+        "Use multiple phrases to describe the same thing"]
+                  )
     | MultiTask(subtask_class=Search)
     | m.TaggedMessage(
         tag="email",
         content="Can you find the video I sent last week and also the post about dogs",
-    )
-    | m.TipsMessage(
-        tips=[
-            "When unsure about the correct segmentation, try to think about the task as a whole",
-            "If acronyms are used expand them to their full form",
-            "Use multiple phrases to describe the same thing",
-        ]
     )
     | m.ChainOfThought()
 )
@@ -142,62 +145,64 @@ tasks = (
 assert isinstance(tasks, ChatCompletion)
 pprint(tasks.kwargs, indent=3)
 """
-{
-    "messages": [
-        {
-            "role": "system",
-            "content": "You are a world class, state of the art agent capable
-            of correctly completing the task: `Segment emails into search queries`"
-        },
-        {
-            "role": "user",
-            "content": "<email>Can you find the video I sent last week and also the post about dogs</email>"
-        },
-        ...
-        {
-            "role": "assistant",
-            "content": "Lets think step by step to get the correct answer:"
-        }
-    ],
-    "functions": [
-        {
-            "name": "MultiSearch",
-            "description": "Correct segmentation of `Search` tasks",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "tasks": {
-                        "description": "Correctly segmented list of `Search` tasks",
-                        "type": "array",
-                        "items": {"$ref": "#/definitions/Search"}
-                    }
-                },
-                "definitions": {
-                    "Search": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "query": {"type": "string"}
-                        },
-                        "required": ["id", "query"]
-                    }
-                },
-                "required": ["tasks"]
-            }
-        }
-    ],
-    "function_call": {"name": "MultiSearch"},
-    "max_tokens": 1000,
-    "temperature": 0.1,
-    "model": "gpt-3.5-turbo-0613"
-}
+{  'function_call': {'name': 'MultiSearch'},
+'functions': [  {  'description': 'Correct segmentation of `Search` tasks',
+    'name': 'MultiSearch',
+    'parameters': {  'definitions': {  'Search': {  'properties': {  'id': {  'type': 'integer'},
+                                                                    'query': {  'type': 'string'}},
+                                                    'required': [  'id',
+                                                                    'query'],
+                                                    'type': 'object'}},
+                    'properties': {  'tasks': {  'description': 'Correctly '
+                                                                'segmented '
+                                                                'list '
+                                                                'of '
+                                                                '`Search` '
+                                                                'tasks',
+                                                'items': {  '$ref': '#/definitions/Search'},
+                                                'type': 'array'}},
+                    'required': ['tasks'],
+                    'type': 'object'}}],
+   'max_tokens': 1000,
+   'messages': [  {  'content': 'Your personality is `Professional, clear and '
+                                'concise`\n'
+                                '\n'
+                                'You are a world class, state of the art agent '
+                                'capable of correctly completing the task: '
+                                '`Segment emails into search queries`\n'
+                                '\n'
+                                'These are the guidelines you consider when '
+                                'completing your task:\n'
+                                '\n'
+                                '* You never swear\n'
+                                '* You are polite\n'
+                                '* You say please and thank you often.\n'
+                                '\n'
+                                'Here are some tips to help you complete the '
+                                'task:\n'
+                                '\n'
+                                '* When unsure about the correct segmentation, '
+                                'try to think about the task as a whole\n'
+                                '* If acronyms are used expand them to their '
+                                'full form\n'
+                                '* Use multiple phrases to describe the same '
+                                'thing',
+                     'role': 'system'},
+                  {  'content': '<email>Can you find the video I sent last '
+                                'week and also the post about dogs</email>',
+                     'role': 'user'},
+                  {  'content': 'Lets think step by step to get the correct '
+                                'answer:',
+                     'role': 'assistant'}],
+   'model': 'gpt-3.5-turbo-0613',
+   'temperature': 0.1}
 """
 
 # Once we call .create we'll be returned with a multitask object that contains our list of task
 result = tasks.create()
 
 for task in result.tasks:
-    # We can now extract the list of tasks as we could normally 
+    # We can now extract the list of tasks as we could normally
     assert isinstance(task, Search)
 ```
 

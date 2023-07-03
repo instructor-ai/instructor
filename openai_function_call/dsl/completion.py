@@ -6,9 +6,10 @@ from openai_function_call import OpenAISchema
 
 from .messages import (
     Message,
+    MessageRole,
     SystemMessage,
     ChainOfThought,
-    ExpertSystem,
+    SystemTask,
     TaggedMessage,
     TipsMessage,
 )
@@ -22,7 +23,7 @@ class ChatCompletion(BaseModel):
     stream: bool = Field(default=False)
 
     messages: List[Message] = Field(default_factory=list, repr=False)
-    system_message: SystemMessage = Field(default=None, repr=False)
+    system_message: SystemMessage = Field(default=SystemMessage(content=''), repr=False)
     cot_message: ChainOfThought = Field(default=None, repr=False)
     function: OpenAISchema = Field(default=None, repr=False)
 
@@ -31,19 +32,21 @@ class ChatCompletion(BaseModel):
 
     def __or__(self, other: Union[Message, OpenAISchema]) -> "ChatCompletion":
         if isinstance(other, Message):
-            if isinstance(other, SystemMessage):
-                if self.system_message:
+            if other.role == MessageRole.SYSTEM:
+                if self.system_message.content:
                     self.system_message.content += "\n\n" + other.content
-                self.system_message = other
-
-            if isinstance(other, ChainOfThought):
-                if self.cot_message:
-                    raise ValueError(
-                        "Only one chain of thought message can be used per completion"
-                    )
-                self.cot_message = other
-            self.messages.append(other)
+                else:
+                    self.system_message.content += other.content
+            else:
+                if isinstance(other, ChainOfThought):
+                    if self.cot_message:
+                        raise ValueError(
+                            "Only one chain of thought message can be used per completion"
+                        )
+                    self.cot_message = other
+                self.messages.append(other)
         else:
+            print(other)
             if self.function:
                 raise ValueError(
                     "Only one function can be used per completion, wrap your tools into a single toolkit schema"

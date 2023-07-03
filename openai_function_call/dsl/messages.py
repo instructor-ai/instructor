@@ -55,12 +55,40 @@ class AssistantMessage(Message):
 
 
 @dataclass
-class ExpertSystem(Message):
+class SystemPersonality(Message):
+    personality: str = Field(default=None, repr=True)
+
+    def __post_init__(self):
+        self.role = MessageRole.SYSTEM
+        self.content = f"Your personality is: `{self.personality}`"
+
+@dataclass
+class SystemTask(Message):
     task: str = Field(default=None, repr=True)
 
     def __post_init__(self):
         self.role = MessageRole.SYSTEM
         self.content = f"You are a world class, state of the art agent capable of correctly completing the task: `{self.task}`"
+
+@dataclass
+class SystemGuidelines(Message):
+    guidelines: List[str] = Field(default_factory=list)
+    header: str = "These are the guidelines you consider when completing your task"
+
+    def __post_init__(self):
+        self.role = MessageRole.SYSTEM
+        guidelines = "\n* ".join(self.guidelines)
+        self.content = f"{self.header}:\n\n* {guidelines}"
+
+@dataclass
+class SystemTips(Message):
+    tips: List[str] = Field(default_factory=list)
+    header: str = "Here are some tips to help you complete the task"
+
+    def __post_init__(self):
+        self.role = MessageRole.SYSTEM
+        tips = "\n* ".join(self.tips)
+        self.content = f"{self.header}:\n\n* {tips}"
 
 
 @dataclass
