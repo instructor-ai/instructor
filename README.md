@@ -110,6 +110,7 @@ print(user_details)  # UserDetails(name="John Doe", age=30)
 ```python
 from openai_function_call import OpenAISchema
 from openai_function_call.dsl import ChatCompletion, MultiTask, messages as m
+from openai_function_call.dsl.messages import system as s
 
 # Define a subtask you'd like to extract from then,
 # We'll use MultTask to easily map it to a List[Search]
@@ -120,15 +121,15 @@ class Search(OpenAISchema):
 
 tasks = (
     ChatCompletion(name="Acme Inc Email Segmentation", model="gpt-3.5-turbo-0613")
-    | m.SystemIdentity(identity="World class state of the art agent") # if no identity is provided, this is the default one
-    | m.SystemTask(task="Segment emails into search queries")
-    | m.SystemStyle(style="Professional, clear and concise")
-    | m.SystemGuidelines(guidelines=[
+    | s.Identity(identity="World class state of the art agent") # if no identity is provided, this is the default one
+    | s.Task(task="Segment emails into search queries")
+    | s.Style(style="Professional, clear and concise")
+    | s.Guidelines(guidelines=[
         'You never swear',
         'You are polite',
         'You say please and thank you often.'
     ])
-    | m.SystemTips(tips=[
+    | s.Tips(tips=[
         "When unsure about the correct segmentation, try to think about the task as a whole",
         "If acronyms are used expand them to their full form",
         "Use multiple phrases to describe the same thing"]

@@ -5,15 +5,7 @@ from pydantic import BaseModel, Field, create_model
 
 from openai_function_call import OpenAISchema
 
-from .messages import (
-    ChainOfThought,
-    Message,
-    MessageRole,
-    SystemMessage,
-    SystemTask,
-    TaggedMessage,
-    TipsMessage,
-)
+from .messages import ChainOfThought, Message, MessageRole, SystemMessage
 
 
 class ChatCompletion(BaseModel):
