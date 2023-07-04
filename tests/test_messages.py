@@ -43,9 +43,9 @@ def test_create_tagged_message():
 
 
 def test_task_message():
-    assert s.Task(task="task").dict() == {
+    assert s.SystemTask(task="task").dict() == {
         "role": "system",
-        "content": f"Your purpose is to correctly complete this task: `task`.",
+        "content": f"You are a world class algorithm capable of correctly completing the task: `task`.",
     }
 
 

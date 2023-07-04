@@ -11,7 +11,7 @@ def test_chatcompletion_has_kwargs():
 
     task = (
         ChatCompletion(name="Acme Inc Email Segmentation", model="gpt3.5-turbo-0613")
-        | s.Task(task="Segment emails into search queries")
+        | s.SystemTask(task="Segment emails into search queries")
         | MultiTask(subtask_class=Search)
         | m.TaggedMessage(
             tag="email",

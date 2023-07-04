@@ -8,16 +8,14 @@ from .base import Message, MessageRole
 
 @dataclass
 class SystemMessage(Message):
-    def __post_init__(self):
-        self.role = MessageRole.SYSTEM
+    role: MessageRole = MessageRole.SYSTEM
 
 
 @dataclass
-class Identity(Message):
+class SystemIdentity(SystemMessage):
     identity: str = Field(default=None, repr=True)
 
     def __post_init__(self):
-        self.role = MessageRole.SYSTEM
         if self.identity:
             self.content = f"You are a {self.identity.lower()}."
         else:
@@ -25,45 +23,38 @@ class Identity(Message):
 
 
 @dataclass
-class Task(Message):
+class SystemTask(SystemMessage):
     task: str = Field(default=None, repr=True)
 
     def __post_init__(self):
-        self.role = MessageRole.SYSTEM
-        if self.task:
-            self.content = (
-                f"Your purpose is to correctly complete this task: `{self.task}`."
-            )
+        assert self.task is not None
+        self.content = f"You are a world class algorithm capable of correctly completing the task: `{self.task}`."
 
 
 @dataclass
-class Style(Message):
+class SystemStyle(SystemMessage):
     style: str = Field(default=None, repr=True)
 
     def __post_init__(self):
-        self.role = MessageRole.SYSTEM
-        self.content = f"Your style when answering is {self.style.lower()}"
+        assert self.style is not None
+        self.content = f"You must respond with in following style: {self.style.lower()}"
 
 
 @dataclass
-class Guidelines(Message):
+class SystemGuidelines(SystemMessage):
     guidelines: List[str] = Field(default_factory=list)
-    header: str = (
-        "These are the guidelines you need to follow when answering user queries:"
-    )
+    header: str = "Here are the guidelines you must to follow when responding"
 
     def __post_init__(self):
-        self.role = MessageRole.SYSTEM
         guidelines = "\n* ".join(self.guidelines)
         self.content = f"{self.header}:\n\n* {guidelines}"
 
 
 @dataclass
-class Tips(Message):
+class SystemTips(SystemMessage):
     tips: List[str] = Field(default_factory=list)
-    header: str = "Here are some tips to help you complete the task:"
+    header: str = "Here are some tips before responding"
 
     def __post_init__(self):
-        self.role = MessageRole.SYSTEM
         tips = "\n* ".join(self.tips)
         self.content = f"{self.header}:\n\n* {tips}"
