@@ -56,12 +56,15 @@ class AssistantMessage(Message):
 
 
 @dataclass
-class SystemPersonality(Message):
-    personality: str = Field(default=None, repr=True)
+class SystemIdentity(Message):
+    identity: str = Field(default=None, repr=True)
 
     def __post_init__(self):
         self.role = MessageRole.SYSTEM
-        self.content = f"Your personality is: `{self.personality}`"
+        if self.identity:
+            self.content = f"You are a {self.identity.lower()}."
+        else:
+            self.content = "You are a world class, state of the art agent."
 
 
 @dataclass
@@ -70,14 +73,26 @@ class SystemTask(Message):
 
     def __post_init__(self):
         self.role = MessageRole.SYSTEM
-        self.content = f"You are a world class, state of the art agent capable of correctly completing the task: `{self.task}`"
+        if self.task:
+            self.content = (
+                f"Your purpose is to correctly complete this task: `{self.task}`."
+            )
+
+
+@dataclass
+class SystemStyle(Message):
+    style: str = Field(default=None, repr=True)
+
+    def __post_init__(self):
+        self.role = MessageRole.SYSTEM
+        self.content = f"Your style when answering is {self.style.lower()}"
 
 
 @dataclass
 class SystemGuidelines(Message):
     guidelines: List[str] = Field(default_factory=list)
     header: str = (
-        "These are the guidelines you need to follow when answering user queries"
+        "These are the guidelines you need to follow when answering user queries:"
     )
 
     def __post_init__(self):
@@ -89,7 +104,7 @@ class SystemGuidelines(Message):
 @dataclass
 class SystemTips(Message):
     tips: List[str] = Field(default_factory=list)
-    header: str = "Here are some tips to help you complete the task"
+    header: str = "Here are some tips to help you complete the task:"
 
     def __post_init__(self):
         self.role = MessageRole.SYSTEM

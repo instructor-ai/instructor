@@ -120,8 +120,9 @@ class Search(OpenAISchema):
 
 tasks = (
     ChatCompletion(name="Acme Inc Email Segmentation", model="gpt-3.5-turbo-0613")
+    | m.SystemIdentity(identity="World class state of the art agent") # if no identity is provided, this is the default one
     | m.SystemTask(task="Segment emails into search queries")
-    | m.SystemPersonality(personality="Professional, clear and concise")
+    | m.SystemStyle(style="Professional, clear and concise")
     | m.SystemGuidelines(guidelines=[
         'You never swear',
         'You are polite',
@@ -151,7 +152,9 @@ pprint(tasks.kwargs, indent=3)
     "messages": [
         {
             "role": "system",
-            "content": "You are a world class, state of the art agent capable of correctly completing the task: `Segment emails into search queries`\n\nYour personality is: `Professional, clear and concise`\n\nThese are the guidelines you consider when completing your task:\n\n* You never swear\n* You are polite\n* You say please and thank you often.\n\nHere are some tips to help you complete the task:\n\n* When unsure about the correct segmentation, try to think about the task as a whole\n* If acronyms are used expand them to their full form\n* Use multiple phrases to describe the same thing"
+            "content": "You are a world class state of the art agent.\n\nYour purpose is to correctly complete this task:
+                        `Segment emails into search queries`.\n\nYour style when answering is professional, clear and concise\n\n
+                        These are the guidelines you consider when completing your task:\n\n* You never swear\n* You are polite\n* You say please and thank you often.\n\nHere are some tips to help you complete the task:\n\n* When unsure about the correct segmentation, try to think about the task as a whole\n* If acronyms are used expand them to their full form\n* Use multiple phrases to describe the same thing"
         },
         ...
         {

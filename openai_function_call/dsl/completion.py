@@ -47,7 +47,6 @@ class ChatCompletion(BaseModel):
                     self.cot_message = other
                 self.messages.append(other)
         else:
-            print(other)
             if self.function:
                 raise ValueError(
                     "Only one function can be used per completion, wrap your tools into a single toolkit schema"
