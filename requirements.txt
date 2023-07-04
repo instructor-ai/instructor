@@ -2,3 +2,4 @@ openai
 pydantic
 pygraphviz
 erdantic
+pytest
