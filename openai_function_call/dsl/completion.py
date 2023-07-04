@@ -1,17 +1,11 @@
 from typing import List, Optional, Type, Union
-from pydantic import BaseModel, Field, create_model
+
 import openai
+from pydantic import BaseModel, Field, create_model
 
 from openai_function_call import OpenAISchema
 
-from .messages import (
-    Message,
-    SystemMessage,
-    ChainOfThought,
-    ExpertSystem,
-    TaggedMessage,
-    TipsMessage,
-)
+from .messages import ChainOfThought, Message, MessageRole, SystemMessage
 
 
 class ChatCompletion(BaseModel):
@@ -31,18 +25,19 @@ class ChatCompletion(BaseModel):
 
     def __or__(self, other: Union[Message, OpenAISchema]) -> "ChatCompletion":
         if isinstance(other, Message):
-            if isinstance(other, SystemMessage):
-                if self.system_message:
+            if other.role == MessageRole.SYSTEM:
+                if not self.system_message:
+                    self.system_message = other
+                else:
                     self.system_message.content += "\n\n" + other.content
-                self.system_message = other
-
-            if isinstance(other, ChainOfThought):
-                if self.cot_message:
-                    raise ValueError(
-                        "Only one chain of thought message can be used per completion"
-                    )
-                self.cot_message = other
-            self.messages.append(other)
+            else:
+                if isinstance(other, ChainOfThought):
+                    if self.cot_message:
+                        raise ValueError(
+                            "Only one chain of thought message can be used per completion"
+                        )
+                    self.cot_message = other
+                self.messages.append(other)
         else:
             if self.function:
                 raise ValueError(
@@ -102,4 +97,3 @@ class ChatCompletion(BaseModel):
         if self.function:
             return self.function.from_response(await completion)
         return await completion
-
