@@ -23,8 +23,6 @@ jobs:
 
       - name: Install Poetry
         uses: snok/install-poetry@v1.3.1
-        # env:
-        #   ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
 
       - name: Install dependencies
         run: poetry install --with dev
