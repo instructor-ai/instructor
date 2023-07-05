@@ -109,3 +109,14 @@ class OpenAISchema(BaseModel):
         function_call = message["function_call"]
         arguments = json.loads(function_call["arguments"])
         return cls(**arguments)
+
+
+def openai_schema(cls):
+    if not issubclass(cls, BaseModel):
+        raise TypeError("Class must be a subclass of pydantic.BaseModel")
+
+    @wraps(cls, updated=())
+    class Wrapper(cls, OpenAISchema):
+        pass
+
+    return Wrapper
