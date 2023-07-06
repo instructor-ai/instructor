@@ -1,5 +1,5 @@
-from openai_function_call import OpenAISchema
-from openai_function_call.dsl import ChatCompletion, MultiTask
+from openai_function_call import OpenAISchema, MultiTask
+from openai_function_call.dsl import ChatCompletion
 from openai_function_call.dsl import messages as m
 from openai_function_call.dsl.messages import system as s
 
