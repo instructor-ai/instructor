@@ -106,6 +106,21 @@ user_details = UserDetails.from_response(completion)
 print(user_details)  # UserDetails(name="John Doe", age=30)
 ```
 
+### Example 2.1: Using the Decorator
+
+The following will also work but we're having issues with propogating type hints
+so language services throw errors for methods like `.openai_schema`. We'd welcome a PR to fix this! 
+
+```python
+from openai_function_call import openai_schema
+
+@openai_schema
+class UserDetails(BaseModel):
+    """User Details"""
+    name: str = Field(..., description="User's name")
+    age: int = Field(..., description="User's age")
+```
+
 ### Example 3: Using the DSL
 
 ```python
