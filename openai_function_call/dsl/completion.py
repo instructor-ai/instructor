@@ -27,7 +27,7 @@ class ChatCompletion(BaseModel):
         if isinstance(other, Message):
             if other.role == MessageRole.SYSTEM:
                 if not self.system_message:
-                    self.system_message = other
+                    self.system_message = other  # type: ignore
                 else:
                     self.system_message.content += "\n\n" + other.content
             else:
