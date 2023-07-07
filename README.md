@@ -121,15 +121,14 @@ class Search(OpenAISchema):
 
 tasks = (
     ChatCompletion(name="Acme Inc Email Segmentation", model="gpt-3.5-turbo-0613")
-    | s.Identity(identity="World class state of the art agent") # if no identity is provided, this is the default one
-    | s.Task(task="Segment emails into search queries")
-    | s.Style(style="Professional, clear and concise")
-    | s.Guidelines(guidelines=[
-        'You never swear',
-        'You are polite',
-        'You say please and thank you often.'
+    | s.Identity.define("World class state of the art agent") # if no identity is provided, this is the default one
+    | s.Task.define("Segment emails into search queries")
+    | s.Style.define("Professional, clear and concise")
+    | s.Guidelines.define([
+        'You always stick to the information contained in the emails and you never invent',
+        'You answer succintly and in a straightforward way, providing the direct answer to the query',
     ])
-    | s.Tips(tips=[
+    | s.Tips.define([
         "When unsure about the correct segmentation, try to think about the task as a whole",
         "If acronyms are used expand them to their full form",
         "Use multiple phrases to describe the same thing"]
@@ -153,9 +152,22 @@ pprint(tasks.kwargs, indent=3)
     "messages": [
         {
             "role": "system",
-            "content": "You are a world class state of the art agent.\n\nYour purpose is to correctly complete this task:
-                        `Segment emails into search queries`.\n\nYour style when answering is professional, clear and concise\n\n
-                        These are the guidelines you consider when completing your task:\n\n* You never swear\n* You are polite\n* You say please and thank you often.\n\nHere are some tips to help you complete the task:\n\n* When unsure about the correct segmentation, try to think about the task as a whole\n* If acronyms are used expand them to their full form\n* Use multiple phrases to describe the same thing"
+            "content": "'You are a world class state of the art agent.\n'
+                        '\n'
+                        'Your purpose is to correctly complete this task: `Segment emails into search queries`.\n'
+                        '\n'
+                        'Your style when answering is professional, clear and concise\n'
+                        '\n'
+                        'These are the guidelines you need to follow when answering user queries:\n'
+                        '\n'
+                        '* You always stick to the information contained in the emails and you never invent\n'
+                        '* You answer succintly and in a straightforward way, providing the direct answer to the query\n'
+                        '\n'
+                        'Here are some tips to help you complete the task:\n'
+                        '\n'
+                        '* When unsure about the correct segmentation, try to think about the task as a whole\n'
+                        '* If acronyms are used expand them to their full form\n'
+                        '* Use multiple phrases to describe the same thing',"
         },
         ...
         {
