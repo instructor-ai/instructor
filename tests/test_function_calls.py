@@ -21,7 +21,7 @@ def test_openai_schema():
     assert hasattr(Dataframe, "openai_schema")
     assert hasattr(Dataframe, "from_response")
     assert hasattr(Dataframe, "to_pandas")
-    assert Dataframe.openai_schema["name"] == "Dataframe"
+    assert Dataframe.openai_schema["name"] == "Dataframe"  # type: ignore
 
 
 def test_openai_schema_raises_error():

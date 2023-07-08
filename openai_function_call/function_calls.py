@@ -22,8 +22,8 @@
 
 import json
 from functools import wraps
-from typing import Any, Callable
-from pydantic import validate_arguments, BaseModel
+from typing import Any, Callable, Optional, List, Type
+from pydantic import validate_arguments, BaseModel, create_model, Field
 
 
 def _remove_a_key(d, remove_key) -> None:

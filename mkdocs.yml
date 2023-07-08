@@ -31,7 +31,10 @@ markdown_extensions:
   - md_in_html
 nav:
   - Home: 'index.md'
-  - Module:
-      - 'Schemas': 'openai_schema.md'
+  - API Reference:
+      - 'OpenAISchema': 'openai_schema.md'
+      - "Helper: MultiTask": "multitask.md"
+      - "Example: Pipeline API": "pipeline-example.md"
+      - "Docs": "chat-completion.md"
   - Examples:
       - 'Missing': 'help.md'

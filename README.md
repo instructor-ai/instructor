@@ -1,8 +1,7 @@
 # Pydantic is all you need: An OpenAI Function Call Pydantic Integration Module
 
-
 We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
-If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco). 
+If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco).
 
 This repo also contains a range of examples I've used in experimetnation and in production and I welcome new contributions for different types of schemas.
 
@@ -128,9 +127,10 @@ class UserDetails(BaseModel):
 ```python
 from openai_function_call import OpenAISchema
 from openai_function_call.dsl import ChatCompletion, MultiTask, messages as m
+from openai_function_call.dsl.messages import system as s
 
 # Define a subtask you'd like to extract from then,
-# We'll use MultTask to easily map it to a List[Search] 
+# We'll use MultTask to easily map it to a List[Search]
 # so we can extract more than one
 class Search(OpenAISchema):
     id: int
@@ -138,24 +138,31 @@ class Search(OpenAISchema):
 
 tasks = (
     ChatCompletion(name="Acme Inc Email Segmentation", model="gpt-3.5-turbo-0613")
-    | m.ExpertSystem(task="Segment emails into search queries")
+    | s.Identity(identity="World class state of the art agent") # if no identity is provided, this is the default one
+    | s.Task(task="Segment emails into search queries")
+    | s.Style(style="Professional, clear and concise")
+    | s.Guidelines(guidelines=[
+        'You never swear',
+        'You are polite',
+        'You say please and thank you often.'
+    ])
+    | s.Tips(tips=[
+        "When unsure about the correct segmentation, try to think about the task as a whole",
+        "If acronyms are used expand them to their full form",
+        "Use multiple phrases to describe the same thing"]
+                  )
     | MultiTask(subtask_class=Search)
     | m.TaggedMessage(
         tag="email",
         content="Can you find the video I sent last week and also the post about dogs",
-    )
-    | m.TipsMessage(
-        tips=[
-            "When unsure about the correct segmentation, try to think about the task as a whole",
-            "If acronyms are used expand them to their full form",
-            "Use multiple phrases to describe the same thing",
-        ]
     )
     | m.ChainOfThought()
 )
 # Its important that this just builds you request,
 # all these | operators are overloaded and all we do is compile
 # it to the openai kwargs
+# Also note that the System components are combined sequentially
+# so the order matters!
 assert isinstance(tasks, ChatCompletion)
 pprint(tasks.kwargs, indent=3)
 """
@@ -163,14 +170,15 @@ pprint(tasks.kwargs, indent=3)
     "messages": [
         {
             "role": "system",
-            "content": "You are a world class, state of the art agent capable
-            of correctly completing the task: `Segment emails into search queries`"
+            "content": "You are a world class state of the art agent.\n\nYour purpose is to correctly complete this task:
+                        `Segment emails into search queries`.\n\nYour style when answering is professional, clear and concise\n\n
+                        These are the guidelines you consider when completing your task:\n\n* You never swear\n* You are polite\n* You say please and thank you often.\n\nHere are some tips to help you complete the task:\n\n* When unsure about the correct segmentation, try to think about the task as a whole\n* If acronyms are used expand them to their full form\n* Use multiple phrases to describe the same thing"
         },
+        ...
         {
             "role": "user",
             "content": "<email>Can you find the video I sent last week and also the post about dogs</email>"
         },
-        ...
         {
             "role": "assistant",
             "content": "Lets think step by step to get the correct answer:"
@@ -207,14 +215,13 @@ pprint(tasks.kwargs, indent=3)
     "max_tokens": 1000,
     "temperature": 0.1,
     "model": "gpt-3.5-turbo-0613"
-}
 """
 
 # Once we call .create we'll be returned with a multitask object that contains our list of task
 result = tasks.create()
 
 for task in result.tasks:
-    # We can now extract the list of tasks as we could normally 
+    # We can now extract the list of tasks as we could normally
     assert isinstance(task, Search)
 ```
 
