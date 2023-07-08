@@ -6,6 +6,7 @@ theme:
   features:
     - navigation.instant
 plugins:
+  - social
   - mkdocstrings:
       handlers:
         python:
