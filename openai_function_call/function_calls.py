@@ -84,6 +84,9 @@ class OpenAISchema(BaseModel):
     @classmethod
     @property
     def openai_schema(cls):
+        """
+        Return the schema of the class in the format of OpenAI's schema
+        """
         schema = cls.schema()
         parameters = {
             k: v for k, v in schema.items() if k not in ("title", "description")
@@ -98,6 +101,7 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def from_response(cls, completion, throw_error=True):
+        """Execute the function from the response of an openai chat completion"""
         message = completion.choices[0].message
 
         if throw_error:
@@ -116,7 +120,7 @@ def openai_schema(cls):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
     @wraps(cls, updated=())
-    class Wrapper(cls, OpenAISchema):
+    class Wrapper(cls, OpenAISchema):  # type: ignore
         pass
 
     return Wrapper
