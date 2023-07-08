@@ -11,6 +11,8 @@ plugins:
         python:
           options:
             members_order: alphabetical
+            allow_inspection: true
+            show_bases: true
 repo_url: https://github.com/jxnl/openai_function_call
 markdown_extensions:
   - pymdownx.critic
