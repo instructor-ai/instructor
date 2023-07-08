@@ -1,7 +1,7 @@
 from openai_function_call import OpenAISchema, MultiTask
 from openai_function_call.dsl import ChatCompletion
 from openai_function_call.dsl import messages as m
-from openai_function_call.dsl.messages import system as s
+from openai_function_call.dsl.messages import messages as s
 
 
 def test_chatcompletion_has_kwargs():
