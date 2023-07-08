@@ -13,6 +13,11 @@ plugins:
             members_order: alphabetical
 repo_url: https://github.com/jxnl/openai_function_call
 markdown_extensions:
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span

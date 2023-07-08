@@ -36,4 +36,23 @@ user_details = UserDetails.from_response(completion)
 print(user_details)  # name="John Doe", age=30
 ```
 
+## Using the decorator 
+
+You can also use a decorator but i recommend the class since you get nice autocompletes with VSCode
+
+```python
+import openai
+from openai_function_call import openai_schema
+
+from pydantic import Field, BaseModel
+
+@openai_schema
+class UserDetails(BaseModel):
+    """Details of a user"""
+    name: str = Field(..., description="users's full name")
+    age: int
+```
+
+## OpenAISchema
+
 ::: openai_function_call.OpenAISchema
