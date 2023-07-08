@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import Field
 from pydantic.dataclasses import dataclass

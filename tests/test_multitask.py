@@ -1,4 +1,5 @@
-from openai_function_call import OpenAISchema, MultiTask
+from openai_function_call import OpenAISchema
+from openai_function_call.dsl.multitask import MultiTask
 
 
 def test_multi_task():
