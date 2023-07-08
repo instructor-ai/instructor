@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from openai_function_call import OpenAISchema
 import openai_function_call.dsl as dsl
 from pydantic import BaseModel, Field
-from openai_function_call.dsl.messages.system import SystemTask
 
 app = FastAPI(title="Example Application using openai_function_call")
 
@@ -29,7 +28,7 @@ SearchResponse = dsl.MultiTask(
 async def search(request: SearchRequest):
     task = (
         dsl.ChatCompletion(name="Segmenting Search requests example")
-        | SystemTask(task="Segment search results")
+        | dsl.system.SystemTask(task="Segment search results")
         | dsl.TaggedMessage(content=request.body, tag="query")
         | dsl.TipsMessage(
             tips=[
