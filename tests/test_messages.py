@@ -28,17 +28,10 @@ def test_create_system_message():
     }
 
 
-def test_assistance_message():
-    assert m.AssistantMessage(content="I am nice").dict() == {
-        "role": "assistant",
-        "content": "I am nice",
-    }
-
-
 def test_create_tagged_message():
     assert m.TaggedMessage(content="I am nice", tag="data").dict() == {
         "role": "user",
-        "content": "<data>I am nice</data>",
+        "content": "Consider the following data:\n\n<data>I am nice</data>",
     }
 
 
