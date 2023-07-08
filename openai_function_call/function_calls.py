@@ -23,7 +23,6 @@
 import json
 from functools import wraps
 from typing import Any, Callable
-
 from pydantic import BaseModel, validate_arguments
 
 
@@ -38,6 +37,31 @@ def _remove_a_key(d, remove_key) -> None:
 
 
 class openai_function:
+    """
+    Decorator to convert a function into an OpenAI function.
+
+    This decorator will convert a function into an OpenAI function. The
+    function will be validated using pydantic and the schema will be
+    generated from the function signature.
+
+    Example:
+        ```python
+        @openai_function
+        def sum(a: int, b: int) -> int:
+            return a + b
+
+        completion = openai.ChatCompletion.create(
+            ...
+            messages=[{
+                "content": "What is 1 + 1?",
+                "role": "user"
+            }]
+        )
+        sum.from_response(completion)
+        # 2
+        ```
+    """
+
     def __init__(self, func: Callable) -> None:
         self.func = func
         self.validate_func = validate_arguments(func)
@@ -67,7 +91,16 @@ class openai_function:
         return wrapper(*args, **kwargs)
 
     def from_response(self, completion, throw_error=True):
-        """Execute the function from the response of an openai chat completion"""
+        """
+        Parse the response from OpenAI's API and return the function call
+
+        Parameters:
+            completion (openai.ChatCompletion): The response from OpenAI's API
+            throw_error (bool): Whether to throw an error if the response does not contain a function call
+
+        Returns:
+            result (any): result of the function call
+        """
         message = completion.choices[0].message
 
         if throw_error:
@@ -85,8 +118,16 @@ class OpenAISchema(BaseModel):
     @classmethod
     @property
     def openai_schema(cls):
-        schema = cls.model_json_schema()
+        """
+        Return the schema in the format of OpenAI's schema as jsonschema
 
+        Note:
+            Its important to add a docstring to describe how to best use this class, it will be included in the description attribute and be part of the prompt.
+
+        Returns:
+            model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
+        """
+        schema = cls.model_json_schema()
         parameters = {
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
@@ -100,6 +141,15 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def from_response(cls, completion, throw_error=True):
+        """Execute the function from the response of an openai chat completion
+
+        Parameters:
+            completion (openai.ChatCompletion): The response from an openai chat completion
+            throw_error (bool): Whether to throw an error if the function call is not detected
+
+        Returns:
+            cls (OpenAISchema): An instance of the class
+        """
         message = completion.choices[0].message
 
         if throw_error:
@@ -118,7 +168,7 @@ def openai_schema(cls):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
     @wraps(cls, updated=())
-    class Wrapper(cls, OpenAISchema):
+    class Wrapper(cls, OpenAISchema):  # type: ignore
         pass
 
     return Wrapper

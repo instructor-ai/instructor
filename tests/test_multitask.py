@@ -9,7 +9,7 @@ def test_multi_task():
         id: int
         query: str
 
-    multitask = MultiTask(subtask_class=Search)
+    multitask = MultiTask(Search)
     assert multitask.openai_schema == {
         "description": "Correct segmentation of `Search` tasks",
         "name": "MultiSearch",

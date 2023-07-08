@@ -1,5 +1,7 @@
-from openai_function_call import OpenAISchema
-from openai_function_call.dsl import ChatCompletion, MultiTask, messages as m
+from openai_function_call import OpenAISchema, MultiTask
+from openai_function_call.dsl import ChatCompletion
+from openai_function_call.dsl import messages as m
+from openai_function_call.dsl.messages import system as s
 
 
 def test_chatcompletion_has_kwargs():
@@ -9,7 +11,7 @@ def test_chatcompletion_has_kwargs():
 
     task = (
         ChatCompletion(name="Acme Inc Email Segmentation", model="gpt3.5-turbo-0613")
-        | m.ExpertSystem(task="Segment emails into search queries")
+        | s.SystemTask(task="Segment emails into search queries")
         | MultiTask(subtask_class=Search)
         | m.TaggedMessage(
             tag="email",

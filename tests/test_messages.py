@@ -1,4 +1,5 @@
 from openai_function_call.dsl import messages as m
+from openai_function_call.dsl.messages import system as s
 
 
 def test_create_message():
@@ -41,10 +42,10 @@ def test_create_tagged_message():
     }
 
 
-def test_expert_system_message():
-    assert m.ExpertSystem(task="task").dict() == {
+def test_task_message():
+    assert s.SystemTask(task="task").dict() == {
         "role": "system",
-        "content": "You are a world class, state of the art agent capable of correctly completing the task: `task`",
+        "content": f"You are a world class state of the art algorithm capable of correctly completing the following task: `task`.",
     }
 
 
