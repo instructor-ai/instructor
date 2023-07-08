@@ -1,4 +1,4 @@
-site_name: OpenAI Function call 
+site_name: OpenAI Function Call 
 theme:
   name: material
   icon:
@@ -6,6 +6,7 @@ theme:
   features:
     - navigation.instant
 plugins:
+  - social
   - mkdocstrings:
       handlers:
         python:
@@ -14,6 +15,7 @@ plugins:
             allow_inspection: true
             show_bases: true
 repo_url: https://github.com/jxnl/openai_function_call
+site_url: https://openai-function-call.vercel.app
 markdown_extensions:
   - pymdownx.critic
   - pymdownx.caret
