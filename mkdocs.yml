@@ -29,6 +29,7 @@ markdown_extensions:
   - pymdownx.superfences
   - attr_list
   - md_in_html
+  - admonition
 nav:
   - Home: 'index.md'
   - API Reference:
@@ -37,4 +38,4 @@ nav:
       - "Example: Pipeline API": "pipeline-example.md"
       - "Docs": "chat-completion.md"
   - Examples:
-      - 'Missing': 'help.md'
+      - 'Segmented Search': 'examples/search.md'

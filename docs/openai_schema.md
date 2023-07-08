@@ -5,9 +5,8 @@ It has a method to help you produce the schema and parse the result of function 
 
 This library is moreso a list of examples and a helper class so I'll keep the example as just structured extraction.
 
-## Where does the prompts go?
-
-Instead of defining your prompts in the messages the prompts you would usually use are now defined as part of the dostring of your class and the field descriptions. This is nice since it allows you to colocate the schema with the class you use to represent the structure.
+!!! note "Where does the prompt go?"
+    Instead of defining your prompts in the messages the prompts you would usually use are now defined as part of the dostring of your class and the field descriptions. This is nice since it allows you to colocate the schema with the class you use to represent the structure.
 
 ## Structured Extraction
 
@@ -36,9 +35,8 @@ user_details = UserDetails.from_response(completion)
 print(user_details)  # name="John Doe", age=30
 ```
 
-## Using the decorator
-
-You can also use a decorator but i recommend the class since you get nice autocompletes with VSCode
+!!! tip "Using the decorator"
+    You can also use `@openai_schema` to decorate `BaseModels`, however, you'll lose some type hinting as a result.
 
 ```python
 import openai
