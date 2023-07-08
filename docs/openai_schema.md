@@ -36,7 +36,7 @@ user_details = UserDetails.from_response(completion)
 print(user_details)  # name="John Doe", age=30
 ```
 
-## Using the decorator 
+## Using the decorator
 
 You can also use a decorator but i recommend the class since you get nice autocompletes with VSCode
 
@@ -53,6 +53,6 @@ class UserDetails(BaseModel):
     age: int
 ```
 
-## OpenAISchema
+## Code Reference 
 
-::: openai_function_call.OpenAISchema
+::: openai_function_call

@@ -70,3 +70,7 @@ completion = openai.ChatCompletion.create(
 user_details = UserDetails.from_response(completion)
 print(user_details)  # name="John Doe", age=30
 ```
+
+# Code 
+
+::: openai_function_call
