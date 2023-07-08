@@ -1,5 +1,3 @@
 mkdocs-material 
 mkdocstrings 
 mkdocstrings-python
-pillow
-cairosvg
