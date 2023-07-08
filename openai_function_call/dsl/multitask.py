@@ -14,11 +14,33 @@ def MultiTask(
     for a specific task, names and descriptions are automatically generated. However
     they can be overridden.
 
-    :param subtask_class: The base class to use for the MultiTask
-    :param name: The name of the MultiTask
-    :param description: The description of the MultiTask
+    Note:
+        Using this function is equivalent to creating a class that inherits from
+        OpenAISchema and has a list of the subtask class as a field.
 
-    :return: new schema class called `Multi{subtask_class.name}`
+        ```python
+        class MultiTask(OpenAISchema):
+            \"""
+            Correct segmentation of `{subtask_class.__name__}` tasks
+            \"""
+            tasks: List[subtask_class] = Field(
+                default_factory=list,
+                repr=False,
+                description=f"Correctly segmented list of `{subtask_class.__name__}` tasks",
+            )
+        ```
+
+
+    Parameters:
+        subtask_class (Type[OpenAISchema]): The base class to use for the MultiTask
+        name (Optional[str]): The name of the MultiTask class, if None then the name
+            of the subtask class is used as `Multi{subtask_class.__name__}`
+        description (Optional[str]): The description of the MultiTask class, if None
+            then the description is set to `Correct segmentation of `{subtask_class.__name__}` tasks`
+
+    Returns:
+        OpenAISchema: A new class that can be used to segment multiple tasks
+
     """
     task_name = subtask_class.__name__ if name is None else name
 

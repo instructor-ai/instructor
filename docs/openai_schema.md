@@ -55,4 +55,4 @@ class UserDetails(BaseModel):
 
 ## Code Reference
 
-::: openai_function_call
+::: openai_function_call.function_calls

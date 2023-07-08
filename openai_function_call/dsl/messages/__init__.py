@@ -1,19 +1,18 @@
-from .assistant import AssistantMessage, ChainOfThought
 from .base import Message, MessageRole
-from .system import (
+from .messages import (
     SystemMessage,
     SystemGuidelines,
     SystemIdentity,
     SystemStyle,
     SystemTask,
     SystemTips,
+    ChainOfThought,
 )
 from .user import TaggedMessage, TipsMessage, UserMessage
 
 __all__ = [
     "Message",
     "MessageRole",
-    "AssistantMessage",
     "ChainOfThought",
     "UserMessage",
     "TaggedMessage",

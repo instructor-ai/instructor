@@ -28,7 +28,7 @@ SearchResponse = dsl.MultiTask(
 async def search(request: SearchRequest):
     task = (
         dsl.ChatCompletion(name="Segmenting Search requests example")
-        | dsl.system.SystemTask(task="Segment search results")
+        | dsl.SystemTask(task="Segment search results")
         | dsl.TaggedMessage(content=request.body, tag="query")
         | dsl.TipsMessage(
             tips=[
