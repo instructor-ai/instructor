@@ -14,8 +14,10 @@ Follow me on twitter and consider helping pay for openai tokens!
 
 ## Installation
 
+Ensure you have Python version 3.9 or above.
+
 ```python
-pip install openai_function_call
+pip install openai-function-call
 ```
 
 ## Contributing
