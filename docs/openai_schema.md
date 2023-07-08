@@ -53,6 +53,6 @@ class UserDetails(BaseModel):
     age: int
 ```
 
-## Code Reference 
+## Code Reference
 
 ::: openai_function_call
