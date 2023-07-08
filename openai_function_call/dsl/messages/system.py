@@ -28,7 +28,7 @@ class SystemTask(SystemMessage):
 
     def __post_init__(self):
         assert self.task is not None
-        self.content = f"You are a world class algorithm capable of correctly completing the task: `{self.task}`."
+        self.content = f"You are a world class state of the art algorithm capable of correctly completing the following task: `{self.task}`."
 
 
 @dataclass
