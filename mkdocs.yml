@@ -1,0 +1,35 @@
+site_name: OpenAI Function call 
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            members_order: alphabetical
+repo_url: https://github.com/jxnl/openai_function_call
+markdown_extensions:
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+nav:
+  - Home: 'index.md'
+  - Module:
+      - 'Schemas': 'openai_schema.md'
+  - Examples:
+      - 'Missing': 'help.md'
