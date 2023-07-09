@@ -1,4 +1,4 @@
-# Using the Chatcompletion
+# Using the Prompt Pipeline 
 
 To get started with this api we must first instantiate a `ChatCompletion` object and build the api call
 by piping messages and functions to it.

@@ -1,14 +1,15 @@
 # OpenAI Schema
 
-The most generic helper is a light weight extention of Pydantic's BaseModel `OpenAISchema`.
-It has a method to help you produce the schema and parse the result of function calls
-
-This library is moreso a list of examples and a helper class so I'll keep the example as just structured extraction.
+We offer a minimally invasive extention of `Pydantic.BaseModel` named `OpenAISchema`. It only has two methods, one to generate the correct schema, and one to produce the class from the completion.
 
 !!! note "Where does the prompt go?"
-    Instead of defining your prompts in the messages the prompts you would usually use are now defined as part of the dostring of your class and the field descriptions. This is nice since it allows you to colocate the schema with the class you use to represent the structure.
+    Our philosphy is that the prompt should live beside the code. Prompting is done via dostrings and field descriptions which allows you to colocate prompts with  your schema.
 
 ## Structured Extraction
+
+You can directly use the class in your `openai` create calls by passing in the classes `openai_schema` and extract the class out with `from_completion`.
+
+With this style of usage you get as close to the api call as possible giving you full control over configuration and prompting.
 
 ```python
 import openai

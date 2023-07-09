@@ -1,8 +1,12 @@
-# Using the pipeline
+# Using the ChatCompletion pipeline
 
-The pipeapi is some syntactic sugar to help build prompts in a readable way that avoids having to remember best practices around wording and structure. Examples include adding tips, tagging data with xml, or even including the chain of thought prompt as an assistant message.
+The pipeline api is just syntactic sugar to help build prompts in a readable way that avoids having to remember best practices around wording and structure. Examples include adding tips, tagging data with xml, or even including the chain of thought prompt as an assistant message.
 
-### Example Pipeline
+## Example Pipeline
+
+Here we'll define a task to segment queries and add some more instructions via the prompt pipeline api.
+
+### Designing the schema
 
 ```python
 from openai_function_call import OpenAISchema, dsl
@@ -19,10 +23,31 @@ class SearchQuery(OpenAISchema):
 SearchResponse = dsl.MultiTask(
     subtask_class=SearchQuery,
 )
+```
+
+!!! tip "MultiTask"
+    To learn more about what multi task does, checkout the [MultiTask](multitask.md) documentation
 
 
+### Building our prompts
+
+We dont deal with prompt templates and treat chat, message, output schema as first class citizens and then pipe them into a completion object.
+
+!!! note "Whats that?"
+    The pipe `|` is an overloaded operator that lets us cleanly compose our prompts.
+
+    `ChatCompletion` contains all the configuration for the model while we use `|` to build our prompt
+
+    We can then chain `|` together to add `Messages` or `OpenAISchema` and `ChatCompletion` will build out query for us while giving us a readable block to code to look ad
+
+    To see what 'message templates' are available check out our [docs](chat-completion.md)
+
+```python
 task = (
-    dsl.ChatCompletion(name="Segmenting Search requests example")
+    dsl.ChatCompletion(
+        name="Segmenting Search requests example",
+        model='gpt-3.5-turbo-0613,
+        max_token=1000)
     | dsl.SystemTask(task="Segment search results")
     | dsl.TaggedMessage(
         content="can you send me the data about the video investment and the one about spot the dog?",
@@ -41,6 +66,9 @@ search_request = task.create()  # type: ignore
 assert isinstance(search_request, SearchResponse)
 print(search_request.json(indent=2))
 ```
+
+!!! tip
+    If you want to see what its actually sent to OpenAI scroll to the bottom of the page! 
 
 Output
 
