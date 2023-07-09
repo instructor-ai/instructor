@@ -1,4 +1,8 @@
-site_name: OpenAI Function call 
+site_name: OpenAI Function Call Library
+site_description: Enhancing OpenAI function calling with Pydantic 
+repo_name: openai_function_call
+repo_url: https://github.com/jxnl/openai_function_call
+site_url: https://openai-function-call.onrender.com/
 theme:
   name: material
   icon:
@@ -18,8 +22,6 @@ plugins:
             members_order: alphabetical
             allow_inspection: true
             show_bases: true
-repo_url: https://github.com/jxnl/openai_function_call
-site_url: https://openai-function-call.onrender.com/
 markdown_extensions:
   - pymdownx.critic
   - pymdownx.caret

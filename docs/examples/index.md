@@ -2,13 +2,13 @@
 
 Welcome to the examples page. Here you will find emails that highlight a range of use cases, on how to use our code and examples demonstrating various features and functionalities.
 
-## Library 
+## Quick Links 
 
-- [Segmented Search](search.md)
-- [One shot Query Planning](planning-tasks.md)
-- [Recursive Schemas](recursive.md)
-- [Exact Citations](exact_citations.md)
-- [Automated Dataframe Extraction](autodataframe.md)
+- [Segmenting search requests into multiple search queries](search.md)
+- [One shot query planning](planning-tasks.md)
+- [Using recursive schema](recursive.md)
+- [Exact citations using regex](exact_citations.md)
+- [Automated database extraction from text](autodataframe.md)
 
 ## Details
 

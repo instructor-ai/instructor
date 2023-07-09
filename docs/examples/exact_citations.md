@@ -2,8 +2,9 @@
 
 In this example, we'll demonstrate how to use OpenAI Function Call to ask an AI a question and get back an answer with correct citations. We'll define the necessary data structures using Pydantic and show how to retrieve the citations for each answer.
 
-!!! note "Motivation"
-    Often times retrival augmented models hallucinate. Wouldn't it be great if each sentence came with citations that were no on the chunk level but at the substring level. Moreover, to ensure the quote exists we can search the string to find the exact quote!
+!!! tips "Motivation"
+    When using AI models to answer questions, it's important to provide accurate and reliable information with appropriate citations. By including citations for each statement, we can ensure the information is backed by reliable sources and help readers verify the information themselves.
+
 
 ## Defining the Data Structures
 
