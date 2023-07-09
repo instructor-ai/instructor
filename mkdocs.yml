@@ -52,3 +52,4 @@ nav:
       - 'Recursive Schemas': 'examples/recursive.md'
       - 'Exact Citations': 'examples/exact_citations.md'
       - 'Automated Dataframe Extraction': "examples/autodataframe.md"
+  - Philosophy: 'philosophy.md'
