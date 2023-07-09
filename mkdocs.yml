@@ -14,6 +14,7 @@ plugins:
             allow_inspection: true
             show_bases: true
 repo_url: https://github.com/jxnl/openai_function_call
+site_url: https://openai-function-call.onrender.com/
 markdown_extensions:
   - pymdownx.critic
   - pymdownx.caret

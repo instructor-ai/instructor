@@ -1,6 +1,6 @@
 # Pydantic is all you need, for openai function calls.
 
-Check out the [docs](https://openai-function-call.vercel.app/)!
+Check out the [docs](https://openai-function-call.onrender.com/)!
 
 We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
 If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco).
