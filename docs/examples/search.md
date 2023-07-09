@@ -1,81 +1,54 @@
-# Example: Segmenting search queries 
+# Example: Segmenting Search Queries
 
-This example will try to highlight a few ways of leveraging `MultiTask`, `enum.Enum`, and using methods to create powerful extrations that make using LLMS feel like regular code. 
+In this example, we will demonstrate how to leverage the `MultiTask` and `enum.Enum` features of OpenAI Function Call to segment search queries. We will define the necessary structures using Pydantic and demonstrate how to execute the segmented queries.
 
-## Defining the structures 
+## Defining the Structures
 
-Lets model the problem as breaking down a search request into a list of search requests, we'll add some enums to make it interesting and 
-take advantage of the fact that these are python objects and add some additional query logic
+Let's model the problem as breaking down a search request into a list of search queries. We will use an enum to represent different types of searches and take advantage of Python objects to add additional query logic.
 
 ```python
 import enum
-
 from pydantic import Field
 from openai_function_call import OpenAISchema
 
-
 class SearchType(str, enum.Enum):
     """Enumeration representing the types of searches that can be performed."""
-
     VIDEO = "video"
     EMAIL = "email"
-
 
 class Search(OpenAISchema):
     """
     Class representing a single search query.
-
-    Args:
-        title (str): The title of the request.
-        query (str): The query string to search for.
-        type (SearchType): The type of search to perform.
     """
-
     title: str = Field(..., description="Title of the request")
     query: str = Field(..., description="Query to search for relevant content")
     type: SearchType = Field(..., description="Type of search")
 
     async def execute(self):
-        print(
-            f"Searching for `{self.title}` with query `{self.query}` using `{self.type}`"
-        )
+        print(f"Searching for `{self.title}` with query `{self.query}` using `{self.type}`")
 ```
 
-!!! tip "Data can have computation!"
-    Notice that we can have an `execute` method on the class that routes the search query based on the enum type.
+Notice that we have added the `execute` method to the `Search` class. This method can be used to route the search query based on the enum type. You can add logic specific to each search type in the `execute` method.
 
-    ```python
-    async def execute(self)
-        if self.type == SearchType.VIDEO:
-            ...
-        else:
-            ...
-        return 
-    ```
-
-    This can be called after to run the queries
-
-### Multiple queries
-
-Often times a request might have multiple queries, we can manually create another class with a list attribute to represent this
+Next, let's define a class to represent multiple search queries.
 
 ```python
+from typing import List
+
 class MultiSearch(OpenAISchema):
     "Correctly segmented set of search results"
     tasks: List[Search]
 ```
 
-!!! tips "Prompting is important"
-    Its important to add docstrings and field descriptions to improve your prompting, even adding 'correctly' often leads to better results.
+The `MultiSearch` class has a single attribute, `tasks`, which is a list of `Search` objects.
 
-!!! usage "Multiple Tasks"
-    The pattern of defining a task and then multiple tasks is common enought that I made a helper `openai_function_call.dsl.MultiTask` to avoid writing generic code.
+## Using the Prompt Pipeline
 
-## Putting it all together
-
-Without using the lets define a function with some type hints 
+To segment a search query, we will use the Prompt Pipeline in OpenAI Function Call. We can define a function that takes a string and returns segmented search queries using the `MultiSearch` class.
 
 ```python
+import openai
+
 def segment(data: str) -> MultiSearch:
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
@@ -90,25 +63,36 @@ def segment(data: str) -> MultiSearch:
         ],
         max_tokens=1000,
     )
+
     return MultiSearch.from_response(completion)
 ```
 
-!!! tips "Typehints"
-    If you're using an IDE its a great idea to have type hints as
-    they make your developer experience better. Its easier to read, and intelligent autocomplete gives you more confidence.
+The `segment` function takes a string `data` and creates a completion using the Prompt Pipeline. It prompts the model to segment the data into multiple search queries and returns the result as a `MultiSearch` object.
 
-## Evaluating an example
+## Evaluating an Example
+
+Let's evaluate an example by segmenting a search query and executing the segmented queries.
 
 ```python
-queries = segment(
-    "Please send me the video from last week about the investment case study and also documents about your GPDR policy?"
-)
-asyncio.gather([q.execute() for q in queries.tasks])
+import asyncio
+
+queries = segment("Please send me the video from last week about the investment case study and also documents about your GDPR policy?")
+
+async def execute_queries(queries: Multisearch):
+    await asyncio.gather(*[q.execute() for q in queries.tasks])
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(execute_queries())
+loop.close()
 ```
 
-By using async we can execute the queries efficiently with fairly modular and simple code.
+In this example, we use the `segment` function to segment the search query. We then use `asyncio` to asynchronously execute the queries using the `execute` method defined in the `Search` class.
 
-```bash
-Searching for `Video` with query `investment case study` using `SearchType.VIDEO`
-Searching for `Documents` with query `GPDR policy` using `SearchType.EMAIL`
+The output will be:
+
 ```
+Searching for `Please send me the video from last week about the investment case study` with query `Please send me the video from last week about the investment case study` using `SearchType.VIDEO`
+Searching for `also documents about your GDPR policy?` with query `also documents about your GDPR policy?` using `SearchType.EMAIL`
+```
+
+This demonstrates how to use the Prompt Pipeline to segment search queries and execute them asynchronously.

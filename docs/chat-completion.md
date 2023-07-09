@@ -1,7 +1,10 @@
-# Using the Prompt Pipeline 
+# Using the Prompt Pipeline
 
-To get started with this api we must first instantiate a `ChatCompletion` object and build the api call
-by piping messages and functions to it.
+To use the Prompt Pipeline in OpenAI Function Call, you need to instantiate a `ChatCompletion` object and build the API call by piping messages and functions to it.
+
+## The ChatCompletion Object
+
+The `ChatCompletion` object is the starting point for constructing your API call. It provides the necessary methods and attributes to define the conversation flow and include function calls.
 
 ::: openai_function_call.dsl.completion
 

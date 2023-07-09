@@ -1,17 +1,18 @@
-# Using the ChatCompletion pipeline
+# Using the ChatCompletion Pipeline
 
-The pipeline api is just syntactic sugar to help build prompts in a readable way that avoids having to remember best practices around wording and structure. Examples include adding tips, tagging data with xml, or even including the chain of thought prompt as an assistant message.
+The ChatCompletion pipeline API provides a convenient way to build prompts with clear instructions and structure. It helps avoid the need to remember best practices for wording and prompt construction. This documentation will demonstrate an example pipeline and guide you through the process of using it.
 
 ## Example Pipeline
 
-Here we'll define a task to segment queries and add some more instructions via the prompt pipeline api.
+We will begin by defining a task to segment queries and add instructions using the prompt pipeline API.
 
-### Designing the schema
+### Designing the Schema
+
+First, let's design the schema for our task. In this example, we will have a `SearchQuery` schema with a single field called `query`. The `query` field will represent a detailed, comprehensive, and specific query to be used for semantic search.
 
 ```python
 from openai_function_call import OpenAISchema, dsl
 from pydantic import Field
-
 
 class SearchQuery(OpenAISchema):
     query: str = Field(
@@ -19,28 +20,17 @@ class SearchQuery(OpenAISchema):
         description="Detailed, comprehensive, and specific query to be used for semantic search",
     )
 
-
 SearchResponse = dsl.MultiTask(
     subtask_class=SearchQuery,
 )
 ```
 
 !!! tip "MultiTask"
-    To learn more about what multi task does, checkout the [MultiTask](multitask.md) documentation
+    To learn more about the `MultiTask` functionality, you can refer to the [MultiTask](multitask.md) documentation.
 
+### Building our Prompts
 
-### Building our prompts
-
-We dont deal with prompt templates and treat chat, message, output schema as first class citizens and then pipe them into a completion object.
-
-!!! note "Whats that?"
-    The pipe `|` is an overloaded operator that lets us cleanly compose our prompts.
-
-    `ChatCompletion` contains all the configuration for the model while we use `|` to build our prompt
-
-    We can then chain `|` together to add `Messages` or `OpenAISchema` and `ChatCompletion` will build out query for us while giving us a readable block to code to look ad
-
-    To see what 'message templates' are available check out our [docs](chat-completion.md)
+Next, let's build our prompts using the pipeline API. We will leverage the features provided by the `ChatCompletion` class and utilize the `|` operator to chain different components of our prompt together.
 
 ```python
 task = (
@@ -62,15 +52,30 @@ task = (
     )
     | SearchResponse
 )
+```
+
+The `ChatCompletion` class is responsible for model configuration, while the `|` operator allows us to construct the prompt in a readable manner. We can add `Messages` or `OpenAISchema` components to the prompt pipeline using `|`, and the `ChatCompletion` class will handle the prompt construction for us.
+
+In the above example, we:
+
+- Initialize a `ChatCompletion` object with the desired model and maximum token count.
+- Add a `SystemTask` component to segment search results.
+- Include a `TaggedMessage` component to provide a query with a specific tag.
+- Use a `TipsMessage` component to include some helpful tips related to the task.
+- Connect the `SearchResponse` schema to the pipeline.
+
+Lastly, we create the `search_request` using `task.create()`. The `search_request` object will be of type `SearchResponse`, and we can print it as a JSON object.
+
+!!! tip
+    If you want to see the exact input sent to OpenAI, scroll to the bottom of the page.
+
+```python
 search_request = task.create()  # type: ignore
 assert isinstance(search_request, SearchResponse)
 print(search_request.json(indent=2))
 ```
 
-!!! tip
-    If you want to see what its actually sent to OpenAI scroll to the bottom of the page! 
-
-Output
+The output will be a JSON object containing the segmented search queries.
 
 ```json
 {

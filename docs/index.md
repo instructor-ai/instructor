@@ -1,34 +1,33 @@
 # Welcome to OpenAI Function Call
 
-We offer a minially invasive extention of `Pydantic.BaseModel` named `OpenAISchema`. It only has two methods, one to generate the correct schema, and one to produce the class from the completion.
+OpenAI Function Call is a library that provides a minimal and non-intrusive extension to the `Pydantic.BaseModel` class called `OpenAISchema`. It offers two main methods: `openai_schema` for generating the correct schema and `from_response` for creating an instance of the class from the completion result.
 
-This library is more, so a list of examples and a helper class so I'll keep the example as just structured extraction.
+The library primarily focuses on showcasing examples and providing a helper class, so I'll keep the example as a simple structured extraction.
 
-If the OpenAI is a chef's knife of code, I hope you sell you a nice handle which comes with a little pamplet of cuttign techniques.
+If OpenAI is like a chef's knife for code, I aim to provide you with a nice handle and a little booklet of cutting techniques. OpenAI Function Call leverages the data validation capabilities of the Pydantic library to handle output parsing in a structured and reliable manner.
 
-It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
+If you have any feedback or need assistance, feel free to leave an issue or reach out to me on [Twitter](https://twitter.com/jxnlco).
 
-If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco).
-
-If you're looking for something more batteries included I strongly recommend [MarvinAI](https://www.askmarvin.ai/) which offers a high level api but does not provide as much access to prompting.
+If you're looking for a more comprehensive solution with batteries included, I highly recommend [MarvinAI](https://www.askmarvin.ai/). MarvinAI provides a high-level API but doesn't offer as much access to prompting.
 
 !!! tip "Just rip it out!"
-    If you don't want to install dependencies. I recommend literally ripping the `function_calls.py` into your own codebase. [[source code]](https://github.com/jxnl/openai_function_call/blob/main/openai_function_call/function_calls.py)
+    If you don't want to install dependencies, you can literally take the `function_calls.py` file from the library's source code and add it to your own codebase. You can find the [source code here](https://github.com/jxnl/openai_function_call/blob/main/openai_function_call/function_calls.py).
 
 ## Installation
 
-```python
+You can install OpenAI Function Call using pip:
+
+```sh
 pip install openai_function_call
 ```
 
 ## Usage
 
-Below are examples showcasing the use of function calls and schemas with OpenAI and Pydantic. In later docs we'll go over a wide array of more creative uses.
+Below are some examples that demonstrate the usage of function calls and schemas with OpenAI and Pydantic. In subsequent documentation, we will explore more creative use cases.
 
 ### Example 1: Extraction
 
-!!! Tip
-    Prompt are now sourced from docstrings and descriptions, so write clear and descriptive documentation!
+Prompts are now sourced from docstrings and field descriptions, so it's important to write clear and descriptive documentation for your schemas.
 
 ```python
 import openai
@@ -38,7 +37,7 @@ from pydantic import Field
 
 class UserDetails(OpenAISchema):
     """Details of a user"""
-    name: str = Field(..., description="users's full name")
+    name: str = Field(..., description="User's full name")
     age: int
 
 completion = openai.ChatCompletion.create(
@@ -52,7 +51,7 @@ completion = openai.ChatCompletion.create(
 )
 
 user_details = UserDetails.from_response(completion)
-print(user_details)  # name="John Doe", age=30
+print(user_details)  # UserDetails(name='John Doe', age=30)
 ```
 
 ### Example 2: Function Calls
