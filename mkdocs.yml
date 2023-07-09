@@ -1,10 +1,18 @@
-site_name: OpenAI Function call 
+site_name: OpenAI Function Call Library
+site_description: Enhancing OpenAI function calling with Pydantic 
+repo_name: openai_function_call
+repo_url: https://github.com/jxnl/openai_function_call
+site_url: https://openai-function-call.onrender.com/
 theme:
   name: material
   icon:
     repo: fontawesome/brands/github
   features:
     - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - content.code.annotate
 plugins:
   - social
   - mkdocstrings:
@@ -14,8 +22,6 @@ plugins:
             members_order: alphabetical
             allow_inspection: true
             show_bases: true
-repo_url: https://github.com/jxnl/openai_function_call
-site_url: https://openai-function-call.onrender.com/
 markdown_extensions:
   - pymdownx.critic
   - pymdownx.caret
@@ -39,10 +45,10 @@ nav:
       - "MultiTask Schema": "multitask.md"
       - "Introduction: Pipeline API": "pipeline-example.md"
       - "Message Templates": "chat-completion.md"
-  - Examples:
-      - 'Example applications': 'examples/index.md'
-      - 'Example: Segmented Search': 'examples/search.md'
-      - 'Example: One shot Query Planning': 'examples/planning-tasks.md'
-      - 'Example: Recursive Schemas': 'examples/recursive.md'
-      - 'Example: Exact Citations': 'examples/exact_citations.md'
-      - 'Example: Automated Dataframe Extraction': "examples/autodataframe.md"
+  - Use Cases:
+      - 'Overview': 'examples/index.md'
+      - 'Segmented Search': 'examples/search.md'
+      - 'One shot Query Planning': 'examples/planning-tasks.md'
+      - 'Recursive Schemas': 'examples/recursive.md'
+      - 'Exact Citations': 'examples/exact_citations.md'
+      - 'Automated Dataframe Extraction': "examples/autodataframe.md"

@@ -2,8 +2,10 @@
 
 In this example, we will demonstrate how to leverage the `MultiTask` and `enum.Enum` features of OpenAI Function Call to segment search queries. We will define the necessary structures using Pydantic and demonstrate how segment query into multiple sub queries and execute them in parallel with `asyncio`.
 
-!!! note "Motivation"
-    Extracting a list of tasks from text is one of the most common examples of using LLMs for 'intent' I can imagine a system like this powering Siri or Alexa fairly soon.
+!!! tips "Motivation"
+
+    Extracting a list of tasks from text is a common use case for leveraging language models. This pattern can be applied to various applications, such as virtual assistants like Siri or Alexa, where understanding user intent and breaking down requests into actionable tasks is crucial. In this example, we will demonstrate how to use OpenAI Function Call to segment search queries and execute them in parallel.
+
 
 ## Defining the Structures
 
@@ -57,7 +59,7 @@ MultiSearch = MultiTask(Search)
 
 To segment a search query, we will use the base openai api. We can define a function that takes a string and returns segmented search queries using the `MultiSearch` class.
 
-```python
+```python hl_lines="7 8"
 import openai
 
 def segment(data: str) -> MultiSearch:
@@ -105,5 +107,3 @@ The output will be:
 Searching for `Please send me the video from last week about the investment case study` with query `Please send me the video from last week about the investment case study` using `SearchType.VIDEO`
 Searching for `also documents about your GDPR policy?` with query `also documents about your GDPR policy?` using `SearchType.EMAIL`
 ```
-
-This demonstrates how to use the Prompt Pipeline to segment search queries and execute them asynchronously.

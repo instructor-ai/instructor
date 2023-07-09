@@ -1,14 +1,14 @@
-# List of Examples
+# Function Calls by Example
 
-Welcome to the examples page. Here you will find detailed information on how to use our code and examples demonstrating various features and functionalities.
+Welcome to the examples page. Here you will find emails that highlight a range of use cases, on how to use our code and examples demonstrating various features and functionalities.
 
-## Library 
+## Quick Links 
 
-- [Segmented Search](search.md)
-- [One shot Query Planning](planning-tasks.md)
-- [Recursive Schemas](recursive.md)
-- [Exact Citations](exact_citations.md)
-- [Automated Dataframe Extraction](autodataframe.md)
+- [Segmenting search requests into multiple search queries](search.md)
+- [One shot query planning](planning-tasks.md)
+- [Using recursive schema](recursive.md)
+- [Exact citations using regex](exact_citations.md)
+- [Automated database extraction from text](autodataframe.md)
 
 ## Details
 
@@ -18,7 +18,7 @@ In this section, you will find examples demonstrating different aspects of our p
 
 - [One shot Query Planning](planning-tasks.md): Explore how to plan and decompose a complex query into multiple subqueries in a single request.
 
-- [Recursive Schemas](recursive.md): Understand how to work with recursive schemas, and why flat is better than nested.
+- [Recursive Schemas](recursive.md): Understand how to work with recursive schemas, and also why flat is better than nested.
 
 - [Exact Citations](exact_citations.md): Find out how to generate exact citations by using smart prompting and regular expressions
 

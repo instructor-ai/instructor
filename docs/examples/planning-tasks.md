@@ -1,9 +1,18 @@
 # Example: Planning and Executing a Query Plan
 
-In this example, we will demonstrate how to use the OpenAI Function Call `ChatCompletion` model to plan and execute a query plan in a question-answering system. We will define the necessary structures using Pydantic and show how to execute the query plan step-by-step.
+This example demonstrates how to use the OpenAI Function Call ChatCompletion model to plan and execute a query plan in a question-answering system. By breaking down a complex question into smaller sub-questions with defined dependencies, the system can systematically gather the necessary information to answer the main question.
 
-!!! note "Motivation"
-    Multishop q/a is iterative and may never end, by trying to plan the queryin one step we know we'll have a finite number of steps. It also helps us break apart questions to figure what we can or cannot answer with available data.
+!!! tips "Motivation"
+    The goal of this example is to showcase how query planning can be used to handle complex questions, facilitate iterative information gathering, automate workflows, and optimize processes. By leveraging the OpenAI Function Call model, you can design and execute a structured plan to find answers effectively.
+    
+     **Use Cases:**
+
+    * Complex question answering
+    * Iterative information gathering
+    * Workflow automation
+    * Process optimization
+
+With the OpenAI Function Call model, you can customize the planning process and integrate it into your specific application to meet your unique requirements.
 
 ## Defining the Structures
 
