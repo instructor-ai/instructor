@@ -4,25 +4,25 @@ Welcome to the examples page. Here you will find detailed information on how to 
 
 ## Library 
 
-- [Segmented Search](examples/search.md)
-- [One shot Query Planning](examples/planning-tasks.md)
-- [Recursive Schemas](examples/recursive.md)
-- [Exact Citations](examples/exact_citations.md)
-- [Automated Dataframe Extraction](examples/autodataframe.md)
+- [Segmented Search](search.md)
+- [One shot Query Planning](planning-tasks.md)
+- [Recursive Schemas](recursive.md)
+- [Exact Citations](exact_citations.md)
+- [Automated Dataframe Extraction](autodataframe.md)
 
 ## Details
 
 In this section, you will find examples demonstrating different aspects of our project's functionality.
 
-- [Segmented Search](examples/search.md): Learn how to perform segmented search using a multi task definition using function calling 
+- [Segmented Search](search.md): Learn how to perform segmented search using a multi task definition using function calling 
 
-- [One shot Query Planning](examples/planning-tasks.md): Explore how to plan and decompose a complex query into multiple subqueries in a single request.
+- [One shot Query Planning](lanning-tasks.md): Explore how to plan and decompose a complex query into multiple subqueries in a single request.
 
-- [Recursive Schemas](examples/recursive.md): Understand how to work with recursive schemas, and why flat is better than nested.
+- [Recursive Schemas](recursive.md): Understand how to work with recursive schemas, and why flat is better than nested.
 
-- [Exact Citations](examples/exact_citations.md): Find out how to generate exact citations by using smart prompting and regular expressions
+- [Exact Citations](exact_citations.md): Find out how to generate exact citations by using smart prompting and regular expressions
 
-- [Automated Dataframe Extraction](examples/autodataframe.md): Discover how to automate dataframe extraction to not only return a table, but possibilty multiple tables.
+- [Automated Dataframe Extraction](autodataframe.md): Discover how to automate dataframe extraction to not only return a table, but possibilty multiple tables.
 
 Feel free to explore these examples to gain a better understanding of various patterns on how creative prompting, description, and structuring of `OpenAISchema` and unlock new capabilities.
 
