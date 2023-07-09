@@ -39,8 +39,7 @@ def MultiTask(
             then the description is set to `Correct segmentation of `{subtask_class.__name__}` tasks`
 
     Returns:
-        OpenAISchema: A new class that can be used to segment multiple tasks
-
+        schema (OpenAISchema): A new class that can be used to segment multiple tasks
     """
     task_name = subtask_class.__name__ if name is None else name
 
