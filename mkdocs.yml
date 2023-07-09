@@ -40,9 +40,9 @@ nav:
       - "Introduction: Pipeline API": "pipeline-example.md"
       - "Message Templates": "chat-completion.md"
   - Examples:
-      - 'Table of contents': 'examples/index.md'
-      - 'Segmented Search': 'examples/search.md'
-      - 'One shot Query Planning': 'examples/planning-tasks.md'
-      - 'Recursive Schemas': 'examples/recursive.md'
-      - 'Exact Citations': 'examples/exact_citations.md'
-      - 'Automated Dataframe Extraction': "examples/autodataframe.md"
+      - 'Example applications': 'examples/index.md'
+      - 'Example: Segmented Search': 'examples/search.md'
+      - 'Example: One shot Query Planning': 'examples/planning-tasks.md'
+      - 'Example: Recursive Schemas': 'examples/recursive.md'
+      - 'Example: Exact Citations': 'examples/exact_citations.md'
+      - 'Example: Automated Dataframe Extraction': "examples/autodataframe.md"

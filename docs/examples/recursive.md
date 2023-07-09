@@ -1,6 +1,6 @@
 # Example: Parsing a Directory Tree
 
-In this example, we will demonstrate how to convert a string representing a directory tree into a filesystem structure using OpenAI's GPT-3 model. We will define the necessary structures using Pydantic, create a function to parse the tree, and provide an example of how to use it.
+In this example, we will demonstrate how define and use a recursive class definition to convert a string representing a directory tree into a filesystem structure using OpenAI's function call api. We will define the necessary structures using Pydantic, create a function to parse the tree, and provide an example of how to use it.
 
 ## Defining the Structures
 
@@ -80,7 +80,7 @@ The `DirectoryTree` class represents the entire directory tree. It has a single 
 
 ## Parsing the Tree
 
-We define a function `parse_tree_to_filesystem` to convert a string representing a directory tree into a filesystem structure using OpenAI's GPT-3 model.
+We define a function `parse_tree_to_filesystem` to convert a string representing a directory tree into a filesystem structure using OpenAI.
 
 ```python
 import openai
@@ -143,11 +143,11 @@ root = parse_tree_to_filesystem(
 root.print_paths()
 ```
 
-In this example, we call `parse_tree_to_filesystem` with a string representing a directory tree. The directory tree has a root node named 'root' with two subfolders (folder1 and folder2). The 'folder1' subfolder contains two files (file1.txt and file2.txt), while the 'folder2' subfolder contains a file (file3.txt) and a subfolder (subfolder1) that, in turn, contains a file (file4.txt).
+In this example, we call `parse_tree_to_filesystem` with a string representing a directory tree.
 
 After parsing the string into a `DirectoryTree` object, we call `root.print_paths()` to print the paths of the root node and its children. The output of this example will be:
 
-```
+```python
 root                               NodeType.FOLDER
 root/folder1                       NodeType.FOLDER
 root/folder1/file1.txt             NodeType.FILE

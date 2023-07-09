@@ -1,9 +1,9 @@
 # Example: Planning and Executing a Query Plan
 
-In this example, we will demonstrate how to use the OpenAI Function Call `ChatCompletion` model to plan and execute a query plan using a question-answering system. We will define the necessary structures using Pydantic and show how to execute the query plan step-by-step.
+In this example, we will demonstrate how to use the OpenAI Function Call `ChatCompletion` model to plan and execute a query plan in a question-answering system. We will define the necessary structures using Pydantic and show how to execute the query plan step-by-step.
 
-!!! note "Graph Generation"
-    Notice that this example produces a flat list of items with dependencies that resemble a graph, while pydantic allows for recursive definitions, its much easier and less confusing for the model to generate flat schemas rather than recursive schemas. If y ou want to see a recursive example see [recursive schemas](recursive.md)
+!!! note "Motivation"
+    Multishop q/a is iterative and may never end, by trying to plan the queryin one step we know we'll have a finite number of steps. It also helps us break apart questions to figure what we can or cannot answer with available data.
 
 ## Defining the Structures
 
@@ -54,6 +54,9 @@ class QueryPlan(OpenAISchema):
         return [q for q in self.query_graph if q.id in ids]
 ```
 
+!!! warning "Graph Generation"
+    Notice that this example produces a flat list of items with dependencies that resemble a graph, while pydantic allows for recursive definitions, its much easier and less confusing for the model to generate flat schemas rather than recursive schemas. If y ou want to see a recursive example see [recursive schemas](recursive.md)
+
 ## Planning a Query Plan
 
 Now, let's demonstrate how to plan and execute a query plan using the defined models and the OpenAI API.
@@ -96,6 +99,9 @@ plan = query_planner(
 )
 plan.dict()
 ```
+
+!!! warning "No RAG"
+    While we build the query plan in this example we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrival and calls openai for retrival augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
 
 ```python
 {'query_graph': [{'dependancies': [],

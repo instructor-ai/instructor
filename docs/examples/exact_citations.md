@@ -2,21 +2,18 @@
 
 In this example, we'll demonstrate how to use OpenAI Function Call to ask an AI a question and get back an answer with correct citations. We'll define the necessary data structures using Pydantic and show how to retrieve the citations for each answer.
 
+!!! note "Motivation"
+    Often times retrival augmented models hallucinate. Wouldn't it be great if each sentence came with citations that were no on the chunk level but at the substring level. Moreover, to ensure the quote exists we can search the string to find the exact quote!
+
 ## Defining the Data Structures
 
 Let's start by defining the data structures required for this task: `Fact` and `QuestionAnswer`.
 
 !!! tip "Prompting as documentation"
-    Make sure to include detailed and useful docstrings and fields for your class definitions. Naming becomes very important since they are semantically meaninful in the prompt 
+    Make sure to include detailed and useful docstrings and fields for your class definitions. Naming becomes very important since they are semantically meaninful in the prompt.
 
     * `substring_quote` performs better than `quote` since it suggests it should be a substring of the original content.
     * Notice that there are instructions on splitting facts in the docstring which will be used by OpenAI
-
-
-!!! tip "Embedding computation"
-    While its not thet best idea to get too crazy with adding 100 methods to your class
-    colocating some computation is oftentimes useful, here we implement the substring search directly with the `Fact` class.
-
 
 ```python
 import openai
@@ -73,6 +70,10 @@ class QuestionAnswer(OpenAISchema):
 The `Fact` class represents a single statement in the answer. It contains a `fact` attribute for the body of the sentence and a `substring_quote` attribute for the sources, which are direct quotes from the context.
 
 The `QuestionAnswer` class represents a question and its answer. It consists of a `question` attribute for the question asked and a list of `Fact` objects in the `answer` attribute.
+
+!!! tip "Embedding computation"
+    While its not thet best idea to get too crazy with adding 100 methods to your class
+    colocating some computation is oftentimes useful, here we implement the substring search directly with the `Fact` class.
 
 ## Asking AI a Question
 
@@ -132,7 +133,7 @@ Let's evaluate the example by asking the AI a question and getting back an answe
 
 !!! usage "Highlight"
     This just adds some color and captures the citation in `<>`
-    
+
     ```python
     def highlight(text, span):
         return (
