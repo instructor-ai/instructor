@@ -16,7 +16,7 @@ In this section, you will find examples demonstrating different aspects of our p
 
 - [Segmented Search](search.md): Learn how to perform segmented search using a multi task definition using function calling 
 
-- [One shot Query Planning](lanning-tasks.md): Explore how to plan and decompose a complex query into multiple subqueries in a single request.
+- [One shot Query Planning](planning-tasks.md): Explore how to plan and decompose a complex query into multiple subqueries in a single request.
 
 - [Recursive Schemas](recursive.md): Understand how to work with recursive schemas, and why flat is better than nested.
 
