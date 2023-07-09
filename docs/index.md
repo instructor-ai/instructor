@@ -39,7 +39,7 @@ In this schema, we define a `UserDetails` class that extends `OpenAISchema`. We 
 
 To enhance the performance of the OpenAI language model, you can add additional prompting in the form of docstrings and field descriptions. They can provide context and guide the model on how to process the data.
 
-```python
+```python hl_lines="5 6"
 from openai_function_call import OpenAISchema
 from pydantic import Field
 
@@ -55,7 +55,7 @@ In this updated schema, we use the `Field` class from `pydantic` to add descript
 
 With the schema defined, let's proceed with calling the `ChatCompletion` API using the defined schema and messages.
 
-```python
+```python hl_lines="11 12 15"
 from openai_function_call import OpenAISchema
 from pydantic import Field
 
@@ -83,7 +83,7 @@ Note that we have omitted the additional parameters that can be included in the 
 
 To deserialize the response from the `ChatCompletion` API back into an instance of the `UserDetails` class, we can use the `from_response` method.
 
-```python
+```python hl_lines="1"
 user = UserDetails.from_response(response)
 print(user.name)  # Output: John Doe
 print(user.age)   # Output: 30
