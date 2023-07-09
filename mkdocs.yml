@@ -6,6 +6,7 @@ theme:
   features:
     - navigation.instant
 plugins:
+  - social
   - mkdocstrings:
       handlers:
         python:
@@ -32,7 +33,7 @@ markdown_extensions:
   - md_in_html
   - admonition
 nav:
-  - Home: 'index.md'
+  - Quick Start: 'index.md'
   - API Reference:
       - 'OpenAISchema': 'openai_schema.md'
       - "MultiTask Schema": "multitask.md"
