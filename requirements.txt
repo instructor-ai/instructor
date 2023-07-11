@@ -1,5 +1,6 @@
 openai
 pydantic
-pygraphviz
-erdantic
+mkdocs-material 
+mkdocstrings 
+mkdocstrings-python
 pytest
