@@ -1,6 +1,3 @@
 openai
 pydantic
-mkdocs-material 
-mkdocstrings 
-mkdocstrings-python
 pytest
