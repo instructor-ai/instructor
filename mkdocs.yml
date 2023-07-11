@@ -53,3 +53,7 @@ nav:
       - 'Exact Citations': 'examples/exact_citations.md'
       - 'Automated Dataframe Extraction': "examples/autodataframe.md"
   - Philosophy: 'philosophy.md'
+extra:
+  analytics:
+    provider: google
+    property: G-5CR8QXF5CN
