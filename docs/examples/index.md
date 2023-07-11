@@ -22,7 +22,7 @@ In this section, you will find examples demonstrating different aspects of our p
 
 - [Exact Citations](exact_citations.md): Find out how to generate exact citations by using smart prompting and regular expressions
 
-- [Automated Dataframe Extraction](autodataframe.md): Discover how to automate dataframe extraction to not only return a table, but possibilty multiple tables.
+- [Automated Dataframe Extraction](autodataframe.md): Discover how to automate dataframe extraction to not only return a table, but possibly multiple tables.
 
 Feel free to explore these examples to gain a better understanding of various patterns on how creative prompting, description, and structuring of `OpenAISchema` and unlock new capabilities.
 

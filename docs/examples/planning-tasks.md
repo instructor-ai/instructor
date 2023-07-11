@@ -64,7 +64,7 @@ class QueryPlan(OpenAISchema):
 ```
 
 !!! warning "Graph Generation"
-    Notice that this example produces a flat list of items with dependencies that resemble a graph, while pydantic allows for recursive definitions, its much easier and less confusing for the model to generate flat schemas rather than recursive schemas. If y ou want to see a recursive example see [recursive schemas](recursive.md)
+    Notice that this example produces a flat list of items with dependencies that resemble a graph, while pydantic allows for recursive definitions, it's much easier and less confusing for the model to generate flat schemas rather than recursive schemas. If you want to see a recursive example, see [recursive schemas](recursive.md)
 
 ## Planning a Query Plan
 
@@ -110,7 +110,7 @@ plan.dict()
 ```
 
 !!! warning "No RAG"
-    While we build the query plan in this example we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrival and calls openai for retrival augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
+    While we build the query plan in this example, we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrival and calls openai for retrival augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
 
 ```python
 {'query_graph': [{'dependancies': [],
@@ -138,7 +138,7 @@ In the above code, we define a `query_planner` function that takes a question as
 
 In this example, we demonstrated how to use the OpenAI Function Call `ChatCompletion` model to plan and execute a query plan using a question-answering system. We defined the necessary structures using Pydantic, created a query planner function. 
 
-If you want to see multiple version of this style of code please visit 
+If you want to see multiple versions of this style of code, please visit:
 
 1. [query planning example](https://github.com/jxnl/openai_function_call/blob/main/examples/query_planner_execution/query_planner_execution.py)
 2. [task planning with topo sort](https://github.com/jxnl/openai_function_call/blob/main/examples/task_planner/task_planner_topological_sort.py)

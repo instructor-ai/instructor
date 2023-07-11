@@ -1,6 +1,6 @@
 # MultiTask 
 
-Defining a task and creating a list of classes is a common enough pattern that we define a helper function `MultiTask` that dynamitcally creates a new schema that has a task attribute defined as a list of the task subclass, it including some prebuild prompts and allows us to avoid writing some extra code.
+Defining a task and creating a list of classes is a common enough pattern that we define a helper function `MultiTask` that dynamically creates a new schema that has a task attribute defined as a list of the task subclass, including some prebuilt prompts and allows us to avoid writing some extra code.
 
 !!! example "Extending user details"
 

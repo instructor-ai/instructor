@@ -11,7 +11,7 @@ In this example, we'll demonstrate how to use OpenAI Function Call to ask an AI 
 Let's start by defining the data structures required for this task: `Fact` and `QuestionAnswer`.
 
 !!! tip "Prompting as documentation"
-    Make sure to include detailed and useful docstrings and fields for your class definitions. Naming becomes very important since they are semantically meaninful in the prompt.
+    Make sure to include detailed and useful docstrings and fields for your class definitions. Naming becomes very important since they are semantically meaningful in the prompt.
 
     * `substring_quote` performs better than `quote` since it suggests it should be a substring of the original content.
     * Notice that there are instructions on splitting facts in the docstring which will be used by OpenAI
@@ -73,8 +73,8 @@ The `Fact` class represents a single statement in the answer. It contains a `fac
 The `QuestionAnswer` class represents a question and its answer. It consists of a `question` attribute for the question asked and a list of `Fact` objects in the `answer` attribute.
 
 !!! tip "Embedding computation"
-    While its not thet best idea to get too crazy with adding 100 methods to your class
-    colocating some computation is oftentimes useful, here we implement the substring search directly with the `Fact` class.
+    While it's not the best idea to get too crazy with adding 100 methods to your class
+    collocating some computation is oftentimes useful, here we implement the substring search directly with the `Fact` class.
 
 ## Asking AI a Question
 
