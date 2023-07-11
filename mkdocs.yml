@@ -13,8 +13,12 @@ theme:
     - navigation.tabs.sticky
     - navigation.expand
     - content.code.annotate
+    - navigation.footer
+    - search.suggest
+    - search.highlight
 plugins:
   - social
+  - search
   - mkdocstrings:
       handlers:
         python:
@@ -57,3 +61,9 @@ extra:
   analytics:
     provider: google
     property: G-5CR8QXF5CN
+  social:
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/jxnlco
+    - icon: fontawesome/brands/github
+      link: https://github.com/jxnl
+copyright: Copyright &copy; 2023 Jason Liu
