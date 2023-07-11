@@ -49,33 +49,29 @@ Next, let's write out prompt using the pipeline style. We will leverage the feat
 
 ```python
 task = (
-    # Define the completion object (consider this both task and prompt)
-    dsl.ChatCompletion(
+    dsl.ChatCompletion(#(1)!
         name="Segmenting Search requests example",
         model='gpt-3.5-turbo-0613,
-        max_token=1000)
-    # SystemTask augments the `task` with "You are a world class ..."
-    | dsl.SystemTask(task="Segment search results")
-    # TaggedMessage wraps content with <query></query> to set clear boundaries 
-    # for the data you wish to process
-    | dsl.TaggedMessage(
+        max_token=1000) 
+    | dsl.SystemTask(task="Segment search results") #(2)!
+    | dsl.TaggedMessage(#(3)!
         content="can you send me the data about the video investment and the one about spot the dog?",
-        tag="query",
-    )
-    # TipsMessages allows you to pass a list of strings as tips
-    # as a result we can potentially create this list dynamically
-    | dsl.TipsMessage(
+        tag="query") 
+    | dsl.TipsMessage(#(4)!
         tips=[
             "Expand query to contain multiple forms of the same word (SSO -> Single Sign On)",
             "Use the title to explain what the query should return, but use the query to complete the search",
             "The query should be detailed, specific, and cast a wide net when possible",
-        ]
-    )
-    # Last step defines the output model you want to use to parse the results
-    # if no outpout model is defined we revert to the usual openai completion.
-    | SearchResponse
+        ]) 
+    | SearchResponse #(5)!
 )
 ```
+
+1. Define the completion object (consider this both task and prompt)
+2. SystemTask augments the `task` with "You are a *world class* ... *correctly* complete the task: {task}"
+3. TaggedMessage wraps content with `<query></query>` to set clear boundaries for the data you wish to process
+4. TipsMessages allows you to pass a list of strings as tips as a result we can potentially create this list dynamically
+5. Last step defines the output model you want to use to parse the results if no outpout model is defined we revert to the usual openai completion.
 
 The `ChatCompletion` class is responsible for model configuration, while the `|` operator allows us to construct the prompt in a readable manner. We can add `Messages` or `OpenAISchema` components to the prompt pipeline using `|`, and the `ChatCompletion` class will handle the prompt construction for us.
 
