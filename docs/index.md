@@ -51,6 +51,42 @@ class UserDetails(OpenAISchema):
 
 In this updated schema, we use the `Field` class from `pydantic` to add descriptions to the `name` field. The description provides information about the field, giving even more context to the language model.
 
+
+!!! note "Code, schema, and prompt"
+     We can run `openai_schema` to see exactly what the API will see, notice how the docstrings, attributes, types, and field descriptions are now part of the schema. This describes on this library's core philosophies.
+
+    ```python hl_lines="2 3"
+    class UserDetails(OpenAISchema):
+        "Correctly extracted user information"
+        name: str = Field(..., description="User's full name")
+        age: int
+
+    UserDetails.openai_schema
+    ```
+
+    ```json hl_lines="3 8"
+    {
+    "name": "UserDetails",
+    "description": "Correctly extracted user information",
+    "parameters": {
+        "type": "object",
+        "properties": {
+        "name": {
+            "description": "User's full name",
+            "type": "string"
+        },
+        "age": {
+            "type": "integer"
+        }
+        },
+        "required": [
+        "age",
+        "name"
+        ]
+    }
+    }
+    ```
+
 ### Section 3: Calling the ChatCompletion
 
 With the schema defined, let's proceed with calling the `ChatCompletion` API using the defined schema and messages.

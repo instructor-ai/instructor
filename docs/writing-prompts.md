@@ -1,10 +1,25 @@
-# Using the ChatCompletion Pipeline
+# Writing prompts with `ChatCompletion`
 
 The ChatCompletion pipeline API provides a convenient way to build prompts with clear instructions and structure. It helps avoid the need to remember best practices for wording and prompt construction. This documentation will demonstrate an example pipeline and guide you through the process of using it.
+
+Our goals are to:
+
+1. Define some best practices with a light abstraction over a chat message
+2. Allow the pipeline to be intuitive and readable.
+3. Abstract the output shape and deserialization to better usability
 
 ## Example Pipeline
 
 We will begin by defining a task to segment queries and add instructions using the prompt pipeline API.
+
+1. We want to define a search object to extract
+2. We want to extract multiple instances of such an object
+3. We want to define the pipeline with a set of instructions
+4. We want to easily call OpenAI and extract the data back out of the competion
+
+!!! note "Applications"
+    Extracted a repeated task out of instructions is a fairly common task.
+    Prompting tips have been to define the task clearly, model the output object and provide tips to the llm for better performance. Something like this can be used to power agents like Siri or Alexa in performing multiple tasks in one request. [Read more](examples/search.md)
 
 ### Designing the Schema
 
@@ -30,19 +45,25 @@ SearchResponse = dsl.MultiTask(
 
 ### Building our Prompts
 
-Next, let's build our prompts using the pipeline API. We will leverage the features provided by the `ChatCompletion` class and utilize the `|` operator to chain different components of our prompt together.
+Next, let's write out prompt using the pipeline style. We will leverage the features provided by the `ChatCompletion` class and utilize the `|` operator to chain different components of our prompt together.
 
 ```python
 task = (
+    # Define the completion object (consider this both task and prompt)
     dsl.ChatCompletion(
         name="Segmenting Search requests example",
         model='gpt-3.5-turbo-0613,
         max_token=1000)
+    # SystemTask augments the `task` with "You are a world class ..."
     | dsl.SystemTask(task="Segment search results")
+    # TaggedMessage wraps content with <query></query> to set clear boundaries 
+    # for the data you wish to process
     | dsl.TaggedMessage(
         content="can you send me the data about the video investment and the one about spot the dog?",
         tag="query",
     )
+    # TipsMessages allows you to pass a list of strings as tips
+    # as a result we can potentially create this list dynamically
     | dsl.TipsMessage(
         tips=[
             "Expand query to contain multiple forms of the same word (SSO -> Single Sign On)",
@@ -50,6 +71,8 @@ task = (
             "The query should be detailed, specific, and cast a wide net when possible",
         ]
     )
+    # Last step defines the output model you want to use to parse the results
+    # if no outpout model is defined we revert to the usual openai completion.
     | SearchResponse
 )
 ```

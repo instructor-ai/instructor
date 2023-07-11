@@ -43,8 +43,8 @@ nav:
   - API Reference:
       - 'OpenAISchema': 'openai_schema.md'
       - "MultiTask Schema": "multitask.md"
-      - "Introduction: Pipeline API": "pipeline-example.md"
-      - "Message Templates": "chat-completion.md"
+      - "Introduction: Writing Prompts": "writing-prompts.md"
+      - "Prompting Templates": "chat-completion.md"
   - Use Cases:
       - 'Overview': 'examples/index.md'
       - 'Segmented Search': 'examples/search.md'
