@@ -3,7 +3,7 @@
 In this example, we'll demonstrate how to convert a text into dataframes using OpenAI Function Call. We will define the necessary data structures using Pydantic and show how to convert the text into dataframes.
 
 !!! note "Motivation"
-    Often times when we parse data we have an opportunity to extract structured data, what if we could extract an arbitrary number of tables with arbitray schemas? By pulling out dataframes we could write tables or csv files and attach them to our retrived data.
+    Often times when we parse data we have an opportunity to extract structured data, what if we could extract an arbitrary number of tables with arbitrary schemas? By pulling out dataframes we could write tables or .csv files and attach them to our retrieved data.
 
 ## Defining the Data Structures
 

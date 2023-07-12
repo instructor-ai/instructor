@@ -7,7 +7,7 @@ In this example, we will demonstrate how define and use a recursive class defini
 We will use Pydantic to define the necessary data structures representing the directory tree and its nodes. We have two classes, `Node` and `DirectoryTree`, which are used to model individual nodes and the entire directory tree, respectively.
 
 !!! warning "Flat is better than nested"
-    While its easier to model thing as nested returning flat items with depedencies tends to yield better results. for a flat example check out [planning tasks](planning-tasks.md) where we model a query plan as a dag.
+    While it's easier to model things as nested, returning flat items with dependencies tends to yield better results. For a flat example, check out [planning tasks](planning-tasks.md) where we model a query plan as a dag.
 
 ```python
 import enum

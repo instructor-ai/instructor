@@ -1,6 +1,6 @@
 # Example: Segmenting Search Queries
 
-In this example, we will demonstrate how to leverage the `MultiTask` and `enum.Enum` features of OpenAI Function Call to segment search queries. We will define the necessary structures using Pydantic and demonstrate how segment query into multiple sub queries and execute them in parallel with `asyncio`.
+In this example, we will demonstrate how to leverage the `MultiTask` and `enum.Enum` features of OpenAI Function Call to segment search queries. We will define the necessary structures using Pydantic and demonstrate how segment queries into multiple sub queries and execute them in parallel with `asyncio`.
 
 !!! tips "Motivation"
 

@@ -10,7 +10,7 @@ The `ChatCompletion` object is the starting point for constructing your API call
 
 ## Messages Types
 
-The basis of a message is defined as a `dataclass`. However we provide helper functions and classes that provide additional functionality in the form of templates. 
+The basis of a message is defined as a `dataclass`. However, we provide helper functions and classes that provide additional functionality in the form of templates. 
 
 ::: openai_function_call.dsl.messages.base
 
