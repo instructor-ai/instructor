@@ -1,23 +1,28 @@
 # OpenAI Function Calls Quick Start Guide
 
-Welcome to the quick start guide for OpenAI Function Call! This guide will walk you through the installation process and provide examples demonstrating the usage of function calls and schemas with OpenAI and Pydantic.
+Welcome to the Quick Start Guide for OpenAI Function Call. This guide will walk you through the installation process and provide examples demonstrating the usage of function calls and schemas with OpenAI and Pydantic.
 
 ## Installation
 
-To get started with OpenAI Function Call, you need to install it using pip. Run the following command in your terminal:
+To get started with OpenAI Function Call, you need to install it using `pip`. Run the following command in your terminal:
 
-```bash
-pip install openai_function_call
+!!! note Requirement
+    Ensure you have Python version 3.9 or above.
+
+
+<!-- termynal -->
+```
+$ pip install openai_function_call
 ```
 
 ## Quick Start
 
-This quick start guide contains the follow sections
+This quick start guide contains the follow sections:
 
 1. Defining a schema 
 2. Adding Additional Prompting
 3. Calling the ChatCompletion
-4. deserializing back to the instance
+4. Deserializing back to the instance
 
 OpenAI Function Call allows you to leverage OpenAI's powerful language models for function calls and schema extraction. This guide provides a quick start for using OpenAI Function Call.
 
@@ -133,4 +138,4 @@ This quick start guide provided you with a basic understanding of how to use Ope
 
 If you have any questions, feel free to leave an issue or reach out to the library's author on [Twitter](https://twitter.com/jxnlco). For a more comprehensive solution with additional features, consider checking out [MarvinAI](https://www.askmarvin.ai/).
 
-To see more examples of how we can create interesting models check out some [examples](examples/index.md)
+To see more examples of how we can create interesting models check out some [examples.](examples/index.md)

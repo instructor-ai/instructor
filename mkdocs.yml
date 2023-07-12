@@ -19,6 +19,7 @@ theme:
 plugins:
   - social
   - search
+  - termynal
   - mkdocstrings:
       handlers:
         python:
