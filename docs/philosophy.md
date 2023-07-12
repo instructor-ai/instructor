@@ -15,9 +15,9 @@ Here are some key points to understand:
 
 * **Code as prompts:** With both the DSL and the structured extraction we don't make a distinction between a code vs a `prompt template`. We believe the prompts that go into a LLM should be constructed and collocated with the code we need to execute. Prompts are created via docstrings, descriptions and functions that construct messages.
 
-* **Writing Prompts:** The library also includes an experimental prompt pipeline api. The DSL is a thin wrapper that aims to improve code readability by adding light abstraction around templates as messages. It provides a slightly more syntax for working with LLMs, making the prompting easier to read.
+* **Writing Prompts:** The library also includes an experimental prompt pipeline api. The DSL is a thin wrapper that aims to improve code readability by adding light abstraction around templates as messages. It provides a slightly more intuitive syntax for working with LLMs, making the prompting easier to read.
 
-    * **No Abstractions for Retrieval or Execution:** The library does not impose any abstractions for retrieval or execution. Python code is considered to great glue code, and there is no need to force the use of additional abstractions. You have the freedom to use any retrieval or execution mechanism that suits your needs.
+    * **No Abstractions for Retrieval or Execution:** The library does not impose any abstractions for retrieval or execution. Python code is considered to be great glue code, and there is no need to force the use of additional abstractions. You have the freedom to use any retrieval or execution mechanism that suits your needs.
 
     !!! example "Roll your own"
         If you want to do retrival simply make a class that extracts a query and implement a method that calls to get the data!

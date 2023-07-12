@@ -38,7 +38,7 @@ class UserDetails(OpenAISchema):
     age: int
 ```
 
-In this schema, we define a `UserDetails` class that extends `OpenAISchema`. We declare two fields, `name` and `age`, of type `str` and `int` respectively. It's important to note that since OpenAI models do not understand annotations or extra metadata like descriptions, we keep the definition clean without docstrings or field descriptions.
+In this schema, we define a `UserDetails` class that extends `OpenAISchema`. We declare two fields, `name` and `age`, of type `str` and `int` respectively. 
 
 ### Section 2: Adding Additional Prompting
 
