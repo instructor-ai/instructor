@@ -125,7 +125,7 @@ Note that we have omitted the additional parameters that can be included in the 
 To deserialize the response from the `ChatCompletion` API back into an instance of the `UserDetails` class, we can use the `from_response` method.
 
 ```python hl_lines="1"
-user = UserDetails.from_response(response)
+user = UserDetails.from_response(completion)
 print(user.name)  # Output: John Doe
 print(user.age)   # Output: 30
 ```
