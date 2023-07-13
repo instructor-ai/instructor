@@ -147,6 +147,7 @@ if __name__ == "__main__":
     +    operation = data.get('operation')
     +    operands = data.get('operands')
 
+
     -@app.post('/calculate')
     -async def calculate(operation: Operation):
     -    if operation.operation == 'add':
@@ -177,9 +178,13 @@ if __name__ == "__main__":
 
     --- requirements.txt
     +++ requirements.txt
-    @@ -1,3 +1,3 @@
+    @@ -1,3 +1,2 @@
     -fastapi
     -uvicorn
     -pydantic
     +flask
+    +flask-cors
     """
+
+    with open("changes.diff", "w") as f:
+        f.write(changes.diff)
