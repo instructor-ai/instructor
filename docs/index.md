@@ -38,7 +38,7 @@ class UserDetails(OpenAISchema):
     age: int
 ```
 
-In this schema, we define a `UserDetails` class that extends `OpenAISchema`. We declare two fields, `name` and `age`, of type `str` and `int` respectively. It's important to note that since OpenAI models do not understand annotations or extra metadata like descriptions, we keep the definition clean without docstrings or field descriptions.
+In this schema, we define a `UserDetails` class that extends `OpenAISchema`. We declare two fields, `name` and `age`, of type `str` and `int` respectively. 
 
 ### Section 2: Adding Additional Prompting
 
@@ -125,7 +125,7 @@ Note that we have omitted the additional parameters that can be included in the 
 To deserialize the response from the `ChatCompletion` API back into an instance of the `UserDetails` class, we can use the `from_response` method.
 
 ```python hl_lines="1"
-user = UserDetails.from_response(response)
+user = UserDetails.from_response(completion)
 print(user.name)  # Output: John Doe
 print(user.age)   # Output: 30
 ```
