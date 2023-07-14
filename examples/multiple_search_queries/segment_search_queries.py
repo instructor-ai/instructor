@@ -21,7 +21,6 @@ from typing import List
 
 import openai
 from pydantic import Field
-from tenacity import retry, stop_after_attempt
 
 from openai_function_call import OpenAISchema
 
@@ -35,15 +34,10 @@ class SearchType(str, enum.Enum):
 
 class Search(OpenAISchema):
     """
-    Class representing a single search query.
-
-    Args:
-        title (str): The title of the request.
-        query (str): The query string to search for.
-        type (SearchType): The type of search to perform.
+    Class representing a single search query which contains title, query and the search type
     """
 
-    title: str = Field(..., description="Title of the request")
+    search_title: str = Field(..., description="Title of the request")
     query: str = Field(..., description="Query to search for relevant content")
     type: SearchType = Field(..., description="Type of search")
 
@@ -52,13 +46,14 @@ class Search(OpenAISchema):
 
         await asyncio.sleep(1)
         print(
-            f"Searching for `{self.title}` with query `{self.query}` using `{self.type}`"
+            f"Searching for `{self.search_title}` with query `{self.query}` using `{self.type}`"
         )
 
 
 class MultiSearch(OpenAISchema):
     """
     Class representing multiple search queries.
+    Make sure they contain all the required attributes
 
     Args:
         searches (List[Search]): The list of searches to perform.
@@ -75,7 +70,6 @@ class MultiSearch(OpenAISchema):
         return loop.run_until_complete(tasks)
 
 
-@retry(stop=stop_after_attempt(3))
 def segment(data: str) -> MultiSearch:
     """
     Convert a string into multiple search queries using OpenAI's GPT-3 model.
@@ -88,7 +82,7 @@ def segment(data: str) -> MultiSearch:
     """
 
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4-0613",
         temperature=0.1,
         functions=[MultiSearch.openai_schema],
         function_call={"name": MultiSearch.openai_schema["name"]},
