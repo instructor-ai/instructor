@@ -22,8 +22,8 @@
 
 import json
 from functools import wraps
-from typing import Any, Callable, Optional, List, Type
-from pydantic import validate_arguments, BaseModel, create_model, Field
+from typing import Any, Callable
+from pydantic import BaseModel, validate_arguments
 
 
 def _remove_a_key(d, remove_key) -> None:
@@ -65,7 +65,7 @@ class openai_function:
     def __init__(self, func: Callable) -> None:
         self.func = func
         self.validate_func = validate_arguments(func)
-        parameters = self.validate_func.model.schema()
+        parameters = self.validate_func.model.model_json_schema()
         parameters["properties"] = {
             k: v
             for k, v in parameters["properties"].items()
@@ -127,7 +127,7 @@ class OpenAISchema(BaseModel):
         Returns:
             model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
         """
-        schema = cls.schema()
+        schema = cls.model_json_schema()
         parameters = {
             k: v for k, v in schema.items() if k not in ("title", "description")
         }

@@ -1,5 +1,5 @@
 from openai_function_call import OpenAISchema
-from openai_function_call.dsl.multitask import MultiTask
+from openai_function_call.dsl import MultiTask
 
 
 def test_multi_task():
@@ -14,7 +14,7 @@ def test_multi_task():
         "description": "Correct segmentation of `Search` tasks",
         "name": "MultiSearch",
         "parameters": {
-            "definitions": {
+            "$defs": {
                 "Search": {
                     "properties": {
                         "id": {"type": "integer"},
@@ -28,7 +28,7 @@ def test_multi_task():
             "properties": {
                 "tasks": {
                     "description": "Correctly segmented list of `Search` tasks",
-                    "items": {"$ref": "#/definitions/Search"},
+                    "items": {"$ref": "#/$defs/Search"},
                     "type": "array",
                 }
             },
@@ -52,7 +52,7 @@ def test_multi_task_with_name_and_desc():
         "description": "MyCustomDesc",
         "name": "MultiMyCustomName",
         "parameters": {
-            "definitions": {
+            "$defs": {
                 "Search": {
                     "properties": {
                         "id": {"type": "integer"},
@@ -66,7 +66,7 @@ def test_multi_task_with_name_and_desc():
             "properties": {
                 "tasks": {
                     "description": "Correctly segmented list of `MyCustomName` tasks",
-                    "items": {"$ref": "#/definitions/Search"},
+                    "items": {"$ref": "#/$defs/Search"},
                     "type": "array",
                 }
             },
