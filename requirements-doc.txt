@@ -2,3 +2,6 @@ mkdocs-material
 mkdocstrings 
 mkdocstrings-python
 termynal
+openai
+pydantic
+pytest

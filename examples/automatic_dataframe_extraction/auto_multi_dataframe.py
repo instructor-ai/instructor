@@ -5,18 +5,10 @@ import openai
 
 
 class RowData(OpenAISchema):
-    row: List[Any] = Field(..., description="The values for each row")
-    citation: str = Field(
-        ..., description="The citation for this row from the original source data"
-    )
+    row: List[Any] = Field(..., description="Correct values for each row")
 
 
 class Dataframe(OpenAISchema):
-    """
-    Class representing a dataframe. This class is used to convert
-    data into a frame that can be used by pandas.
-    """
-
     name: str = Field(..., description="The name of the dataframe")
     data: List[RowData] = Field(
         ...,
@@ -30,8 +22,8 @@ class Dataframe(OpenAISchema):
     def to_pandas(self):
         import pandas as pd
 
-        columns = self.columns + ["citation"]
-        data = [row.row + [row.citation] for row in self.data]
+        columns = self.columns
+        data = [row.row for row in self.data]
 
         return pd.DataFrame(data=data, columns=columns)
 
@@ -39,6 +31,8 @@ class Dataframe(OpenAISchema):
 class Database(OpenAISchema):
     """
     A set of correct named and defined tables as dataframes
+    Each one should have the right number of columns and correct
+    values for each.
     """
 
     tables: List[Dataframe] = Field(
@@ -50,7 +44,7 @@ class Database(OpenAISchema):
 def dataframe(data: str) -> Database:
     completion = openai.ChatCompletion.create(
         model="gpt-4-0613",
-        temperature=0.1,
+        temperature=0.0,
         functions=[Database.openai_schema],
         function_call={"name": Database.openai_schema["name"]},
         messages=[
@@ -89,14 +83,13 @@ if __name__ == "__main__":
         print(df.to_pandas())
     """
     People
-    Name  Age           City Favorite Sport
-    0   John   25       New York     Basketball
-    1   Mike   30  San Francisco       Baseball
-    2  Sarah   20    Los Angeles         Tennis
-    3   Mary   35        Chicago           None
-
+    ID   Name  Age           City Favorite Sport
+    0   1   John   25       New York     Basketball
+    1   2   Mike   30  San Francisco       Baseball
+    2   3  Sarah   20    Los Angeles         Tennis
+    3   4   Mary   35        Chicago           None
     Teams
-    Team Name Captain  Number of Players
-    0    Tigers    John                 12
-    1     Lions    Mike                 10
+    ID Team Name Captain  Number of Players
+    0   1    Tigers    John                 12
+    1   2     Lions    Mike                 10
     """
