@@ -179,7 +179,7 @@ class UserWithAddress(UserDetails):
     address: str 
 
 class UserWithFriends(UserDetails):
-    best_friend: UserDetail
+    best_friend: UserDetails
     friends: List[UserDetails]
 ```
 
