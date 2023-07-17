@@ -16,8 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install Doc Deps
-        run: pip install -r requirements-doc.txt
-
       - name: Deploy MkDocs
         uses: mhausenblas/mkdocs-deploy-gh-pages@1.26
+        env:
+          requirements: requirements-doc.txt
