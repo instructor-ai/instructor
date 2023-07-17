@@ -65,7 +65,7 @@ class Query(OpenAISchema):
                 query=self.question,
             )
             await asyncio.sleep(1)
-            pprint(resp.dict())
+            pprint(resp.model_dump())
             return resp
 
         sub_queries = dependency_func(self.dependancies)
@@ -73,12 +73,12 @@ class Query(OpenAISchema):
             *[q.execute(dependency_func=dependency_func) for q in sub_queries]
         )
         sub_answers = MergedResponses(responses=computed_queries)
-        merged_query = f"{self.question}\nContext: {sub_answers.json()}"
+        merged_query = f"{self.question}\nContext: {sub_answers.model_dump_json()}"
         resp = ComputeQuery(
             query=merged_query,
         )
         await asyncio.sleep(2)
-        pprint(resp.dict())
+        pprint(resp.model_dump())
         return resp
 
 
@@ -105,8 +105,8 @@ class QueryPlan(OpenAISchema):
         return [q for q in self.query_graph if q.id in idz]
 
 
-Query.update_forward_refs()
-QueryPlan.update_forward_refs()
+Query.model_rebuild()
+QueryPlan.model_rebuild()
 
 
 def query_planner(question: str, plan=False) -> QueryPlan:
