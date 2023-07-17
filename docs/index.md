@@ -29,9 +29,7 @@ To get started with OpenAI Function Call, you need to install it using `pip`. Ru
 !!! note Requirement
     Ensure you have Python version 3.9 or above.
 
-
-<!-- termynal -->
-```
+```sh
 $ pip install openai_function_call
 ```
 
