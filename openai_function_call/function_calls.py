@@ -137,7 +137,7 @@ class OpenAISchema(BaseModel):
         if "description" not in schema:
             schema[
                 "description"
-            ] = f"Correctly extracted {cls.__name__} with all the required parameters with correct types"
+            ] = f"Correctly extracted `{cls.__name__}` with all the required parameters with correct types"
 
         return {
             "name": schema["title"],
