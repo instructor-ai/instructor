@@ -44,12 +44,9 @@ markdown_extensions:
   - md_in_html
   - admonition
 nav:
-  - Quick Start: 'index.md'
-  - API Reference:
-      - 'OpenAISchema': 'openai_schema.md'
-      - "MultiTask Schema": "multitask.md"
-      - "Introduction: Writing Prompts": "writing-prompts.md"
-      - "Prompting Templates": "chat-completion.md"
+  - Introduction: 
+      - Function Calls: 'index.md'
+      - Philosophy: 'philosophy.md'
   - Use Cases:
       - 'Overview': 'examples/index.md'
       - 'Segmented Search': 'examples/search.md'
@@ -58,7 +55,11 @@ nav:
       - 'Exact Citations': 'examples/exact_citations.md'
       - 'Automated Dataframe Extraction': "examples/autodataframe.md"
       - 'Creating multiple file programs': "examples/gpt-engineer.md"
-  - Philosophy: 'philosophy.md'
+  - API Reference:
+      - 'OpenAISchema': 'openai_schema.md'
+      - "MultiTask Schema": "multitask.md"
+      - "Introduction: Writing Prompts": "writing-prompts.md"
+      - "Prompting Templates": "chat-completion.md"
 extra:
   analytics:
     provider: google

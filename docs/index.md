@@ -1,8 +1,28 @@
-# OpenAI Function Calls Quick Start Guide
+# OpenAI Function Call
+
+*OpenAISchema, structured extraction in Python, powered by OpenAI, designed for simplicity, transparency, and control.*
+
+-----
+
+This library is build to interact with openai's function call api from python code, with python objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
+
+**OpenAISchema** is based on Python type annotations, and powered by Pydantic.
+
+The key features are:
+
+* **Intuitive to write**: Great support for editors, completions. Spend less time debugging.
+* **Writing prompts as code**: Collocate docstrings and descriptions as part of your prompting.
+* **Extensible**: Bring your own kitchen sink without being weighted down by abstractions.
+
+## Structured Extraction with `openai`
 
 Welcome to the Quick Start Guide for OpenAI Function Call. This guide will walk you through the installation process and provide examples demonstrating the usage of function calls and schemas with OpenAI and Pydantic.
 
-## Installation
+### Requirements
+
+This library depends on **Pydantic** an **OpenAI** that's all.
+
+### Installation
 
 To get started with OpenAI Function Call, you need to install it using `pip`. Run the following command in your terminal:
 
@@ -132,10 +152,41 @@ print(user.age)   # Output: 30
 
 By calling `UserDetails.from_response`, we create an instance of the `UserDetails` class using the response from the API call. Subsequently, we can access the extracted user details through the `name` and `age` attributes of the `user` object.
 
-## Next Steps
+## IDE Support 
+
+Everything is designed for you to get the best developer experience possible, with the best editor support.
+
+Including **autocompletion**:
+
+![autocomplete](img/ide_support.png)
+
+And even **inline errors**
+
+![errors](img/error2.png)
+
+## OpenAI Schema and Pydantic
 
 This quick start guide provided you with a basic understanding of how to use OpenAI Function Call for schema extraction and function calls. You can now explore more advanced use cases and creative applications of this library.
+
+Since `UserDetails` is a `OpenAISchems` and a `pydantic.BaseModel` you can use inheritance and nesting to create more complex emails while avoiding code duplication
+
+```python
+class UserDetails(OpenAISchema):
+    name: str = Field(..., description="User's full name")
+    age: int
+
+class UserWithAddress(UserDetails):
+    address: str 
+
+class UserWithFriends(UserDetails):
+    best_friend: UserDetail
+    friends: List[UserDetails]
+```
 
 If you have any questions, feel free to leave an issue or reach out to the library's author on [Twitter](https://twitter.com/jxnlco). For a more comprehensive solution with additional features, consider checking out [MarvinAI](https://www.askmarvin.ai/).
 
 To see more examples of how we can create interesting models check out some [examples.](examples/index.md)
+
+## License
+
+This project is licensed under ther terms of the MIT License.
