@@ -1,25 +1,23 @@
 # OpenAI Schema
 
-The most generic helper is a light weight extention of Pydantic's BaseModel `OpenAISchema`.
-It has a method to help you produce the schema and parse the result of function calls
+The `OpenAISchema` is an extension of `Pydantic.BaseModel` that offers a minimally invasive way to define schemas for OpenAI completions. It provides two main methods: `openai_schema` to generate the correct schema and `from_response` to create an instance of the class from the completion result.
 
-This library is moreso a list of examples and a helper class so I'll keep the example as just structured extraction.
+## Prompt Placement
 
-## Where does the prompts go?
-
-Instead of defining your prompts in the messages the prompts you would usually use are now defined as part of the dostring of your class and the field descriptions. This is nice since it allows you to colocate the schema with the class you use to represent the structure.
+Our philosophy is to keep prompts close to the code. This is achieved by using docstrings and field descriptions to provide prompts and descriptions for your schema fields.
 
 ## Structured Extraction
+
+You can directly use the `OpenAISchema` class in your `openai` API create calls by passing in the `openai_schema` class property and extracting the class out using the `from_response` method. This style of usage provides full control over configuration and prompting.
 
 ```python
 import openai
 from openai_function_call import OpenAISchema
-
 from pydantic import Field
 
 class UserDetails(OpenAISchema):
     """Details of a user"""
-    name: str = Field(..., description="users's full name")
+    name: str = Field(..., description="User's full name")
     age: int
 
 completion = openai.ChatCompletion.create(
@@ -33,26 +31,25 @@ completion = openai.ChatCompletion.create(
 )
 
 user_details = UserDetails.from_response(completion)
-print(user_details)  # name="John Doe", age=30
+print(user_details)  # UserDetails(name='John Doe', age=30)
 ```
 
-## Using the decorator
-
-You can also use a decorator but i recommend the class since you get nice autocompletes with VSCode
+You can also use the `@openai_schema` decorator to decorate `BaseModels`, but you may lose some type hinting as a result.
 
 ```python
 import openai
 from openai_function_call import openai_schema
-
 from pydantic import Field, BaseModel
 
 @openai_schema
 class UserDetails(BaseModel):
     """Details of a user"""
-    name: str = Field(..., description="users's full name")
+    name: str = Field(..., description="User's full name")
     age: int
 ```
 
 ## Code Reference
+
+For more information about the code, including the complete API reference, please refer to the `openai_function_call` documentation.
 
 ::: openai_function_call.function_calls

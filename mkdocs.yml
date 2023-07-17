@@ -1,11 +1,24 @@
-site_name: OpenAI Function call 
+site_name: OpenAI Function Call Library
+site_description: Enhancing OpenAI function calling with Pydantic 
+repo_name: openai_function_call
+repo_url: https://github.com/jxnl/openai_function_call
+site_url: https://openai-function-call.onrender.com/
 theme:
   name: material
   icon:
     repo: fontawesome/brands/github
   features:
     - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - content.code.annotate
+    - navigation.footer
+    - search.suggest
+    - search.highlight
 plugins:
+  - social
+  - search
   - mkdocstrings:
       handlers:
         python:
@@ -13,7 +26,6 @@ plugins:
             members_order: alphabetical
             allow_inspection: true
             show_bases: true
-repo_url: https://github.com/jxnl/openai_function_call
 markdown_extensions:
   - pymdownx.critic
   - pymdownx.caret
@@ -29,12 +41,31 @@ markdown_extensions:
   - pymdownx.superfences
   - attr_list
   - md_in_html
+  - admonition
 nav:
-  - Home: 'index.md'
+  - Introduction: 
+      - Function Calls: 'index.md'
+      - Philosophy: 'philosophy.md'
+  - Use Cases:
+      - 'Overview': 'examples/index.md'
+      - 'Segmented Search': 'examples/search.md'
+      - 'One shot Query Planning': 'examples/planning-tasks.md'
+      - 'Recursive Schemas': 'examples/recursive.md'
+      - 'Exact Citations': 'examples/exact_citations.md'
+      - 'Automated Dataframe Extraction': "examples/autodataframe.md"
+      - 'Creating multiple file programs': "examples/gpt-engineer.md"
   - API Reference:
       - 'OpenAISchema': 'openai_schema.md'
-      - "Helper: MultiTask": "multitask.md"
-      - "Example: Pipeline API": "pipeline-example.md"
-      - "Docs": "chat-completion.md"
-  - Examples:
-      - 'Missing': 'help.md'
+      - "MultiTask Schema": "multitask.md"
+      - "Introduction: Writing Prompts": "writing-prompts.md"
+      - "Prompting Templates": "chat-completion.md"
+extra:
+  analytics:
+    provider: google
+    property: G-5CR8QXF5CN
+  social:
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/jxnlco
+    - icon: fontawesome/brands/github
+      link: https://github.com/jxnl
+copyright: Copyright &copy; 2023 Jason Liu

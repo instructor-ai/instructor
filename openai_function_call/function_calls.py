@@ -133,6 +133,12 @@ class OpenAISchema(BaseModel):
         }
         parameters["required"] = sorted(parameters["properties"])
         _remove_a_key(parameters, "title")
+
+        if "description" not in schema:
+            schema[
+                "description"
+            ] = f"Correctly extracted `{cls.__name__}` with all the required parameters with correct types"
+
         return {
             "name": schema["title"],
             "description": schema["description"],

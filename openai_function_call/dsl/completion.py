@@ -150,6 +150,7 @@ class ChatCompletion(BaseModel):
         completion = openai.ChatCompletion.create(**kwargs)
         if self.function:
             return self.function.from_response(completion)
+        return completion
 
     async def acreate(self):
         """

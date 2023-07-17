@@ -1,4 +1,6 @@
-# Pydantic is all you need: An OpenAI Function Call Pydantic Integration Module
+# Pydantic is all you need, for openai function calls.
+
+Check out the [docs](https://openai-function-call.onrender.com/)!
 
 We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
 If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco).
@@ -125,9 +127,11 @@ class UserDetails(BaseModel):
 ### Example 3: Using the DSL
 
 ```python
+from pprint import pprint
+
 from openai_function_call import OpenAISchema
 from openai_function_call.dsl import ChatCompletion, MultiTask, messages as m
-from openai_function_call.dsl.messages import system as s
+from openai_function_call.dsl.messages import SystemIdentity, SystemTask, SystemStyle, SystemGuidelines, SystemTips
 
 # Define a subtask you'd like to extract from then,
 # We'll use MultTask to easily map it to a List[Search]
@@ -138,15 +142,15 @@ class Search(OpenAISchema):
 
 tasks = (
     ChatCompletion(name="Acme Inc Email Segmentation", model="gpt-3.5-turbo-0613")
-    | s.Identity(identity="World class state of the art agent") # if no identity is provided, this is the default one
-    | s.Task(task="Segment emails into search queries")
-    | s.Style(style="Professional, clear and concise")
-    | s.Guidelines(guidelines=[
+    | SystemIdentity(identity="World class state of the art agent") # if no identity is provided, this is the default one
+    | SystemTask(task="Segment emails into search queries")
+    | SystemStyle(style="Professional, clear and concise")
+    | SystemGuidelines(guidelines=[
         'You never swear',
         'You are polite',
         'You say please and thank you often.'
     ])
-    | s.Tips(tips=[
+    | SystemTips(tips=[
         "When unsure about the correct segmentation, try to think about the task as a whole",
         "If acronyms are used expand them to their full form",
         "Use multiple phrases to describe the same thing"]
