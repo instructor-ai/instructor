@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openai-function-call"
-version = "0.1.1"
+version = "0.1.2"
 description = "Helper functions that allow us to improve openai's function_call ergonomics"
 authors = ["Jason <jason@jxnl.co>"]
 license = "MIT"

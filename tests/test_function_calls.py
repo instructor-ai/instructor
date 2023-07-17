@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel
 
-from openai_function_call import openai_schema
+from openai_function_call import openai_schema, OpenAISchema
 
 
 def test_openai_schema():
@@ -30,3 +30,13 @@ def test_openai_schema_raises_error():
         @openai_schema
         class Dummy:
             pass
+
+
+def test_no_docstring():
+    class Dummy(OpenAISchema):
+        attr: str
+
+    assert (
+        Dummy.openai_schema["description"]
+        == "Correctly extracted `Dummy` with all the required parameters with correct types"
+    )
