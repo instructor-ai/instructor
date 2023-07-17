@@ -134,17 +134,20 @@ class OpenAISchema(BaseModel):
             model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
         """
         schema = cls.model_json_schema()
+        docstring = parse(cls.__doc__)
         parameters = {
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
+        for param in docstring.params:
+            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
+                if "description" not in parameters["properties"][name]:
+                    parameters["properties"][name]["description"] = description
+
         parameters["required"] = sorted(
             k for k, v in parameters["properties"].items() if not "default" in v
         )
 
-        if "description" not in schema:
-            schema[
-                "description"
-            ] = f"Correctly extracted `{cls.__name__}` with all the required parameters with correct types"
+        schema["description"] = docstring.short_description
 
         _remove_a_key(parameters, "additionalProperties")
         _remove_a_key(parameters, "title")
