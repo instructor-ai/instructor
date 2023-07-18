@@ -1,6 +1,50 @@
 from pydantic import create_model, Field
 from typing import Optional, List, Type
-from ..function_calls import OpenAISchema
+from openai_function_call import OpenAISchema
+
+
+class MultiTaskBase:
+    task_type = None  # type: ignore
+
+    @classmethod
+    def from_streaming_response(cls, completion):
+        json_chunks = cls.extract_json(completion)
+        yield from cls.tasks_from_chunks(json_chunks)
+
+    @classmethod
+    def tasks_from_chunks(cls, json_chunks):
+        started = False
+        potential_object = ""
+        for chunk in json_chunks:
+            potential_object += chunk
+            if not started:
+                if "[" in chunk:
+                    started = True
+                    potential_object = chunk[chunk.find("[") + 1 :]
+                continue
+
+            task_json, potential_object = cls.get_object(potential_object, 0)
+            if task_json:
+                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                yield obj
+
+    @staticmethod
+    def extract_json(completion):
+        for chunk in completion:
+            delta = chunk["choices"][0]["delta"]
+            if "function_call" in delta:
+                yield delta["function_call"]["arguments"]
+
+    @staticmethod
+    def get_object(str, stack):
+        for i, c in enumerate(str):
+            if c == "{":
+                stack += 1
+            if c == "}":
+                stack -= 1
+                if stack == 0:
+                    return str[: i + 1], str[i + 2 :]
+        return None, str
 
 
 def MultiTask(
@@ -30,7 +74,6 @@ def MultiTask(
             )
         ```
 
-
     Parameters:
         subtask_class (Type[OpenAISchema]): The base class to use for the MultiTask
         name (Optional[str]): The name of the MultiTask class, if None then the name
@@ -54,7 +97,13 @@ def MultiTask(
         ),
     )
 
-    new_cls = create_model(name, tasks=list_tasks, __base__=(OpenAISchema,))
+    new_cls = create_model(
+        name,
+        tasks=list_tasks,
+        __base__=(OpenAISchema, MultiTaskBase),
+    )
+    # set the class constructor BaseModel
+    new_cls.task_type = subtask_class
 
     new_cls.__doc__ = (
         f"Correct segmentation of `{task_name}` tasks"
