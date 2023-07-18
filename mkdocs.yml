@@ -44,7 +44,8 @@ markdown_extensions:
   - admonition
 nav:
   - Introduction: 
-      - Function Calls: 'index.md'
+      - OpenAISchema: 'index.md'
+      - MultiTask: "multitask.md"
       - Philosophy: 'philosophy.md'
   - Use Cases:
       - 'Overview': 'examples/index.md'
@@ -56,7 +57,7 @@ nav:
       - 'Creating multiple file programs': "examples/gpt-engineer.md"
   - API Reference:
       - 'OpenAISchema': 'openai_schema.md'
-      - "MultiTask Schema": "multitask.md"
+      - 'MultiTask': 'api_multitask.md'
       - "Introduction: Writing Prompts": "writing-prompts.md"
       - "Prompting Templates": "chat-completion.md"
 extra:

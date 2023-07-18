@@ -74,7 +74,6 @@ def MultiTask(
             )
         ```
 
-
     Parameters:
         subtask_class (Type[OpenAISchema]): The base class to use for the MultiTask
         name (Optional[str]): The name of the MultiTask class, if None then the name
