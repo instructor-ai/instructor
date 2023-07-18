@@ -28,7 +28,7 @@ class Program(OpenAISchema):
     files: List[File] = Field(..., description="List of files")
 
 
-def segment(data: str) -> Program:
+def develop(data: str) -> Program:
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=0.1,
@@ -50,16 +50,16 @@ def segment(data: str) -> Program:
 
 
 if __name__ == "__main__":
-    queries = segment(
+    program = develop(
         """
-        Create a fastapi app with a readme.md file and a main.py file with 
-        some basic math functions. the datamodels should use pydantic and 
-        the main.py should use fastapi. the readme.md should have a title 
-        and a description. The readme should contain some helpful infromation 
+        Create a fastapi app with a readme.md file and a main.py file with
+        some basic math functions. the datamodels should use pydantic and
+        the main.py should use fastapi. the readme.md should have a title
+        and a description. The readme should contain some helpful infromation
         and a curl example"""
     )
 
-    for file in queries.files:
+    for file in program.files:
         print(file.file_name)
         print("-")
         print(file.body)
@@ -81,11 +81,15 @@ if __name__ == "__main__":
 
     ## Example
 
-    You can use the following curl command to test the `/add` endpoint:
+    To perform a basic math operation, you can use the following curl command:
 
     ```bash
-    $ curl -X POST -H "Content-Type: application/json" -d '{"a": 2, "b": 3}' http://localhost:8000/add
+    curl -X POST -H "Content-Type: application/json" -d '{"operation": "add", "operands": [2, 3]}' http://localhost:8000/calculate
     ```
+
+
+
+
 
     main.py
     -
@@ -95,31 +99,31 @@ if __name__ == "__main__":
     app = FastAPI()
 
 
-    class Numbers(BaseModel):
-        a: int
-        b: int
+    class Operation(BaseModel):
+        operation: str
+        operands: list
 
 
-    @app.post('/add')
-    def add_numbers(numbers: Numbers):
-        return {'result': numbers.a + numbers.b}
+    @app.post('/calculate')
+    async def calculate(operation: Operation):
+        if operation.operation == 'add':
+            result = sum(operation.operands)
+        elif operation.operation == 'subtract':
+            result = operation.operands[0] - sum(operation.operands[1:])
+        elif operation.operation == 'multiply':
+            result = 1
+            for operand in operation.operands:
+                result *= operand
+        elif operation.operation == 'divide':
+            result = operation.operands[0]
+            for operand in operation.operands[1:]:
+                result /= operand
+        else:
+            result = None
+        return {'result': result}
 
 
-    @app.post('/subtract')
-    def subtract_numbers(numbers: Numbers):
-        return {'result': numbers.a - numbers.b}
 
-
-    @app.post('/multiply')
-    def multiply_numbers(numbers: Numbers):
-        return {'result': numbers.a * numbers.b}
-
-
-    @app.post('/divide')
-    def divide_numbers(numbers: Numbers):
-        if numbers.b == 0:
-            return {'error': 'Cannot divide by zero'}
-        return {'result': numbers.a / numbers.b}
 
 
     requirements.txt
@@ -128,3 +132,6 @@ if __name__ == "__main__":
     uvicorn
     pydantic
     """
+
+    with open("program.json", "w") as f:
+        f.write(Program.parse_obj(program).json())
