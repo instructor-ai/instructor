@@ -8,8 +8,8 @@ from generate import Program
 
 class Diff(OpenAISchema):
     """
-    Changes that must be correctly made in a program's code repository
-    defined as a complete diff file which will be used to `patch` the repository
+    Changes that must be correctly made in a program's code repository defined as a
+    complete diff (Unified Format) file which will be used to `patch` the repository.
 
     Example:
       --- /path/to/original	timestamp
