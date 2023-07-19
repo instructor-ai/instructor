@@ -1,7 +1,8 @@
-mkdocs-material 
+mkdocs-material
+pillow
+cairosvg
 mkdocstrings 
 mkdocstrings-python
-termynal
 openai
 pydantic
 pytest
