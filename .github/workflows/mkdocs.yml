@@ -39,4 +39,4 @@ jobs:
         run: pip install -r requirements-doc.txt
 
       - name: Build and deploy MkDocs
-        run: mkdocs gh-deploy
+        run: mkdocs gh-deploy --force
