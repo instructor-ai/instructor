@@ -5,7 +5,7 @@ Check out the [docs](https://openai-function-call.onrender.com/)!
 We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
 If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco).
 
-This repo also contains a range of examples I've used in experimetnation and in production and I welcome new contributions for different types of schemas.
+This repo also contains a range of examples I've used in experimentation and in production and I welcome new contributions for different types of schemas.
 
 ## Support
 
