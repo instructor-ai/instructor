@@ -1,9 +1,11 @@
-from typing import Iterable, List, Optional
-from fastapi import FastAPI
+from typing import Iterable, List
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.params import Depends
 from openai_function_call import MultiTask
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
+import os
 import openai
 
 
@@ -17,16 +19,16 @@ class SubResponse(BaseModel):
     """
     If there are multiple phrases with difference citations. Each one should be its own object.
     make sure to break them apart such that each one only uses a set of
-    sources that are relevant to it. If you need to say something without a citation leave the quotes as None
+    sources that are relevant to it.
     """
 
     body: str = Field(..., description="Body of the sentences, as part of a response")
-    substring_quotes: Optional[List[str]] = Field(
+    substring_quotes: List[str] = Field(
         ...,
         description="Each source should be a direct quote from the context, as a substring of the original content but should be a wide enough quote to capture the context of the quote. The citation should at least be long and capture the context and be a full sentence.",
     )
 
-    def _get_span(self, quote, context, errs=100):
+    def _get_span(self, quote, context):
         import regex
 
         minor = quote
@@ -34,7 +36,7 @@ class SubResponse(BaseModel):
 
         errs_ = 0
         s = regex.search(f"({minor}){{e<={errs_}}}", major)
-        while s is None and errs_ <= errs:
+        while s is None and errs_ <= len(context) * 0.05:
             errs_ += 1
             s = regex.search(f"({minor}){{e<={errs_}}}", major)
 
@@ -85,9 +87,28 @@ def stream_extract(question: Question) -> Iterable[SubResponse]:
     return Answers.from_streaming_response(completion)
 
 
+def get_api_key(request: Request):
+    """
+    This just gets the API key from the request headers.
+    but tries to read from the environment variable OPENAI_API_KEY first.
+    """
+    if "OPENAI_API_KEY" in os.environ:
+        return os.environ["OPENAI_API_KEY"]
+
+    auth = request.headers.get("Authorization")
+    if auth is None:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+    if auth.startswith("Bearer "):
+        return auth.replace("Bearer ", "")
+
+    return None
+
+
 # Route to handle SSE events and return users
 @app.post("/extract", response_class=StreamingResponse)
-async def extract(question: Question):
+async def extract(question: Question, openai_key=Depends(get_api_key)):
+    openai.api_key = openai_key
     facts = stream_extract(question)
 
     async def generate():
@@ -96,7 +117,7 @@ async def extract(question: Question):
             resp = {
                 "body": fact.body,
                 "spans": spans,
-                "citation": fact.substring_quotes,
+                "citation": [question.context[a:b] for (a, b) in spans],
             }
             yield f"data: {resp}"
 

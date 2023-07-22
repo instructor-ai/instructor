@@ -21,6 +21,24 @@ curl -X POST -H "Content-Type: application/json" -d '{
 
 Replace `http://localhost:8000` with the actual URL of your FastAPI app if it's running on a different host and port. The API will respond with Server-Sent Events (SSE) containing the extracted facts in real-time.
 
+## Bring your own API key
+
+If you have your own api key but dont want to try deploying it yourself you're welcome to use my 
+modal isntance here, this code is public and I do not store your key.
+
+```bash
+curl -X 'POST' \
+  'https://jxnl--rag-citation-fastapi-app.modal.run/extract' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <OPENAI_API_KEY>' \
+  -d '{
+  "context": "My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.I went to an arts highschool but in university I studied Computational Mathematics and physics.  As part of coop I worked at many companies including Stitchfix, Facebook.  I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.",
+  "query": "What did the author do in school?"
+}'
+```
+
+
 ## Requirements
 
 To run this application, ensure you have the following Python packages installed:
