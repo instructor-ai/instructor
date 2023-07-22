@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openai-function-call"
-version = "0.2.0"
+version = "0.2.1"
 description = "Helper functions that allow us to improve openai's function_call ergonomics"
 authors = ["Jason <jason@jxnl.co>"]
 license = "MIT"
@@ -9,7 +9,7 @@ packages = [{include = "openai_function_call"}]
 repository = "https://github.com/jxnl/openai_function_call"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 openai = "^0.27.8"
 pydantic = "^2.0.2"
 
