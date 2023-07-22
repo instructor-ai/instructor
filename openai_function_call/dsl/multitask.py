@@ -3,7 +3,7 @@ from typing import Optional, List, Type, Union
 from openai_function_call import OpenAISchema
 
 
-class MultiTaskBase(OpenAISchema):
+class MultiTaskBase:
     task_type = None  # type: ignore
 
     @classmethod
@@ -51,7 +51,7 @@ def MultiTask(
     subtask_class: Type[BaseModel],
     name: Optional[str] = None,
     description: Optional[str] = None,
-) -> Union[MultiTaskBase | OpenAISchema]:
+):
     """
     Dynamically create a MultiTask OpenAISchema that can be used to segment multiple
     tasks given a base class. This creates class that can be used to create a toolkit
