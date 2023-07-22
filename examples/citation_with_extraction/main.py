@@ -20,6 +20,8 @@ class SubResponse(BaseModel):
     If there are multiple phrases with difference citations. Each one should be its own object.
     make sure to break them apart such that each one only uses a set of
     sources that are relevant to it.
+
+    When possible return `substring_quote` before the `body`.
     """
 
     body: str = Field(..., description="Body of the sentences, as part of a response")
