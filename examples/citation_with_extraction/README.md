@@ -19,6 +19,11 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' -N http://localhost:8000/extract
 ```
 
+```sh
+data: {'body': 'In school, the author went to an arts high school.', 'spans': [(91, 106)], 'citation': ['arts highschool']}
+data: {'body': 'In university, the author studied Computational Mathematics and physics.', 'spans': [(135, 172)], 'citation': ['Computational Mathematics and physics']}
+```
+
 Replace `http://localhost:8000` with the actual URL of your FastAPI app if it's running on a different host and port. The API will respond with Server-Sent Events (SSE) containing the extracted facts in real-time.
 
 ## Bring your own API key
@@ -38,10 +43,6 @@ curl -X 'POST' \
 }'
 ```
 
-```
-data: {'body': 'In school, the author went to an arts high school.', 'spans': [(91, 106)], 'citation': ['arts highschool']}
-data: {'body': 'In university, the author studied Computational Mathematics and physics.', 'spans': [(135, 172)], 'citation': ['Computational Mathematics and physics']}
-```
 
 ## Requirements
 
