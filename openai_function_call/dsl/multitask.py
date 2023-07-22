@@ -1,4 +1,4 @@
-from pydantic import create_model, Field
+from pydantic import BaseModel, create_model, Field
 from typing import Optional, List, Type
 from openai_function_call import OpenAISchema
 
@@ -48,7 +48,7 @@ class MultiTaskBase:
 
 
 def MultiTask(
-    subtask_class: Type[OpenAISchema],
+    subtask_class: Type[BaseModel],
     name: Optional[str] = None,
     description: Optional[str] = None,
 ):
