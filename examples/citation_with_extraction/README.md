@@ -38,6 +38,10 @@ curl -X 'POST' \
 }'
 ```
 
+```
+data: {'body': 'In school, the author went to an arts high school.', 'spans': [(91, 106)], 'citation': ['arts highschool']}
+data: {'body': 'In university, the author studied Computational Mathematics and physics.', 'spans': [(135, 172)], 'citation': ['Computational Mathematics and physics']}
+```
 
 ## Requirements
 
