@@ -40,20 +40,16 @@ def stream_extract(input: str, cls) -> Iterable[User]:
 
 start = time.time()
 for user in stream_extract(
-    input="Create 10 characters from the book Three Body Problem",
+    input="Create 5 characters from the book Three Body Problem",
     cls=User,
 ):
-    delay = (time.time() - start) * 100
-    print(f"{int(delay)} ms: User({user})")
-"""
-561 ms: User(name='Ye Wenjie' job='Astrophysicist' age=50)
-713 ms: User(name='Wang Miao' job='Nanomaterials Researcher' age=40)
-836 ms: User(name='Shi Qiang' job='Detective' age=45)
-1001 ms: User(name='Ding Yi' job='Theoretical Physicist' age=42)
-1136 ms: User(name='Chang Weisi' job='Major General' age=55)
-1274 ms: User(name='Zhang Beihai' job='Space Force Naval Officer' age=52)
-1499 ms: User(name='Luo Ji' job='Astronomer' age=48)
-1612 ms: User(name='Wei Cheng' job='Mathematician' age=46)
-1774 ms: User(name='Shen Yufei' job='Physicist' age=39)
-1904 ms: User(name='Pan Han' job='Engineer' age=43)
-"""
+    delay = round(time.time() - start, 1)
+    print(f"{delay} s: User({user})")
+    """
+    5.0 s: User(name='Ye Wenjie' job='Astrophysicist' age=50)
+    6.6 s: User(name='Wang Miao' job='Nanomaterials Researcher' age=40)
+    8.0 s: User(name='Shi Qiang' job='Detective' age=55)
+    9.4 s: User(name='Ding Yi' job='Theoretical Physicist' age=45)
+    10.6 s: User(name='Chang Weisi' job='Major General' age=60)
+    """
+    # Notice that the first one would return at 5s bu the last one returned in 10s!
