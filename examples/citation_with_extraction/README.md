@@ -14,8 +14,8 @@ To use the `/extract` endpoint, send a POST request with `curl` or any HTTP clie
 
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{
-  "context": "In 1969, NASA astronauts Neil Armstrong and Buzz Aldrin became the first humans to land and walk on the Moon during the Apollo 11 mission.",
-  "query": "Who were the first humans to land on the Moon?"
+  "context": "My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.I went to an arts highschool but in university I studied Computational Mathematics and physics.  As part of coop I worked at many companies including Stitchfix, Facebook.  I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.",
+  "query": "What did the author do in school?"
 }' -N http://localhost:8000/extract
 ```
 

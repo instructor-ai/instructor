@@ -1,9 +1,10 @@
-from typing import Iterable, List
-from fastapi import FastAPI, Request, Response, status
+from typing import Iterable, List, Optional
+from fastapi import FastAPI
+from openai_function_call import MultiTask
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
+
 import openai
-from openai_function_call import MultiTask, OpenAISchema
 
 
 # FastAPI app
@@ -12,17 +13,17 @@ app = FastAPI(
 )
 
 
-class Fact(BaseModel):
+class SubResponse(BaseModel):
     """
-    Each fact has a body and a list of sources. If there are multiple facts
+    If there are multiple phrases with difference citations. Each one should be its own object.
     make sure to break them apart such that each one only uses a set of
-    sources that are relevant to it.
+    sources that are relevant to it. If you need to say something without a citation leave the quotes as None
     """
 
-    fact: str = Field(..., description="Body of the sentence, as part of a response")
-    substring_quote: List[str] = Field(
+    body: str = Field(..., description="Body of the sentences, as part of a response")
+    substring_quotes: Optional[List[str]] = Field(
         ...,
-        description="Each source should be a direct quote from the context, as a substring of the original content",
+        description="Each source should be a direct quote from the context, as a substring of the original content but should be a wide enough quote to capture the context of the quote. The citation should at least be long and capture the context and be a full sentence.",
     )
 
     def _get_span(self, quote, context, errs=100):
@@ -41,14 +42,15 @@ class Fact(BaseModel):
             yield from s.spans()
 
     def get_spans(self, context):
-        for quote in self.substring_quote:
-            yield from self._get_span(quote, context)
+        if self.substring_quotes:
+            for quote in self.substring_quotes:
+                yield from self._get_span(quote, context)
 
 
 Answers = MultiTask(
-    Fact,
+    SubResponse,
     name="Answer",
-    description="Correctly answer questions based on a context using a list of facts. The facts will be combined to answer the question and the citations will be used to verify the answer.",
+    description="Correctly answer questions based on a context. Quotes should be full sentences when possible",
 )
 
 
@@ -58,9 +60,9 @@ class Question(BaseModel):
 
 
 # Function to extract entities from input text using GPT-3.5
-def stream_extract(question: Question) -> Iterable[Fact]:
+def stream_extract(question: Question) -> Iterable[SubResponse]:
     completion = openai.ChatCompletion.create(
-        model="gpt-turbo-3.5-0613",
+        model="gpt-3.5-turbo-0613",
         temperature=0,
         stream=True,
         functions=[Answers.openai_schema],
@@ -84,12 +86,18 @@ def stream_extract(question: Question) -> Iterable[Fact]:
 
 
 # Route to handle SSE events and return users
-@app.post("/extract")
+@app.post("/extract", response_class=StreamingResponse)
 async def extract(question: Question):
     facts = stream_extract(question)
 
     async def generate():
         for fact in facts:
-            yield f"data: {fact.model_dump_json()}"
+            spans = list(fact.get_spans(question.context))
+            resp = {
+                "body": fact.body,
+                "spans": spans,
+                "citation": fact.substring_quotes,
+            }
+            yield f"data: {resp}"
 
     return StreamingResponse(generate(), media_type="text/event-stream")

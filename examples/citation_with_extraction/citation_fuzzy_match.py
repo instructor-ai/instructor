@@ -92,10 +92,7 @@ def ask_ai(question: str, context: str) -> QuestionAnswer:
 
 question = "What did the author do during college?"
 context = """
-My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.
-I went to an arts highschool but in university I studied Computational Mathematics and physics. 
-As part of coop I worked at many companies including Stitchfix, Facebook.
-I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.
+My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.I went to an arts highschool but in university I studied Computational Mathematics and physics.  As part of coop I worked at many companies including Stitchfix, Facebook.  I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.
 """
 
 
