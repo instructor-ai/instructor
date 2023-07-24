@@ -1,3 +1,4 @@
+import json
 from typing import Iterable, List
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.params import Depends
@@ -121,6 +122,7 @@ async def extract(question: Question, openai_key=Depends(get_api_key)):
                 "spans": spans,
                 "citation": [question.context[a:b] for (a, b) in spans],
             }
-            yield f"data: {resp}"
+            resp_json = json.dumps(resp)
+            yield f"data: {resp_json}"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
