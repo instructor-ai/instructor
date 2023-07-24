@@ -6,6 +6,8 @@
 
 This library is build to interact with openai's function call api from python code, with python objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
 
+The approach of combining a human prompt and a "response schema" is not necessarily unique; however, it shows great promise. As we have been concentrating on translating user intent into structured data, we have discovered that Python with Pydantic is exceptionally well-suited for this task. 
+
 **OpenAISchema** is based on Python type annotations, and powered by Pydantic.
 
 The key features are:
