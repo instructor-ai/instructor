@@ -124,5 +124,6 @@ async def extract(question: Question, openai_key=Depends(get_api_key)):
             }
             resp_json = json.dumps(resp)
             yield f"data: {resp_json}"
+        yield "data: [DONE]"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
