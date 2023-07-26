@@ -74,7 +74,6 @@ class openai_function:
         parameters["required"] = sorted(
             parameters["properties"]
         )  # bug workaround see lc
-        _remove_a_key(parameters, "title")
         _remove_a_key(parameters, "additionalProperties")
         self.openai_schema = {
             "name": self.func.__name__,
@@ -132,7 +131,6 @@ class OpenAISchema(BaseModel):
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
         parameters["required"] = sorted(parameters["properties"])
-        _remove_a_key(parameters, "title")
 
         if "description" not in schema:
             schema[
