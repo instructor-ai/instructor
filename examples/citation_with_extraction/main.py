@@ -8,7 +8,9 @@ from starlette.responses import StreamingResponse
 
 import os
 import openai
+import logging
 
+logger = logging.getLogger(__name__)
 
 # FastAPI app
 app = FastAPI(
@@ -116,6 +118,7 @@ async def extract(question: Question, openai_key=Depends(get_api_key)):
 
     async def generate():
         for fact in facts:
+            logger.info(f"Fact: {fact}")
             spans = list(fact.get_spans(question.context))
             resp = {
                 "body": fact.body,

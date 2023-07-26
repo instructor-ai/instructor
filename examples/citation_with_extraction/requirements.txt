@@ -3,3 +3,4 @@ uvicorn
 openai
 pydantic
 openai_function_call
+regex
