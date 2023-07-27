@@ -67,7 +67,7 @@ def ask_ai(question: str, context: str) -> QuestionAnswer:
     # Making a request to the hypothetical 'openai' module
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
-        temperature=0.2,
+        temperature=0,
         max_tokens=1000,
         functions=[QuestionAnswer.openai_schema],
         function_call={"name": QuestionAnswer.openai_schema["name"]},
@@ -90,7 +90,7 @@ def ask_ai(question: str, context: str) -> QuestionAnswer:
     return QuestionAnswer.from_response(completion)
 
 
-question = "What did the author do during college?"
+question = "What the author's last name?"
 context = """
 My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.I went to an arts highschool but in university I studied Computational Mathematics and physics.  As part of coop I worked at many companies including Stitchfix, Facebook.  I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.
 """

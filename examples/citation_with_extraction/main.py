@@ -2,13 +2,15 @@ import json
 from typing import Iterable, List
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.params import Depends
-from openai_function_call import MultiTask
+from openai_function_call import MultiTask, OpenAISchema
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
 import os
 import openai
 import logging
+
+from openai_function_call.dsl.multitask import MultiTaskBase
 
 logger = logging.getLogger(__name__)
 
@@ -18,19 +20,20 @@ app = FastAPI(
 )
 
 
-class SubResponse(BaseModel):
+class Fact(BaseModel):
     """
-    If there are multiple phrases with difference citations. Each one should be its own object.
-    make sure to break them apart such that each one only uses a set of
-    sources that are relevant to it.
-
-    When possible return `substring_quote` before the `body`.
+    Class representing single statement.
+    Each fact has a body and a list of sources.
+    If there are multiple facts make sure to break them apart such that each one only uses a set of sources that are relevant to it.
     """
 
-    body: str = Field(..., description="Body of the sentences, as part of a response")
+    fact: str = Field(
+        ...,
+        description="Body of the sentences, as part of a response, it should read like a sentence that answers the question",
+    )
     substring_quotes: List[str] = Field(
         ...,
-        description="Each source should be a direct quote from the context, as a substring of the original content but should be a wide enough quote to capture the context of the quote. The citation should at least be long and capture the context and be a full sentence.",
+        description="Each source should be a direct quote from the context, as a substring of the original content",
     )
 
     def _get_span(self, quote, context):
@@ -54,11 +57,19 @@ class SubResponse(BaseModel):
                 yield from self._get_span(quote, context)
 
 
-Answers = MultiTask(
-    SubResponse,
-    name="Answer",
-    description="Correctly answer questions based on a context. Quotes should be full sentences when possible",
-)
+class QuestionAnswer(OpenAISchema, MultiTaskBase):
+    """
+    Class representing a question and its answer as a list of facts each one should have a soruce.
+    each sentence contains a body and a list of sources."""
+
+    question: str = Field(..., description="Question that was asked")
+    tasks: List[Fact] = Field(
+        ...,
+        description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
+    )
+
+
+QuestionAnswer.task_type = Fact
 
 
 class Question(BaseModel):
@@ -67,13 +78,13 @@ class Question(BaseModel):
 
 
 # Function to extract entities from input text using GPT-3.5
-def stream_extract(question: Question) -> Iterable[SubResponse]:
+def stream_extract(question: Question) -> Iterable[Fact]:
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
         stream=True,
-        functions=[Answers.openai_schema],
-        function_call={"name": Answers.openai_schema["name"]},
+        functions=[QuestionAnswer.openai_schema],
+        function_call={"name": QuestionAnswer.openai_schema["name"]},
         messages=[
             {
                 "role": "system",
@@ -89,7 +100,7 @@ def stream_extract(question: Question) -> Iterable[SubResponse]:
         ],
         max_tokens=2000,
     )
-    return Answers.from_streaming_response(completion)
+    return QuestionAnswer.from_streaming_response(completion)
 
 
 def get_api_key(request: Request):
@@ -121,7 +132,7 @@ async def extract(question: Question, openai_key=Depends(get_api_key)):
             logger.info(f"Fact: {fact}")
             spans = list(fact.get_spans(question.context))
             resp = {
-                "body": fact.body,
+                "body": fact.fact,
                 "spans": spans,
                 "citation": [question.context[a:b] for (a, b) in spans],
             }
