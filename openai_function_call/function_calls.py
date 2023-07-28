@@ -109,7 +109,7 @@ class openai_function:
             ), "Function name does not match"
 
         function_call = message["function_call"]
-        arguments = json.loads(function_call["arguments"])
+        arguments = json.loads(function_call["arguments"], strict=False)
         return self.validate_func(**arguments)
 
 
@@ -163,7 +163,7 @@ class OpenAISchema(BaseModel):
             ), "Function name does not match"
 
         function_call = message["function_call"]
-        arguments = json.loads(function_call["arguments"])
+        arguments = json.loads(function_call["arguments"], strict=False)
         return cls(**arguments)
 
 
