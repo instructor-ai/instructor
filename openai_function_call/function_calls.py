@@ -72,10 +72,10 @@ class openai_function:
             if k not in ("v__duplicate_kwargs", "args", "kwargs")
         }
         parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() 
-            if not "default" in v
+            k for k, v in parameters["properties"].items() if not "default" in v
         )
         _remove_a_key(parameters, "additionalProperties")
+        _remove_a_key(parameters, "title")
         self.openai_schema = {
             "name": self.func.__name__,
             "description": self.func.__doc__,
@@ -132,8 +132,7 @@ class OpenAISchema(BaseModel):
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
         parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() 
-            if not "default" in v
+            k for k, v in parameters["properties"].items() if not "default" in v
         )
 
         if "description" not in schema:
@@ -141,6 +140,8 @@ class OpenAISchema(BaseModel):
                 "description"
             ] = f"Correctly extracted `{cls.__name__}` with all the required parameters with correct types"
 
+        _remove_a_key(parameters, "additionalProperties")
+        _remove_a_key(parameters, "title")
         return {
             "name": schema["title"],
             "description": schema["description"],
