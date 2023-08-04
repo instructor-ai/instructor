@@ -61,14 +61,29 @@ def test_openai_function():
             A string with the full content of what the given role said
         """
 
-    scheme = get_current_weather.openai_schema
+    @openai_function
+    def get_current_weather_no_format_docstring(
+            location: str, format: Literal["celsius", "fahrenheit"] = "celsius"
+    ):
+        """
+        Gets the current weather in a given location, use this function for any questions related to the weather
+
+        Parameters
+        ----------
+        location
+            The city to get the weather, e.g. San Francisco. Guess the location from user messages
+        """
+
+    scheme_missing_param = get_current_weather_no_format_docstring.openai_schema
     assert (
-        scheme["parameters"]["properties"]["location"]["description"]
+        scheme_missing_param["parameters"]["properties"]["location"]["description"]
         ==
         "The city to get the weather, e.g. San Francisco. Guess the location from user messages"
     )
     assert (
-        scheme["parameters"]["properties"]["format"]["enum"]
+        scheme_missing_param["parameters"]["properties"]["format"]["enum"]
         ==
         ["celsius", "fahrenheit"]
     )
+    with pytest.raises(KeyError, match="description"):
+        scheme_missing_param["parameters"]["properties"]["format"]["description"]
