@@ -44,7 +44,7 @@ markdown_extensions:
   - admonition
 nav:
   - Introduction: 
-      - OpenAISchema: 'index.md'
+      - Getting Started: 'index.md'
       - MultiTask: "multitask.md"
       - Philosophy: 'philosophy.md'
   - Use Cases:
