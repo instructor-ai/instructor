@@ -22,7 +22,7 @@ Welcome to the Quick Start Guide for OpenAI Function Call. This guide will walk 
 
 ### Requirements
 
-This library depends on **Pydantic** an **OpenAI** that's all.
+This library depends on **Pydantic** and **OpenAI** that's all.
 
 ### Installation
 
@@ -35,7 +35,58 @@ To get started with OpenAI Function Call, you need to install it using `pip`. Ru
 $ pip install openai_function_call
 ```
 
-## Quick Start
+## Quick Start with Patching ChatCompletion
+
+To simplify your work with OpenAI models and streamline the extraction of Pydantic objects from prompts, we offer a patching mechanism for the `ChatCompletion`` class. Here's a step-by-step guide:
+
+### Step 1: Import and Patch the Module
+
+First, import the required libraries and apply the patch function to the OpenAI module. This exposes new functionality with the response_model parameter.
+
+```python
+import openai
+from pydantic import BaseModel
+from openai_function_call import patch
+
+patch()
+```
+
+### Step 2: Define the Pydantic Model
+
+Create a Pydantic model to define the structure of the data you want to extract. This model will map directly to the information in the prompt.
+
+```python
+class UserDetail(BaseModel):
+    name: str
+    age: int
+```
+
+### Step 3: Extract Data with ChatCompletion
+
+Use the openai.ChatCompletion.create method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
+
+```python
+user: UserDetail = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract Jason is 25 years old"},
+    ]
+)
+```
+
+### Step 4: Validate the Extracted Data
+
+You can then validate the extracted data by asserting the expected values. By adding the type things you also get a bunch of nice benefits with your IDE like spell check and auto complete!
+
+```python
+assert user.name == "Jason"
+assert user.age == 25
+```
+
+## Introduction to `OpenAISchema`
+
+If you want more control than just passing a single class we can use the `OpenAISchema` which extends `BaseModel`.
 
 This quick start guide contains the follow sections:
 
@@ -63,6 +114,9 @@ In this schema, we define a `UserDetails` class that extends `OpenAISchema`. We 
 ### Section 2: Adding Additional Prompting
 
 To enhance the performance of the OpenAI language model, you can add additional prompting in the form of docstrings and field descriptions. They can provide context and guide the model on how to process the data.
+
+!!! note Using `patch`
+    these docstrings and fields descriptions are powered by `pydantic.BaseModel` so they'll work via the patching approach as well.
 
 ```python hl_lines="5 6"
 from openai_function_call import OpenAISchema
