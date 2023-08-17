@@ -218,11 +218,11 @@ Everything is designed for you to get the best developer experience possible, wi
 
 Including **autocompletion**:
 
-![autocomplete](img/ide_support.png)
+![autocomplete](docs/ide_support.png)
 
 And even **inline errors**
 
-![errors](img/error2.png)
+![errors](docs/error2.png)
 
 ## OpenAI Schema and Pydantic
 
