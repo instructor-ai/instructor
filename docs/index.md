@@ -32,7 +32,7 @@ To get started with OpenAI Function Call, you need to install it using `pip`. Ru
     Ensure you have Python version 3.9 or above.
 
 ```sh
-$ pip install openai_function_call
+$ pip install instructor
 ```
 
 ## Quick Start with Patching ChatCompletion
@@ -46,7 +46,7 @@ First, import the required libraries and apply the patch function to the OpenAI 
 ```python
 import openai
 from pydantic import BaseModel
-from openai_function_call import patch
+from instructor import patch
 
 patch()
 ```
@@ -102,7 +102,7 @@ OpenAI Function Call allows you to leverage OpenAI's powerful language models fo
 To begin, let's define a schema using OpenAI Function Call. A schema describes the structure of the input and output data for a function. In this example, we'll define a simple schema for a `User` object:
 
 ```python
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 class UserDetails(OpenAISchema):
     name: str
@@ -119,7 +119,7 @@ To enhance the performance of the OpenAI language model, you can add additional 
     these docstrings and fields descriptions are powered by `pydantic.BaseModel` so they'll work via the patching approach as well.
 
 ```python hl_lines="5 6"
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 from pydantic import Field
 
 class UserDetails(OpenAISchema):
@@ -171,7 +171,7 @@ In this updated schema, we use the `Field` class from `pydantic` to add descript
 With the schema defined, let's proceed with calling the `ChatCompletion` API using the defined schema and messages.
 
 ```python hl_lines="11 12 15"
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 from pydantic import Field
 
 class UserDetails(OpenAISchema):

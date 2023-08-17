@@ -4,7 +4,7 @@ import inspect
 from typing import Callable, Optional, Type, Union
 
 from pydantic import BaseModel
-from openai_function_call import OpenAISchema, openai_schema
+from .function_calls import OpenAISchema, openai_schema
 
 
 def wrap_chatcompletion(func: Callable) -> Callable:

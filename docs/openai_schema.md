@@ -12,7 +12,7 @@ You can directly use the `OpenAISchema` class in your `openai` API create calls 
 
 ```python
 import openai
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 from pydantic import Field
 
 class UserDetails(OpenAISchema):
@@ -38,7 +38,7 @@ You can also use the `@openai_schema` decorator to decorate `BaseModels`, but yo
 
 ```python
 import openai
-from openai_function_call import openai_schema
+from instructor import openai_schema
 from pydantic import Field, BaseModel
 
 @openai_schema
@@ -50,6 +50,6 @@ class UserDetails(BaseModel):
 
 ## Code Reference
 
-For more information about the code, including the complete API reference, please refer to the `openai_function_call` documentation.
+For more information about the code, including the complete API reference, please refer to the `instructor` documentation.
 
-::: openai_function_call.function_calls
+::: instructor.function_calls

@@ -26,7 +26,7 @@ We will begin by defining a task to segment queries and add instructions using t
 First, let's design the schema for our task. In this example, we will have a `SearchQuery` schema with a single field called `query`. The `query` field will represent a detailed, comprehensive, and specific query to be used for semantic search.
 
 ```python
-from openai_function_call import OpenAISchema, dsl
+from instructor import OpenAISchema, dsl
 from pydantic import Field
 
 class SearchQuery(OpenAISchema):

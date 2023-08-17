@@ -6,7 +6,7 @@ To use the Prompt Pipeline in OpenAI Function Call, you need to instantiate a `C
 
 The `ChatCompletion` object is the starting point for constructing your API call. It provides the necessary methods and attributes to define the conversation flow and include function calls.
 
-::: openai_function_call.dsl.completion
+::: instructor.dsl.completion
 
 ## Messages Types
 
@@ -16,6 +16,6 @@ The basis of a message is defined as a `dataclass`. However, we provide helper f
 
 ## Helper Messages / Templates
 
-::: openai_function_call.dsl.messages.messages
+::: instructor.dsl.messages.messages
 
-::: openai_function_call.dsl.messages.user
+::: instructor.dsl.messages.user

@@ -14,7 +14,7 @@ Let's start by defining the data structure of `File` and `Program`.
 ```python
 from typing import List
 from pydantic import Field
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 
 class File(OpenAISchema):
@@ -173,7 +173,7 @@ This will be our definition for a change in our code base:
 
 ```python
 from pydantic import Field
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 class Diff(OpenAISchema):
     """
