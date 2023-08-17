@@ -1,240 +1,252 @@
-# Pydantic is all you need, for openai function calls.
+# Instructor (openai_function_call)
 
-Check out the [docs](https://openai-function-call.onrender.com/)!
+[![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/jxnl/instructor.svg)](https://github.com/jxnl/instructor/network)
+[![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
+[![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://link-to-your-documentation)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 
-We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
-If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco).
+*Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control.*
 
-This repo also contains a range of examples I've used in experimentation and in production and I welcome new contributions for different types of schemas.
+This library is built to interact with openai's function call api from python code, with python structs / objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
 
-## Support
+The approach of combining a human prompt and a "response schema" is not necessarily unique; however, it shows great promise. As we have been concentrating on translating user intent into structured data, we have discovered that Python with Pydantic is exceptionally well-suited for this task. 
 
-Follow me on twitter and consider helping pay for openai tokens!
+**OpenAISchema** is based on Python type annotations, and powered by Pydantic.
 
-[![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/jxnlco.svg?style=social&label=Follow%20%40jxnlco)](https://twitter.com/jxnlco) [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/jxnl)
+The key features are:
 
-## Installation
+* **Intuitive to write**: Great support for editors, completions. Spend less time debugging.
+* **Writing prompts as code**: Collocate docstrings and descriptions as part of your prompting.
+* **Extensible**: Bring your own kitchen sink without being weighted down by abstractions.
 
-Ensure you have Python version 3.9 or above.
+## Structured Extraction with `openai`
 
-```python
-pip install openai-function-call
+Welcome to the Quick Start Guide for OpenAI Function Call. This guide will walk you through the installation process and provide examples demonstrating the usage of function calls and schemas with OpenAI and Pydantic.
+
+### Requirements
+
+This library depends on **Pydantic** and **OpenAI** that's all.
+
+### Installation
+
+To get started with OpenAI Function Call, you need to install it using `pip`. Run the following command in your terminal:
+
+!!! note Requirement
+    Ensure you have Python version 3.9 or above.
+
+```sh
+$ pip install instructor
 ```
 
-## Contributing
+## Quick Start with Patching ChatCompletion
 
-To get started, clone the repository
+To simplify your work with OpenAI models and streamline the extraction of Pydantic objects from prompts, we offer a patching mechanism for the `ChatCompletion`` class. Here's a step-by-step guide:
 
-```bash
-git clone https://github.com/jxnl/openai_function_call.git
-```
+### Step 1: Import and Patch the Module
 
-Next, install the necessary Python packages from the requirements.txt file:
-
-```bash
-pip install -r requirements.txt
-```
-
-### Poetry
-
-We also use poetry if you'd like
-
-```bash
-poetry build
-```
-
-Your contributions are welcome! If you have great examples or find neat patterns, clone the repo and add another example.
-Check out the issues for any ideas if you want to learn. The goal is to find great patterns and cool examples to highlight.
-
-If you encounter any issues or want to provide feedback, you can create an issue in this repository. You can also reach out to me on Twitter at @jxnlco.
-
-## Usage
-
-This module simplifies the interaction with the OpenAI API, enabling a more structured and predictable conversation with the AI. Below are examples showcasing the use of function calls and schemas with OpenAI and Pydantic.
-
-### Example 1: Function Calls
+First, import the required libraries and apply the patch function to the OpenAI module. This exposes new functionality with the response_model parameter.
 
 ```python
 import openai
-from openai_function_call import openai_function
+from pydantic import BaseModel
+from instructor import patch
 
-@openai_function
-def sum(a:int, b:int) -> int:
-    """Sum description adds a + b"""
-    return a + b
-
-completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        temperature=0,
-        functions=[sum.openai_schema],
-        messages=[
-            {
-                "role": "system",
-                "content": "You must use the `sum` function instead of adding yourself.",
-            },
-            {
-                "role": "user",
-                "content": "What is 6+3 use the `sum` function",
-            },
-        ],
-    )
-
-result = sum.from_response(completion)
-print(result)  # 9
+patch()
 ```
 
-### Example 2: Schema Extraction
+### Step 2: Define the Pydantic Model
+
+Create a Pydantic model to define the structure of the data you want to extract. This model will map directly to the information in the prompt.
 
 ```python
-import openai
-from openai_function_call import OpenAISchema
+class UserDetail(BaseModel):
+    name: str
+    age: int
+```
 
+### Step 3: Extract Data with ChatCompletion
+
+Use the openai.ChatCompletion.create method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
+
+```python
+user: UserDetail = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract Jason is 25 years old"},
+    ]
+)
+```
+
+### Step 4: Validate the Extracted Data
+
+You can then validate the extracted data by asserting the expected values. By adding the type things you also get a bunch of nice benefits with your IDE like spell check and auto complete!
+
+```python
+assert user.name == "Jason"
+assert user.age == 25
+```
+
+## Introduction to `OpenAISchema`
+
+If you want more control than just passing a single class we can use the `OpenAISchema` which extends `BaseModel`.
+
+This quick start guide contains the follow sections:
+
+1. Defining a schema 
+2. Adding Additional Prompting
+3. Calling the ChatCompletion
+4. Deserializing back to the instance
+
+OpenAI Function Call allows you to leverage OpenAI's powerful language models for function calls and schema extraction. This guide provides a quick start for using OpenAI Function Call.
+
+### Section 1: Defining a Schema
+
+To begin, let's define a schema using OpenAI Function Call. A schema describes the structure of the input and output data for a function. In this example, we'll define a simple schema for a `User` object:
+
+```python
+from instructor import OpenAISchema
+
+class UserDetails(OpenAISchema):
+    name: str
+    age: int
+```
+
+In this schema, we define a `UserDetails` class that extends `OpenAISchema`. We declare two fields, `name` and `age`, of type `str` and `int` respectively. 
+
+### Section 2: Adding Additional Prompting
+
+To enhance the performance of the OpenAI language model, you can add additional prompting in the form of docstrings and field descriptions. They can provide context and guide the model on how to process the data.
+
+!!! note Using `patch`
+    these docstrings and fields descriptions are powered by `pydantic.BaseModel` so they'll work via the patching approach as well.
+
+```python hl_lines="5 6"
+from instructor import OpenAISchema
 from pydantic import Field
 
 class UserDetails(OpenAISchema):
-    """User Details"""
-    name: str = Field(..., description="User's name")
-    age: int = Field(..., description="User's age")
+    "Correctly extracted user information"
+    name: str = Field(..., description="User's full name")
+    age: int
+```
+
+In this updated schema, we use the `Field` class from `pydantic` to add descriptions to the `name` field. The description provides information about the field, giving even more context to the language model.
+
+
+!!! note "Code, schema, and prompt"
+     We can run `openai_schema` to see exactly what the API will see, notice how the docstrings, attributes, types, and field descriptions are now part of the schema. This describes on this library's core philosophies.
+
+    ```python hl_lines="2 3"
+    class UserDetails(OpenAISchema):
+        "Correctly extracted user information"
+        name: str = Field(..., description="User's full name")
+        age: int
+
+    UserDetails.openai_schema
+    ```
+
+    ```json hl_lines="3 8"
+    {
+    "name": "UserDetails",
+    "description": "Correctly extracted user information",
+    "parameters": {
+        "type": "object",
+        "properties": {
+        "name": {
+            "description": "User's full name",
+            "type": "string"
+        },
+        "age": {
+            "type": "integer"
+        }
+        },
+        "required": [
+        "age",
+        "name"
+        ]
+    }
+    }
+    ```
+
+### Section 3: Calling the ChatCompletion
+
+With the schema defined, let's proceed with calling the `ChatCompletion` API using the defined schema and messages.
+
+```python hl_lines="11 12 15"
+from instructor import OpenAISchema
+from pydantic import Field
+
+class UserDetails(OpenAISchema):
+    "Correctly extracted user information"
+    name: str = Field(..., description="User's full name")
+    age: int
 
 completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo-0613",
     functions=[UserDetails.openai_schema],
+    function_call={"name": UserDetails.openai_schema["name"]},
     messages=[
-        {"role": "system", "content": "I'm going to ask for user details. Use UserDetails to parse this data."},
+        {"role": "system", "content": "Extract user details from my requests"},
         {"role": "user", "content": "My name is John Doe and I'm 30 years old."},
     ],
 )
-
-user_details = UserDetails.from_response(completion)
-print(user_details)  # UserDetails(name="John Doe", age=30)
 ```
 
-### Example 2.1: Using the Decorator
+In this example, we make a call to the `ChatCompletion` API by providing the model name (`gpt-3.5-turbo-0613`) and a list of messages. The messages consist of a system message and a user message. The system message sets the context by requesting user details, while the user message provides the input with the user's name and age.
 
-The following will also work but we're having issues with propogating type hints
-so language services throw errors for methods like `.openai_schema`. We'd welcome a PR to fix this! 
+Note that we have omitted the additional parameters that can be included in the API request, such as `temperature`, `max_tokens`, and `n`. These parameters can be customized according to your requirements.
+
+### Section 4: Deserializing Back to the Instance
+
+To deserialize the response from the `ChatCompletion` API back into an instance of the `UserDetails` class, we can use the `from_response` method.
+
+```python hl_lines="1"
+user = UserDetails.from_response(completion)
+print(user.name)  # Output: John Doe
+print(user.age)   # Output: 30
+```
+
+By calling `UserDetails.from_response`, we create an instance of the `UserDetails` class using the response from the API call. Subsequently, we can access the extracted user details through the `name` and `age` attributes of the `user` object.
+
+## IDE Support 
+
+Everything is designed for you to get the best developer experience possible, with the best editor support.
+
+Including **autocompletion**:
+
+![autocomplete](docs/img/ide_support.png)
+
+And even **inline errors**
+d
+![errors](docs/img/error2.png)
+
+## OpenAI Schema and Pydantic
+
+This quick start guide provided you with a basic understanding of how to use OpenAI Function Call for schema extraction and function calls. You can now explore more advanced use cases and creative applications of this library.
+
+Since `UserDetails` is a `OpenAISchems` and a `pydantic.BaseModel` you can use inheritance and nesting to create more complex emails while avoiding code duplication
 
 ```python
-from openai_function_call import openai_schema
+class UserDetails(OpenAISchema):
+    name: str = Field(..., description="User's full name")
+    age: int
 
-@openai_schema
-class UserDetails(BaseModel):
-    """User Details"""
-    name: str = Field(..., description="User's name")
-    age: int = Field(..., description="User's age")
+class UserWithAddress(UserDetails):
+    address: str 
+
+class UserWithFriends(UserDetails):
+    best_friend: UserDetails
+    friends: List[UserDetails]
 ```
 
-### Example 3: Using the DSL
+If you have any questions, feel free to leave an issue or reach out to the library's author on [Twitter](https://twitter.com/jxnlco). For a more comprehensive solution with additional features, consider checking out [MarvinAI](https://www.askmarvin.ai/).
 
-```python
-from pprint import pprint
-
-from openai_function_call import OpenAISchema
-from openai_function_call.dsl import ChatCompletion, MultiTask, messages as m
-from openai_function_call.dsl.messages import SystemIdentity, SystemTask, SystemStyle, SystemGuidelines, SystemTips
-
-# Define a subtask you'd like to extract from then,
-# We'll use MultTask to easily map it to a List[Search]
-# so we can extract more than one
-class Search(OpenAISchema):
-    id: int
-    query: str
-
-tasks = (
-    ChatCompletion(name="Acme Inc Email Segmentation", model="gpt-3.5-turbo-0613")
-    | SystemIdentity(identity="World class state of the art agent") # if no identity is provided, this is the default one
-    | SystemTask(task="Segment emails into search queries")
-    | SystemStyle(style="Professional, clear and concise")
-    | SystemGuidelines(guidelines=[
-        'You never swear',
-        'You are polite',
-        'You say please and thank you often.'
-    ])
-    | SystemTips(tips=[
-        "When unsure about the correct segmentation, try to think about the task as a whole",
-        "If acronyms are used expand them to their full form",
-        "Use multiple phrases to describe the same thing"]
-                  )
-    | MultiTask(subtask_class=Search)
-    | m.TaggedMessage(
-        tag="email",
-        content="Can you find the video I sent last week and also the post about dogs",
-    )
-    | m.ChainOfThought()
-)
-# Its important that this just builds you request,
-# all these | operators are overloaded and all we do is compile
-# it to the openai kwargs
-# Also note that the System components are combined sequentially
-# so the order matters!
-assert isinstance(tasks, ChatCompletion)
-pprint(tasks.kwargs, indent=3)
-"""
-{
-    "messages": [
-        {
-            "role": "system",
-            "content": "You are a world class state of the art agent.\n\nYour purpose is to correctly complete this task:
-                        `Segment emails into search queries`.\n\nYour style when answering is professional, clear and concise\n\n
-                        These are the guidelines you consider when completing your task:\n\n* You never swear\n* You are polite\n* You say please and thank you often.\n\nHere are some tips to help you complete the task:\n\n* When unsure about the correct segmentation, try to think about the task as a whole\n* If acronyms are used expand them to their full form\n* Use multiple phrases to describe the same thing"
-        },
-        ...
-        {
-            "role": "user",
-            "content": "<email>Can you find the video I sent last week and also the post about dogs</email>"
-        },
-        {
-            "role": "assistant",
-            "content": "Lets think step by step to get the correct answer:"
-        }
-    ],
-    "functions": [
-        {
-            "name": "MultiSearch",
-            "description": "Correct segmentation of `Search` tasks",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "tasks": {
-                        "description": "Correctly segmented list of `Search` tasks",
-                        "type": "array",
-                        "items": {"$ref": "#/definitions/Search"}
-                    }
-                },
-                "definitions": {
-                    "Search": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "query": {"type": "string"}
-                        },
-                        "required": ["id", "query"]
-                    }
-                },
-                "required": ["tasks"]
-            }
-        }
-    ],
-    "function_call": {"name": "MultiSearch"},
-    "max_tokens": 1000,
-    "temperature": 0.1,
-    "model": "gpt-3.5-turbo-0613"
-"""
-
-# Once we call .create we'll be returned with a multitask object that contains our list of task
-result = tasks.create()
-
-for task in result.tasks:
-    # We can now extract the list of tasks as we could normally
-    assert isinstance(task, Search)
-```
-
-## Advanced Usage
-
-If you want to see more examples checkout the examples folder!
+To see more examples of how we can create interesting models check out some [examples.](examples/index.md)
 
 ## License
 
-This project is licensed under the terms of the MIT license.
-
-For more details, refer to the LICENSE file in the repository.
+This project is licensed under the terms of the MIT License.

@@ -14,7 +14,7 @@ Let's model the problem as breaking down a search request into a list of search 
 ```python
 import enum
 from pydantic import Field
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 class SearchType(str, enum.Enum):
     """Enumeration representing the types of searches that can be performed."""
@@ -50,7 +50,7 @@ The `MultiSearch` class has a single attribute, `tasks`, which is a list of `Sea
 This pattern is so common that we've added a helper function `MultiTask` to makes this simpler 
 
 ```python
-from openai_function_call.dsl import MultiTask
+from instructor.dsl import MultiTask
 
 MultiSearch = MultiTask(Search)
 ```

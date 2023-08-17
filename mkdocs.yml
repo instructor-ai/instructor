@@ -1,8 +1,8 @@
-site_name: OpenAI Function Call Library
+site_name: Instructor (openai_function_call)
 site_description: Enhancing OpenAI function calling with Pydantic 
-repo_name: openai_function_call
-repo_url: https://github.com/jxnl/openai_function_call
-site_url: https://openai-function-call.onrender.com/
+repo_name: instructor
+repo_url: https://github.com/jxnl/instructor
+site_url: https://jxnl.github.io/instructor
 theme:
   name: material
   icon:

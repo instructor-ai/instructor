@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel
 
-from openai_function_call import openai_schema, OpenAISchema
+from instructor import openai_schema, OpenAISchema
 
 
 def test_openai_schema():

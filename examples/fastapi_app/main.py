@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from openai_function_call import OpenAISchema
-import openai_function_call.dsl as dsl
+from instructor import OpenAISchema
+import instructor.dsl as dsl
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="Example Application using openai_function_call")
+app = FastAPI(title="Example Application using instructor")
 
 
 class SearchRequest(BaseModel):
