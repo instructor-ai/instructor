@@ -12,20 +12,6 @@
 
 This library is built to interact with openai's function call api from python code, with python structs / objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
 
-The approach of combining a human prompt and a "response schema" is not necessarily unique; however, it shows great promise. As we have been concentrating on translating user intent into structured data, we have discovered that Python with Pydantic is exceptionally well-suited for this task. 
-
-**OpenAISchema** is based on Python type annotations, and powered by Pydantic.
-
-The key features are:
-
-* **Intuitive to write**: Great support for editors, completions. Spend less time debugging.
-* **Writing prompts as code**: Collocate docstrings and descriptions as part of your prompting.
-* **Extensible**: Bring your own kitchen sink without being weighted down by abstractions.
-
-## Structured Extraction with `openai`
-
-Welcome to the Quick Start Guide for OpenAI Function Call. This guide will walk you through the installation process and provide examples demonstrating the usage of function calls and schemas with OpenAI and Pydantic.
-
 ### Requirements
 
 This library depends on **Pydantic** and **OpenAI** that's all.
@@ -33,9 +19,6 @@ This library depends on **Pydantic** and **OpenAI** that's all.
 ### Installation
 
 To get started with OpenAI Function Call, you need to install it using `pip`. Run the following command in your terminal:
-
-!!! note Requirement
-    Ensure you have Python version 3.9 or above.
 
 ```sh
 $ pip install instructor
