@@ -1,7 +1,7 @@
-site_name: Instructor
+site_name: Instructor (openai_function_call)
 site_description: Enhancing OpenAI function calling with Pydantic 
 repo_name: instructor
-repo_url: https://github.com/jxnl/openai_function_call
+repo_url: https://github.com/jxnl/instructor
 site_url: https://jxnl.github.io/instructor
 theme:
   name: material

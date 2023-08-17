@@ -1,10 +1,17 @@
-# OpenAI Function Call
+# Instructor (openai_function_call)
 
-*OpenAISchema, structured extraction in Python, powered by OpenAI, designed for simplicity, transparency, and control.*
+!!! note "Renaming from openai_function_call"
+    This library used to be called `openai_function_call` simply change the import and you should be good to go!
+
+    ```sh
+    find /path/to/dir -type f -exec sed -i 's/openai_function_call/instructor/g' {} \;
+    ```
+
+*Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control.*
 
 -----
 
-This library is build to interact with openai's function call api from python code, with python objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
+This library is built to interact with openai's function call api from python code, with python structs / objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
 
 The approach of combining a human prompt and a "response schema" is not necessarily unique; however, it shows great promise. As we have been concentrating on translating user intent into structured data, we have discovered that Python with Pydantic is exceptionally well-suited for this task. 
 
