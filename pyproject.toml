@@ -5,8 +5,8 @@ description = "Helper functions that allow us to improve openai's function_call 
 authors = ["Jason <jason@jxnl.co>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "openai_function_call"}]
-repository = "https://github.com/jxnl/openai_function_call"
+packages = [{include = "instructor"}]
+repository = "https://github.com/jxnl/instructor"
 
 [tool.poetry.dependencies]
 python = "^3.9"

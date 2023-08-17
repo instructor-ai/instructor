@@ -1,6 +1,6 @@
 # Pydantic is all you need, for openai function calls.
 
-Check out the [docs](https://openai-function-call.onrender.com/)!
+Check out the [docs](https://jxnl.github.io/instructor)!
 
 We try to provides a powerful and efficient approach to output parsing when interacting with OpenAI's Function Call API. One that is framework agnostic and minimizes any dependencies. It leverages the data validation capabilities of the Pydantic library to handle output parsing in a more structured and reliable manner.
 If you have any feedback, leave an issue or hit me up on [twitter](https://twitter.com/jxnlco).
@@ -18,7 +18,7 @@ Follow me on twitter and consider helping pay for openai tokens!
 Ensure you have Python version 3.9 or above.
 
 ```python
-pip install openai-function-call
+pip install instructor
 ```
 
 ## Contributing
@@ -26,7 +26,7 @@ pip install openai-function-call
 To get started, clone the repository
 
 ```bash
-git clone https://github.com/jxnl/openai_function_call.git
+git clone https://github.com/jxnl/instructor.git
 ```
 
 Next, install the necessary Python packages from the requirements.txt file:
@@ -56,7 +56,7 @@ This module simplifies the interaction with the OpenAI API, enabling a more stru
 
 ```python
 import openai
-from openai_function_call import openai_function
+from instructor import openai_function
 
 @openai_function
 def sum(a:int, b:int) -> int:
@@ -87,7 +87,7 @@ print(result)  # 9
 
 ```python
 import openai
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 from pydantic import Field
 
@@ -115,7 +115,7 @@ The following will also work but we're having issues with propogating type hints
 so language services throw errors for methods like `.openai_schema`. We'd welcome a PR to fix this! 
 
 ```python
-from openai_function_call import openai_schema
+from instructor import openai_schema
 
 @openai_schema
 class UserDetails(BaseModel):
@@ -129,9 +129,9 @@ class UserDetails(BaseModel):
 ```python
 from pprint import pprint
 
-from openai_function_call import OpenAISchema
-from openai_function_call.dsl import ChatCompletion, MultiTask, messages as m
-from openai_function_call.dsl.messages import SystemIdentity, SystemTask, SystemStyle, SystemGuidelines, SystemTips
+from instructor import OpenAISchema
+from instructor.dsl import ChatCompletion, MultiTask, messages as m
+from instructor.dsl.messages import SystemIdentity, SystemTask, SystemStyle, SystemGuidelines, SystemTips
 
 # Define a subtask you'd like to extract from then,
 # We'll use MultTask to easily map it to a List[Search]

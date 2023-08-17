@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 import pytest
 import openai
-from openai_function_call import patch
+from instructor import patch
 
 
 @pytest.mark.skip(reason="Needs openai call")
