@@ -5,7 +5,7 @@ import openai
 from pydantic import Field
 from tenacity import retry, stop_after_attempt
 
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 
 class NodeType(str, enum.Enum):

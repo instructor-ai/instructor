@@ -1,4 +1,4 @@
-from openai_function_call import OpenAISchema, dsl
+from instructor import OpenAISchema, dsl
 from pydantic import Field
 
 

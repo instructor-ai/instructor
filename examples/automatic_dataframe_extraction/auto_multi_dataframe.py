@@ -1,4 +1,4 @@
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 from pydantic import Field
 from typing import List, Any
 import openai

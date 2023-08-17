@@ -1,7 +1,7 @@
 import openai
 
 from pydantic import Field, parse_file_as
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 from generate import Program
 

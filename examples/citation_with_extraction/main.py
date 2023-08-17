@@ -2,7 +2,7 @@ import json
 from typing import Iterable, List
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.params import Depends
-from openai_function_call import MultiTask, OpenAISchema
+from instructor import MultiTask, OpenAISchema
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
@@ -10,7 +10,7 @@ import os
 import openai
 import logging
 
-from openai_function_call.dsl.multitask import MultiTaskBase
+from instructor.dsl.multitask import MultiTaskBase
 
 logger = logging.getLogger(__name__)
 
