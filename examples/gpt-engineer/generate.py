@@ -2,7 +2,7 @@ import openai
 
 from typing import List
 from pydantic import Field
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 
 class File(OpenAISchema):

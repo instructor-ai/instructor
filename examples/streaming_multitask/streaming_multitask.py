@@ -2,7 +2,7 @@ from typing import Iterable
 import openai
 import time
 
-from openai_function_call import MultiTask, OpenAISchema
+from instructor import MultiTask, OpenAISchema
 
 
 class User(OpenAISchema):

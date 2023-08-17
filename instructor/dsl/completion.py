@@ -1,7 +1,7 @@
 import openai
 from typing import List, Union
 from pydantic import BaseModel, Field
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 from .messages import ChainOfThought, Message, MessageRole, SystemMessage
 
 

@@ -20,7 +20,7 @@ Let's start by defining the data structures required for this task: `Fact` and `
 import openai
 from pydantic import Field, BaseModel
 from typing import List
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 
 class Fact(BaseModel):

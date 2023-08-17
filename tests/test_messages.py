@@ -1,5 +1,5 @@
-from openai_function_call.dsl import messages as m
-from openai_function_call.dsl.messages import messages as s
+from instructor.dsl import messages as m
+from instructor.dsl.messages import messages as s
 
 
 def test_create_message():

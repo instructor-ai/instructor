@@ -23,7 +23,7 @@ import enum
 from typing import List
 
 from pydantic import Field
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 
 class QueryType(str, enum.Enum):
@@ -140,7 +140,7 @@ In this example, we demonstrated how to use the OpenAI Function Call `ChatComple
 
 If you want to see multiple versions of this style of code, please visit:
 
-1. [query planning example](https://github.com/jxnl/openai_function_call/blob/main/examples/query_planner_execution/query_planner_execution.py)
-2. [task planning with topo sort](https://github.com/jxnl/openai_function_call/blob/main/examples/task_planner/task_planner_topological_sort.py)
+1. [query planning example](https://github.com/jxnl/instructor/blob/main/examples/query_planner_execution/query_planner_execution.py)
+2. [task planning with topo sort](https://github.com/jxnl/instructor/blob/main/examples/task_planner/task_planner_topological_sort.py)
 
 Feel free to modify the code to fit your specific use case and explore other possibilities of using the OpenAI Function Call model to plan and execute complex workflows.

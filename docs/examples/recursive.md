@@ -13,7 +13,7 @@ We will use Pydantic to define the necessary data structures representing the di
 import enum
 from typing import List
 from pydantic import Field
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 class NodeType(str, enum.Enum):
     """Enumeration representing the types of nodes in a filesystem."""

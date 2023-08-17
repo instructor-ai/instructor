@@ -21,7 +21,7 @@ Defining a task and creating a list of classes is a common enough pattern that w
 By using multitask you get a very convient class with prompts and names automatically defined. You get `from_response` just like any other `OpenAISchema` you're able to extract the list of objects data you want with `MultTask.tasks`.
 
 ```python hl_lines="13"
-from openai_function_call import OpenAISchema, MultiTask
+from instructor import OpenAISchema, MultiTask
 
 class User(OpenAISchema):
     name: str

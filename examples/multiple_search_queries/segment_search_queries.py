@@ -22,7 +22,7 @@ from typing import List
 import openai
 from pydantic import Field
 
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 
 class SearchType(str, enum.Enum):

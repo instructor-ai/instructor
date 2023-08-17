@@ -10,7 +10,7 @@ In this example, we'll demonstrate how to convert a text into dataframes using O
 Let's start by defining the data structures required for this task: `RowData`, `Dataframe`, and `Database`.
 
 ```python
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 from pydantic import Field
 from typing import List, Any
 

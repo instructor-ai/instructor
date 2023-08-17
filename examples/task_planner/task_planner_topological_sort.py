@@ -16,7 +16,7 @@ from typing import List, Generator
 import openai
 from pydantic import Field, BaseModel
 
-from openai_function_call import OpenAISchema
+from instructor import OpenAISchema
 
 
 class TaskResult(BaseModel):

@@ -4,7 +4,7 @@ import modal
 stub = modal.Stub("rag-citation")
 
 image = modal.Image.debian_slim().pip_install(
-    "fastapi", "openai_function_call>=0.2.1", "regex"
+    "fastapi", "instructor>=0.2.1", "regex"
 )
 
 

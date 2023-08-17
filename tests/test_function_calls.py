@@ -3,7 +3,7 @@ from typing import Literal
 import pytest
 from pydantic import BaseModel
 
-from openai_function_call import openai_schema, OpenAISchema, openai_function
+from instructor import openai_schema, OpenAISchema, openai_function
 
 
 def test_openai_schema():
