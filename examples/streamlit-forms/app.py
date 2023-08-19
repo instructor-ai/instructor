@@ -10,6 +10,10 @@ patch()
 
 st.set_page_config(layout="wide")
 
+# add a sidebar to set OPENAI_API_KEY
+st.sidebar.header("OpenAI API Key")
+openai.api_key = st.sidebar.text_input("API Key:", type="password", value=openai.api_key)
+
 
 class SearchType(str, enum.Enum):
     """Enumeration representing the types of searches that can be performed."""
