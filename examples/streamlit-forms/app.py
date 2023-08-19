@@ -12,7 +12,9 @@ st.set_page_config(layout="wide")
 
 # add a sidebar to set OPENAI_API_KEY
 st.sidebar.header("OpenAI API Key")
-openai.api_key = st.sidebar.text_input("API Key:", type="password", value=openai.api_key)
+openai.api_key = st.sidebar.text_input(
+    "API Key:", type="password", value=openai.api_key
+)
 
 
 class SearchType(str, enum.Enum):
@@ -47,7 +49,7 @@ class MultiSearch(BaseModel):
 
 
 st.markdown(
-"""
+    """
 # Structure is all you need 
 
 **Bridge LLMs and existing Software**
@@ -62,17 +64,19 @@ LLMS revolve around using structured tools and apis.
 4. Structured Eval -> Improved performance
 
 This demo will be one of 3 pieces we need to complete the puzzle, labeling structured data.
-""")
+"""
+)
 
 st.markdown("## Task")
 
 st.markdown(
-"""
+    """
 To convert text data into multiple queries we need:
 
 1. System Prompt
 2. Target Schema
-""")
+"""
+)
 
 if st.checkbox("Show the schema"):
     st.code(
@@ -159,15 +163,21 @@ tabs = st.radio(
 )
 
 if tabs == "What it used to be like":
-    st.warning("Many existing tools just treat all data like text, very hard to use and not very actionable")
+    st.warning(
+        "Many existing tools just treat all data like text, very hard to use and not very actionable"
+    )
     st.text_area("Response", value=str(multi_search_obj.model_dump_json()))
 
 if tabs == "What we get today":
-    st.info("Viewing JSON is better but still not very actionable since editing ignores the structure, for example, type should be an enum!")
+    st.info(
+        "Viewing JSON is better but still not very actionable since editing ignores the structure, for example, type should be an enum!"
+    )
     st.json(multi_search_obj.model_dump_json())
 
 elif tabs == "What the future looks like":
-    st.info("With structure we can generate UIs that are more usable and actionable by allowing behavior like adding to a list, updating, deleting, and using types to determine the input fields")
+    st.info(
+        "With structure we can generate UIs that are more usable and actionable by allowing behavior like adding to a list, updating, deleting, and using types to determine the input fields"
+    )
     if st.button("Add a new search"):
         multi_search_obj.searches.append(
             Search(search_title="New Search", type=SearchType.VIDEO)
