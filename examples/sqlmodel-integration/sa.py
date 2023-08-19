@@ -1,5 +1,7 @@
 from datetime import datetime
+import uuid
 from sqlalchemy import (
+    Boolean,
     create_engine,
     Column,
     Integer,
@@ -19,8 +21,11 @@ class Message(Base):
     index = Column(Integer)
     role = Column(String)
     content = Column(String, index=True)
+    function_call = Column(String)
     arguments = Column(String)
+    name = Column(String)
 
+    is_response = Column(Boolean, default=False)
     chatcompletion_id = Column(String, ForeignKey("chatcompletion.id"))
     chatcompletion = relationship(
         "ChatCompletion", back_populates="messages", foreign_keys=[chatcompletion_id]
@@ -56,6 +61,8 @@ class ChatCompletion(Base):
     prompt_tokens = Column(Integer)
     completion_tokens = Column(Integer)
     total_tokens = Column(Integer)
+    functions = Column(String)  # TODO: make this a foreign key
+    function_call = Column(String)  # TODO: make this a foreign key
 
 
 if __name__ == "__main__":
@@ -63,36 +70,5 @@ if __name__ == "__main__":
     sqlite_url = f"sqlite:///{sqlite_file_name}"
 
     engine = create_engine(sqlite_url, echo=True)
-    # create all the tables 
+    # create all the tables
     Base.metadata.create_all(engine)
-
-    with Session(engine) as session:
-        messages = [
-            Message(
-                role="system",
-                content="You are helping a customer with a technical issue.",
-            ),
-            Message(
-                role="user", content="Hello, I am having trouble with my computer."
-            ),
-        ]
-        responses = [
-            Message(
-                role="system",
-                content="Ok, what is the problem?",
-            ),
-            Message(role="user", content="My computer is not turning on."),
-        ]
-        chat_completion = ChatCompletion(
-            id="test2",
-            messages=messages,
-            responses=responses,
-            temperature=0.1,
-            model="gpt-3.5-turbo-0613",
-            max_tokens=1000,
-            prompt_tokens=100,
-            completion_tokens=900,
-            total_tokens=1000,
-        )
-        session.add(chat_completion)
-        session.commit()
