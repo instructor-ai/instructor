@@ -159,12 +159,15 @@ tabs = st.radio(
 )
 
 if tabs == "What it used to be like":
-    st.text_area("Edit", value=str(multi_search_obj.model_dump_json()))
+    st.warning("Many existing tools just treat all data like text, very hard to use and not very actionable")
+    st.text_area("Response", value=str(multi_search_obj.model_dump_json()))
 
 if tabs == "What we get today":
+    st.info("Viewing JSON is better but still not very actionable since editing ignores the structure, for example, type should be an enum!")
     st.json(multi_search_obj.model_dump_json())
 
 elif tabs == "What the future looks like":
+    st.info("With structure we can generate UIs that are more usable and actionable by allowing behavior like adding to a list, updating, deleting, and using types to determine the input fields")
     if st.button("Add a new search"):
         multi_search_obj.searches.append(
             Search(search_title="New Search", type=SearchType.VIDEO)
@@ -174,7 +177,7 @@ elif tabs == "What the future looks like":
     cols = st.columns(len(multi_search_obj.searches))
     for i, search in enumerate(multi_search_obj.searches):
         with cols[i]:
-            with st.form(key=f"{search.search_title}"):
+            with st.form(key=f"query_form_{i}"):
                 title = st.markdown(f"**Searches[{i}]**")
                 query = st.text_input("Query:", value=search.query)
                 types = st.selectbox(
