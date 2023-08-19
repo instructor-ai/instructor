@@ -1,16 +1,18 @@
 import openai
 from pydantic import BaseModel
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 from instructor import OpenAISchema
 from patch_sql import instrument_with_sqlalchemy
+import pytest
 
-engine = create_engine("sqlite:///chat.db", echo=True)
+async_engine = create_async_engine("sqlite+aiosqlite:///chat.db", echo=True)
 
-instrument_with_sqlalchemy(engine)
+instrument_with_sqlalchemy(async_engine)
 
 
-def test_normal():
-    resp = openai.ChatCompletion.create(
+@pytest.mark.asyncio
+async def test_normal():
+    resp = await openai.ChatCompletion.acreate(
         model="gpt-3.5-turbo-0613",
         messages=[
             {
@@ -26,12 +28,13 @@ def test_normal():
     assert "2" in resp.choices[0].message.content
 
 
-def test_schema():
+@pytest.mark.asyncio
+async def test_schema():
     class Add(OpenAISchema):
         a: int
         b: int
 
-    resp = openai.ChatCompletion.create(
+    resp = await openai.ChatCompletion.acreate(
         model="gpt-3.5-turbo-0613",
         functions=[Add.openai_schema],
         function_call={"name": "Add"},
@@ -51,7 +54,8 @@ def test_schema():
     assert add.b == 1
 
 
-def test_response_model():
+@pytest.mark.asyncio
+async def test_response_model():
     from instructor import patch
 
     patch()
@@ -60,7 +64,7 @@ def test_response_model():
         a: int
         b: int
 
-    add: Add = openai.ChatCompletion.create(
+    add: Add = await openai.ChatCompletion.acreate(  # type: ignore
         response_model=Add,
         model="gpt-3.5-turbo-0613",
         messages=[
@@ -69,6 +73,6 @@ def test_response_model():
                 "content": "1+1",
             }
         ],
-    )  # type: ignore
+    )
     assert add.a == 1
     assert add.b == 1

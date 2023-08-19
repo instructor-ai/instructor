@@ -48,13 +48,28 @@ async def async_insert_chat_completion(
         chat = ChatCompletion(
             id=kwargs.pop("id", None),
             messages=[
-                Message(**message, index=ii) for (ii, message) in enumerate(messages)
+                sql_message(index=ii, message=message)
+                for (ii, message) in enumerate(messages)
             ],
-            responses=[Message(**response) for response in responses],
+            responses=[
+                sql_message(index=resp["index"], message=resp.message, is_response=True)
+                for resp in responses
+            ],
             **kwargs,
         )
         session.add(chat)
         await session.commit()
+
+
+def sql_message(index, message, is_response=False):
+    return Message(
+        index=index,
+        content=message.get("content", None),
+        role=message["role"],
+        arguments=message.get("function_call", {}).get("arguments", None),
+        name=message.get("function_call", {}).get("name", None),
+        is_response=is_response,
+    )
 
 
 # Synchronous function to insert chat completion
@@ -72,26 +87,11 @@ def sync_insert_chat_completion(
             functions=json.dumps(kwargs.pop("functions", None)),
             function_call=json.dumps(kwargs.pop("function_call", None)),
             messages=[
-                Message(
-                    index=ii,
-                    content=message["content"],
-                    role=message["role"],
-                    arguments=message.get("function_call", {}).get("arguments", None),
-                    name=message.get("function_call", {}).get("name", None),
-                )
+                sql_message(index=ii, message=message)
                 for (ii, message) in enumerate(messages)
             ],
             responses=[
-                Message(
-                    index=resp["index"],
-                    content=resp.message.get("content", None),
-                    role=resp.message.get("role", None),
-                    arguments=resp.message.get("function_call", {}).get(
-                        "arguments", None
-                    ),
-                    name=resp.message.get("function_call", {}).get("name", None),
-                    is_response=True,
-                )
+                sql_message(index=resp["index"], message=resp.message, is_response=True)
                 for resp in responses
             ],
             **kwargs,
