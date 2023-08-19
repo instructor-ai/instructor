@@ -64,14 +64,14 @@ def patch_with_engine(engine):
     if is_async_engine(engine):
 
         def save_chat_completion(
-            messages: list[dict], responses: list[dict] = [], **kwargs
+            messages: list[dict], responses: list[dict], **kwargs
         ):
             asyncio.run(async_insert_chat_completion(messages, responses, **kwargs))
 
     else:
 
         def save_chat_completion(
-            messages: list[dict], responses: list[dict] = [], **kwargs
+            messages: list[dict], responses: list[dict], **kwargs
         ):
             sync_insert_chat_completion(messages, responses, **kwargs)
 
