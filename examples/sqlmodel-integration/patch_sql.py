@@ -1,3 +1,6 @@
+"""
+TODO: add the created_at, id and called it completion vs response
+"""
 
 try:
     import importlib
@@ -14,9 +17,9 @@ import asyncio
 from functools import wraps
 import openai
 import inspect
-from typing import Callable, Optional
+from typing import Callable
 
-from sa import engine, ChatCompletion, Message
+from sa import ChatCompletion, Message
 
 
 # Check if the engine is asynchronous
@@ -40,6 +43,7 @@ async def async_insert_chat_completion(
 
     async with AsyncSessionLocal() as session:
         chat = ChatCompletion(
+            id=kwargs.pop("id", None),
             messages=[
                 Message(**message, index=ii) for (ii, message) in enumerate(messages)
             ],
@@ -59,10 +63,11 @@ def sync_insert_chat_completion(
 ):
     with Session(engine) as session:
         chat = ChatCompletion(
+            id=kwargs.pop("id", None),
             messages=[
                 Message(**message, index=ii) for (ii, message) in enumerate(messages)
             ],
-            responses=[Message(**response) for response in responses],
+            responses=[Message(index=response["index"], **response["message"], is_response=True) for response in responses],
             **kwargs,
         )
         session.add(chat)
@@ -91,8 +96,9 @@ def patch_with_engine(engine):
             async def new_chatcompletion(*args, **kwargs):  # type: ignore
                 response = await func(*args, **kwargs)
                 save_chat_completion(
-                    messages=response.messages,
+                    messages=kwargs.pop("messages", []),
                     responses=response.choices,
+                    id=response["id"],
                     **response["usage"],
                     **kwargs,
                 )
@@ -104,11 +110,13 @@ def patch_with_engine(engine):
             def new_chatcompletion(*args, **kwargs):
                 response = func(*args, **kwargs)
                 save_chat_completion(
-                    messages=response.messages,
+                    messages=kwargs.pop("messages", []),
                     responses=response.choices,
+                    id=response["id"],
                     **response["usage"],
                     **kwargs,
                 )
+                response._completion_id = response["id"]
                 return response
 
         return new_chatcompletion

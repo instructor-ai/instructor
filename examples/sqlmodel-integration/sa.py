@@ -16,6 +16,7 @@ Base = declarative_base()
 class Message(Base):
     __tablename__ = "message"
     id = Column(Integer, primary_key=True, index=True)
+    index = Column(Integer)
     role = Column(String)
     content = Column(String, index=True)
     arguments = Column(String)
@@ -58,10 +59,11 @@ class ChatCompletion(Base):
 
 
 if __name__ == "__main__":
-    sqlite_file_name = "example.db"
+    sqlite_file_name = "chat.db"
     sqlite_url = f"sqlite:///{sqlite_file_name}"
 
     engine = create_engine(sqlite_url, echo=True)
+    # create all the tables 
     Base.metadata.create_all(engine)
 
     with Session(engine) as session:
@@ -82,10 +84,9 @@ if __name__ == "__main__":
             Message(role="user", content="My computer is not turning on."),
         ]
         chat_completion = ChatCompletion(
-            id="test",
+            id="test2",
             messages=messages,
             responses=responses,
-            finish_reason="stop",
             temperature=0.1,
             model="gpt-3.5-turbo-0613",
             max_tokens=1000,
