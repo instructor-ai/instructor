@@ -1,60 +1,121 @@
+import asyncio
 from functools import wraps
 import openai
 import inspect
 from typing import Callable, Optional, Type, Union
 
-from sqlmodel import Session
-from models import Completion, Messages,
-from sqlmodels import engine, session, ChatCompletion, Message
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 
-def wrap_chatcompletion(func: Callable) -> Callable:
-    is_async = inspect.iscoroutinefunction(func)
-    if is_async:
-
-        @wraps(func)
-        async def new_chatcompletion(
-            *args,
-            **kwargs
-        ):  # type: ignore
-            response = await func(*args, **kwargs)
-
-            with Session(engine) as session:
-                chat_completion = ChatCompletion(
-                    messages=[Message(**message, index=ii) for ii, message in enumerate(kwargs["messages"])],
-                    temperature=kwargs.get("temperature", None),
-                    model=kwargs.get("model", None),
-                    max_tokens=kwargs.get("max_tokens", None),
-                    prompt_tokens=response.usage.get("prompt_tokens", None),
-                    completion_tokens=response.usage.get("completion_tokens", None),
-                    total_tokens=response.usage.get("total_tokens", None),
-                    finish_reason=response.choices[0].finish_reason,
-                    response=Message(**response.choices[0]),
-                )
-                session.add(chat_completion)
+from sa import engine, ChatCompletion, Message
 
 
-            return response
+# Check if the engine is asynchronous
+def is_async_engine(engine) -> bool:
+    return isinstance(engine, AsyncEngine)
+
+
+# Async function to insert chat completion
+async def async_insert_chat_completion(
+    messages: list[dict],
+    responses: list[dict] = [],
+    **kwargs,
+):
+    # Create a custom Session class
+    AsyncSessionLocal = sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+    async with AsyncSessionLocal() as session:
+        chat = ChatCompletion(
+            messages=[
+                Message(**message, index=ii) for (ii, message) in enumerate(messages)
+            ],
+            responses=[Message(**response) for response in responses],
+            **kwargs,
+        )
+        session.add(chat)
+        await session.commit()
+
+
+# Synchronous function to insert chat completion
+def sync_insert_chat_completion(
+    messages: list[dict],
+    responses: list[dict] = [],
+    **kwargs,
+):
+    with Session(engine) as session:
+        chat = ChatCompletion(
+            messages=[
+                Message(**message, index=ii) for (ii, message) in enumerate(messages)
+            ],
+            responses=[Message(**response) for response in responses],
+            **kwargs,
+        )
+        session.add(chat)
+        session.commit()
+
+
+def patch_with_engine(engine):
+    # Check if the engine is asynchronous
+    if is_async_engine(engine):
+
+        def save_chat_completion(
+            messages: list[dict], responses: list[dict] = [], **kwargs
+        ):
+            asyncio.run(async_insert_chat_completion(messages, responses, **kwargs))
 
     else:
 
-        @wraps(func)
-        def new_chatcompletion(
-            *args,
-            **kwargs
+        def save_chat_completion(
+            messages: list[dict], responses: list[dict] = [], **kwargs
         ):
-            response = func(*args, **kwargs)
-            return response
+            sync_insert_chat_completion(messages, responses, **kwargs)
 
-    return new_chatcompletion
+    def add_sql_alchemy(func: Callable) -> Callable:
+        is_async = inspect.iscoroutinefunction(func)
+        if is_async:
+
+            @wraps(func)
+            async def new_chatcompletion(*args, **kwargs):  # type: ignore
+                response = await func(*args, **kwargs)
+                save_chat_completion(
+                    messages=response.messages,
+                    responses=response.responses,
+                    **response["usage"],
+                    **kwargs,
+                )
+                return response
+
+        else:
+
+            @wraps(func)
+            def new_chatcompletion(*args, **kwargs):
+                response = func(*args, **kwargs)
+                save_chat_completion(
+                    messages=response.messages,
+                    responses=response.responses,
+                    **response["usage"],
+                    **kwargs,
+                )
+                return response
+
+        return new_chatcompletion
+
+    return add_sql_alchemy
 
 
 original_chatcompletion = openai.ChatCompletion.create
 original_chatcompletion_async = openai.ChatCompletion.acreate
 
 
-def patch():
-    openai.ChatCompletion.create = wrap_chatcompletion(original_chatcompletion)
-    openai.ChatCompletion.acreate = wrap_chatcompletion(original_chatcompletion_async)
+def patch(engine):
+    patcher = patch_with_engine(engine)
+    openai.ChatCompletion.create = patcher(original_chatcompletion)
+    openai.ChatCompletion.acreate = patcher(original_chatcompletion_async)
 
 
 def unpatch():

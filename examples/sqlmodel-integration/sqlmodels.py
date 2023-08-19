@@ -10,11 +10,11 @@ class Message(SQLModel, table=True):
     content: Optional[str] = Field(default=None, index=True)
     arguments: Optional[str] = None
 
-    chatcompletion_id: Optional[str] = Column(
+    chatcompletion_id: Optional[str] = Field(
         default=None, foreign_key="chatcompletion.id"
+    )
     chatcompletion: Optional["ChatCompletion"] = Relationship(
         back_populates="messages",
-        sa_relationship_kwargs={"foreign_keys": ["chatcompletion_id"]},
     )
 
     response_chatcompletion_id: Optional[str] = Field(
@@ -22,7 +22,6 @@ class Message(SQLModel, table=True):
     )
     response_chatcompletion: Optional["ChatCompletion"] = Relationship(
         back_populates="responses",
-        sa_relationship_kwargs={"foreign_keys": ["response_chatcompletion_id"]},
     )
 
 
@@ -37,6 +36,7 @@ class ChatCompletion(SQLModel, table=True):
     temperature: Optional[float] = None
     model: Optional[str]
     max_tokens: Optional[int] = None
+    n: Optional[int] = None
 
     prompt_tokens: Optional[int] = None
     completion_tokens: Optional[int] = None
