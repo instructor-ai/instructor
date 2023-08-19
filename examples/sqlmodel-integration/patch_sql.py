@@ -1,12 +1,20 @@
+
+try:
+    import importlib
+    importlib.import_module("sqlalchemy")
+except ImportError:
+    import warnings
+    warnings.warn("SQLAlchemy is not installed. Please install it to use this feature.")
+
+from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
+
 import asyncio
 from functools import wraps
 import openai
 import inspect
-from typing import Callable, Optional, Type, Union
-
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Callable, Optional
 
 from sa import engine, ChatCompletion, Message
 
@@ -18,6 +26,7 @@ def is_async_engine(engine) -> bool:
 
 # Async function to insert chat completion
 async def async_insert_chat_completion(
+    engine: AsyncEngine,
     messages: list[dict],
     responses: list[dict] = [],
     **kwargs,
@@ -43,6 +52,7 @@ async def async_insert_chat_completion(
 
 # Synchronous function to insert chat completion
 def sync_insert_chat_completion(
+    engine,
     messages: list[dict],
     responses: list[dict] = [],
     **kwargs,
@@ -63,17 +73,15 @@ def patch_with_engine(engine):
     # Check if the engine is asynchronous
     if is_async_engine(engine):
 
-        def save_chat_completion(
-            messages: list[dict], responses: list[dict], **kwargs
-        ):
-            asyncio.run(async_insert_chat_completion(messages, responses, **kwargs))
+        def save_chat_completion(messages: list[dict], responses: list[dict], **kwargs):
+            asyncio.run(
+                async_insert_chat_completion(engine, messages, responses, **kwargs)
+            )
 
     else:
 
-        def save_chat_completion(
-            messages: list[dict], responses: list[dict], **kwargs
-        ):
-            sync_insert_chat_completion(messages, responses, **kwargs)
+        def save_chat_completion(messages: list[dict], responses: list[dict], **kwargs):
+            sync_insert_chat_completion(engine, messages, responses, **kwargs)
 
     def add_sql_alchemy(func: Callable) -> Callable:
         is_async = inspect.iscoroutinefunction(func)
@@ -84,7 +92,7 @@ def patch_with_engine(engine):
                 response = await func(*args, **kwargs)
                 save_chat_completion(
                     messages=response.messages,
-                    responses=response.responses,
+                    responses=response.choices,
                     **response["usage"],
                     **kwargs,
                 )
@@ -97,7 +105,7 @@ def patch_with_engine(engine):
                 response = func(*args, **kwargs)
                 save_chat_completion(
                     messages=response.messages,
-                    responses=response.responses,
+                    responses=response.choices,
                     **response["usage"],
                     **kwargs,
                 )
