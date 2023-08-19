@@ -120,12 +120,12 @@ original_chatcompletion = openai.ChatCompletion.create
 original_chatcompletion_async = openai.ChatCompletion.acreate
 
 
-def patch(engine):
+def instrument_with_sqlalchemy(engine):
     patcher = patch_with_engine(engine)
     openai.ChatCompletion.create = patcher(original_chatcompletion)
     openai.ChatCompletion.acreate = patcher(original_chatcompletion_async)
 
 
-def unpatch():
+def uninstrument_with_sqlalchemy():
     openai.ChatCompletion.create = original_chatcompletion
     openai.ChatCompletion.acreate = original_chatcompletion_async
