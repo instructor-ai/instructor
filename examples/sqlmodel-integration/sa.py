@@ -21,7 +21,7 @@ class Message(Base):
     index = Column(Integer)
     role = Column(String)
     content = Column(String, index=True)
-    function_call = Column(String)
+    is_function_call = Column(Boolean)
     arguments = Column(String)
     name = Column(String)
 

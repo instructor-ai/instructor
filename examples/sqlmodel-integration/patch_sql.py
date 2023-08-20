@@ -32,6 +32,7 @@ def sql_message(index, message, is_response=False):
         role=message["role"],
         arguments=message.get("function_call", {}).get("arguments", None),
         name=message.get("function_call", {}).get("name", None),
+        is_function_call = "function_call" in message,
         is_response=is_response,
     )
 
@@ -44,10 +45,9 @@ def sync_insert_chat_completion(
     **kwargs,
 ):
     with Session(engine) as session:
-        print(responses[0])
-
         chat = ChatCompletion(
             id=kwargs.pop("id", None),
+            created_at=kwargs.pop("created", None),
             functions=json.dumps(kwargs.pop("functions", None)),
             function_call=json.dumps(kwargs.pop("function_call", None)),
             messages=[
