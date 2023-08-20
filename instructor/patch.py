@@ -86,15 +86,10 @@ Parameters:
     return new_chatcompletion
 
 
-original_chatcompletion = openai.ChatCompletion.create
-original_chatcompletion_async = openai.ChatCompletion.acreate
 
 
 def patch():
+    original_chatcompletion = openai.ChatCompletion.create
+    original_chatcompletion_async = openai.ChatCompletion.acreate
     openai.ChatCompletion.create = wrap_chatcompletion(original_chatcompletion)
     openai.ChatCompletion.acreate = wrap_chatcompletion(original_chatcompletion_async)
-
-
-def unpatch():
-    openai.ChatCompletion.create = original_chatcompletion
-    openai.ChatCompletion.acreate = original_chatcompletion_async
