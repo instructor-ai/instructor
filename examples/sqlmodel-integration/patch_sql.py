@@ -25,42 +25,6 @@ from typing import Callable
 from sa import ChatCompletion, Message
 
 
-# Check if the engine is asynchronous
-def is_async_engine(engine) -> bool:
-    return isinstance(engine, AsyncEngine)
-
-
-# Async function to insert chat completion
-async def async_insert_chat_completion(
-    engine: AsyncEngine,
-    messages: list[dict],
-    responses: list[dict] = [],
-    **kwargs,
-):
-    # Create a custom Session class
-    AsyncSessionLocal = sessionmaker(
-        bind=engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
-
-    async with AsyncSessionLocal() as session:
-        chat = ChatCompletion(
-            id=kwargs.pop("id", None),
-            messages=[
-                sql_message(index=ii, message=message)
-                for (ii, message) in enumerate(messages)
-            ],
-            responses=[
-                sql_message(index=resp["index"], message=resp.message, is_response=True)
-                for resp in responses
-            ],
-            **kwargs,
-        )
-        session.add(chat)
-        await session.commit()
-
-
 def sql_message(index, message, is_response=False):
     return Message(
         index=index,
@@ -101,19 +65,6 @@ def sync_insert_chat_completion(
 
 
 def patch_with_engine(engine):
-    # Check if the engine is asynchronous
-    if is_async_engine(engine):
-
-        def save_chat_completion(messages: list[dict], responses: list[dict], **kwargs):
-            asyncio.run(
-                async_insert_chat_completion(engine, messages, responses, **kwargs)
-            )
-
-    else:
-
-        def save_chat_completion(messages: list[dict], responses: list[dict], **kwargs):
-            sync_insert_chat_completion(engine, messages, responses, **kwargs)
-
     def add_sql_alchemy(func: Callable) -> Callable:
         is_async = inspect.iscoroutinefunction(func)
         if is_async:
@@ -121,7 +72,8 @@ def patch_with_engine(engine):
             @wraps(func)
             async def new_chatcompletion(*args, **kwargs):  # type: ignore
                 response = await func(*args, **kwargs)
-                save_chat_completion(
+                sync_insert_chat_completion(
+                    engine,
                     messages=kwargs.pop("messages", []),
                     responses=response.choices,
                     id=response["id"],
@@ -136,9 +88,8 @@ def patch_with_engine(engine):
             def new_chatcompletion(*args, **kwargs):
                 response = func(*args, **kwargs)
 
-                print(response)
-
-                save_chat_completion(
+                sync_insert_chat_completion(
+                    engine,
                     messages=kwargs.pop("messages", []),
                     responses=response.choices,
                     id=response["id"],
