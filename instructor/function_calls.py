@@ -147,7 +147,12 @@ class OpenAISchema(BaseModel):
             k for k, v in parameters["properties"].items() if not "default" in v
         )
 
-        schema["description"] = docstring.short_description
+        if "description" not in schema:
+            if docstring.short_description:
+                schema["description"] = docstring.short_description
+            else:
+                schema["description"] = f"Correctly extracted `{cls.__name__}` with all " \
+                                        f"the required parameters with correct types"
 
         _remove_a_key(parameters, "additionalProperties")
         _remove_a_key(parameters, "title")

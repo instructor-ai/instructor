@@ -146,7 +146,7 @@ Note that if the `Field` contains a description for a parameter as well as the d
 !!! note "Code, schema, and prompt"
 We can run `openai_schema` to see exactly what the API will see, notice how the docstrings, attributes, types, and parameter descriptions are now part of the schema. This describes on this library's core philosophies.
 
-    ```python hl_lines="2 3"
+    ```python hl_lines="3 5 7"
     class UserDetails(OpenAISchema):
         """
         Correctly extracted user information
@@ -159,7 +159,7 @@ We can run `openai_schema` to see exactly what the API will see, notice how the 
     UserDetails.openai_schema
     ```
 
-    ```json hl_lines="3 8"
+    ```json hl_lines="3 9 13"
     {
     "name": "UserDetails",
     "description": "Correctly extracted user information",
