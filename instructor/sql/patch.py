@@ -3,30 +3,23 @@ TODO: add the created_at, id and called it completion vs response
 """
 
 try:
-    import importlib
-
-    importlib.import_module("sqlalchemy")
+    from sqlalchemy.orm import Session
 except ImportError:
     import warnings
 
     warnings.warn("SQLAlchemy is not installed. Please install it to use this feature.")
 
-from sqlalchemy.ext.asyncio import AsyncEngine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession
-
-import asyncio
-from functools import wraps
 import openai
 import inspect
 import json
 from typing import Callable
+from functools import wraps
 
-from sa import ChatCompletion, Message
+from sa import ChatCompletionSQL, MessageSQL
 
 
-def sql_message(index, message, is_response=False):
-    return Message(
+def message_sql(index, message, is_response=False):
+    return MessageSQL(
         index=index,
         content=message.get("content", None),
         role=message["role"],
@@ -44,18 +37,18 @@ def sync_insert_chat_completion(
     responses: list[dict] = [],
     **kwargs,
 ):
-    with Session(engine) as session:
-        chat = ChatCompletion(
+    with Session(engine) as session:  # type: ignore
+        chat = ChatCompletionSQL(
             id=kwargs.pop("id", None),
             created_at=kwargs.pop("created", None),
             functions=json.dumps(kwargs.pop("functions", None)),
             function_call=json.dumps(kwargs.pop("function_call", None)),
             messages=[
-                sql_message(index=ii, message=message)
+                message_sql(index=ii, message=message)
                 for (ii, message) in enumerate(messages)
             ],
             responses=[
-                sql_message(index=resp["index"], message=resp.message, is_response=True)
+                message_sql(index=resp["index"], message=resp.message, is_response=True)  # type: ignore
                 for resp in responses
             ],
             **kwargs,

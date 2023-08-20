@@ -6,8 +6,8 @@ from instructor import patch
 
 engine = create_engine("sqlite:///chat.db", echo=True)
 instrument_with_sqlalchemy(engine)
-
 patch()
+
 
 class Add(BaseModel):
     a: int
