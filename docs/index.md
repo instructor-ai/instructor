@@ -130,29 +130,20 @@ from instructor import OpenAISchema
 from pydantic import Field
 
 class UserDetails(OpenAISchema):
-    """"
-    Correctly extracted user information
-    :param age: age of the user
-    """
+    "Correctly extracted user information"
     name: str = Field(..., description="User's full name")
     age: int
 ```
 
-In this updated schema, we use the `Field` class from `pydantic` to add descriptions to the `name` field. Moreover, we use the docstring to add information for the parameter `age`. 
-In both cases, the description provides information about the fields, giving even more context to the language model.
-Information from the docstring is extracted using [docstring-parser](https://github.com/rr-/docstring_parser) which supports different docstring styles.
-Note that if the `Field` contains a description for a parameter as well as the docstring, the `Field`'s description is used. 
+In this updated schema, we use the `Field` class from `pydantic` to add descriptions to the `name` field. The description provides information about the field, giving even more context to the language model.
+
 
 !!! note "Code, schema, and prompt"
-We can run `openai_schema` to see exactly what the API will see, notice how the docstrings, attributes, types, and parameter descriptions are now part of the schema. This describes on this library's core philosophies.
+     We can run `openai_schema` to see exactly what the API will see, notice how the docstrings, attributes, types, and field descriptions are now part of the schema. This describes on this library's core philosophies.
 
     ```python hl_lines="2 3"
     class UserDetails(OpenAISchema):
-        """
-        Correctly extracted user information
-        :param name: the user's full name
-        :param age: age of the user
-        """
+        "Correctly extracted user information"
         name: str = Field(..., description="User's full name")
         age: int
 
@@ -167,12 +158,11 @@ We can run `openai_schema` to see exactly what the API will see, notice how the 
         "type": "object",
         "properties": {
         "name": {
-            "type": "string",
-            "description": "User's full name"
+            "description": "User's full name",
+            "type": "string"
         },
         "age": {
             "type": "integer"
-            "description": "age of the user"
         }
         },
         "required": [
@@ -192,11 +182,7 @@ from instructor import OpenAISchema
 from pydantic import Field
 
 class UserDetails(OpenAISchema):
-    """
-    Correctly extracted user information
-    :param name: the user's full name
-    :param age: age of the user
-    """
+    "Correctly extracted user information"
     name: str = Field(..., description="User's full name")
     age: int
 

@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 import json
-from docstring_parser import parse
 from functools import wraps
 from typing import Any, Callable
 from pydantic import BaseModel, validate_arguments
@@ -66,17 +65,12 @@ class openai_function:
     def __init__(self, func: Callable) -> None:
         self.func = func
         self.validate_func = validate_arguments(func)
-        self.docstring = parse(self.func.__doc__)
-
         parameters = self.validate_func.model.model_json_schema()
         parameters["properties"] = {
             k: v
             for k, v in parameters["properties"].items()
             if k not in ("v__duplicate_kwargs", "args", "kwargs")
         }
-        for param in self.docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
-                parameters["properties"][name]["description"] = description
         parameters["required"] = sorted(
             k for k, v in parameters["properties"].items() if not "default" in v
         )
@@ -84,7 +78,7 @@ class openai_function:
         _remove_a_key(parameters, "title")
         self.openai_schema = {
             "name": self.func.__name__,
-            "description": self.docstring.short_description,
+            "description": self.func.__doc__,
             "parameters": parameters,
         }
         self.model = self.validate_func.model
@@ -134,20 +128,17 @@ class OpenAISchema(BaseModel):
             model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
         """
         schema = cls.model_json_schema()
-        docstring = parse(cls.__doc__)
         parameters = {
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
-        for param in docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
-                if "description" not in parameters["properties"][name]:
-                    parameters["properties"][name]["description"] = description
-
         parameters["required"] = sorted(
             k for k, v in parameters["properties"].items() if not "default" in v
         )
 
-        schema["description"] = docstring.short_description
+        if "description" not in schema:
+            schema[
+                "description"
+            ] = f"Correctly extracted `{cls.__name__}` with all the required parameters with correct types"
 
         _remove_a_key(parameters, "additionalProperties")
         _remove_a_key(parameters, "title")

@@ -1,4 +1,3 @@
 openai
 pydantic
 pytest
-docstring-parser
