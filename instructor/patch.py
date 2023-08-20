@@ -4,7 +4,7 @@ import inspect
 from typing import Callable, Optional, Type, Union
 
 from pydantic import BaseModel
-from .function_calls import OpenAISchema, openai_schema
+from .function_calls import OpenAISchema, openai_schema, model_from_response, model_openai_schema
 
 
 def wrap_chatcompletion(func: Callable) -> Callable:
@@ -19,9 +19,9 @@ def wrap_chatcompletion(func: Callable) -> Callable:
         ):  # type: ignore
             if response_model is not None:
                 if not issubclass(response_model, OpenAISchema):
-                    response_model = openai_schema(response_model)
-                kwargs["functions"] = [response_model.openai_schema]
-                kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
+                    schema = model_openai_schema(response_model)
+                kwargs["functions"] = [schema]
+                kwargs["function_call"] = {"name": schema["name"]}
 
             if kwargs.get("stream", False) and response_model is not None:
                 import warnings
@@ -33,7 +33,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
             response = await func(*args, **kwargs)
 
             if response_model is not None:
-                model = response_model.from_response(response)
+                model = model_from_response(response_model, response) 
                 model._raw_response = response
                 return model
             return response
@@ -48,9 +48,9 @@ def wrap_chatcompletion(func: Callable) -> Callable:
         ):
             if response_model is not None:
                 if not issubclass(response_model, OpenAISchema):
-                    response_model = openai_schema(response_model)
-                kwargs["functions"] = [response_model.openai_schema]
-                kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
+                    schema = model_openai_schema(response_model)
+                kwargs["functions"] = [schema]
+                kwargs["function_call"] = {"name": schema["name"]}
 
             if kwargs.get("stream", False) and response_model is not None:
                 import warnings
@@ -61,7 +61,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
             response = func(*args, **kwargs)
             if response_model is not None:
-                model = response_model.from_response(response)
+                model = model_from_response(response_model, response)
                 model._raw_response = response
                 return model
             return response
@@ -91,3 +91,6 @@ def patch():
     original_chatcompletion_async = openai.ChatCompletion.acreate
     openai.ChatCompletion.create = wrap_chatcompletion(original_chatcompletion)
     openai.ChatCompletion.acreate = wrap_chatcompletion(original_chatcompletion_async)
+
+def patch_chatcompletion_with_response_model():
+    patch()

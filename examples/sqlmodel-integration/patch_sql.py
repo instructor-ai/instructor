@@ -11,11 +11,8 @@ except ImportError:
 
     warnings.warn("SQLAlchemy is not installed. Please install it to use this feature.")
 
-from sqlalchemy.ext.asyncio import AsyncEngine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
-import asyncio
 from functools import wraps
 import openai
 import inspect

@@ -22,7 +22,7 @@
 
 import json
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Callable, Type
 from pydantic import BaseModel, validate_arguments
 
 
@@ -118,35 +118,7 @@ class OpenAISchema(BaseModel):
     @classmethod
     @property
     def openai_schema(cls):
-        """
-        Return the schema in the format of OpenAI's schema as jsonschema
-
-        Note:
-            Its important to add a docstring to describe how to best use this class, it will be included in the description attribute and be part of the prompt.
-
-        Returns:
-            model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
-        """
-        schema = cls.model_json_schema()
-        parameters = {
-            k: v for k, v in schema.items() if k not in ("title", "description")
-        }
-        parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() if not "default" in v
-        )
-
-        if "description" not in schema:
-            schema[
-                "description"
-            ] = f"Correctly extracted `{cls.__name__}` with all the required parameters with correct types"
-
-        _remove_a_key(parameters, "additionalProperties")
-        _remove_a_key(parameters, "title")
-        return {
-            "name": schema["title"],
-            "description": schema["description"],
-            "parameters": parameters,
-        }
+        return openai_schema(cls)
 
     @classmethod
     def from_response(cls, completion, throw_error=True):
@@ -181,3 +153,58 @@ def openai_schema(cls):
         pass
 
     return Wrapper
+
+def model_openai_schema(cls: Type[BaseModel]) -> dict:
+    """
+    Return the schema in the format of OpenAI's schema as jsonschema
+
+    Note:
+        Its important to add a docstring to describe how to best use this class, it will be included in the description attribute and be part of the prompt.
+
+    Returns:
+        model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
+    """
+    schema = cls.model_json_schema()
+    parameters = {
+        k: v for k, v in schema.items() if k not in ("title", "description")
+    }
+    parameters["required"] = sorted(
+        k for k, v in parameters["properties"].items() if not "default" in v
+    )
+
+    if "description" not in schema:
+        schema[
+            "description"
+        ] = f"Correctly extracted `{cls.__name__}` with all the required parameters with correct types"
+
+    _remove_a_key(parameters, "additionalProperties")
+    _remove_a_key(parameters, "title")
+    return {
+        "name": schema["title"],
+        "description": schema["description"],
+        "parameters": parameters,
+    }
+
+def model_from_response(cls: BaseModel, completion, throw_error=True):
+    """Execute the function from the response of an openai chat completion
+
+    Parameters:
+        completion (openai.ChatCompletion): The response from an openai chat completion
+        throw_error (bool): Whether to throw an error if the function call is not detected
+
+    Returns:
+        cls (OpenAISchema): An instance of the class
+    """
+    message = completion.choices[0].message
+    schema = model_openai_schema(cls)
+
+    if throw_error:
+        assert "function_call" in message, "No function call detected"
+        assert (
+            message["function_call"]["name"] == schema["name"]
+        ), "Function name does not match"
+
+    function_call = message["function_call"]
+    arguments = json.loads(function_call["arguments"], strict=False)
+
+    return cls(**arguments)

@@ -66,7 +66,7 @@ class ChatCompletion(Base):
 
 
 if __name__ == "__main__":
-    sqlite_file_name = "chat.db"
+    sqlite_file_name = "openai.db"
     sqlite_url = f"sqlite:///{sqlite_file_name}"
 
     engine = create_engine(sqlite_url, echo=True)
