@@ -1,19 +1,11 @@
-"""
-TODO: add the created_at, id and called it completion vs response
-"""
-
 try:
-    import importlib
-
-    importlib.import_module("sqlalchemy")
+    from sqlalchemy.orm import Session
 except ImportError:
     import warnings
 
-    warnings.warn("SQLAlchemy is not installed. Please install it to use this feature.")
+    warnings.warn("SQLAlchemy is not installed. Please install it to use this feature `pip install sqlalchemy`")
 
-from sqlalchemy import Engine
-from sqlalchemy.orm import Session
-
+import time
 from functools import wraps
 import openai
 import inspect
@@ -42,18 +34,19 @@ def sync_insert_chat_completion(
     responses: list[dict] = [],
     **kwargs,
 ):
-    with Session(engine) as session:
+    with Session(engine) as session: 
         chat = ChatCompletion(
             id=kwargs.pop("id", None),
             created_at=kwargs.pop("created", None),
             functions=json.dumps(kwargs.pop("functions", None)),
             function_call=json.dumps(kwargs.pop("function_call", None)),
+            latency_ms=kwargs.pop("latency_ms", None),
             messages=[
                 sql_message(index=ii, message=message)
                 for (ii, message) in enumerate(messages)
             ],
             responses=[
-                sql_message(index=resp["index"], message=resp.message, is_response=True)
+                sql_message(index=resp["index"], message=resp.message, is_response=True) # type: ignore
                 for resp in responses
             ],
             **kwargs,
@@ -69,11 +62,15 @@ def patch_with_engine(engine):
 
             @wraps(func)
             async def new_chatcompletion(*args, **kwargs):  # type: ignore
+
+                start_ms = time.time()
                 response = await func(*args, **kwargs)
+                latency_ms = round((time.time() - start_ms) * 1000)
                 sync_insert_chat_completion(
                     engine,
                     messages=kwargs.pop("messages", []),
                     responses=response.choices,
+                    latency_ms=latency_ms,
                     id=response["id"],
                     **response["usage"],
                     **kwargs,
@@ -84,17 +81,19 @@ def patch_with_engine(engine):
 
             @wraps(func)
             def new_chatcompletion(*args, **kwargs):
+                start_ms = time.time()
                 response = func(*args, **kwargs)
+                latency_ms = round((time.time() - start_ms) * 1000)
 
                 sync_insert_chat_completion(
                     engine,
                     messages=kwargs.pop("messages", []),
                     responses=response.choices,
                     id=response["id"],
+                    latency_ms=latency_ms,
                     **response["usage"],
                     **kwargs,
                 )
-                response._completion_id = response["id"]
                 return response
 
         return new_chatcompletion

@@ -60,6 +60,7 @@ class ChatCompletion(Base):
     prompt_tokens = Column(Integer)
     completion_tokens = Column(Integer)
     total_tokens = Column(Integer)
+    latency_ms = Column(Integer)
     functions = Column(String)  # TODO: make this a foreign key
     function_call = Column(String)  # TODO: make this a foreign key
 
