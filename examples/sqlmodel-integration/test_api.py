@@ -2,11 +2,11 @@ import openai
 from pydantic import BaseModel
 from sqlalchemy import create_engine
 from instructor import OpenAISchema
-from patch_sql import instrument_with_sqlalchemy
+from patch_sql import instrument_chat_completion_sa
 
 engine = create_engine("sqlite:///chat.db", echo=True)
 
-instrument_with_sqlalchemy(engine)
+instrument_chat_completion_sa(engine)
 
 
 def test_normal():

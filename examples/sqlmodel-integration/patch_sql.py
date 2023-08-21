@@ -11,6 +11,7 @@ except ImportError:
 
     warnings.warn("SQLAlchemy is not installed. Please install it to use this feature.")
 
+from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
 from functools import wraps
@@ -101,7 +102,7 @@ def patch_with_engine(engine):
     return add_sql_alchemy
 
 
-def instrument_with_sqlalchemy(engine):
+def instrument_chat_completion_sa(engine):
     patcher = patch_with_engine(engine)
     original_chatcompletion = openai.ChatCompletion.create
     original_chatcompletion_async = openai.ChatCompletion.acreate

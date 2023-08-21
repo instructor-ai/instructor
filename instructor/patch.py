@@ -4,7 +4,7 @@ import inspect
 from typing import Callable, Optional, Type, Union
 
 from pydantic import BaseModel
-from .function_calls import OpenAISchema, openai_schema, model_from_response, model_openai_schema
+from .function_calls import OpenAISchema, model_from_response, model_openai_schema
 
 
 def wrap_chatcompletion(func: Callable) -> Callable:
@@ -20,8 +20,8 @@ def wrap_chatcompletion(func: Callable) -> Callable:
             if response_model is not None:
                 if not issubclass(response_model, OpenAISchema):
                     schema = model_openai_schema(response_model)
-                kwargs["functions"] = [schema]
-                kwargs["function_call"] = {"name": schema["name"]}
+                    kwargs["functions"] = [schema]
+                    kwargs["function_call"] = {"name": schema["name"]}
 
             if kwargs.get("stream", False) and response_model is not None:
                 import warnings
@@ -34,6 +34,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
             if response_model is not None:
                 model = model_from_response(response_model, response) 
+                model.completion_id = response["id"]
                 model._raw_response = response
                 return model
             return response
@@ -49,8 +50,8 @@ def wrap_chatcompletion(func: Callable) -> Callable:
             if response_model is not None:
                 if not issubclass(response_model, OpenAISchema):
                     schema = model_openai_schema(response_model)
-                kwargs["functions"] = [schema]
-                kwargs["function_call"] = {"name": schema["name"]}
+                    kwargs["functions"] = [schema]
+                    kwargs["function_call"] = {"name": schema["name"]}
 
             if kwargs.get("stream", False) and response_model is not None:
                 import warnings
@@ -62,6 +63,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
             response = func(*args, **kwargs)
             if response_model is not None:
                 model = model_from_response(response_model, response)
+                model.completion_id = response["id"]
                 model._raw_response = response
                 return model
             return response

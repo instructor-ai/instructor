@@ -1,6 +1,6 @@
 import openai
 
-from patch_sql import instrument_with_sqlalchemy
+from patch_sql import instrument_chat_completion_sa, instrument_with_sa_engine
 from instructor.patch import patch_chatcompletion_with_response_model
 
 from typing import Optional
@@ -11,9 +11,7 @@ from sqlalchemy import create_engine
 # SQLAlchemy allows you to support any database!
 engine = create_engine("sqlite:///openai.db", echo=True)
 
-# This saves all completions and messages into the database
-# Allowing you to own your entire LLM observability (and data)
-instrument_with_sqlalchemy(engine)
+instrument_with_sa_engine(engine)
 
 # This adds a response_model parameter to the ChatCompletion.careate method
 patch_chatcompletion_with_response_model()
@@ -22,8 +20,18 @@ patch_chatcompletion_with_response_model()
 # Instead of Pydantic, you can use SQLModel!
 class UserDetails(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    completion_id: Optional[str] = Field(default=None)
     name: str
     age: int
+
+    def save(self):
+        with Session(engine) as session:
+            
+            if hasattr(self, "_raw_response"):
+                self.completion_id = self._raw_response["id"]
+
+            session.add(self)
+            session.commit()
 
 
 resp: UserDetails = openai.ChatCompletion.create(
@@ -37,7 +45,4 @@ resp: UserDetails = openai.ChatCompletion.create(
     ],
 )  # type: ignore
 
-# Hopefully this can be automatically done in the future
-with Session(engine) as session:
-    session.add(resp)
-    session.commit()
+resp.save()

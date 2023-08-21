@@ -1,5 +1,4 @@
 from datetime import datetime
-import uuid
 from sqlalchemy import (
     Boolean,
     create_engine,
@@ -10,7 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
 )
-from sqlalchemy.orm import declarative_base, relationship, Session
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
