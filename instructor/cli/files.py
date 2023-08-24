@@ -88,7 +88,7 @@ def download(
 @app.command(
     help="Delete a file from OpenAI's servers",
 )
-def delete(file_id: str = typer.Argument(help="The ID of the file to delete")):
+def delete(file_id: str = typer.Argument(..., help="ID of the file to delete")):
     with console.status(
         f"[bold red]Deleting file {file_id}...", spinner="dots"
     ) as status:

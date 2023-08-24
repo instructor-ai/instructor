@@ -1,6 +1,6 @@
 import typer
-import jobs
-import files
+import instructor.cli.jobs as jobs
+import instructor.cli.files as files
 
 app = typer.Typer(
     name="instructor-ft",
@@ -9,6 +9,3 @@ app = typer.Typer(
 
 app.add_typer(jobs.app, name="jobs", help="Monitor and create fine tuning jobs")
 app.add_typer(files.app, name="files", help="Manage files on OpenAI's servers")
-
-if __name__ == "__main__":
-    app()
