@@ -99,11 +99,24 @@ def watch(
 def create_from_id(
     id: str = typer.Argument(..., help="ID of the existing fine-tuning job"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    validation_file_id: str = typer.Option(
+        default=None, help="ID of the validation file to use for fine-tuning"
+    ),
+    suffix: str = typer.Option(
+        "fine-tune", help="Suffix for model up to 40 characters"
+    ),
+    n_epochs: int = typer.Option(3, help="Number of epochs to train for"),
 ):
     with console.status(
         f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
     ) as status:
-        job = openai.FineTuningJob.create(training_file=id, model=model)
+        job = openai.FineTuningJob.create(
+            training_file=id,
+            model=model,
+            suffix=suffix,
+            hyperparameters={"n_epochs": n_epochs},
+            validation_file_id=validation_file_id,
+        )
         console.log(f"[bold green]Fine-tuning job created with ID: {job.id}")  # type: ignore
     watch(limit=5, poll=2, screen=False)
 
@@ -114,6 +127,10 @@ def create_from_id(
 def create_from_file(
     file: str = typer.Argument(..., help="Path to the file for fine-tuning"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    suffix: str = typer.Option(
+        "fine-tune", help="Suffix for model up to 40 characters"
+    ),
+    n_epochs: int = typer.Option(3, help="Number of epochs to train for"),
     poll: int = typer.Option(2, help="Polling interval in seconds"),
 ):
     with open(file, "rb") as file:
@@ -132,7 +149,12 @@ def create_from_file(
 
             time.sleep(poll)
 
-    job = openai.FineTuningJob.create(training_file=file_id, model=model)
+    job = openai.FineTuningJob.create(
+        training_file=file_id,
+        model=model,
+        suffix=suffix,
+        hyperparameters={"n_epochs": n_epochs},
+    )
     console.log(
         f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id}"
     )
