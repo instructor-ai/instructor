@@ -12,7 +12,8 @@ repository = "https://github.com/jxnl/instructor"
 python = "^3.9"
 openai = "^0.27.8"
 pydantic = "^2.0.2"
-typer = "^0.4.0"  # Add this line
+docstring-parser = "^0.15"
+typer = "^0.4.0" 
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"
