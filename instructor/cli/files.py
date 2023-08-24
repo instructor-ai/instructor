@@ -18,7 +18,6 @@ console = Console()
 def generate_file_table(files: List[openai.File]) -> Table:
     table = Table(
         title="OpenAI Files",
-        caption="Automatically refreshes every 5 seconds, press Ctrl+C to exit",
     )
     table.add_column("File ID", style="dim")
     table.add_column("Size (bytes)", justify="right")
