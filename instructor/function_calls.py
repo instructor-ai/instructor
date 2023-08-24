@@ -107,7 +107,7 @@ class openai_function:
         Returns:
             result (any): result of the function call
         """
-        message = completion.choices[0].message
+        message = completion['choices'][0]['message']
 
         if throw_error:
             assert "function_call" in message, "No function call detected"
@@ -173,7 +173,7 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-        message = completion.choices[0].message
+        message = completion['choices'][0]['message']
 
         if throw_error:
             assert "function_call" in message, "No function call detected"
