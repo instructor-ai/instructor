@@ -75,7 +75,9 @@ class openai_function:
             if k not in ("v__duplicate_kwargs", "args", "kwargs")
         }
         for param in self.docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
+            if (name := param.arg_name) in parameters["properties"] and (
+                description := param.description
+            ):
                 parameters["properties"][name]["description"] = description
         parameters["required"] = sorted(
             k for k, v in parameters["properties"].items() if not "default" in v
@@ -107,7 +109,7 @@ class openai_function:
         Returns:
             result (any): result of the function call
         """
-        message = completion['choices'][0]['message']
+        message = completion["choices"][0]["message"]
 
         if throw_error:
             assert "function_call" in message, "No function call detected"
@@ -139,7 +141,9 @@ class OpenAISchema(BaseModel):
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
         for param in docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
+            if (name := param.arg_name) in parameters["properties"] and (
+                description := param.description
+            ):
                 if "description" not in parameters["properties"][name]:
                     parameters["properties"][name]["description"] = description
 
@@ -151,8 +155,10 @@ class OpenAISchema(BaseModel):
             if docstring.short_description:
                 schema["description"] = docstring.short_description
             else:
-                schema["description"] = f"Correctly extracted `{cls.__name__}` with all " \
-                                        f"the required parameters with correct types"
+                schema["description"] = (
+                    f"Correctly extracted `{cls.__name__}` with all "
+                    f"the required parameters with correct types"
+                )
 
         _remove_a_key(parameters, "additionalProperties")
         _remove_a_key(parameters, "title")
@@ -173,7 +179,7 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-        message = completion['choices'][0]['message']
+        message = completion["choices"][0]["message"]
 
         if throw_error:
             assert "function_call" in message, "No function call detected"

@@ -47,7 +47,7 @@ def test_no_docstring():
 def test_openai_function():
     @openai_function
     def get_current_weather(
-            location: str, format: Literal["celsius", "fahrenheit"] = "celsius"
+        location: str, format: Literal["celsius", "fahrenheit"] = "celsius"
     ):
         """
         Gets the current weather in a given location, use this function for any questions related to the weather
@@ -63,7 +63,7 @@ def test_openai_function():
 
     @openai_function
     def get_current_weather_no_format_docstring(
-            location: str, format: Literal["celsius", "fahrenheit"] = "celsius"
+        location: str, format: Literal["celsius", "fahrenheit"] = "celsius"
     ):
         """
         Gets the current weather in a given location, use this function for any questions related to the weather
@@ -77,13 +77,11 @@ def test_openai_function():
     scheme_missing_param = get_current_weather_no_format_docstring.openai_schema
     assert (
         scheme_missing_param["parameters"]["properties"]["location"]["description"]
-        ==
-        "The city to get the weather, e.g. San Francisco. Guess the location from user messages"
+        == "The city to get the weather, e.g. San Francisco. Guess the location from user messages"
     )
-    assert (
-        scheme_missing_param["parameters"]["properties"]["format"]["enum"]
-        ==
-        ["celsius", "fahrenheit"]
-    )
+    assert scheme_missing_param["parameters"]["properties"]["format"]["enum"] == [
+        "celsius",
+        "fahrenheit",
+    ]
     with pytest.raises(KeyError, match="description"):
         scheme_missing_param["parameters"]["properties"]["format"]["description"]

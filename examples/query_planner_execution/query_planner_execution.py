@@ -138,7 +138,7 @@ def query_planner(question: str, plan=False) -> QueryPlan:
             max_tokens=1000,
         )
 
-        messages.append(completion['choices'][0]['message'])
+        messages.append(completion["choices"][0]["message"])
 
         messages.append(
             {

@@ -12,6 +12,7 @@ class UserExtract(BaseModel):
     name: str
     age: int
 
+
 user: UserExtract = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     response_model=UserExtract,
