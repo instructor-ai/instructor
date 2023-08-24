@@ -1,0 +1,155 @@
+from typing import List
+import openai
+import typer
+import time
+
+from rich.live import Live
+from rich.table import Table
+from rich.console import Console
+from datetime import datetime
+
+app = typer.Typer()
+console = Console()
+
+
+def generate_table(jobs):
+    # Sorting the jobs by creation time
+    jobs = sorted(jobs, key=lambda x: x["created_at"], reverse=True)
+
+    table = Table(
+        title="OpenAI Fine Tuning Job Monitoring",
+        caption="Automatically refreshes every 5 seconds, press Ctrl+C to exit",
+    )
+
+    table.add_column("Job ID", style="dim")
+    table.add_column("Status")
+    table.add_column("Creation Time", justify="right")
+    table.add_column("Completion Time", justify="right")
+    table.add_column("Model Name")
+    table.add_column("File ID")
+    table.add_column("Epochs")
+    table.add_column("Base Model")
+
+    for job in jobs:
+        status_emoji = {
+            "running": "⏳",
+            "succeeded": "✅",
+            "failed": "❌",
+            "cancelled": "🚫",
+        }.get(job["status"], "❓")
+
+        finished_at = (
+            str(datetime.fromtimestamp(job["finished_at"]))
+            if job["finished_at"]
+            else "N/A"
+        )
+
+        table.add_row(
+            job["id"],
+            f"{status_emoji} [{status_color(job['status'])}]{job['status']}[/]",
+            str(datetime.fromtimestamp(job["created_at"])),
+            finished_at,
+            job["fine_tuned_model"],
+            job["training_file"],
+            str(job["hyperparameters"]["n_epochs"]),
+            job["model"],
+        )
+
+    return table
+
+
+def status_color(status: str) -> str:
+    return {"running": "yellow", "succeeded": "green", "failed": "red"}.get(
+        status, "white"
+    )
+
+
+def get_jobs(limit: int = 5) -> List[openai.FineTuningJob]:
+    return openai.FineTuningJob.list(limit=limit)["data"]
+
+
+def get_file_status(file_id: str) -> str:
+    response = openai.File.retrieve(file_id)
+    return response["status"]
+
+
+@app.command(
+    name="list",
+    help="Monitor the status of the most recent fine-tuning jobs.",
+)
+def watch(
+    limit: int = typer.Option(5, help="Limit the number of jobs to monitor"),
+    poll: int = typer.Option(5, help="Polling interval in seconds"),
+    screen: bool = typer.Option(False, help="Enable or disable screen output"),
+):
+    """
+    Monitor the status of the most recent fine-tuning jobs.
+    """
+    jobs = get_jobs(limit=limit)
+    with Live(generate_table(jobs), refresh_per_second=2, screen=screen) as live_table:
+        while True:
+            jobs = get_jobs(limit=limit)
+            live_table.update(generate_table(jobs))
+            time.sleep(poll)
+
+
+@app.command(
+    help="Create a fine-tuning job from an existing ID.",
+)
+def create_from_id(
+    id: str = typer.Argument(..., help="ID of the existing fine-tuning job"),
+    model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+):
+    with console.status(
+        f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
+    ) as status:
+        job = openai.FineTuningJob.create(training_file=id, model=model)
+        console.log(f"[bold green]Fine-tuning job created with ID: {job.id}")  # type: ignore
+    watch(limit=5, poll=2, screen=False)
+
+
+@app.command(
+    help="Create a fine-tuning job from a file.",
+)
+def create_from_file(
+    file: str = typer.Argument(..., help="Path to the file for fine-tuning"),
+    model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    poll: int = typer.Option(2, help="Polling interval in seconds"),
+):
+    with open(file, "rb") as file:
+        response = openai.File.create(file=file, purpose="fine-tune")
+
+    file_id = response["id"]
+
+    with console.status(f"Monitoring upload: {file_id} before finetuning...") as status:
+        status.spinner_style = "dots"
+        while True:
+            file_status = get_file_status(file_id)
+
+            if file_status == "processed":
+                console.log(f"[bold green]File {file_id} uploaded successfully!")
+                break
+
+            time.sleep(poll)
+
+    job = openai.FineTuningJob.create(training_file=file_id, model=model)
+    console.log(
+        f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id}"
+    )
+    watch(limit=5, poll=poll, screen=False)
+
+
+@app.command(
+    help="Cancel a fine-tuning job.",
+)
+def cancel(id: str = typer.Argument(..., help="ID of the fine-tuning job to cancel")):
+    with console.status(f"[bold red]Cancelling job {id}...", spinner="dots") as status:
+        try:
+            openai.FineTuningJob.cancel(id)
+            console.log(f"[bold red]Job {id} cancelled successfully!")
+        except Exception as e:
+            console.log(f"[bold red]Error cancelling job {id}: {e}")
+
+
+if __name__ == "__main__":
+    app()
