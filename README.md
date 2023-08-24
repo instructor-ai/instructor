@@ -126,13 +126,14 @@ In this updated schema, we use the `Field` class from `pydantic` to add descript
 ```python hl_lines="2 3"
 class UserDetails(OpenAISchema):
     "Correctly extracted user information"
+
     name: str = Field(..., description="User's full name")
     age: int
 
 UserDetails.openai_schema
 ```
 
-```json hl_lines="3 8"
+```json
 {
 "name": "UserDetails",
 "description": "Correctly extracted user information",
@@ -204,7 +205,7 @@ Including **autocompletion**:
 ![autocomplete](docs/img/ide_support.png)
 
 And even **inline errors**
-d
+
 ![errors](docs/img/error2.png)
 
 ## OpenAI Schema and Pydantic

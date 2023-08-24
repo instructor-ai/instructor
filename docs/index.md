@@ -146,59 +146,56 @@ Note that if the `Field` contains a description for a parameter as well as the d
 !!! note "Code, schema, and prompt"
 We can run `openai_schema` to see exactly what the API will see, notice how the docstrings, attributes, types, and parameter descriptions are now part of the schema. This describes on this library's core philosophies.
 
-    ```python hl_lines="3 5 7"
-    class UserDetails(OpenAISchema):
-        """
-        Correctly extracted user information
-        :param name: the user's full name
-        :param age: age of the user
-        """
-        name: str = Field(..., description="User's full name")
-        age: int
-
-    UserDetails.openai_schema
-    ```
-
-    ```json hl_lines="3 9 13"
-    {
-    "name": "UserDetails",
-    "description": "Correctly extracted user information",
-    "parameters": {
-        "type": "object",
-        "properties": {
-        "name": {
-            "type": "string",
-            "description": "User's full name"
-        },
-        "age": {
-            "type": "integer"
-            "description": "age of the user"
-        }
-        },
-        "required": [
-        "age",
-        "name"
-        ]
-    }
-    }
-    ```
-
-### Section 3: Calling the ChatCompletion
-
-With the schema defined, let's proceed with calling the `ChatCompletion` API using the defined schema and messages.
-
-```python hl_lines="11 12 15"
-from instructor import OpenAISchema
-from pydantic import Field
-
+```python
 class UserDetails(OpenAISchema):
     """
     Correctly extracted user information
+
     :param name: the user's full name
     :param age: age of the user
     """
     name: str = Field(..., description="User's full name")
     age: int
+
+UserDetails.openai_schema
+```
+
+```json hl_lines="3 9 13"
+{
+"name": "UserDetails",
+"description": "Correctly extracted user information",
+"parameters": {
+    "type": "object",
+    "properties": {
+    "name": {
+        "type": "string",
+        "description": "User's full name"
+    },
+    "age": {
+        "type": "integer"
+        "description": "age of the user"
+    }
+    },
+    "required": [
+    "age",
+    "name"
+    ]
+}
+}
+```
+
+### Section 3: Calling the ChatCompletion
+
+With the schema defined, let's proceed with calling the `ChatCompletion` API using the defined schema and messages.
+
+```python hl_lines="11 12"
+from instructor import OpenAISchema
+from pydantic import Field
+
+class UserDetails(OpenAISchema):
+    name: str = Field(..., description="User's full name")
+    age: int
+
 
 completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo-0613",
@@ -219,8 +216,9 @@ Note that we have omitted the additional parameters that can be included in the 
 
 To deserialize the response from the `ChatCompletion` API back into an instance of the `UserDetails` class, we can use the `from_response` method.
 
-```python hl_lines="1"
+```python
 user = UserDetails.from_response(completion)
+
 print(user.name)  # Output: John Doe
 print(user.age)   # Output: 30
 ```
