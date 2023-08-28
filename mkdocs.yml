@@ -49,7 +49,8 @@ nav:
       - Philosophy: 'philosophy.md'
   - Use Cases:
       - 'Overview': 'examples/index.md'
-      - 'Classification': 'examples/classification.md'
+      - 'Classifying Text': 'examples/classification.md'
+      - 'Extracting Action Items': 'examples/action_items.md'
       - 'Segmented Search': 'examples/search.md'
       - 'One shot Query Planning': 'examples/planning-tasks.md'
       - 'Recursive Schemas': 'examples/recursive.md'

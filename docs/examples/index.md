@@ -5,6 +5,7 @@ Welcome to the examples page. Here you will find emails that highlight a range o
 ## Quick Links 
 
 - [Classifying Text](classification.md)
+- [Identifying Action Items with dependencies](action_items.md)
 - [Segmenting search requests into multiple search queries](search.md)
 - [One shot query planning](planning-tasks.md)
 - [Using recursive schema](recursive.md)
@@ -17,6 +18,8 @@ Welcome to the examples page. Here you will find emails that highlight a range o
 In this section, you will find examples demonstrating different aspects of our project's functionality.
 
 - [Classfying Text](classification.md): Doing single and multi class prediction using enums.
+
+- [Identifying Action Items with dependencies](action_items.md): Scanning a transcript to generate action items with subtasks.
 
 - [Segmented Search](search.md): Learn how to perform segmented search using a multi task definition using function calling
 
