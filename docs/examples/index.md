@@ -4,6 +4,7 @@ Welcome to the examples page. Here you will find emails that highlight a range o
 
 ## Quick Links 
 
+- [Classifying Text](classification.md)
 - [Segmenting search requests into multiple search queries](search.md)
 - [One shot query planning](planning-tasks.md)
 - [Using recursive schema](recursive.md)
@@ -15,7 +16,9 @@ Welcome to the examples page. Here you will find emails that highlight a range o
 
 In this section, you will find examples demonstrating different aspects of our project's functionality.
 
-- [Segmented Search](search.md): Learn how to perform segmented search using a multi task definition using function calling 
+- [Classfying Text](classification.md): Doing single and multi class prediction using enums.
+
+- [Segmented Search](search.md): Learn how to perform segmented search using a multi task definition using function calling
 
 - [One shot Query Planning](planning-tasks.md): Explore how to plan and decompose a complex query into multiple subqueries in a single request.
 
