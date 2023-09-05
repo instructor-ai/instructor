@@ -1,5 +1,7 @@
 # Tips for Structure Engineering in Python
 
+The intersection between language models and structured data is a hotbed of untapped potential. With function calling and instructor, a new paradigm has emerged, one that focuses on lightweight, flexible solutions for leveraging language models to produce structured data in Python. Whether you're defining complex relationships between entities or reusing components across different contexts, these tips are designed to align seamlessly with the instructor approach.
+
 ## Modular Chain of Thought
 
 This approach to "chain of thought" improves data quality but can have modular components rather than global CoT.
@@ -20,7 +22,7 @@ class UserDetail(BaseModel):
 
 ## Utilize Optional Attributes
 
-For optional fields, use Python's **`Optional`** type and set a default value to avoid the model filling in undesired defaults like `''` for strings that are missing
+Use Python's Optional type and set a default value to prevent undesired defaults like empty strings.
 
 ```python hl_lines="6"
 from typing import Optional
