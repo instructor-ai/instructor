@@ -4,7 +4,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/jxnl/instructor.svg)](https://github.com/jxnl/instructor/network)
 [![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
 [![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://link-to-your-documentation)
+[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 
