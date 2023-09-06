@@ -1,6 +1,14 @@
 # Tips for Structure Engineering in Python
 
-The intersection between language models and structured data is a hotbed of untapped potential. With function calling and instructor, a new paradigm has emerged, one that focuses on lightweight, flexible solutions for leveraging language models to produce structured data in Python. Whether you're defining complex relationships between entities or reusing components across different contexts, these tips are designed to align seamlessly with the instructor approach.
+The overarching theme is to make the models as self-descriptive, modular, and flexible as possible, while maintaining data integrity and ease of use.
+
+- **Modularity**: Design self-contained components for reuse.
+- **Self-Description**: Use Pydantic's `Field` for clear field descriptions.
+- **Optionality**: Use Python's `Optional` type for nullable fields and set sensible defaults.
+- **Standardization**: Employ enumerations for fields with a fixed set of values; include a fallback option.
+- **Dynamic Data**: Use key-value pairs for arbitrary properties and limit list lengths.
+- **Entity Relationships**: Define explicit identifiers and relationship fields.
+- **Contextual Logic**: Optionally add a "chain of thought" field in reusable components for extra context.
 
 ## Modular Chain of Thought
 
@@ -91,6 +99,33 @@ class UserDetail(BaseModel):
 
 ```
 
+## Limiting the Length of Lists
+
+When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage the length. You can use prompting and enumeration to limit the list length, ensuring a manageable set of properties.
+
+```python hl_lines="2 10"
+class Property(BaseModel):
+    index: str = Field(..., description="Monotonically increasing ID")
+    key: str
+    value: str
+
+class UserDetail(BaseModel):
+    age: int
+    name: str
+    properties: List[Property] = Field(..., description="List of arbitrary extracted properties, should be less than 6")
+```
+
+**Using Tuples for Simple Types**
+
+For simple types, tuples can be a more compact alternative to custom classes, especially when the properties don't require additional descriptions.
+
+```python hl_lines="4"
+class UserDetail(BaseModel):
+    age: int
+    name: str
+    properties: List[Tuple[int, str]] = Field(..., description="List of arbitrary extracted properties, should be less than 6")
+```
+
 ## Advanced Arbitrary Properties
 
 For multiple users, aim to use consistent key names when extracting properties.
@@ -116,7 +151,7 @@ class UserDetail(BaseModel):
     id: int = Field(..., description="Unique identifier for each user.")
     age: int
     name: str
-    friends: List[int] = Field(..., description="Correctl and complete list of friend IDs, representing relationships between users.")
+    friends: List[int] = Field(..., description="Correct and complete list of friend IDs, representing relationships between users.")
 
 class UserRelationships(BaseModel):
     users: List[UserDetail] = Field(..., description="Collection of users, correctly capturing the relationships among them.")
