@@ -103,7 +103,7 @@ class UserDetail(BaseModel):
 
 When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage the length. You can use prompting and enumeration to limit the list length, ensuring a manageable set of properties.
 
-```python hl_lines="2 10"
+```python hl_lines="2 9"
 class Property(BaseModel):
     index: str = Field(..., description="Monotonically increasing ID")
     key: str
