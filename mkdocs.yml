@@ -64,7 +64,8 @@ nav:
       - "Introduction: Writing Prompts": "writing-prompts.md"
       - "Prompting Templates": "chat-completion.md"
   - CLI Reference:
-      - "Finetuning": finetune.md
+      - "Usage": "cli/usage.md"
+      - "Finetuning": "cli/finetune.md"
 extra:
   analytics:
     provider: google

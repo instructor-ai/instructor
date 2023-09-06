@@ -6,20 +6,22 @@ The instructor CLI provides functionalities for managing fine-tuning jobs on Ope
 ### View Jobs Options
 
 ```sh
-$ instructor jobs --help          
+$ instructor jobs --help 
+                                                                                                               
+ Usage: instructor jobs [OPTIONS] COMMAND [ARGS]...                                                            
+                                                                                                               
+ Monitor and create fine tuning jobs                                                                           
+                                                                                                               
+╭─ Options ───────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                             │
+╰─────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ cancel                    Cancel a fine-tuning job.                                                         │
+│ create-from-file          Create a fine-tuning job from a file.                                             │
+│ create-from-id            Create a fine-tuning job from an existing ID.                                     │
+│ list                      Monitor the status of the most recent fine-tuning jobs.                           │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
-Usage: instructor jobs [OPTIONS] COMMAND [ARGS]...
-
-  Monitor and create fine tuning jobs
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  cancel            Cancel a fine-tuning job.
-  create-from-file  Create a fine-tuning job from a file.
-  create-from-id    Create a fine-tuning job from an existing ID.
-  list              Monitor the status of the most recent fine-tuning jobs.
 ```
 
 ### Create from File
@@ -84,6 +86,7 @@ OpenAI Files
 └───────────────────────────────┴──────────────┴─────────────────────┴──────────┴───────────┘   
 ```
 
+# Contributions 
 
-## Conclusion
-The instructor CLI offers an intuitive interface for managing OpenAI's fine-tuning jobs and related files. By utilizing simple commands, you can create, monitor, and manage your fine-tuning tasks with ease. Feel free to explore further options and parameters by using the --help flag with any command.
+We aim to provide a light wrapper around the API rather than offering a complete CLI. Contributions are welcome! Please feel free to make an issue at [jxnl/instructor/issues](https://github.com/jxnl/instructor/issues) or submit a pull request.
+
