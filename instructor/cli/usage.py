@@ -120,8 +120,12 @@ def group_and_sum_by_date_and_snapshot(usage_data: List[dict]) -> Table:
     table.add_column("Total Requests", justify="right")
     table.add_column("Total Cost ($)", justify="right")
 
-    for date, snapshots in summary.items():
-        for snapshot_id, data in snapshots.items():
+    # Sort dates and snapshots in descending order
+    sorted_dates = sorted(summary.keys(), reverse=True)
+    for date in sorted_dates:
+        sorted_snapshots = sorted(summary[date].keys(), reverse=True)
+        for snapshot_id in sorted_snapshots:
+            data = summary[date][snapshot_id]
             table.add_row(
                 date,
                 snapshot_id,
