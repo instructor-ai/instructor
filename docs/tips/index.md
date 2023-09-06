@@ -112,7 +112,7 @@ class Property(BaseModel):
 class UserDetail(BaseModel):
     age: int
     name: str
-    properties: List[Property] = Field(..., description="List of arbitrary extracted properties, should be less than 6")
+    properties: List[Property] = Field(..., description="Numbered list of arbitrary extracted properties, should be less than 6")
 ```
 
 **Using Tuples for Simple Types**
@@ -123,7 +123,7 @@ For simple types, tuples can be a more compact alternative to custom classes, es
 class UserDetail(BaseModel):
     age: int
     name: str
-    properties: List[Tuple[int, str]] = Field(..., description="List of arbitrary extracted properties, should be less than 6")
+    properties: List[Tuple[int, str]] = Field(..., description="Numbered list of arbitrary extracted properties, should be less than 6")
 ```
 
 ## Advanced Arbitrary Properties
