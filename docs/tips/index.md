@@ -1,6 +1,6 @@
-# Tips for Structure Engineering in Python
+# Prompt Engineering for Function Calling
 
-The overarching theme is to make the models as self-descriptive, modular, and flexible as possible, while maintaining data integrity and ease of use.
+The overarching theme of using instructor and pydantic for function calling is to make the models as self-descriptive, modular, and flexible as possible, while maintaining data integrity and ease of use.
 
 - **Modularity**: Design self-contained components for reuse.
 - **Self-Description**: Use Pydantic's `Field` for clear field descriptions.

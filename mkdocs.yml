@@ -57,7 +57,7 @@ nav:
       - 'Exact Citations': 'examples/exact_citations.md'
       - 'Automated Dataframe Extraction': "examples/autodataframe.md"
       - 'Creating multiple file programs': "examples/gpt-engineer.md"
-  - Structure Engineering Tips: 'tips/index.md'
+  - Prompt Engineering Tips: 'tips/index.md'
   - API Reference:
       - 'OpenAISchema': 'openai_schema.md'
       - 'MultiTask': 'api_multitask.md'
