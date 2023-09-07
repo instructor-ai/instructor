@@ -1,4 +1,4 @@
-# Patterns for Multiple Extraction
+# Patterns for Extracting Multiple Items
 
 A common use case of structured extraction is defining a single schema class and then making another schema to create a list to do multiple extraction
 
@@ -16,14 +16,14 @@ Defining a task and creating a list of classes is a common enough pattern that w
 1. Dynamic docstrings and class name baed on the task
 2. Helper method to support streaming by collectin function_call tokens until a object back out.
 
-## Extracting Tasks
+## Extracting Tasks using MultiTask
 
 By using multitask you get a very convient class with prompts and names automatically defined. You get `from_response` just like any other `OpenAISchema` you're able to extract the list of objects data you want with `MultTask.tasks`.
 
 ```python hl_lines="13"
 from instructor import OpenAISchema, MultiTask
 
-class User(OpenAISchema):
+class User(BaseModel):
     name: str
     age: int
 
