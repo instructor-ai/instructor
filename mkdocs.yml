@@ -46,6 +46,7 @@ nav:
   - Introduction: 
       - Getting Started: 'index.md'
       - MultiTask: "multitask.md"
+      - Maybe: "maybe.md"
       - Philosophy: 'philosophy.md'
   - Use Cases:
       - 'Overview': 'examples/index.md'
