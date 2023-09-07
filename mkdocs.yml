@@ -45,29 +45,30 @@ markdown_extensions:
 nav:
   - Introduction: 
       - Getting Started: 'index.md'
-      - MultiTask: "multitask.md"
-      - Maybe: "maybe.md"
+      - Prompt Engineering Tips: 'tips/index.md'
+      - Meta Functions:
+        - Multiple Extractions: "multitask.md"
+        - Handling Missing Content: "maybe.md"
       - Philosophy: 'philosophy.md'
   - Use Cases:
       - 'Overview': 'examples/index.md'
-      - 'Classifying Text': 'examples/classification.md'
-      - 'Extracting Action Items': 'examples/action_items.md'
-      - 'Segmented Search': 'examples/search.md'
+      - 'Text Classification': 'examples/classification.md'
+      - 'Exact Citations for RAG': 'examples/exact_citations.md'
+      - 'Extracting Multiple Search Queries': 'examples/search.md'
       - 'One shot Query Planning': 'examples/planning-tasks.md'
       - 'Recursive Schemas': 'examples/recursive.md'
-      - 'Exact Citations': 'examples/exact_citations.md'
       - 'Automated Dataframe Extraction': "examples/autodataframe.md"
+      - 'Extracting Action Items from Transcript': 'examples/action_items.md'
       - 'Creating multiple file programs': "examples/gpt-engineer.md"
-  - Prompt Engineering Tips: 'tips/index.md'
+  - CLI Reference:
+      - "Introduction": "cli/index.md"
+      - "Usage Tracking": "cli/usage.md"
+      - "Finetuning GPT": "cli/finetune.md"
   - API Reference:
       - 'OpenAISchema': 'openai_schema.md'
       - 'MultiTask': 'api_multitask.md'
       - "Introduction: Writing Prompts": "writing-prompts.md"
       - "Prompting Templates": "chat-completion.md"
-  - CLI Reference:
-      - "Introduction": "cli/index.md"
-      - "Usage Tracking": "cli/usage.md"
-      - "Finetuning GPT": "cli/finetune.md"
 extra:
   analytics:
     provider: google

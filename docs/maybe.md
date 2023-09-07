@@ -27,7 +27,7 @@ class MaybeUser(BaseModel):
 
 ## Implementing `Maybe` Pattern with `instructor`
 
-You can use a third-party library like `instructor` to generalize the `Maybe` pattern.
+You can use `instructor` to generalize the `Maybe` pattern.
 
 ```python
 import instructor
