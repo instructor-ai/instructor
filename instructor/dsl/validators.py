@@ -58,8 +58,6 @@ def llm_validator(
             temperature=temperature,
         )  # type: ignore
 
-        print(resp.model_dump_json(indent=2))
-
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.
         assert resp.is_valid, resp.reason
