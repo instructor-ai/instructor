@@ -98,7 +98,9 @@ def wrap_chatcompletion(func: Callable) -> Callable:
     is_async = inspect.iscoroutinefunction(func)
 
     @wraps(func)
-    async def new_chatcompletion_async(response_model, *args, max_retries=0, **kwargs):
+    async def new_chatcompletion_async(
+        response_model=None, *args, max_retries=0, **kwargs
+    ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)
         response, error = await retry_async(
             func=func,
@@ -112,7 +114,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
         return process_response(response, response_model)
 
     @wraps(func)
-    def new_chatcompletion_sync(response_model, *args, max_retries=0, **kwargs):
+    def new_chatcompletion_sync(response_model=None, *args, max_retries=0, **kwargs):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)
         response, error = retry_sync(
             func=func,

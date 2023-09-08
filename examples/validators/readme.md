@@ -1,65 +1,78 @@
-# Introduction to Validation in Pydantic and LLMs
+# Using `llm_validator` with OpenAI's GPT-3.5 Turbo and Pydantic for Text Validation with Output Examples
 
-Validation is crucial when using Large Language Models (LLMs) for data extraction. It ensures data integrity, enables reasking for better results, and allows for overwriting incorrect values. Pydantic offers versatile validation capabilities suitable for use with LLM outputs.
+## Overview
 
-To see the most up to date examples check out our [examples/validators](https://github.com/jxnl/instructor/tree/main/examples/validators)
+This document outlines how to use a custom text validation logic (`llm_validator`) with OpenAI's GPT-3.5 Turbo and Pydantic, including the outputs for each operation.
 
-## Validation Features in Pydantic
+## Code Explanation
 
-Pydantic supports:
+### Basic Setup
 
-- [Field-Level Validation](https://docs.pydantic.dev/latest/usage/validators/)
-- [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators)
-
-## Importance of LLM Validation
-
-- **Data Integrity**: Enforces data quality standards.
-- **Reasking**: Utilizes Pydantic's error messages to improve LLM outputs.
-- **Overwriting**: Overwrites incorrect values during API calls.
-
-## Code Examples
-
-### Simple Validation with Pydantic
-
-The example uses a custom validator function to enforce a rule on the name attribute. If a user fails to input a full name (first and last name separated by a space), Pydantic will raise a validation error. This is useful for pre-processing data generated or extracted by an LLM. In the future, we can use this error to reask the model when appropriate.
+Import necessary modules and apply patches for compatibility.
 
 ```python
-from pydantic import BaseModel, ValidationError
-from typing_extensions import Annotated, AfterValidator
+from typing_extensions import Annotated
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+)
+from instructor import llm_validator, patch
+import openai
 
-def name_must_contain_space(v: str) -> str:
-    if " " not in v:
-        raise ValueError("name must be a first and last name separated by a space")
-    return v.lower()
-
-class UserDetail(BaseModel):
-    age: int
-    name: Annotated[str, AfterValidator(name_must_contain_space)]
-
-try:
-    person = UserDetail(age=29, name="Jason")
-except ValidationError as e:
-    print(e)
-
-# Output:
-# 1 validation error for UserDetail
-# name
-#    Value error, name must be a first and last name separated by a space (type=value_error)
+patch()
 ```
 
-### LLM-Based Validation
+### Defining Response Models
 
-This example demonstrates using an LLM as a validator. If the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error. This level of validation can be essential when the model is used in real-time systems where it can generate a broad range of outputs. Akin to something like Constitutional AI and self reflection but on the single attribute level, which can be much more efficient. 
+Define a basic Pydantic model named `QuestionAnswer`.
 
 ```python
-from pydantic import BaseModel, ValidationError, BeforeValidator
-from typing_extensions import Annotated
-import instructor
-from instructor.dsl.validators import llm_validator
-
-instructor.patch()
-
 class QuestionAnswer(BaseModel):
+    question: str
+    answer: str
+```
+
+### Generating a Response
+
+Generate a response from GPT-3.5 Turbo.
+
+```python
+question = "What is the meaning of life?"
+context = "The according to the devil is to live a life of sin and debauchery."
+
+qa: QuestionAnswer = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    response_model=QuestionAnswer,
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
+        },
+        {
+            "role": "user",
+            "content": f"using the context: {context}\n\nAnswer the following question: {question}",
+        },
+    ],
+)
+```
+
+#### Output
+
+Before validation with `llm_validator`:
+
+```json
+{
+  "question": "What is the meaning of life?",
+  "answer": "The meaning of life, according to the context, is to live a life of sin and debauchery."
+}
+```
+
+### Adding Custom Validation
+
+Add custom validation using `llm_validator`.
+
+```python
+class QuestionAnswerNoEvil(BaseModel):
     question: str
     answer: Annotated[
         str,
@@ -67,102 +80,73 @@ class QuestionAnswer(BaseModel):
             llm_validator("don't say objectionable things", allow_override=True)
         ),
     ]
-
-try:
-    qa = QuestionAnswer(
-        question="What is the meaning of life?",
-        answer="The meaning of life is to be evil and kill people",
-    )
-except ValidationError as e:
-    print(e)
-
-# Output:
-# 1 validation error for QuestionAnswer
-# answer
-#    Assertion failed, The statement promotes violence and harm to others, which is objectionable. (type=assertion_error)
 ```
 
-!!! note "Model Level Evaluation"
-    Right now we only go over the field level examples, check out [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators) if you want to see how to do model level evaluation
+#### Output
 
-## Create Your Own LLM Validator
+```text
+1 validation error for QuestionAnswerNoEvil
+answer
+    Assertion failed, The statement promotes sin and debauchery, which is objectionable.
+```
 
-The section shows how to create a custom LLM validator function. You can modify the function to suit your specific requirements, making it a powerful tool for advanced validation scenarios.
+### Handling Validation Errors
 
-The `llm_validator` function can be extended or customized to fit specific requirements.
+Catch exceptions raised by the validation.
 
 ```python
-from pydantic import BaseModel, Field
-from typing import Optional
-import instructor
-import openai
-
-instructor.patch()
-
-class Validator(BaseModel):
-    is_valid: bool = Field(default=True)
-    reason: Optional[str] = Field(default=None)
-    fixed_value: Optional[str] = Field(default=None)
-
-
-def llm_validator(
-    statement: str,
-    allow_override: bool = False,
-    model: str = "gpt-3.5-turbo",
-    temperature: float = 0,
-):
-    """
-    Create a validator that uses the LLM to validate an attribute
-
-    Parameters:
-        statement (str): The statement to validate
-        model (str): The LLM to use for validation (default: "gpt-3.5-turbo-0613")
-        temperature (float): The temperature to use for the LLM (default: 0)
-    """
-
-    def llm(v):
-        resp: Validator = openai.ChatCompletion.create(
-            response_model=Validator,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a world class validation model. Capable to determine if the following value is valid for the statement, if it is not, explain why and suggest a new value.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Does `{v}` follow the rules: {statement}",
-                },
-            ],
-            model=model,
-            temperature=temperature,
-        )  # type: ignore
-
-        print(resp.model_dump_json(indent=2))
-
-        # If the response is  not valid, return the reason, this could be used in
-        # the future to generate a better response, via reasking mechanism.
-        assert resp.is_valid, resp.reason
-
-        if allow_override and not resp.is_valid and resp.fixed_value is not None:
-            # If the value is not valid, but we allow override, return the fixed value
-            return resp.fixed_value
-        return v
-
-    return llm
+try:
+    qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        response_model=QuestionAnswerNoEvil,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
+            },
+            {
+                "role": "user",
+                "content": f"using the context: {context}\n\nAnswer the following question: {question}",
+            },
+        ],
+    )
+except Exception as e:
+    print(e)
 ```
 
-## Summary and Future Implications
+### Retrying Validation
 
-### Classical vs. Future Validation Mechanisms
+Allow for retries by setting `max_retries=1`.
 
-Classical validation methods are effective for assessing the quality and integrity of data. They are rule-based and evaluate data against a predetermined set of criteria.
+```python
+qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    response_model=QuestionAnswerNoEvil,
+    max_retries=1,
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
+        },
+        {
+            "role": "user",
+            "content": f"using the context: {context}\n\nAnswer the following question: {question}",
+        },
+    ],
+)
+```
 
-The future is likely to see the integration of LLMs in the validation process itself, utilizing a suite of field-level or model-level evaluations that can self-critique and self-evaluate the outputs generated by these models. This will go beyond the mere integrity of data and extend into the realm of content quality, reasoning, and even ethical considerations.
+#### Output
 
-### Applications and Scenarios
+After validation with `llm_validator` and `max_retries=1`:
 
-- **Content Moderation**: LLMs can be trained or guided to recognize and filter out objectionable or sensitive material, ensuring a safer user experience.
-- **Reflecting on Chain of Thought**: As LLMs can evaluate their own reasoning process, this opens doors to even more reliable and dependable automated systems.
-- **Verifying Hallucinations**: LLMs can be configured to recognize when they generate data or responses that do not align with facts or reliable data, reducing the risk of disseminating false information.
+```json
+{
+  "question": "What is the meaning of life?",
+  "answer": "The meaning of life is subjective and can vary depending on individual beliefs and philosophies."
+}
+```
 
-By integrating these advanced validation techniques, we not only improve the quality and reliability of LLM-generated content but also pave the way for more autonomous and effective systems.
+## Summary
+
+This document described how to use `llm_validator` with OpenAI's GPT-3.5 Turbo and Pydantic, including example outputs. This approach allows for controlled and filtered responses.
