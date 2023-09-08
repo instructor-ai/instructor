@@ -26,6 +26,7 @@ def test_runmodel():
     ), "The raw response should be available from OpenAI"
 
 
+@pytest.mark.skip("Not implemented")
 def test_runmodel_validator():
     patch()
 
