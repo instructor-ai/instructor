@@ -2,14 +2,14 @@
 
 Validation is crucial when using Large Language Models (LLMs) for data extraction. It ensures data integrity, enables reasking for better results, and allows for overwriting incorrect values. Pydantic offers versatile validation capabilities suitable for use with LLM outputs.
 
+To see the most up to date examples check out our [examples/validators](https://github.com/jxnl/instructor/tree/main/examples/validators)
 
-!!! note "Pydantic Validation Docs"
-    Pydantic supports validation individual fields or the whole model dict all at once.
+## Validation Features in Pydantic
 
-    - [Field-Level Validation](https://docs.pydantic.dev/latest/usage/validators/)
-    - [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators)
+Pydantic supports:
 
-    To see the most up to date examples check out our repo [jxnl/instructor/examples/validators](https://github.com/jxnl/instructor/tree/main/examples/validators)
+- [Field-Level Validation](https://docs.pydantic.dev/latest/usage/validators/)
+- [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators)
 
 ## Importance of LLM Validation
 
@@ -50,7 +50,6 @@ except ValidationError as e:
 ### LLM-Based Validation
 
 This example demonstrates using an LLM as a validator. If the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error. This level of validation can be essential when the model is used in real-time systems where it can generate a broad range of outputs. Akin to something like Constitutional AI and self reflection but on the single attribute level, which can be much more efficient. 
-
 
 ```python
 from pydantic import BaseModel, ValidationError, BeforeValidator
@@ -137,6 +136,8 @@ def llm_validator(
             model=model,
             temperature=temperature,
         )  # type: ignore
+
+        print(resp.model_dump_json(indent=2))
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.
