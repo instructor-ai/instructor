@@ -1,6 +1,6 @@
 # Introduction to Validation in Pydantic and LLMs
 
-Validation is crucial when using Large Language Models (LLMs) for data extraction. It ensures data integrity, enables reasking for better results, and allows for overwriting incorrect values. Pydantic offers versatile validation capabilities suitable for use with LLM outputs.
+Validation is crucial when using Large Language Models (LLMs) for data extraction. It ensures data integrity, enables [reasking for better results](reask.md), and allows for overwriting incorrect values. Pydantic offers versatile validation capabilities suitable for use with LLM outputs.
 
 
 !!! note "Pydantic Validation Docs"
@@ -14,14 +14,14 @@ Validation is crucial when using Large Language Models (LLMs) for data extractio
 ## Importance of LLM Validation
 
 - **Data Integrity**: Enforces data quality standards.
-- **Reasking**: Utilizes Pydantic's error messages to improve LLM outputs.
+- **[Reasking](reask.md)**: Utilizes Pydantic's error messages to improve LLM outputs.
 - **Overwriting**: Overwrites incorrect values during API calls.
 
 ## Code Examples
 
 ### Simple Validation with Pydantic
 
-The example uses a custom validator function to enforce a rule on the name attribute. If a user fails to input a full name (first and last name separated by a space), Pydantic will raise a validation error. This is useful for pre-processing data generated or extracted by an LLM. In the future, we can use this error to reask the model when appropriate.
+The example uses a custom validator function to enforce a rule on the name attribute. If a user fails to input a full name (first and last name separated by a space), Pydantic will raise a validation error. If you want the LLM to automatically fix the error check out our [reasking docs.](reask.md)
 
 ```python
 from pydantic import BaseModel, ValidationError

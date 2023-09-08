@@ -1,7 +1,9 @@
 from functools import wraps
+from json import JSONDecodeError
+from pydantic import ValidationError
 import openai
 import inspect
-from typing import Callable, Optional, Type, Union
+from typing import Callable, Type
 
 from pydantic import BaseModel
 from .function_calls import OpenAISchema, openai_schema
@@ -22,10 +24,11 @@ If need to obtain the raw response from OpenAI's API, you can access it using th
 Parameters:
 
     response_model (Union[Type[BaseModel], Type[OpenAISchema]]): The response model to use for parsing the response from OpenAI's API, if available (default: None)
+    max_retries (int): The maximum number of retries to attempt if the response is not valid (default: 0)
 """
 
 
-def handle_response_model(response_model: Type[BaseModel], **kwargs):
+def handle_response_model(response_model: Type[BaseModel], kwargs):
     new_kwargs = kwargs.copy()
     if response_model is not None:
         if not issubclass(response_model, OpenAISchema):
@@ -51,27 +54,76 @@ def process_response(response, response_model):  # type: ignore
     return response
 
 
+async def retry_async(func, response_model, args, kwargs, max_retries):
+    retries = 0
+    while retries <= max_retries:
+        try:
+            response = await func(*args, **kwargs)
+            return process_response(response, response_model), None
+        except (ValidationError, JSONDecodeError) as e:
+            kwargs["messages"].append(dict(**response.choices[0].message))
+            kwargs["messages"].append(
+                {
+                    "role": "user",
+                    "content": f"Recall the function correctly, exceptions found\n{e}",
+                }
+            )
+            retries += 1
+            if retries > max_retries:
+                raise e
+
+
+def retry_sync(func, response_model, args, kwargs, max_retries):
+    retries = 0
+    new_kwargs = kwargs.copy()
+    while retries <= max_retries:
+        # Excepts ValidationError, and JSONDecodeError
+        try:
+            response = func(*args, **kwargs)
+            return process_response(response, response_model), None
+        except (ValidationError, JSONDecodeError) as e:
+            kwargs["messages"].append(dict(**response.choices[0].message))
+            kwargs["messages"].append(
+                {
+                    "role": "user",
+                    "content": f"Recall the function correctly, exceptions found\n{e}",
+                }
+            )
+            retries += 1
+            if retries > max_retries:
+                raise e
+
+
 def wrap_chatcompletion(func: Callable) -> Callable:
     is_async = inspect.iscoroutinefunction(func)
 
     @wraps(func)
-    async def new_chatcompletion_async(
-        response_model=Type[BaseModel], retry=None, *args, **kwargs
-    ):
-        response_model, new_kwargs = handle_response_model(
-            response_model=response_model, **kwargs
-        )
-
-        response = await func(*args, **new_kwargs)
+    async def new_chatcompletion_async(response_model, *args, max_retries=0, **kwargs):
+        response_model, new_kwargs = handle_response_model(response_model, kwargs)
+        response, error = await retry_async(
+            func=func,
+            response_model=response_model,
+            max_retries=max_retries,
+            args=args,
+            kwargs=new_kwargs,
+        )  # type: ignore
+        if error:
+            raise ValueError(error)
         return process_response(response, response_model)
 
     @wraps(func)
-    def new_chatcompletion_sync(response_model=Type[BaseModel], *args, **kwargs):
-        response_model, new_kwargs = handle_response_model(
-            response_model=response_model, **kwargs
-        )
-        response = func(*args, **new_kwargs)
-        return process_response(response, response_model)
+    def new_chatcompletion_sync(response_model, *args, max_retries=0, **kwargs):
+        response_model, new_kwargs = handle_response_model(response_model, kwargs)
+        response, error = retry_sync(
+            func=func,
+            response_model=response_model,
+            max_retries=max_retries,
+            args=args,
+            kwargs=new_kwargs,
+        )  # type: ignore
+        if error:
+            raise ValueError(error)
+        return response
 
     wrapper_function = new_chatcompletion_async if is_async else new_chatcompletion_sync
     wrapper_function.__doc__ = OVERRIDE_DOCS

@@ -46,8 +46,9 @@ nav:
   - Introduction: 
       - Getting Started: 'index.md'
       - Prompt Engineering Tips: 'tips/index.md'
-      - Meta Functions:
+      - Helpers:
         - Validations (self critique): "validation.md"
+        - Reasking via Validators: "reask.md"
         - Multiple Extractions: "multitask.md"
         - Handling Missing Content: "maybe.md"
       - Philosophy: 'philosophy.md'
