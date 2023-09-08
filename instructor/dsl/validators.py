@@ -3,10 +3,8 @@ from typing import Optional
 import instructor
 import openai
 
-instructor.patch()
 
-
-class Validator(BaseModel):
+class Validator(instructor.OpenAISchema):
     """
     Validate if an attribute is correct and if not,
     return a new value with an error message
@@ -42,8 +40,9 @@ def llm_validator(
     """
 
     def llm(v):
-        resp: Validator = openai.ChatCompletion.create(
-            response_model=Validator,
+        resp = openai.ChatCompletion.create(
+            functions=[Validator.openai_schema],
+            function_call={"name": Validator.openai_schema["name"]},
             messages=[
                 {
                     "role": "system",
@@ -57,6 +56,7 @@ def llm_validator(
             model=model,
             temperature=temperature,
         )  # type: ignore
+        resp = Validator.from_response(resp)
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.
