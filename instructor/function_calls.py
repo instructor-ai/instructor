@@ -24,7 +24,7 @@ import json
 from docstring_parser import parse
 from functools import wraps
 from typing import Any, Callable
-from pydantic import BaseModel, validate_arguments
+from pydantic import BaseModel, create_model, validate_arguments
 
 
 def _remove_a_key(d, remove_key) -> None:
@@ -196,8 +196,9 @@ def openai_schema(cls):
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
-    @wraps(cls, updated=())
-    class Wrapper(cls, OpenAISchema):  # type: ignore
-        pass
-
-    return Wrapper
+    return wraps(cls, updated=())(
+        create_model(
+            cls.__name__,
+            __base__=(cls, OpenAISchema),
+        )
+    )
