@@ -54,6 +54,7 @@ nav:
   - Use Cases:
       - 'Overview': 'examples/index.md'
       - 'Text Classification': 'examples/classification.md'
+      - 'Self-Critique Using Validators': 'examples/self_critique.md'
       - 'Exact Citations for RAG': 'examples/exact_citations.md'
       - 'Extracting Multiple Search Queries': 'examples/search.md'
       - 'One shot Query Planning': 'examples/planning-tasks.md'

@@ -6,6 +6,7 @@ Welcome to the examples page. Here you will find emails that highlight a range o
 
 - [Classifying Text](classification.md)
 - [Extracting search requests into multiple search queries](search.md)
+- [Self Critique](self_critique.md)
 - [Exact citations using regex](exact_citations.md)
 - [One shot query planning](planning-tasks.md)
 - [Using recursive schema](recursive.md)
@@ -19,6 +20,7 @@ In this section, you will find examples demonstrating different aspects of our p
 
 - [Classfying Text](classification.md): Doing single and multi class prediction using enums.
 
+- [Self Critique](self_critique.md): Learn how to implement self-critique in AI systems using `llm_validator`
 
 - [Segmented Search](search.md): Learn how to perform segmented search using a multi task definition using function calling
 
