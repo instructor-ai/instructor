@@ -234,14 +234,3 @@ To see more examples of how we can create interesting models check out some [exa
 ## License
 
 This project is licensed under the terms of the MIT License.
-
-
-$ openai_function_call git:(ft-cli) ✗ instructor jobs create-from-file data.jsonl
-                                                OpenAI Fine Tuning Job Monitoring                                                
-| Job ID          | Status      | Creation Time      | Completion Time | Model Name      | File ID        | Epochs | Base Model       |
-|-----------------|-------------|--------------------|-----------------|-----------------|----------------|--------|------------------|
-| ftjob-PWo6uwk…  | 🚫 cancelled | 2023-08-23 23:10:54| N/A             |                 | file-F7lJg6Z4…  | 3      | gpt-3.5-turbo-…  |
-| ftjob-1whjva8…  | 🚫 cancelled | 2023-08-23 22:47:05| N/A             |                 | file-F7lJg6Z4…  | 3      | gpt-3.5-turbo-…  |
-| ftjob-wGoBDld…  | 🚫 cancelled | 2023-08-23 22:44:12| N/A             |                 | file-F7lJg6Z4…  | 3      | gpt-3.5-turbo-…  |
-| ftjob-yd5aRTc…  | ✅ succeeded | 2023-08-23 14:26:03| 2023-08-23 15:02:29| ft:gpt-3.5-tur… | file-IQxAUDqX… | 3      | gpt-3.5-turbo-…  |
-                                  Automatically refreshes every 5 seconds, press Ctrl+C to exit  
