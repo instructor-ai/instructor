@@ -61,7 +61,7 @@ async def retry_async(func, response_model, args, kwargs, max_retries):
             response = await func(*args, **kwargs)
             return process_response(response, response_model), None
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(dict(**response.choices[0].message))
+            kwargs["messages"].append(dict(**response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -82,7 +82,7 @@ def retry_sync(func, response_model, args, kwargs, max_retries):
             response = func(*args, **kwargs)
             return process_response(response, response_model), None
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(dict(**response.choices[0].message))
+            kwargs["messages"].append(dict(**response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -101,7 +101,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
     async def new_chatcompletion_async(
         response_model=None, *args, max_retries=0, **kwargs
     ):
-        response_model, new_kwargs = handle_response_model(response_model, kwargs)
+        response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = await retry_async(
             func=func,
             response_model=response_model,
@@ -115,7 +115,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     def new_chatcompletion_sync(response_model=None, *args, max_retries=0, **kwargs):
-        response_model, new_kwargs = handle_response_model(response_model, kwargs)
+        response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = retry_sync(
             func=func,
             response_model=response_model,
