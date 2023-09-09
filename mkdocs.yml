@@ -61,7 +61,8 @@ nav:
       - 'Recursive Schemas': 'examples/recursive.md'
       - 'Automated Dataframe Extraction': "examples/autodataframe.md"
       - 'Extracting Action Items from Transcript': 'examples/action_items.md'
-      - 'Creating multiple file programs': "examples/gpt-engineer.md"
+      - 'Creating Multiple File Programs': "examples/gpt-engineer.md"
+      - 'Scrubbing PII Data': "examples/pii.md"
   - CLI Reference:
       - "Introduction": "cli/index.md"
       - "Usage Tracking": "cli/usage.md"

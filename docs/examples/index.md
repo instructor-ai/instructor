@@ -12,6 +12,7 @@ Welcome to the examples page. Here you will find emails that highlight a range o
 - [Using recursive schema](recursive.md)
 - [Automated database extraction from text](autodataframe.md)
 - [Identifying Action Items with dependencies](action_items.md)
+- [Extracting PII Data](pii.md)
 - [Creating multiple file programs](gpt-engineer.md)
 
 ## Details
@@ -33,6 +34,8 @@ In this section, you will find examples demonstrating different aspects of our p
 - [Automated Dataframe Extraction](autodataframe.md): Discover how to automate dataframe extraction to not only return a table, but possibly multiple tables.
 
 - [Creating Multiple File Programs](gpt-engineer.md): Master how to create multiple file programs based on specification using function calling.
+
+- [Extracting PII Data](pii.md): Learn how to extract and scrub PII data from a document.
 
 - [Identifying Action Items with dependencies](action_items.md): Scanning a transcript to generate action items with subtasks.
 
