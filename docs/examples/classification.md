@@ -37,7 +37,9 @@ The function **`classify`** will perform the single-label classification.
 import openai
 import instructor
 
-instructor.patch()
+# Patch the OpenAI API to use the `ChatCompletion`
+# endpoint with `response_model` enabled.
+instructor.patch() 
 
 def classify(data: str) -> SinglePrediction:
     """Perform single-label classification on the input text."""
@@ -51,7 +53,6 @@ def classify(data: str) -> SinglePrediction:
             },
         ],
     )  # type: ignore
-
 ```
 
 ### Testing and Evaluation
