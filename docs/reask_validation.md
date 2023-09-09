@@ -165,6 +165,13 @@ except (ValidationError, JSONDecodeError) as e:
     )
 ```
 
+## Advanced Validation Techniques
+
+The docs are currently incomplete, but we have a few advanced validation techniques that we're working on documenting better, for a example of model level validation, and using a validation context check out our example on [verifying citations](examples/exact_citations.md) which covers
+
+1. Validate the entire object with all attributes rather than one attribute at a time
+2. Using some 'context' to validate the object, in this case we use the `context` to check if the citation existed in the original text.
+
 ## Takeaways
 
 By integrating these advanced validation techniques, we not only improve the quality and reliability of LLM-generated content but also pave the way for more autonomous and effective systems.
