@@ -1,46 +1,25 @@
 # Function Calls by Example
 
-Welcome to the examples page. Here you will find emails that highlight a range of use cases, on how to use our code and examples demonstrating various features and functionalities.
+## Quick Links
 
-## Quick Links 
+- [Classifying Text](classification.md): Single and multi-label classification using enums.
 
-- [Classifying Text](classification.md)
-- [Extracting search requests into multiple search queries](search.md)
-- [Self Critique](self_critique.md)
-- [Exact citations using regex](exact_citations.md)
-- [One shot query planning](planning-tasks.md)
-- [Using recursive schema](recursive.md)
-- [Automated database extraction from text](autodataframe.md)
-- [Identifying Action Items with dependencies](action_items.md)
-- [Extracting PII Data](pii.md)
-- [Creating multiple file programs](gpt-engineer.md)
+- [Self-Assessment via Validators](self_critique.md): Implement AI self-assessment with `llm_validator`.
 
-## Details
+- [Extracting Search Queries](search.md): Segment search queries through function calling and multi-task definitions.
 
-In this section, you will find examples demonstrating different aspects of our project's functionality.
+- [Query Decomposition](planning-tasks.md): Decompose complex queries into subqueries in a single request.
 
-- [Classfying Text](classification.md): Doing single and multi class prediction using enums.
+- [Working with Recursive Schemas](recursive.md): Implement and understand recursive schemas.
 
-- [Self Critique](self_critique.md): Learn how to implement self-critique in AI systems using `llm_validator`
+- [Citations via Regex](exact_citations.md): Retrieve exact citations using regular expressions and smart prompting.
 
-- [Segmented Search](search.md): Learn how to perform segmented search using a multi task definition using function calling
+- [Table Extraction from Text](autodataframe.md): Extract tables, potentially multiple, automatically from textual data.
 
-- [One shot Query Planning](planning-tasks.md): Explore how to plan and decompose a complex query into multiple subqueries in a single request.
+- [Multi-File Code Generation](gpt-engineer.md): Generate multi-file programs with contents and paths. 
 
-- [Recursive Schemas](recursive.md): Understand how to work with recursive schemas, and also why flat is better than nested.
+- [PII Data Sanitization](pii.md): Extract and sanitize Personally Identifiable Information (PII) from documents.
 
-- [Exact Citations](exact_citations.md): Find out how to generate exact citations by using smart prompting and regular expressions
-
-- [Automated Dataframe Extraction](autodataframe.md): Discover how to automate dataframe extraction to not only return a table, but possibly multiple tables.
-
-- [Creating Multiple File Programs](gpt-engineer.md): Master how to create multiple file programs based on specification using function calling.
-
-- [Extracting PII Data](pii.md): Learn how to extract and scrub PII data from a document.
-
-- [Identifying Action Items with dependencies](action_items.md): Scanning a transcript to generate action items with subtasks.
-
-Feel free to explore these examples to gain a better understanding of various patterns on how creative prompting, description, and structuring of `OpenAISchema` and unlock new capabilities.
-
-If you have any questions or need further assistance, please refer to the specific example documentation or reach out to our support team.
+- [Action Item and Dependency Mapping](action_items.md): Generate action items and their dependencies from transcripts.
 
 Happy exploring!

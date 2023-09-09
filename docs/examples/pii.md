@@ -1,4 +1,4 @@
-# PII Data Extraction and Scrubbing Example with Output
+# PII Data Extraction and Scrubbing
 
 ## Overview
 

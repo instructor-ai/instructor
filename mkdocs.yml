@@ -52,17 +52,17 @@ nav:
         - Handling Missing Content: "maybe.md"
       - Philosophy: 'philosophy.md'
   - Use Cases:
-      - 'Overview': 'examples/index.md'
-      - 'Text Classification': 'examples/classification.md'
-      - 'Self-Critique Using Validators': 'examples/self_critique.md'
-      - 'Exact Citations for RAG': 'examples/exact_citations.md'
-      - 'Extracting Multiple Search Queries': 'examples/search.md'
-      - 'One shot Query Planning': 'examples/planning-tasks.md'
-      - 'Recursive Schemas': 'examples/recursive.md'
-      - 'Automated Dataframe Extraction': "examples/autodataframe.md"
-      - 'Extracting Action Items from Transcript': 'examples/action_items.md'
-      - 'Creating Multiple File Programs': "examples/gpt-engineer.md"
-      - 'Scrubbing PII Data': "examples/pii.md"
+    - Overview: 'examples/index.md'
+    - Text Classification Techniques: 'examples/classification.md'
+    - AI Self-Assessment: 'examples/self_critique.md'
+    - Citation Retrieval via Regex: 'examples/exact_citations.md'
+    - Search Query Segmentation: 'examples/search.md'
+    - Query Decomposition in One Go: 'examples/planning-tasks.md'
+    - Working with Recursive Schemas: 'examples/recursive.md'
+    - Table Extraction from Text: 'examples/autodataframe.md'
+    - Action Item and Dependency Mapping: 'examples/action_items.md'
+    - Multi-File Code Generation: 'examples/gpt-engineer.md'
+    - PII Data Sanitization: 'examples/pii.md'
   - CLI Reference:
       - "Introduction": "cli/index.md"
       - "Usage Tracking": "cli/usage.md"
