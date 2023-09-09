@@ -35,6 +35,9 @@ The function **`classify`** will perform the single-label classification.
 
 ```python
 import openai
+import instructor
+
+instructor.patch()
 
 def classify(data: str) -> SinglePrediction:
     """Perform single-label classification on the input text."""
