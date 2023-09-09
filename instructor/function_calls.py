@@ -169,12 +169,13 @@ class OpenAISchema(BaseModel):
         }
 
     @classmethod
-    def from_response(cls, completion, throw_error=True):
+    def from_response(cls, completion, throw_error=True, validation_context=None):
         """Execute the function from the response of an openai chat completion
 
         Parameters:
             completion (openai.ChatCompletion): The response from an openai chat completion
             throw_error (bool): Whether to throw an error if the function call is not detected
+            validation_context (dict): The validation context to use for validating the response
 
         Returns:
             cls (OpenAISchema): An instance of the class
@@ -187,12 +188,12 @@ class OpenAISchema(BaseModel):
                 message["function_call"]["name"] == cls.openai_schema["name"]
             ), "Function name does not match"
 
-        function_call = message["function_call"]
-        arguments = json.loads(function_call["arguments"], strict=False)
-        return cls(**arguments)
+        return cls.model_validate_json(
+            message["function_call"]["arguments"], context=validation_context
+        )
 
 
-def openai_schema(cls):
+def openai_schema(cls) -> OpenAISchema:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
@@ -201,4 +202,4 @@ def openai_schema(cls):
             cls.__name__,
             __base__=(cls, OpenAISchema),
         )
-    )
+    )  # type: ignore
