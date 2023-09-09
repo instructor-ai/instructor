@@ -1,25 +1,45 @@
 from typing import List
+from loguru import logger
 
 import openai
-from pydantic import Field, BaseModel
+import instructor
 
-from instructor import OpenAISchema
+
+from pydantic import Field, BaseModel, FieldValidationInfo, model_validator
 
 
 class Fact(BaseModel):
-    """
-    Class representing single statement.
-    Each fact has a body and a list of sources.
-    If there are multiple facts make sure to break them apart such that each one only uses a set of sources that are relevant to it.
-    """
-
-    fact: str = Field(..., description="Body of the sentence, as part of a response")
-    substring_quote: List[str] = Field(
+    statement: str = Field(
+        ..., description="Body of the sentence, as part of a response"
+    )
+    substring_phrase: List[str] = Field(
         ...,
-        description="Each source should be a direct quote from the context, as a substring of the original content",
+        description="String quote long enough to evaluate the truthfulness of the fact",
     )
 
-    def _get_span(self, quote, context, errs=100):
+    @model_validator(mode="after")
+    def validate_sources(self, info: FieldValidationInfo) -> "Fact":
+        """
+        For each substring_phrase, find the span of the substring_phrase in the context.
+        If the span is not found, remove the substring_phrase from the list.
+        """
+        if info.context is None:
+            logger.info("No context found, skipping validation")
+            return self
+
+        # Get the context from the info
+        text_chunks = info.context.get("text_chunk", None)
+
+        # Get the spans of the substring_phrase in the context
+        spans = list(self.get_spans(text_chunks))
+        logger.info(
+            f"Found {len(spans)} span(s) for from {len(self.substring_phrase)} citation(s)."
+        )
+        # Replace the substring_phrase with the actual substring
+        self.substring_phrase = [text_chunks[span[0] : span[1]] for span in spans]
+        return self
+
+    def _get_span(self, quote, context, errs=5):
         import regex
 
         minor = quote
@@ -35,11 +55,11 @@ class Fact(BaseModel):
             yield from s.spans()
 
     def get_spans(self, context):
-        for quote in self.substring_quote:
+        for quote in self.substring_phrase:
             yield from self._get_span(quote, context)
 
 
-class QuestionAnswer(OpenAISchema):
+class QuestionAnswer(instructor.OpenAISchema):
     """
     Class representing a question and its answer as a list of facts each one should have a soruce.
     each sentence contains a body and a list of sources."""
@@ -50,25 +70,21 @@ class QuestionAnswer(OpenAISchema):
         description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
     )
 
+    @model_validator(mode="after")
+    def validate_sources(self) -> "QuestionAnswer":
+        """
+        Checks that each fact has some sources, and removes those that do not.
+        """
+        logger.info(f"Validating {len(self.answer)} facts")
+        self.answer = [fact for fact in self.answer if len(fact.substring_phrase) > 0]
+        logger.info(f"Found {len(self.answer)} facts with sources")
+        return self
+
 
 def ask_ai(question: str, context: str) -> QuestionAnswer:
-    """
-    Function to ask AI a question and get back an Answer object.
-    but should be updated to use the actual method for making a request to the AI.
-
-    Args:
-        question (str): The question to ask the AI.
-        context (str): The context for the question.
-
-    Returns:
-        Answer: The Answer object.
-    """
-
-    # Making a request to the hypothetical 'openai' module
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
-        max_tokens=1000,
         functions=[QuestionAnswer.openai_schema],
         function_call={"name": QuestionAnswer.openai_schema["name"]},
         messages=[
@@ -87,45 +103,38 @@ def ask_ai(question: str, context: str) -> QuestionAnswer:
     )
 
     # Creating an Answer object from the completion response
-    return QuestionAnswer.from_response(completion)
-
-
-question = "What the author's last name?"
-context = """
-My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.I went to an arts highschool but in university I studied Computational Mathematics and physics.  As part of coop I worked at many companies including Stitchfix, Facebook.  I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.
-"""
-
-
-def highlight(text, span):
-    return (
-        "..."
-        + text[span[0] - 50 : span[0]].replace("\n", "")
-        + "\033[91m"
-        + "<"
-        + text[span[0] : span[1]].replace("\n", "")
-        + "> "
-        + "\033[0m"
-        + text[span[1] : span[1] + 20].replace("\n", "")
-        + "..."
+    return QuestionAnswer.from_response(
+        completion, validation_context={"text_chunk": context}
     )
 
 
+question = "where did he go to school?"
+context = """
+My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.I went to an arts highschool but in university I studied Computational Mathematics and physics.  As part of coop I worked at many companies including Stitchfix, Facebook. I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.
+"""
+
 answer = ask_ai(question, context)
-
-print("Question:", question)
-print()
-for fact in answer.answer:
-    print("Statement:", fact.fact)
-    for span in fact.get_spans(context):
-        print("Citation:", highlight(context, span))
-    print()
-    """
-    Question: What did the author do during college?
-
-    Statement: The author studied Computational Mathematics and physics in university.
-    Citation: ...s born in China.I went to an arts highschool but <in university I studied Computational Mathematics and physics> . As part of coop I...
-
-    Statement: The author started the Data Science club at the University of Waterloo and was the president of the club for 2 years.
-    Citation: ...y companies including Stitchfix, Facebook.I also <started the Data Science club at the University of Waterloo>  and I was the presi...
-    Citation: ... club at the University of Waterloo and I was the <president of the club for 2 years> ...
-    """
+print(answer.model_dump_json(indent=2))
+"""
+2023-09-09 15:48:11.022 | INFO     | __main__:validate_sources:35 - Found 1 span(s) for from 1 citation(s).
+2023-09-09 15:48:11.023 | INFO     | __main__:validate_sources:35 - Found 1 span(s) for from 1 citation(s).
+2023-09-09 15:48:11.023 | INFO     | __main__:validate_sources:78 - Validating 2 facts
+2023-09-09 15:48:11.023 | INFO     | __main__:validate_sources:80 - Found 2 facts with sources
+{
+  "question": "where did he go to school?",
+  "answer": [
+    {
+      "statement": "Jason Liu went to an arts highschool.",
+      "substring_phrase": [
+        "arts highschool"
+      ]
+    },
+    {
+      "statement": "Jason Liu studied Computational Mathematics and physics in university.",
+      "substring_phrase": [
+        "university"
+      ]
+    }
+  ]
+}
+"""

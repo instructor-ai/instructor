@@ -46,20 +46,24 @@ def handle_response_model(response_model: Type[BaseModel], kwargs):
     return response_model, new_kwargs
 
 
-def process_response(response, response_model):  # type: ignore
+def process_response(response, response_model, validation_context=None):  # type: ignore
     if response_model is not None:
-        model = response_model.from_response(response)
+        model = response_model.from_response(
+            response, validation_context=validation_context
+        )
         model._raw_response = response
         return model
     return response
 
 
-async def retry_async(func, response_model, args, kwargs, max_retries):
+async def retry_async(
+    func, response_model, validation_context, args, kwargs, max_retries
+):
     retries = 0
     while retries <= max_retries:
         try:
             response = await func(*args, **kwargs)
-            return process_response(response, response_model), None
+            return process_response(response, response_model, validation_context), None
         except (ValidationError, JSONDecodeError) as e:
             kwargs["messages"].append(dict(**response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
@@ -73,14 +77,14 @@ async def retry_async(func, response_model, args, kwargs, max_retries):
                 raise e
 
 
-def retry_sync(func, response_model, args, kwargs, max_retries):
+def retry_sync(func, response_model, validation_context, args, kwargs, max_retries):
     retries = 0
     new_kwargs = kwargs.copy()
     while retries <= max_retries:
         # Excepts ValidationError, and JSONDecodeError
         try:
             response = func(*args, **kwargs)
-            return process_response(response, response_model), None
+            return process_response(response, response_model, validation_context), None
         except (ValidationError, JSONDecodeError) as e:
             kwargs["messages"].append(dict(**response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
@@ -99,26 +103,30 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     async def new_chatcompletion_async(
-        response_model=None, *args, max_retries=0, **kwargs
+        response_model=None, valiation_context=None, *args, max_retries=0, **kwargs
     ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = await retry_async(
             func=func,
             response_model=response_model,
+            valiation_context=valiation_context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
         )  # type: ignore
         if error:
             raise ValueError(error)
-        return process_response(response, response_model)
+        return (response,)
 
     @wraps(func)
-    def new_chatcompletion_sync(response_model=None, *args, max_retries=0, **kwargs):
+    def new_chatcompletion_sync(
+        response_model=None, validation_context=None, *args, max_retries=0, **kwargs
+    ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = retry_sync(
             func=func,
             response_model=response_model,
+            validation_context=validation_context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
