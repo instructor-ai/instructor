@@ -17,10 +17,15 @@ Let's start by defining the data structures required for this task: `Fact` and `
     * Notice that there are instructions on splitting facts in the docstring which will be used by OpenAI
 
 ```python
-import openai
 from pydantic import Field, BaseModel
 from typing import List
-from instructor import OpenAISchema
+
+import openai
+import instructor
+
+# Patch the OpenAI API to use the `ChatCompletion`
+# endpoint with `response_model` enabled.
+intructor.patch()
 
 
 class Fact(BaseModel):
@@ -55,7 +60,7 @@ class Fact(BaseModel):
             yield from self._get_span(quote, context)
 
 
-class QuestionAnswer(OpenAISchema):
+class QuestionAnswer(BaseModel):
     """
     Class representing a question and its answer as a list of facts, where each fact should have a source.
     Each sentence contains a body and a list of sources.
@@ -80,33 +85,11 @@ The `QuestionAnswer` class represents a question and its answer. It consists of 
 
 To ask the AI a question and get back an answer with citations, we can define a function `ask_ai` that takes a question and context as input and returns a `QuestionAnswer` object.
 
-!!! tips "Prompting Tip: Expert system"
-    Expert prompting is a great trick to get results, it can be easily done by saying things like:
-
-    *  you are an world class expert that can correctly ...
-    *  you are jeff dean give me a code review ...
-
-```python
+```python hl_lines="4"
 def ask_ai(question: str, context: str) -> QuestionAnswer:
-    """
-    Function to ask AI a question and get back an Answer object.
-    but should be updated to use the actual method for making a request to the AI.
-
-    Args:
-        question (str): The question to ask the AI.
-        context (str): The context for the question.
-
-    Returns:
-        Answer: The Answer object.
-    """
-
-    # Making a request to the hypothetical 'openai' module
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        temperature=0.2,
-        max_tokens=1000,
-        functions=[QuestionAnswer.openai_schema],
-        function_call={"name": QuestionAnswer.openai_schema["name"]},
+    return openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        response_model=QuestionAnswer,
         messages=[
             {
                 "role": "system",
@@ -121,9 +104,6 @@ def ask_ai(question: str, context: str) -> QuestionAnswer:
             },
         ],
     )
-
-    # Creating an Answer object from the completion response
-    return QuestionAnswer.from_response(completion)
 ```
 
 The `ask_ai` function takes a string `question` and a string `context` as input. It makes a completion request to the AI model, providing the question and context as part of the prompt. The resulting completion is then converted into a `QuestionAnswer` object.
@@ -174,7 +154,7 @@ In this code snippet, we print the question and iterate over each fact in the an
 
 Here is the expected output for the example:
 
-```
+```plaintext hl_lines="3 6"
 Question: What did the author do during college?
 
 Statement: The author studied Computational Mathematics and physics in university.
