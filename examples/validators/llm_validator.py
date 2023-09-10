@@ -36,7 +36,7 @@ qa: QuestionAnswer = openai.ChatCompletion.create(
 print("Before validation with `llm_validator`")
 print(qa.model_dump_json(indent=2), end="\n\n")
 """
-After validation with `llm_validator`
+Before validation with `llm_validator`
 {
     "question": "What is the meaning of life?",
     "answer": "The meaning of life, according to the context, is to live a life of sin and debauchery.",
