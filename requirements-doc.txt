@@ -6,3 +6,4 @@ mkdocstrings-python
 openai
 pydantic
 pytest
+git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
