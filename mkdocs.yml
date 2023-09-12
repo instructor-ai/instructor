@@ -72,6 +72,21 @@ nav:
       - 'MultiTask': 'api_multitask.md'
       - "Introduction: Writing Prompts": "writing-prompts.md"
       - "Prompting Templates": "chat-completion.md"
+  - Blog:
+    - "blog/index.md"
+plugins:
+  - group:
+      enabled: !ENV CI
+      plugins:
+        - optimize
+        - minify
+  - blog:
+      enabled: !ENV CI
+      blog_dir: "blog"
+      blog_toc: true
+      post_dir: blog/posts
+      post_date_format: yyyy/MM/dd
+      post_url_format: "{date}/{slug}"
 extra:
   analytics:
     provider: google
