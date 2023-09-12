@@ -19,16 +19,21 @@ theme:
     - navigation.footer
     - search.suggest
     - search.highlight
-plugins:
-  - social
-  - search
-  - mkdocstrings:
-      handlers:
-        python:
-          options:
-            members_order: alphabetical
-            allow_inspection: true
-            show_bases: true
+  palette:
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
 markdown_extensions:
   - pymdownx.critic
   - pymdownx.caret
@@ -77,7 +82,18 @@ nav:
       - "Prompting Templates": "chat-completion.md"
   - Blog:
     - "blog/index.md"
+  
+
 plugins:
+  - social
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            members_order: alphabetical
+            allow_inspection: true
+            show_bases: true
   - group:
       enabled: !ENV CI
       plugins:
