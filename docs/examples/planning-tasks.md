@@ -41,7 +41,7 @@ class Query(OpenAISchema):
         ...,
         description="Question asked using a question answering system",
     )
-    dependancies: List[int] = Field(
+    dependencies: List[int] = Field(
         default_factory=list,
         description="List of sub questions that need to be answered before asking this question",
     )
@@ -113,19 +113,19 @@ plan.dict()
     While we build the query plan in this example, we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrival and calls openai for retrival augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
 
 ```python
-{'query_graph': [{'dependancies': [],
+{'query_graph': [{'dependencies': [],
                     'id': 1,
                     'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
                     'question': "Identify Jason's home country"},
-                    {'dependancies': [],
+                    {'dependencies': [],
                     'id': 2,
                     'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
                     'question': 'Find the population of Canada'},
-                    {'dependancies': [1],
+                    {'dependencies': [1],
                     'id': 3,
                     'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
                     'question': "Find the population of Jason's home country"},
-                    {'dependancies': [2, 3],
+                    {'dependencies': [2, 3],
                     'id': 4,
                     'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
                     'question': 'Calculate the difference in populations between '
