@@ -25,7 +25,7 @@ class StreamingAccumulatorManager:
             try:
                 # Replace this line with your validation logic
                 obj = m.MultiSearch.model_validate(obj)
-                self.update(index, obj)
+                self.update(index, obj.model_dump())
                 self.accumulator[Status.IS_VALID.value].update(index, True)
             except ValidationError as e:
                 self.accumulator[Status.IS_VALID.value].update(index, False)
@@ -59,8 +59,6 @@ class StreamingAccumulatorManager:
         elif isinstance(data, Enum):
             enum_path = f"{path}.enum"
             self.accumulator[enum_path].update(index, data.value)
-        elif path != "$":
-            pass
         else:
             self.accumulator[path].update(index, data)
 
