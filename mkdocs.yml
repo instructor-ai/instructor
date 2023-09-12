@@ -9,9 +9,12 @@ theme:
     repo: fontawesome/brands/github
   features:
     - navigation.instant
+    - navigation.instant.prefetch
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.expand
+    - navigation.path
+    - content.tooltips
     - content.code.annotate
     - navigation.footer
     - search.suggest
