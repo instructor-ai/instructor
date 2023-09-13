@@ -3,7 +3,7 @@ from stats_dict import stats_dict
 import json
 
 # Sample data
-query_data = {i: line for i, line in enumerate(open("test.jsonl", "r"))}
+query_data = {i: line.strip() for i, line in enumerate(open("test.jsonl", "r"))}
 
 # Initialize selected keys
 selected_keys = {}
@@ -27,15 +27,13 @@ def render_dropdown_and_button(stats_key):
     st.subheader("Histogram")
     st.bar_chart(stats_dict[stats_key]["counter"], use_container_width=True)
 
-    st.subheader("Select keys to view lines")
     options = list(stats_dict[stats_key]["counter"].keys())
     selected_keys[stats_key] = st.multiselect(
         f"View samples with {stats_key}",
         options,
         default=selected_keys.get(stats_key, []),
     )
-    if st.button(f"Show Selected for {stats_key}"):
-        st.code(get_lines(stats_key, selected_keys[stats_key]))
+    st.code(get_lines(stats_key, selected_keys[stats_key]))
 
 
 # Sidebar for navigation
@@ -46,7 +44,7 @@ page = st.sidebar.selectbox(
 )
 
 # Main Streamlit App
-st.title("Query Data Visualizer")
+st.title("Structured Output Evaluation")
 
 # Validation Stats
 if page == "Validation Stats":

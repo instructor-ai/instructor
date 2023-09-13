@@ -1,13 +1,17 @@
-from typing import List
-from graphviz import Digraph
+# Entity Resolution and Visualization for Legal Documents
+
+In this guide, we demonstrate how to extract and resolve entities from a sample legal contract. Then, we visualize these entities and their dependencies as an entity graph. This approach can be invaluable for legal tech applications, aiding in the understanding of complex documents.
+
+!!! tips "Motivation"
+    Legal contracts are full of intricate details and interconnected clauses. Automatically extracting and visualizing these elements can make it easier to understand the document's overall structure and terms.
+
+## Defining the Data Structures
+
+The **`Entity`** and **`Property`** classes model extracted entities and their attributes. **`DocumentExtraction`** encapsulates a list of these entities.
+
+```python
 from pydantic import BaseModel, Field
-
-import instructor
-import openai
-
-# Patch openai to use instructor
-# allows for response_model
-instructor.patch()
+from typing import List
 
 
 class Property(BaseModel):
@@ -40,16 +44,26 @@ class DocumentExtraction(BaseModel):
         ...,
         description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
     )
+```
 
+## Entity Extraction and Resolution
+
+The **`ask_ai`** function utilizes OpenAI's API to extract and resolve entities from the input content.
+
+```python
+import openai
+import instructor
+
+instructor.patch()
 
 def ask_ai(content) -> DocumentExtraction:
-    resp: DocumentExtraction = openai.ChatCompletion.create(
+    return openai.ChatCompletion.create(
         model="gpt-4",
         response_model=DocumentExtraction,
         messages=[
             {
                 "role": "system",
-                "content": "You are a perfect entity resolution system that extracts facts from the document. Extract and resolve a list of entities from the following document:",
+                "content": "Extract and resolve a list of entities from the following document:",
             },
             {
                 "role": "user",
@@ -57,39 +71,39 @@ def ask_ai(content) -> DocumentExtraction:
             },
         ],
     )  # type: ignore
-    return resp
+```
 
+## Graph Visualization
+
+**`generate_graph`** takes the extracted entities and visualizes them using Graphviz. It creates nodes for each entity and edges for their dependencies.
+
+```python
+from graphviz import Digraph
 
 def generate_html_label(entity: Entity) -> str:
-    rows = [
-        f"<tr><td>{prop.key}</td><td>{prop.resolved_absolute_value}</td></tr>"
-        for prop in entity.properties
-    ]
+    rows = [f"<tr><td>{prop.key}</td><td>{prop.resolved_absolute_value}</td></tr>" for prop in entity.properties]
     table_rows = "".join(rows)
-    return f"""<
-    <table border="0" cellborder="1" cellspacing="0">
-    <tr><td colspan="2"><b>{entity.entity_title}</b></td></tr>
-    {table_rows}
-    </table>>"""
-
+    return f"<table border='0' cellborder='1' cellspacing='0'><tr><td colspan='2'><b>{entity.entity_title}</b></td></tr>{table_rows}</table>>"
 
 def generate_graph(data: DocumentExtraction):
     dot = Digraph(comment="Entity Graph", node_attr={"shape": "plaintext"})
-
-    # Add nodes
+    
     for entity in data.entities:
         label = generate_html_label(entity)
         dot.node(str(entity.id), label)
-
-    # Add edges
+    
     for entity in data.entities:
         for dep_id in entity.dependencies:
             dot.edge(str(entity.id), str(dep_id))
+    
+    dot.render("entity.gv", view=True)
+```
 
-    # Render graph
-    dot.render("entity.gz", view=True)
+## Execution
 
+Finally, execute the code to visualize the entity graph for the sample legal contract.
 
+```python
 content = """
 Sample Legal Contract
 Agreement Contract
@@ -113,7 +127,11 @@ The parties agree not to disclose any confidential information received from the
 Article 4: Termination
 
 The contract can be terminated with a 30-day notice, unless there are outstanding obligations that must be fulfilled after the [DeliveryDate].
-"""
-
+"""  # Your legal contract here
 model = ask_ai(content)
 generate_graph(model)
+```
+
+This will produce a graphical representation of the entities and their dependencies, stored as "entity.gv". 
+
+![Entity Graph](entity_resolution.png)

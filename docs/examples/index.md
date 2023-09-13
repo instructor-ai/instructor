@@ -6,13 +6,18 @@
 
 - [Self-Assessment via Validators](self_critique.md): Implement AI self-assessment with `llm_validator`.
 
+- [Citations via Regex](exact_citations.md): Retrieve exact citations using regular expressions and smart prompting.
+
 - [Extracting Search Queries](search.md): Segment search queries through function calling and multi-task definitions.
+
+- [Generating Knowledge Graphs](knowledge_graph.md): Generate knowledge graphs from a question
 
 - [Query Decomposition](planning-tasks.md): Decompose complex queries into subqueries in a single request.
 
+- [Entity Extraction and Resolution](entity_resolution.md): Extract and resolve entities from a document.
+
 - [Working with Recursive Schemas](recursive.md): Implement and understand recursive schemas.
 
-- [Citations via Regex](exact_citations.md): Retrieve exact citations using regular expressions and smart prompting.
 
 - [Table Extraction from Text](autodataframe.md): Extract tables, potentially multiple, automatically from textual data.
 

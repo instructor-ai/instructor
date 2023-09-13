@@ -140,9 +140,11 @@ def wrap_chatcompletion(func: Callable) -> Callable:
     return wrapper_function
 
 
-def process_response(response, response_model):
+def process_response(response, response_model, validation_context=None):
     if response_model is not None:
-        model = response_model.from_response(response)
+        model = response_model.from_response(
+            response, validation_context=validation_context
+        )
         model._raw_response = response
         return model
     return response
