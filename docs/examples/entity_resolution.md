@@ -54,6 +54,8 @@ The **`ask_ai`** function utilizes OpenAI's API to extract and resolve entities 
 import openai
 import instructor
 
+# Adds response_model to ChatCompletion
+# Allows the return of Pydantic model rather than raw JSON
 instructor.patch()
 
 def ask_ai(content) -> DocumentExtraction:

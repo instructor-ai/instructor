@@ -35,6 +35,11 @@ The **`generate_graph`** function leverages OpenAI's API to generate a knowledge
 
 ```python
 import openai
+import instructor
+
+# Adds response_model to ChatCompletion
+# Allows the return of Pydantic model rather than raw JSON
+instructor.patch()
 
 def generate_graph(input) -> KnowledgeGraph:
     return openai.ChatCompletion.create(
