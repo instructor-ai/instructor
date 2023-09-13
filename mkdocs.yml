@@ -74,7 +74,7 @@ nav:
     - Table Extraction from Text: 'examples/autodataframe.md'
     - Action Item and Dependency Mapping: 'examples/action_items.md'
     - Multi-File Code Generation: 'examples/gpt-engineer.md'
-    - PII Data Sanitization: 'examples/pii.md
+    - PII Data Sanitization: 'examples/pii.md'
   - CLI Reference:
       - "Introduction": "cli/index.md"
       - "Usage Tracking": "cli/usage.md"
