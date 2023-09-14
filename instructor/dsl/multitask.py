@@ -118,7 +118,7 @@ def MultiTask(
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, MultiTaskBase),
+        __base__=(OpenAISchema, MultiTaskBase),  # type: ignore
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class

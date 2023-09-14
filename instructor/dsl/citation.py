@@ -64,7 +64,6 @@ class CitationMixin(BaseModel):
         If the span is not found, remove the substring_phrase from the list.
         """
         if info.context is None:
-            logger.info("No context found, skipping validation")
             return self
 
         # Get the context from the info
