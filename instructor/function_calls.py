@@ -31,7 +31,7 @@ def _remove_a_key(d, remove_key) -> None:
     """Remove a key from a dictionary recursively"""
     if isinstance(d, dict):
         for key in list(d.keys()):
-            if key == remove_key:
+            if key == remove_key and "type" in d.keys():
                 del d[key]
             else:
                 _remove_a_key(d[key], remove_key)
@@ -200,6 +200,7 @@ class OpenAISchema(BaseModel):
                     f"the required parameters with correct types"
                 )
 
+        _remove_a_key(parameters, "title")
         _remove_a_key(parameters, "additionalProperties")
         return {
             "name": schema["title"],
