@@ -33,6 +33,30 @@ def llm_validator(
     """
     Create a validator that uses the LLM to validate an attribute
 
+    ## Usage
+
+    ```python
+    from instructor import llm_validator
+    from pydantic import BaseModel, Field, field_validator
+
+    class User(BaseModel):
+        name: str = Annotated[str, llm_validator("The name must be a full name all lowercase")]
+        age: int = Field(description="The age of the person")
+
+    try:
+        user = User(name="Jason Liu", age=20)
+    except ValidationError as e:
+        print(e)
+    ```
+
+    ```
+    1 validation error for User
+    name
+      The name is valid but not all lowercase (type=value_error.llm_validator)
+    ```
+
+    Note that there, the error message is written by the LLM, and the error type is `value_error.llm_validator`.
+
     Parameters:
         statement (str): The statement to validate
         model (str): The LLM to use for validation (default: "gpt-3.5-turbo-0613")

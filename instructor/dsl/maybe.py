@@ -3,6 +3,10 @@ from typing import Type, Optional
 
 
 class MaybeBase(BaseModel):
+    """
+    Extract a result from a model, if any, otherwise set the error and message fields.
+    """
+
     result: Optional[BaseModel]
     error: bool = Field(default=False)
     message: Optional[str]
@@ -13,7 +17,33 @@ class MaybeBase(BaseModel):
 
 def Maybe(model: Type[BaseModel]) -> MaybeBase:
     """
-    Create a Maybe model for a given Pydantic model.
+    Create a Maybe model for a given Pydantic model. This allows you to return a model that includes fields for `result`, `error`, and `message` for sitatations where the data may not be present in the context.
+
+    ## Usage
+
+    ```python
+    from pydantic import BaseModel, Field
+    from instructor import Maybe
+
+    class User(BaseModel):
+        name: str = Field(description="The name of the person")
+        age: int = Field(description="The age of the person")
+        role: str = Field(description="The role of the person")
+
+    MaybeUser = Maybe(User)
+    ```
+
+    ## Result
+
+    ```python
+    class MaybeUser(BaseModel):
+        result: Optional[User]
+        error: bool = Field(default=False)
+        message: Optional[str]
+
+        def __bool__(self):
+            return self.result is not None
+    ```
 
     Parameters:
         model (Type[BaseModel]): The Pydantic model to wrap with Maybe.

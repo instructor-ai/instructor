@@ -80,10 +80,9 @@ nav:
       - "Usage Tracking": "cli/usage.md"
       - "Finetuning GPT": "cli/finetune.md"
   - API Reference:
-      - 'OpenAISchema': 'openai_schema.md'
-      - 'MultiTask': 'api_multitask.md'
-      - "Introduction: Writing Prompts": "writing-prompts.md"
-      - "Prompting Templates": "chat-completion.md"
+      - 'Core Library': 'api.md'
+      - "Prompting DSL: Intro": "writing-prompts.md"
+      - "Prompting DSL Reference": "chat-completion.md"
   - Blog:
     - "blog/index.md"
   
