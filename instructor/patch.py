@@ -103,20 +103,20 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     async def new_chatcompletion_async(
-        response_model=None, valiation_context=None, *args, max_retries=0, **kwargs
+        response_model=None, validation_context=None, *args, max_retries=0, **kwargs
     ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = await retry_async(
             func=func,
             response_model=response_model,
-            valiation_context=valiation_context,
+            validation_context=validation_context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
         )  # type: ignore
         if error:
             raise ValueError(error)
-        return (response,)
+        return response
 
     @wraps(func)
     def new_chatcompletion_sync(
@@ -155,6 +155,47 @@ original_chatcompletion_async = openai.ChatCompletion.acreate
 
 
 def patch():
+    """
+    Patch the `openai.ChatCompletion.create` and `openai.ChatCompletion.acreate` methods to support the `response_model` parameter.
+
+    ## Usage
+
+    ```python
+    from pydantic import BaseModel, Field
+    import instructor
+
+    instructor.patch()
+
+    class User(BaseModel):
+        name: str = Field(description="The name of the person")
+        age: int = Field(description="The age of the person")
+        role: str = Field(description="The role of the person")
+
+    user = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "user",
+                "content": "Jason is 20 years old",
+            },
+        ],
+        response_model=User,
+    )
+
+    print(user.model_dump())
+    ```
+
+    ## Result
+    ```
+    {
+        "name": "Jason Liu",
+        "age": 20,
+        "role": "student",
+    }
+    ```
+
+
+    """
     openai.ChatCompletion.create = wrap_chatcompletion(original_chatcompletion)
     openai.ChatCompletion.acreate = wrap_chatcompletion(original_chatcompletion_async)
 

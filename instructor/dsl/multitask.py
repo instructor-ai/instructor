@@ -58,21 +58,39 @@ def MultiTask(
     for a specific task, names and descriptions are automatically generated. However
     they can be overridden.
 
-    Note:
-        Using this function is equivalent to creating a class that inherits from
-        OpenAISchema and has a list of the subtask class as a field.
+    ## Usage
 
-        ```python
-        class MultiTask(OpenAISchema):
-            \"""
-            Correct segmentation of `{subtask_class.__name__}` tasks
-            \"""
-            tasks: List[subtask_class] = Field(
-                default_factory=list,
-                repr=False,
-                description=f"Correctly segmented list of `{subtask_class.__name__}` tasks",
-            )
-        ```
+    ```python
+    from pydantic import BaseModel, Field
+    from instructor import MultiTask
+
+    class User(BaseModel):
+        name: str = Field(description="The name of the person")
+        age: int = Field(description="The age of the person")
+        role: str = Field(description="The role of the person")
+
+    MultiUser = MultiTask(User)
+    ```
+
+    ## Result
+
+    ```python
+    class MultiUser(OpenAISchema, MultiTaskBase):
+        tasks: List[User] = Field(
+            default_factory=list,
+            repr=False,
+            description="Correctly segmented list of `User` tasks",
+        )
+
+        @classmethod
+        def from_streaming_response(cls, completion) -> Generator[User]:
+            '''
+            Parse the streaming response from OpenAI and yield a `User` object
+            for each task in the response
+            '''
+            json_chunks = cls.extract_json(completion)
+            yield from cls.tasks_from_chunks(json_chunks)
+    ```
 
     Parameters:
         subtask_class (Type[OpenAISchema]): The base class to use for the MultiTask
@@ -100,7 +118,7 @@ def MultiTask(
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, MultiTaskBase),
+        __base__=(OpenAISchema, MultiTaskBase),  # type: ignore
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class

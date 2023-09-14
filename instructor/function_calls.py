@@ -31,7 +31,7 @@ def _remove_a_key(d, remove_key) -> None:
     """Remove a key from a dictionary recursively"""
     if isinstance(d, dict):
         for key in list(d.keys()):
-            if key == remove_key:
+            if key == remove_key and "type" in d.keys():
                 del d[key]
             else:
                 _remove_a_key(d[key], remove_key)
@@ -123,6 +123,46 @@ class openai_function:
 
 
 class OpenAISchema(BaseModel):
+    """
+    Augments a Pydantic model with OpenAI's schema for function calling
+
+    This class augments a Pydantic model with OpenAI's schema for function calling. The schema is generated from the model's signature and docstring. The schema can be used to validate the response from OpenAI's API and extract the function call.
+
+    ## Usage
+
+    ```python
+    from instructor import OpenAISchema
+
+    class User(OpenAISchema):
+        name: str
+        age: int
+
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo',
+        messages=[{
+            "content": "Jason is 20 years old",
+            "role": "user"
+        }],
+        functions=[User.openai_schema],
+        function_call={"name": User.openai_schema["name"]},
+    )
+
+    user = User.from_response(completion)
+
+    print(user.model_dump())
+    ```
+    ## Result
+
+    ```
+    {
+        "name": "Jason Liu",
+        "age": 20,
+    }
+    ```
+
+
+    """
+
     @classmethod
     @property
     def openai_schema(cls):
@@ -160,8 +200,8 @@ class OpenAISchema(BaseModel):
                     f"the required parameters with correct types"
                 )
 
-        _remove_a_key(parameters, "additionalProperties")
         _remove_a_key(parameters, "title")
+        _remove_a_key(parameters, "additionalProperties")
         return {
             "name": schema["title"],
             "description": schema["description"],
