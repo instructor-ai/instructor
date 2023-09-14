@@ -116,7 +116,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
         )  # type: ignore
         if error:
             raise ValueError(error)
-        return (response,)
+        return response
 
     @wraps(func)
     def new_chatcompletion_sync(
