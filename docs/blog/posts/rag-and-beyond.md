@@ -21,15 +21,13 @@ With the advent of large language models (LLM), retrival augmented generation (R
   <figcaption>Simple RAG that embedded the user query and makes a search.</figcaption>
 </figure>
 
-In this post I'll show you how to use `instructor` to model a search backend, why that might be useful, and how to use it to completely bring your own arbitrary infrastructure to the table.
+So let's kick things off by examining what I like to call the 'Dumb' RAG Model—a basic setup that's more common than you'd think.
 
 ## The 'Dumb' RAG Model
 
 When you ask a question like, "what is the capital of France?" The RAG 'dumb' model embeds the query and searches in some unopinonated search endpoint. Limited to a single method API like `search(query: str) -> List[str]`. This is fine for simple queries, since you'd expect words like 'paris is the capital of france' to be in the top results of say, your wikipedia embeddings.
 
-However it'd be crazy to think that this was the best solution, its common to also want to filter keywords, or tags, or search in a specific date range, or dispatch to multiple backends where data is located, call other external apis and etc.
-
-This is where function calling comes in, and more interestingly, modeling your function as multiple dispatched functions.
+Now that we've seen the limitations of a simplistic RAG model, let's dive into how we can make it smarter with query understanding. This is where things get interesting.
 
 ## Improving the RAG Model with Query Understanding
 
@@ -37,13 +35,14 @@ This is where function calling comes in, and more interestingly, modeling your f
     Much of this work has been inspired by / done in collab with a few of my clients at [new.computer](https://new.computer), [Metaphor Systems](https://metaphor.systems),  and [Naro](https://narohq.com), go check them out!
 
 
-Ultimately what you want to deploy is a [system that understands](https://en.wikipedia.org/wiki/Query_understanding) how to take the query and rewrite it to improve precision and recall. Once you have that in place, then the role of the LLM is both translate the user query into a search engine call, render the results, or use the model to summarize the results back ot the user in a coherent way.
+Ultimately what you want to deploy is a [system that understands](https://en.wikipedia.org/wiki/Query_understanding) how to take the query and rewrite it to improve precision and recall. 
 
 <figure markdown>
   ![RAG](img/query_understanding.png)
   <figcaption>Query Understanding system routes to multiple search backends.</figcaption>
 </figure>
 
+Not convinced? Let's move from theory to practice with a real-world example. First up, Metaphor Systems.
 
 ## Case Study 1: Metaphor Systems
 
@@ -57,31 +56,27 @@ Take [Metaphor Systems](https://metaphor.systems), which turns natural language 
 If we peek under the hood, we can see that the query is actually a complex object, with a date range, and a list of domains to search in. Its actually more complex than this but this is a good start.
 
 ```python
-from pydantic import BaseModel
-from typing import List
-
-import datetime
-import instructor 
-import openai
-
-# Enables response_model in the openai client
-instructor.patch()
-
 class DateRange(BaseModel):
     start: datetime.date
     end: datetime.date
 
 class MetaphorQuery(BaseModel):
-    query: str
+    rewritten_query: str
     published_daterange: DateRange
     domains_allow_list: List[str]
 
     async def execute():
-        return await metaphor.search(
-            query=self.query,
-            published_daterange=self.published_daterange,
-            domains_allow_list=self.domains_allow_list
-        )
+        return await metaphor.search(...)
+```
+
+Note how we model a rewritten query, range of published dates, and a list of domains to search in. This is a powerful pattern allows the user query to be restructured for better performance without the user having to know the details of how the search backend works. 
+
+```python
+import instructor 
+import openai
+
+# Enables response_model in the openai client
+instructor.patch()
 
 query = openai.ChatCompletion.create(
     model="gpt-4",
@@ -103,7 +98,7 @@ query = openai.ChatCompletion.create(
 
 ```json
 {
-    "query": "What are some recent developments in AI?",
+    "rewritten_query": "novel developments advancements ai artificial intelligence machine learning",
     "published_daterange": {
         "start": "2023-09-17",
         "end": "2021-06-17"
@@ -124,24 +119,13 @@ class DateRange(BaseModel):
     )
 ```
 
+Now, let's see how this approach can help model an agent like personal assistant.
+
 ## Case Study 2: Personal Assistant
 
 Another great example of this multiple dispatch pattern is a personal assistant. You ask, "What do I have today?" You want events, emails, reminders. Multiple backends, one unified summary of result. Here you can't even assume that text is going to be embedded in the search backend. You need to model the search backend and the query.
 
 ```python
-# SearchClient model and OpenAI call
-from pydantic import BaseModel
-from typing import List
-
-import datetime
-import enum
-import asyncio
-import instructor 
-import openai
-
-# Enables response_model in the openai client
-instructor.patch()
-
 class ClientSource(enum.Enum):
     GMAIL = "gmail"
     CALENDAR = "calendar"
@@ -156,15 +140,25 @@ class SearchClient(BaseModel):
 
     async def execute(self) -> str:
         if self.source == ClientSource.GMAIL:
-            return await gmail.search(query=self.query, keywords=self.keywords, email=self.email, start_date=self.start_date, end_date=self.end_date)
+            ...
         elif self.source == ClientSource.CALENDAR:
-            return await calendar.search(query=self.query, keywords=self.keywords, email=self.email, start_date=self.start_date, end_date=self.end_date)
+            ...
 
 class Retrival(BaseModel):
     queries: List[SearchClient]
 
     async def execute(self) -> str:
         return await asyncio.gather(*[query.execute() for query in self.queries])
+```
+
+Now we can call this with a simple query like "What do I have today?" and it will try to async dispatch to the correct backend. Its will important to prompt the language model well, but we'll leave that for another day.
+
+```python
+import instructor 
+import openai
+
+# Enables response_model in the openai client
+instructor.patch()
 
 retrival = openai.ChatCompletion.create(
     model="gpt-4",
@@ -208,8 +202,12 @@ Both of these examples show case how both search providors and consumers can use
 
 ## Conclusion
 
-At the end of the day its not really about embedding systems, its about good old information retrival, query understanding, rewriting, etc. That's where the magic happens. With `instructor`, you're not just working with extraction of structured data, you're building a model of a system and presenting it to the language model. It super charges function calling to reason about multiple calls to many systes in a pythonic way.
+This isnt about fancy embedding tricks, its just plain old information retrival and query understanding. The beauty of instructor is that it simplifies modeling the complex and lets you define the output of the language model, the prompts, and the payload we send to the backend in a single place.
 
 ## What's Next?
 
-The real game-changer isn't just smarter algorithms; it's the collaboration between expert users and AI engineers. Experts bring domain-specific insights, but how do you distill this wisdom into tool use? That's the gap I'm trying to tackle next. I'm building a platform that fosters collaboration between the two, making it easier to fine-tune prompts or even the language models themselves real-world expertise. Intrigued? Visit [useinstructor.com](https://useinstructor.com) and take our survey. Together, let's create tools that are as brilliant as the minds using them.
+With `instructor`, you're not just working with extraction of structured data, you're building a model of a system and presenting it to the language model. It super charges function calling to reason about multiple calls to many systems in a pythonic way.
+
+But better structured output is just the beginning. The untapped goldmine is in the usage, not the tool. Collaboration between experts and AI engineers is what will bring domain-specific insights, but how do you distill this wisdom into tool use? 
+
+I'm building a platform that fosters collaboration between the two, making it easier to iterate on prompts or even create a gold label dataset and finetune the language models themselves from real-world expertise. Interested? Visit [useinstructor.com](https://useinstructor.com) and take our survey. Together, let's create tools that are as brilliant as the minds using them.
