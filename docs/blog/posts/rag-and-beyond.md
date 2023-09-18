@@ -198,6 +198,9 @@ retrival = openai.ChatCompletion.create(
 
 Notice that we have a list of queries, that route to different search backends, email and calendar. We can even dispatch them async to be as performance as possible. Not only do we dispatch to different backends (that we have no control over), but you are likely going to render them to the user differently as well, perhaps you want to summarize the emails in text, but you want to render the calendar events as a list that they can scroll across on a mobile app.
 
+!!! Note "Can I used framework X?"
+    I get this question many times, but its just code, within these dispatchs you can do whatever you want. You can use `input()` to ask the user for more information, make a post request, call a Langchain agent or LLamaindex query engine to get more information, the sky is the limit.
+
 Both of these examples show case how both search providors and consumers can use `instructor` to model their systems. This is a powerful pattern that allows you to build a system that can be used by anyone, and can be used to build a LLM layer, from scratch, in front of any arbitrary backend.
 
 ## Conclusion
@@ -206,8 +209,6 @@ This isnt about fancy embedding tricks, its just plain old information retrival 
 
 ## What's Next?
 
-With `instructor`, you're not just working with extraction of structured data, you're building a model of a system and presenting it to the language model. It super charges function calling to reason about multiple calls to many systems in a pythonic way.
+`instructor` isn't just about data extraction, It's building a model, and presenting it to the LLM. Structured output is just the beginning. The untapped goldmine is skilled use of tools and apis. 
 
-But better structured output is just the beginning. The untapped goldmine is in the usage, not the tool. Collaboration between experts and AI engineers is what will bring domain-specific insights, but how do you distill this wisdom into tool use? 
-
-I'm building a platform that fosters collaboration between the two, making it easier to iterate on prompts or even create a gold label dataset and finetune the language models themselves from real-world expertise. Interested? Visit [useinstructor.com](https://useinstructor.com) and take our survey. Together, let's create tools that are as brilliant as the minds using them.
+I believe collaboration between experts users and AI engineers is what will bring out that expertise. If you're interested, visit [useinstructor.com](https://useinstructor.com) and take our survey. Together, let's create tools that are as brilliant as the minds that use them.
