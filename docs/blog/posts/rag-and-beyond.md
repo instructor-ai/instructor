@@ -27,7 +27,17 @@ So let's kick things off by examining what I like to call the 'Dumb' RAG Modelâ€
 
 When you ask a question like, "what is the capital of France?" The RAG 'dumb' model embeds the query and searches in some unopinonated search endpoint. Limited to a single method API like `search(query: str) -> List[str]`. This is fine for simple queries, since you'd expect words like 'paris is the capital of france' to be in the top results of say, your wikipedia embeddings.
 
-Now that we've seen the limitations of a simplistic RAG model, let's dive into how we can make it smarter with query understanding. This is where things get interesting.
+### Why is this a problem?
+
+- **Query-Document Mismatch**: Assumes query and content are similar in embedding space and only retrival is based on embedding similarity. Only using queries that are semantically similar to the content is a huge limitation.
+
+- **Monolithic Search Backend**: Assumes a single search backend, which is not always the case. You may have multiple search backends, each with their own API, and you want to route the query to vector stores, search clients, sql databases, and more.
+  
+- **Limitation of text search**: Restricts complex queries to a single string (`{query: str}`), sacrificing expressiveness, in using keywords, filters, and other advanced features.
+
+- **Limited ability to plan**: Assumes that the query is the only input to the search backend, but you may want to use other information to improve the search, like the user's location, or the time of day using the context to rewrite the query.
+
+Now let's dive into how we can make it smarter with query understanding. This is where things get interesting.
 
 ## Improving the RAG Model with Query Understanding
 
