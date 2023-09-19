@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "instructor"
-version = "0.2.7"
+version = "0.2.8"
 description = "Helper functions that allow us to improve openai's function_call ergonomics"
 authors = ["Jason <jason@jxnl.co>"]
 license = "MIT"
@@ -10,7 +10,7 @@ repository = "https://github.com/jxnl/instructor"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-openai = "^0.27.8"
+openai = "^0.28.0"
 pydantic = "^2.0.2"
 docstring-parser = "^0.15"
 typer = "^0.9.0" 
