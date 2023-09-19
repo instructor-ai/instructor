@@ -14,7 +14,7 @@ tags:
 With the advent of large language models (LLM), retrival augmented generation (RAG) has become a hot topic. However throught the past year of [helping startups](https://jxnl.notion.site/Working-with-me-ec2bb36a5ac048c2a8f6bd888faea6c2?pvs=4) integrate LLMs into their stack I've noticed that the pattern of taking user queries, embedding them, and directly searching a vector store is effectively demoware.
 
 !!! note "What is RAG?"
-    Retrival augmented generation (RAG) is a technique that uses a LLM to generate responses, but uses a search backend to augment the generation, in the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
+    Retrival augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
 
 <figure markdown>
   ![RAG](img/dumb_rag.png)
@@ -33,7 +33,7 @@ When you ask a question like, "what is the capital of France?" The RAG 'dumb' mo
 
 - **Monolithic Search Backend**: Assumes a single search backend, which is not always the case. You may have multiple search backends, each with their own API, and you want to route the query to vector stores, search clients, sql databases, and more.
   
-- **Limitation of text search**: Restricts complex queries to a single string (`{query: str}`), sacrificing expressiveness, in using keywords, filters, and other advanced features. For example, `what problems did we fix last week` that cannot be answered by a simple text search, since documents that contain `problem, last week` are going to be present at every week.
+- **Limitation of text search**: Restricts complex queries to a single string (`{query: str}`), sacrificing expressiveness, in using keywords, filters, and other advanced features. For example, asking `what problems did we fix last week` cannot be answered by a simple text search since documents that contain `problem, last week` are going to be present at every week.
 
 - **Limited ability to plan**: Assumes that the query is the only input to the search backend, but you may want to use other information to improve the search, like the user's location, or the time of day using the context to rewrite the query. For example, if you present the language model of more context its able to plan a suite of queries to execute to return the best results.
 
@@ -56,7 +56,7 @@ Not convinced? Let's move from theory to practice with a real-world example. Fir
 
 ## Whats instructor?
 
-Instructor uses Pydantic to simplify the interaction between the programmer and language models via the function calling api..
+Instructor uses Pydantic to simplify the interaction between the programmer and language models via the function calling API.
 
 - **Widespread Adoption**: Pydantic is a popular tool among Python developers.
 - **Simplicity**: Pydantic allows model definition in Python.
@@ -64,14 +64,14 @@ Instructor uses Pydantic to simplify the interaction between the programmer and 
 
 ## Case Study 1: Metaphor Systems
 
-Take [Metaphor Systems](https://metaphor.systems), which turns natural language queries into their custom search-optimized query. If you take a look web ui you'll notice that they have an auto-prompt option, which uses function calls to furthur optimize your query using an language model, and turn it into a fully specified metaphor systems query.
+Take [Metaphor Systems](https://metaphor.systems), which turns natural language queries into their custom search-optimized query. If you take a look web UI you'll notice that they have an auto-prompt option, which uses function calls to furthur optimize your query using a language model, and turns it into a fully specified metaphor systems query.
 
 <figure markdown>
 ![Metaphor Systems](img/meta.png)
 <figcaption>Metaphor Systems UI</figcaption>
 </figure>
 
-If we peek under the hood, we can see that the query is actually a complex object, with a date range, and a list of domains to search in. Its actually more complex than this but this is a good start. We can model this structured output in Pydantic using the instructor library
+If we peek under the hood, we can see that the query is actually a complex object, with a date range, and a list of domains to search in. It's actually more complex than this but this is a good start. We can model this structured output in Pydantic using the instructor library
 
 ```python
 class DateRange(BaseModel):
@@ -87,7 +87,7 @@ class MetaphorQuery(BaseModel):
         return await metaphor.search(...)
 ```
 
-Note how we model a rewritten query, range of published dates, and a list of domains to search in. This is a powerful pattern allows the user query to be restructured for better performance without the user having to know the details of how the search backend works. 
+Note how we model a rewritten query, range of published dates, and a list of domains to search in. This powerful pattern allows the user query to be restructured for better performance without the user having to know the details of how the search backend works. 
 
 ```python
 import instructor 
@@ -125,7 +125,7 @@ query = openai.ChatCompletion.create(
 }
 ```
 
-This isn't just about adding some date ranges. It's about nuanced, tailored searches, that is deeply integrated with the backend. Metaphor Systems has a whole suite of other filters and options that you can use to build a powerful search query. They can even use some chain of thought prompting to improve how they use some of these advanced features.
+This isn't just about adding some date ranges. It's about nuanced, tailored searches, that are deeply integrated with the backend. Metaphor Systems has a whole suite of other filters and options that you can use to build a powerful search query. They can even use some chain of thought prompting to improve how they use some of these advanced features.
 
 ```python
 class DateRange(BaseModel):
@@ -169,7 +169,7 @@ class Retrival(BaseModel):
         return await asyncio.gather(*[query.execute() for query in self.queries])
 ```
 
-Now we can call this with a simple query like "What do I have today?" and it will try to async dispatch to the correct backend. Its will important to prompt the language model well, but we'll leave that for another day.
+Now we can call this with a simple query like "What do I have today?" and it will try to async dispatch to the correct backend. It's still important to prompt the language model well, but we'll leave that for another day.
 
 ```python
 import instructor 
@@ -214,20 +214,21 @@ retrival = openai.ChatCompletion.create(
 }
 ```
 
-Notice that we have a list of queries, that route to different search backends, email and calendar. We can even dispatch them async to be as performance as possible. Not only do we dispatch to different backends (that we have no control over), but you are likely going to render them to the user differently as well, perhaps you want to summarize the emails in text, but you want to render the calendar events as a list that they can scroll across on a mobile app.
+Notice that we have a list of queries that route to different search backends (email and calendar). We can even dispatch them async to be as performance as possible. Not only do we dispatch to different backends (that we have no control over), but you are likely going to render them to the user differently as well. Perhaps you want to summarize the emails in text, but you want to render the calendar events as a list that they can scroll across on a mobile app.
 
 !!! Note "Can I used framework X?"
-    I get this question many times, but its just code, within these dispatchs you can do whatever you want. You can use `input()` to ask the user for more information, make a post request, call a Langchain agent or LLamaindex query engine to get more information, the sky is the limit.
+    I get this question a lot, but it's just code. Within these dispatchs you can do whatever you want. You can use `input()` to ask the user for more information, make a post request, call a Langchain agent or LLamaindex query engine to get more information. The sky is the limit.
 
-Both of these examples show case how both search providors and consumers can use `instructor` to model their systems. This is a powerful pattern that allows you to build a system that can be used by anyone, and can be used to build a LLM layer, from scratch, in front of any arbitrary backend.
+Both of these examples showcase how both search providors and consumers can use `instructor` to model their systems. This is a powerful pattern that allows you to build a system that can be used by anyone, and can be used to build an LLM layer, from scratch, in front of any arbitrary backend.
 
 ## Conclusion
 
-This isnt about fancy embedding tricks, its just plain old information retrival and query understanding. The beauty of instructor is that it simplifies modeling the complex and lets you define the output of the language model, the prompts, and the payload we send to the backend in a single place.
+This isnt about fancy embedding tricks, it's just plain old information retrival and query understanding. The beauty of instructor is that it simplifies modeling the complex and lets you define the output of the language model, the prompts, and the payload we send to the backend in a single place.
 
 ## What's Next?
 
 Here I want to show that `instructor`` isn’t just about data extraction. It’s a powerful framework for building a data model and integrating it with your LLM. Structured output is just the beginning — the untapped goldmine is skilled use of tools and APIs.
 
-I believe collaboration between domain experts and AI engineers the key to enable advanced tool use. I’ve been building a new tool on top of instructor that enables seamless collaboration and experimentation on LLMs with structured outputs. If you’re interested, visit [useinstructor.com](https://useinstructor.com) and take our survey to join the waitlist.
+I believe collaboration between domain experts and AI engineers is the key to enable advanced tool use. I’ve been building a new tool on top of instructor that enables seamless collaboration and experimentation on LLMs with structured outputs. If you’re interested, visit [useinstructor.com](https://useinstructor.com) and take our survey to join the waitlist.
+
 Together, let’s create tools that are as brilliant as the minds that use them.
