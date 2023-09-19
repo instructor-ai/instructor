@@ -11,10 +11,10 @@ tags:
 
 # RAG is more than just embedding search
 
-With the advent of large language models (LLM), retrival augmented generation (RAG) has become a hot topic. However throught the past year of [helping startups](https://jxnl.notion.site/Working-with-me-ec2bb36a5ac048c2a8f6bd888faea6c2?pvs=4) integrate LLMs into their stack I've noticed that the pattern of taking user queries directly into LLMs is effectively demoware.
+With the advent of large language models (LLM), retrival augmented generation (RAG) has become a hot topic. However throught the past year of [helping startups](https://jxnl.notion.site/Working-with-me-ec2bb36a5ac048c2a8f6bd888faea6c2?pvs=4) integrate LLMs into their stack I've noticed that the pattern of taking user queries, embedding them, and directly searching a vector store is effectively demoware.
 
 !!! note "What is RAG?"
-    Retrival augmented generation (RAG) is a technique that uses a LLM to generate responses, but uses a search backend to augment the generation, in the past year using text embeddings with a vector databases has been the most popular approach. 
+    Retrival augmented generation (RAG) is a technique that uses a LLM to generate responses, but uses a search backend to augment the generation, in the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
 
 <figure markdown>
   ![RAG](img/dumb_rag.png)
@@ -29,13 +29,13 @@ When you ask a question like, "what is the capital of France?" The RAG 'dumb' mo
 
 ### Why is this a problem?
 
-- **Query-Document Mismatch**: Assumes query and content are similar in embedding space and only retrival is based on embedding similarity. Only using queries that are semantically similar to the content is a huge limitation.
+- **Query-Document Mismatch**: This model assumes that query embedding and the content embedding are similar in the embedding space, which is not always true based on the text you're trying to search over. Only using queries that are semantically similar to the content is a huge limitation!
 
 - **Monolithic Search Backend**: Assumes a single search backend, which is not always the case. You may have multiple search backends, each with their own API, and you want to route the query to vector stores, search clients, sql databases, and more.
   
-- **Limitation of text search**: Restricts complex queries to a single string (`{query: str}`), sacrificing expressiveness, in using keywords, filters, and other advanced features.
+- **Limitation of text search**: Restricts complex queries to a single string (`{query: str}`), sacrificing expressiveness, in using keywords, filters, and other advanced features. For example, `what problems did we fix last week` that cannot be answered by a simple text search, since documents that contain `problem, last week` are going to be present at every week.
 
-- **Limited ability to plan**: Assumes that the query is the only input to the search backend, but you may want to use other information to improve the search, like the user's location, or the time of day using the context to rewrite the query.
+- **Limited ability to plan**: Assumes that the query is the only input to the search backend, but you may want to use other information to improve the search, like the user's location, or the time of day using the context to rewrite the query. For example, if you present the language model of more context its able to plan a suite of queries to execute to return the best results.
 
 Now let's dive into how we can make it smarter with query understanding. This is where things get interesting.
 
@@ -54,6 +54,14 @@ Ultimately what you want to deploy is a [system that understands](https://en.wik
 
 Not convinced? Let's move from theory to practice with a real-world example. First up, Metaphor Systems.
 
+## Whats instructor?
+
+Instructor uses Pydantic to simplify the interaction between the programmer and language models via the function calling api..
+
+- **Widespread Adoption**: Pydantic is a popular tool among Python developers.
+- **Simplicity**: Pydantic allows model definition in Python.
+- **Framework Compatibility**: Many Python frameworks already use Pydantic.
+
 ## Case Study 1: Metaphor Systems
 
 Take [Metaphor Systems](https://metaphor.systems), which turns natural language queries into their custom search-optimized query. If you take a look web ui you'll notice that they have an auto-prompt option, which uses function calls to furthur optimize your query using an language model, and turn it into a fully specified metaphor systems query.
@@ -63,7 +71,7 @@ Take [Metaphor Systems](https://metaphor.systems), which turns natural language 
 <figcaption>Metaphor Systems UI</figcaption>
 </figure>
 
-If we peek under the hood, we can see that the query is actually a complex object, with a date range, and a list of domains to search in. Its actually more complex than this but this is a good start.
+If we peek under the hood, we can see that the query is actually a complex object, with a date range, and a list of domains to search in. Its actually more complex than this but this is a good start. We can model this structured output in Pydantic using the instructor library
 
 ```python
 class DateRange(BaseModel):
@@ -133,7 +141,7 @@ Now, let's see how this approach can help model an agent like personal assistant
 
 ## Case Study 2: Personal Assistant
 
-Another great example of this multiple dispatch pattern is a personal assistant. You ask, "What do I have today?" You want events, emails, reminders. Multiple backends, one unified summary of result. Here you can't even assume that text is going to be embedded in the search backend. You need to model the search backend and the query.
+Another great example of this multiple dispatch pattern is a personal assistant. You might ask, "What do I have today?", from a vague query you might want events, emails, reminders etc. That data will likely exist in multiple backends, but what you want is one unified summary of results. Here you can't assume that text of those documents are all embedded in a search backend. There might be a calendar client, email client, across personal and profession accounts.
 
 ```python
 class ClientSource(enum.Enum):
@@ -219,6 +227,7 @@ This isnt about fancy embedding tricks, its just plain old information retrival 
 
 ## What's Next?
 
-`instructor` isn't just about data extraction, It's building a model, and presenting it to the LLM. Structured output is just the beginning. The untapped goldmine is skilled use of tools and apis. 
+Here I want to show that `instructor`` isn’t just about data extraction. It’s a powerful framework for building a data model and integrating it with your LLM. Structured output is just the beginning — the untapped goldmine is skilled use of tools and APIs.
 
-I believe collaboration between experts users and AI engineers is what will bring out that expertise. If you're interested, visit [useinstructor.com](https://useinstructor.com) and take our survey. Together, let's create tools that are as brilliant as the minds that use them.
+I believe collaboration between domain experts and AI engineers the key to enable advanced tool use. I’ve been building a new tool on top of instructor that enables seamless collaboration and experimentation on LLMs with structured outputs. If you’re interested, visit [useinstructor.com](https://useinstructor.com) and take our survey to join the waitlist.
+Together, let’s create tools that are as brilliant as the minds that use them.
