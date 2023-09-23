@@ -33,7 +33,11 @@ jobs:
             mkdocs-material-
 
       - name: Install Requirements
-        run: pip install -r requirements-doc.txt
+        run: |
+          sudo apt-get update &&
+          sudo apt-get install pngquant &&
+          pip install -r requirements-doc.txt
+
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
