@@ -7,3 +7,4 @@ openai
 pydantic
 pytest
 git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
+mkdocs-minify-plugin
