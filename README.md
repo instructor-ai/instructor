@@ -34,10 +34,10 @@ First, import the required libraries and apply the patch function to the OpenAI 
 
 ```python
 import openai
+import instructor
 from pydantic import BaseModel
-from instructor import patch
 
-patch()
+instructor.patch()
 ```
 
 ### Step 2: Define the Pydantic Model
