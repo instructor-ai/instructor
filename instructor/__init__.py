@@ -1,6 +1,6 @@
 from .function_calls import OpenAISchema, openai_function, openai_schema
 from .dsl import MultiTask, Maybe, llm_validator, CitationMixin
-from .patch import patch
+from .patch import patch, unpatch
 
 __all__ = [
     "OpenAISchema",
@@ -11,4 +11,5 @@ __all__ = [
     "openai_schema",
     "patch",
     "llm_validator",
+    "unpatch",
 ]
