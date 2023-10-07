@@ -1,12 +1,18 @@
+from pyexpat import model
+import openai
 from pydantic import BaseModel
 from instructor.distil import (
-    distil,
+    Instructions,
     format_function,
     get_signature_from_fn,
     is_return_type_base_model_or_instance,
 )
 
 # Replace `your_module_name` with your actual module name
+
+instructions = Instructions(
+    name="test_distil",
+)
 
 
 class SimpleModel(BaseModel):
@@ -47,7 +53,7 @@ def test_format_function():
 
 
 def test_distil_decorator_without_arguments():
-    @distil
+    @instructions.distil
     def test_func(x: int) -> SimpleModel:
         return SimpleModel(data=x)
 
@@ -56,7 +62,7 @@ def test_distil_decorator_without_arguments():
 
 
 def test_distil_decorator_with_name_argument():
-    @distil(name="custom_name")
+    @instructions.distil(name="custom_name")
     def another_test_func(x: int) -> SimpleModel:
         return SimpleModel(data=x)
 
@@ -67,3 +73,11 @@ def test_distil_decorator_with_name_argument():
 # Mock track function for decorator tests
 def mock_track(*args, **kwargs):
     pass
+
+
+def fn(a: int, b: int) -> int:
+    return openai.ChatCompletion.create(
+        messages=[],
+        model="davinci",
+        response_model=SimpleModel,
+    )

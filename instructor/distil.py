@@ -2,42 +2,14 @@ import enum
 import functools
 import inspect
 import json
+import logging
+import os
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable, List, Optional
+import uuid
 from pydantic import BaseModel, validate_call
 
-import inspect
-import logging
-
 from instructor import openai_schema
-
-distil_logger = logging.getLogger("instructor.distil")
-
-
-def logging(level=logging.INFO, handler=None, log_to_file=True, filename_prefix=None):
-    """
-    Configure the instructor module's logging.
-
-    :param level: Log level.
-    :param handler: Optional logging handler. If not provided, defaults to FileHandler or NullHandler based on log_to_file.
-    :param log_to_file: If True and no handler is provided, logs to a file.
-    :param filename: Optional filename for logging if log_to_file is True. Defaults to 'instructor.log'.
-    """
-    distil_logger.setLevel(level)
-
-    # Clear existing handlers
-    for h in distil_logger.handlers[:]:
-        distil_logger.removeHandler(h)
-
-    if handler:
-        distil_logger.addHandler(handler)
-    elif log_to_file:
-        filename = filename_prefix or "instructor.log"
-        file_handler = logging.FileHandler(filename)
-        file_handler.setFormatter(logging.Formatter("%(message)s"))
-        distil_logger.addHandler(file_handler)
-    else:
-        distil_logger.addHandler(logging.NullHandler())
 
 
 class FinetuneFormat(enum.Enum):
@@ -101,112 +73,127 @@ def is_return_type_base_model_or_instance(func: Callable[..., Any]) -> bool:
     return inspect.isclass(return_type) and issubclass(return_type, BaseModel)
 
 
-@validate_call
-def track(
-    fn: Callable[..., Any],
-    args: tuple,
-    kwargs: dict,
-    resp: BaseModel,
-    name: Optional[str] = None,
-    finetune_format: FinetuneFormat = FinetuneFormat.RAW,
-):
-    """
-    Track the function call and response in a log file, later used for finetuning.
+class Instructions:
+    def __init__(
+        self,
+        name: str = None,
+        id: str = None,
+        log_handlers: List[logging.Handler] = None,
+    ):
+        self.name = name
+        self.id = id or str(uuid.uuid4())
+        self.unique_id = str(uuid.uuid4())
 
-    :param fn: Function to track.
-    :param args: Arguments passed to the function.
-    :param kwargs: Keyword arguments passed to the function.
-    :param resp: Response returned by the function.
-    :param name: Name of the function to track. Defaults to the function name.
-    :param finetune_format: Format to use for finetuning. Defaults to "raw".
-    """
-    name = name if name else fn.__name__
-    base_model: BaseModel = type(resp)
+        self.logger = logging.getLogger(self.name)
+        for handler in log_handlers or []:
+            self.logger.addHandler(handler)
 
-    if finetune_format == FinetuneFormat.RAW:
-        function_body = dict(
-            fn_name=name,
-            fn_repr=format_function(fn),
-            args=args,
-            kwargs=kwargs,
-            resp=resp.model_dump(),
-            schema=base_model.model_json_schema(),
-        )
-        distil_logger.info(json.dumps(function_body))
-        return
+    def distil(
+        self,
+        *args,
+        name: str = None,
+        mode: str = "distil",
+        fine_tune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
+    ):
+        """
+        Decorator to track the function call and response, supports distillation and dispatch modes.
 
-    if finetune_format == FinetuneFormat.MESSAGES:
-        # This is the format that OpenAI's API expects for a finetune call
-        openai_function_call = openai_schema(base_model).openai_schema
-        function_definition = get_signature_from_fn(fn)
-        function_body = {
-            "messages": [
-                {
-                    "role": "system",
-                    "content": f"Return the response from the function call.\n\n {function_definition}",
-                },
-                {
-                    "role": "user",
-                    "content": f"Return the results of the function with the following arguments:\n\n {name}(*{args}, **{kwargs})",
-                },
-                {
-                    "role": "function",
-                    "function_call": {
-                        "name": openai_function_call["name"],
-                        "augments": resp.model_dump(),
+        If used without arguments, it must be used as a decorator.
+
+        :Example:
+
+        >>> @distil
+        >>> def my_function() -> MyModel:
+        >>>     return MyModel()
+        >>>
+        >>> @distil(name="my_function")
+        >>> def my_function() -> MyModel:
+        >>>     return MyModel()
+
+        :param fn: Function to track.
+        :param name: Name of the function to track. Defaults to the function name.
+        :param mode: Mode to use for distillation. Defaults to "distil".
+        """
+        allowed_modes = {"distil", "dispatch"}
+        assert mode in allowed_modes, f"Must be in {allowed_modes}"
+        assert mode == "distil", "Only distil mode is supported at the moment."
+
+        def _wrap_distil(fn):
+            msg = f"Return type hint for {fn} must subclass `pydantic.BaseModel'"
+            assert is_return_type_base_model_or_instance(fn), msg
+
+            @functools.wraps(fn)
+            def _distil(*args, **kwargs):
+                resp = fn(*args, **kwargs)
+                self.track(
+                    fn, args, kwargs, resp, name=name, finetune_format=fine_tune_format
+                )
+
+                return resp
+
+            return _distil
+
+        if len(args) == 1 and callable(args[0]):
+            return _wrap_distil(args[0])
+
+        return _wrap_distil
+
+    @validate_call
+    def track(
+        self,
+        fn: Callable[..., Any],
+        args: tuple,
+        kwargs: dict,
+        resp: BaseModel,
+        name: Optional[str] = None,
+        finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
+    ):
+        """
+        Track the function call and response in a log file, later used for finetuning.
+
+        :param fn: Function to track.
+        :param args: Arguments passed to the function.
+        :param kwargs: Keyword arguments passed to the function.
+        :param resp: Response returned by the function.
+        :param name: Name of the function to track. Defaults to the function name.
+        :param finetune_format: Format to use for finetuning. Defaults to "raw".
+        """
+        name = name if name else fn.__name__
+        base_model: BaseModel = type(resp)
+
+        if finetune_format == FinetuneFormat.RAW:
+            function_body = dict(
+                fn_name=name,
+                fn_repr=format_function(fn),
+                args=args,
+                kwargs=kwargs,
+                resp=resp.model_dump(),
+                schema=base_model.model_json_schema(),
+            )
+            self.logger.info(json.dumps(function_body))
+
+        if finetune_format == FinetuneFormat.MESSAGES:
+            # This is the format that OpenAI's API expects for a finetune call
+            openai_function_call = openai_schema(base_model).openai_schema
+            function_definition = get_signature_from_fn(fn).replace(fn.__name__, name)
+            function_body = {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": f"Return the response from the function call.\n\n {function_definition}",
                     },
-                },
-            ],
-            "functions": [openai_function_call],
-            "function_call": {"name": name},
-        }
-        distil_logger.info(json.dumps(function_body))
-        return
-    raise ValueError(f"Invalid finetune format: {finetune_format}")
-
-
-def distil(
-    *args,
-    name: str = None,
-    mode: str = "distil",
-    fine_tune_format: FinetuneFormat = FinetuneFormat.RAW,
-):
-    """
-    Decorator to track the function call and response, supports distillation and dispatch modes.
-
-    If used without arguments, it must be used as a decorator.
-
-    :Example:
-
-    >>> @distil
-    >>> def my_function() -> MyModel:
-    >>>     return MyModel()
-    >>>
-    >>> @distil(name="my_function")
-    >>> def my_function() -> MyModel:
-    >>>     return MyModel()
-
-    :param fn: Function to track.
-    :param name: Name of the function to track. Defaults to the function name.
-    :param mode: Mode to use for distillation. Defaults to "distil".
-    """
-    allowed_modes = {"distil", "dispatch"}
-    assert mode in allowed_modes, f"Must be in {allowed_modes}"
-    assert mode == "distil", "Only distil mode is supported at the moment."
-
-    def _wrap_distil(fn):
-        msg = f"Return type hint for {fn} must subclass `pydantic.BaseModel'"
-        assert is_return_type_base_model_or_instance(fn), msg
-
-        @functools.wraps(fn)
-        def _distil(*args, **kwargs):
-            resp = fn(*args, **kwargs)
-            track(fn, args, kwargs, resp, name=name, finetune_format=fine_tune_format)
-            return resp
-
-        return _distil
-
-    if len(args) == 1 and callable(args[0]):
-        return _wrap_distil(args[0])
-
-    return _wrap_distil
+                    {
+                        "role": "user",
+                        "content": f"Return the results of the function with the following arguments:\n\n {name}(*{args}, **{kwargs})",
+                    },
+                    {
+                        "role": "assistant",
+                        "function_call": {
+                            "name": openai_function_call["name"],
+                            "arguments": resp.model_dump_json(),
+                        },
+                    },
+                ],
+                "functions": [openai_function_call],
+            }
+            self.logger.info(json.dumps(function_body))
