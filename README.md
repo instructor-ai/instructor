@@ -140,6 +140,60 @@ model = openai.ChatCompletion.create(
 assert model.name == "JASON"
 ```
 
+## Use Anthropic,Huggingface,Palm,Ollama, etc.[Full List](https://docs.litellm.ai/docs/providers)
+
+### Create OpenAI-proxy
+We'll use [LiteLLM](https://docs.litellm.ai/docs/) to create an OpenAI-compatible endpoint, that translates OpenAI calls to any of the [supported providers](https://docs.litellm.ai/docs/providers).
+
+
+Example to use a local CodeLLama model from Ollama.ai with Instructor: 
+
+Let's spin up a proxy server to route any OpenAI call from Instructor to Ollama/CodeLlama
+
+```python
+pip install litellm
+```
+```python
+$ litellm --model ollama/codellama
+
+#INFO: Ollama running on http://0.0.0.0:8000
+```
+
+[Docs](https://docs.litellm.ai/docs/proxy_server)
+
+### Update Instructor
+
+```python
+import instructor
+from pydantic import BaseModel, field_validator
+
+# Apply the patch to the OpenAI client
+instructor.patch()
+
+class UserDetails(BaseModel):
+    name: str
+    age: int
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v):
+        if v.upper() != v:
+            raise ValueError("Name must be in uppercase.")
+        return v
+
+model = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetails,
+    max_retries=2,
+    api_base="http://0.0.0.0:8000",
+    messages=[
+        {"role": "user", "content": "Extract jason is 25 years old"},
+    ],
+)
+
+assert model.name == "JASON"
+```
+
 ## IDE Support 
 
 Everything is designed for you to get the best developer experience possible, with the best editor support.
