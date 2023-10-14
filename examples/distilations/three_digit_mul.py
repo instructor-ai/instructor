@@ -1,7 +1,7 @@
 import logging
 
 from pydantic import BaseModel
-from instructor.distil import Instructions
+from instructor import Instructions
 
 logging.basicConfig(level=logging.INFO)
 

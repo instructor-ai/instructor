@@ -79,11 +79,13 @@ class Instructions:
         id: str = None,
         log_handlers: List[logging.Handler] = None,
         finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
+        indent: int = 2,
     ):
         self.name = name
         self.id = id or str(uuid.uuid4())
         self.unique_id = str(uuid.uuid4())
         self.finetune_format = finetune_format
+        self.indent = indent
 
         self.logger = logging.getLogger(self.name)
         for handler in log_handlers or []:
@@ -167,7 +169,7 @@ class Instructions:
 
         if finetune_format == FinetuneFormat.MESSAGES:
             openai_function_call = openai_schema(base_model).openai_schema
-            function_definition = get_signature_from_fn(fn).replace(fn.__name__, name)
+            func_def = get_signature_from_fn(fn).replace(fn.__name__, name)
 
             str_args = ", ".join(map(str, args))
             str_kwargs = (
@@ -179,17 +181,17 @@ class Instructions:
                 "messages": [
                     {
                         "role": "system",
-                        "content": f"Predict the results of this function:\n\n{function_definition}",
+                        "content": f"Predict the results of this function:\n\n{func_def}",
                     },
                     {
                         "role": "user",
-                        "content": f"Return {name}({call_args})",
+                        "content": f"Return `{name}({call_args})`",
                     },
                     {
                         "role": "assistant",
                         "function_call": {
                             "name": openai_function_call["name"],
-                            "arguments": resp.model_dump_json(),
+                            "arguments": resp.model_dump_json(indent=self.indent),
                         },
                     },
                 ],
