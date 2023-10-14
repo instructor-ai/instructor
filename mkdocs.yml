@@ -56,6 +56,7 @@ nav:
   - Introduction: 
       - Getting Started: 'index.md'
       - Prompt Engineering Tips: 'tips/index.md'
+      - Distillation: 'distillation.md'
       - Helpers:
         - Reasking and Validation Overview: "reask_validation.md"
         - Multiple Extractions: "multitask.md"
