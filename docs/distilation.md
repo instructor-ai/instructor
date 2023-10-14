@@ -27,15 +27,15 @@ instructions = Instructions(
     log_handlers=[logging.FileHandler("math_finetunes.jsonl")]
 )
 
-class Response(BaseModel):
+class Multiply(BaseModel):
     a: int
     b: int
     result: int
 
 @instructions.distil
-def fn(a: int, b: int) -> Response:
+def fn(a: int, b: int) -> Multiply:
     resp = a + b
-    return Response(a=a, b=b, result=resp)
+    return Multiply(a=a, b=b, result=resp)
 ```
 
 ## Custom Log Handlers for Data Collection
@@ -85,9 +85,9 @@ instructions = Instructions(
 )
 
 @instructions.distil(model='gpt-3.5-turbo:finetuned', swap=True)
-def fn(a: int, b: int) -> Response:
+def fn(a: int, b: int) -> Multiply:
     resp = a + b
-    return Response(a=a, b=b, result=resp)
+    return Multiply(a=a, b=b, result=resp)
 ```
 
 This dynamic switching retains backward compatibility while improving efficiency, opening up exciting avenues for future developments.

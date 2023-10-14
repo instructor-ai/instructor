@@ -16,7 +16,7 @@ But the promise of LLMs is that they can do all of this in one go. So how do we 
 
 ## Challenges in Fine-tuning
 
-Fine-tuning a model isn't as straightforward as just writing `def f(a, b): return a * b` to teach a model three-digit multiplication. Substantial data preparation is required, making logging for data collection cumbersome. Luckily OpenAI not only provides a fine-tuning script but also one for function calling which simplies the process backed to structured outputs! More over, the finetune allows us to avoid passing the schema to the model, resulting in less tokens being used!
+Fine-tuning a model isn't as straightforward as just writing `def f(a, b): return a * b` to teach a model three-digit multiplication. Substantial data preparation is required, making logging for data collection cumbersome. Luckily OpenAI not only provides a fine-tuning script but also one for function calling which simplies the process backed by structured outputs! More over, the finetune allows us to avoid passing the schema to the model, resulting in less tokens being used!
 
 ## Role of Instructor in Easing the Process
 
@@ -28,6 +28,7 @@ Here's an example to illustrate its use:
 
 ```python
 import logging
+import random
 from pydantic import BaseModel
 from instructor import Instructions
 
