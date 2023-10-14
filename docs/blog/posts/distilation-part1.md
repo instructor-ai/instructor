@@ -107,4 +107,4 @@ def fn(a: int, b: int) -> Multiply:
 
 Now we can swap out the implementation of `fn` with calling the finetuned model, since we know the response type is still `Multiply` we can use instructor behind the scenes and have it be backwards compatible with the existing code. 
 
-This is a powerful idea, and I'm excited to see where it goes.
+Now if you're thinking wow, I'd love a backend service to do this for continously, you're in luck! Please check out the survey at [useinstructor.com](https://useinstructor.com) and let us know who you are.
