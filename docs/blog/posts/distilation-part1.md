@@ -2,8 +2,10 @@
 draft: False 
 date: 2023-10-17
 tags:
-  - RAG
-  - Finetuning
+  - python
+  - distilation 
+  - function calling
+  - tinetuning
 ---
 
 # Introduction to `Instructions` from `Instructor`, finetuning from Python functions.
