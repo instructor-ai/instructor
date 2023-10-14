@@ -3,7 +3,6 @@ import functools
 import inspect
 import json
 import logging
-import os
 
 from typing import Any, Callable, List, Optional
 import uuid
@@ -79,10 +78,12 @@ class Instructions:
         name: str = None,
         id: str = None,
         log_handlers: List[logging.Handler] = None,
+        finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
     ):
         self.name = name
         self.id = id or str(uuid.uuid4())
         self.unique_id = str(uuid.uuid4())
+        self.finetune_format = finetune_format
 
         self.logger = logging.getLogger(self.name)
         for handler in log_handlers or []:
@@ -93,7 +94,7 @@ class Instructions:
         *args,
         name: str = None,
         mode: str = "distil",
-        fine_tune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
+        fine_tune_format: FinetuneFormat = None,
     ):
         """
         Decorator to track the function call and response, supports distillation and dispatch modes.
@@ -117,6 +118,9 @@ class Instructions:
         allowed_modes = {"distil", "dispatch"}
         assert mode in allowed_modes, f"Must be in {allowed_modes}"
         assert mode == "distil", "Only distil mode is supported at the moment."
+
+        if fine_tune_format is None:
+            fine_tune_format = self.finetune_format
 
         def _wrap_distil(fn):
             msg = f"Return type hint for {fn} must subclass `pydantic.BaseModel'"
@@ -161,30 +165,25 @@ class Instructions:
         name = name if name else fn.__name__
         base_model: BaseModel = type(resp)
 
-        if finetune_format == FinetuneFormat.RAW:
-            function_body = dict(
-                fn_name=name,
-                fn_repr=format_function(fn),
-                args=args,
-                kwargs=kwargs,
-                resp=resp.model_dump(),
-                schema=base_model.model_json_schema(),
-            )
-            self.logger.info(json.dumps(function_body))
-
         if finetune_format == FinetuneFormat.MESSAGES:
-            # This is the format that OpenAI's API expects for a finetune call
             openai_function_call = openai_schema(base_model).openai_schema
             function_definition = get_signature_from_fn(fn).replace(fn.__name__, name)
+
+            str_args = ", ".join(map(str, args))
+            str_kwargs = (
+                ", ".join(f"{k}={json.dumps(v)}" for k, v in kwargs.items()) or None
+            )
+            call_args = ", ".join(filter(None, [str_args, str_kwargs]))
+
             function_body = {
                 "messages": [
                     {
                         "role": "system",
-                        "content": f"Return the response from the function call.\n\n {function_definition}",
+                        "content": f"Predict the results of this function:\n\n{function_definition}",
                     },
                     {
                         "role": "user",
-                        "content": f"Return the results of the function with the following arguments:\n\n {name}(*{args}, **{kwargs})",
+                        "content": f"Return {name}({call_args})",
                     },
                     {
                         "role": "assistant",
@@ -196,4 +195,15 @@ class Instructions:
                 ],
                 "functions": [openai_function_call],
             }
+            self.logger.info(json.dumps(function_body))
+
+        if finetune_format == FinetuneFormat.RAW:
+            function_body = dict(
+                fn_name=name,
+                fn_repr=format_function(fn),
+                args=args,
+                kwargs=kwargs,
+                resp=resp.model_dump(),
+                schema=base_model.model_json_schema(),
+            )
             self.logger.info(json.dumps(function_body))
