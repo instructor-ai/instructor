@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from instructor import Instructions
 
 logging.basicConfig(level=logging.INFO)
@@ -15,14 +15,14 @@ instructions = Instructions(
 )
 
 
-class Response(BaseModel):
+class Multiply(BaseModel):
     a: int
     b: int
-    result: int
+    result: int = Field(..., description="The result of the multiplication")
 
 
 @instructions.distil
-def fn(a: int, b: int, c: str) -> Response:
+def fn(a: int, b: int, c: str) -> Multiply:
     """_summary_
 
     Args:
@@ -34,7 +34,7 @@ def fn(a: int, b: int, c: str) -> Response:
         Response: _description_
     """
     resp = a + b
-    return Response(a=a, b=b, result=resp)
+    return Multiply(a=a, b=b, result=resp)
 
 
 if __name__ == "__main__":

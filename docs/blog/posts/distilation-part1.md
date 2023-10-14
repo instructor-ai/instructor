@@ -39,15 +39,15 @@ instructions = Instructions(
     log_handlers=[logging.FileHandler("math_finetunes.jsonl")]
 )
 
-class Response(BaseModel):
+class Multiply(BaseModel):
     a: int
     b: int
     result: int
 
 @instructions.distil
-def fn(a: int, b: int) -> Response:
-    resp = a + b
-    return Response(a=a, b=b, result=resp)
+def fn(a: int, b: int) -> Multiply:
+    resp = a * b
+    return Multiply(a=a, b=b, result=resp)
 
 for _ in range(10):
     a = random.randint(100, 999)
@@ -55,7 +55,30 @@ for _ in range(10):
     print(fn(a, b))
 ```
 
+## Logging output
+
+```python
+{
+    "messages": [
+        {"role": "system", "content": 'Predict the results of this function: ...'},
+        {"role": "user", "content": 'Return fn(133, b=539)'},
+        {"role": "assistant", 
+            "function_call": 
+                {
+                    "name": "Multiply", 
+                    "arguments": '{"a":133,"b":539,"result":89509}'
+            }
+        }
+    ],
+    "functions": [
+        {"name": "Multiply", "description": "Correctly extracted `Multiply`..."}
+    ]
+}
+```
+
 ## Why Instructor and Distillation are Useful
+
+Many systems are not as simple as a single `openai.ChatCompletion.create` call, instead we often create objects, do additional processing, validation, error correction, and then return the result. This is a lot of work, and it's easy to make mistakes. Instructor's `distil` feature makes this process easier by:
 
 1. Streamlines complex functions with validations, making them more efficient.
 2. Facilitates the integration of classical machine learning with language models. 
@@ -74,11 +97,11 @@ instructions = Instructions(
 )
 
 @instructions.distil(model='gpt-3.5-turbo:finetuned', swap=True)
-def fn(a: int, b: int) -> Response:
+def fn(a: int, b: int) -> Multiply:
     resp = a + b
-    return Response(a=a, b=b, result=resp)
+    return Multiply(a=a, b=b, result=resp)
 ```
 
-Now we can swap out the implementation of `fn` with calling the finetuned model, since we know the response type is still `Response` we can use instructor behind the scenes and have it be backwards compatible with the existing code. 
+Now we can swap out the implementation of `fn` with calling the finetuned model, since we know the response type is still `Multiply` we can use instructor behind the scenes and have it be backwards compatible with the existing code. 
 
 This is a powerful idea, and I'm excited to see where it goes.
