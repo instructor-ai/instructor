@@ -1,4 +1,4 @@
-from pyexpat import model
+import pytest
 import openai
 from pydantic import BaseModel
 from instructor.distil import (
@@ -17,6 +17,22 @@ instructions = Instructions(
 
 class SimpleModel(BaseModel):
     data: int
+
+
+def test_must_have_hint():
+    with pytest.raises(AssertionError):
+
+        @instructions.distil
+        def test_func(x: int):
+            return SimpleModel(data=x)
+
+
+def test_must_be_base_model():
+    with pytest.raises(AssertionError):
+
+        @instructions.distil
+        def test_func(x) -> int:
+            return SimpleModel(data=x)
 
 
 def test_is_return_type_base_model_or_instance():
