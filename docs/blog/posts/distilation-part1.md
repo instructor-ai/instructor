@@ -1,32 +1,80 @@
 ---
-draft: False 
-date: 2023-10-17
+draft: False  
+date: 2023-10-15
 tags:
   - python
-  - distilation 
+  - distillation
   - function calling
-  - tinetuning
+  - finetuning
 ---
 
-# Introduction to `Instructions` from `Instructor`, finetuning from Python functions.
+# Streamline finetuning with `Instructions` from `Instructor`
 
 The core philosophy with the `instructor` library is to make language models backwards compatible with existing code. By adding Pydantic in the mix we're able to easily work with LLMs without much worry.
 
-However, many times, a single function isn't just one LLM call. After the results are returned theres [validation](/docs/validation.md), some additional processing and formatting before you `return` the result.
+Building efficient, reliable functions is a key skill in software development. But why stop there? What if your functions could automatically become smarter and more efficient without any hand-holding? That's exactly what you gain by investing a few minutes into this read. Here, we delve into some new features `instructor`. 
 
-But the promise of LLMs is that they can do all of this in one go. So how do we get there? Finetuning end to end is a great tool for enhancing language models. Instructor uses type hints via Pydantic to maintain backward compatibility. Distillation focuses on fine-tuning language models to imitate specific functions.
+By the end of this article, you'll understand how to easily integrate the end to end finetuning of small functions `instructor` library with your Python functions to improve them without breaking existing code.
 
-## Challenges in Fine-tuning
+## Why You Should Care
 
-Fine-tuning a model isn't as straightforward as just writing `def f(a, b): return a * b` to teach a model three-digit multiplication. Substantial data preparation is required, making logging for data collection cumbersome. Luckily OpenAI not only provides a fine-tuning script but also one for function calling which simplies the process backed by structured outputs! More over, the finetune allows us to avoid passing the schema to the model, resulting in less tokens being used!
+Traditionally, implementing a complex prompt chaining function often involved linking multiple chains together. Each llm call might need [data validation](https://jxnl.github.io/instructor/reask_validation/), externHowever, many times, a single function isn't just one LLM call!
 
-## Role of Instructor in Easing the Process
+### Anatomy of a Complex Function
 
-The feature `from instructor import Instructions` simplifies this. It decorates Python functions that return Pydantic objects, automatically creating a fine-tuning dataset when provided a handler for logging. This allows you to finetune a model to imitate a function's behavior.
+To paint a clearer picture, let's consider a function that takes a video transcript and churns out an email. This function may include the following steps:
 
-## How to Use Instructor's Distillation Feature
+1. Summarize the video transcript.
+2. Fact-check the summary.
+3. Create a sequence of increasingly dense email drafts.
+4. Select the final draft.
 
-Here's an example to illustrate its use:
+Here's how the function could look in code:
+
+```python
+def complex_chain(video_transcript: str) -> Email:
+    """
+    Generate a follow-up email based on a video transcript
+    """
+    summary = extract_summary(video_transcript)
+    summary = check_for_hallucinations(video_transcript, summary)
+    emails: List[Email] = create_chain_of_density(summary)
+    return emails[-1]
+```
+
+Traditional approaches would require you to manually save logs, extract the logs into a training set, fine-tune the model, and then replace the function with the model. But with `instructor`, a single decorator does the trick.
+
+```python
+from instructor import Instructions
+
+instructions = Instructions(name="sales_follow_up")
+
+@instructions.distil
+def complex_chain(video_transcript: str) -> Email:
+    summary = extract_summary(video_transcript)
+    summary = check_for_hallucinations(video_transcript, summary)
+    emails: List[Email] = create_chain_of_density(summary)
+    return emails[-1]
+```
+
+This allows you to replace the function with a fine-tuned model without altering the response type or breaking existing code.
+
+```python
+from instructor import Instructions
+
+instructions = Instructions(name="sales_follow_up")
+
+@instructions.distil(model='gpt-3.5-turbo:finetuned')
+def complex_chain(video_transcript: str) -> Email:
+    summary = extract_summary(video_transcript)
+    summary = check_for_hallucinations(video_transcript, summary)
+    emails: List[Email] = create_chain_of_density(summary)
+    return emails[-1]
+```
+
+## A Simpler Example: Three-Digit Multiplication
+
+Even for trivial functions, defining data transformations and gathering the data can still be tedious. Here's how `instructor` automates this.
 
 ```python
 import logging
@@ -58,6 +106,8 @@ for _ in range(10):
     print(fn(a, b))
 ```
 
+Once your function is defined, you can run it and it will automatically log the output to the file specified in the `log_handlers` argument.
+
 ## Logging output
 
 ```python
@@ -79,32 +129,10 @@ for _ in range(10):
 }
 ```
 
-## Why Instructor and Distillation are Useful
+Now this file is ready to be used for finetuning. You can use the `instructor` CLI to finetune the model. Check out the [finetune docs](https://jxnl.github.io/instructor/cli/finetune/) for more information.
 
-Many systems are not as simple as a single `openai.ChatCompletion.create` call, instead we often create objects, do additional processing, validation, error correction, and then return the result. This is a lot of work, and it's easy to make mistakes. Instructor's `distil` feature makes this process easier by:
+## Next step
 
-1. Streamlines complex functions with validations, making them more efficient.
-2. Facilitates the integration of classical machine learning with language models. 
+The `instructor` library offers an effortless way to make your llm functions smarter and more efficient. The best part? It ensures backward compatibility, so you can implement these improvements without breaking your existing codebase. 
 
-By understanding and leveraging these capabilities, you can create powerful, fine-tuned language models with ease. To learn more about how to use the file to finetune a model, check out the [cli](/docs/cli/finetune.md)
-
-## Next Steps
-
-This post is mostly a peek of what I've been working on this week. Once we have a model trained I'd like to be able to dynamically swap the implemetnation of a function with a model. This would allow us to do things like:
-
-```python
-from instructor import Instructions
-
-instructions = Instructions(
-    name="three_digit_multiply",
-)
-
-@instructions.distil(model='gpt-3.5-turbo:finetuned', swap=True)
-def fn(a: int, b: int) -> Multiply:
-    resp = a + b
-    return Multiply(a=a, b=b, result=resp)
-```
-
-Now we can swap out the implementation of `fn` with calling the finetuned model, since we know the response type is still `Multiply` we can use instructor behind the scenes and have it be backwards compatible with the existing code. 
-
-Now if you're thinking wow, I'd love a backend service to do this for continously, you're in luck! Please check out the survey at [useinstructor.com](https://useinstructor.com) and let us know who you are.
+Now if you're thinking wow, I'd love a backend service to do this for continously, you're in luck! Check out the survey at [useinstructor.com](https://useinstructor.com) and let us know who you are.
