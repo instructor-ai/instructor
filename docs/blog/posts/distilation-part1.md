@@ -6,19 +6,23 @@ tags:
   - distillation
   - function calling
   - finetuning
+  - experimental
 ---
 
-# Streamline finetuning with `Instructions` from `Instructor`
+# Experimental: Finetuning with `Instructions` from `Instructor`
 
 The core philosophy with the `instructor` library is to make language models backwards compatible with existing code. By adding Pydantic in the mix we're able to easily work with LLMs without much worry.
 
-Building efficient, reliable functions is a key skill in software development. But why stop there? What if your functions could automatically become smarter and more efficient without any hand-holding? That's exactly what you gain by investing a few minutes into this read. Here, we delve into some new features `instructor`. 
+However, building efficient, reliable function is a key skill in software development. But why stop there? What if your functions could automatically become smarter and more efficient without any hand-holding? That's exactly what you gain by investing a few minutes into this read. Here, we delve into some new features `instructor`. 
+
+!!! note "Experimental"
+    This is an experimental feature. It's not yet ready for production use. This post is meant to give you a sneak peek into what's coming next, and get your feedback on what you'd like to see.
 
 By the end of this article, you'll understand how to easily integrate the end to end finetuning of small functions `instructor` library with your Python functions to improve them without breaking existing code.
 
 ## Why You Should Care
 
-Traditionally, implementing a complex prompt chaining function often involved linking multiple chains together. Each llm call might need [data validation](https://jxnl.github.io/instructor/reask_validation/), externHowever, many times, a single function isn't just one LLM call!
+Traditionally, implementing a complex prompt chain involved linking multiple chains together. Each llm call might need [data validation](https://jxnl.github.io/instructor/reask_validation/), external validations, follow up prompts and more. This can be a tedious process, especially if you're working with a large number of functions. Instead we might want to finetune a model that can handle the entire chain end to end.
 
 ### Anatomy of a Complex Function
 
