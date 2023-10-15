@@ -9,7 +9,7 @@ tags:
   - experimental
 ---
 
-# Experimental: Finetuning with `Instructions` from `Instructor`
+# Experimental: End to End Distillation
 
 The core philosophy with the `instructor` library is to make language models backwards compatible with existing code. By adding Pydantic in the mix we're able to easily work with LLMs without much worry.
 
