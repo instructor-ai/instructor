@@ -9,7 +9,7 @@ tags:
   - experimental
 ---
 
-# Experimental: End to End Distillation
+# Experimental: Finetuning with `Instructions` from `Instructor`
 
 The core philosophy with the `instructor` library is to make language models backwards compatible with existing code. By adding Pydantic in the mix we're able to easily work with LLMs without much worry.
 
@@ -22,7 +22,7 @@ By the end of this article, you'll understand how to easily integrate the end to
 
 ## Why You Should Care
 
-Traditionally, implementing a complex prompt chain involved linking multiple chains together. Each llm call might need [data validation](https://jxnl.github.io/instructor/reask_validation/), external validations, follow up prompts and more. This can be a tedious process, especially if you're working with a large number of functions. Instead we might want to finetune a model that can handle the entire chain end to end.
+Traditionally, implementing a complex prompt chain involved linking multiple chains together. Each llm call might need [data validation](https://jxnl.github.io/instructor/reask_validation/), external validations, follow up prompts and more. This can be a tedious process, especially if you're working with a large number of functions. Instead we might want to finetune a model that can handle the entire chain end to
 
 ### Anatomy of a Complex Function
 
