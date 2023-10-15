@@ -103,7 +103,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     async def new_chatcompletion_async(
-        response_model=None, validation_context=None, *args, max_retries=0, **kwargs
+        response_model=None, validation_context=None, *args, max_retries=1, **kwargs
     ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = await retry_async(
@@ -120,7 +120,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     def new_chatcompletion_sync(
-        response_model=None, validation_context=None, *args, max_retries=0, **kwargs
+        response_model=None, validation_context=None, *args, max_retries=1, **kwargs
     ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = retry_sync(
