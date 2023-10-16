@@ -65,7 +65,7 @@ This allows you to replace the function with a fine-tuned model without altering
 
 ## I trained the model. Now what?
 
-Once a model is trained, you might imagine you want to delete the code body and replace it with a call to the model. However since we already decorate the function with `@instructions.distil`, we can simply call the function as usual. The `instructor` library will automatically detect the model and use it instead of the function body.
+Once a model is trained, you might imagine you want to delete the code body and replace it with a call to the model. However since we already decorate the function with `@instructions.distil`, we can simply call the function as usual. Here, `@distil` will automatically detect the model and use it instead of the function body.
 
 ```python
 from instructor import Instructions
@@ -80,7 +80,7 @@ def complex_chain(video_transcript: str) -> Email:
     return emails[-1]
 ```
 
-Behind the scenes `instructor` will automatically detect the model and use it instead of the function body. Its a bit advanced but `@distil` will skip the function body and use the model instead, something like this:
+Its a bit advanced but notice that `@distil` can detect the model and call openai rather than calling the base function:
 
 ```python
 def distil(model):
