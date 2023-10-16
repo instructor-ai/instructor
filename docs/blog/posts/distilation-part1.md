@@ -63,6 +63,10 @@ def complex_chain(video_transcript: str) -> Email:
 
 This allows you to replace the function with a fine-tuned model without altering the response type or breaking existing code.
 
+## I trained the model. Now what?
+
+Once a model is trained, you might imagine you want to delete the code body and replace it with a call to the model. However since we already decorate the function with `@instructions.distil`, we can simply call the function as usual. The `instructor` library will automatically detect the model and use it instead of the function body.
+
 ```python
 from instructor import Instructions
 
@@ -75,6 +79,27 @@ def complex_chain(video_transcript: str) -> Email:
     emails: List[Email] = create_chain_of_density(summary)
     return emails[-1]
 ```
+
+Behind the scenes `instructor` will automatically detect the model and use it instead of the function body. Its a bit advanced but `@distil` will skip the function body and use the model instead, something like this:
+
+```python
+def distil(model):
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            if model:
+                return openai.ChatCompletion.create(
+                    model=model,
+                    messages=[...],
+                    response_model=fn.__annotations__["return"],
+                )
+            else:
+                return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+```
+
+You can imagine in the future we can swap baesd on a feature flag or some other logic like a percentage of users. We can even run both the model and the function body in parallel and compare the results, as a way to validate the model.
 
 ## A Simpler Example: Three-Digit Multiplication
 
