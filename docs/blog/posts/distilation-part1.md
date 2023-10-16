@@ -84,22 +84,22 @@ Its a bit advanced but notice that `@distil` can detect the model and call opena
 
 ```python
 def distil(model):
-    def decorator(fn):
-        @wraps(fn)
-        def wrapper(*args, **kwargs):
-            if model:
-                return openai.ChatCompletion.create(
-                    model=model,
-                    messages=[...],
-                    response_model=fn.__annotations__["return"],
-                )
-            else:
-                return fn(*args, **kwargs)
-        return wrapper
-    return decorator
+    if model:
+        return openai.ChatCompletion.create(
+            model=model,
+            messages=[...],
+            response_model=fn.__annotations__["return"],
+        )
+    # call the original function
+    # if the model is not set yet
+    return fn(*args, **kwargs)
 ```
 
-You can imagine in the future we can swap baesd on a feature flag or some other logic like a percentage of users. We can even run both the model and the function body in parallel and compare the results, as a way to validate the model.
+You can imagine in the future we can have a range of different behavior 
+
+1. Call a finetuned model, fall back to the original function 
+2. Call the finetuned model and the original function and compare the results as a validation
+3. Route a percentage of calls to the finetuned model and the rest to the original function, as a way to test the model in production
 
 ## A Simpler Example: Three-Digit Multiplication
 
