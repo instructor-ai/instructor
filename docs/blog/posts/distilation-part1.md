@@ -50,8 +50,14 @@ Traditional approaches would require you to manually save logs, extract the logs
 
 ```python
 from instructor import Instructions
+import logging
 
-instructions = Instructions(name="sales_follow_up")
+logging.basicConfig(level=logging.INFO)
+
+instructions = Instructions(
+    name="sales_follow_up",
+    log_handlers=[FileHandler("complex_chain_finetune.jsonl")]
+)
 
 @instructions.distil
 def complex_chain(video_transcript: str) -> Email:
@@ -61,7 +67,8 @@ def complex_chain(video_transcript: str) -> Email:
     return emails[-1]
 ```
 
-This allows you to replace the function with a fine-tuned model without altering the response type or breaking existing code.
+This now results in a log file that can be used to finetune a model, you can use the `instructor` cli or upload the file directly to OpenAI. Note that its building using log handlers, so if you want to save to a DB or S3 you can do that by saving your logs elsewhere.
+
 
 ## I trained the model. Now what?
 
