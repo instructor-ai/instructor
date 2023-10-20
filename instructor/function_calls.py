@@ -98,7 +98,7 @@ class openai_function:
 
         return wrapper(*args, **kwargs)
 
-    def from_response(self, completion, throw_error=True):
+    def from_response(self, completion, throw_error=True, strict: bool = None):
         """
         Parse the response from OpenAI's API and return the function call
 
@@ -118,7 +118,7 @@ class openai_function:
             ), "Function name does not match"
 
         function_call = message["function_call"]
-        arguments = json.loads(function_call["arguments"], strict=False)
+        arguments = json.loads(function_call["arguments"], strict=strict)
         return self.validate_func(**arguments)
 
 
@@ -209,13 +209,20 @@ class OpenAISchema(BaseModel):
         }
 
     @classmethod
-    def from_response(cls, completion, throw_error=True, validation_context=None):
+    def from_response(
+        cls,
+        completion,
+        throw_error: bool = True,
+        validation_context=None,
+        strict: bool = None,
+    ):
         """Execute the function from the response of an openai chat completion
 
         Parameters:
             completion (openai.ChatCompletion): The response from an openai chat completion
             throw_error (bool): Whether to throw an error if the function call is not detected
             validation_context (dict): The validation context to use for validating the response
+            strict (bool): Whether to use strict json parsing
 
         Returns:
             cls (OpenAISchema): An instance of the class
@@ -229,7 +236,9 @@ class OpenAISchema(BaseModel):
             ), "Function name does not match"
 
         return cls.model_validate_json(
-            message["function_call"]["arguments"], context=validation_context
+            message["function_call"]["arguments"],
+            context=validation_context,
+            strict=strict,
         )
 
 
