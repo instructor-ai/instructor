@@ -4,10 +4,19 @@ import inspect
 import json
 import logging
 
+<<<<<<< HEAD
 from typing import Any, Callable, List, Optional
 import uuid
 from pydantic import BaseModel, validate_call
 
+=======
+from typing import Any, Callable, List, Optional, Type
+from pydantic import BaseModel, validate_call
+
+import uuid
+import openai
+
+>>>>>>> distil
 from instructor import openai_schema
 
 
@@ -83,12 +92,31 @@ class Instructions:
         log_handlers: List[logging.Handler] = None,
         finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
         indent: int = 2,
+<<<<<<< HEAD
     ):
+=======
+        include_code_body: bool = False,
+    ):
+        """
+        Instructions for distillation and dispatch.
+
+        :param name: Name of the instructions.
+        :param id: ID of the instructions.
+        :param log_handlers: List of log handlers to use.
+        :param finetune_format: Format to use for finetuning.
+        :param indent: Indentation to use for finetuning.
+        :param include_code_body: Whether to include the code body in the finetuning.
+        """
+>>>>>>> distil
         self.name = name
         self.id = id or str(uuid.uuid4())
         self.unique_id = str(uuid.uuid4())
         self.finetune_format = finetune_format
         self.indent = indent
+<<<<<<< HEAD
+=======
+        self.include_code_body = include_code_body
+>>>>>>> distil
 
         self.logger = logging.getLogger(self.name)
         for handler in log_handlers or []:
@@ -99,6 +127,10 @@ class Instructions:
         *args,
         name: str = None,
         mode: str = "distil",
+<<<<<<< HEAD
+=======
+        model: str = "gpt-3.5-turbo",
+>>>>>>> distil
         fine_tune_format: FinetuneFormat = None,
     ):
         """
@@ -122,7 +154,10 @@ class Instructions:
         """
         allowed_modes = {"distil", "dispatch"}
         assert mode in allowed_modes, f"Must be in {allowed_modes}"
+<<<<<<< HEAD
         assert mode == "distil", "Only distil mode is supported at the moment."
+=======
+>>>>>>> distil
 
         if fine_tune_format is None:
             fine_tune_format = self.finetune_format
@@ -130,6 +165,23 @@ class Instructions:
         def _wrap_distil(fn):
             msg = f"Return type hint for {fn} must subclass `pydantic.BaseModel'"
             assert is_return_type_base_model_or_instance(fn), msg
+<<<<<<< HEAD
+=======
+            return_base_model = inspect.signature(fn).return_annotation
+
+            @functools.wraps(fn)
+            def _dispatch(*args, **kwargs):
+                openai_kwargs = self.openai_kwargs(
+                    name=name,
+                    fn=fn,
+                    args=args,
+                    kwargs=kwargs,
+                    base_model=return_base_model,
+                )
+                return openai.ChatCompletion.create(
+                    **openai_kwargs, model=model, response_model=return_base_model
+                )
+>>>>>>> distil
 
             @functools.wraps(fn)
             def _distil(*args, **kwargs):
@@ -140,7 +192,15 @@ class Instructions:
 
                 return resp
 
+<<<<<<< HEAD
             return _distil
+=======
+            if mode == "dispatch":
+                return _dispatch
+
+            if mode == "distil":
+                return _distil
+>>>>>>> distil
 
         if len(args) == 1 and callable(args[0]):
             return _wrap_distil(args[0])
@@ -172,35 +232,18 @@ class Instructions:
 
         if finetune_format == FinetuneFormat.MESSAGES:
             openai_function_call = openai_schema(base_model).openai_schema
-            func_def = get_signature_from_fn(fn).replace(fn.__name__, name)
-
-            str_args = ", ".join(map(str, args))
-            str_kwargs = (
-                ", ".join(f"{k}={json.dumps(v)}" for k, v in kwargs.items()) or None
+            openai_kwargs = self.openai_kwargs(name, fn, args, kwargs, base_model)
+            openai_kwargs["messages"].append(
+                {
+                    "role": "assistant",
+                    "function_call": {
+                        "name": base_model.__name__,
+                        "arguments": resp.model_dump_json(indent=self.indent),
+                    },
+                }
             )
-            call_args = ", ".join(filter(None, [str_args, str_kwargs]))
-
-            function_body = {
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": f"Predict the results of this function:\n\n{func_def}",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Return `{name}({call_args})`",
-                    },
-                    {
-                        "role": "assistant",
-                        "function_call": {
-                            "name": openai_function_call["name"],
-                            "arguments": resp.model_dump_json(indent=self.indent),
-                        },
-                    },
-                ],
-                "functions": [openai_function_call],
-            }
-            self.logger.info(json.dumps(function_body))
+            openai_kwargs["functions"] = [openai_function_call]
+            self.logger.info(json.dumps(openai_kwargs))
 
         if finetune_format == FinetuneFormat.RAW:
             function_body = dict(
@@ -212,3 +255,29 @@ class Instructions:
                 schema=base_model.model_json_schema(),
             )
             self.logger.info(json.dumps(function_body))
+
+    def openai_kwargs(self, name, fn, args, kwargs, base_model):
+        if self.include_code_body:
+            func_def = format_function(fn)
+        else:
+            func_def = get_signature_from_fn(fn)
+
+        str_args = ", ".join(map(str, args))
+        str_kwargs = (
+            ", ".join(f"{k}={json.dumps(v)}" for k, v in kwargs.items()) or None
+        )
+        call_args = ", ".join(filter(None, [str_args, str_kwargs]))
+
+        function_body = {
+            "messages": [
+                {
+                    "role": "system",
+                    "content": f"Predict the results of this function:\n\n{func_def}",
+                },
+                {
+                    "role": "user",
+                    "content": f"Return `{name}({call_args})`",
+                },
+            ],
+        }
+        return function_body
