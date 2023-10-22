@@ -4,20 +4,11 @@ import inspect
 import json
 import logging
 
-<<<<<<< HEAD
 from typing import Any, Callable, List, Optional
-import uuid
-from pydantic import BaseModel, validate_call
-
-=======
-from typing import Any, Callable, List, Optional, Type
 from pydantic import BaseModel, validate_call
 
 import uuid
 import openai
-
->>>>>>> distil
-from instructor import openai_schema
 
 
 class FinetuneFormat(enum.Enum):
