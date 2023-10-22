@@ -83,12 +83,14 @@ class Instructions:
         log_handlers: List[logging.Handler] = None,
         finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
         indent: int = 2,
+        include_code_body: bool = False,
     ):
         self.name = name
         self.id = id or str(uuid.uuid4())
         self.unique_id = str(uuid.uuid4())
         self.finetune_format = finetune_format
         self.indent = indent
+        self.include_code_body = include_code_body
 
         self.logger = logging.getLogger(self.name)
         for handler in log_handlers or []:
@@ -196,7 +198,11 @@ class Instructions:
 
     def openai_kwargs(self, name, fn, args, kwargs, base_model):
         openai_function_call = openai_schema(base_model).openai_schema
-        func_def = get_signature_from_fn(fn).replace(fn.__name__, name)
+
+        if self.include_code_body:
+            func_def = format_function(fn)
+        else:
+            func_def = get_signature_from_fn(fn).replace(fn.__name__, name)
 
         str_args = ", ".join(map(str, args))
         str_kwargs = (
