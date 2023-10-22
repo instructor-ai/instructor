@@ -120,4 +120,4 @@ With this, you can swap the function implementation, making it backward compatib
 
 ## Conclusion
 
-We've seen how `Instructor` can make your life easier, from fine-tuning to distillation. Stay tuned for more updates and don't forget to check out the survey at [useinstructor.com](https://useinstructor.com).
+We've seen how `Instructor` can make your life easier, from fine-tuning to distillation. Now if you're thinking wow, I'd love a backend service to do this for continously, you're in luck! Please check out the survey at [useinstructor.com](https://useinstructor.com) and let us know who you are.
