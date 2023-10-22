@@ -113,6 +113,7 @@ class Instructions:
         *args,
         name: str = None,
         mode: str = "distil",
+        model: str = "gpt-3.5-turbo",
         fine_tune_format: FinetuneFormat = None,
     ):
         """
@@ -136,7 +137,6 @@ class Instructions:
         """
         allowed_modes = {"distil", "dispatch"}
         assert mode in allowed_modes, f"Must be in {allowed_modes}"
-        assert mode == "distil", "Only distil mode is supported at the moment."
 
         if fine_tune_format is None:
             fine_tune_format = self.finetune_format
@@ -156,7 +156,7 @@ class Instructions:
                     base_model=return_base_model,
                 )
                 return openai.ChatCompletion.create(
-                    **openai_kwargs, response_model=return_base_model
+                    **openai_kwargs, model=model, response_model=return_base_model
                 )
 
             @functools.wraps(fn)
@@ -215,7 +215,6 @@ class Instructions:
                 }
             )
             openai_kwargs["functions"] = [openai_function_call]
-            openai_kwargs["function_call"] = {"name": openai_function_call["name"]}
             self.logger.info(json.dumps(openai_kwargs))
 
         if finetune_format == FinetuneFormat.RAW:
@@ -233,7 +232,7 @@ class Instructions:
         if self.include_code_body:
             func_def = format_function(fn)
         else:
-            func_def = get_signature_from_fn(fn).replace(fn.__name__, name)
+            func_def = get_signature_from_fn(fn)
 
         str_args = ", ".join(map(str, args))
         str_kwargs = (

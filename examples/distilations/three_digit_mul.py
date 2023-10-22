@@ -22,49 +22,43 @@ class Multiply(BaseModel):
 
 
 @instructions.distil
-def fn(a: int, b: int, c: str) -> Multiply:
-    """_summary_
-
-    Args:
-        a (int): _description_
-        b (int): _description_
-        c (str): _description_
-
-    Returns:
-        Response: _description_
-    """
-    resp = a + b
+def fn(a: int, b: int) -> Multiply:
+    """Return the result of multiplying a and b together"""
+    resp = a * b
     return Multiply(a=a, b=b, result=resp)
 
 
 if __name__ == "__main__":
     import random
 
-    # A log will look like this:
-    log_line = {
+    log_lines = {
         "messages": [
             {
                 "role": "system",
-                "content": 'Predict the results of this function:\n\ndef fn(a: int, b: int, c: str) -> __main__.Response\n"""\n_summary_\n\nArgs:\n    a (int): _description_\n    b (int): _description_\n    c (str): _description_\n\nReturns:\n    Response: _description_\n"""',
+                "content": 'Predict the results of this function:\n\ndef fn(a: int, b: int) -> __main__.Multiply\n"""\nReturn the result of multiplying a and b together\n"""',
             },
-            {"role": "user", "content": 'Return fn(133, b=539, c="hello")'},
+            {"role": "user", "content": "Return `fn(169, b=166)`"},
             {
                 "role": "assistant",
                 "function_call": {
-                    "name": "Response",
-                    "arguments": '{"a":133,"b":539,"result":672}',
+                    "name": "Multiply",
+                    "arguments": '{\n  "a": 169,\n  "b": 166,\n  "result": 28054\n}',
                 },
             },
         ],
         "functions": [
             {
-                "name": "Response",
-                "description": "Correctly extracted `Response` with all the required parameters with correct types",
+                "name": "Multiply",
+                "description": "Correctly extracted `Multiply` with all the required parameters with correct types",
                 "parameters": {
                     "properties": {
-                        "a": {"type": "integer"},
-                        "b": {"type": "integer"},
-                        "result": {"type": "integer"},
+                        "a": {"title": "A", "type": "integer"},
+                        "b": {"title": "B", "type": "integer"},
+                        "result": {
+                            "description": "The result of the multiplication",
+                            "title": "Result",
+                            "type": "integer",
+                        },
                     },
                     "required": ["a", "b", "result"],
                     "type": "object",
@@ -72,8 +66,7 @@ if __name__ == "__main__":
             }
         ],
     }
-
     for _ in range(10):
         a = random.randint(100, 999)
         b = random.randint(100, 999)
-        print("returning", fn(a, b=b, c="hello"))
+        print("returning", fn(a, b=b))
