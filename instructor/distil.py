@@ -172,7 +172,7 @@ class Instructions:
 
         if finetune_format == FinetuneFormat.MESSAGES:
             openai_kwargs = self.openai_kwargs(name, fn, args, kwargs, base_model)
-            openai_kwargs.append(
+            openai_kwargs["messages"].append(
                 {
                     "role": "assistant",
                     "function_call": {
