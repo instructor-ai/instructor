@@ -171,36 +171,17 @@ class Instructions:
         base_model: BaseModel = type(resp)
 
         if finetune_format == FinetuneFormat.MESSAGES:
-            openai_function_call = openai_schema(base_model).openai_schema
-            func_def = get_signature_from_fn(fn).replace(fn.__name__, name)
-
-            str_args = ", ".join(map(str, args))
-            str_kwargs = (
-                ", ".join(f"{k}={json.dumps(v)}" for k, v in kwargs.items()) or None
+            openai_kwargs = self.openai_kwargs(name, fn, args, kwargs, base_model)
+            openai_kwargs.append(
+                {
+                    "role": "assistant",
+                    "function_call": {
+                        "name": base_model.__name__,
+                        "arguments": resp.model_dump_json(indent=self.indent),
+                    },
+                }
             )
-            call_args = ", ".join(filter(None, [str_args, str_kwargs]))
-
-            function_body = {
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": f"Predict the results of this function:\n\n{func_def}",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Return `{name}({call_args})`",
-                    },
-                    {
-                        "role": "assistant",
-                        "function_call": {
-                            "name": openai_function_call["name"],
-                            "arguments": resp.model_dump_json(indent=self.indent),
-                        },
-                    },
-                ],
-                "functions": [openai_function_call],
-            }
-            self.logger.info(json.dumps(function_body))
+            self.logger.info(json.dumps(openai_kwargs))
 
         if finetune_format == FinetuneFormat.RAW:
             function_body = dict(
@@ -212,3 +193,28 @@ class Instructions:
                 schema=base_model.model_json_schema(),
             )
             self.logger.info(json.dumps(function_body))
+
+    def openai_kwargs(self, name, fn, args, kwargs, base_model):
+        openai_function_call = openai_schema(base_model).openai_schema
+        func_def = get_signature_from_fn(fn).replace(fn.__name__, name)
+
+        str_args = ", ".join(map(str, args))
+        str_kwargs = (
+            ", ".join(f"{k}={json.dumps(v)}" for k, v in kwargs.items()) or None
+        )
+        call_args = ", ".join(filter(None, [str_args, str_kwargs]))
+
+        function_body = {
+            "messages": [
+                {
+                    "role": "system",
+                    "content": f"Predict the results of this function:\n\n{func_def}",
+                },
+                {
+                    "role": "user",
+                    "content": f"Return `{name}({call_args})`",
+                },
+            ],
+            "functions": [openai_function_call],
+        }
+        return function_body

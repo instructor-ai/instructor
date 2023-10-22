@@ -188,8 +188,6 @@ class OpenAISchema(BaseModel):
                     f"the required parameters with correct types"
                 )
 
-        _remove_a_key(parameters, "title")
-        _remove_a_key(parameters, "additionalProperties")
         return {
             "name": schema["title"],
             "description": schema["description"],
