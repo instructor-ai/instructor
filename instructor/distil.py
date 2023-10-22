@@ -10,6 +10,8 @@ from pydantic import BaseModel, validate_call
 import uuid
 import openai
 
+from instructor.function_calls import openai_schema
+
 
 class FinetuneFormat(enum.Enum):
     MESSAGES: str = "messages"
