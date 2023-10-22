@@ -14,6 +14,8 @@ tags:
 
 Get ready to dive deep into the world of fine-tuning task specific language models with Python functions. We'll explore how the `instructor.instructions` streamlines this process, making the task you want to distil  more efficient and powerful while preserving its original functionality and backwards compatibility.
 
+If you want to see the full example checkout [examples/distillation](https://github.com/jxnl/instructor/tree/main/examples/distilations)
+
 ## Why You Need Instructor
 
 Imagine you're developing a backend service that uses a mix old and new school ML practises, it may involve pipelines with multiple function calls, validations, and data processing. Sounds cumbersome, right? That's where `Instructor` comes in. It simplifies complex procedures, making them more efficient and easier to manage by adding a decorator to your function that will automatically generate a dataset for fine-tuning and help you swap out the function implementation.
