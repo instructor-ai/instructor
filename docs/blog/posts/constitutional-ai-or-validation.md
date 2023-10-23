@@ -63,7 +63,7 @@ def validation_function(cls, value):
     return mutation(value)
 ```
 
-We should be able to define new types that are powered by probabilsitic models and use them in the same way we use define validators in Pydantic.
+We should be able to define new types that are powered by probabilistic models and use them in the same way we use define validators in Pydantic.
 
 ## Probabilistic Validation in Software 3.0
 
