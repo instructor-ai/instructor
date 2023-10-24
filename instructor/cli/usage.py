@@ -42,11 +42,6 @@ async def get_usage_for_past_n_days(n_days: int) -> List[dict]:
     return all_data
 
 
-from collections import defaultdict
-from datetime import datetime
-from typing import List
-from rich.table import Table
-
 # Define the cost per unit for each model
 MODEL_COSTS = {
     "gpt-3.5-turbo": {"prompt": 0.0015 / 1000, "completion": 0.002 / 1000},

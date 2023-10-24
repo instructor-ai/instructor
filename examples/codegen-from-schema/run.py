@@ -10,14 +10,14 @@ from jinja2 import Template
 from models import ExtractPerson
 
 import openai
-import instructor 
+import instructor
 
 instructor.patch()
 
 app = FastAPI()
 
-class TemplateVariables(BaseModel):
 
+class TemplateVariables(BaseModel):
     biography: str
 
 
@@ -26,7 +26,11 @@ class RequestSchema(BaseModel):
     model: str
     temperature: int
 
-PROMPT_TEMPLATE = Template("""Extract the person from the following: {{biography}}""".strip())
+
+PROMPT_TEMPLATE = Template(
+    """Extract the person from the following: {{biography}}""".strip()
+)
+
 
 @app.post("/api/v1/extract_person", response_model=ExtractPerson)
 async def extract_person(input: RequestSchema) -> ExtractPerson:
@@ -35,7 +39,5 @@ async def extract_person(input: RequestSchema) -> ExtractPerson:
         model=input.model,
         temperature=input.temperature,
         response_model=ExtractPerson,
-        messages=[
-            {"role": "user", "content": rendered_prompt}
-        ]
-    ) # type: ignore
+        messages=[{"role": "user", "content": rendered_prompt}],
+    )  # type: ignore

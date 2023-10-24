@@ -1,7 +1,7 @@
 import instructor
 import openai
 from pydantic import BaseModel, Field
-from typing import Optional, Type
+from typing import Optional
 
 instructor.patch()
 

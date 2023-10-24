@@ -64,7 +64,7 @@ def load_json_schema(json_schema_path: str) -> dict:
 
 def generate_pydantic_model(json_schema_path: str):
     input_path = Path(json_schema_path)
-    output_path = Path(f"./models.py")
+    output_path = Path("./models.py")
     generate(
         input_=input_path, input_file_type=InputFileType.JsonSchema, output=output_path
     )

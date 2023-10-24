@@ -11,9 +11,9 @@ from pydantic import BaseModel
 
 
 class Type(Enum):
-    home = 'home'
-    work = 'work'
-    mobile = 'mobile'
+    home = "home"
+    work = "work"
+    mobile = "mobile"
 
 
 class PhoneNumber(BaseModel):

@@ -57,7 +57,7 @@ class Query(OpenAISchema):
     )
 
     async def execute(self, dependency_func):
-        print("Executing", f"`self.question`")
+        print("Executing", "`self.question`")
         print("Executing with", len(self.dependancies), "dependancies")
 
         if self.node_type == QueryType.SINGLE_QUESTION:

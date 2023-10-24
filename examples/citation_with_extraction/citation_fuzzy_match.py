@@ -90,14 +90,14 @@ def ask_ai(question: str, context: str) -> QuestionAnswer:
         messages=[
             {
                 "role": "system",
-                "content": f"You are a world class algorithm to answer questions with correct and exact citations. ",
+                "content": "You are a world class algorithm to answer questions with correct and exact citations. ",
             },
-            {"role": "user", "content": f"Answer question using the following context"},
+            {"role": "user", "content": "Answer question using the following context"},
             {"role": "user", "content": f"{context}"},
             {"role": "user", "content": f"Question: {question}"},
             {
                 "role": "user",
-                "content": f"Tips: Make sure to cite your sources, and use the exact words from the context.",
+                "content": "Tips: Make sure to cite your sources, and use the exact words from the context.",
             },
         ],
     )
