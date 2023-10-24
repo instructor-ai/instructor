@@ -194,11 +194,12 @@ Now we can use this validator in the same way we used the `llm_validator` from `
 
 ```python
 from pydantic import BaseModel, ValidationError, field_validator, AfterValidator
+from typing import Annotated
 
 class UserModel(BaseModel):
     id: int
     name: str
-    beliefs: Annotation[str, AfterValidator(validator)]
+    beliefs: Annotated[str, AfterValidator(validator)]
 ```
 
 ## Writing validations that depend on multiple fields
