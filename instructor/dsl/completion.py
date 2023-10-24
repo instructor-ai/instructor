@@ -62,7 +62,7 @@ class ChatCompletion(BaseModel):
     function: OpenAISchema = Field(default=None, repr=False)
 
     def __post_init__(self):
-        assert self.stream == False, "Stream is not supported yet"
+        assert not self.stream, "Stream is not supported yet"
 
     def __or__(self, other: Union[Message, OpenAISchema]) -> "ChatCompletion":
         """

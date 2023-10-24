@@ -1,5 +1,5 @@
 from pydantic import BaseModel, create_model, Field
-from typing import Optional, List, Type, Union
+from typing import Optional, List, Type
 from instructor import OpenAISchema
 
 

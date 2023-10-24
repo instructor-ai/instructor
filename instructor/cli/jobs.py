@@ -102,7 +102,7 @@ def create_from_id(
 ):
     with console.status(
         f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
-    ) as status:
+    ):
         job = openai.FineTuningJob.create(training_file=id, model=model)
         console.log(f"[bold green]Fine-tuning job created with ID: {job.id}")  # type: ignore
     watch(limit=5, poll=2, screen=False)
@@ -143,7 +143,7 @@ def create_from_file(
     help="Cancel a fine-tuning job.",
 )
 def cancel(id: str = typer.Argument(..., help="ID of the fine-tuning job to cancel")):
-    with console.status(f"[bold red]Cancelling job {id}...", spinner="dots") as status:
+    with console.status(f"[bold red]Cancelling job {id}...", spinner="dots"):
         try:
             openai.FineTuningJob.cancel(id)
             console.log(f"[bold red]Job {id} cancelled successfully!")

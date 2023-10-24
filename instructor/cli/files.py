@@ -1,8 +1,5 @@
 from typing import List
-from typing_extensions import Annotated
-from rich.live import Live
 from rich.table import Table
-from rich.spinner import Spinner
 from rich.console import Console
 
 from datetime import datetime
@@ -76,9 +73,7 @@ def download(
     file_id: str = typer.Argument(..., help="ID of the file to download"),
     output: str = typer.Argument(..., help="Output path for the downloaded file"),
 ):
-    with console.status(
-        f"[bold green]Downloading file {file_id}...", spinner="dots"
-    ) as status:
+    with console.status(f"[bold green]Downloading file {file_id}...", spinner="dots"):
         content = openai.File.download(file_id)
         with open(output, "wb") as file:
             file.write(content)
@@ -89,9 +84,7 @@ def download(
     help="Delete a file from OpenAI's servers",
 )
 def delete(file_id: str = typer.Argument(..., help="ID of the file to delete")):
-    with console.status(
-        f"[bold red]Deleting file {file_id}...", spinner="dots"
-    ) as status:
+    with console.status(f"[bold red]Deleting file {file_id}...", spinner="dots"):
         try:
             openai.File.delete(file_id)
             console.log(f"[bold red]File {file_id} deleted successfully!")

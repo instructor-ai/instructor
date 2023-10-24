@@ -1,5 +1,4 @@
 import instructor
-import openai
 from pydantic import BaseModel, ValidationError, field_validator
 
 instructor.patch()

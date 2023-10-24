@@ -70,7 +70,7 @@ class openai_function:
             ):
                 parameters["properties"][name]["description"] = description
         parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() if not "default" in v
+            k for k, v in parameters["properties"].items() if "default" not in v
         )
         self.openai_schema = {
             "name": self.func.__name__,
@@ -176,7 +176,7 @@ class OpenAISchema(BaseModel):
                     parameters["properties"][name]["description"] = description
 
         parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() if not "default" in v
+            k for k, v in parameters["properties"].items() if "default" not in v
         )
 
         if "description" not in schema:

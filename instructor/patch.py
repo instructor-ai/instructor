@@ -46,7 +46,9 @@ def handle_response_model(response_model: Type[BaseModel], kwargs):
     return response_model, new_kwargs
 
 
-def process_response(response, response_model, validation_context: dict = None, strict=None):  # type: ignore
+def process_response(
+    response, response_model, validation_context: dict = None, strict=None
+):  # type: ignore
     """Processes a OpenAI response with the response model, if available
     It can use `validation_context` and `strict` to validate the response
     via the pydantic model

@@ -1,5 +1,5 @@
 from .completion import ChatCompletion
-from .messages import *
+from .messages import messages
 from .multitask import MultiTask
 from .maybe import Maybe
 from .validators import llm_validator

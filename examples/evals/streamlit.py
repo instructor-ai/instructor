@@ -1,6 +1,5 @@
 import streamlit as st
 from stats_dict import stats_dict
-import json
 
 # Sample data
 query_data = {i: line.strip() for i, line in enumerate(open("test.jsonl", "r"))}

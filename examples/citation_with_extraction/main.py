@@ -2,7 +2,7 @@ import json
 from typing import Iterable, List
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.params import Depends
-from instructor import MultiTask, OpenAISchema
+from instructor import OpenAISchema
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
@@ -88,14 +88,14 @@ def stream_extract(question: Question) -> Iterable[Fact]:
         messages=[
             {
                 "role": "system",
-                "content": f"You are a world class algorithm to answer questions with correct and exact citations. ",
+                "content": "You are a world class algorithm to answer questions with correct and exact citations. ",
             },
-            {"role": "user", "content": f"Answer question using the following context"},
+            {"role": "user", "content": "Answer question using the following context"},
             {"role": "user", "content": f"{question.context}"},
             {"role": "user", "content": f"Question: {question.query}"},
             {
                 "role": "user",
-                "content": f"Tips: Make sure to cite your sources, and use the exact words from the context.",
+                "content": "Tips: Make sure to cite your sources, and use the exact words from the context.",
             },
         ],
         max_tokens=2000,
