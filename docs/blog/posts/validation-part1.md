@@ -2,35 +2,32 @@
 draft: False 
 date: 2023-10-23
 tags:
-    - pydantic
-    - validation
-    - guardrails 
-    - constitutional ai
+  - pydantic
+  - validation
+  - guardrails 
+  - constitutional ai
 ---
 
 # Good LLM Validation is Just Good Validation
 
-Tools like Constitutional AI address shortcomings by using AI feedback to evaluate outputs. In this approach, an developer provides a set of principles for making judgments about generated text. These principles guide the model's behavior. 
+Tools like Constitutional AI address shortcomings by using AI feedback to evaluate outputs. In this approach, a developer provides a set of principles for making judgments about generated text, guiding the model's behavior. Essentially, it's a form of validation where a model performs the validation instead of manual rule checking. For example, a content moderation system could automatically ban certain keywords using a model. This self-correcting system improves upon previous error handling methods.
 
-Essentially, it's a form of validation. Instead of manually checking against a set of rules, we now have a model that can perform the validation. For example, a content moderation system could use a model to automatically ban certain keywords. Previously, an error might have been thrown upon detection, but now we have a self-correcting system.
-
-This post will explore how we can achieve this using Pydantic and Instructor without introducing new standards or terms for validation.
+This post explores how to achieve this using Pydantic and Instructor without introducing new standards or terms for validation.
 
 ## Validations in Software 1.0
 
-!!! note "Pydantic Validations"
-    Pydantic supports a variety of validation methods. They all work with the same patters we'll discuss in this post. For more information.
+Pydantic supports various validation methods, all based on the same patterns discussed in this post. For more information, refer to the following:
 
-    1. [Field Validators](https://docs.pydantic.dev/latest/concepts/validators/#field-validators)
-    2. [Class Validators](https://docs.pydantic.dev/latest/concepts/validators/#model-validators)
+1. [Field Validators](https://docs.pydantic.dev/latest/concepts/validators/#field-validators)
+2. [Class Validators](https://docs.pydantic.dev/latest/concepts/validators/#model-validators)
 
-    Along with advanced features like [Validation Context](https://docs.pydantic.dev/latest/concepts/validators/#validation-context)
+Pydantic also provides advanced features like [Validation Context](https://docs.pydantic.dev/latest/concepts/validators/#validation-context).
 
-One of the simplest forms of validation is field validation which can be done in two ways, using the `field_validator` decorator or using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations.
+One of the simplest forms of validation is field validation, which can be done in two ways: using the `field_validator` decorator or using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations.
 
 ### Validating that a name contains a space
 
-To validate if a name contains a space, we can use either the `field_validator` decorator or the `Annotated` function from the Pydantic library.
+To validate if a name contains a space, you can use either the `field_validator` decorator or the `Annotated` function from the Pydantic library.
 
 #### Using `field_validator` decorator
 
@@ -75,6 +72,7 @@ from typing import Annotated
 def name_must_contain_space(v):
     if ' ' not in v:
         raise ValueError('must contain a space')
+```python
     return v
 
 class UserModel(BaseModel):
@@ -95,9 +93,9 @@ name
   Value error, must contain a space [type=value_error, input_value='jason', input_type=str]
 ```
 
-Validation is a fundamental concept in software development. However, when we want an AI system to raise an error or self-correct, new vocabulary and terms have been introduced in the community. Instead, we can apply the same idea of having types, such as an integer or a string, but with additional constraints. For example, a string type that is not "an apology" or "a threat." The underlying principles remain the same.
+Validation is a fundamental concept in software development. When it comes to AI systems, the idea of validation remains the same. Instead of introducing new terms and standards, existing programming concepts can be applied. For example, types can have additional constraints. We can define types that are not "an apology" or "a threat." The underlying principles remain unchanged.
 
-In essence, we have a function where we check if the value satisfies a certain condition. If it does, we return the value. If it does not, we raise an error. This is similar to the above examples, with the addition of a possible mutation step.
+In essence, validation involves checking if a value satisfies a condition. If it does, the value is returned. If it doesn't, an error is raised. This concept is similar to the examples mentioned above, with the addition of a possible mutation step:
 
 ```python
 def validation_function(value):
@@ -106,15 +104,15 @@ def validation_function(value):
     return mutation(value)
 ```
 
-We should be able to define new types that are powered by probabilistic models and use them in the same way we define validators in Pydantic.
+We can define new types powered by probabilistic models and use them as validators in Pydantic.
 
 ## Fuzzy Validation in Software 3.0
 
-Now that you have an idea of how simple field validators work, let's discuss probabilistic validation in software 3.0. In this context, the instructor provides a fuzzy LLM-powered validator called `llm_validator` that uses a statement to verify the value. The statement is a string used to prompt the model to determine if the value is valid. If the value is valid, the model returns the value. If the value is not valid, the model returns an error message.
+Now that we understand how simple field validators work, let's discuss probabilistic validation in software 3.0. In this context, we introduce an LLM-powered validator called `llm_validator` that uses a statement to verify the value. The statement prompts the model to determine if the value is valid. If it is, the model returns the value. If it's not, the model returns an error message.
 
 ```python
 from instructor import llm_validator
-from pydantic import BaseModel, field_validator, ValidationError
+from pydantic import BaseModel, ValidationError
 from typing import Annotated
 
 class UserModel(BaseModel):
@@ -134,13 +132,13 @@ except ValidationError as e:
 
 The error message is generated by the language model (LLM) rather than the code itself, making it helpful for re-asking the model. Multiple validators can be stacked on top of each other.
 
-To get a better understanding, let's look at how to build `llm_validator` from scratch.
+To better understand this approach, let's see how to build an `llm_validator` from scratch.
 
 ## Creating Your Own Field Level `llm_validator`
 
 We highly recommend trying to build your own `llm_validator`. It's a great way to get started with `instructor` and enables you to create custom validators.
 
-Before we continue, let's re-examine the anatomy of a validator.
+Before we continue, let's review the anatomy of a validator:
 
 ```python
 def validation_function(value):
@@ -305,8 +303,7 @@ Value error, Citation `Jason is cool` not found in text chunks [type=value_error
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
 
-In order to pass this context from the `openai.ChatCompletion.create` call `instructor.patch()` also passes the `validation_context`
-which will be accessible from the `info` argument in the decorated validator functions.
+In order to pass this context from the `openai.ChatCompletion.create` call, `instructor.patch()` also passes the `validation_context`, which will be accessible from the `info` argument in the decorated validator functions.
 
 ```python
 def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
@@ -324,7 +321,7 @@ def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
     )
 ```
 
-## Self corrections using validation errors
+## Self Corrections Using Validation Errors
 
 When programming LLMs, it is often desirable to have error messages. However, when using intelligent systems, it is important to be able to correct the output. Validators can be very useful in ensuring certain properties of the outputs. The `patch()` method in the `openai` client allows you to use the `max_retries` parameter to specify the number of times you can ask the model to correct the output.
 
@@ -335,8 +332,7 @@ This approach provides a layer of defense against two types of bad outputs:
 
 ### Define the Response Model with Validators
 
-In the code snippet below, the field validator ensures that the `name` field is in uppercase. If the name is not in uppercase, a `ValueError` is raised. Instead of using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations, we can use the `field_validator` decorator to define a validator for a field. The benefit of this approach is that we can define a validator and colocate it with the object its validating.
-
+In the code snippet below, the field validator ensures that the `name` field is in uppercase. If the name is not in uppercase, a `ValueError` is raised. Instead of using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations, we can use the `field_validator` decorator to define a validator for a field. The benefit of this approach is that we can define a validator and colocate it with the object it's validating.
 
 ```python
 from pydantic import BaseModel, field_validator
@@ -377,7 +373,7 @@ model = openai.ChatCompletion.create(
 assert model.name == "JASON"
 ```
 
-You see here that while there was no code that explicity uppercased the name, the model was able to correct the output.
+As seen in this example, even though there is no code explicitly uppercasing the name, the model is able to correct the output.
 
 ## Conclusion
 
