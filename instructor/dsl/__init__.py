@@ -5,7 +5,7 @@ from .maybe import Maybe
 from .validators import llm_validator
 from .citation import CitationMixin
 
-__all__ = [
+__all__ = [  # noqa: F405
     "ChatCompletion",
     "CitationMixin",
     "MultiTask",
