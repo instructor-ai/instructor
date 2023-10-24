@@ -83,8 +83,6 @@ name
   Value error, must contain a space [type=value_error, input_value='jason', input_type=str]
 ```
 
-This code snippet achieves the same validation result. If the provided name does not contain a space, a `ValueError` is raised, and the corresponding error message is displayed.
-
 Validation is a fundamental concept in software development, and it remains the same when applied to AI systems. Instead of introducing new terms and standards, existing programming concepts can be leveraged. For example, types can have additional constraints, ensuring they are not "an apology" or "a threat." The underlying principles of validation remain unchanged.
 
 In essence, validation involves checking if a value satisfies a condition. If it does, the value is returned. If it doesn't, an error is raised. This concept is similar to the examples mentioned above, with the addition of a possible mutation step:
