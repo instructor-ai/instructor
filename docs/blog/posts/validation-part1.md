@@ -8,23 +8,77 @@ tags:
     - constitutional ai
 ---
 
-# Constitutional AI is just Probabilistic Validation
-
-Earlier this year, there was a lot of discussion about Constitutional AI and its role in guiding models. There was also talk about the need for guard rails and special systems to ensure safe outputs. However, I found myself unimpressed. Why create a new term when we already have one that describes the concept? That term is "validation," and now we can do it probabilistically.
+# Good LLM Validation is Just Good Validation
 
 Tools like Constitutional AI address shortcomings by using AI feedback to evaluate outputs. In this approach, an AI system provides a set of principles for making judgments about generated text. These principles guide the model's behavior. Essentially, it's a form of validation. Instead of manually checking against a set of rules, we now have a model that can perform the validation. For example, a content moderation system could use a model to automatically ban certain keywords. Previously, an error might have been thrown upon detection, but now we have a self-correcting system.
 
 This post will explore how we can achieve this using Pydantic and Instructor without introducing new standards or terms for validation.
 
-## Validation in Software 1.0
+1. Introduction to Field Validators
 
-Common types of validation in Software 1.0 include:
+## Validations in Software 1.0
+
+One of the simplest forms of validation is field validation which can be done in two ways, using the `field_validator` decorator or using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations.
+
+Common types of validation include:
 
 -  Type checking
 -  Range checking
 -  Length checking
 
 Here's an example model that uses Pydantic to validate the range and length of a string, taken directly from the Pydantic documentation:
+
+### Simple Validation with Pydantic's `Field`
+
+Consider wanting to have an id field be between 1 and 100:
+
+```python hl_lines="2"
+from pydantic import BaseModel, ValidationError, validator
+
+class UserModel(BaseModel):
+    id: int = Field(..., gt=0, lt=100)
+    name: str
+
+try:
+    UserModel(id=0, name="Jason Liu")
+except ValidationError as e:
+    print(e)
+    """
+    1 validation error for UserModel
+    id
+      ensure this value is greater than 0 (type=value_error.number.not_gt; limit_value=0)
+    """
+```
+
+### Field Validation with a [PEP 593](https://www.python.org/dev/peps/pep-0593/) Variable Annotation
+
+```python hl_lines="2"
+from pydantic import BaseModel, ValidationError, validator, AfterValidator
+from typing import Annotated
+
+def name_must_contain_space(v):
+    if ' ' not in v:
+        raise ValueError('must contain a space')
+    return v
+
+class UserModel(BaseModel):
+    id: int = Field(..., gt=0, lt=100)
+    name: Annotated[str, AfterValidator(name_must_contain_space)]
+
+try:
+    UserModel(id=1, name='jason')
+except ValidationError as e:
+    print(e)
+    """
+    1 validation error for UserModel
+    name
+      Value error, must contain a space [type=value_error, input_value='jason', input_type=str]
+    """
+```
+
+### Field Validation with `field_validator`
+
+Lastly, we can use the `field_validator` decorator to define a validator for a field. The benefit of this approach is that we can define a validator for a field that is not a function of the field itself and can cover multiple fields.
 
 ```python
 from pydantic import BaseModel, ValidationError, field_validator
@@ -40,9 +94,6 @@ class UserModel(BaseModel):
             raise ValueError('must contain a space')
         return v.title()
 
-print(UserModel(id=1, name='John Doe'))
-#> id=1 name='John Doe'
-
 try:
     UserModel(id=1, name='jason')
 except ValidationError as e:
@@ -54,10 +105,12 @@ except ValidationError as e:
     """
 ```
 
-Validation is a fundamental concept in Software 1.0. However, when we want an ai system to raise an error or self-correct, we introduce new vocabulary and terms. Instead, we can apply the same idea of having types, such as an integer or a string, but with additional constraints. For example, a string type that is not "an apology" or "a threat." The underlying principles remain the same.
+Validation is a fundamental concept in Software 1.0. However, when we want an ai system to raise an error or self-correct, the community seems to have introduced new vocabulary and terms. Instead, we can apply the same idea of having types, such as an integer or a string, but with additional constraints. For example, a string type that is not "an apology" or "a threat." The underlying principles remain the same.
+
+We have some function where we check if the value satisfies some condition. If it does, we return the value. If it does not, we raise an error. This is the same as the following, with the addition of an possible mutation step.
 
 ```python
-def validation_function(cls, value):
+def validation_function(value):
     if condition(value):
         raise ValueError("Value is not valid")
     return mutation(value)
@@ -67,22 +120,18 @@ We should be able to define new types that are powered by probabilistic models a
 
 ## Probabilistic Validation in Software 3.0
 
-In this note, we will discuss probabilistic validation in software 3.0. We introduce a type hint called `llm_validator` and demonstrate how to create custom validators using `instructor` itself.
+Now that you have an idea of how simple field validators work, lets will discuss probabilistic validation in software 3.0.
+Here instructor provides a fuzzy llm powered validator called `llm_validator` and that uses a statement to verify the value. The statement is a string that is used to prompt the model to determine if the value is valid. If the value is valid, the model returns the value. If the value is not valid, the model returns an error message.
 
 ```python
+from instructor import llm_validator
 from pydantic import BaseModel, field_validator, ValidationError
-from instruct import llm_validator
+from typing import Annotated
 
 class UserModel(BaseModel):
     id: int
     name: str
-    beliefs: str
-
-    @field_validator('beliefs')
-    @classmethod
-    def moderate_beliefs(cls, v: str) -> str:
-        validator = llm_validator("don't say objectionable things")
-        return validator(v)
+    beliefs: Annotation[str, llm_validator("don't say objectionable things")]
 ```
 
 Now, if we create a `UserModel` instance with a belief that contains objectionable things, we will get an error.
@@ -101,27 +150,17 @@ except ValidationError as e:
 
 Notably, the error message is generated by the language model (LLM) rather than the code itself, making it helpful for re-asking the model. Multiple validators can be stacked on top of each other.
 
-```python
-class UserModel(BaseModel):
-    id: int
-    name: str
-    beliefs: str
+To get a better understanding of lets look like building llm_validator from scratch.
 
-    @field_validator('beliefs')
-    @classmethod
-    def moderate_beliefs(cls, v: str) -> str:
-        validator = llm_validator("don't say objectionable things")
-        return validator(v)
-```
 
-## Creating Your Own `llm_validator`
+## Creating Your Own Field Level `llm_validator`
 
 We highly recommend trying to build your own `llm_validator`. It's a great way to get started with `instructor` and enables you to create custom validators.
 
-Before we continue, let's examine the anatomy of a validator.
+Before we continue, let's re examine the anatomy of a validator.
 
 ```python
-def validation_function(cls, value):
+def validation_function(value):
     if condition(value):
         raise ValueError("Value is not valid")
     return value 
@@ -138,34 +177,46 @@ class Validation(BaseModel):
 Using this structure, we can implement the same logic as before and utilize `instructor` to generate the validation.
 
 ```python
-def llm_validator(statement):
-    def validator(v):
-        resp = openai.ChatCompletion.create(
-            response_model=Validation,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a validator. Determine if the value is valid for the statement. If it is not, explain why.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Does `{v}` follow the rules: {statement}",
-                },
-            ],
-            model=model,
-            temperature=temperature,
-        )  # type: ignore
+import instructor 
+import openai
 
-        if resp.is_valid:
-            return v
-        else:
-            raise ValueError(resp.error_message)
-    return validator
+# Enables `response_model` and `max_retries` parameters
+instructor.patch()
+
+def validator(v):
+    statement = "don't say objectionable things"
+    resp = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a validator. Determine if the value is valid for the statement. If it is not, explain why.",
+            },
+            {
+                "role": "user",
+                "content": f"Does `{v}` follow the rules: {statement}",
+            },
+        ],
+        # this comes from instructor.patch()
+        response_model=Validation,
+    )  
+    if not resp.is_valid:
+        raise ValueError(resp.error_message)
+    return v
 ```
 
-Programming with `instructor` often follows a similar pattern. You define a model you want to use, create a Pydantic model that represents the output of the model, and then use `instructor` to generate the desired object.
+Now we can use this validator in the same way we used the `llm_validator` from `instructor`.
 
-## Self-healing Using Validation Errors
+```python
+from pydantic import BaseModel, ValidationError, field_validator, AfterValidator
+
+class UserModel(BaseModel):
+    id: int
+    name: str
+    beliefs: Annotation[str, AfterValidator(validator)]
+```
+
+## Self corrections using validation errors
 
 When programming LLMs, it is often desirable to have error messages. However, when using intelligent systems, it is important to be able to correct the output. Validators can be very useful in ensuring certain properties of the outputs. The `patch()` method in the `openai` client allows you to use the `max_retries` parameter to specify the number of times you can ask the model to correct the output.
 
@@ -174,16 +225,13 @@ This approach provides a layer of defense against two types of bad outputs:
 1. Pydantic Validation Errors (code or LLM-based)
 2. JSON Decoding Errors (when the model returns an incorrect response)
 
-### Step 1: Define the Response Model with Validators
+### Define the Response Model with Validators
 
-In the code snippet below, the field validator ensures that the `name` field is in uppercase. If the name is not in uppercase, a `ValueError` is raised.
+In the code snippet below, the field validator ensures that the `name` field is in uppercase. If the name is not in uppercase, a `ValueError` is raised. Instead of using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations, we can use the `field_validator` decorator to define a validator for a field. The benefit of this approach is that we can define a validator and colocate it with the object its validating.
+
 
 ```python
-import instructor
 from pydantic import BaseModel, field_validator
-
-# Apply the patch to the OpenAI client
-instructor.patch()
 
 class UserModel(BaseModel):
     name: str
@@ -197,18 +245,25 @@ class UserModel(BaseModel):
         return v
 ```
 
-### Step 2: Using the Client with Retries
+### Using the Client with Retries
 
 In the following code snippet, the `UserModel` is specified as the `response_model`, and `max_retries` is set to 2.
 
 ```python
+import openai
+import instructor 
+
+# Enables `response_model` and `max_retries` parameters
+instructor.patch()
+
 model = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
-    response_model=UserModel,
-    max_retries=2,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
     ],
+    # Powered by instructor.patch()
+    response_model=UserModel,
+    max_retries=2,
 )
 
 assert model.name == "JASON"
