@@ -1,37 +1,28 @@
 ---
-draft: False 
+draft: False
 date: 2023-10-23
 tags:
   - pydantic
   - validation
-  - guardrails 
+  - guardrails
   - constitutional ai
 ---
 
 # Good LLM Validation is Just Good Validation
 
-Tools like Constitutional AI address shortcomings by using AI feedback to evaluate outputs. In this approach, a developer provides a set of principles for making judgments about generated text, guiding the model's behavior. Essentially, it's a form of validation where a model performs the validation instead of manual rule checking. For example, a content moderation system could automatically ban certain keywords using a model. This self-correcting system improves upon previous error handling methods.
-
-This post explores how to achieve this using Pydantic and Instructor without introducing new standards or terms for validation.
+In the world of AI, validation plays a crucial role in ensuring the quality and reliability of generated outputs. Traditional approaches involve manual rule checking, but advancements in AI, such as Constitutional AI, offer a self-correcting system where AI models perform the validation. Pydantic and Instructor are powerful tools that enable validation without introducing new standards or terms. This post explores how to achieve effective validation using Pydantic and Instructor.
 
 ## Software 1.0 Validation
 
-Pydantic supports various validation methods, all based on the same patterns discussed in this post. For more information, refer to the following:
-
-1. [Field Validators](https://docs.pydantic.dev/latest/concepts/validators/#field-validators)
-2. [Class Validators](https://docs.pydantic.dev/latest/concepts/validators/#model-validators)
-
-Pydantic also provides advanced features like [Validation Context](https://docs.pydantic.dev/latest/concepts/validators/#validation-context).
-
-One of the simplest forms of validation is field validation, which can be done in two ways: using the `field_validator` decorator or using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations.
+Pydantic provides various validation methods based on well-established patterns. Field validation in Pydantic can be done using the `field_validator` decorator or [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations. The official Pydantic documentation provides detailed information on these validation methods, including field validators and class validators.
 
 ### Example: Validating that a name contains a space
 
-To validate if a name contains a space, you can use either the `field_validator` decorator or the `Annotated` function from the Pydantic library.
+To illustrate field validation, let's consider the example of validating whether a name contains a space. Pydantic offers two approaches for this validation: using the `field_validator` decorator or the `Annotated` function.
 
 #### Using `field_validator` decorator
 
-Here's an example of how to define a validator for the `name` field using the `field_validator` decorator:
+Here's an example of using the `field_validator` decorator to define a validator for the `name` field:
 
 ```python
 from pydantic import BaseModel, ValidationError, field_validator
@@ -92,7 +83,9 @@ name
   Value error, must contain a space [type=value_error, input_value='jason', input_type=str]
 ```
 
-Validation is a fundamental concept in software development. When it comes to AI systems, the idea of validation remains the same. Instead of introducing new terms and standards, existing programming concepts can be applied. For example, types can have additional constraints. We can define types that are not "an apology" or "a threat." The underlying principles remain unchanged.
+This code snippet achieves the same validation result. If the provided name does not contain a space, a `ValueError` is raised, and the corresponding error message is displayed.
+
+Validation is a fundamental concept in software development, and it remains the same when applied to AI systems. Instead of introducing new terms and standards, existing programming concepts can be leveraged. For example, types can have additional constraints, ensuring they are not "an apology" or "a threat." The underlying principles of validation remain unchanged.
 
 In essence, validation involves checking if a value satisfies a condition. If it does, the value is returned. If it doesn't, an error is raised. This concept is similar to the examples mentioned above, with the addition of a possible mutation step:
 
@@ -103,16 +96,15 @@ def validation_function(value):
     return mutation(value)
 ```
 
-We can define new types powered by probabilistic models and use them as validators in Pydantic.
+With Pydantic, we can define new types powered by probabilistic models and use them as validators.
 
 ## Software 3.0: Validation for LLMs or powered by LLMs
 
-Now that we understand how simple field validators work, let's discuss probabilistic validation in software 3.0. In this context, we introduce an LLM-powered validator called `llm_validator` that uses a statement to verify the value. The statement prompts the model to determine if the value is valid. If it is, the model returns the value. If it's not, the model returns an error message.
-
+Building upon the understanding of simple field validators, let's delve into probabilistic validation in software 3.0. In this context, we introduce an LLM-powered validator called `llm_validator` that uses a statement to verify the value. The model evaluates the statement to determine if the value is valid. If it is, the model returns the value; otherwise, it returns an error message.
 
 ### Example: Don't Say Objectionable Things
 
-Let's say we want to validate that a user's beliefs don't contain objectionable things. We can use the `llm_validator` to achieve this. Here's an example:
+Suppose we want to validate that a user's beliefs do not contain objectionable content. We can use the `llm_validator` to achieve this. Here's an example:
 
 ```python
 from instructor import llm_validator
@@ -125,7 +117,7 @@ class UserModel(BaseModel):
     beliefs: Annotated[str, llm_validator("don't say objectionable things")]
 ```
 
-Now, if we create a `UserModel` instance with a belief that contains objectionable things, we will get an error.
+Now, if we create a `UserModel` instance with a belief that contains objectionable content, we will receive an error.
 
 ```python
 try:
@@ -140,7 +132,7 @@ To better understand this approach, let's see how to build an `llm_validator` fr
 
 ### Creating Your Own Field Level `llm_validator`
 
-We highly recommend trying to build your own `llm_validator`. It's a great way to get started with `instructor` and enables you to create custom validators.
+Building your own `llm_validator` can be a valuable exercise to get started with `instructor` and create custom validators.
 
 Before we continue, let's review the anatomy of a validator:
 
@@ -151,11 +143,11 @@ def validation_function(value):
     return value 
 ```
 
-As we can see, a validator is simply a function that takes in a value and returns a value. If the value is not valid, it raises a `ValueError`. We can represent this as follows:
+As we can see, a validator is simply a function that takes in a value and returns a value. If the value is not valid, it raises a `ValueError`. We can represent this using the following structure:
 
 ```python
 class Validation(BaseModel):
-    is_valid: bool = Field(..., description="Whether the value is valid given the rules")
+    is_valid: bool = Field(..., description="Whether the value is valid based on the rules")
     error_message: Optional[str] = Field(..., description="The error message if the value is not valid, to be used for re-asking the model")
 ```
 
@@ -204,7 +196,7 @@ class UserModel(BaseModel):
 
 ## Writing validations that depend on multiple fields
 
-To validate multiple attributes simultaneously, you can extend the validation function and use a model validator instead of a field validator. Here's an example implementation in Pytho that checks if the `answer` follows the `chain_of_thought`:
+To validate multiple attributes simultaneously, you can extend the validation function and use a model validator instead of a field validator. Here's an example implementation in Python that checks if the `answer` follows the `chain_of_thought`:
 
 ```python
 import instructor 
@@ -264,7 +256,7 @@ except ValidationError as e:
     print(e)
 ```
 
-Now, if we create a `Response` instance with an answer that does not follow the chain of thought, we will get an error.
+If we create a `Response` instance with an answer that does not follow the chain of thought, we will get an error.
 
 ```
 1 validation error for Response
@@ -274,7 +266,7 @@ Now, if we create a `Response` instance with an answer that does not follow the 
 
 ## Example: Citations, allowing Context to Influence Validation
 
-You can pass a context object to the validation methods, which can be accessed from the `info` argument in decorated validator functions. One common application is to pass text chunks as context to the validation function. This allows the model to validate the text in the context of other text chunks. Here's an example:
+Contextual information can be passed to validation methods by using a context object, which can be accessed from the `info` argument in decorated validator functions. This technique allows the model to validate text in the context of other text chunks. Here's an example:
 
 ```python
 class AnswerWithCitation(BaseModel):
@@ -292,7 +284,7 @@ class AnswerWithCitation(BaseModel):
         return v
 ```
 
-If you have a model with the following text chunks:
+Suppose you have a model with the following text chunks:
 
 ```python
 try:
@@ -311,7 +303,7 @@ Value error, Citation `Jason is cool` not found in text chunks [type=value_error
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
 
-In order to pass this context from the `openai.ChatCompletion.create` call, `instructor.patch()` also passes the `validation_context`, which will be accessible from the `info` argument in the decorated validator functions.
+To pass this context from the `openai.ChatCompletion.create` call, `instructor.patch()` also passes the `validation_context`, which will be accessible from the `info` argument in the decorated validator functions.
 
 ```python
 def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
@@ -331,7 +323,7 @@ def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
 
 ## Self Corrections Using Validation Errors
 
-When programming LLMs, it is often desirable to have error messages. However, when using intelligent systems, it is important to be able to correct the output. Validators can be very useful in ensuring certain properties of the outputs. The `patch()` method in the `openai` client allows you to use the `max_retries` parameter to specify the number of times you can ask the model to correct the output.
+When programming LLMs, having error messages is often desirable. However, with intelligent systems, the ability to correct the output is also crucial. Validators can be valuable in ensuring certain properties of the outputs. The `patch()` method in the `openai` client allows you to use the `max_retries` parameter to specify the number of times you can ask the model to correct the output.
 
 This approach provides a layer of defense against two types of bad outputs:
 
@@ -340,7 +332,7 @@ This approach provides a layer of defense against two types of bad outputs:
 
 ### Define the Response Model with Validators
 
-In the code snippet below, the field validator ensures that the `name` field is in uppercase. If the name is not in uppercase, a `ValueError` is raised. Instead of using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations, we can use the `field_validator` decorator to define a validator for a field. The benefit of this approach is that we can define a validator and colocate it with the object it's validating.
+In the following code snippet, the field validator ensures that the `name` field is in uppercase. If the name is not in uppercase, a `ValueError` is raised. Instead of using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations, we can use the `field_validator` decorator to define a validator for a field. This approach allows the validator to be colocated with the object it's validating.
 
 ```python
 from pydantic import BaseModel, field_validator
@@ -359,11 +351,11 @@ class UserModel(BaseModel):
 
 ### Using the Client with Retries
 
-In the following code snippet, the `UserModel` is specified as the `response_model`, and `max_retries` is set to 2.
+In the code snippet below, the `UserModel` is specified as the `response_model`, and `max_retries` is set to 2.
 
 ```python
 import openai
-import instructor 
+import instructor
 
 # Enables `response_model` and `max_retries` parameters
 instructor.patch()
@@ -381,8 +373,10 @@ model = openai.ChatCompletion.create(
 assert model.name == "JASON"
 ```
 
-As seen in this example, even though there is no code explicitly uppercasing the name, the model is able to correct the output.
+In this example, even though there is no code explicitly transforming the name to uppercase, the model is able to correct the output.
 
 ## Conclusion
 
-In this note, we have explored how many of the guardrails and self-reflection conversations in AI can be simplified by improving control flow and applying existing programming concepts. Instead of introducing new standards or terminology, the focus should be on validation and error handling, which are crucial for most applications. This post demonstrates the use of `instructor` to create validators using LLM (Language Model) and utilizing error information to prompt adaptive responses. Additionally, we have discussed how validators can be employed to rectify outputs. We hope you have found this post helpful and encourage you to experiment with `instructor` on your own.
+In this post, we have explored how validation in AI systems can be simplified by leveraging existing programming concepts. We have demonstrated the use of Pydantic and Instructor to achieve effective validation without introducing new standards or terminology. By utilizing LLM-powered validators and error information, we can prompt adaptive responses and rectify outputs. We encourage you to experiment with validation in your own projects using these powerful tools.
+
+Remember, validation and error handling are crucial for ensuring the quality and reliability of AI systems. By applying the concepts discussed in this post, you can enhance the control flow and improve the overall performance of your AI applications.
