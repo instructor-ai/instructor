@@ -59,7 +59,7 @@ class UserMessage(BaseModel):
     def message_cannot_have_blacklisted_words(cls, v: str) -> str:
         for word in v.split():
             if word.lower() in ['rob','steal']:
-                raise ValueError(f"{word} was found in the message {v}")
+                raise ValueError(f"`{word}` was found in the message `{v}`")
         return v
 
 try:
