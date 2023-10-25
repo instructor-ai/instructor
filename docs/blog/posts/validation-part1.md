@@ -132,7 +132,7 @@ ValidMessage = Annotated[str, AfterValidator(message_cannot_have_blacklisted_wor
 
 
 class UserMessage(BaseModel):
-    message:ValidMessage
+    message: Annotated[str, AfterValidator(message_cannot_have_blacklisted_words)]
 
 try:
     UserMessage(message="This is a lovely day")
