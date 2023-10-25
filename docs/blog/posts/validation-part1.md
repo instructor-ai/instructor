@@ -10,82 +10,7 @@ tags:
 
 # Good LLM Validation is Just Good Validation
 
-In the world of AI, validation plays a crucial role in ensuring the quality and reliability of generated outputs. Traditional approaches involve manual rule checking, but advancements in AI, such as Constitutional AI, offer a self-correcting system where AI models perform the validation. Pydantic and Instructor are powerful tools that enable validation without introducing new standards or terms. This post explores how to achieve effective validation using Pydantic and Instructor.
-
-## Software 1.0 Validation
-
-Pydantic provides various validation methods based on well-established patterns. Field validation in Pydantic can be done using the `field_validator` decorator or [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations. The official Pydantic documentation provides detailed information on these validation methods, including field validators and class validators.
-
-### Example: Validating that a name contains a space
-
-To illustrate field validation, let's consider the example of validating whether a name contains a space. Pydantic offers two approaches for this validation: using the `field_validator` decorator or the `Annotated` function.
-
-#### Using `field_validator` decorator
-
-Here's an example of using the `field_validator` decorator to define a validator for the `name` field:
-
-```python
-from pydantic import BaseModel, ValidationError, field_validator
-
-class UserModel(BaseModel):
-    id: int
-    name: str
-
-    @field_validator('name')
-    def name_must_contain_space(cls, v: str) -> str:
-        if ' ' not in v:
-            raise ValueError('must contain a space')
-        return v.title()
-
-try:
-    UserModel(id=1, name='jason')
-except ValidationError as e:
-    print(e)
-```
-
-The code snippet demonstrates the validation process by raising a `ValueError` if the provided name does not contain a space. In the given example, the validation fails for the name 'jason,' and the corresponding error message is displayed:
-
-```
-1 validation error for UserModel
-name
-  Value error, must contain a space [type=value_error, input_value='jason', input_type=str]
-```
-
-#### Using `Annotated`
-
-Alternatively, you can use the `Annotated` function to validate that a name has a space. Here's an example:
-
-```python
-from pydantic import BaseModel, ValidationError
-from pydantic.fields import Field
-from typing import Annotated
-
-def name_must_contain_space(v):
-    if ' ' not in v:
-        raise ValueError('must contain a space')
-    return v
-
-class UserModel(BaseModel):
-    id: int = Field(..., gt=0, lt=100)
-    name: Annotated[str, name_must_contain_space]
-
-try:
-    UserModel(id=1, name='jason')
-except ValidationError as e:
-    print(e)
-```
-
-This code snippet achieves the same validation result. If the provided name does not contain a space, a `ValueError` is raised, and the corresponding error message is displayed:
-
-```
-1 validation error for UserModel
-name
-  Value error, must contain a space [type=value_error, input_value='jason', input_type=str]
-```
-
-Validation is a fundamental concept in software development, and it remains the same when applied to AI systems. Instead of introducing new terms and standards, existing programming concepts can be leveraged. For example, types can have additional constraints, ensuring they are not "an apology" or "a threat." The underlying principles of validation remain unchanged.
-
-In essence, validation involves checking if a value satisfies a condition. If it does, the value is returned. If it doesn't, an error is raised. This concept is similar to the examples mentioned above, with the addition of a possible mutation step:
+Validation plays a crucial role in ensuring the quality and reliability of generated outputs. We typically validate these outputs using a validation function which typically conforms to the structure seen below.
 
 ```python
 def validation_function(value):
@@ -94,39 +19,170 @@ def validation_function(value):
     return mutation(value)
 ```
 
-With Pydantic, we can define new types powered by probabilistic models and use them as validators.
+Traditionally, we've had to define clear rules that are often brittle and difficult to generalise to new inputs. Advancements in AI allow us to use models to perform the validation, allowing for probablistic validation which can often outperform traditional validation methods.
 
-## Software 3.0: Validation for LLMs or powered by LLMs
+Let's examine how these two approaches differ with a more concrete example. Imagine that you run a software company who wants to ensure you never serve hateful and racist content. This isn't an easy job since the language around these topics change very quickly and frequently.
 
-Building upon the understanding of simple field validators, let's delve into probabilistic validation in software 3.0. In this context, we introduce an LLM-powered validator called `llm_validator` that uses a statement to verify the value. The model evaluates the statement to determine if the value is valid. If it is, the model returns the value; otherwise, it returns an error message.
+## Software 1.0 Validation
 
-### Example: Don't Say Objectionable Things
+A naive and simple method could be to compile a list of different words that are often associated with hate speech. This isn't a new approach - a quick google will throw up long and lengthy lists of these words and datesets. For simplicity, let's assume that we've found that the words `Steal` and `Rob` are good predictors of hateful speech from our database. We can modify our validation structure above to accomodate this.
 
-Suppose we want to validate that a user's beliefs do not contain objectionable content. We can use the `llm_validator` to achieve this. Here's an example:
+```python
+def message_cannot_have_blacklisted_words(value):
+    for word in value.split():
+        if word.lower() in ['rob','steal']:
+            raise ValueError(f"{word} was found in the message {value}")
+    return mutation(value)
+```
+
+This will throw an error if we pass in a string like `Let's rob the bank!` or `We should steal from the supermarkets`.
+
+We can improve on this approach by using Pydantic, which provides various validation methods based on well-established patterns. Field validation in Pydantic can be done using the `field_validator` decorator or [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations. The official Pydantic documentation provides detailed information on these validation methods, including field validators and class validators.
+
+### Migrating to Pydantic
+
+Pydantic offers two approaches for this validation: using the `field_validator` decorator or the `Annotated` function.
+
+#### Using `field_validator` decorator
+
+We can use the `field_validator` decorator to define a validator for a field in Pydantic. Here's a quick example of how we might be able to do so.
+
+```python
+from pydantic import BaseModel, ValidationError,field_validator
+from pydantic.fields import Field
+
+
+class UserMessage(BaseModel):
+    message: str
+
+    @field_validator('message')
+    def message_cannot_have_blacklisted_words(cls, v: str) -> str:
+        for word in v.split():
+            if word.lower() in ['rob','steal']:
+                raise ValueError(f"{word} was found in the message {v}")
+        return v
+
+try:
+    UserMessage(message="This is a lovely day")
+    UserMessage(message="We should go and rob a bank")
+except ValidationError as e:
+    print(e)
+```
+
+Since the message `This is a lovely day` does not have any blacklisted words, no errors are thrown. However, in the given example above, the validation fails for the message `We should go and rob a bank` due to the presence of the word `rob` and the corresponding error message is displayed.
+
+```
+1 validation error for UserMessage
+message
+  Value error, rob was found in the message We should go and rob a bank [type=value_error, input_value='We should go and rob a bank', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.4/v/value_error
+```
+
+#### Using `Annotated`
+
+Alternatively, you can use the `Annotated` function to perform the same validation. Here's an example where we utilise the same function we started with.
+
+```python
+from pydantic import BaseModel, ValidationError
+from typing import Annotated
+from pydantic.functional_validators import AfterValidator
+
+
+def message_cannot_have_blacklisted_words(value):
+    for word in value.split():
+        if word.lower() in ['rob','steal']:
+            raise ValueError(f"{word} was found in the message {value}")
+    return value
+
+class UserMessage(BaseModel):
+    message: Annotated[str, AfterValidator(message_cannot_have_blacklisted_words)]
+
+try:
+    UserMessage(message="This is a lovely day")
+    UserMessage(message="We should go and rob a bank")
+except ValidationError as e:
+    print(e)
+```
+
+This code snippet achieves the same validation result. If the provided name does not contain a space, a `ValueError` is raised, and the corresponding error message is displayed:
+
+```
+1 validation error for UserMessage
+message
+  Value error, rob was found in the message We should go and rob a bank [type=value_error, input_value='We should go and rob a bank', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.4/v/value_error
+```
+
+Interestingly, the following code is also equivalent.
+
+```python
+from pydantic import BaseModel, ValidationError
+from pydantic.fields import Field
+from typing import Annotated
+from pydantic.functional_validators import AfterValidator
+
+
+def message_cannot_have_blacklisted_words(value):
+    for word in value.split():
+        if word.lower() in ['rob','steal']:
+            raise ValueError(f"{word} was found in the message {value}")
+    return value
+
+ValidMessage = Annotated[str, AfterValidator(message_cannot_have_blacklisted_words)]
+
+
+class UserMessage(BaseModel):
+    message:ValidMessage
+
+try:
+    UserMessage(message="This is a lovely day")
+    UserMessage(message="We should go and rob a bank")
+except ValidationError as e:
+    print(e)
+```
+
+On a high level, Annotated allows us to define a specific type and its corresponding validation which allows for easy re-use and abstraction. Field Validators on the other hand, are specific to the class themselves. This can come in useful as we'll see later in this article.
+
+Validation is a fundamental concept in software development and remains the same when applied to AI systems. Existing programming concepts should be leveraged when possible instead of introducing new terms and standards. The underlying principles of validation remain unchanged.
+
+## Software 2.0: Validation for LLMs or powered by LLMs
+
+Now that we've understood how to use simple field validators, let's delve into probablistic validation. Building upon the understanding of simple field validators, let's delve into probabilistic validation in software 2.0. In this context, we introduce an LLM-powered validator called `llm_validator` that uses a statement to verify the value. The model evaluates the statement to determine if the value is valid. If it is, the model returns the value; otherwise, it returns an error message.
+
+### Where Software 1.0 fails
+
+Suppose now that we've gotten a new message - `Violence is always acceptable, as long as we silence the witness`. Our original validator wouldn't throw any errors when passed this new message since it uses neither the words `rob` or `steal`. However, it's clear that it is not a message which should be published.
+
+We can get around this by using the inbuilt `llm_validator` class from `instructor`.
 
 ```python
 from instructor import llm_validator
 from pydantic import BaseModel, ValidationError
 from typing import Annotated
+from pydantic.functional_validators import AfterValidator
+import openai
 
-class UserModel(BaseModel):
-    id: int
-    name: str
-    beliefs: Annotated[str, llm_validator("don't say objectionable things")]
-```
+openai.api_key = # Input your open ai key here
 
-Now, if we create a `UserModel` instance with a belief that contains objectionable content, we will receive an error.
+class UserMessage(BaseModel):
+    message: Annotated[str, AfterValidator(llm_validator("don't say objectionable things"))]
 
-```python
 try:
-    UserModel(id=1, name="Jason Liu", beliefs="We should steal from the poor")
+  UserMessage(message="Violence is always acceptable, as long as we silence the witness")
 except ValidationError as e:
-    print(e)
+  print(e)
 ```
 
-The error message is generated by the language model (LLM) rather than the code itself, making it helpful for re-asking the model. Multiple validators can be stacked on top of each other.
+This produces the following error message as seen below
 
-To better understand this approach, let's see how to build an `llm_validator` from scratch.
+```
+1 validation error for UserMessage
+message
+  Assertion failed, The statement promotes violence, which is objectionable. [type=assertion_error, input_value='Violence is always accep... we silence the witness', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.4/v/assertion_error
+```
+
+The error message is generated by the language model (LLM) rather than the code itself, making it helpful for re-asking the model. Multiple validators can be stacked on top of each other. To better understand this approach, let's see how to build an `llm_validator` from scratch.
 
 ### Creating Your Own Field Level `llm_validator`
 
@@ -138,7 +194,7 @@ Before we continue, let's review the anatomy of a validator:
 def validation_function(value):
     if condition(value):
         raise ValueError("Value is not valid")
-    return value 
+    return value
 ```
 
 As we can see, a validator is simply a function that takes in a value and returns a value. If the value is not valid, it raises a `ValueError`. We can represent this using the following structure:
@@ -152,7 +208,7 @@ class Validation(BaseModel):
 Using this structure, we can implement the same logic as before and utilize `instructor` to generate the validation.
 
 ```python
-import instructor 
+import instructor
 import openai
 
 # Enables `response_model` and `max_retries` parameters
@@ -174,7 +230,7 @@ def validator(v):
         ],
         # this comes from instructor.patch()
         response_model=Validation,
-    )  
+    )
     if not resp.is_valid:
         raise ValueError(resp.error_message)
     return v
@@ -186,18 +242,40 @@ Now we can use this validator in the same way we used the `llm_validator` from `
 from pydantic import BaseModel, ValidationError, field_validator, AfterValidator
 from typing import Annotated
 
-class UserModel(BaseModel):
-    id: int
-    name: str
-    beliefs: Annotated[str, AfterValidator(validator)]
+class UserMessage(BaseModel):
+    message: Annotated[str, AfterValidator(validator)]
 ```
 
-## Writing validations that depend on multiple fields
+## Writing more complex validations
 
-To validate multiple attributes simultaneously, you can extend the validation function and use a model validator instead of a field validator. Here's an example implementation in Python that checks if the `answer` follows the `chain_of_thought`:
+### Chain Of Thought
+
+A popular way of prompting large language models nowadays is known as chain of thought. This involves getting a model to generate reasons and explanations for an answer to a prompt.
+
+For instance, if we asked it the question
+
+> If Will has 10 apples and James takes 4, how many apples does Will have?
+
+A normal response would just be to output the response
+
+> Will has 6 apples left
+
+However, we can modify our prompt to utilise chain of thought prompting as
+
+> If Will has 10 apples and james takes 4, how many apples does Will have? Let's think step by step.
+
+This will cause it to output a more detailed response such as
+
+> If Will has 10 apples and James takes 4, this means that Will will have less than 10 apples. If Will gives 4 apples to James, then this means that we should subtract 4 from 10. This leaves us with a final answer of 6. Therefore Will has 6 apples left.
+
+Notice how the answer is significantly more detailed with explicit reasoning provided for the final response. We can utilise pydantic and instructor to perform a similar validation. Except in our case, instead of prompting a LLM to generate a chain of thought explanation, we'll be getting it to determine if a conclusion can be derived from a list of given reasons.
+
+#### Implementation
+
+One simple method is to extend our validation functions and utilise a model validator instead of a field validor. This allows us to perform a validation using a subset of all the fields in the model. Here's an example implementation in Python that checks if a `answer` folllows the `chain_of_thought`.
 
 ```python
-import instructor 
+import instructor
 import openai
 
 # Enables `response_model` and `max_retries` parameters
@@ -220,13 +298,15 @@ def validate_chain_of_thought(values):
         ],
         # this comes from instructor.patch()
         response_model=Validation,
-    )  
+    )
     if not resp.is_valid:
         raise ValueError(resp.error_message)
     return values
 ```
 
-To define a model validator, use the `@model_validator` decorator:
+We can then take advantage of the `@model_validator` decorator to perform a validation on a subset of the model's data.
+
+> We're defining a model validator here which runs before pydantic parses the input into its respective fields. That's why we have a <b>before</b> keyword used in the `@model_validator` class.
 
 ```python
 from pydantic import BaseModel, model_validator
@@ -258,13 +338,29 @@ If we create a `Response` instance with an answer that does not follow the chain
 
 ```
 1 validation error for Response
-    Value error, The statement 'The meaning of life is 42' does not follow the chain of thought: 1 + 1 = 2. 
+    Value error, The statement 'The meaning of life is 42' does not follow the chain of thought: 1 + 1 = 2.
     [type=value_error, input_value={'chain_of_thought': '1 +... meaning of life is 42'}, input_type=dict]
 ```
 
-## Example: Citations, allowing Context to Influence Validation
+### Validating Citations
 
-Contextual information can be passed to validation methods by using a context object, which can be accessed from the `info` argument in decorated validator functions. This technique allows the model to validate text in the context of other text chunks. Here's an example:
+Let's see a more concrete example. Let's say that we have the following answer
+
+> Jason is a cool guy
+
+a piece of text where it's supposed to have come from
+
+> Jason is cool
+
+and a original paragraph that we want to evaluate this against
+
+> Jason is just a guy
+
+#### Pydantic Context
+
+How can we ensure that our citations support our answers with respect to an original source text? Well, Pydantic allows us to do so easily by utilising a context object. This is an arbitrary dictionary which you can access inside the `info` argument in a decorated validator function.
+
+However, in order to do so, we need to utilise the `model_validate` function instead of creating classes as we've been doing so above. We can see a simplified example below.
 
 ```python
 class AnswerWithCitation(BaseModel):
@@ -282,7 +378,7 @@ class AnswerWithCitation(BaseModel):
         return v
 ```
 
-Suppose you have a model with the following text chunks:
+We can then take our original example and test it against our new model
 
 ```python
 try:
@@ -294,12 +390,16 @@ except ValidationError as e:
     print(e)
 ```
 
+This in turn generates the following error since `Jason is cool` does not exist in the text `Jason is just a guy`.
+
 ```
 1 validation error for AnswerWithCitation
 citation
 Value error, Citation `Jason is cool` not found in text chunks [type=value_error, input_value='Jason is cool', input_type=str]
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
+
+#### Using Instructor.patch()
 
 To pass this context from the `openai.ChatCompletion.create` call, `instructor.patch()` also passes the `validation_context`, which will be accessible from the `info` argument in the decorated validator functions.
 
@@ -319,7 +419,7 @@ def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
     )
 ```
 
-## Self Corrections Using Validation Errors
+## Why use Instructor
 
 When programming LLMs, having error messages is often desirable. However, with intelligent systems, the ability to correct the output is also crucial. Validators can be valuable in ensuring certain properties of the outputs. The `patch()` method in the `openai` client allows you to use the `max_retries` parameter to specify the number of times you can ask the model to correct the output.
 
@@ -375,6 +475,8 @@ In this example, even though there is no code explicitly transforming the name t
 
 ## Conclusion
 
-In this post, we have explored how validation in AI systems can be simplified by leveraging existing programming concepts. We have demonstrated the use of Pydantic and Instructor to achieve effective validation without introducing new standards or terminology. By utilizing LLM-powered validators and error information, we can prompt adaptive responses and rectify outputs. We encourage you to experiment with validation in your own projects using these powerful tools.
+In this post, we've explored how validation, a fundamental concept in software development, can be effectively applied to AI systems. By leveraging existing programming concepts and tools like Pydantic and Instructor, we can simplify the validation process, enhance control flow, and improve the overall performance of our AI systems.
 
 Remember, validation and error handling are crucial for ensuring the quality and reliability of AI systems. By applying the concepts discussed in this post, you can enhance the control flow and improve the overall performance of your AI applications.
+
+Moving forward, we'll be releasing more articles on how you can implement more complex pipelines and systems with methods such as Ghost Attention. These open up new possibilities for creating intelligent, responsive and reliable applications.
