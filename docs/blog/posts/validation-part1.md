@@ -91,7 +91,7 @@ from pydantic.functional_validators import AfterValidator
 def message_cannot_have_blacklisted_words(value:str):
     for word in value.split():
         if word.lower() in ['rob','steal']:
-            raise ValueError(f"{word} was found in the message {value}")
+            raise ValueError(f"`{word}` was found in the message `{value}`")
     return value
 
 class UserMessage(BaseModel):
