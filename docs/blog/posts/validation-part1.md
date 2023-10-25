@@ -161,8 +161,9 @@ We can get around this by using the inbuilt `llm_validator` class from `instruct
 
 ```python
 from instructor import llm_validator
-from pydantic import BaseModel, ValidationError, AfterValidator
+from pydantic import BaseModel, ValidationError
 from typing import Annotated
+from pydantic.functional_validators import AfterValidator
 
 import openai
 
