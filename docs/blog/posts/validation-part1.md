@@ -10,7 +10,9 @@ tags:
 
 # Good LLM Validation is Just Good Validation
 
-Validation plays a crucial role in ensuring the quality and reliability of generated outputs. We validate these outputs using a validation function which conforms to the structure seen below.
+> What if your validation logic could learn and adapt like a human, but operate at the speed of software? This is the future of validation and it's already here.
+
+Validation is the backbone of reliable software. But traditional methods are static, rule-based, and can't adapt to new challenges. This post looks at how to bring dynamic, machine learning-driven validation into your software stack using Python libraries like Pydantic and Instructor. We validate these outputs using a validation function which conforms to the structure seen below.
 
 ```python
 def validation_function(value):
@@ -49,7 +51,7 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-In the past year, We've had to define clear rules that are often brittle and difficult to generalise to new inputs. Advancements in AI allow us to use models to perform the validation, allowing for probablistic validation which can often outperform traditional validation methods and enable new capabilities.
+In this post, we'll explore how to evolve from static, rule-based validation methods to dynamic, machine learning-driven ones. You'll learn how Python libraries like Pydantic and Instructor can make this transition smooth, and how Large Language Models can bring adaptability and nuance to your validation logic. We'll also delve into advanced topics like 'Chain of Thought' in validation and the importance of contextual checks.
 
 Let's examine how these approaches with a example. Imagine that you run a software company who wants to ensure you never serve hateful and racist content. This isn't an easy job since the language around these topics change very quickly and frequently.
 
@@ -479,6 +481,6 @@ In this example, even though there is no code explicitly transforming the name t
 
 ## Conclusion
 
-In this post, we've explored how validation, a fundamental concept in software development, can be effectively applied to AI systems. By leveraging existing programming concepts and tools like Pydantic and Instructor, we can simplify the validation process, enhance control flow, and improve the overall performance of our AI systems.
+We've examined the limitations of traditional validation and how modern tools and AI can offer more robust solutions. From the simplicity of Pydantic and Instructor to the dynamic validation capabilities of LLMs, the landscape of validation is changing but without needing to introduce new contepts. With advanced techniques like validating attributes, chain of thought, and contextual validation, it's clear that the future of validation is not just about preventing bad data but about allowing llms to understand the data and correcting it.
 
-Remember, validation and error handling are crucial for ensuring the quality and reliability of AI systems. By applying the concepts discussed in this post, you can enhance the control flow and improve the overall performance of your AI applications.
+Remember, validation and error handling are crucial for ensuring the quality and reliability of AI systems. By applying the concepts discussed in this post, you can enhance the control flow and improve the overall performance of your AI application without introducting new concepts and standards.
