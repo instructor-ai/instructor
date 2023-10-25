@@ -109,7 +109,7 @@ This code snippet achieves the same validation result. If the provided name does
 ```
 1 validation error for UserMessage
 message
-  Value error, rob was found in the message We should go and rob a bank [type=value_error, input_value='We should go and rob a bank', input_type=str]
+  Value error, `rob` was found in the message `We should go and rob a bank` [type=value_error, input_value='We should go and rob a bank', input_type=str]
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
 
