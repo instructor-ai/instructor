@@ -19,7 +19,37 @@ def validation_function(value):
     return mutation(value)
 ```
 
-We've had to define clear rules that are often brittle and difficult to generalise to new inputs. Advancements in AI allow us to use models to perform the validation, allowing for probablistic validation which can often outperform traditional validation methods and enable new capabilities.
+## What is instructor?
+
+`Instructor` is built to interact with openai's function call api from python code, with python structs / objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai. By definining prompts as pydantic objects we can build in validators 'for free' and have a clear separation of concerns between the prompt and the code that calls openai.
+
+```python
+import openai
+import instructor
+from pydantic import BaseModel
+
+# This enables response_model keyword
+# from openai.ChatCompletion.create
+instructor.patch()
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+
+user: UserDetail = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract Jason is 25 years old"},
+    ]
+)
+
+assert user.name == "Jason"
+assert user.age == 25
+```
+
+In the past year, We've had to define clear rules that are often brittle and difficult to generalise to new inputs. Advancements in AI allow us to use models to perform the validation, allowing for probablistic validation which can often outperform traditional validation methods and enable new capabilities.
 
 Let's examine how these approaches with a example. Imagine that you run a software company who wants to ensure you never serve hateful and racist content. This isn't an easy job since the language around these topics change very quickly and frequently.
 
