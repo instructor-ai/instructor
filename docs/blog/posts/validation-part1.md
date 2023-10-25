@@ -423,7 +423,7 @@ def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
     )
 ```
 
-## Why use Instructor
+## Tying it all together with `instructor.patch()`
 
 When programming LLMs, having error messages is often desirable. However, with intelligent systems, the ability to correct the output is also crucial. Validators can be valuable in ensuring certain properties of the outputs. The `patch()` method in the `openai` client allows you to use the `max_retries` parameter to specify the number of times you can ask the model to correct the output.
 
