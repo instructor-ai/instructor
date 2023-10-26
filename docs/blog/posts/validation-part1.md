@@ -14,7 +14,7 @@ tags:
 
 > What if your validation logic could learn and adapt like a human, but operate at the speed of software? This is the future of validation and it's already here.
 
-Validation is the backbone of reliable software. But traditional methods are static, rule-based, and can't adapt to new challenges. This post looks at how to bring dynamic, machine learning-driven validation into your software stack using Python libraries like Pydantic and Instructor. We validate these outputs using a validation function which conforms to the structure seen below.
+Validation is the backbone of reliable software. But traditional methods are static, rule-based, and can't adapt to new challenges. This post looks at how to bring dynamic, machine learning-driven validation into your software stack using Python libraries like `Pydantic` and `Instructor`. We validate these outputs using a validation function which conforms to the structure seen below.
 
 ```python
 def validation_function(value):
@@ -23,9 +23,9 @@ def validation_function(value):
     return mutation(value)
 ```
 
-## What is instructor?
+## What is Instructor?
 
-`Instructor` helps to ensure you get the exact response type you're looking for when using openai's function call api. Once you've defined the pydantic model for your desired response, `Instructor` handles all the complicated logic in-between - from the parsing/validation of the response to the automatic retries for invalid responses. This means that we can build in validators 'for free' and have a clear separation of concerns between the prompt and the code that calls openai.
+`Instructor` helps to ensure you get the exact response type you're looking for when using openai's function call api. Once you've defined the `Pydantic` model for your desired response, `Instructor` handles all the complicated logic in-between - from the parsing/validation of the response to the automatic retries for invalid responses. This means that we can build in validators 'for free' and have a clear separation of concerns between the prompt and the code that calls openai.
 
 ```python
 import openai
@@ -137,7 +137,7 @@ except ValidationError as e:
     print(e)
 ```
 
-This code snippet achieves the same validation result. If the provided name does not contain a space, a `ValueError` is raised, and the corresponding error message is displayed:
+This code snippet achieves the same validation result. If the user message contains any of the words in the blacklist, a `ValueError` is raised and the corresponding error message is displayed.
 
 ```
 1 validation error for UserMessage
@@ -234,7 +234,8 @@ def validator(v):
     return v
 ```
 
-1. We're using the same `Validation` Pydantic class that we defined just slightly above to perform the validation
+1. The new parameter of `response_model` comes from `instructor.patch()` and does not exist in the original OpenAI SDK. This
+   allows us to pass in the `Pydantic` model that we want as a response.
 
 Now we can use this validator in the same way we used the `llm_validator` from `Instructor`.
 
@@ -277,7 +278,7 @@ def validate_chain_of_thought(values):
 
 We can then take advantage of the `model_validator` decorator to perform a validation on a subset of the model's data.
 
-> We're defining a model validator here which runs before pydantic parses the input into its respective fields. That's why we have a **before** keyword used in the `model_validator` class.
+> We're defining a model validator here which runs before `Pydantic` parses the input into its respective fields. That's why we have a **before** keyword used in the `model_validator` class.
 
 ```python
 from pydantic import BaseModel,model_validator
@@ -315,7 +316,7 @@ If we create a `AIResponse` instance with an answer that does not follow the cha
 
 ### Validating Citations From Original Text
 
-Let's see a more concrete example. Let's say that we've asked our model a question about a text chunk and we want to validate that the generated answer is supported by the source. While we could verify this by looking up the original source manually, a more scalable approach is to use a validator to do this automatically.
+Let's see a more concrete example. Let's say that we've asked our model a question about some text source and we want to validate that the generated answer is supported by the source. While we could verify this by looking up the original source manually, a more scalable approach is to use a validator to do this automatically.
 
 We can pass in additional context to our validation functions using the `model_validate` function in `Pydantic` so that our models have more information to work with when performing validation. This context is a normal python dictionary and can be accessed inside the `info` argument in our validator functions.
 
@@ -328,7 +329,7 @@ class AnswerWithCitation(BaseModel):
 
     @field_validator('citation')
     @classmethod
-    def citation_exists(cls, v: str, info: ValidationInfo):
+    def citation_exists(cls, v: str, info: ValidationInfo): # (1)!
         context = info.context
         if context:
             context = context.get('text_chunk')
@@ -337,17 +338,21 @@ class AnswerWithCitation(BaseModel):
         return v
 ```
 
+1. This `info` object corresponds to the value of `context` that we pass into the `model_validate` function as seen below.
+
 We can then take our original example and test it against our new model
 
 ```python
 try:
     AnswerWithCitation.model_validate(
         {"answer": "Jason is a cool guy", "citation": "Jason is cool"},
-        context={"text_chunk": "Jason is just a guy"},
+        context={"text_chunk": "Jason is just a guy"}, # (1)!
     )
 except ValidationError as e:
     print(e)
 ```
+
+1. This `context` object is just a normal python dictionary and can take in and store any arbitrary values
 
 This in turn generates the following error since `Jason is cool` does not exist in the text `Jason is just a guy`.
 
@@ -385,7 +390,7 @@ def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
 
 ## Error Handling and Re-Asking
 
-Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. The by running `instructor.patch()` not only do we add `response_model` and `validation_context` it also allows you to use the `max_retries` parameter to specify the number of times try to self correct.
+Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. The by running `instructor.patch()` not only do we add `response_model` and `validation_context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
 
 This approach provides a layer of defense against two types of bad outputs:
 
