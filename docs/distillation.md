@@ -99,8 +99,7 @@ Run a finetune like this:
 instructor jobs create-from-file math_finetunes.jsonl
 ```
 
-## Next Steps and Future Plans
-Here's a sneak peek of what I'm planning:
+Once a model is trained you can simply change `mode` to `dispatch` and it will use the model to run the function!
 
 ```python
 from instructor import Instructions
@@ -111,6 +110,7 @@ instructions = Instructions(
 
 @instructions.distil(model='gpt-3.5-turbo:finetuned-123', mode="dispatch")
 def fn(a: int, b: int) -> Multiply:
+    # now this code will be short circuited and the model will be used instead.
     resp = a + b
     return Multiply(a=a, b=b, result=resp)
 ```
