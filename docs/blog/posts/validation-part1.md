@@ -6,6 +6,8 @@ tags:
   - validation
   - guardrails
   - constitutional ai
+  - chain of thought
+  - citations
 ---
 
 # Good LLM Validation is Just Good Validation
