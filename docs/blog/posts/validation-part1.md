@@ -51,13 +51,13 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-In this post, we'll explore how to evolve from static, rule-based validation methods to dynamic, machine learning-driven ones. You'll learn how Python libraries like Pydantic and Instructor can make this transition smooth, and how Large Language Models can bring adaptability and nuance to your validation logic. We'll also delve into advanced topics like 'Chain of Thought' in validation and the importance of contextual checks.
+In this post, we'll explore how to evolve from static, rule-based validation methods to dynamic, machine learning-driven ones. You'll learn to use `Pydantic` and `Instructor` to leverage language models and dive into advanced topics like content moderation, validating chain of thought reasoning, and contextual validation.
 
 Let's examine how these approaches with a example. Imagine that you run a software company who wants to ensure you never serve hateful and racist content. This isn't an easy job since the language around these topics change very quickly and frequently.
 
 ## Software 1.0 Validation
 
-A simple method could be to compile a list of different words that are often associated with hate speech. This isn't a new approach - a quick google will throw up long and lengthy lists of these words and datesets. For simplicity, let's assume that we've found that the words `Steal` and `Rob` are good predictors of hateful speech from our database. We can modify our validation structure above to accomodate this.
+A simple method could be to compile a list of different words that are often associated with hate speech. For simplicity, let's assume that we've found that the words `Steal` and `Rob` are good predictors of hateful speech from our database. We can modify our validation structure above to accomodate this.
 
 ```python
 def message_cannot_have_blacklisted_words(value):
@@ -69,20 +69,17 @@ def message_cannot_have_blacklisted_words(value):
 
 This will throw an error if we pass in a string like `Let's rob the bank!` or `We should steal from the supermarkets`.
 
-We can improve on this approach by using Pydantic, which provides various validation methods based on well-established patterns. Field validation in Pydantic can be done using the `field_validator` decorator or [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations. The official Pydantic documentation provides detailed information on these validation methods, including field validators and class validators.
-
-### Migrating to Pydantic
+## Introduction to Validations in Pydantic
 
 Pydantic offers two approaches for this validation: using the `field_validator` decorator or the `Annotated` hints.
 
-#### Using `field_validator` decorator
+### Using `field_validator` decorator
 
 We can use the `field_validator` decorator to define a validator for a field in Pydantic. Here's a quick example of how we might be able to do so.
 
 ```python
-from pydantic import BaseModel, ValidationError,field_validator
+from pydantic import BaseModel, ValidationError, field_validator
 from pydantic.fields import Field
-
 
 class UserMessage(BaseModel):
     message: str
@@ -110,7 +107,7 @@ message
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
 
-#### Using `Annotated`
+### Using `Annotated`
 
 Alternatively, you can use the `Annotated` function to perform the same validation. Here's an example where we utilise the same function we started with.
 
@@ -145,17 +142,13 @@ message
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
 
-On a high level, `Annotated` allows us to define a specific type and its corresponding validation which allows for easy re-use and abstraction. Field Validators on the other hand, are specific to the class themselves. The decision to use one over the other is often a matter of preference and how we want to manage our codebase.
-
 Validation is a fundamental concept in software development and remains the same when applied to AI systems. Existing programming concepts should be leveraged when possible instead of introducing new terms and standards. The underlying principles of validation remain unchanged.
+
+Suppose now that we've gotten a new message - `Violence is always acceptable, as long as we silence the witness`. Our original validator wouldn't throw any errors when passed this new message since it uses neither the words `rob` or `steal`. However, it's clear that it is not a message which should be published. How can we ensure that our validation logic can adapt to new challenges?
 
 ## Software 3.0: Validation for LLMs or powered by LLMs
 
-Now that we've understood how to use simple field validators, let's delve into probablistic validation. Building upon the understanding of simple field validators, let's delve into probabilistic validation in software 2.0. In this context, we introduce an LLM-powered validator called `llm_validator` that uses a statement to verify the value. The model evaluates the statement to determine if the value is valid. If it is, the model returns the value; otherwise, it returns an error message.
-
-### Where Software 1.0 fails
-
-Suppose now that we've gotten a new message - `Violence is always acceptable, as long as we silence the witness`. Our original validator wouldn't throw any errors when passed this new message since it uses neither the words `rob` or `steal`. However, it's clear that it is not a message which should be published.
+Building upon the understanding of simple field validators, let's delve into probabilistic validation in software 3.0, (prompt engineering). We'll introduce an LLM-powered validator called `llm_validator` that uses a statement to verify the value.
 
 We can get around this by using the inbuilt `llm_validator` class from `instructor`.
 
@@ -165,17 +158,13 @@ from pydantic import BaseModel, ValidationError
 from typing import Annotated
 from pydantic.functional_validators import AfterValidator
 
-import openai
-
-openai.api_key = # Input your open ai key here
-
 class UserMessage(BaseModel):
     message: Annotated[str, AfterValidator(llm_validator("don't say objectionable things"))]
 
 try:
-  UserMessage(message="Violence is always acceptable, as long as we silence the witness")
+    UserMessage(message="Violence is always acceptable, as long as we silence the witness")
 except ValidationError as e:
-  print(e)
+    print(e)
 ```
 
 This produces the following error message as seen below
@@ -187,7 +176,7 @@ message
     For further information visit https://errors.pydantic.dev/2.4/v/assertion_error
 ```
 
-The error message is generated by the language model (LLM) rather than the code itself, making it helpful for re-asking the model. Multiple validators can be stacked on top of each other. To better understand this approach, let's see how to build an `llm_validator` from scratch.
+The error message is generated by the language model (LLM) rather than the code itself, making it helpful for re-asking the model in a later section. To better understand this approach, let's see how to build an `llm_validator` from scratch.
 
 ### Creating Your Own Field Level `llm_validator`
 
@@ -244,48 +233,19 @@ def validator(v):
 Now we can use this validator in the same way we used the `llm_validator` from `instructor`.
 
 ```python
-from pydantic import BaseModel, ValidationError, field_validator, AfterValidator
-from typing import Annotated
-
 class UserMessage(BaseModel):
     message: Annotated[str, AfterValidator(validator)]
 ```
 
 ## Writing more complex validations
 
-### Chain Of Thought
+### Validating Chain of Thought
 
 A popular way of prompting large language models nowadays is known as chain of thought. This involves getting a model to generate reasons and explanations for an answer to a prompt.
 
-For instance, if we asked it the question
-
-> If Will has 10 apples and James takes 4, how many apples does Will have?
-
-A normal response would just be to output the response
-
-> Will has 6 apples left
-
-However, we can modify our prompt to utilise chain of thought prompting as
-
-> If Will has 10 apples and james takes 4, how many apples does Will have? Let's think step by step.
-
-This will cause it to output a more detailed response such as
-
-> If Will has 10 apples and James takes 4, this means that Will will have less than 10 apples. If Will gives 4 apples to James, then this means that we should subtract 4 from 10. This leaves us with a final answer of 6. Therefore Will has 6 apples left.
-
-Notice how the answer is significantly more detailed with explicit reasoning provided for the final response. We can utilise pydantic and instructor to perform a similar validation. Except in our case, instead of prompting a LLM to generate a chain of thought explanation, we'll be getting it to determine if a conclusion can be derived from a list of given reasons.
-
-#### Implementation
-
-One simple method is to extend our validation functions and utilise a model validator instead of a field validor. This allows us to perform a validation using a subset of all the fields in the model. Here's an example implementation in Python that checks if a `answer` folllows the `chain_of_thought`.
+We can utilise pydantic and instructor to perform a validation to check of the reasoning is reasonable, given both the answer and the chain of thought. To do this we can't build a field validator since we need to access multiple fields in the model. Instead we can use a model validator. This allows us to perform a validation using a subset of all the fields in the model. Here's an example implementation in Python that checks if a `answer` follows the `chain_of_thought`.
 
 ```python
-import instructor
-import openai
-
-# Enables `response_model` and `max_retries` parameters
-instructor.patch()
-
 def validate_chain_of_thought(values):
     chain_of_thought = values["chain_of_thought"]
     answer = values["answer"]
@@ -314,9 +274,7 @@ We can then take advantage of the `model_validator` decorator to perform a valid
 > We're defining a model validator here which runs before pydantic parses the input into its respective fields. That's why we have a **before** keyword used in the `model_validator` class.
 
 ```python
-from pydantic import BaseModel, model_validator
-
-class Response(BaseModel):
+class AIResponse(BaseModel):
     chain_of_thought: str
     answer: str
 
@@ -328,44 +286,32 @@ class Response(BaseModel):
         return validate_chain_of_thought(data)
 ```
 
-Now, when you create a `Response` instance, the `chain_of_thought_makes_sense` validator will be invoked. Here's an example:
+Now, when you create a `AIResponse` instance, the `chain_of_thought_makes_sense` validator will be invoked. Here's an example:
 
 ```python
 try:
-    resp = Response(
+    resp = AIResponse(
         chain_of_thought="1 + 1 = 2", answer="The meaning of life is 42"
     )
 except ValidationError as e:
     print(e)
 ```
 
-If we create a `Response` instance with an answer that does not follow the chain of thought, we will get an error.
+If we create a `AIResponse` instance with an answer that does not follow the chain of thought, we will get an error.
 
 ```
-1 validation error for Response
+1 validation error for AIResponse
     Value error, The statement 'The meaning of life is 42' does not follow the chain of thought: 1 + 1 = 2.
     [type=value_error, input_value={'chain_of_thought': '1 +... meaning of life is 42'}, input_type=dict]
 ```
 
-Beyong validating multiple attributes of a model, we can also introduce context to our validation functions, in order to give our models more information to work with.
+Beyond validating multiple attributes of a model, we can also introduce context to our validation functions, in order to give our models more information to work with.
 
 ### Validating Citations From Original Text
 
-Let's see a more concrete example. Let's say that we have the following answer
+Let's see a more concrete example. Let's say we use RAG to answer a question given a text chunk, in earlier systems we'd just simply tell you the chunk id and you'd have to go and find the text chunk yourself. But what if we could validate that the answer is actually supported by the text chunk? We can do this by passing the text chunk as a context to the validator.
 
-> Jason is a cool guy
-
-a piece of text where it's supposed to have come from
-
-> Jason is cool
-
-and a original paragraph that we want to evaluate this against
-
-> Jason is just a guy
-
-#### Pydantic Context
-
-How can we ensure that our citations support our answers with respect to an original source text? Well, Pydantic allows us to do so easily by utilising a context object. This is an arbitrary dictionary which you can access inside the `info` argument in a decorated validator function.
+Pydantic allows us to do so easily by utilising a context object. This is an arbitrary dictionary which you can access inside the `info` argument in a decorated validator function.
 
 However, in order to do so, we need to utilise the `model_validate` function instead of creating classes as we've been doing so above. We can see a simplified example below.
 
@@ -406,11 +352,17 @@ Value error, Citation `Jason is cool` not found in text chunks [type=value_error
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
 
-#### Using Instructor.patch()
+## Putting it all together with `instructor.patch()`
 
 To pass this context from the `openai.ChatCompletion.create` call, `instructor.patch()` also passes the `validation_context`, which will be accessible from the `info` argument in the decorated validator functions.
 
 ```python
+import openai
+import instructor
+
+# Enables `response_model` and `max_retries` parameters
+instructor.patch()
+
 def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
     return openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -421,14 +373,13 @@ def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
             },
         ],
         response_model=AnswerWithCitation,
-        max_retries=2,
         validation_context={"text_chunk": text_chunk},
     )
 ```
 
-## Tying it all together with `instructor.patch()`
+## Error Handling and Re-Asking
 
-When programming LLMs, having error messages is often desirable. However, with intelligent systems, the ability to correct the output is also crucial. Validators can be valuable in ensuring certain properties of the outputs. The `patch()` method in the `openai` client allows you to use the `max_retries` parameter to specify the number of times you can ask the model to correct the output.
+Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. The by running `instructor.patch()` not only do we add `response_model` and `validation_context` it also allows you to use the `max_retries` parameter to specify the number of times try to self correct.
 
 This approach provides a layer of defense against two types of bad outputs:
 
@@ -437,7 +388,7 @@ This approach provides a layer of defense against two types of bad outputs:
 
 ### Define the Response Model with Validators
 
-In the following code snippet, the field validator ensures that the `name` field is in uppercase. If the name is not in uppercase, a `ValueError` is raised. Instead of using [PEP 593](https://www.python.org/dev/peps/pep-0593/) variable annotations, we can use the `field_validator` decorator to define a validator for a field. This approach allows the validator to be colocated with the object it's validating.
+To keep things simple lets assume we have a model that returns a `UserModel` object. We can define the response model using Pydantic and add a field validator to ensure that the name is in uppercase.
 
 ```python
 from pydantic import BaseModel, field_validator
@@ -454,17 +405,9 @@ class UserModel(BaseModel):
         return v
 ```
 
-### Using the Client with Retries
-
-In the code snippet below, the `UserModel` is specified as the `response_model`, and `max_retries` is set to 2.
+This is where the `max_retries` parameter comes in. It allows the model to self correct and retry the prompt using the error message rather than the prompt.
 
 ```python
-import openai
-import instructor
-
-# Enables `response_model` and `max_retries` parameters
-instructor.patch()
-
 model = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
@@ -482,8 +425,6 @@ In this example, even though there is no code explicitly transforming the name t
 
 ## Conclusion
 
-We've examined the limitations of traditional validation and how modern tools and AI can offer more robust solutions. From the simplicity of Pydantic and Instructor to the dynamic validation capabilities of LLMs, the landscape of validation is changing but without needing to introduce new contepts. With advanced techniques like validating attributes, chain of thought, and contextual validation, it's clear that the future of validation is not just about preventing bad data but about allowing llms to understand the data and correcting it.
-
-Remember, validation and error handling are crucial for ensuring the quality and reliability of AI systems. By applying the concepts discussed in this post, you can enhance the control flow and improve the overall performance of your AI application without introducting new concepts and standards.
+From the simplicity of Pydantic and Instructor to the dynamic validation capabilities of LLMs, the landscape of validation is changing but without needing to introduce new contepts. It's clear that the future of validation is not just about preventing bad data but about allowing llms to understand the data and correcting it.
 
 If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!
