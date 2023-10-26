@@ -27,7 +27,7 @@ def validation_function(value):
 
 ```python
 import openai
-import instructor
+import instructor # pip install instructor
 from pydantic import BaseModel
 
 # This enables response_model keyword

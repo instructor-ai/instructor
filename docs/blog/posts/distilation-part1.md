@@ -16,7 +16,7 @@ Get ready to dive deep into the world of fine-tuning task specific language mode
 
 If you want to see the full example checkout [examples/distillation](https://github.com/jxnl/instructor/tree/main/examples/distilations)
 
-## Why You Need Instructor
+## Why use Instructor? 
 
 Imagine you're developing a backend service that uses a mix old and new school ML practises, it may involve pipelines with multiple function calls, validations, and data processing. Sounds cumbersome, right? That's where `Instructor` comes in. It simplifies complex procedures, making them more efficient and easier to manage by adding a decorator to your function that will automatically generate a dataset for fine-tuning and help you swap out the function implementation.
 
@@ -28,7 +28,7 @@ Before we dig into the nitty-gritty, let's look at how easy it is to use Instruc
 import logging
 import random
 from pydantic import BaseModel
-from instructor import Instructions
+from instructor import Instructions # pip install instructor
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +36,9 @@ logging.basicConfig(level=logging.INFO)
 instructions = Instructions(
     name="three_digit_multiply",
     finetune_format="messages",
+    # log handler is used to save the data to a file
+    # you can imagine saving it to a database or other storage
+    # based on your needs! 
     log_handlers=[logging.FileHandler("math_finetunes.jsonl")]
 )
 
