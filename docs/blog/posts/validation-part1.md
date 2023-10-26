@@ -27,7 +27,7 @@ def validation_function(value):
 
 `Instructor` helps to ensure you get the exact response type you're looking for when using openai's function call api. Once you've defined the pydantic model for your desired response, `Instructor` handles all the complicated logic in-between - from the parsing/validation of the response to the automatic retries for invalid responses. This means that we can build in validators 'for free' and have a clear separation of concerns between the prompt and the code that calls openai.
 
-```python linenums="1"
+```python
 import openai
 import instructor # pip install instructor
 from pydantic import BaseModel
@@ -317,7 +317,7 @@ If we create a `AIResponse` instance with an answer that does not follow the cha
 
 Let's see a more concrete example. Let's say that we've asked our model a question about a text chunk and we want to validate that the generated answer is supported by the source. While we could verify this by looking up the original source manually, a more scalable approach is to use a validator to do this automatically.
 
-Since we only want the information on the chunk during validation, we can use the `model_validate` function in `Pydantic`. This allows us to pass in additional context so that our models have more information to work with when performing validation. This context is a normal python dictionary and can be accessed inside the `info` argument in our validator functions.
+We can pass in additional context to our validation functions using the `model_validate` function in `Pydantic` so that our models have more information to work with when performing validation. This context is a normal python dictionary and can be accessed inside the `info` argument in our validator functions.
 
 ```python
 from pydantic import ValidationInfo,BaseModel,field_validator
@@ -328,7 +328,7 @@ class AnswerWithCitation(BaseModel):
 
     @field_validator('citation')
     @classmethod
-    def citation_exists(cls, v: str, info: ValidationInfo): #(1)!
+    def citation_exists(cls, v: str, info: ValidationInfo):
         context = info.context
         if context:
             context = context.get('text_chunk')
