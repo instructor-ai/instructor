@@ -80,7 +80,7 @@ LLM-based validation can also be plugged into the same Pydantic model. Here, if 
 ```python hl_lines="9 15"
 from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
-from instruct import llm_validator
+from instructor import llm_validator
 
 class QuestionAnswer(BaseModel):
     question: str
