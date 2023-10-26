@@ -280,6 +280,8 @@ We can then take advantage of the `model_validator` decorator to perform a valid
 > We're defining a model validator here which runs before pydantic parses the input into its respective fields. That's why we have a **before** keyword used in the `model_validator` class.
 
 ```python
+from pydantic import BaseModel,model_validator
+
 class AIResponse(BaseModel):
     chain_of_thought: str
     answer: str
@@ -318,7 +320,7 @@ Let's see a more concrete example. Let's say that we've asked our model a questi
 Since we only want the information on the chunk during validation, we can use the `model_validate` function in `Pydantic`. This allows us to pass in additional context so that our models have more information to work with when performing validation. This context is a normal python dictionary and can be accessed inside the `info` argument in our validator functions.
 
 ```python
-from pydantic import ValidationInfo
+from pydantic import ValidationInfo,BaseModel,field_validator
 
 class AnswerWithCitation(BaseModel):
     answer: str
