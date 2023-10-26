@@ -55,23 +55,14 @@ In this post, we'll explore how to evolve from static, rule-based validation met
 
 Let's examine how these approaches with a example. Imagine that you run a software company who wants to ensure you never serve hateful and racist content. This isn't an easy job since the language around these topics change very quickly and frequently.
 
-## Software 1.0 Validation
+## Software 1.0: Introduction to Validations in Pydantic
 
 A simple method could be to compile a list of different words that are often associated with hate speech. For simplicity, let's assume that we've found that the words `Steal` and `Rob` are good predictors of hateful speech from our database. We can modify our validation structure above to accomodate this.
 
-```python
-def message_cannot_have_blacklisted_words(value):
-    for word in value.split():
-        if word.lower() in {'rob','steal'}:
-            raise ValueError(f"`{word}`` was found in the message `{value}`")
-    return mutation(value)
-```
-
 This will throw an error if we pass in a string like `Let's rob the bank!` or `We should steal from the supermarkets`.
 
-## Introduction to Validations in Pydantic
-
 Pydantic offers two approaches for this validation: using the `field_validator` decorator or the `Annotated` hints.
+
 
 ### Using `field_validator` decorator
 
@@ -243,7 +234,7 @@ class UserMessage(BaseModel):
 
 A popular way of prompting large language models nowadays is known as chain of thought. This involves getting a model to generate reasons and explanations for an answer to a prompt.
 
-We can utilise pydantic and instructor to perform a validation to check of the reasoning is reasonable, given both the answer and the chain of thought. To do this we can't build a field validator since we need to access multiple fields in the model. Instead we can use a model validator. This allows us to perform a validation using a subset of all the fields in the model. Here's an example implementation in Python that checks if a `answer` follows the `chain_of_thought`.
+We can utilise pydantic and instructor to perform a validation to check of the reasoning is reasonable, given both the answer and the chain of thought. To do this we can't build a field validator since we need to access multiple fields in the model. Instead we can use a model validator. 
 
 ```python
 def validate_chain_of_thought(values):
