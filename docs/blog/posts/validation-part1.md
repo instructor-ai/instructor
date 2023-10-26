@@ -485,3 +485,5 @@ In this example, even though there is no code explicitly transforming the name t
 We've examined the limitations of traditional validation and how modern tools and AI can offer more robust solutions. From the simplicity of Pydantic and Instructor to the dynamic validation capabilities of LLMs, the landscape of validation is changing but without needing to introduce new contepts. With advanced techniques like validating attributes, chain of thought, and contextual validation, it's clear that the future of validation is not just about preventing bad data but about allowing llms to understand the data and correcting it.
 
 Remember, validation and error handling are crucial for ensuring the quality and reliability of AI systems. By applying the concepts discussed in this post, you can enhance the control flow and improve the overall performance of your AI application without introducting new concepts and standards.
+
+If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!

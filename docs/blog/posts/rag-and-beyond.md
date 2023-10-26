@@ -231,4 +231,5 @@ Here I want to show that `instructor`` isn’t just about data extraction. It’
 
 I believe collaboration between domain experts and AI engineers is the key to enable advanced tool use. I’ve been building a new tool on top of instructor that enables seamless collaboration and experimentation on LLMs with structured outputs. If you’re interested, visit [useinstructor.com](https://useinstructor.com) and take our survey to join the waitlist.
 
-Together, let’s create tools that are as brilliant as the minds that use them.
+
+If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!

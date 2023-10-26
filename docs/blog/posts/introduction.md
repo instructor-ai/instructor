@@ -176,3 +176,5 @@ class MaybeUser(BaseModel):
 ## Conclusion
 
 Instructor, with Pydantic, simplifies interaction with language models. It is usable for both experienced and new developers.
+
+If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!
