@@ -59,7 +59,7 @@ assert user.age == 25
 
 2.  Invalid responses that fail to be validated succesfully will trigger up to as many reattempts as you define.
 
-3.  As long as you pass in a `response_model` parameter to the `ChatCompletion` api call, your response object will
+3.  As long as you pass in a `response_model` parameter to the `ChatCompletion` api call, the returned object will always
     be a validated `Pydantic` object.
 
 In this post, we'll explore how to evolve from static, rule-based validation methods to dynamic, machine learning-driven ones. You'll learn to use `Pydantic` and `Instructor` to leverage language models and dive into advanced topics like content moderation, validating chain of thought reasoning, and contextual validation.
@@ -281,7 +281,7 @@ We can then take advantage of the `model_validator` decorator to perform a valid
 > We're defining a model validator here which runs before `Pydantic` parses the input into its respective fields. That's why we have a **before** keyword used in the `model_validator` class.
 
 ```python
-from pydantic import BaseModel,model_validator
+from pydantic import BaseModel, model_validator
 
 class AIResponse(BaseModel):
     chain_of_thought: str
@@ -316,7 +316,7 @@ If we create a `AIResponse` instance with an answer that does not follow the cha
 
 ### Validating Citations From Original Text
 
-Let's see a more concrete example. Let's say that we've asked our model a question about some text source and we want to validate that the generated answer is supported by the source. While we could verify this by looking up the original source manually, a more scalable approach is to use a validator to do this automatically.
+Let's see a more concrete example. Let's say that we've asked our model a question about some text source and we want to validate that the generated answer is supported by the source. This would allow us to minimize hallucinations and prevent statements that are not backed by the original text. While we could verify this by looking up the original source manually, a more scalable approach is to use a validator to do this automatically.
 
 We can pass in additional context to our validation functions using the `model_validate` function in `Pydantic` so that our models have more information to work with when performing validation. This context is a normal python dictionary and can be accessed inside the `info` argument in our validator functions.
 
