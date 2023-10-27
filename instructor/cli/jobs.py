@@ -81,10 +81,19 @@ def watch(
     limit: int = typer.Option(5, help="Limit the number of jobs to monitor"),
     poll: int = typer.Option(5, help="Polling interval in seconds"),
     screen: bool = typer.Option(False, help="Enable or disable screen output"),
+    openai_key: str = typer.Option(
+        None,
+        envvar="OPENAI_API_KEY",
+        help="OpenAI API key, can also be set using the OPENAI_API_KEY environment variable",
+    ),
 ):
     """
     Monitor the status of the most recent fine-tuning jobs.
     """
+
+    if openai_key:
+        openai.api_key = openai_key
+
     jobs = get_jobs(limit=limit)
     with Live(generate_table(jobs), refresh_per_second=2, screen=screen) as live_table:
         while True:
@@ -99,7 +108,15 @@ def watch(
 def create_from_id(
     id: str = typer.Argument(..., help="ID of the existing fine-tuning job"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    openai_key: str = typer.Option(
+        None,
+        envvar="OPENAI_API_KEY",
+        help="OpenAI API key, can also be set using the OPENAI_API_KEY environment variable",
+    ),
 ):
+    if openai_key:
+        openai.api_key = openai_key
+
     with console.status(
         f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
     ):
@@ -114,8 +131,16 @@ def create_from_id(
 def create_from_file(
     file: str = typer.Argument(..., help="Path to the file for fine-tuning"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    openai_key: str = typer.Option(
+        None,
+        envvar="OPENAI_API_KEY",
+        help="OpenAI API key, can also be set using the OPENAI_API_KEY environment variable",
+    ),
     poll: int = typer.Option(2, help="Polling interval in seconds"),
 ):
+    if openai_key:
+        openai.api_key = openai_key
+
     with open(file, "rb") as file:
         response = openai.File.create(file=file, purpose="fine-tune")
 
@@ -142,7 +167,17 @@ def create_from_file(
 @app.command(
     help="Cancel a fine-tuning job.",
 )
-def cancel(id: str = typer.Argument(..., help="ID of the fine-tuning job to cancel")):
+def cancel(
+    id: str = typer.Argument(..., help="ID of the fine-tuning job to cancel"),
+    openai_key: str = typer.Option(
+        None,
+        envvar="OPENAI_API_KEY",
+        help="OpenAI API key, can also be set using the OPENAI_API_KEY environment variable",
+    ),
+):
+    if openai_key:
+        openai.api_key = openai_key
+
     with console.status(f"[bold red]Cancelling job {id}...", spinner="dots"):
         try:
             openai.FineTuningJob.cancel(id)
