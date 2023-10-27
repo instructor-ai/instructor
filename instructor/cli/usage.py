@@ -1,5 +1,6 @@
 from typing import List
 from datetime import datetime, timedelta
+import openai
 import typer
 import os
 import aiohttp
@@ -134,7 +135,13 @@ def group_and_sum_by_date_and_snapshot(usage_data: List[dict]) -> Table:
 @app.command(help="Displays OpenAI API usage data for the past N days.")
 def list(
     n: int = typer.Option(0, help="Number of days."),
+    openai_api_key: str = typer.Option(
+        None, envvar="OPENAI_API_KEY", help="OpenAI API key."
+    ),
 ):
+    if openai_api_key:
+        openai.api_key = openai_api_key
+
     all_data = asyncio.run(get_usage_for_past_n_days(n))
     table = group_and_sum_by_date_and_snapshot(all_data)
     console.print(table)

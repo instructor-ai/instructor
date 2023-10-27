@@ -52,7 +52,15 @@ def upload(
     filepath: str = typer.Argument(..., help="Path to the file to upload"),
     purpose: str = typer.Option("fine-tune", help="Purpose of the file"),
     poll: int = typer.Option(5, help="Polling interval in seconds"),
+    openai_key: str = typer.Option(
+        None,
+        envvar="OPENAI_API_KEY",
+        help="OpenAI API key, can also be set using the OPENAI_API_KEY environment variable",
+    ),
 ):
+    if openai_key:
+        openai.api_key = openai_key
+
     with open(filepath, "rb") as file:
         response = openai.File.create(file=file, purpose=purpose)
     file_id = response["id"]
@@ -72,7 +80,15 @@ def upload(
 def download(
     file_id: str = typer.Argument(..., help="ID of the file to download"),
     output: str = typer.Argument(..., help="Output path for the downloaded file"),
+    openai_key: str = typer.Option(
+        None,
+        envvar="OPENAI_API_KEY",
+        help="OpenAI API key, can also be set using the OPENAI_API_KEY environment variable",
+    ),
 ):
+    if openai_key:
+        openai.api_key = openai_key
+
     with console.status(f"[bold green]Downloading file {file_id}...", spinner="dots"):
         content = openai.File.download(file_id)
         with open(output, "wb") as file:
@@ -83,7 +99,17 @@ def download(
 @app.command(
     help="Delete a file from OpenAI's servers",
 )
-def delete(file_id: str = typer.Argument(..., help="ID of the file to delete")):
+def delete(
+    file_id: str = typer.Argument(..., help="ID of the file to delete"),
+    openai_key: str = typer.Option(
+        None,
+        envvar="OPENAI_API_KEY",
+        help="OpenAI API key, can also be set using the OPENAI_API_KEY environment variable",
+    ),
+):
+    if openai_key:
+        openai.api_key = openai_key
+
     with console.status(f"[bold red]Deleting file {file_id}...", spinner="dots"):
         try:
             openai.File.delete(file_id)
