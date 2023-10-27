@@ -3,6 +3,8 @@ draft: False
 date: 2023-09-11
 tags:
   - Introduction
+authors:
+  - jxnl
 ---
 
 # Bridging Language Models with Python using Instructor, Pydantic, and OpenAI's Function Calls

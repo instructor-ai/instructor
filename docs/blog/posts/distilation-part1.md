@@ -6,6 +6,8 @@ tags:
   - distillation
   - function calling
   - finetuning
+authors:
+  - jxnl
 ---
 
 # Enhancing Python Functions with Instructor: A Guide to Fine-Tuning and Distillation

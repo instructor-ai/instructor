@@ -7,6 +7,8 @@ tags:
   - Query Understanding
   - Search Systems
   - Personal Assistant
+authors:
+  - jxnl
 ---
 
 # RAG is more than just embedding search

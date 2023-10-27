@@ -8,6 +8,9 @@ tags:
   - constitutional ai
   - chain of thought
   - citations
+authors:
+  - jxnl
+  - ivanleomk
 ---
 
 # Good LLM Validation is Just Good Validation
