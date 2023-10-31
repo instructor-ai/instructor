@@ -116,7 +116,7 @@ Here's a sneak peek of what I'm planning:
 
 
 ```python
-from instructor import Instructions,patch
+from instructor import Instructions, patch
 
 patch() #(1)!
 
