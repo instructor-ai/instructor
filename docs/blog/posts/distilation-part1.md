@@ -103,6 +103,10 @@ Here's how the logging output would look:
 
 Run a finetune like this:
 
+!!! note annotate "Don't forget to set your OpenAI Key as an environment variable"
+
+    All of the `instructor jobs` commands assume you've set an environment variable of `OPENAI_API_KEY` in your shell. You can set this by running the command `export OPENAI_API_KEY=<Insert API Key Here>` in your shell
+
 ```bash
 instructor jobs create-from-file math_finetunes.jsonl
 ```
@@ -110,18 +114,33 @@ instructor jobs create-from-file math_finetunes.jsonl
 ## Next Steps and Future Plans
 Here's a sneak peek of what I'm planning:
 
+
 ```python
-from instructor import Instructions
+from instructor import Instructions, patch
+
+patch() #(1)!
+
+class Multiply(BaseModel):
+    a: int
+    b: int
+    result: int
 
 instructions = Instructions(
     name="three_digit_multiply",
 )
 
-@instructions.distil(model='gpt-3.5-turbo:finetuned-123', mode="dispatch")
+@instructions.distil(model='gpt-3.5-turbo:finetuned-123', mode="dispatch") # (2)!
 def fn(a: int, b: int) -> Multiply:
     resp = a + b
     return Multiply(a=a, b=b, result=resp)
 ```
+
+
+1.  Don't forget to run the `patch()` command that we provide with the `Instructor` package. This helps
+    automatically serialize the content back into the `Pydantic`` model that we're looking for.
+
+2.  Don't forget to replace this with your new model id. OpenAI identifies fine tuned models with an id
+    of `ft:gpt-3.5-turbo-0613:personal::<id>` under their **Fine-tuning** tab on their dashboard
 
 With this, you can swap the function implementation, making it backward compatible. You can even imagine using the different models for different tasks or validating and runnign evals by using the original function and comparing it to the distillation.
 
