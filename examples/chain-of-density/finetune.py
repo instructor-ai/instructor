@@ -1,14 +1,11 @@
 from pydantic import BaseModel
 from chain_of_density import Summary, summarize_article
 import csv
-from itertools import islice
 import logging
 import instructor
-import openai
 
 instructor.patch()
 
-openai.api_key = "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"
 logging.basicConfig(level=logging.INFO)
 
 instructions = instructor.Instructions(
@@ -44,7 +41,7 @@ with open("output.csv", "r") as file:
 
     # Skip the header row
     next(reader)
-    for article, summary in islice(reader, 18):
+    for article, summary in reader:
         for _ in range(3):
             try:
                 generated_summary = distil_summarization(article)
