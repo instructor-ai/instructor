@@ -47,7 +47,10 @@ def query_crm(query: str) -> CRMSearchQuery:
         messages=[
             {
                 "role": "system",
-                "content": "You are a world class CRM search career generator. You will take the user query and decompose it into a set of CRM queries queries.",
+                "content": """
+                You are a world class CRM search career generator. 
+                You will take the user query and decompose it into a set of CRM queries queries.
+                """,
             },
             {"role": "user", "content": query},
         ],
@@ -62,25 +65,25 @@ if __name__ == "__main__":
     {
     "queries": [
         {
-        "source": "business",
-        "city_location": "San Francisco",
-        "search_description": "pottery businesses"
+            "source": "business",
+            "city_location": "San Francisco",
+            "search_description": "pottery businesses"
         },
         {
-        "source": "personal",
-        "city_location": "New York",
-        "search_description": "friends in New York"
+            "source": "personal",
+            "city_location": "New York",
+            "search_description": "friends in New York"
         },
         {
-        "source": "personal",
-        "city_location": "Boston",
-        "search_description": "friends in Boston"
+            "source": "personal",
+            "city_location": "Boston",
+            "search_description": "friends in Boston"
         },
         {
-        "source": "personal",
-        "city_location": "Philadelphia",
-        "search_description": "friends in Philadelphia"
+            "source": "personal",
+            "city_location": "Philadelphia",
+            "search_description": "friends in Philadelphia"
         }
     ]
     }
-"""
+    """
