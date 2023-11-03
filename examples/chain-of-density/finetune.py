@@ -1,53 +1,53 @@
-from pydantic import BaseModel,Field,model_validator,FieldValidationInfo
-from typing import List
-import spacy
+from pydantic import BaseModel
+from chain_of_density import Summary, summarize_article
+import csv
+from itertools import islice
+import logging
+import instructor
+import openai
 
-nlp = spacy.load("en_core_web_sm")
+instructor.patch()
 
-class Entity(BaseModel):
-    """
-    An entity is a real-world object that's assigned a name - for example, a person, country a product or a book title.
-    """
-    entity_name: str = Field(
-        ...,description="This is the associated name with the entity that exists in the text"
-    )
+openai.api_key = "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"
+logging.basicConfig(level=logging.INFO)
 
-
-# Note that we utilise Spacy for entity recognition so that it is consistent with the original paper implementation which uses it as an original prompt
-class Summary(BaseModel):
-    """
-    This represents a summary of some text passed to the model
-
-    Guidelines
-    - Make every word count : Rewrite the previous summary to improve flow and make space for additional entities
-    - Never remove an existing entity from the original text
-    - Make space with fusion, compression, and removal of uninformative phrases like "the article discusses"
-    - Missing entities can appear anywhere in the new summary
-    """
-    denser_summary:str = Field(...,description="Concise yet self-contained summary")
-
-    @model_validator(mode="after")
-    def validate_sources(self, info: FieldValidationInfo) -> "Summary":
-        # We first extract out the original summary and compute the entity count
-        original_content = info.context["original_content"]
-        if original_content is None:
-            raise ValueError("Plese supply an original summary to compare the generated summary to")
-        doc = nlp(original_content)
-        original_entities = doc.ents
-
-        new_summary = self.denser_summary
-        new_doc = nlp(new_summary)
-        new_entities = new_doc.ents
-
-        missing_entities = [entity for entity in original_entities if entity not in new_entities]
-
-        # Validate that we have at least the same number of entities
-        if len(missing_entities) >= 1:
-            raise ValueError(f"Entites were removed. Please regenerate a new summary that contains the entities {','.join(missing_entities)}")
+instructions = instructor.Instructions(
+    name="Chain Of Density",
+    finetune_format="messages",
+    # log handler is used to save the data to a file
+    # you can imagine saving it to a database or other storage
+    # based on your needs!
+    log_handlers=[logging.FileHandler("summarization.jsonl")],
+)
 
 
-        return self
+class Multiply(BaseModel):
+    a: int
+    b: int
+    result: int
 
 
-    
+@instructions.distil
+def distil_summarization(text: str) -> Summary:
+    summary_chain = summarize_article(text, stream=False)
+    generated_summaries = [i for i in summary_chain][0][1]
 
+    # We implement a rudimentary retry with MultiTask for now - if we do not have at least 5 items in the chain, we'll retry the entire
+    # chain
+    assert len(generated_summaries) >= 5
+    return generated_summaries[-1]
+
+
+# Read in the csv file we have
+with open("output.csv", "r") as file:
+    reader = csv.reader(file)
+
+    # Skip the header row
+    next(reader)
+    for article, summary in islice(reader, 18):
+        for _ in range(3):
+            try:
+                generated_summary = distil_summarization(article)
+                break
+            except Exception as e:
+                print(f"Failed to generate summary due to {e}")
