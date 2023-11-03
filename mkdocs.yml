@@ -93,6 +93,9 @@ nav:
 plugins:
   - social
   - search
+  - git-committers:
+      repository: jxnl/instructor 
+      branch: main
   - mkdocstrings:
       handlers:
         python:
