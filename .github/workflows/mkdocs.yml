@@ -21,16 +21,18 @@ jobs:
         with:
           python-version: 3.x
 
-      - name: Store cache_id
-        run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+      - name: Calculate requirements hash
+        id: req-hash
+        run: echo "::set-output name=hash::$(sha256sum requirements-doc.txt | awk '{print $1}')"
 
       - name: Setup cache
         uses: actions/cache@v3
         with:
-          key: mkdocs-material-${{ env.cache_id }}
+          key: mkdocs-material-${{ steps.req-hash.outputs.hash }}
           path: .cache
           restore-keys: |
             mkdocs-material-
+
 
       - name: Install Requirements
         run: |
