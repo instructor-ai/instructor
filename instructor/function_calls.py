@@ -126,7 +126,7 @@ class OpenAISchema(BaseModel):
         age: int
 
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo',
+        model="gpt-3.5-turbo",
         messages=[{
             "content": "Jason is 20 years old",
             "role": "user"
