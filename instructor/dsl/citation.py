@@ -21,7 +21,7 @@ class CitationMixin(BaseModel):
     context = "Betty was a student. Jason was a student. Jason is 20 years old"
 
     user = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo',
+        model="gpt-3.5-turbo",
         messages=[
             {
                 "role": "user",
