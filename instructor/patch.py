@@ -141,7 +141,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     async def new_chatcompletion_async(
-        response_model=None, validation_context=None, *args, max_retries=1, **kwargs
+        cls, response_model=None, validation_context=None, *args, max_retries=1, **kwargs
     ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = await retry_async(
@@ -158,7 +158,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     def new_chatcompletion_sync(
-        response_model=None, validation_context=None, *args, max_retries=1, **kwargs
+        cls, response_model=None, validation_context=None, *args, max_retries=1, **kwargs
     ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
         response, error = retry_sync(
@@ -175,7 +175,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     wrapper_function = new_chatcompletion_async if is_async else new_chatcompletion_sync
     wrapper_function.__doc__ = OVERRIDE_DOCS
-    return wrapper_function
+    return classmethod(wrapper_function)
 
 
 original_chatcompletion = openai.ChatCompletion.create

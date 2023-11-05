@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 import pytest
 import openai
-from instructor import patch
+from instructor import patch, unpatch
 
 
 @pytest.mark.skip("Not implemented")
@@ -56,3 +56,15 @@ def test_runmodel_validator():
     assert hasattr(
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
+
+
+def test_is_classmethod_without_patch():
+    ftype = type(openai.ChatCompletion.create)
+    assert str(ftype) == "<class 'method'>"
+
+
+def test_is_classmethod_with_patch():
+    patch()
+    ftype = type(openai.ChatCompletion.create)
+    assert str(ftype) == "<class 'method'>"
+    unpatch()
