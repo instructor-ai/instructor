@@ -20,7 +20,7 @@ class Validator(instructor.OpenAISchema):
     )
     fixed_value: Optional[str] = Field(
         default=None,
-        description="If the attribuet is not valid, suggest a new value for the attribute",
+        description="If the attribute is not valid, suggest a new value for the attribute",
     )
 
 
