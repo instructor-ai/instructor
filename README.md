@@ -152,7 +152,7 @@ And even **inline errors**
 
 ![errors](docs/img/error2.png)
 
-To see more examples of how we can create interesting models check out some [examples.](examples/index.md)
+To see more examples of how we can create interesting models check out some [examples.](https://jxnl.github.io/instructor/examples/)
 
 ## License
 
