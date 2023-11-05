@@ -12,17 +12,6 @@ nlp = spacy.load("en_core_web_trf")
 instructor.patch()
 
 
-class OverlappingEntities(BaseModel):
-    """
-    This represents a list of entities that are present in the provided paragraph and the list of entities provided. If there are no overlapping entities, please return an empty list.
-    """
-
-    entities: List[str] = Field(
-        default_factory=list,
-        description="This is the list of entities that appear in both the provided list and the summary",
-    )
-
-
 class InitialSummary(BaseModel):
     """
     This is an initial summary which should be long ( 4-5 sentences, ~80 words) yet highly non-specific, containing little information beyond the entities marked as missing. Use overly verbose languages and fillers (Eg. This article discusses) to reach ~80 words.
@@ -34,8 +23,7 @@ class InitialSummary(BaseModel):
     )
 
 
-# Note that we utilise Spacy for entity recognition so that it is consistent with the original paper implementation which uses it as an original prompt
-class RewrittenSummary(instructor.OpenAISchema):
+class RewrittenSummary(BaseModel):
     """
     This is a new, denser summary of identical length which covers every entity and detail from the previous summary plus the Missing Entities.
 
@@ -100,13 +88,6 @@ def compute_metrics(summary: str):
     ET_ratio = round(num_entities / num_tokens, 4)
 
     return num_tokens, num_entities, ET_ratio
-
-
-retrying = Retrying(
-    stop=stop_after_attempt(3),
-    wait=wait_fixed(60),
-    retry_error_cls=openai.error.RateLimitError,
-)
 
 
 @retry(
