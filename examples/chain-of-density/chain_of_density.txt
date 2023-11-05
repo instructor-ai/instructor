@@ -5,3 +5,5 @@ docstring-parser
 spacy
 python-dotenv
 instructor
+nltk
+rich

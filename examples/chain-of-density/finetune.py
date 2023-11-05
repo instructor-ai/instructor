@@ -1,5 +1,5 @@
 from typing import List
-from chain_of_density import summarize_article
+from chain_of_density import summarize_article, compute_metrics
 import csv
 import logging
 import instructor
@@ -24,10 +24,10 @@ class GeneratedSummary(BaseModel):
     summary: str
 
 
-@instructions.distil
+# @instructions.distil
+# @instructions.distil(model="ft:gpt-3.5-turbo-0613:personal::8HQgyZBo", mode="dispatch")
 def distil_summarization(text: str) -> GeneratedSummary:
     summary_chain: List[str] = summarize_article(text)
-    print(summary_chain)
     return GeneratedSummary(summary=summary_chain[-1])
 
 
@@ -35,5 +35,19 @@ def distil_summarization(text: str) -> GeneratedSummary:
 with open("output.csv", "r") as file:
     reader = csv.reader(file)
 
-    for article, summary in islice(reader, 1, 10):
-        distil_summarization(article)
+    summaries = []
+    for article, summary in islice(reader, 30, 35):
+        summaries.append(distil_summarization(article))
+
+    ttl_tokens = 0
+    ttl_entities = 0
+
+    for summary in summaries:
+        num_tokens, num_entities, ET_ratio = compute_metrics(summary.summary)
+        ttl_tokens += num_tokens
+        ttl_entities += num_entities
+        print(
+            f"Token Count: {num_tokens}, Entity Count: {num_entities}, E/T : {ET_ratio}"
+        )
+
+    print(f"FINAL ET: {ttl_entities/ttl_tokens}")

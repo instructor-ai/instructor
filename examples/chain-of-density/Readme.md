@@ -6,10 +6,13 @@ This is a simple example which shows how to perform Chain Of Density summarizati
 
 1. First, install all of the required dependencies by running the command below. We recommend using a virtual environment to install these so that it does not affect your system installation.
 
+> To evaluate the quality of our Summaries, we use spaCy and NLTk. You'll need to download the spaCy en_core_web_trf package and the nltk punkt package to compute the token metrics.
 
 ```
 pip3 install -r chain_of_density.txt
 ```
+
+
 
 2. Download the dataset using `download.py`. We're using the `griffin/chain_of_density` dataset for this example so no worries if you don't have a dataset of your own. This should generate a new `.csv` file in the folder called `output.csv`
 
