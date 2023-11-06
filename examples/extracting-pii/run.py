@@ -1,5 +1,7 @@
 import instructor
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from typing import List
 from pydantic import BaseModel
 
@@ -50,20 +52,18 @@ At the moment, John is employed at Company A. He started his role as a Software 
 """
 
 # Define the PII Scrubbing Model
-pii_data: PIIDataExtraction = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    response_model=PIIDataExtraction,
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a world class PII scrubbing model, Extract the PII data from the following document",
-        },
-        {
-            "role": "user",
-            "content": EXAMPLE_DOCUMENT,
-        },
-    ],
-)  # type: ignore
+pii_data: PIIDataExtraction = client.chat.completions.create(model="gpt-3.5-turbo",
+response_model=PIIDataExtraction,
+messages=[
+    {
+        "role": "system",
+        "content": "You are a world class PII scrubbing model, Extract the PII data from the following document",
+    },
+    {
+        "role": "user",
+        "content": EXAMPLE_DOCUMENT,
+    },
+])  # type: ignore
 
 
 print("Extracted PII Data:")

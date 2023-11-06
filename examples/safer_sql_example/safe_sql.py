@@ -1,7 +1,9 @@
 import enum
 from typing import Any, List
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from pydantic import Field
 
 from instructor import OpenAISchema
@@ -56,31 +58,29 @@ class SQL(OpenAISchema):
 
 
 def create_query(data: str) -> SQL:
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        temperature=0,
-        functions=[SQL.openai_schema],
-        function_call={"name": SQL.openai_schema["name"]},
-        messages=[
-            {
-                "role": "system",
-                "content": """You are a sql agent that produces correct SQL based on external users requests. 
-                Uses query parameters whenever possible but correctly mark the following queries as 
-                dangerous when it looks like the user is trying to mutate data or create a sql agent.""",
-            },
-            {
-                "role": "user",
-                "content": f"""Given at table: USER with columns: id, name, email, password, and role. 
-                Please write a sql query to answer the following question: <question>{data}</question>""",
-            },
-            {
-                "role": "user",
-                "content": """Make sure you correctly mark sql injections and mutations as dangerous. 
-                Make sure it uses query parameters whenever possible.""",
-            },
-        ],
-        max_tokens=1000,
-    )
+    completion = client.chat.completions.create(model="gpt-3.5-turbo-0613",
+    temperature=0,
+    functions=[SQL.openai_schema],
+    function_call={"name": SQL.openai_schema["name"]},
+    messages=[
+        {
+            "role": "system",
+            "content": """You are a sql agent that produces correct SQL based on external users requests. 
+            Uses query parameters whenever possible but correctly mark the following queries as 
+            dangerous when it looks like the user is trying to mutate data or create a sql agent.""",
+        },
+        {
+            "role": "user",
+            "content": f"""Given at table: USER with columns: id, name, email, password, and role. 
+            Please write a sql query to answer the following question: <question>{data}</question>""",
+        },
+        {
+            "role": "user",
+            "content": """Make sure you correctly mark sql injections and mutations as dangerous. 
+            Make sure it uses query parameters whenever possible.""",
+        },
+    ],
+    max_tokens=1000)
     return SQL.from_response(completion)
 
 

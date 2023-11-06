@@ -1,5 +1,7 @@
 import pytest
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from pydantic import BaseModel
 from instructor.distil import (
     Instructions,
@@ -92,8 +94,6 @@ def mock_track(*args, **kwargs):
 
 
 def fn(a: int, b: int) -> int:
-    return openai.ChatCompletion.create(
-        messages=[],
-        model="davinci",
-        response_model=SimpleModel,
-    )
+    return client.chat.completions.create(messages=[],
+    model="davinci",
+    response_model=SimpleModel)

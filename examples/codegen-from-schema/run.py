@@ -9,7 +9,9 @@ from pydantic import BaseModel
 from jinja2 import Template
 from models import ExtractPerson
 
-import openai
+from openai import AsyncOpenAI
+
+aclient = AsyncOpenAI()
 import instructor
 
 instructor.patch()
@@ -35,9 +37,7 @@ PROMPT_TEMPLATE = Template(
 @app.post("/api/v1/extract_person", response_model=ExtractPerson)
 async def extract_person(input: RequestSchema) -> ExtractPerson:
     rendered_prompt = PROMPT_TEMPLATE.render(**input.template_variables.model_dump())
-    return await openai.ChatCompletion.acreate(
-        model=input.model,
-        temperature=input.temperature,
-        response_model=ExtractPerson,
-        messages=[{"role": "user", "content": rendered_prompt}],
-    )  # type: ignore
+    return await aclient.chat.completions.create(model=input.model,
+    temperature=input.temperature,
+    response_model=ExtractPerson,
+    messages=[{"role": "user", "content": rendered_prompt}])  # type: ignore

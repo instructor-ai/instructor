@@ -3,7 +3,9 @@ from graphviz import Digraph
 from pydantic import BaseModel, Field
 
 import instructor
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 # Patch openai to use instructor
 # allows for response_model
@@ -43,20 +45,18 @@ class DocumentExtraction(BaseModel):
 
 
 def ask_ai(content) -> DocumentExtraction:
-    resp: DocumentExtraction = openai.ChatCompletion.create(
-        model="gpt-4",
-        response_model=DocumentExtraction,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a perfect entity resolution system that extracts facts from the document. Extract and resolve a list of entities from the following document:",
-            },
-            {
-                "role": "user",
-                "content": content,
-            },
-        ],
-    )  # type: ignore
+    resp: DocumentExtraction = client.chat.completions.create(model="gpt-4",
+    response_model=DocumentExtraction,
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a perfect entity resolution system that extracts facts from the document. Extract and resolve a list of entities from the following document:",
+        },
+        {
+            "role": "user",
+            "content": content,
+        },
+    ])  # type: ignore
     return resp
 
 

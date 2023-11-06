@@ -2,7 +2,9 @@ from typing import List
 from enum import Enum
 from pydantic import BaseModel, Field
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 import instructor
 
 instructor.patch()
@@ -41,20 +43,18 @@ class CRMSearchQuery(BaseModel):
 
 
 def query_crm(query: str) -> CRMSearchQuery:
-    queries = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        response_model=CRMSearchQuery,
-        messages=[
-            {
-                "role": "system",
-                "content": """
-                You are a world class CRM search career generator. 
-                You will take the user query and decompose it into a set of CRM queries queries.
-                """,
-            },
-            {"role": "user", "content": query},
-        ],
-    )
+    queries = client.chat.completions.create(model="gpt-3.5-turbo",
+    response_model=CRMSearchQuery,
+    messages=[
+        {
+            "role": "system",
+            "content": """
+            You are a world class CRM search career generator. 
+            You will take the user query and decompose it into a set of CRM queries queries.
+            """,
+        },
+        {"role": "user", "content": query},
+    ])
     return queries
 
 

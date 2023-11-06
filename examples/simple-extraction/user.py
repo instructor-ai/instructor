@@ -1,5 +1,7 @@
 import instructor
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -13,16 +15,14 @@ class UserDetail(BaseModel):
 
 
 def get_user_detail(string) -> UserDetail:
-    return openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        response_model=UserDetail,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Get user details for {string}",
-            },
-        ],
-    )  # type: ignore
+    return client.chat.completions.create(model="gpt-3.5-turbo-0613",
+    response_model=UserDetail,
+    messages=[
+        {
+            "role": "user",
+            "content": f"Get user details for {string}",
+        },
+    ])  # type: ignore
 
 
 user = get_user_detail("Jason is 25 years old")

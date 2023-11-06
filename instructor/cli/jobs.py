@@ -1,5 +1,7 @@
 from typing import List
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 import typer
 import time
 import json
@@ -65,11 +67,11 @@ def status_color(status: str) -> str:
 
 
 def get_jobs(limit: int = 5) -> List[openai.FineTuningJob]:
-    return openai.FineTuningJob.list(limit=limit)["data"]
+    return client.fine_tuning.list(limit=limit)["data"]
 
 
 def get_file_status(file_id: str) -> str:
-    response = openai.File.retrieve(file_id)
+    response = client.files.retrieve(file_id)
     return response["status"]
 
 
@@ -116,12 +118,10 @@ def create_from_id(
     with console.status(
         f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
     ):
-        job = openai.FineTuningJob.create(
-            training_file=id, 
-            model=model, 
-            hyperparameters = hyperparameters_dict if hyperparameters_dict else None, 
-            validation_file=validation_file_id if validation_file_id else None
-        )
+        job = client.fine_tuning.create(training_file=id, 
+        model=model, 
+        hyperparameters = hyperparameters_dict if hyperparameters_dict else None, 
+        validation_file=validation_file_id if validation_file_id else None)
         console.log(f"[bold green]Fine-tuning job created with ID: {job.id}")  # type: ignore
     watch(limit=5, poll=2, screen=False)
 
@@ -149,14 +149,14 @@ def create_from_file(
 
 
     with open(file, "rb") as file:
-        response = openai.File.create(file=file, purpose="fine-tune")
+        response = client.files.create(file=file, purpose="fine-tune")
 
     file_id = response["id"]
 
     validation_file_id = None
     if validation_file:
         with open(validation_file, "rb") as val_file:
-            val_response = openai.File.create(file=val_file, purpose="fine-tune")
+            val_response = client.files.create(file=val_file, purpose="fine-tune")
         validation_file_id = val_response["id"]
 
     with console.status(f"Monitoring upload: {file_id} before finetuning...") as status:
@@ -174,12 +174,10 @@ def create_from_file(
 
             time.sleep(poll)
 
-    job = openai.FineTuningJob.create(
-        training_file = file_id, 
-        model = model, 
-        hyperparameters = hyperparameters_dict if hyperparameters_dict else None,
-        validation_file = validation_file_id if validation_file else None
-    )
+    job = client.fine_tuning.create(training_file = file_id, 
+    model = model, 
+    hyperparameters = hyperparameters_dict if hyperparameters_dict else None,
+    validation_file = validation_file_id if validation_file else None)
     if validation_file_id:
         console.log(
             f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id} and validation_file ID: {validation_file_id}"
@@ -197,7 +195,7 @@ def create_from_file(
 def cancel(id: str = typer.Argument(..., help="ID of the fine-tuning job to cancel")):
     with console.status(f"[bold red]Cancelling job {id}...", spinner="dots"):
         try:
-            openai.FineTuningJob.cancel(id)
+            client.fine_tuning.cancel(id)
             console.log(f"[bold red]Job {id} cancelled successfully!")
         except Exception as e:
             console.log(f"[bold red]Error cancelling job {id}: {e}")

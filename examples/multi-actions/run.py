@@ -1,7 +1,9 @@
 from typing import List, Optional
 import instructor
 from pydantic import BaseModel, Field
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 import enum
 
 instructor.patch()
@@ -85,9 +87,7 @@ initial_messages = [
     },
 ]
 
-response: Response = openai.ChatCompletion.create(
-    messages=initial_messages, response_model=Response, model="gpt-4"
-)  # type: ignore
+response: Response = client.chat.completions.create(messages=initial_messages, response_model=Response, model="gpt-4")  # type: ignore
 
 print(response.model_dump_json(indent=2))
 """

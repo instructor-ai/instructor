@@ -8,7 +8,9 @@ from typing import Any, Callable, List, Optional
 from pydantic import BaseModel, validate_call
 
 import uuid
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 from instructor.function_calls import openai_schema
 
@@ -155,9 +157,7 @@ class Instructions:
                     kwargs=kwargs,
                     base_model=return_base_model,
                 )
-                return openai.ChatCompletion.create(
-                    **openai_kwargs, model=model, response_model=return_base_model
-                )
+                return client.chat.completions.create(**openai_kwargs, model=model, response_model=return_base_model)
 
             @functools.wraps(fn)
             def _distil(*args, **kwargs):

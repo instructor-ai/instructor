@@ -1,4 +1,6 @@
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 from pydantic import Field, parse_file_as
 from instructor import OpenAISchema
@@ -61,34 +63,31 @@ def refactor(new_requirements: str, program: Program) -> Diff:
     program_description = "\n".join(
         [f"{code.file_name}\n[[[\n{code.body}\n]]]\n" for code in program.files]
     )
-    completion = openai.ChatCompletion.create(
-        # model="gpt-3.5-turbo-0613",
-        model="gpt-4",
-        temperature=0,
-        functions=[Diff.openai_schema],
-        function_call={"name": Diff.openai_schema["name"]},
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a world class programming AI capable of refactor "
-                "existing python repositories. You will name files correct, include "
-                "__init__.py files and write correct python code, with correct imports. "
-                "You'll deliver your changes in valid 'diff' format so that they could "
-                "be applied using the 'patch' command. "
-                "Make sure you put the correct line numbers, "
-                "and that all lines that must be changed are correctly marked.",
-            },
-            {
-                "role": "user",
-                "content": new_requirements,
-            },
-            {
-                "role": "user",
-                "content": program_description,
-            },
-        ],
-        max_tokens=1000,
-    )
+    completion = client.chat.completions.create(model="gpt-4",
+    temperature=0,
+    functions=[Diff.openai_schema],
+    function_call={"name": Diff.openai_schema["name"]},
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a world class programming AI capable of refactor "
+            "existing python repositories. You will name files correct, include "
+            "__init__.py files and write correct python code, with correct imports. "
+            "You'll deliver your changes in valid 'diff' format so that they could "
+            "be applied using the 'patch' command. "
+            "Make sure you put the correct line numbers, "
+            "and that all lines that must be changed are correctly marked.",
+        },
+        {
+            "role": "user",
+            "content": new_requirements,
+        },
+        {
+            "role": "user",
+            "content": program_description,
+        },
+    ],
+    max_tokens=1000)
     return Diff.from_response(completion)
 
 

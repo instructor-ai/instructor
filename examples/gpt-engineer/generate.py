@@ -1,4 +1,6 @@
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 from typing import List
 from pydantic import Field
@@ -29,23 +31,21 @@ class Program(OpenAISchema):
 
 
 def develop(data: str) -> Program:
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        temperature=0.1,
-        functions=[Program.openai_schema],
-        function_call={"name": Program.openai_schema["name"]},
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a world class programming AI capable of writing correct python scripts and modules. You will name files correct, include __init__.py files and write correct python code. with correct imports.",
-            },
-            {
-                "role": "user",
-                "content": data,
-            },
-        ],
-        max_tokens=1000,
-    )
+    completion = client.chat.completions.create(model="gpt-3.5-turbo-0613",
+    temperature=0.1,
+    functions=[Program.openai_schema],
+    function_call={"name": Program.openai_schema["name"]},
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a world class programming AI capable of writing correct python scripts and modules. You will name files correct, include __init__.py files and write correct python code. with correct imports.",
+        },
+        {
+            "role": "user",
+            "content": data,
+        },
+    ],
+    max_tokens=1000)
     return Program.from_response(completion)
 
 

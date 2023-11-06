@@ -13,7 +13,9 @@ Added by Jan Philipp Harries / @jpdus
 import asyncio
 from typing import List, Generator
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from pydantic import Field, BaseModel
 
 from instructor import OpenAISchema
@@ -153,14 +155,12 @@ def task_planner(question: str) -> TaskPlan:
         },
     ]
 
-    completion = openai.ChatCompletion.create(
-        model="gpt-4-0613",
-        temperature=0,
-        functions=[TaskPlan.openai_schema],
-        function_call={"name": TaskPlan.openai_schema["name"]},
-        messages=messages,
-        max_tokens=1000,
-    )
+    completion = client.chat.completions.create(model="gpt-4-0613",
+    temperature=0,
+    functions=[TaskPlan.openai_schema],
+    function_call={"name": TaskPlan.openai_schema["name"]},
+    messages=messages,
+    max_tokens=1000)
     root = TaskPlan.from_response(completion)
 
     return root

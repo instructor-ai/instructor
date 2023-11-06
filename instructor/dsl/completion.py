@@ -1,4 +1,7 @@
-import openai
+from openai import OpenAI, AsyncOpenAI
+
+client = OpenAI()
+aclient = AsyncOpenAI()
 from typing import List, Union
 from pydantic import BaseModel, Field
 from instructor import OpenAISchema
@@ -147,7 +150,7 @@ class ChatCompletion(BaseModel):
             response (OpenAISchema): The response from the OpenAI API
         """
         kwargs = self.kwargs
-        completion = openai.ChatCompletion.create(**kwargs)
+        completion = client.chat.completions.create(**kwargs)
         if self.function:
             return self.function.from_response(completion)
         return completion
@@ -160,7 +163,7 @@ class ChatCompletion(BaseModel):
             response (OpenAISchema): The response from the OpenAI API
         """
         kwargs = self.kwargs
-        completion = openai.ChatCompletion.acreate(**kwargs)
+        completion = aclient.chat.completions.create(**kwargs)
         if self.function:
             return self.function.from_response(await completion)
         return await completion

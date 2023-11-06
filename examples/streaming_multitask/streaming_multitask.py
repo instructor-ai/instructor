@@ -1,5 +1,7 @@
 from typing import Iterable
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 import time
 
 from instructor import MultiTask, OpenAISchema
@@ -13,28 +15,26 @@ class User(OpenAISchema):
 
 def stream_extract(input: str, cls) -> Iterable[User]:
     MultiUser = MultiTask(cls)
-    completion = openai.ChatCompletion.create(
-        model="gpt-4-0613",
-        temperature=0.1,
-        stream=True,
-        functions=[MultiUser.openai_schema],
-        function_call={"name": MultiUser.openai_schema["name"]},
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a perfect entity extraction system",
-            },
-            {
-                "role": "user",
-                "content": (
-                    f"Consider the data below:\n{input}"
-                    "Correctly segment it into entitites"
-                    "Make sure the JSON is correct"
-                ),
-            },
-        ],
-        max_tokens=1000,
-    )
+    completion = client.chat.completions.create(model="gpt-4-0613",
+    temperature=0.1,
+    stream=True,
+    functions=[MultiUser.openai_schema],
+    function_call={"name": MultiUser.openai_schema["name"]},
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a perfect entity extraction system",
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Consider the data below:\n{input}"
+                "Correctly segment it into entitites"
+                "Make sure the JSON is correct"
+            ),
+        },
+    ],
+    max_tokens=1000)
     return MultiUser.from_streaming_response(completion)
 
 

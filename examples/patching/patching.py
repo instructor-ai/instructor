@@ -1,4 +1,6 @@
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from pydantic import BaseModel
 from instructor import patch
 
@@ -13,12 +15,10 @@ class UserExtract(BaseModel):
     age: int
 
 
-user: UserExtract = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    response_model=UserExtract,
-    messages=[
-        {"role": "user", "content": "Extract jason is 25 years old"},
-    ],
-)  # type: ignore
+user: UserExtract = client.chat.completions.create(model="gpt-3.5-turbo",
+response_model=UserExtract,
+messages=[
+    {"role": "user", "content": "Extract jason is 25 years old"},
+])  # type: ignore
 
 print(user)

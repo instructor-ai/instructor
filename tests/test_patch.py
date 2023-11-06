@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 import pytest
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from instructor import patch
 
 
@@ -12,13 +14,11 @@ def test_runmodel():
         name: str
         age: int
 
-    model = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        response_model=UserExtract,
-        messages=[
-            {"role": "user", "content": "Extract jason is 25 years old"},
-        ],
-    )
+    model = client.chat.completions.create(model="gpt-3.5-turbo",
+    response_model=UserExtract,
+    messages=[
+        {"role": "user", "content": "Extract jason is 25 years old"},
+    ])
     assert isinstance(model, UserExtract), "Should be instance of UserExtract"
     assert model.name.lower() == "jason"
     assert hasattr(
@@ -43,14 +43,12 @@ def test_runmodel_validator():
                 raise ValueError("Name should be uppercase")
             return v
 
-    model = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        response_model=UserExtract,
-        max_retries=2,
-        messages=[
-            {"role": "user", "content": "Extract jason is 25 years old"},
-        ],
-    )
+    model = client.chat.completions.create(model="gpt-3.5-turbo",
+    response_model=UserExtract,
+    max_retries=2,
+    messages=[
+        {"role": "user", "content": "Extract jason is 25 years old"},
+    ])
     assert isinstance(model, UserExtract), "Should be instance of UserExtract"
     assert model.name == "JASON"
     assert hasattr(

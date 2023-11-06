@@ -1,6 +1,8 @@
 from typing import List
 import enum
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 from pydantic import BaseModel
 from instructor import patch
 
@@ -21,16 +23,14 @@ class MultiClassPrediction(BaseModel):
 
 # Modify the classify function
 def multi_classify(data: str) -> MultiClassPrediction:
-    return openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        response_model=MultiClassPrediction,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Classify the following support ticket: {data}",
-            },
-        ],
-    )  # type: ignore
+    return client.chat.completions.create(model="gpt-3.5-turbo-0613",
+    response_model=MultiClassPrediction,
+    messages=[
+        {
+            "role": "user",
+            "content": f"Classify the following support ticket: {data}",
+        },
+    ])  # type: ignore
 
 
 # Example using a support ticket
