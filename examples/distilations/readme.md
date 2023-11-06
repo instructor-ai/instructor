@@ -32,6 +32,12 @@ This script demonstrates how to use the `Instructor` library for fine-tuning a P
     ```
     Wait for the fine-tuning job to complete.
 
+    If you have validation date you can run:
+
+    ```
+    instructor jobs create-from-file math_finetunes.jsonl --n-epochs 4 --validation-file math_finetunes_val.jsonl 
+    ```
+
 ### Output
 
 That's it! You've successfully run the script and can now proceed to fine-tune your model.

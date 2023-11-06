@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "instructor"
-version = "0.2.9"
+version = "0.2.11"
 description = "Helper functions that allow us to improve openai's function_call ergonomics"
 authors = ["Jason <jason@jxnl.co>"]
 license = "MIT"
