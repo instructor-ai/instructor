@@ -2,6 +2,7 @@ from typing import List
 import openai
 import typer
 import time
+import json
 
 from rich.live import Live
 from rich.table import Table
@@ -99,11 +100,19 @@ def watch(
 def create_from_id(
     id: str = typer.Argument(..., help="ID of the existing fine-tuning job"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    hyperparameters: str = typer.Option(None, help="Hyperparameters for fine-tuning in JSON format (n_epochs)"),
+    validation_file: str = typer.Option(None, help="Path to the validation file")
 ):
+    hyperparameters_dict = json.loads(hyperparameters) if hyperparameters else None
     with console.status(
         f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
     ):
-        job = openai.FineTuningJob.create(training_file=id, model=model)
+        job = openai.FineTuningJob.create(
+            training_file=id, 
+            model=model,
+            hyperparameters=hyperparameters_dict,
+            validation_file=validation_file
+        )
         console.log(f"[bold green]Fine-tuning job created with ID: {job.id}")  # type: ignore
     watch(limit=5, poll=2, screen=False)
 
@@ -115,7 +124,10 @@ def create_from_file(
     file: str = typer.Argument(..., help="Path to the file for fine-tuning"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
     poll: int = typer.Option(2, help="Polling interval in seconds"),
+    hyperparameters: str = type.Option(None, help="Hyperparameters for fine-tuning in JSON format"),
+    validation_file: str = typer.Option(None, help="Path to the validation file"),
 ):
+    hyperparameters_dict = json.loads(hyperparameters) if hyperparameters else None
     with open(file, "rb") as file:
         response = openai.File.create(file=file, purpose="fine-tune")
 
@@ -132,7 +144,12 @@ def create_from_file(
 
             time.sleep(poll)
 
-    job = openai.FineTuningJob.create(training_file=file_id, model=model)
+    job = openai.FineTuningJob.create(
+        training_file=file_id, 
+        model=model,
+        hyperparameters=hyperparameters_dict,
+        validation_file=validation_file    
+    )
     console.log(
         f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id}"
     )
