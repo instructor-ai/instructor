@@ -1,13 +1,10 @@
 from typing import List
 from enum import Enum
 from pydantic import BaseModel, Field
-
+import instructor
 from openai import OpenAI
 
-client = OpenAI()
-import instructor
-
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 
 class CRMSource(Enum):

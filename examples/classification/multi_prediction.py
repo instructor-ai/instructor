@@ -1,13 +1,11 @@
-from typing import List
 import enum
 import instructor
+
+from typing import List
 from openai import OpenAI
+from pydantic import BaseModel
 
 client = instructor.patch(OpenAI())
-from pydantic import BaseModel
-from instructor import patch
-
-patch()
 
 
 # Define new Enum class for multiple labels

@@ -8,13 +8,12 @@ from starlette.responses import StreamingResponse
 
 import os
 import instructor
-from openai import OpenAI
-
-client = instructor.patch(OpenAI())
 import logging
 
+from openai import OpenAI
 from instructor.dsl.multitask import MultiTaskBase
 
+client = instructor.patch(OpenAI())
 logger = logging.getLogger(__name__)
 
 # FastAPI app

@@ -1,13 +1,11 @@
+import instructor
+
 from typing import List
 from loguru import logger
-
-import instructor
 from openai import OpenAI
+from pydantic import Field, BaseModel, FieldValidationInfo, model_validator
 
 client = instructor.patch(OpenAI())
-
-
-from pydantic import Field, BaseModel, FieldValidationInfo, model_validator
 
 
 class Fact(BaseModel):

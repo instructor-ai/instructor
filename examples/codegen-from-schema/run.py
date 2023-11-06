@@ -4,17 +4,15 @@
 #   api_path: /api/v1/extract_person
 #   json_schema_path: ./input.json
 
+import instructor
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from jinja2 import Template
 from models import ExtractPerson
-
 from openai import AsyncOpenAI
 
-aclient = AsyncOpenAI()
-import instructor
-
-instructor.patch()
+aclient = instructor.apatch(AsyncOpenAI())
 
 app = FastAPI()
 

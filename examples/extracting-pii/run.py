@@ -1,13 +1,10 @@
-import instructor
-from openai import OpenAI
-
-client = OpenAI()
 from typing import List
 from pydantic import BaseModel
 
-instructor.patch()
+import instructor
+from openai import OpenAI
 
-# Define Schemas for PII data
+client = instructor.patch(OpenAI())
 
 
 class Data(BaseModel):
