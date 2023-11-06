@@ -1,20 +1,23 @@
-from typing import Iterable
-from openai import OpenAI
-
-client = OpenAI()
 import time
 
-from instructor import MultiTask, OpenAISchema
+from typing import Iterable
+from openai import OpenAI
+from pydantic import BaseModel
+
+import instructor
 
 
-class User(OpenAISchema):
+client = instructor.patch(OpenAI())
+
+
+class User(BaseModel):
     name: str
     job: str
     age: int
 
 
 def stream_extract(input: str, cls) -> Iterable[User]:
-    MultiUser = MultiTask(cls)
+    MultiUser = instructor.MultiTask(cls)
     completion = client.chat.completions.create(
         model="gpt-4-0613",
         temperature=0.1,

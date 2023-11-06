@@ -1,12 +1,11 @@
 import enum
+import instructor
+
 from typing import Any, List
-
 from openai import OpenAI
+from pydantic import BaseModel, Field
 
-client = OpenAI()
-from pydantic import Field
-
-from instructor import OpenAISchema
+client = instructor.patch(OpenAI())
 
 
 class SQLTemplateType(str, enum.Enum):
@@ -14,7 +13,7 @@ class SQLTemplateType(str, enum.Enum):
     IDENTIFIER = "identifier"
 
 
-class Parameters(OpenAISchema):
+class Parameters(BaseModel):
     key: str
     value: Any
     type: SQLTemplateType = Field(
@@ -24,7 +23,7 @@ class Parameters(OpenAISchema):
     )
 
 
-class SQL(OpenAISchema):
+class SQL(BaseModel):
     """
     Class representing a single search query. and its query parameters
     Correctly mark the query as safe or dangerous if it looks like a sql injection attempt or an abusive query

@@ -1,11 +1,10 @@
 import instructor
-from openai import OpenAI
 
-client = OpenAI()
+from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import Optional
 
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 
 class UserDetail(BaseModel):
