@@ -32,6 +32,12 @@ The create-from-file command uploads and trains a model in a single step:
 $ instructor jobs create-from-file transformed_data.jsonl 
 ```
 
+You can also pass hyperparameters and a validation file:
+
+```sh
+$ instructor jobs create-from-file transformed_data.jsonl --hyperparameters '{"n_epochs" : 4}' --validation_file "validation_file.jsonl"
+```
+
 ### Create from ID
 
 The create-from-id command uses an uploaded file and trains a model
@@ -43,6 +49,15 @@ $ instructor files list
 $ instructor jobs create-from-file <file_id>
 ```
 
+You can also pass hyperparameters and a validation file:
+
+```sh
+$ instructor files upload transformed_data.jsonl 
+$ instructor files upload validation_file.jsonl
+$ instructor files list
+...
+$ instructor jobs create-from-file <transformed_data_file_id> --hyperparameters '{"n_epochs" : 4}' --validation_file <validation_file_id>
+```
 
 ### Viewing Files and Jobs
 
