@@ -1,21 +1,21 @@
 from typing import List
-import openai
 from rich.table import Table
 from rich.console import Console
 
 from datetime import datetime
 from openai import OpenAI
 
-client = OpenAI()
+import openai
 import typer
 import time
 
+client = OpenAI()
 app = typer.Typer()
 console = Console()
 
 
 # Sample response data
-def generate_file_table(files: List[FileObject]) -> Table:
+def generate_file_table(files: List[openai.types.FileObject]) -> Table:
     table = Table(
         title="OpenAI Files",
     )

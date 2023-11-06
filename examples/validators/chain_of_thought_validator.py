@@ -1,12 +1,11 @@
 import instructor
 from openai import OpenAI
 
-client = OpenAI()
 from pydantic import BaseModel, Field, model_validator
 from typing import Optional
 
 # Enables `response_model` and `max_retries` parameters
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 
 class Validation(BaseModel):
