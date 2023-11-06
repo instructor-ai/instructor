@@ -91,6 +91,9 @@ nav:
   
 
 plugins:
+  - mike:
+      alias_type: symlink
+      canonical_version: latest
   - social
   - search
   - mkdocstrings:
