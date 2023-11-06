@@ -1,6 +1,16 @@
 # Using the Command Line Interface
 The instructor CLI provides functionalities for managing fine-tuning jobs on OpenAI.
 
+!!! warning "Incomplete API"
+    The CLI is still under development and does not yet support all features of the API. If you would like to use a feature that is not yet supported, please consider using the contributing to our library [jxnl/instructor](https://www.github.com/jxnl/instructor) instead.
+
+    !!! note "Low hanging fruit"
+
+        If you want to contribute we're looking for a few things:
+
+        1. Adding filenames on upload
+        2. Adding model prefixes to the model names
+
 ## Creating a Fine-Tuning Job
 
 ### View Jobs Options

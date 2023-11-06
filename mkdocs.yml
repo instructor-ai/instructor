@@ -80,8 +80,8 @@ nav:
     - Distilation: "distillation.md"
   - CLI Reference:
       - "Introduction": "cli/index.md"
-      - "Usage Tracking": "cli/usage.md"
       - "Finetuning GPT": "cli/finetune.md"
+      - "Usage Tracking": "cli/usage.md"
   - API Reference:
       - 'Core Library': 'api.md'
       - "Prompting DSL: Intro": "writing-prompts.md"
