@@ -13,9 +13,9 @@ $ instructor jobs --help
  Monitor and create fine tuning jobs                                                                           
                                                                                                                
 ╭─ Options ───────────────────────────────────────────────────────────────────────────────╮
-│ --help          Show this message and exit.                                             │
-│ --hyperparameters   Specify hyperparameters for fine-tuning.                            |
-│ --validation_file   Specify a validation file for fine-tuning.                          │
+│ --help                                Show this message and exit.                       │
+│ --hyperparameters '{"n_epochs": n}'   Specify hyperparameters for fine-tuning.          |
+│ --validation_file                     Specify a validation file for fine-tuning.        │
 ╰─────────────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ cancel                    Cancel a fine-tuning job.                                                         │
@@ -40,10 +40,11 @@ $ instructor jobs create-from-file transformed_data.jsonl --validation_file vali
 The create-from-id command uses an uploaded file and trains a model
 
 ```sh
-$ instructor files upload transformed_data.jsonl 
+$ instructor files upload transformed_data.jsonl
+$ instructor files upload validation_data.jsonl 
 $ instructor files list
 ...
-$ instructor jobs create-from-file <file_id>
+$ instructor jobs create_from_id <file_id> --validation_file <validation_file_id> --hyperparameters '{"n_epochs": n}'
 ```
 
 
