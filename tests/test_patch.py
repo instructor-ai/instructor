@@ -1,15 +1,14 @@
 from pydantic import BaseModel
-import pytest
 from openai import OpenAI
 
-client = OpenAI()
-from instructor import patch
+import pytest
+import instructor
+
+client = instructor.patch(OpenAI())
 
 
 @pytest.mark.skip("Not implemented")
 def test_runmodel():
-    patch()
-
     class UserExtract(BaseModel):
         name: str
         age: int
@@ -30,8 +29,6 @@ def test_runmodel():
 
 @pytest.mark.skip("Not implemented")
 def test_runmodel_validator():
-    patch()
-
     from pydantic import field_validator
 
     class UserExtract(BaseModel):

@@ -1,4 +1,5 @@
 from typing import List
+import openai
 from rich.table import Table
 from rich.console import Console
 
@@ -14,7 +15,7 @@ console = Console()
 
 
 # Sample response data
-def generate_file_table(files: List[openai.File]) -> Table:
+def generate_file_table(files: List[FileObject]) -> Table:
     table = Table(
         title="OpenAI Files",
     )
@@ -36,15 +37,16 @@ def generate_file_table(files: List[openai.File]) -> Table:
     return table
 
 
-def get_files(limit: int = 5) -> List[openai.File]:
-    files = client.files.list(limit=limit)["data"]  # type: ignore
-    files = sorted(files, key=lambda x: x["created_at"], reverse=True)
+def get_files(limit: int = 5) -> List[openai.types.FileObject]:
+    files = client.files.list(limit=limit)
+    files = files.data
+    files = sorted(files, key=lambda x: x.created_at, reverse=True)
     return files[:limit]
 
 
 def get_file_status(file_id: str) -> str:
     response = client.files.retrieve(file_id)
-    return response["status"]
+    return response.status
 
 
 @app.command(

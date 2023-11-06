@@ -1,18 +1,18 @@
 import enum
-import functools
-import inspect
 import json
+import uuid
 import logging
+import inspect
+import functools
+import instructor
 
 from typing import Any, Callable, List, Optional
 from pydantic import BaseModel, validate_call
 
-import uuid
 from openai import OpenAI
-
-client = OpenAI()
-
 from instructor.function_calls import openai_schema
+
+client = instructor.patch(OpenAI())
 
 
 class FinetuneFormat(enum.Enum):

@@ -1,8 +1,9 @@
 import pytest
-from openai import OpenAI
+import instructor
 
-client = OpenAI()
+from openai import OpenAI
 from pydantic import BaseModel
+
 from instructor.distil import (
     Instructions,
     format_function,
@@ -10,7 +11,7 @@ from instructor.distil import (
     is_return_type_base_model_or_instance,
 )
 
-# Replace `your_module_name` with your actual module name
+client = instructor.patch(OpenAI())
 
 instructions = Instructions(
     name="test_distil",

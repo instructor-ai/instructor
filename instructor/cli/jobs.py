@@ -1,7 +1,6 @@
 from typing import List
 from openai import OpenAI
 
-client = OpenAI()
 import typer
 import time
 from rich.live import Live
@@ -9,6 +8,7 @@ from rich.table import Table
 from rich.console import Console
 from datetime import datetime
 
+client = OpenAI()
 app = typer.Typer()
 console = Console()
 
@@ -65,7 +65,7 @@ def status_color(status: str) -> str:
     )
 
 
-def get_jobs(limit: int = 5) -> List[openai.FineTuningJob]:
+def get_jobs(limit: int = 5) -> List:
     return client.fine_tuning.list(limit=limit)["data"]
 
 
