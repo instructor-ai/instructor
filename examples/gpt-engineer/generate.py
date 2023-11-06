@@ -1,10 +1,11 @@
+import instructor
+
 from openai import OpenAI
-
-client = OpenAI()
-
 from typing import List
 from pydantic import Field
 from instructor import OpenAISchema
+
+client = instructor.patch(OpenAI())
 
 
 class File(OpenAISchema):

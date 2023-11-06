@@ -1,8 +1,9 @@
 from typing import List
 import enum
+import instructor
 from openai import OpenAI
 
-client = OpenAI()
+client = instructor.patch(OpenAI())
 from pydantic import BaseModel
 from instructor import patch
 

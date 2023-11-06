@@ -1,12 +1,11 @@
+import instructor
 from openai import OpenAI
 
-client = OpenAI()
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from instructor import patch
 from enum import Enum
 
-patch()
+client = instructor.patch(OpenAI())
 
 
 class PriorityEnum(str, Enum):

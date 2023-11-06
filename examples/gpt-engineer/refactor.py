@@ -1,11 +1,11 @@
+import instructor
+
 from openai import OpenAI
-
-client = OpenAI()
-
 from pydantic import Field, parse_file_as
 from instructor import OpenAISchema
-
 from generate import Program
+
+client = instructor.patch(OpenAI())
 
 
 class Diff(OpenAISchema):

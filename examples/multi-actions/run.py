@@ -1,12 +1,11 @@
-from typing import List, Optional
 import instructor
+import enum
+
+from typing import List, Optional
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
-client = OpenAI()
-import enum
-
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 
 class Action(enum.Enum):
@@ -92,30 +91,26 @@ response: Response = client.chat.completions.create(
 )  # type: ignore
 
 print(response.model_dump_json(indent=2))
-"""
 {
-  "text": "Updating task to create 20 GIFs and creating a new task to create an additional 20 animated GIFs after the initial task is done.",
-  "task_action": [
-    {
-      "id": 23,
-      "method": "update_task",
-      "waiting_on": null,
-      "name": "Create 20 new GIFs",
-      "notes": "The user increased the number of GIFs from 10 to 20. They plan to create these as they work through their daily tasks, creating about one to two GIFs per day. If this plan doesn't work, they will reconsider their strategy.",
-      "bucket": "taskbot",
-      "project": "personal_site"
-    },
-    {
-      "id": 24,
-      "method": "create_task",
-      "waiting_on": [
-        23
-      ],
-      "name": "Create 20 new animated GIFs",
-      "notes": "The task will be initiated once the task with id 23 is completed.",
-      "bucket": "taskbot",
-      "project": "personal_site"
-    }
-  ]
+    "text": "Updating task to create 20 GIFs and creating a new task to create an additional 20 animated GIFs after the initial task is done.",
+    "task_action": [
+        {
+            "id": 23,
+            "method": "update_task",
+            "waiting_on": None,
+            "name": "Create 20 new GIFs",
+            "notes": "The user increased the number of GIFs from 10 to 20. They plan to create these as they work through their daily tasks, creating about one to two GIFs per day. If this plan doesn't work, they will reconsider their strategy.",
+            "bucket": "taskbot",
+            "project": "personal_site",
+        },
+        {
+            "id": 24,
+            "method": "create_task",
+            "waiting_on": [23],
+            "name": "Create 20 new animated GIFs",
+            "notes": "The task will be initiated once the task with id 23 is completed.",
+            "bucket": "taskbot",
+            "project": "personal_site",
+        },
+    ],
 }
-"""

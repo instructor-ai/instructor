@@ -7,9 +7,10 @@ from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
 import os
+import instructor
 from openai import OpenAI
 
-client = OpenAI()
+client = instructor.patch(OpenAI())
 import logging
 
 from instructor.dsl.multitask import MultiTaskBase

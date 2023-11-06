@@ -1,11 +1,10 @@
 import enum
+import instructor
 from openai import OpenAI
 
-client = OpenAI()
 from pydantic import BaseModel
-from instructor import patch
 
-patch()
+client = instructor.patch(OpenAI())
 
 
 class Labels(str, enum.Enum):
