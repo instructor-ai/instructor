@@ -73,6 +73,13 @@ def get_file_status(file_id: str) -> str:
     response = openai.File.retrieve(file_id)
     return response["status"]
 
+def validate_hyperparameters(hyperparameters: str):
+    hyperparameters_dict = json.loads(hyperparameters) if hyperparameters else None
+    if hyperparameters_dict is not None:
+        if "n_epochs" not in hyperparameters_dict or len(hyperparameters_dict) != 1:
+            raise typer.Exit("Hyperparameters must only include 'n_epochs'")
+    return hyperparameters_dict
+
 
 @app.command(
     name="list",
@@ -103,10 +110,7 @@ def create_from_id(
     hyperparameters: str = typer.Option(None, help="Hyperparameters for fine-tuning in JSON format (n_epochs)"),
     validation_id: str = typer.Option(None, help="Path to the validation file")
 ):
-    hyperparameters_dict = json.loads(hyperparameters) if hyperparameters else None
-    if hyperparameters_dict is not None:
-        if "n_epochs" not in hyperparameters_dict or len(hyperparameters_dict) != 1:
-            raise typer.Exit("Hyperparameters must only include 'n_epochs'")
+    hyperparameters_dict = validate_hyperparameters(hyperparameters)
     
     if validation_id:
         try:
@@ -136,10 +140,7 @@ def create_from_file(
     hyperparameters: str = type.Option(None, help="Hyperparameters for fine-tuning in JSON format"),
     validation_file: str = typer.Option(None, help="Path to the validation file"),
 ):
-    hyperparameters_dict = json.loads(hyperparameters) if hyperparameters else None
-    if hyperparameters_dict is not None:
-        if "n_epochs" not in hyperparameters_dict or len(hyperparameters_dict) != 1:
-            raise typer.Exit("Hyperparameters must only include 'n_epochs'")
+    hyperparameters_dict = validate_hyperparameters(hyperparameters)
     
     validation_id = None
     if validation_file:
