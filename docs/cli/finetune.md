@@ -14,6 +14,8 @@ $ instructor jobs --help
                                                                                                                
 ╭─ Options ───────────────────────────────────────────────────────────────────────────────╮
 │ --help          Show this message and exit.                                             │
+│ --hyperparameters   Specify hyperparameters for fine-tuning.                            |
+│ --validation_file   Specify a validation file for fine-tuning.                          │
 ╰─────────────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ cancel                    Cancel a fine-tuning job.                                                         │
@@ -26,10 +28,11 @@ $ instructor jobs --help
 
 ### Create from File
 
-The create-from-file command uploads and trains a model in a single step:
+The create-from-file command uploads and trains a model in a single step.
+Validation file and hyperparameters are optional.
 
 ```sh
-$ instructor jobs create-from-file transformed_data.jsonl 
+$ instructor jobs create-from-file transformed_data.jsonl --validation_file validation_data.jsonl --hyperparameters '{"n_epochs": 3}'
 ```
 
 ### Create from ID
