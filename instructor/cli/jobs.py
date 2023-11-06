@@ -99,18 +99,19 @@ def watch(
 def create_from_id(
     id: str = typer.Argument(..., help="ID of the existing fine-tuning job"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
-    hyperparameters: str = typer.Option(None, help="Hyperparameters for fine-tuning"),
+    n_epochs: int = typer.Option(None, help="Number of epochs for fine-tuning", show_default=False),
+    batch_size: str = typer.Option(None, help="Batch size for fine-tuning", show_default=False),
+    learning_rate_multiplier: str = typer.Option(None, help="Learning rate multiplier for fine-tuning", show_default=False),
     validation_file_id: str = typer.Option(None, help="ID of the uploaded validation file"),
     ):
 
-    hyperparameters_dict = None
-    if hyperparameters:
-        try:
-            hyperparameters_dict = json.loads(hyperparameters)
-            if 'n_epochs' not in hyperparameters_dict or not isinstance(hyperparameters_dict['n_epochs'], int):
-                raise ValueError("Hyperparameters must be a JSON object containing 'n_epochs' as an integer.")
-        except json.JSONDecodeError:
-            raise ValueError("Hyperparameters must be a valid JSON string.")
+    hyperparameters_dict = {}
+    if n_epochs is not None:
+        hyperparameters_dict['n_epochs'] = n_epochs
+    if batch_size is not None:
+        hyperparameters_dict['batch_size'] = batch_size
+    if learning_rate_multiplier is not None:
+        hyperparameters_dict['learning_rate_multiplier'] = learning_rate_multiplier
 
     with console.status(
         f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
@@ -118,7 +119,7 @@ def create_from_id(
         job = openai.FineTuningJob.create(
             training_file=id, 
             model=model, 
-            hyperparameters=hyperparameters_dict if hyperparameters else None, 
+            hyperparameters = hyperparameters_dict if hyperparameters_dict else None, 
             validation_file=validation_file_id if validation_file_id else None
         )
         console.log(f"[bold green]Fine-tuning job created with ID: {job.id}")  # type: ignore
@@ -132,18 +133,20 @@ def create_from_file(
     file: str = typer.Argument(..., help="Path to the file for fine-tuning"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
     poll: int = typer.Option(2, help="Polling interval in seconds"),
-    hyperparameters: str = typer.Option(None, help="Hyperparameters for fine-tuning"),
+    n_epochs: int = typer.Option(None, help="Number of epochs for fine-tuning", show_default=False),
+    batch_size: str = typer.Option(None, help="Batch size for fine-tuning", show_default=False),
+    learning_rate_multiplier: str = typer.Option(None, help="Learning rate multiplier for fine-tuning", show_default=False),
     validation_file: str = typer.Option(None, help="Path to the validation file"),
     ):
 
-    hyperparameters_dict = None
-    if hyperparameters:
-        try:
-            hyperparameters_dict = json.loads(hyperparameters)
-            if 'n_epochs' not in hyperparameters_dict or not isinstance(hyperparameters_dict['n_epochs'], int):
-                raise ValueError("Hyperparameters must be a JSON object containing 'n_epochs' as an integer.")
-        except json.JSONDecodeError:
-            raise ValueError("Hyperparameters must be a valid JSON string.")
+    hyperparameters_dict = {}
+    if n_epochs is not None:
+        hyperparameters_dict['n_epochs'] = n_epochs
+    if batch_size is not None:
+        hyperparameters_dict['batch_size'] = batch_size
+    if learning_rate_multiplier is not None:
+        hyperparameters_dict['learning_rate_multiplier'] = learning_rate_multiplier
+
 
     with open(file, "rb") as file:
         response = openai.File.create(file=file, purpose="fine-tune")
@@ -172,10 +175,10 @@ def create_from_file(
             time.sleep(poll)
 
     job = openai.FineTuningJob.create(
-        training_file=file_id, 
-        model=model, 
-        hyperparameters=hyperparameters_dict, 
-        validation_file=validation_file_id if validation_file else None
+        training_file = file_id, 
+        model = model, 
+        hyperparameters = hyperparameters_dict if hyperparameters_dict else None,
+        validation_file = validation_file_id if validation_file else None
     )
     if validation_file_id:
         console.log(
