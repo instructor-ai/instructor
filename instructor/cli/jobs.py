@@ -115,27 +115,49 @@ def create_from_file(
     file: str = typer.Argument(..., help="Path to the file for fine-tuning"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
     poll: int = typer.Option(2, help="Polling interval in seconds"),
+    hyperparameters: dict = typer.Option(None, help="Hyperparameters for fine-tuning"),
+    validation_file: str = typer.Option(None, help="Path to the validation file"),
 ):
     with open(file, "rb") as file:
         response = openai.File.create(file=file, purpose="fine-tune")
 
     file_id = response["id"]
 
+    validation_file_id = None
+    if validation_file:
+        with open(validation_file, "rb") as val_file:
+            val_response = openai.File.create(file=val_file, purpose="fine-tune")
+        validation_file_id = val_response["id"]
+
     with console.status(f"Monitoring upload: {file_id} before finetuning...") as status:
         status.spinner_style = "dots"
         while True:
             file_status = get_file_status(file_id)
+            if validation_file_id:
+                validation_file_status = get_file_status(validation_file_id)
 
-            if file_status == "processed":
+            if file_status == "processed" and (not validation_file_id or validation_file_status == "processed"):
                 console.log(f"[bold green]File {file_id} uploaded successfully!")
+                if validation_file_id:
+                    console.log(f"[bold green]Validation file {validation_file_id} uploaded successfully!")
                 break
 
             time.sleep(poll)
 
-    job = openai.FineTuningJob.create(training_file=file_id, model=model)
-    console.log(
-        f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id}"
+    job = openai.FineTuningJob.create(
+        training_file=file_id, 
+        model=model, 
+        hyperparameters=hyperparameters, 
+        validation_file=validation_file_id if validation_file else None
     )
+    if validation_file_id:
+        console.log(
+            f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id} and validation_file ID: {validation_file_id}"
+        )
+    else:
+        console.log(
+            f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id}"
+        )
     watch(limit=5, poll=poll, screen=False)
 
 
