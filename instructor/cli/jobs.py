@@ -143,9 +143,12 @@ def create_from_file(
     
     validation_id = None
     if validation_file:
-        with open(validation_file, "rb") as file:
-            response = openai.File.create(file=file, purpose="fine-tune")
-        validation_id = response["id"]
+        try:
+            with open(validation_file, "rb") as file:
+                response = openai.File.create(file=file, purpose="fine-tune")
+            validation_file_id = response["id"]
+        except Exception as e:
+            raise typer.Exit(f"Failed to upload validation file: {e}")
 
     with open(file, "rb") as file:
         response = openai.File.create(file=file, purpose="fine-tune")
@@ -167,7 +170,7 @@ def create_from_file(
         training_file=file_id, 
         model=model,
         hyperparameters=hyperparameters_dict,
-        validation_file=validation_id    
+        validation_file=validation_file_id    
     )
     console.log(
         f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id}"
