@@ -3,7 +3,7 @@ from typing import Optional
 import instructor
 from openai import OpenAI
 
-client = OpenAI()
+client = instructor.patch(OpenAI())
 
 
 class Validator(instructor.OpenAISchema):
