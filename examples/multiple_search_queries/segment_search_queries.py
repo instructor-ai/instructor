@@ -83,21 +83,23 @@ def segment(data: str) -> MultiSearch:
         MultiSearch: An object representing the multiple search queries.
     """
 
-    completion = client.chat.completions.create(model="gpt-4-0613",
-    temperature=0.1,
-    functions=[MultiSearch.openai_schema],
-    function_call={"name": MultiSearch.openai_schema["name"]},
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a helpful assistant.",
-        },
-        {
-            "role": "user",
-            "content": f"Consider the data below:\n{data} and segment it into multiple search queries",
-        },
-    ],
-    max_tokens=1000)
+    completion = client.chat.completions.create(
+        model="gpt-4-0613",
+        temperature=0.1,
+        functions=[MultiSearch.openai_schema],
+        function_call={"name": MultiSearch.openai_schema["name"]},
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant.",
+            },
+            {
+                "role": "user",
+                "content": f"Consider the data below:\n{data} and segment it into multiple search queries",
+            },
+        ],
+        max_tokens=1000,
+    )
     return MultiSearch.from_response(completion)
 
 

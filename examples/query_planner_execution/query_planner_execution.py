@@ -133,10 +133,9 @@ def query_planner(question: str, plan=False) -> QueryPlan:
                 "content": "Lets think step by step to find correct set of queries and its dependencies and not make any assuptions on what is known.",
             },
         )
-        completion = client.chat.completions.create(model=PLANNING_MODEL,
-        temperature=0,
-        messages=messages,
-        max_tokens=1000)
+        completion = client.chat.completions.create(
+            model=PLANNING_MODEL, temperature=0, messages=messages, max_tokens=1000
+        )
 
         messages.append(completion["choices"][0]["message"])
 
@@ -147,12 +146,14 @@ def query_planner(question: str, plan=False) -> QueryPlan:
             }
         )
 
-    completion = client.chat.completions.create(model=ANSWERING_MODEL,
-    temperature=0,
-    functions=[QueryPlan.openai_schema],
-    function_call={"name": QueryPlan.openai_schema["name"]},
-    messages=messages,
-    max_tokens=1000)
+    completion = client.chat.completions.create(
+        model=ANSWERING_MODEL,
+        temperature=0,
+        functions=[QueryPlan.openai_schema],
+        function_call={"name": QueryPlan.openai_schema["name"]},
+        messages=messages,
+        max_tokens=1000,
+    )
     root = QueryPlan.from_response(completion)
     return root
 

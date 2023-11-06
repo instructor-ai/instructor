@@ -22,14 +22,16 @@ class SinglePrediction(BaseModel):
 
 
 def classify(data: str) -> SinglePrediction:
-    return client.chat.completions.create(model="gpt-3.5-turbo-0613",
-    response_model=SinglePrediction,
-    messages=[
-        {
-            "role": "user",
-            "content": f"Classify the following text: {data}",
-        },
-    ])  # type: ignore
+    return client.chat.completions.create(
+        model="gpt-3.5-turbo-0613",
+        response_model=SinglePrediction,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Classify the following text: {data}",
+            },
+        ],
+    )  # type: ignore
 
 
 prediction = classify("Hello there I'm a nigerian prince and I want to give you money")

@@ -28,14 +28,16 @@ class KnowledgeGraph(BaseModel):
 
 
 def generate_graph(input) -> KnowledgeGraph:
-    return client.chat.completions.create(model="gpt-3.5-turbo-16k",
-    messages=[
-        {
-            "role": "user",
-            "content": f"Help me understand following by describing as a detailed knowledge graph: {input}",
-        }
-    ],
-    response_model=KnowledgeGraph)  # type: ignore
+    return client.chat.completions.create(
+        model="gpt-3.5-turbo-16k",
+        messages=[
+            {
+                "role": "user",
+                "content": f"Help me understand following by describing as a detailed knowledge graph: {input}",
+            }
+        ],
+        response_model=KnowledgeGraph,
+    )  # type: ignore
 
 
 def visualize_knowledge_graph(kg: KnowledgeGraph):

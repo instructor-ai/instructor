@@ -60,17 +60,19 @@ ChainOfDenseSummaries = instructor.MultiTask(
 
 
 def summarize_article(article: str, n_summaries: int = 5, stream: bool = True):
-    completion = client.chat.completions.create(model="gpt-3.5-turbo-16k",
-    stream=stream,
-    messages=[
-        {
-            "role": "system",
-            "content": """Summarize the following article with {n_summary} chain of summaries with increasing density:""",
-        },
-        {"role": "user", "content": article},
-    ],
-    functions=[ChainOfDenseSummaries.openai_schema],
-    function_call={"name": ChainOfDenseSummaries.openai_schema["name"]})
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo-16k",
+        stream=stream,
+        messages=[
+            {
+                "role": "system",
+                "content": """Summarize the following article with {n_summary} chain of summaries with increasing density:""",
+            },
+            {"role": "user", "content": article},
+        ],
+        functions=[ChainOfDenseSummaries.openai_schema],
+        function_call={"name": ChainOfDenseSummaries.openai_schema["name"]},
+    )
     if stream:
         return ChainOfDenseSummaries.from_streaming_response(completion)
     return ChainOfDenseSummaries.from_response(completion)

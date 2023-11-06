@@ -20,18 +20,20 @@ class QuestionAnswer(BaseModel):
 question = "What is the meaning of life?"
 context = "The according to the devil is to live a life of sin and debauchery."
 
-qa: QuestionAnswer = client.chat.completions.create(model="gpt-3.5-turbo",
-response_model=QuestionAnswer,
-messages=[
-    {
-        "role": "system",
-        "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
-    },
-    {
-        "role": "user",
-        "content": f"using the context: {context}\n\nAnswer the following question: {question}",
-    },
-])  # type: ignore
+qa: QuestionAnswer = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=QuestionAnswer,
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
+        },
+        {
+            "role": "user",
+            "content": f"using the context: {context}\n\nAnswer the following question: {question}",
+        },
+    ],
+)  # type: ignore
 
 print("Before validation with `llm_validator`")
 print(qa.model_dump_json(indent=2), end="\n\n")
@@ -55,18 +57,20 @@ class QuestionAnswerNoEvil(BaseModel):
 
 
 try:
-    qa: QuestionAnswerNoEvil = client.chat.completions.create(model="gpt-3.5-turbo",
-    response_model=QuestionAnswerNoEvil,
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
-        },
-        {
-            "role": "user",
-            "content": f"using the context: {context}\n\nAnswer the following question: {question}",
-        },
-    ])  # type: ignore
+    qa: QuestionAnswerNoEvil = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        response_model=QuestionAnswerNoEvil,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
+            },
+            {
+                "role": "user",
+                "content": f"using the context: {context}\n\nAnswer the following question: {question}",
+            },
+        ],
+    )  # type: ignore
 except Exception as e:
     print(e, end="\n\n")
     """
@@ -76,19 +80,21 @@ except Exception as e:
         For further information visit https://errors.pydantic.dev/2.3/v/assertion_error
     """
 
-qa: QuestionAnswerNoEvil = client.chat.completions.create(model="gpt-3.5-turbo",
-response_model=QuestionAnswerNoEvil,
-max_retries=1,
-messages=[
-    {
-        "role": "system",
-        "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
-    },
-    {
-        "role": "user",
-        "content": f"using the context: {context}\n\nAnswer the following question: {question}",
-    },
-])  # type: ignore
+qa: QuestionAnswerNoEvil = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=QuestionAnswerNoEvil,
+    max_retries=1,
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a system that answers questions based on the context. answer exactly what the question asks using the context.",
+        },
+        {
+            "role": "user",
+            "content": f"using the context: {context}\n\nAnswer the following question: {question}",
+        },
+    ],
+)  # type: ignore
 
 print("After validation with `llm_validator` with `max_retries=1`")
 print(qa.model_dump_json(indent=2), end="\n\n")

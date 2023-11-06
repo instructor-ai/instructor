@@ -24,19 +24,21 @@ async def main():
     question = "What is the meaning of life?"
 
     try:
-        qa: QuestionAnswerNoEvil = await aclient.chat.completions.create(model="gpt-3.5-turbo",
-        response_model=QuestionAnswerNoEvil,
-        max_retries=2,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a system that answers questions based on the context. Answer exactly what the question asks using the context.",
-            },
-            {
-                "role": "user",
-                "content": f"using the context: {context}\n\nAnswer the following question: {question}",
-            },
-        ])  # type: ignore
+        qa: QuestionAnswerNoEvil = await aclient.chat.completions.create(
+            model="gpt-3.5-turbo",
+            response_model=QuestionAnswerNoEvil,
+            max_retries=2,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a system that answers questions based on the context. Answer exactly what the question asks using the context.",
+                },
+                {
+                    "role": "user",
+                    "content": f"using the context: {context}\n\nAnswer the following question: {question}",
+                },
+            ],
+        )  # type: ignore
         print(qa)
     except Exception as e:
         print(e)

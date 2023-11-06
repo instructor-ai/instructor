@@ -94,6 +94,6 @@ def mock_track(*args, **kwargs):
 
 
 def fn(a: int, b: int) -> int:
-    return client.chat.completions.create(messages=[],
-    model="davinci",
-    response_model=SimpleModel)
+    return client.chat.completions.create(
+        messages=[], model="davinci", response_model=SimpleModel
+    )

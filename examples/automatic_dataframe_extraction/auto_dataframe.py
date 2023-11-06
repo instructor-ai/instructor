@@ -35,22 +35,24 @@ class Dataframe(OpenAISchema):
 
 
 def dataframe(data: str) -> Dataframe:
-    completion = client.chat.completions.create(model="gpt-3.5-turbo-0613",
-    temperature=0.1,
-    functions=[Dataframe.openai_schema],
-    function_call={"name": Dataframe.openai_schema["name"]},
-    messages=[
-        {
-            "role": "system",
-            "content": """Map this data into a dataframe a
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo-0613",
+        temperature=0.1,
+        functions=[Dataframe.openai_schema],
+        function_call={"name": Dataframe.openai_schema["name"]},
+        messages=[
+            {
+                "role": "system",
+                "content": """Map this data into a dataframe a
             nd correctly define the correct columns and rows""",
-        },
-        {
-            "role": "user",
-            "content": f"{data}",
-        },
-    ],
-    max_tokens=1000)
+            },
+            {
+                "role": "user",
+                "content": f"{data}",
+            },
+        ],
+        max_tokens=1000,
+    )
     return Dataframe.from_response(completion)
 
 

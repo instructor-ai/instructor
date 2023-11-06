@@ -92,21 +92,23 @@ def parse_tree_to_filesystem(data: str) -> DirectoryTree:
         DirectoryTree: The directory tree representing the filesystem.
     """
 
-    completion = client.chat.completions.create(model="gpt-3.5-turbo-0613",
-    temperature=0.2,
-    functions=[DirectoryTree.openai_schema],
-    function_call={"name": DirectoryTree.openai_schema["name"]},
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a perfect file system parsing algorithm. You are given a string representing a directory tree. You must return the correct filesystem structure.",
-        },
-        {
-            "role": "user",
-            "content": f"Consider the data below:\n{data} and return the correctly labeled filesystem",
-        },
-    ],
-    max_tokens=1000)
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo-0613",
+        temperature=0.2,
+        functions=[DirectoryTree.openai_schema],
+        function_call={"name": DirectoryTree.openai_schema["name"]},
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a perfect file system parsing algorithm. You are given a string representing a directory tree. You must return the correct filesystem structure.",
+            },
+            {
+                "role": "user",
+                "content": f"Consider the data below:\n{data} and return the correctly labeled filesystem",
+            },
+        ],
+        max_tokens=1000,
+    )
     root = DirectoryTree.from_response(completion)
     return root
 

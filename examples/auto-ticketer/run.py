@@ -51,18 +51,20 @@ class ActionItems(BaseModel):
 
 
 def generate(data: str) -> ActionItems:
-    return client.chat.completions.create(model="gpt-3.5-turbo-0613",
-    response_model=ActionItems,
-    messages=[
-        {
-            "role": "system",
-            "content": "The following is a transcript of a meeting between a manager and their team. The manager is assigning tasks to their team members and creating action items for them to complete.",
-        },
-        {
-            "role": "user",
-            "content": f"Create the action items for the following transcript: {data}",
-        },
-    ])  # type: ignore
+    return client.chat.completions.create(
+        model="gpt-3.5-turbo-0613",
+        response_model=ActionItems,
+        messages=[
+            {
+                "role": "system",
+                "content": "The following is a transcript of a meeting between a manager and their team. The manager is assigning tasks to their team members and creating action items for them to complete.",
+            },
+            {
+                "role": "user",
+                "content": f"Create the action items for the following transcript: {data}",
+            },
+        ],
+    )  # type: ignore
 
 
 prediction = generate(

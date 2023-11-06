@@ -87,7 +87,9 @@ initial_messages = [
     },
 ]
 
-response: Response = client.chat.completions.create(messages=initial_messages, response_model=Response, model="gpt-4")  # type: ignore
+response: Response = client.chat.completions.create(
+    messages=initial_messages, response_model=Response, model="gpt-4"
+)  # type: ignore
 
 print(response.model_dump_json(indent=2))
 """

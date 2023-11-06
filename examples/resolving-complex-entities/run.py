@@ -45,18 +45,20 @@ class DocumentExtraction(BaseModel):
 
 
 def ask_ai(content) -> DocumentExtraction:
-    resp: DocumentExtraction = client.chat.completions.create(model="gpt-4",
-    response_model=DocumentExtraction,
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a perfect entity resolution system that extracts facts from the document. Extract and resolve a list of entities from the following document:",
-        },
-        {
-            "role": "user",
-            "content": content,
-        },
-    ])  # type: ignore
+    resp: DocumentExtraction = client.chat.completions.create(
+        model="gpt-4",
+        response_model=DocumentExtraction,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a perfect entity resolution system that extracts facts from the document. Extract and resolve a list of entities from the following document:",
+            },
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+    )  # type: ignore
     return resp
 
 

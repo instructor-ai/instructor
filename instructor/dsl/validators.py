@@ -66,20 +66,22 @@ def llm_validator(
     """
 
     def llm(v):
-        resp = client.chat.completions.create(functions=[Validator.openai_schema],
-        function_call={"name": Validator.openai_schema["name"]},
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a world class validation model. Capable to determine if the following value is valid for the statement, if it is not, explain why and suggest a new value.",
-            },
-            {
-                "role": "user",
-                "content": f"Does `{v}` follow the rules: {statement}",
-            },
-        ],
-        model=model,
-        temperature=temperature)  # type: ignore
+        resp = client.chat.completions.create(
+            functions=[Validator.openai_schema],
+            function_call={"name": Validator.openai_schema["name"]},
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a world class validation model. Capable to determine if the following value is valid for the statement, if it is not, explain why and suggest a new value.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Does `{v}` follow the rules: {statement}",
+                },
+            ],
+            model=model,
+            temperature=temperature,
+        )  # type: ignore
         resp = Validator.from_response(resp)
 
         # If the response is  not valid, return the reason, this could be used in

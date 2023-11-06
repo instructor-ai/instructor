@@ -18,14 +18,16 @@ MaybeUser = instructor.Maybe(UserDetail)
 
 
 def get_user_detail(string) -> MaybeUser:  # type: ignore
-    return client.chat.completions.create(model="gpt-3.5-turbo-0613",
-    response_model=MaybeUser,
-    messages=[
-        {
-            "role": "user",
-            "content": f"Get user details for {string}",
-        },
-    ])  # type: ignore
+    return client.chat.completions.create(
+        model="gpt-3.5-turbo-0613",
+        response_model=MaybeUser,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Get user details for {string}",
+            },
+        ],
+    )  # type: ignore
 
 
 user = get_user_detail("Jason is 25 years old")

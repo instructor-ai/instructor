@@ -157,7 +157,9 @@ class Instructions:
                     kwargs=kwargs,
                     base_model=return_base_model,
                 )
-                return client.chat.completions.create(**openai_kwargs, model=model, response_model=return_base_model)
+                return client.chat.completions.create(
+                    **openai_kwargs, model=model, response_model=return_base_model
+                )
 
             @functools.wraps(fn)
             def _distil(*args, **kwargs):

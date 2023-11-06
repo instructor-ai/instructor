@@ -82,25 +82,27 @@ class Question(BaseModel):
 
 # Function to extract entities from input text using GPT-3.5
 def stream_extract(question: Question) -> Iterable[Fact]:
-    completion = client.chat.completions.create(model="gpt-3.5-turbo-0613",
-    temperature=0,
-    stream=True,
-    functions=[QuestionAnswer.openai_schema],
-    function_call={"name": QuestionAnswer.openai_schema["name"]},
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a world class algorithm to answer questions with correct and exact citations. ",
-        },
-        {"role": "user", "content": "Answer question using the following context"},
-        {"role": "user", "content": f"{question.context}"},
-        {"role": "user", "content": f"Question: {question.query}"},
-        {
-            "role": "user",
-            "content": "Tips: Make sure to cite your sources, and use the exact words from the context.",
-        },
-    ],
-    max_tokens=2000)
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo-0613",
+        temperature=0,
+        stream=True,
+        functions=[QuestionAnswer.openai_schema],
+        function_call={"name": QuestionAnswer.openai_schema["name"]},
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a world class algorithm to answer questions with correct and exact citations. ",
+            },
+            {"role": "user", "content": "Answer question using the following context"},
+            {"role": "user", "content": f"{question.context}"},
+            {"role": "user", "content": f"Question: {question.query}"},
+            {
+                "role": "user",
+                "content": "Tips: Make sure to cite your sources, and use the exact words from the context.",
+            },
+        ],
+        max_tokens=2000,
+    )
     return QuestionAnswer.from_streaming_response(completion)
 
 
@@ -125,7 +127,9 @@ def get_api_key(request: Request):
 # Route to handle SSE events and return users
 @app.post("/extract", response_class=StreamingResponse)
 async def extract(question: Question, openai_key=Depends(get_api_key)):
-    raise Exception("The 'openai.api_key' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(api_key=openai_key)'")
+    raise Exception(
+        "The 'openai.api_key' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(api_key=openai_key)'"
+    )
     facts = stream_extract(question)
 
     async def generate():

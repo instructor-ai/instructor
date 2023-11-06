@@ -22,19 +22,21 @@ class Validation(BaseModel):
 def validator(values):
     chain_of_thought = values["chain_of_thought"]
     answer = values["answer"]
-    resp = client.chat.completions.create(model="gpt-3.5-turbo",
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a validator. Determine if the value is valid for the statement. If it is not, explain why.",
-        },
-        {
-            "role": "user",
-            "content": f"Verify that `{answer}` follows the chain of thought: {chain_of_thought}",
-        },
-    ],
-    # this comes from instructor.patch()
-    response_model=Validation)
+    resp = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a validator. Determine if the value is valid for the statement. If it is not, explain why.",
+            },
+            {
+                "role": "user",
+                "content": f"Verify that `{answer}` follows the chain of thought: {chain_of_thought}",
+            },
+        ],
+        # this comes from instructor.patch()
+        response_model=Validation,
+    )
     if not resp.is_valid:
         raise ValueError(resp.error_message)
     return values
