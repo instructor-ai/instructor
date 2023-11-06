@@ -4,7 +4,6 @@ from openai import OpenAI
 client = OpenAI()
 import typer
 import time
-import json
 from rich.live import Live
 from rich.table import Table
 from rich.console import Console

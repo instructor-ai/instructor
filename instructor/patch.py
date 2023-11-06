@@ -1,7 +1,6 @@
 from functools import wraps
 from json import JSONDecodeError
 from pydantic import ValidationError
-import openai
 import inspect
 from typing import Callable, Type, Optional
 

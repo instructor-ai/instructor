@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
 import os
-import openai
 from openai import OpenAI
 
 client = OpenAI()

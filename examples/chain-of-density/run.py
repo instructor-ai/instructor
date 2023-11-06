@@ -1,11 +1,12 @@
 import instructor
 from openai import OpenAI
 
-client = OpenAI()
 from pydantic import BaseModel, Field
 
 from pprint import pprint
 from typing import List
+
+client = instructor.patch(OpenAI())
 
 
 class Summary(BaseModel):
