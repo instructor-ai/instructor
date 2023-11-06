@@ -15,12 +15,6 @@ $ instructor jobs --help
 ╭─ Options ───────────────────────────────────────────────────────────────────────────────╮
 │ --help                            Display the help message.                             │
 ╰─────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Fine-tuning Parameters (Optional) ─────────────────────────────────────────────────────╮
-│ --n_epochs n                      Specify the number of epochs to train the model.      |
-| --batch_size n                    Specify number of examples in each batch.             |
-| --learning_rate_multiplier n      Specify scaling factor for the learning rate.         |
-│ --validation_file <>              Specify a validation file or id.                      │
-╰─────────────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ cancel                    Cancel a fine-tuning job.                                                         │
 │ create-from-file          Create a fine-tuning job from a file.                                             │
@@ -35,12 +29,61 @@ $ instructor jobs --help
 The create-from-file command uploads and trains a model in a single step.
 
 ```sh
+❯ instructor jobs create-from-file --help
+                                                                                         
+ Usage: instructor jobs create-from-file [OPTIONS] FILE                                  
+                                                                                         
+ Create a fine-tuning job from a file.                                                   
+                                                                                         
+╭─ Arguments ───────────────────────────────────────────────────────────────────────────╮
+│ *    file      TEXT  Path to the file for fine-tuning [default: None] [required]      │
+╰───────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ─────────────────────────────────────────────────────────────────────────────╮
+│ --model                           TEXT     Model to use for fine-tuning               │
+│                                            [default: gpt-3.5-turbo]                   │
+│ --poll                            INTEGER  Polling interval in seconds [default: 2]   │
+│ --n-epochs                        INTEGER  Number of epochs for fine-tuning           │
+│ --batch-size                      TEXT     Batch size for fine-tuning                 │
+│ --learning-rate-multiplier        TEXT     Learning rate multiplier for fine-tuning   │
+│ --validation-file                 TEXT     Path to the validation file                │
+│                                            [default: None]                            │
+│ --help                                     Show this message and exit.                │
+╰───────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+#### Usage
+
+```sh
 $ instructor jobs create-from-file transformed_data.jsonl --validation_file validation_data.jsonl --n_epochs 3 --batch_size 16 --learning_rate_multiplier 0.5
 ```
 
 ### Create from ID
 
 The create-from-id command uses an uploaded file and trains a model
+
+```sh
+❯ instructor jobs create-from-id --help
+                                                                                         
+ Usage: instructor jobs create-from-id [OPTIONS] ID                                      
+                                                                                         
+ Create a fine-tuning job from an existing ID.                                           
+                                                                                         
+╭─ Arguments ───────────────────────────────────────────────────────────────────────────╮
+│ *    id      TEXT  ID of the existing fine-tuning job [default: None] [required]      │
+╰───────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ─────────────────────────────────────────────────────────────────────────────╮
+│ --model                           TEXT     Model to use for fine-tuning               │
+│                                            [default: gpt-3.5-turbo]                   │
+│ --n-epochs                        INTEGER  Number of epochs for fine-tuning           │
+│ --batch-size                      TEXT     Batch size for fine-tuning                 │
+│ --learning-rate-multiplier        TEXT     Learning rate multiplier for fine-tuning   │
+│ --validation-file-id              TEXT     ID of the uploaded validation file         │
+│                                            [default: None]                            │
+│ --help                                     Show this message and exit.                │
+╰───────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+#### Usage
 
 ```sh
 $ instructor files upload transformed_data.jsonl
