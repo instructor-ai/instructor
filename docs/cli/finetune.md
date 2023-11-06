@@ -13,9 +13,13 @@ $ instructor jobs --help
  Monitor and create fine tuning jobs                                                                           
                                                                                                                
 ╭─ Options ───────────────────────────────────────────────────────────────────────────────╮
-│ --help                                Show this message and exit.                       │
-│ --hyperparameters '{"n_epochs": n}'   Specify hyperparameters for fine-tuning.          |
-│ --validation_file                     Specify a validation file for fine-tuning.        │
+│ --help                            Display the help message.                             │
+╰─────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Fine-tuning Parameters (Optional) ─────────────────────────────────────────────────────╮
+│ --n_epochs n                      Specify the number of epochs to train the model.      |
+| --batch_size n                    Specify number of examples in each batch.             |
+| --learning_rate_multiplier n      Specify scaling factor for the learning rate.         |
+│ --validation_file <>              Specify a validation file or id.                      │
 ╰─────────────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ cancel                    Cancel a fine-tuning job.                                                         │
@@ -29,10 +33,9 @@ $ instructor jobs --help
 ### Create from File
 
 The create-from-file command uploads and trains a model in a single step.
-Validation file and hyperparameters are optional.
 
 ```sh
-$ instructor jobs create-from-file transformed_data.jsonl --validation_file validation_data.jsonl --hyperparameters '{"n_epochs": 3}'
+$ instructor jobs create-from-file transformed_data.jsonl --validation_file validation_data.jsonl --n_epochs 3 --batch_size 16 --learning_rate_multiplier 0.5
 ```
 
 ### Create from ID
@@ -44,7 +47,7 @@ $ instructor files upload transformed_data.jsonl
 $ instructor files upload validation_data.jsonl 
 $ instructor files list
 ...
-$ instructor jobs create_from_id <file_id> --validation_file <validation_file_id> --hyperparameters '{"n_epochs": n}'
+$ instructor jobs create_from_id <file_id> --validation_file <validation_file_id> --n_epochs 3 --batch_size 16 --learning_rate_multiplier 0.5
 ```
 
 
