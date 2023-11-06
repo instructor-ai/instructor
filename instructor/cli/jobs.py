@@ -101,9 +101,18 @@ def create_from_id(
     id: str = typer.Argument(..., help="ID of the existing fine-tuning job"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
     hyperparameters: str = typer.Option(None, help="Hyperparameters for fine-tuning in JSON format (n_epochs)"),
-    validation_file: str = typer.Option(None, help="Path to the validation file")
+    validation_id: str = typer.Option(None, help="Path to the validation file")
 ):
     hyperparameters_dict = json.loads(hyperparameters) if hyperparameters else None
+    if hyperparameters_dict is not None:
+        if "n_epochs" not in hyperparameters_dict or len(hyperparameters_dict) != 1:
+            raise typer.Exit("Hyperparameters must only include 'n_epochs'")
+    
+    if validation_id:
+        try:
+            openai.File.retrieve(validation_id)
+        except Exception:
+            raise typer.Exit(f"Validation file with ID {validation_id} does not exist")
     with console.status(
         f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
     ):
@@ -111,7 +120,7 @@ def create_from_id(
             training_file=id, 
             model=model,
             hyperparameters=hyperparameters_dict,
-            validation_file=validation_file
+            validation_file=validation_id
         )
         console.log(f"[bold green]Fine-tuning job created with ID: {job.id}")  # type: ignore
     watch(limit=5, poll=2, screen=False)
@@ -128,6 +137,16 @@ def create_from_file(
     validation_file: str = typer.Option(None, help="Path to the validation file"),
 ):
     hyperparameters_dict = json.loads(hyperparameters) if hyperparameters else None
+    if hyperparameters_dict is not None:
+        if "n_epochs" not in hyperparameters_dict or len(hyperparameters_dict) != 1:
+            raise typer.Exit("Hyperparameters must only include 'n_epochs'")
+    
+    validation_id = None
+    if validation_file:
+        with open(validation_file, "rb") as file:
+            response = openai.File.create(file=file, purpose="fine-tune")
+        validation_id = response["id"]
+
     with open(file, "rb") as file:
         response = openai.File.create(file=file, purpose="fine-tune")
 
@@ -148,7 +167,7 @@ def create_from_file(
         training_file=file_id, 
         model=model,
         hyperparameters=hyperparameters_dict,
-        validation_file=validation_file    
+        validation_file=validation_id    
     )
     console.log(
         f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id}"
