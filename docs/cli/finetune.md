@@ -49,14 +49,14 @@ $ instructor files list
 $ instructor jobs create-from-file <file_id>
 ```
 
-You can also pass hyperparameters and a validation file:
+You can also pass hyperparameters and a validation id:
 
 ```sh
 $ instructor files upload transformed_data.jsonl 
 $ instructor files upload validation_file.jsonl
 $ instructor files list
 ...
-$ instructor jobs create-from-file <transformed_data_file_id> --hyperparameters '{"n_epochs" : 4}' --validation_file <validation_file_id>
+$ instructor jobs create-from-file <transformed_data_file_id> --hyperparameters '{"n_epochs" : 4}' --validation_file_id <validation_file_id>
 ```
 
 ### Viewing Files and Jobs
