@@ -114,6 +114,8 @@ plugins:
       post_url_format: "{date}/{slug}"
       authors_file: "{blog}/.authors.yml"
 extra:
+  version:
+    provider: mike
   analytics:
     provider: google
     property: G-5CR8QXF5CN
