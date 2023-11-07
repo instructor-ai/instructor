@@ -42,6 +42,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
+      - name: Fetch documentation branch
+        run: git fetch origin gh-pages --depth=1
+
+      - name: Configure Git User
+        run: |
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@example.com"
+
       - name: Get current tag
         run: echo "version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
