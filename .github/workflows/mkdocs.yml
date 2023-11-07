@@ -28,6 +28,8 @@ jobs:
           sudo apt-get update &&
           sudo apt-get install pngquant &&
           pip install -r requirements-doc.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Fetch documentation branch
         run: git fetch origin gh-pages --depth=1
