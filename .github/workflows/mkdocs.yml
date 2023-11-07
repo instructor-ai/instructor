@@ -8,7 +8,7 @@ on:
 permissions:
   contents: write
 
-jobs:
+jjobs:
   deploy:
     runs-on: ubuntu-latest
 
@@ -33,7 +33,6 @@ jobs:
           restore-keys: |
             mkdocs-material-
 
-
       - name: Install Requirements
         run: |
           sudo apt-get update &&
@@ -43,5 +42,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Build and deploy MkDocs
-        run: mkdocs gh-deploy --force
+      - name: Get current tag
+        id: get-tag
+        run: echo "::set-output name=version::$(git describe --tags --abbrev=0)"
+
+      - name: Build and deploy with mike
+        run: mike deploy --update-aliases ${{ steps.get-tag.outputs.version }} latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
