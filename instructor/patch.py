@@ -1,10 +1,9 @@
+import inspect
+
 from functools import wraps
 from json import JSONDecodeError
-from pydantic import ValidationError
-import inspect
+from pydantic import ValidationError, BaseModel
 from typing import Callable, Type, Optional
-
-from pydantic import BaseModel
 from .function_calls import OpenAISchema, openai_schema
 
 OVERRIDE_DOCS = """
@@ -21,9 +20,9 @@ If `stream=True` is specified, the response will be parsed using the `from_strea
 If need to obtain the raw response from OpenAI's API, you can access it using the `_raw_response` attribute of the response model.
 
 Parameters:
-
     response_model (Union[Type[BaseModel], Type[OpenAISchema]]): The response model to use for parsing the response from OpenAI's API, if available (default: None)
     max_retries (int): The maximum number of retries to attempt if the response is not valid (default: 0)
+    validation_context (dict): The validation context to use for validating the response (default: None)
 """
 
 
@@ -143,8 +142,8 @@ def wrap_chatcompletion(func: Callable) -> Callable:
         cls,
         response_model=None,
         validation_context=None,
-        *args,
         max_retries=1,
+        *args,
         **kwargs,
     ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
@@ -165,8 +164,8 @@ def wrap_chatcompletion(func: Callable) -> Callable:
         cls,
         response_model=None,
         validation_context=None,
-        *args,
         max_retries=1,
+        *args,
         **kwargs,
     ):
         response_model, new_kwargs = handle_response_model(response_model, kwargs)  # type: ignore
@@ -189,7 +188,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
 def patch(client):
     """
-    Patch the `openai.ChatCompletion.create` and `openai.ChatCompletion.acreate` methods
+    Patch the `client.chat.completions.create` and `client.chat.completions.create` methods
 
     Enables the following features:
 
@@ -204,6 +203,16 @@ def patch(client):
 
 
 def apatch(client):
+    """
+    Patch the `client.chat.completions.acreate` and `client.chat.completions.acreate` methods
+
+    Enables the following features:
+
+    - `response_model` parameter to parse the response from OpenAI's API
+    - `max_retries` parameter to retry the function if the response is not valid
+    - `validation_context` parameter to validate the response using the pydantic model
+    - `strict` parameter to use strict json parsing
+    """
     client.chat.completions.acreate = wrap_chatcompletion(
         client.chat.completions.acreate
     )
