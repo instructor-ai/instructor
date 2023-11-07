@@ -56,6 +56,6 @@ jobs:
         run: echo "version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Build and deploy with mike
-        run: mike deploy ${{ env.version }} latest
+        run: mike deploy --push --update-aliases ${{ env.version }} latest
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
