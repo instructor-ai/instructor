@@ -4,21 +4,18 @@
 [![GitHub forks](https://img.shields.io/github/forks/jxnl/instructor.svg)](https://github.com/jxnl/instructor/network)
 [![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
 [![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
+[![Github discussions](https://img.shields.io/github/discussions/jxnl/instructor)](https:github.com/jxnl/instructor/discussions)
 [![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 
-*Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control.*
+_Structured extraction in Python, powered by OpenAI's function calling API, designed for simplicity, transparency, and control._
 
-This library is built to interact with openai's function call api from python code, with python structs / objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
-
-### Requirements
-
-This library depends on **Pydantic** and **OpenAI** that's all.
+Built to interact solely openai's function calling api from python. It's designed to be intuitive, easy to use, but give great visibily in how we call openai. My goal isn't to hide the api, but to make it easier to use and show you how to leverage it via the [docs](https://jxnl.github.io/instructor).
 
 ### Installation
 
-To get started with OpenAI Function Call, you need to install it using `pip`. Run the following command in your terminal:
+To get started you need to install it using `pip`. Run the following command in your terminal:
 
 ```sh
 $ pip install instructor
@@ -28,6 +25,14 @@ $ pip install instructor
 
 To simplify your work with OpenAI models and streamline the extraction of Pydantic objects from prompts, we offer a patching mechanism for the `ChatCompletion`` class. Here's a step-by-step guide:
 
+This patch introduces 2 features to the `ChatCompletion` class:
+
+1. The `response_model` parameter, which allows you to specify a Pydantic model to extract data into.
+2. The `max_retries` parameter, which allows you to specify the number of times to retry the request if it fails.
+3. The `validation_context` parameter, which allows you to specify a context object that validators have access to.
+
+note: to learn more about validators checkout our [blog](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
+
 ### Step 1: Import and Patch the Module
 
 First, import the required libraries and apply the patch function to the OpenAI module. This exposes new functionality with the response_model parameter.
@@ -35,7 +40,6 @@ First, import the required libraries and apply the patch function to the OpenAI 
 ```python
 import openai
 import instructor
-from pydantic import BaseModel
 
 instructor.patch()
 ```
@@ -45,6 +49,8 @@ instructor.patch()
 Create a Pydantic model to define the structure of the data you want to extract. This model will map directly to the information in the prompt.
 
 ```python
+from pydantic import BaseModel
+
 class UserDetail(BaseModel):
     name: str
     age: int
@@ -85,7 +91,7 @@ from instructor import llm_validator
 class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
-        str, 
+        str,
         BeforeValidator(llm_validator("don't say objectionable things"))
     ]
 
@@ -140,7 +146,7 @@ model = openai.ChatCompletion.create(
 assert model.name == "JASON"
 ```
 
-## IDE Support 
+## IDE Support
 
 Everything is designed for you to get the best developer experience possible, with the best editor support.
 
