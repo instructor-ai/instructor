@@ -91,9 +91,6 @@ nav:
   
 
 plugins:
-  - mike:
-      alias_type: symlink
-      canonical_version: latest
   - social
   - search
   - mkdocstrings:
@@ -108,7 +105,6 @@ plugins:
       plugins:
         - optimize
         - minify
-        - mike
   - blog:
       enabled: !ENV CI
       blog_dir: "blog"
@@ -118,8 +114,6 @@ plugins:
       post_url_format: "{date}/{slug}"
       authors_file: "{blog}/.authors.yml"
 extra:
-  version:
-    provider: mike
   analytics:
     provider: google
     property: G-5CR8QXF5CN

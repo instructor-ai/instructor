@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -35,6 +33,7 @@ jobs:
           restore-keys: |
             mkdocs-material-
 
+
       - name: Install Requirements
         run: |
           sudo apt-get update &&
@@ -44,18 +43,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Fetch documentation branch
-        run: git fetch origin gh-pages --depth=1
-
-      - name: Configure Git User
-        run: |
-          git config user.name "ci-bot"
-          git config user.email "ci-bot@example.com"
-
-      - name: Get current tag
-        run: echo "version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-
-      - name: Build and deploy with mike
-        run: mike deploy --push --update-aliases ${{ env.version }} latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Build and deploy MkDocs
+        run: mkdocs gh-deploy --force
