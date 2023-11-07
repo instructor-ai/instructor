@@ -108,6 +108,7 @@ plugins:
       plugins:
         - optimize
         - minify
+        - mike
   - blog:
       enabled: !ENV CI
       blog_dir: "blog"
