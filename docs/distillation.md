@@ -4,7 +4,6 @@
 
 If you want to see the full example checkout [examples/distillation](https://github.com/jxnl/instructor/tree/main/examples/distilations)
 
-
 ## The Challenges in Function-Level Fine-Tuning
 
 Replicating the behavior of a Python function in a language model involves intricate data preparation. For instance, teaching a model to execute three-digit multiplication is not as trivial as implementing `def f(a, b): return a * b`. OpenAI's fine-tuning script coupled with their function calling utility provides a structured output, thereby simplifying the data collection process. Additionally, this eliminates the need for passing the schema to the model, thus conserving tokens.
@@ -14,6 +13,7 @@ Replicating the behavior of a Python function in a language model involves intri
 By using `Instructions`, you can annotate a Python function that returns a Pydantic object, thereby automating the dataset creation for fine-tuning. A handler for logging is all that's needed to build this dataset.
 
 ## How to Implement `Instructions` in Your Code
+
 ## Quick Start: How to Use Instructor's Distillation Feature
 
 Before we dig into the nitty-gritty, let's look at how easy it is to use Instructor's distillation feature to use function calling finetuning to export the data to a JSONL file.
@@ -32,7 +32,7 @@ instructions = Instructions(
     finetune_format="messages",
     # log handler is used to save the data to a file
     # you can imagine saving it to a database or other storage
-    # based on your needs! 
+    # based on your needs!
     log_handlers=[logging.FileHandler("math_finetunes.jsonl")]
 )
 
@@ -72,6 +72,7 @@ The library offers two main benefits:
 The `from instructor import Instructions` feature is a time saver. It auto-generates a fine-tuning dataset, making it a breeze to imitate a function's behavior.
 
 ## Logging Output and Running a Finetune
+
 Here's how the logging output would look:
 
 ```python
@@ -79,10 +80,10 @@ Here's how the logging output would look:
     "messages": [
         {"role": "system", "content": 'Predict the results of this function: ...'},
         {"role": "user", "content": 'Return fn(133, b=539)'},
-        {"role": "assistant", 
-            "function_call": 
+        {"role": "assistant",
+            "function_call":
                 {
-                    "name": "Multiply", 
+                    "name": "Multiply",
                     "arguments": '{"a":133,"b":539,"result":89509}'
             }
         }

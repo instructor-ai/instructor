@@ -93,12 +93,12 @@ Note how we model a rewritten query, range of published dates, and a list of dom
 
 ```python
 import instructor 
-import openai
+from openai import OpenAI
 
 # Enables response_model in the openai client
-instructor.patch()
+client = instructor.patch(OpenAI())
 
-query = openai.ChatCompletion.create(
+query = client.chat.completions.create(
     model="gpt-4",
     response_model=MetaphorQuery,
     messages=[
@@ -175,12 +175,12 @@ Now we can call this with a simple query like "What do I have today?" and it wil
 
 ```python
 import instructor 
-import openai
+from openai import OpenAI
 
 # Enables response_model in the openai client
-instructor.patch()
+client = instructor.patch(OpenAI())
 
-retrival = openai.ChatCompletion.create(
+retrival = client.chat.completions.create(
     model="gpt-4",
     response_model=Retrival,
     messages=[

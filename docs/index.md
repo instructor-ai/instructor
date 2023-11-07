@@ -15,8 +15,6 @@ This library is built to interact with openai's function call api from python co
 
 The approach of combining a human prompt and a "response schema" is not necessarily unique; however, it shows great promise. As we have been concentrating on translating user intent into structured data, we have discovered that Python with Pydantic is exceptionally well-suited for this task. 
 
-**OpenAISchema** is based on Python type annotations, and powered by Pydantic.
-
 The key features are:
 
 * **Intuitive to write**: Great support for editors, completions. Spend less time debugging.
@@ -51,13 +49,13 @@ To simplify your work with OpenAI models and streamline the extraction of Pydant
 First, import the required libraries and apply the patch function to the OpenAI module. This exposes new functionality with the response_model parameter.
 
 ```python
-import openai
 import instructor
+from openai import OpenAI
 from pydantic import BaseModel
 
 # This enables response_model keyword
-# from openai.ChatCompletion.create
-instructor.patch()
+# from client.chat.completions.create
+client = instructor.patch(OpenAI())
 ```
 
 ### Step 2: Define the Pydantic Model
@@ -72,10 +70,10 @@ class UserDetail(BaseModel):
 
 ### Step 3: Extract Data with ChatCompletion
 
-Use the openai.ChatCompletion.create method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
+Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
 
 ```python
-user: UserDetail = openai.ChatCompletion.create(
+user: UserDetail = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
@@ -112,7 +110,7 @@ This quick start guide provided you with a basic understanding of how to use Ope
 Since `UserDetails` is a `OpenAISchems` and a `pydantic.BaseModel` you can use inheritance and nesting to create more complex emails while avoiding code duplication
 
 ```python
-class UserDetails(OpenAISchema):
+class UserDetails(BaseModel):
     name: str = Field(..., description="User's full name")
     age: int
 

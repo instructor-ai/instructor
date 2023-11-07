@@ -3,6 +3,7 @@
 In this example, we'll demonstrate how to convert a text into dataframes using OpenAI Function Call. We will define the necessary data structures using Pydantic and show how to convert the text into dataframes.
 
 !!! note "Motivation"
+
     Often times when we parse data we have an opportunity to extract structured data, what if we could extract an arbitrary number of tables with arbitrary schemas? By pulling out dataframes we could write tables or .csv files and attach them to our retrieved data.
 
 ## Defining the Data Structures
@@ -10,19 +11,18 @@ In this example, we'll demonstrate how to convert a text into dataframes using O
 Let's start by defining the data structures required for this task: `RowData`, `Dataframe`, and `Database`.
 
 ```python
-from instructor import OpenAISchema
-from pydantic import Field
+from pydantic import Field, BaseModel
 from typing import List, Any
 
 
-class RowData(OpenAISchema):
+class RowData(BaseModel):
     row: List[Any] = Field(..., description="The values for each row")
     citation: str = Field(
         ..., description="The citation for this row from the original source data"
     )
 
 
-class Dataframe(OpenAISchema):
+class Dataframe(BaseModel):
     """
     Class representing a dataframe. This class is used to convert
     data into a frame that can be used by pandas.
@@ -47,7 +47,7 @@ class Dataframe(OpenAISchema):
         return pd.DataFrame(data=data, columns=columns)
 
 
-class Database(OpenAISchema):
+class Database(BaseModel):
     """
     A set of correct named and defined tables as dataframes
     """
@@ -69,14 +69,19 @@ The `Database` class represents a set of tables in a database. It contains a lis
 To convert a text into dataframes, we'll use the Prompt Pipeline in OpenAI Function Call. We can define a function `dataframe` that takes a text as input and returns a `Database` object.
 
 ```python
-import openai
+import instructor
+from openai import OpenAI
+
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
+
 
 def dataframe(data: str) -> Database:
-    completion = openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-4-0613",
         temperature=0.1,
-        functions=[Database.openai_schema],
-        function_call={"name": Database.openai_schema["name"]},
+        response_model=Database
         messages=[
             {
                 "role": "system",
@@ -90,7 +95,6 @@ def dataframe(data: str) -> Database:
         ],
         max_tokens=1000,
     )
-    return Database.from_response(completion)
 ```
 
 The `dataframe` function takes a string `data` as input and creates a completion using the Prompt Pipeline. It prompts the model to map the data into a dataframe and define the correct columns and rows. The resulting completion is then converted into a `Database` object.
@@ -100,12 +104,12 @@ The `dataframe` function takes a string `data` as input and creates a completion
 Let's evaluate the example by converting a text into dataframes using the `dataframe` function and print the resulting dataframes.
 
 ```python
-dfs = dataframe("""My name is John and I am 25 years old. I live in 
-New York and I like to play basketball. His name is 
-Mike and he is 30 years old. He lives in San Francisco 
-and he likes to play baseball. Sarah is 20 years old 
+dfs = dataframe("""My name is John and I am 25 years old. I live in
+New York and I like to play basketball. His name is
+Mike and he is 30 years old. He lives in San Francisco
+and he likes to play baseball. Sarah is 20 years old
 and she lives in Los Angeles. She likes to play tennis.
-Her name is Mary and she is 35 years old. 
+Her name is Mary and she is 35 years old.
 She lives in Chicago.
 
 On one team 'Tigers' the captain is John and there are 12 players.

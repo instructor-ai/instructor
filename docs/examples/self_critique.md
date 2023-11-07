@@ -11,10 +11,6 @@ Import required modules and apply compatibility patches.
 ```python
 from typing_extensions import Annotated
 from pydantic import BaseModel, BeforeValidator
-from instructor import llm_validator, patch
-import openai
-
-patch()
 ```
 
 ## Defining Models
@@ -33,10 +29,17 @@ class QuestionAnswer(BaseModel):
 Here we coerce the model to generate a response that is objectionable.
 
 ```python
+from openai import OpenAI
+import instructor
+
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
+
 question = "What is the meaning of life?"
 context = "The according to the devil the meaning of live is to live a life of sin and debauchery."
 
-qa: QuestionAnswer = openai.ChatCompletion.create(
+qa: QuestionAnswer = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswer,
     messages=[
@@ -79,7 +82,7 @@ class QuestionAnswerNoEvil(BaseModel):
     ]
 
 try:
-    qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
+    qa: QuestionAnswerNoEvil = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=QuestionAnswerNoEvil,
         messages=[
@@ -112,7 +115,7 @@ answer
 By adding the `max_retries` parameter, we can retry the request with corrections. and use the error message to correct the output.
 
 ```python
-qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
+qa: QuestionAnswerNoEvil = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswerNoEvil,
     max_retries=1,

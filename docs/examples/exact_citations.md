@@ -26,7 +26,7 @@ from typing import List
 class Fact(BaseModel):
     fact: str = Field(...)
     substring_quote: List[str] = Field(...)
-    
+
     @model_validator(mode="after")
     def validate_sources(self, info: FieldValidationInfo) -> "Fact":
         text_chunks = info.context.get("text_chunk", None)
@@ -55,10 +55,10 @@ This class encapsulates the question and its corresponding answer. It contains t
 This method checks that each `Fact` object in the `answer` list has at least one valid source. If a `Fact` object has no valid sources, it is removed from the `answer` list.
 
 ```python hl_lines="5-8"
-class QuestionAnswer(instructor.OpenAISchema):
+class QuestionAnswer(BaseModel):
     question: str = Field(...)
     answer: List[Fact] = Field(...)
-    
+
     @model_validator(mode="after")
     def validate_sources(self) -> "QuestionAnswer":
         self.answer = [fact for fact in self.answer if len(fact.substring_quote) > 0]
@@ -74,32 +74,37 @@ This function takes a string `question` and a string `context` and returns a `Qu
 To understand the validation context work from pydantic check out [pydantic's docs](https://docs.pydantic.dev/usage/validators/#model-validators)
 
 ```python hl_lines="5 6 14"
+from openai import OpenAI
+import instructor
+
+# Apply the patch to the OpenAI client
+# enables response_model, validation_context keyword
+client = instructor.patch(OpenAI())
+
 def ask_ai(question: str, context: str) -> QuestionAnswer:
-    completion = openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
-        functions=[QuestionAnswer.openai_schema],
-        function_call={"name": QuestionAnswer.openai_schema["name"]},
+        response_model=QuestionAnswer,
         messages=[
             {"role": "system", "content": "You are a world class algorithm to answer questions with correct and exact citations."},
             {"role": "user", "content": f"{context}"},
             {"role": "user", "content": f"Question: {question}"}
         ],
-    )
-    return QuestionAnswer.from_response(
-        completion, validation_context={"text_chunk": context}
+        validation_context={"text_chunk": context},
     )
 ```
 
 ## Example
- dd
+
+dd
 Here's an example of using these classes and functions to ask a question and validate the answer.
 
 ```python
 question = "What did the author do during college?"
 context = """
 My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.
-I went to an arts high school but in university I studied Computational Mathematics and physics. 
+I went to an arts high school but in university I studied Computational Mathematics and physics.
 As part of coop I worked at many companies including Stitchfix, Facebook.
 I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.
 """
