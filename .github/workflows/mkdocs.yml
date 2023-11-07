@@ -50,6 +50,6 @@ jobs:
           echo "version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Build and deploy with mike
-        run: mike deploy --update-aliases ${{ env.version }} latest
+        run: mike deploy --update-aliases ${{ env.version }} latest --ignore-remote-status
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
