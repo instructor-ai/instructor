@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -44,9 +46,10 @@ jobs:
 
       - name: Get current tag
         id: get-tag
-        run: echo "::set-output name=version::$(git describe --tags --abbrev=0)"
+        run: |
+          echo "version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Build and deploy with mike
-        run: mike deploy --update-aliases ${{ steps.get-tag.outputs.version }} latest
+        run: mike deploy --update-aliases ${{ env.version }} latest
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
