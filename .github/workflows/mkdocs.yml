@@ -26,6 +26,14 @@ jobs:
       - name: Calculate requirements hash
         id: req-hash
         run: echo "hash=$(sha256sum requirements-doc.txt | awk '{print $1}')" >> $GITHUB_ENV
+      
+      - name: Setup cache
+        uses: actions/cache@v3
+        with:
+          key: mkdocs-material-${{ steps.req-hash.outputs.hash }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
 
       - name: Install Requirements
         run: |
