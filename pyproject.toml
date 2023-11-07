@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "instructor"
 version = "0.2.11"
-description = "Helper functions that allow us to improve openai's function_call ergonomics"
-authors = ["Jason <jason@jxnl.co>"]
+description = "Pythonic OpenAI function calling, for humans"
+authors = ["Jason Liu <jason@jxnl.co>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "instructor"}]
