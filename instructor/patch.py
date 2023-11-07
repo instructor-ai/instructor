@@ -184,7 +184,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     wrapper_function = new_chatcompletion_async if is_async else new_chatcompletion_sync
     wrapper_function.__doc__ = OVERRIDE_DOCS
-    return wrapper_function
+    return classmethod(wrapper_function)
 
 
 def patch(client):
