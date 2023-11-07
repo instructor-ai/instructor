@@ -4,15 +4,12 @@ import uuid
 import logging
 import inspect
 import functools
-import instructor
 
 from typing import Any, Callable, List, Optional
 from pydantic import BaseModel, validate_call
 
 from openai import OpenAI
 from instructor.function_calls import openai_schema
-
-client = instructor.patch(OpenAI())
 
 
 class FinetuneFormat(enum.Enum):
@@ -88,6 +85,7 @@ class Instructions:
         finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
         indent: int = 2,
         include_code_body: bool = False,
+        openai_client: OpenAI = None,
     ):
         """
         Instructions for distillation and dispatch.
@@ -105,6 +103,7 @@ class Instructions:
         self.finetune_format = finetune_format
         self.indent = indent
         self.include_code_body = include_code_body
+        self.client = openai_client or OpenAI()
 
         self.logger = logging.getLogger(self.name)
         for handler in log_handlers or []:
@@ -157,7 +156,7 @@ class Instructions:
                     kwargs=kwargs,
                     base_model=return_base_model,
                 )
-                return client.chat.completions.create(
+                return self.client.chat.completions.create(
                     **openai_kwargs, model=model, response_model=return_base_model
                 )
 
