@@ -8,7 +8,7 @@ on:
 permissions:
   contents: write
 
-jjobs:
+jobs:
   deploy:
     runs-on: ubuntu-latest
 
