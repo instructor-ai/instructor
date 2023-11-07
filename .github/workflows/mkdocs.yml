@@ -27,18 +27,7 @@ jobs:
         id: req-hash
         run: echo "hash=$(sha256sum requirements-doc.txt | awk '{print $1}')" >> $GITHUB_ENV
 
-      - name: Setup cache for pip
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/pip
-            .cache
-          key: ${{ runner.os }}-pip-${{ env.hash }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
       - name: Install Requirements
-        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update &&
           sudo apt-get install pngquant &&
