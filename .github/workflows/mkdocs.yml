@@ -49,8 +49,8 @@ jobs:
 
       - name: Configure Git User
         run: |
-          git config user.name "ci-bot"
-          git config user.email "ci-bot@example.com"
+          git config user.name "actions"
+          git config user.email "actions@github.com"
 
       - name: Get current tag
         run: echo "version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
