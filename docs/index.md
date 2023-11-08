@@ -2,9 +2,11 @@
 
 _Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control._
 
+Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
+
 ---
 
-[Star us on Github!](https://jxnl.github.io/instructor).
+[Star us on Github!](https://jxnl.github.io/instructor)
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
@@ -17,7 +19,7 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 [![PyPI version](https://img.shields.io/pypi/v/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
-Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
+---
 
 ## Usage
 
@@ -159,7 +161,7 @@ answer
    Assertion failed, The statement is objectionable. (type=assertion_error)
 ```
 
-## Reask on validation error
+## Advanced: Reask on validation error
 
 Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
