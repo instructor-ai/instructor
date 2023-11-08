@@ -72,10 +72,13 @@ This patch introduces 3 features to the `ChatCompletion` class:
 First, import the required libraries and apply the patch function to the OpenAI module. This exposes new functionality with the response_model parameter.
 
 ```python
-import openai
 import instructor
+from openai import OpenAI
+from pydantic import BaseModel
 
-instructor.patch()
+# This enables response_model keyword
+# from client.chat.completions.create
+client = instructor.patch(OpenAI())
 ```
 
 ### Step 2: Define the Pydantic Model
@@ -92,10 +95,10 @@ class UserDetail(BaseModel):
 
 ### Step 3: Extract Data with ChatCompletion
 
-Use the openai.ChatCompletion.create method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
+Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
 
 ```python
-user: UserDetail = openai.ChatCompletion.create(
+user: UserDetail = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[

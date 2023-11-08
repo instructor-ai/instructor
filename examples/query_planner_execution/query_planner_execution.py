@@ -1,11 +1,12 @@
 import asyncio
 import enum
+import instructor
+
 from typing import List
+from openai import OpenAI
+from pydantic import Field, BaseModel
 
-import openai
-from pydantic import Field
-
-from instructor import OpenAISchema
+client = instructor.patch(OpenAI())
 
 
 class QueryType(str, enum.Enum):
@@ -18,7 +19,7 @@ class QueryType(str, enum.Enum):
     MERGE_MULTIPLE_RESPONSES = "MERGE_MULTIPLE_RESPONSES"
 
 
-class ComputeQuery(OpenAISchema):
+class ComputeQuery(BaseModel):
     """
     Models a computation of a query, assume this can be some RAG system like llamaindex
     """
@@ -27,7 +28,7 @@ class ComputeQuery(OpenAISchema):
     response: str = "..."
 
 
-class MergedResponses(OpenAISchema):
+class MergedResponses(BaseModel):
     """
     Models a merged response of multiple queries.
     Currently we just concatinate them but we can do much more complex things.
@@ -36,7 +37,7 @@ class MergedResponses(OpenAISchema):
     responses: List[ComputeQuery]
 
 
-class Query(OpenAISchema):
+class Query(BaseModel):
     """
     Class representing a single question in a question answer subquery.
     Can be either a single question or a multi question merge.
@@ -82,7 +83,7 @@ class Query(OpenAISchema):
         return resp
 
 
-class QueryPlan(OpenAISchema):
+class QueryPlan(BaseModel):
     """
     Container class representing a tree of questions to ask a question answer system.
     and its dependencies. Make sure every question is in the tree, and every question is asked only once.
@@ -131,11 +132,8 @@ def query_planner(question: str, plan=False) -> QueryPlan:
                 "content": "Lets think step by step to find correct set of queries and its dependencies and not make any assuptions on what is known.",
             },
         )
-        completion = openai.ChatCompletion.create(
-            model=PLANNING_MODEL,
-            temperature=0,
-            messages=messages,
-            max_tokens=1000,
+        completion = client.chat.completions.create(
+            model=PLANNING_MODEL, temperature=0, messages=messages, max_tokens=1000
         )
 
         messages.append(completion["choices"][0]["message"])
@@ -147,7 +145,7 @@ def query_planner(question: str, plan=False) -> QueryPlan:
             }
         )
 
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model=ANSWERING_MODEL,
         temperature=0,
         functions=[QueryPlan.openai_schema],

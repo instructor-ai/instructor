@@ -4,15 +4,15 @@
 #   api_path: /api/v1/extract_person
 #   json_schema_path: ./input.json
 
+import instructor
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from jinja2 import Template
 from models import ExtractPerson
+from openai import AsyncOpenAI
 
-import openai
-import instructor
-
-instructor.patch()
+aclient = instructor.apatch(AsyncOpenAI())
 
 app = FastAPI()
 
@@ -35,7 +35,7 @@ PROMPT_TEMPLATE = Template(
 @app.post("/api/v1/extract_person", response_model=ExtractPerson)
 async def extract_person(input: RequestSchema) -> ExtractPerson:
     rendered_prompt = PROMPT_TEMPLATE.render(**input.template_variables.model_dump())
-    return await openai.ChatCompletion.acreate(
+    return await aclient.chat.completions.create(
         model=input.model,
         temperature=input.temperature,
         response_model=ExtractPerson,

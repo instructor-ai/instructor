@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -23,25 +25,27 @@ jobs:
 
       - name: Calculate requirements hash
         id: req-hash
-        run: echo "::set-output name=hash::$(sha256sum requirements-doc.txt | awk '{print $1}')"
+        run: echo "hash=$(sha256sum requirements-doc.txt | awk '{print $1}')" >> $GITHUB_ENV
 
-      - name: Setup cache
+      - name: Setup cache for pip
         uses: actions/cache@v3
         with:
-          key: mkdocs-material-${{ steps.req-hash.outputs.hash }}
-          path: .cache
+          path: |
+            ~/.cache/pip
+            .cache
+          key: ${{ runner.os }}-pip-${{ env.hash }}
           restore-keys: |
-            mkdocs-material-
-
+            ${{ runner.os }}-pip-
 
       - name: Install Requirements
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update &&
           sudo apt-get install pngquant &&
           pip install -r requirements-doc.txt
 
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
+      - name: Fetch documentation branch
+        run: git fetch origin gh-pages --depth=1
+        
       - name: Build and deploy MkDocs
         run: mkdocs gh-deploy --force

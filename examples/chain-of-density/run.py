@@ -1,9 +1,12 @@
 import instructor
-import openai
+from openai import OpenAI
+
 from pydantic import BaseModel, Field
 
 from pprint import pprint
 from typing import List
+
+client = instructor.patch(OpenAI())
 
 
 class Summary(BaseModel):
@@ -58,7 +61,7 @@ ChainOfDenseSummaries = instructor.MultiTask(
 
 
 def summarize_article(article: str, n_summaries: int = 5, stream: bool = True):
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model="gpt-3.5-turbo-16k",
         stream=stream,
         messages=[

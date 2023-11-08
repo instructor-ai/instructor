@@ -109,7 +109,7 @@ import instructor
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 class UserDetails(BaseModel):
     name: str
@@ -128,7 +128,7 @@ class UserDetails(BaseModel):
 Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
 ```python hl_lines="4 10"
-model = openai.ChatCompletion.create(
+model = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetails,
     max_retries=2,

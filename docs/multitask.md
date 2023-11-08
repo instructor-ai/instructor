@@ -3,11 +3,13 @@
 A common use case of structured extraction is defining a single schema class and then making another schema to create a list to do multiple extraction
 
 ```python
-class User(OpenAISchema):
+from pydantic import BaseModel
+
+class User(BaseModel):
     name: str
     age: int
 
-class Users(OpenAISchema):
+class Users(BaseModel):
     users: List[User]
 ```
 
@@ -18,21 +20,28 @@ Defining a task and creating a list of classes is a common enough pattern that w
 
 ## Extracting Tasks using MultiTask
 
-By using multitask you get a very convient class with prompts and names automatically defined. You get `from_response` just like any other `OpenAISchema` you're able to extract the list of objects data you want with `MultTask.tasks`.
+By using multitask you get a very convient class with prompts and names automatically defined. You get `from_response` just like any other `BaseModel` you're able to extract the list of objects data you want with `MultTask.tasks`.
 
-```python
+```python hl_lines="13"
 import instructor
+from openai import OpenAI
 
-# Enable `response_model`
-instructor.patch()
+client = instructor.patch(OpenAI())
+
 
 class User(BaseModel):
     name: str
     age: int
 
-results = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    response_model=instructor.MultiTask(User)
+
+MultiUser = instructor.MultiTask(User)
+
+completion = client.chat.completions.create(
+    model="gpt-4-0613",
+    temperature=0.1,
+    stream=False,
+    functions=[MultiUser.openai_schema],
+    function_call={"name": MultiUser.openai_schema["name"]},
     messages=[
         {
             "role": "user",
@@ -53,19 +62,18 @@ results = openai.ChatCompletion.create(
 
 ## Streaming Tasks
 
-Since a `MultiTask(T)` is well contrained to `tasks: List[T]` we can make assuptions on how tokens are used and provide a helper method that allows you generate tasks as the the tokens are streamed in. This currently isnt supported via the `response_model` parameter but can be used with the `functions` parameter.
+Since a `MultiTask(T)` is well contrained to `tasks: List[T]` we can make assuptions on how tokens are used and provide a helper method that allows you generate tasks as the the tokens are streamed in
 
 Lets look at an example in action with the same class
 
 ```python hl_lines="6 26"
 MultiUser = instructor.MultiTask(User)
 
-completion = openai.ChatCompletion.create(
+completion = client.chat.completions.create(
     model="gpt-4-0613",
     temperature=0.1,
     stream=True,
-    functions=[MultiUser.openai_schema],
-    function_call={"name": MultiUser.openai_schema["name"]},
+    response_model=MultiUser,
     messages=[
         {
             "role": "system",
@@ -90,3 +98,5 @@ for user in MultiUser.from_streaming_response(completion):
 >>> name="Jason" "age"=10
 >>> name="John" "age"=10
 ```
+
+This streaming is still a prototype, but should work quite well for simple schemas.

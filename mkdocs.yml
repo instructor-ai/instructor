@@ -134,8 +134,6 @@ nav:
       - "Usage Tracking": "cli/usage.md"
   - API Reference:
       - 'Core Library': 'api.md'
-      - "Prompting DSL: Intro": "writing-prompts.md"
-      - "Prompting DSL Reference": "chat-completion.md"
   - Blog:
     - "blog/index.md"
   

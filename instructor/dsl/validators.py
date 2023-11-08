@@ -1,7 +1,8 @@
+import openai
 from pydantic import Field
 from typing import Optional
+from openai import OpenAI
 import instructor
-import openai
 
 
 class Validator(instructor.OpenAISchema):
@@ -29,6 +30,7 @@ def llm_validator(
     allow_override: bool = False,
     model: str = "gpt-3.5-turbo",
     temperature: float = 0,
+    openai_client: OpenAI = None,
 ):
     """
     Create a validator that uses the LLM to validate an attribute
@@ -40,7 +42,7 @@ def llm_validator(
     from pydantic import BaseModel, Field, field_validator
 
     class User(BaseModel):
-        name: str = Annotated[str, llm_validator("The name must be a full name all lowercase")]
+        name: str = Annotated[str, llm_validator("The name must be a full name all lowercase")
         age: int = Field(description="The age of the person")
 
     try:
@@ -61,10 +63,13 @@ def llm_validator(
         statement (str): The statement to validate
         model (str): The LLM to use for validation (default: "gpt-3.5-turbo-0613")
         temperature (float): The temperature to use for the LLM (default: 0)
+        openai_client (OpenAI): The OpenAI client to use (default: None)
     """
 
+    openai_client = openai_client or OpenAI()
+
     def llm(v):
-        resp = openai.ChatCompletion.create(
+        resp = openai_client.chat.completions.create(
             functions=[Validator.openai_schema],
             function_call={"name": Validator.openai_schema["name"]},
             messages=[

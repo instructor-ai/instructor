@@ -1,9 +1,11 @@
-import openai
+import instructor
 
+from openai import OpenAI
 from pydantic import Field, parse_file_as
 from instructor import OpenAISchema
-
 from generate import Program
+
+client = instructor.patch(OpenAI())
 
 
 class Diff(OpenAISchema):
@@ -61,8 +63,7 @@ def refactor(new_requirements: str, program: Program) -> Diff:
     program_description = "\n".join(
         [f"{code.file_name}\n[[[\n{code.body}\n]]]\n" for code in program.files]
     )
-    completion = openai.ChatCompletion.create(
-        # model="gpt-3.5-turbo-0613",
+    completion = client.chat.completions.create(
         model="gpt-4",
         temperature=0,
         functions=[Diff.openai_schema],

@@ -1,18 +1,19 @@
 from pydantic import BaseModel
+from openai import OpenAI
+
 import pytest
-import openai
-from instructor import patch
+import instructor
+
+client = instructor.patch(OpenAI())
 
 
 @pytest.mark.skip("Not implemented")
 def test_runmodel():
-    patch()
-
     class UserExtract(BaseModel):
         name: str
         age: int
 
-    model = openai.ChatCompletion.create(
+    model = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=UserExtract,
         messages=[
@@ -28,8 +29,6 @@ def test_runmodel():
 
 @pytest.mark.skip("Not implemented")
 def test_runmodel_validator():
-    patch()
-
     from pydantic import field_validator
 
     class UserExtract(BaseModel):
@@ -43,7 +42,7 @@ def test_runmodel_validator():
                 raise ValueError("Name should be uppercase")
             return v
 
-    model = openai.ChatCompletion.create(
+    model = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=UserExtract,
         max_retries=2,

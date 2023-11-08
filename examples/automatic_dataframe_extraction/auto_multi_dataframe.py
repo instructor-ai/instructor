@@ -1,7 +1,9 @@
 from instructor import OpenAISchema
 from pydantic import Field
 from typing import List, Any
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 
 class RowData(OpenAISchema):
@@ -42,7 +44,7 @@ class Database(OpenAISchema):
 
 
 def dataframe(data: str) -> Database:
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model="gpt-4-0613",
         temperature=0.0,
         functions=[Database.openai_schema],
@@ -51,7 +53,7 @@ def dataframe(data: str) -> Database:
             {
                 "role": "system",
                 "content": """Map this data into a dataframe a
-                nd correctly define the correct columns and rows""",
+            nd correctly define the correct columns and rows""",
             },
             {
                 "role": "user",

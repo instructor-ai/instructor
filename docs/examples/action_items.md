@@ -3,7 +3,8 @@
 In this guide, we'll walk through how to extract action items from meeting transcripts using OpenAI's API and Pydantic. This use case is essential for automating project management tasks, such as task assignment and priority setting.
 
 !!! tips "Motivation"
-    In the corporate world, a considerable amount of time is spent in meetings, and action items are often the actionable output of these discussions. Automating the extraction of action items can be a time-saver and ensures that nothing crucial is missed.
+
+Significant amount of time is dedicated to meetings, where action items are generated as the actionable outcomes of these discussions. Automating the extraction of action items can save time and guarantee that no critical tasks are overlooked.
 
 ## Defining the Structures
 
@@ -45,11 +46,16 @@ class ActionItems(BaseModel):
 To extract action items from a meeting transcript, we use the **`generate`** function. It calls OpenAI's API, processes the text, and returns a set of action items modeled as **`ActionItems`**.
 
 ```python
-import openai
+import instructor
+from openai import OpenAI
+
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
 
 def generate(data: str) -> ActionItems:
-    return openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
+    return client.chat.completions.create(
+        model="gpt-3.5-turbo",
         response_model=ActionItems,
         messages=[
             {
@@ -62,7 +68,6 @@ def generate(data: str) -> ActionItems:
             },
         ],
     )  # type: ignore
-
 ```
 
 ## Evaluation and Testing
@@ -98,7 +103,7 @@ Alice: Sounds like a plan. Let's get these tasks modeled out and get started."""
 )
 ```
 
-## Visualizing the tasks 
+## Visualizing the tasks
 
 In order to quickly visualize the data we used code interpreter to create a graphviz export of the json version of the ActionItems array.
 
@@ -112,10 +117,7 @@ In order to quickly visualize the data we used code interpreter to create a grap
       "name": "Improve Authentication System",
       "description": "Revamp the front-end and optimize the back-end of the authentication system",
       "priority": "High",
-      "assignees": [
-        "Bob",
-        "Carol"
-      ],
+      "assignees": ["Bob", "Carol"],
       "subtasks": [
         {
           "id": 2,
@@ -133,26 +135,18 @@ In order to quickly visualize the data we used code interpreter to create a grap
       "name": "Integrate Authentication System with Billing System",
       "description": "Integrate the improved authentication system with the new billing system",
       "priority": "Medium",
-      "assignees": [
-        "Bob"
-      ],
+      "assignees": ["Bob"],
       "subtasks": [],
-      "dependencies": [
-        1
-      ]
+      "dependencies": [1]
     },
     {
       "id": 5,
       "name": "Update User Documentation",
       "description": "Update the user documentation to reflect the changes in the authentication system",
       "priority": "Low",
-      "assignees": [
-        "Carol"
-      ],
+      "assignees": ["Carol"],
       "subtasks": [],
-      "dependencies": [
-        2
-      ]
+      "dependencies": [2]
     }
   ]
 }
