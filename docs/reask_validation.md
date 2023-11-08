@@ -1,12 +1,6 @@
-# Integrated Validation and Reask with LLMs and Pydantic
+# Validation and Reask with LLMs and Pydantic
 
 Instead of framing "self-critique" or "self-reflection" in AI as new concepts, we can view them as validation errors with clear error messages that the systen can use to self heal.
-
-## Applications and Scenarios
-
-- **Content Moderation**: LLMs can be trained or guided to recognize and filter out objectionable or sensitive material, ensuring a safer user experience.
-- **Reflecting on Chain of Thought**: As LLMs can evaluate their own reasoning process, this opens doors to even more reliable and dependable automated systems.
-- **Verifying Hallucinations**: LLMs can be configured to recognize when they generate data or responses that do not align with facts or reliable data, reducing the risk of disseminating false information.
 
 ## Pythonic Validation with Pydantic and Instructor
 
@@ -30,8 +24,7 @@ Validation is crucial when using Large Language Models (LLMs) for data extractio
 ### Code-Based Validation Example
 
 !!! note "Model Level Evaluation"
-
-    Right now we only go over the field level examples, check out [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators) if you want to see how to do model level evaluation
+Right now we only go over the field level examples, check out [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators) if you want to see how to do model level evaluation
 
 Enforce a naming rule using Pydantic's built-in validation:
 
@@ -149,7 +142,7 @@ assert model.name == "JASON"
 
 ### What happens behind the scenes?
 
-Behind the scenes, the `client = instructor.patch(OpenAI())` method adds a `max_retries` parameter to the `client.chat.completions.create()` method. The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
+Behind the scenes, the `instructor.patch()` method adds a `max_retries` parameter to the `openai.ChatCompletion.create()` method. The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
 
 ```python
 try:

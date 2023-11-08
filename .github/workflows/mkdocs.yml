@@ -46,16 +46,6 @@ jobs:
 
       - name: Fetch documentation branch
         run: git fetch origin gh-pages --depth=1
-
-      - name: Configure Git User
-        run: |
-          git config user.name "actions"
-          git config user.email "actions@github.com"
-
-      - name: Get current tag
-        run: echo "version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-
-      - name: Build and deploy with mike
-        run: mike deploy --update-aliases ${{ env.version }} latest --ignore-remote-status
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        
+      - name: Build and deploy MkDocs
+        run: mkdocs gh-deploy --force

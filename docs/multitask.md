@@ -1,4 +1,4 @@
-# Patterns for Extracting Multiple Items
+# Streaming and MultiTask
 
 A common use case of structured extraction is defining a single schema class and then making another schema to create a list to do multiple extraction
 
@@ -48,16 +48,16 @@ completion = client.chat.completions.create(
             "content": f"Consider the data below: Jason is 10 and John is 30",
         },
     ],
-    max_tokens=1000,
 )
-MultiUser.from_response(completion)
 ```
 
-```sh
-{"tasks": [
-    {"name": "Jason", "age": 10},
-    {"name": "John", "age": 30}
-]}
+```json
+{
+  "tasks": [
+    { "name": "Jason", "age": 10 },
+    { "name": "John", "age": 30 }
+  ]
+}
 ```
 
 ## Streaming Tasks
@@ -67,7 +67,7 @@ Since a `MultiTask(T)` is well contrained to `tasks: List[T]` we can make assupt
 Lets look at an example in action with the same class
 
 ```python hl_lines="6 26"
-MultiUser = MultiTask(User)
+MultiUser = instructor.MultiTask(User)
 
 completion = client.chat.completions.create(
     model="gpt-4-0613",

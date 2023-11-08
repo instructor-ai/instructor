@@ -1,24 +1,51 @@
-# Instructor (openai_function_call)
+# Getting Started with Instructor
 
+_Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control._
+
+---
+
+[Star us on Github!](https://jxnl.github.io/instructor).
+
+[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![PyPI version](https://img.shields.io/pypi/v/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/jxnl/instructor.svg)](https://github.com/jxnl/instructor/network)
 [![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
 [![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
+[![Github discussions](https://img.shields.io/github/discussions/jxnl/instructor)](https:github.com/jxnl/instructor/discussions)
 [![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 
-*Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control.*
+Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
 
-This library is built to interact with openai's function call api from python code, with python structs / objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
+```py hl_lines="5 13"
+import openai
+import instructor
 
-### Requirements
+# Enables `response_model`
+instructor.patch()
 
-This library depends on **Pydantic** and **OpenAI** that's all.
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+user = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract Jason is 25 years old"},
+    ]
+)
+
+assert isinstance(user, UserDetail)
+assert user.name == "Jason"
+assert user.age == 25
+```
 
 ### Installation
 
-To get started with OpenAI Function Call, you need to install it using `pip`. Run the following command in your terminal:
+To get started you need to install it using `pip`. Run the following command in your terminal:
 
 ```sh
 $ pip install instructor
@@ -26,7 +53,19 @@ $ pip install instructor
 
 ## Quick Start with Patching ChatCompletion
 
-To simplify your work with OpenAI models and streamline the extraction of Pydantic objects from prompts, we offer a patching mechanism for the `ChatCompletion`` class. Here's a step-by-step guide:
+To simplify your work with OpenAI we offer a patching mechanism for the `ChatCompletion` class.
+
+Here's a step-by-step guide:
+
+This patch introduces 3 features to the `ChatCompletion` class:
+
+1. The `response_model` parameter, which allows you to specify a Pydantic model to extract data into.
+2. The `max_retries` parameter, which allows you to specify the number of times to retry the request if it fails.
+3. The `validation_context` parameter, which allows you to specify a context object that validators have access to.
+
+!!! note "Using Validators"
+
+    Learn more about validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
 
 ### Step 1: Import and Patch the Module
 
@@ -35,7 +74,6 @@ First, import the required libraries and apply the patch function to the OpenAI 
 ```python
 import openai
 import instructor
-from pydantic import BaseModel
 
 instructor.patch()
 ```
@@ -45,6 +83,8 @@ instructor.patch()
 Create a Pydantic model to define the structure of the data you want to extract. This model will map directly to the information in the prompt.
 
 ```python
+from pydantic import BaseModel
+
 class UserDetail(BaseModel):
     name: str
     age: int
@@ -62,6 +102,9 @@ user: UserDetail = openai.ChatCompletion.create(
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ]
 )
+
+assert user.name == "Jason"
+assert user.age == 25
 ```
 
 ### Step 4: Validate the Extracted Data
@@ -85,7 +128,7 @@ from instructor import llm_validator
 class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
-        str, 
+        str,
         BeforeValidator(llm_validator("don't say objectionable things"))
     ]
 
@@ -139,20 +182,6 @@ model = openai.ChatCompletion.create(
 
 assert model.name == "JASON"
 ```
-
-## IDE Support 
-
-Everything is designed for you to get the best developer experience possible, with the best editor support.
-
-Including **autocompletion**:
-
-![autocomplete](docs/img/ide_support.png)
-
-And even **inline errors**
-
-![errors](docs/img/error2.png)
-
-To see more examples of how we can create interesting models check out some [examples.](https://jxnl.github.io/instructor/examples/)
 
 ## License
 
