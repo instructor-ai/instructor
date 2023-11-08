@@ -4,11 +4,14 @@ site_description: Enhancing OpenAI function calling with Pydantic
 repo_name: instructor
 repo_url: https://github.com/jxnl/instructor/
 site_url: https://jxnl.github.io/instructor/
+edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2023 Jason Liu 
 theme:
   name: material
   icon:
     repo: fontawesome/brands/github
+    edit: material/pencil 
+    view: material/eye
   features:
     - announce.dismiss
     - content.action.edit
@@ -80,8 +83,8 @@ markdown_extensions:
   - pymdownx.magiclink:
       normalize_issue_symbols: true
       repo_url_shorthand: true
-      user: squidfunk
-      repo: mkdocs-material
+      user: jxnl 
+      repo: instructor
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.snippets:
