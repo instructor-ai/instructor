@@ -56,11 +56,10 @@ nav:
   - Introduction: 
       - Getting Started: 'index.md'
       - Prompt Engineering Tips: 'tips/index.md'
+      - Validation: "reask_validation.md"
+      - Streaming Lists: "multitask.md"
+      - Handling Missing Content: "maybe.md"
       - Distillation: 'distillation.md'
-      - Helpers:
-        - Reasking and Validation Overview: "reask_validation.md"
-        - Multiple Extractions: "multitask.md"
-        - Handling Missing Content: "maybe.md"
       - Philosophy: 'philosophy.md'
   - Cookbook:
     - Overview: 'examples/index.md'
