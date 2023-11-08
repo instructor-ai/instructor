@@ -6,31 +6,33 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 
 [Star us on Github!](https://jxnl.github.io/instructor).
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![PyPI version](https://img.shields.io/pypi/v/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
+[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
 [![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
 [![Github discussions](https://img.shields.io/github/discussions/jxnl/instructor)](https:github.com/jxnl/instructor/discussions)
-[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
-[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
+[![PyPI version](https://img.shields.io/pypi/v/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
 Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
 
+## Usage
+
 ```py hl_lines="5 13"
-import openai
+from openai import OpenAI()
 import instructor
 
 # Enables `response_model`
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 class UserDetail(BaseModel):
     name: str
     age: int
 
-user = openai.ChatCompletion.create(
+user = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
@@ -43,7 +45,24 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-### Installation
+!!! note "Using `openai>=1.0.0`"
+
+    If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
+    where you can patch a global client like so:
+
+    ```python hl_lines="4 8"
+    import openai
+    import instructor
+
+    instructor.patch()
+
+    user = openai.ChatCompletion.create(
+        ...,
+        response_model=UserDetail,
+    )
+    ```
+
+## Installation
 
 To get started you need to install it using `pip`. Run the following command in your terminal:
 
@@ -51,13 +70,10 @@ To get started you need to install it using `pip`. Run the following command in 
 $ pip install instructor
 ```
 
-## Quick Start with Patching ChatCompletion
+## Quick Start
 
 To simplify your work with OpenAI we offer a patching mechanism for the `ChatCompletion` class.
-
-Here's a step-by-step guide:
-
-This patch introduces 3 features to the `ChatCompletion` class:
+The patch introduces 3 features to the `ChatCompletion` class:
 
 1. The `response_model` parameter, which allows you to specify a Pydantic model to extract data into.
 2. The `max_retries` parameter, which allows you to specify the number of times to retry the request if it fails.
@@ -67,7 +83,7 @@ This patch introduces 3 features to the `ChatCompletion` class:
 
     Learn more about validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
 
-### Step 1: Import and Patch the Module
+### Step 1: Patch the client
 
 First, import the required libraries and apply the patch function to the OpenAI module. This exposes new functionality with the response_model parameter.
 
@@ -93,9 +109,10 @@ class UserDetail(BaseModel):
     age: int
 ```
 
-### Step 3: Extract Data with ChatCompletion
+### Step 3: Extract
 
-Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
+Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction. Its helpful to annotate the variable with the type of the response model.
+which will help your IDE provide autocomplete and spell check.
 
 ```python
 user: UserDetail = client.chat.completions.create(
@@ -110,18 +127,9 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-### Step 4: Validate the Extracted Data
+## Pydantic Validation
 
-You can then validate the extracted data by asserting the expected values. By adding the type things you also get a bunch of nice benefits with your IDE like spell check and auto complete!
-
-```python
-assert user.name == "Jason"
-assert user.age == 25
-```
-
-### LLM-Based Validation
-
-LLM-based validation can also be plugged into the same Pydantic model. Here, if the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error.
+Validation can also be plugged into the same Pydantic model. Here, if the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error.
 
 ```python hl_lines="9 15"
 from pydantic import BaseModel, ValidationError, BeforeValidator
@@ -152,16 +160,18 @@ answer
    Assertion failed, The statement is objectionable. (type=assertion_error)
 ```
 
-## Using the Client with Retries
+## Reask on validation error
 
 Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
 ```python
+from openai import OpenAI
 import instructor
+
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 class UserDetails(BaseModel):
     name: str
@@ -174,7 +184,7 @@ class UserDetails(BaseModel):
             raise ValueError("Name must be in uppercase.")
         return v
 
-model = openai.ChatCompletion.create(
+model = client.chat.completion.create(
     model="gpt-3.5-turbo",
     response_model=UserDetails,
     max_retries=2,
