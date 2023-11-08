@@ -1,77 +1,125 @@
 site_name: Instructor (openai_function_call)
+site_author: Jason Liu
 site_description: Enhancing OpenAI function calling with Pydantic 
 repo_name: instructor
 repo_url: https://github.com/jxnl/instructor/
 site_url: https://jxnl.github.io/instructor/
+copyright: Copyright &copy; 2023 Jason Liu 
 theme:
   name: material
   icon:
     repo: fontawesome/brands/github
   features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
     - navigation.instant
     - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.prune
+    - navigation.sections
     - navigation.tabs
-    - navigation.tabs.sticky
-    - navigation.expand
-    - navigation.path
-    - content.tooltips
-    - content.code.annotate
-    - content.code.select
-    - content.code.copy
-    - navigation.footer
-    - search.suggest
+    # - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
     - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    # - toc.integrate
   palette:
-
-    # Palette toggle for light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-
-    # Palette toggle for dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+      - scheme: default
+        primary: indigo
+        accent: indigo
+        toggle:
+          icon: material/brightness-7
+          name: Switch to dark mode
+      - scheme: slate
+        primary: black
+        accent: indigo
+        toggle:
+          icon: material/brightness-4
+          name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+# Extensions
 markdown_extensions:
-  - pymdownx.critic
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
   - pymdownx.caret
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.tilde
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences
-  - attr_list
-  - md_in_html
-  - admonition
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: squidfunk
+      repo: mkdocs-material
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/mkdocs.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
 nav:
   - Introduction: 
       - Getting Started: 'index.md'
       - Prompt Engineering Tips: 'tips/index.md'
-      - Validation: "reask_validation.md"
+      - Using Validations: "reask_validation.md"
       - Streaming Lists: "multitask.md"
       - Handling Missing Content: "maybe.md"
-      - Distillation: 'distillation.md'
       - Philosophy: 'philosophy.md'
   - Cookbook:
     - Overview: 'examples/index.md'
-    - Text Classification Techniques: 'examples/classification.md'
-    - AI Self-Assessment: 'examples/self_critique.md'
-    - Citation Retrieval via Regex: 'examples/exact_citations.md'
-    - Knowledge Graph Generation: 'examples/knowledge_graph.md'
+    - Text Classification: 'examples/classification.md'
+    - Self Critique: 'examples/self_critique.md'
+    - Citations: 'examples/exact_citations.md'
+    - Knowledge Graph: 'examples/knowledge_graph.md'
     - Entity Resolution: 'examples/entity_resolution.md'
-    - Search Query Segmentation: 'examples/search.md'
-    - Query Decomposition in One Go: 'examples/planning-tasks.md'
-    - Working with Recursive Schemas: 'examples/recursive.md'
-    - Table Extraction from Text: 'examples/autodataframe.md'
+    - Search Queries: 'examples/search.md'
+    - Query Decomposition: 'examples/planning-tasks.md'
+    - Recursive Schemas: 'examples/recursive.md'
+    - Table Extraction: 'examples/autodataframe.md'
     - Action Item and Dependency Mapping: 'examples/action_items.md'
     - Multi-File Code Generation: 'examples/gpt-engineer.md'
     - PII Data Sanitization: 'examples/pii.md'
@@ -79,7 +127,7 @@ nav:
     - Distilation: "distillation.md"
   - CLI Reference:
       - "Introduction": "cli/index.md"
-      - "Finetuning GPT": "cli/finetune.md"
+      - "Finetuning GPT-3.5": "cli/finetune.md"
       - "Usage Tracking": "cli/usage.md"
   - API Reference:
       - 'Core Library': 'api.md'
@@ -88,10 +136,12 @@ nav:
   - Blog:
     - "blog/index.md"
   
-
 plugins:
   - social
-  - search
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - minify:
+      minify_html: true
   - mkdocstrings:
       handlers:
         python:
