@@ -1,10 +1,14 @@
 import inspect
+import openai
 
 from functools import wraps
 from json import JSONDecodeError
 from pydantic import ValidationError, BaseModel
 from typing import Callable, Type, Optional
 from .function_calls import OpenAISchema, openai_schema
+
+
+MAJOR, MINOR, PATCH = openai.__version__.split(".")
 
 OVERRIDE_DOCS = """
 Creates a new chat completion for the provided messages and parameters.
@@ -185,35 +189,53 @@ def wrap_chatcompletion(func: Callable) -> Callable:
     wrapper_function.__doc__ = OVERRIDE_DOCS
     return classmethod(wrapper_function)
 
+if MAJOR == "0":
+    original_chatcompletion = openai.ChatCompletion.create
+    original_achatcompletion = openai.ChatCompletion.acreate
 
-def patch(client):
-    """
-    Patch the `client.chat.completions.create` and `client.chat.completions.create` methods
+    def patch():
+        """
+        Enables the following features:
 
-    Enables the following features:
+        - `response_model` parameter to parse the response from OpenAI's API
+        - `max_retries` parameter to retry the function if the response is not valid
+        - `validation_context` parameter to validate the response using the pydantic model
+        - `strict` parameter to use strict json parsing
+        """
 
-    - `response_model` parameter to parse the response from OpenAI's API
-    - `max_retries` parameter to retry the function if the response is not valid
-    - `validation_context` parameter to validate the response using the pydantic model
-    - `strict` parameter to use strict json parsing
-    """
+        openai.ChatCompletion.create = wrap_chatcompletion(original_chatcompletion)
+        openai.ChatCompletion.acreate = wrap_chatcompletion(original_achatcompletion)
+        return 
 
-    client.chat.completions.create = wrap_chatcompletion(client.chat.completions.create)
-    return client
+    def unpatch():
+        openai.ChatCompletion.create = original_chatcompletion
+        openai.ChatCompletion.acreate = original_achatcompletion
+        return
+else:
+    def patch(client):
+        """
+        Enables the following features:
+
+        - `response_model` parameter to parse the response from OpenAI's API
+        - `max_retries` parameter to retry the function if the response is not valid
+        - `validation_context` parameter to validate the response using the pydantic model
+        - `strict` parameter to use strict json parsing
+        """
+
+        client.chat.completions.create = wrap_chatcompletion(client.chat.completions.create)
+        return client
 
 
-def apatch(client):
-    """
-    Patch the `client.chat.completions.acreate` and `client.chat.completions.acreate` methods
+    def apatch(client):
+        """
+        Enables the following features:
 
-    Enables the following features:
-
-    - `response_model` parameter to parse the response from OpenAI's API
-    - `max_retries` parameter to retry the function if the response is not valid
-    - `validation_context` parameter to validate the response using the pydantic model
-    - `strict` parameter to use strict json parsing
-    """
-    client.chat.completions.acreate = wrap_chatcompletion(
-        client.chat.completions.acreate
-    )
-    return client
+        - `response_model` parameter to parse the response from OpenAI's API
+        - `max_retries` parameter to retry the function if the response is not valid
+        - `validation_context` parameter to validate the response using the pydantic model
+        - `strict` parameter to use strict json parsing
+        """
+        client.chat.completions.acreate = wrap_chatcompletion(
+            client.chat.completions.acreate
+        )
+        return client
