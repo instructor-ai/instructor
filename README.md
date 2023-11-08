@@ -45,7 +45,7 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-!!! note "Using `openai>=1.0.0`"
+!!! note "Using `openai<1.0.0`"
 
     If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
     where you can patch a global client like so:
@@ -184,7 +184,7 @@ class UserDetails(BaseModel):
             raise ValueError("Name must be in uppercase.")
         return v
 
-model = client.chat.completion.create(
+model = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetails,
     max_retries=2,
