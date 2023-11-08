@@ -1,7 +1,15 @@
-# Instructor
+# Getting Started with Instructor
 
+_Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control._
+
+---
+
+[Star us on Github!](https://jxnl.github.io/instructor).
+
+[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![PyPI version](https://img.shields.io/pypi/v/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/jxnl/instructor.svg)](https://github.com/jxnl/instructor/network)
 [![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
 [![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
 [![Github discussions](https://img.shields.io/github/discussions/jxnl/instructor)](https:github.com/jxnl/instructor/discussions)
@@ -9,9 +17,31 @@
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 
-_Structured extraction in Python, powered by OpenAI's function calling API, designed for simplicity, transparency, and control._
+Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
 
-Built to interact solely openai's function calling api from python. It's designed to be intuitive, easy to use, but give great visibily in how we call openai. My goal isn't to hide the api, but to make it easier to use and show you how to leverage it via the [docs](https://jxnl.github.io/instructor).
+```py hl_lines="5 13"
+import openai
+import instructor
+
+# Enables `response_model`
+instructor.patch()
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+user = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract Jason is 25 years old"},
+    ]
+)
+
+assert isinstance(user, UserDetail)
+assert user.name == "Jason"
+assert user.age == 25
+```
 
 ### Installation
 
@@ -23,15 +53,19 @@ $ pip install instructor
 
 ## Quick Start with Patching ChatCompletion
 
-To simplify your work with OpenAI models and streamline the extraction of Pydantic objects from prompts, we offer a patching mechanism for the `ChatCompletion`` class. Here's a step-by-step guide:
+To simplify your work with OpenAI we offer a patching mechanism for the `ChatCompletion` class.
 
-This patch introduces 2 features to the `ChatCompletion` class:
+Here's a step-by-step guide:
+
+This patch introduces 3 features to the `ChatCompletion` class:
 
 1. The `response_model` parameter, which allows you to specify a Pydantic model to extract data into.
 2. The `max_retries` parameter, which allows you to specify the number of times to retry the request if it fails.
 3. The `validation_context` parameter, which allows you to specify a context object that validators have access to.
 
-note: to learn more about validators checkout our [blog](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
+!!! note "Using Validators"
+
+    Learn more about validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
 
 ### Step 1: Import and Patch the Module
 
@@ -68,6 +102,9 @@ user: UserDetail = openai.ChatCompletion.create(
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ]
 )
+
+assert user.name == "Jason"
+assert user.age == 25
 ```
 
 ### Step 4: Validate the Extracted Data
@@ -145,20 +182,6 @@ model = openai.ChatCompletion.create(
 
 assert model.name == "JASON"
 ```
-
-## IDE Support
-
-Everything is designed for you to get the best developer experience possible, with the best editor support.
-
-Including **autocompletion**:
-
-![autocomplete](docs/img/ide_support.png)
-
-And even **inline errors**
-
-![errors](docs/img/error2.png)
-
-To see more examples of how we can create interesting models check out some [examples.](https://jxnl.github.io/instructor/examples/)
 
 ## License
 
