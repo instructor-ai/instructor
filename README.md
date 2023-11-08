@@ -94,7 +94,7 @@ from pydantic import BaseModel
 
 # This enables response_model keyword
 # from client.chat.completions.create
-client = instructor.patch(OpenAI())
+instructor_client = instructor.patch(OpenAI())
 ```
 
 ### Step 2: Define the Pydantic Model
@@ -115,7 +115,7 @@ Use the `client.chat.completions.create` method to send a prompt and extract the
 which will help your IDE provide autocomplete and spell check.
 
 ```python
-user: UserDetail = client.chat.completions.create(
+user: UserDetail = instructor_client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
@@ -171,7 +171,7 @@ import instructor
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
-client = instructor.patch(OpenAI())
+instructor_client = instructor.patch(OpenAI())
 
 class UserDetails(BaseModel):
     name: str
@@ -184,7 +184,7 @@ class UserDetails(BaseModel):
             raise ValueError("Name must be in uppercase.")
         return v
 
-model = client.chat.completions.create(
+model = instructor_client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetails,
     max_retries=2,
