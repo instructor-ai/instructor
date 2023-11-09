@@ -1,35 +1,31 @@
 # Introduction
 
-This is a simple example which shows how to perform Chain Of Density summarization using GPT-3.5 and utilise the generated output to fine-tune a 3.5 model for production usage.
+This is a simple example which shows how to perform Chain Of Density summarization using GPT-3.5 and utilise the generated output to fine-tune a 3.5 model for production usage. All of our data referenced in this file is located [here](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density) on hugging face
+
+Check out our blog post [here](https://jxnl.github.io/instructor/blog/2023/11/05/implementing-chain-of-density/) where we have a detailed explanation of the code and a [colab notebook](https://colab.research.google.com/drive/1iBkrEh2G5U8yh8RmI8EkWxjLq6zIIuVm?usp=sharing) walking you through how we perform our calculations.
 
 ## Instructions
 
 1. First, install all of the required dependencies by running the command below. We recommend using a virtual environment to install these so that it does not affect your system installation.
 
-> To evaluate the quality of our Summaries, we use spaCy and NLTk. You'll need to download the spaCy en_core_web_trf package and the nltk punkt package to compute the token metrics.
+> We use NLTK to ensure that our summaries are of a certain token length. In order to do so, you'll need to download the `punkt` package to compute the token metrics. You can do so by running the command `nltk.download('punkt')`
 
 ```
-pip3 install -r chain_of_density.txt
+pip3 install -r requirements.txt
 ```
 
+2. Download the `test.csv` file and the `summarization.jsonl` file that you want to use for finetuning. We provide one with `20` examples, `50` examples and `100` examples to be used for testing. Let's now run a simple finetuning job with the following command.
 
-
-2. Download the dataset using `download.py`. We're using the `griffin/chain_of_density` dataset for this example so no worries if you don't have a dataset of your own. This should generate a new `.csv` file in the folder called `output.csv`
-
-```
-python3 download.py
-```
-
-3. We now need some examples to fine-tune our `3.5` model on. We provide a existing `.jsonl` file to use or you can generate new ones from the dataset using `finetune.py`
-
->  Don't forget to set an environment variable `OPENAI_API_KEY` in your shell if you wish to regenerate the examples. You can do so using the command `export OPENAI_API_KEY=<api key> ` We'll use it subsequently down the line for our finetuning step too
-
-4. Now that we have a `.jsonl` file with a bunch of examples, let's now run a simple finetuning job
+> Don't forget to set your `OPENAI_API_KEY` as an environment variable in your shell before running these commands
 
 ```
 instructor jobs create-from-file summarization.jsonl 
 ```
 
-Voila! Now you've got a new GPT3.5 model that's capable of summarizing text fine-tuned with Chain Of Density.
+3. Once the job is complete, you'll end up with a new GPT 3.5 model that's capable of producing high quality summaries with a high entity density. You can run it by simply changing our `finetune.py` file's `instructions.distil` annotator as
 
-TODO: Evaluate the quality of the improved summaries using Spacy's Entity counter ( So we can calculate entity / tokens )
+```
+@instructions.distil(model=<your finetuned model >,mode="dispatch")
+def distil_summarization(text: str) -> GeneratedSummary:
+// rest of code goes here
+```

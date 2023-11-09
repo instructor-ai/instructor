@@ -9,13 +9,15 @@ tags:
   - gpt-3.5-turbo
   - distilation
 authors:
-  - jxnl
   - ivanleomk
+  - jxnl
 ---
 
 # Implementing Chain Of Density
 
-By the end of this article, you'll have a fine-tuned GPT 3.5 model which can take in source text and output a summary which mimics a chain-of-density summarization using `Instructor`'s new jobs cli feature. As usual, all of the code is avaliable for reference under our `examples/chain-of-density` folder. We've also uploaded all our generated data to Hugging Face [here](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density) for you to use if you'd like to try reproducing these experiments.
+By the end of this article, you'll have a fine-tuned GPT 3.5 model which can take in source text and output a summary which mimics a chain-of-density summarization using `Instructor`'s new jobs cli feature. As usual, all of the code is avaliable for reference under our `examples/chain-of-density` folder. 
+
+We've also uploaded all our generated data to Hugging Face [here](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density) for you to use if you'd like to try reproducing these experiments. We've also added a [Colab Instance](https://colab.research.google.com/drive/1iBkrEh2G5U8yh8RmI8EkWxjLq6zIIuVm?usp=sharing) for you to check our generated values.
 
 ## What is a Chain Of Density?
 
@@ -184,11 +186,16 @@ def has_no_absent_entities(cls, absent_entities: List[str]):
 
 Now that we have our models and the rough flow figured out, let's implement a function to summarize a piece of text using `Chain Of Density` summarization. 
 
-```py hl_lines="4-19 33-63"
+```py hl_lines="4 9-24 38-68"
+from openai import OpenAI
+import instructor
+
+client = instructor.patch(OpenAI()) #(1)!
+
 def summarize_article(article: str, summary_steps: int = 3):
     summary_chain = []
     # We first generate an initial summary
-    summary: InitialSummary = openai.ChatCompletion.create(  # (1)!
+    summary: InitialSummary = client.chat.completions.create(  # (2)!
         model="gpt-4-0613",
         response_model=InitialSummary,
         messages=[
@@ -217,7 +224,7 @@ def summarize_article(article: str, summary_steps: int = 3):
                 },
             ]
         )
-        new_summary: RewrittenSummary = openai.ChatCompletion.create( # (2)!
+        new_summary: RewrittenSummary = client.chat.completions.create( # (3)!
             model="gpt-4-0613",
             messages=[
                 {
@@ -254,10 +261,15 @@ def summarize_article(article: str, summary_steps: int = 3):
     return summary_chain
 ```
 
-1.  We first generate an initial summary. Note here that we explictly ask for a summary that has 
+1.  We need to apply a `patch` function on the `OpenAI` client for us to get all
+    of the benefits that `Instructor` provides. With a simple `patch`, we can get
+    **automatic type coercion of our outputs and automatic retries for invalid outputs**
+    out of the box! 
+
+2.  We first generate an initial summary. Note here that we explictly ask for a summary that has 
     80 words and is lengthy with overly verbose fillers in the system prompt
 
-2.  We slightly modify the original system prompt used in the original paper to perform a rewrite of the summary. 
+3.  We slightly modify the original system prompt used in the original paper to perform a rewrite of the summary. 
     Using `Instructor`, we also get validation of the generated output with our `field_validator`s that we defined above
     
 This summarization function yields a result which triples the number of entities while mantaining the same number of tokens. We can also see that stylistically, the summary is a lot more natural.
@@ -284,11 +296,11 @@ import instructor
 from itertools import islice
 from pydantic import BaseModel
 
-instructor.patch() #(2)!
+instructor.patch() 
 
 logging.basicConfig(level=logging.INFO) 
 
-instructions = instructor.Instructions( #(3)!
+instructions = instructor.Instructions( #(2)!
     name="Chain Of Density",
     finetune_format="messages",
     # log handler is used to save the data to a file
@@ -300,10 +312,10 @@ instructions = instructor.Instructions( #(3)!
 class GeneratedSummary(BaseModel):
     summary: str
 
-@instructions.distil #(4)!
+@instructions.distil #(3)!
 def distil_summarization(text: str) -> GeneratedSummary:
     summary_chain: List[str] = summarize_article(text)
-    return GeneratedSummary(summary=summary_chain[-1]) #(5)!
+    return GeneratedSummary(summary=summary_chain[-1]) #(4)!
 
 with open("train.csv", "r") as file:
     reader = csv.reader(file)
@@ -316,15 +328,13 @@ with open("train.csv", "r") as file:
 1.  In this example, we're using the summarize_article that we defined up above. We saved it in a local file called `chain_of_density.py`,
     hence the import
 
-2.  Don't forget to use `instructor.patch()` so that you get the automatic parsing and validation of OpenAI responses.
-
-3.  We instantiate a `Instruction` object which will help us handle the conversion of our function calls into a valid `.jsonl` file. We also define
+2.  We instantiate a `Instruction` object which will help us handle the conversion of our function calls into a valid `.jsonl` file. We also define
     the name of the `.jsonl` file in the `log_handlers` parameter
 
-4.  We add in an `instructions.distil` annotation so that we automatically capture the input and output of the function we'd like to 
+3.  We add in an `instructions.distil` annotation so that we automatically capture the input and output of the function we'd like to 
     fine-tune our model to output
 
-5.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
+4.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
     be returned when using the `instructions.distil` annotation
 
 
@@ -375,23 +385,29 @@ We used a total of 20 articles as a validation set which our fine tuned models h
 | ------------------- | --------------- | ------------------ | ------------------- | ------ |
 | GPT-4               | 87.2            | 10.15              | 0.116               | 86.65  |
 | GPT-4-Turbo         | 41.1            | 10.05              | 0.116               | 87.25  |
-| 3.5 Finetuned (20)  | 2.05            | 10.9               | 0.13                | 87.4   |
-| 3.5 Finetuned (50)  | 2.00            | 10.85              | 0.12                | 94.7   |
-| 3.5 Finetuned (100) | 2.09            | 10.10              | 0.12                | 88     |
+| 3.5 Finetuned (20)  | 2.05            | 10.9               | 0.125                | 87.4   |
+| 3.5 Finetuned (50)  | 2.00            | 10.85              | 0.114                | 94.95   |
+| 3.5 Finetuned (100) | 2.09            | 10.10              | 0.115                | 88     |
 
 Using the OpenAI Usage Dashboard, we can calculate the cost of generating 20 summaries as seen below. 
 
-| Model               | Training Cost | Inference Cost | Tokens Used |
-| ------------------- | ------------- | -------------- | ----------- |
-| 3.5 Finetuned (20)  | 0.664         | 0.15           | 43,612      | 
-| 3.5 Finetuned (50)  | 1.112         | 0.153          | 45,128      |
-| 3.5 Finetuned (100) | 2.328         | 0.153          | 44,925      |
-| GPT-4 Turbo         | -             | 1.41           | 265,397     |
-| GPT-4               | -             | 7.63           | 238,290     |
+| Model               | Training Cost | Inference Cost | Tokens Used | Total Cost |
+| ------------------- | ------------- | -------------- | ----------- | ---------- |
+| 3.5 Finetuned (20)  | 0.664         | 0.153          | 43,612      | 0.817      |
+| 3.5 Finetuned (50)  | 1.112         | 0.153          | 45,128      | 1.266      |
+| 3.5 Finetuned (100) | 2.328         | 0.153          | 44,925      | 2.481      |
+| GPT-4 Turbo         | -             | 1.41           | 265,397     | 1.41       |
+| GPT-4               | -             | 7.63           | 238,290     | 7.69       | 
+
+If we assume a fixed inference cost, then we can assume that `GPT-4-Turbo` has an approximate inference cost of `0.07` per summary while our finetuned models have an inference cost of `0.00765` per summary, which is almost 10x cheaper.
+
+Once we factor in the training cost, only the 100 example model is more expensive than `GPT-4-Turbo` at 20 examples. However, this changes once we generate more than 33 examples.
 
 !!! note
 
     Using a fine-tuned model was able to reduce the inference time by almost 20-40x while keeping entity density relatively constant. At the same time, our costs dropped by almost 10x when compared against `GPT-4 Turbo` and by almost 150x when compared against GPT-4. This is a strong nod to the power of fine-tuning and generating small models to perform niche tasks.
+
+    Even though we incurred a small Training Cost for our finetuned models, this cost gets amortized over time as our model gets used more often, resulting in massive efficiency gains.
 
 ## Conclusion
 
