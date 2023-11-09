@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 instructions = instructor.Instructions(
     name="Chain Of Density",
     finetune_format="messages",
-    log_handlers=[logging.FileHandler("summarization22.jsonl")],
+    log_handlers=[logging.FileHandler("summarization.jsonl")],
 )
 
 
