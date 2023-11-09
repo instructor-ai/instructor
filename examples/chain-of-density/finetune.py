@@ -4,9 +4,6 @@ import csv
 import logging
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
-
-client = instructor.patch(OpenAI())
 
 logging.basicConfig(level=logging.INFO)
 
