@@ -1,15 +1,11 @@
-from pydantic import BaseModel, Field, field_validator, model_validator
-from typing import List, Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import List
 import instructor
 import openai
 import nltk
-import spacy
-from tenacity import Retrying, retry, stop_after_attempt, wait_fixed
-from pydantic.functional_validators import AfterValidator
+from openai import OpenAI
 
-
-nlp = spacy.load("en_core_web_trf")
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 
 class InitialSummary(BaseModel):
@@ -80,25 +76,10 @@ class RewrittenSummary(BaseModel):
         return absent_entities
 
 
-def compute_metrics(summary: str):
-    tokens = nltk.word_tokenize(summary)
-    num_tokens = len(tokens)
-    doc = nlp(summary)
-    num_entities = len(doc.ents)
-    ET_ratio = round(num_entities / num_tokens, 4)
-
-    return num_tokens, num_entities, ET_ratio
-
-
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_fixed(60),
-    retry_error_cls=openai.error.RateLimitError,
-)
 def summarize_article(article: str, summary_steps: int = 3):
     summary_chain = []
     # We first generate an initial summary
-    summary: InitialSummary = openai.ChatCompletion.create(
+    summary: InitialSummary = openai.chat.completions.create(
         model="gpt-4-0613",
         response_model=InitialSummary,
         messages=[
@@ -114,16 +95,8 @@ def summarize_article(article: str, summary_steps: int = 3):
         ],
         max_retries=2,
     )
-    summary_chain.append(summary.summary)
     prev_summary = None
-
-    num_tokens, num_entities, ET_ratio = compute_metrics(summary.summary)
-    print(
-        f"--First Attempt completed - Token Count: {num_tokens}, Entity Count: {num_entities}, ET_Ratio: {ET_ratio}"
-    )
-    print(f"\n{summary.summary}\n")
-
-    # # Then we perform a denser summarization
+    summary_chain.append(summary.summary)
     for i in range(summary_steps):
         missing_entity_message = (
             []
@@ -135,7 +108,7 @@ def summarize_article(article: str, summary_steps: int = 3):
                 },
             ]
         )
-        new_summary: RewrittenSummary = openai.ChatCompletion.create(
+        new_summary: RewrittenSummary = openai.chat.completions.create(
             model="gpt-4-0613",
             messages=[
                 {
@@ -168,11 +141,5 @@ def summarize_article(article: str, summary_steps: int = 3):
         )
         summary_chain.append(new_summary.summary)
         prev_summary = new_summary
-        num_tokens, num_entities, ET_ratio = compute_metrics(new_summary.summary)
-        print(
-            f"---Succesfully generated iteration {i+1}. Identified {','.join(new_summary.missing)} to add in the next iteration. ( Token Count: {num_tokens}, Entity Count: {num_entities}, E/T : {ET_ratio})"
-        )
-        # print(f"\n{new_summary.included}\n")
-        print(f"\n{new_summary.summary}\n")
 
     return summary_chain

@@ -5,6 +5,9 @@ tags:
   - pydantic
   - validation
   - chain of density
+  - finetuneing
+  - gpt-3.5-turbo
+  - distilation
 authors:
   - jxnl
   - ivanleomk
@@ -12,7 +15,7 @@ authors:
 
 # Implementing Chain Of Density
 
-By the end of this article, you'll have a fine-tuned GPT 3.5 model which can take in source text and output a summary which mimics a chain-of-density summarization using `Instructor`'s new jobs cli feature. As usual, all of the code is avaliable for reference under our `examples/chain-of-density` folder. 
+By the end of this article, you'll have a fine-tuned GPT 3.5 model which can take in source text and output a summary which mimics a chain-of-density summarization using `Instructor`'s new jobs cli feature. As usual, all of the code is avaliable for reference under our `examples/chain-of-density` folder. We've also uploaded all our generated data to Hugging Face [here](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density) for you to use if you'd like to try reproducing these experiments.
 
 ## What is a Chain Of Density?
 
@@ -25,6 +28,8 @@ First, a large language model is provided with an article and asked to generate 
 During the entire process, the model is also tasked with keeping the length of the summaries fairly constant. As a result, as new entities are added in with each iteration, we get more entities present within our summary. This results in a summary which is more entity dense, thus the name `Chain Of Density`. 
 
 ## Implementation
+
+Note that our implementation uses a validator to ensure that the rewritten summary has a minimum length rather than a prompt. As a result, we match the original paper on entity count but not entity density.
 
 ### Paper Prompt
 
@@ -86,8 +91,7 @@ We can implement this using Instructor by breaking down the entire process into 
 
 Let's start by walking through some of the data models that we'll be using as the `response_model` for our open ai function calls
 
-Firstly, we'll need a data model for the initial summary that we will be generating. We'll take the description of this class straight from the original prompt.
-
+Firstly, we'll need a data model for the initial summary that we will be generating. We'll take the description of this class straight from the original prompt. Its important to note that these docstrings serve a purpose, they are directly used by the LLM when generating the outputs.
 ```py
 class InitialSummary(BaseModel):
     """
@@ -135,7 +139,7 @@ class RewrittenSummary(BaseModel):
     )
 ```
 
-!!! Using Validators in Instructor
+!!! notes "Using Pydantic Validators with Instructor"
 
     For a more in-depth walkthrough on how to use `Pydantic` validators with the `Instructor` 
     library, we recommend checking out our previous article on LLM 
@@ -256,21 +260,22 @@ def summarize_article(article: str, summary_steps: int = 3):
 2.  We slightly modify the original system prompt used in the original paper to perform a rewrite of the summary. 
     Using `Instructor`, we also get validation of the generated output with our `field_validator`s that we defined above
     
-We can run this function on a sample corpus of text - we provide a script to download the `griffin/chain-of-density` dataset which the paper utilized in the `examples/chain-of-density` folder. 
-
-This yields a result as seen below which has almost 3 times the number of entities with roughly the same length. We can also see that stylistically, the summary is a lot more natural.
+This summarization function yields a result which triples the number of entities while mantaining the same number of tokens. We can also see that stylistically, the summary is a lot more natural.
 
 **First Summary** : This article discusses the highly-anticipated boxing match between Manny Pacquiao and Floyd Mayweather. The article revolves around Manny Pacquiao's statements about his upcoming fight and his preparations for the same. A portion of the article provides details about the financial stipulations of the match and its significance in the sporting arena. Quotes from Pacquiao illustrating his determination and his battle strategy are highlighted. The tone of the article is largely centered around creating a build-up to the upcoming mega event.
 
 **Final Summary** : Manny Pacquiao, the Filipino boxer, anticipates the forthcoming May 2 showdown at the MGM Grand as the fight of his life, against the undefeated American Floyd Mayweather, in a $300m bout. Despite being seen as the underdog in this high-stakes Las Vegas match, Pacquiao is confident, promising a warrior's spirit and assuring the fans who have been awaiting this encounter for a decade, that it will indeed be the biggest sporting spectacle in history worthy of their anticipation
 
-## Fine-tuning our Model
+## Fine-Tuning
 
-We can now finetune GPT3.5 to perform this task using these summaries generated using GPT4. Instructor provides an easy way to do so with the `Instructions` object. 
+In this section, we'll look into how to fine-tune a GPT 3.5 model so that it is able to perform at an equivalent level as a GPT-4 model. We'll then compare the performance of our model against that of `GPT-4` and `GPT-4-Turbo` to see how it stacks up. 
 
-Simply create a new `Instruction` instance, use our provided annotator and you'll get a nicely formatted `.jsonl` file to be used for fine-tuning. In our example below, we read in 20 news articles from the `griffin/chain-of-density` dataset to generate our fine-tuning data.
+### Creating a Training Set
 
-```py hl_lines="2 9 13-20 25 28 33"
+Let's first segregate our train and test set so that we don't have any sort of contamination - this corresponds to our `train.csv` and `test.csv` in our [Hugging Face Dataset](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density). Now, we just need to import the `Instructions` module from the `Instructor` package which allows you to generate a nicely formatted `.jsonl` file to be used for fine-tuning
+
+
+```py hl_lines="2 9 13-20 25 28"
 from typing import List
 from chain_of_density import summarize_article #(1)!
 import csv
@@ -300,11 +305,12 @@ def distil_summarization(text: str) -> GeneratedSummary:
     summary_chain: List[str] = summarize_article(text)
     return GeneratedSummary(summary=summary_chain[-1]) #(5)!
 
-with open("output.csv", "r") as file:
+with open("train.csv", "r") as file:
     reader = csv.reader(file)
-    # Row 0 of our CSV file is the header row so we start from row 1
-    for article, summary in islice(reader, 1, 20): #(6)!
-        summaries.append(distil_summarization(article))
+    next(reader)  # Skip the header
+    for index, (article, summary) in enumerate(reader):
+        # Run Distillisation to generate the values
+        distil_summarization(article)
 ```
 
 1.  In this example, we're using the summarize_article that we defined up above. We saved it in a local file called `chain_of_density.py`,
@@ -321,8 +327,6 @@ with open("output.csv", "r") as file:
 5.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
     be returned when using the `instructions.distil` annotation
 
-6.  The `islice` operator is used to take a slice of an iterator - it allows us to take a subset of the original iterator from a specified
-    start and end index.
 
 !!! Rate Limiting
 
@@ -330,8 +334,10 @@ with open("output.csv", "r") as file:
     Don't forget to add in rate limiting error handling with `tenacity` and set the `OPENAI_API_KEY` shell environment variable
     before running any subsequent commands
 
+### Creating Fine-Tuning Jobs
 
-Once we run this script, we'll have a new file called `generated.jsonl` in our local repository. Now all that's left is to run the command
+
+Once we run this script, we'll have a new file called `generated.jsonl` in our local repository. Now all that's left is to run the command below to start fine-tuning your first model!
 
 ```
 instructor jobs create-from-file generated.jsonl
@@ -346,9 +352,57 @@ def distil_summarization(text: str) -> GeneratedSummary:
     return GeneratedSummary(summary=summary_chain[-1]) 
 ```
 
+
 1. Don't forget to replace this with your new model id. OpenAI identifies fine tuned models with an id of 
     ft:gpt-3.5-turbo-0613:personal::<id> under their  Fine-tuning tab on their dashboard
 
 With that, you've now got your own fine-tuned model ready to go and serve data in production. We've seen how Instructor can make your life easier, from fine-tuning to distillation.
 
-If you enjoy the content or want to try out instructor please check out the github and give us a star!
+## Benchmarking
+
+We fine-tuned a total of 3 different models, giving each 20, 50 and 100 samples respectively. We then compared the output of these fine tuned models to GPT-4 and the newly released GPT-4-Turbo to see how they match up.
+
+We'll be comparing these models in three main ways
+
+- Entity Density : This is the amount of entities per tokens that we have - the higher this figure is, the better.
+- Latency : How long does it take to generate the result that we want.
+- Costs : How much does the entire experiment cost
+
+We used a total of 20 articles as a validation set which our fine tuned models had not seen before. This was the overall performance that we observed.
+
+
+| Model               | Mean Latency(s) | Mean Entity County | Mean Entity Density | Tokens |
+| ------------------- | --------------- | ------------------ | ------------------- | ------ |
+| GPT-4               | 87.2            | 10.15              | 0.116               | 86.65  |
+| GPT-4-Turbo         | 41.1            | 10.05              | 0.116               | 87.25  |
+| 3.5 Finetuned (20)  | 2.05            | 10.9               | 0.13                | 87.4   |
+| 3.5 Finetuned (50)  | 2.00            | 10.85              | 0.12                | 94.7   |
+| 3.5 Finetuned (100) | 2.09            | 10.10              | 0.12                | 88     |
+
+Using the OpenAI Usage Dashboard, we can calculate the cost of generating 20 summaries as seen below. 
+
+| Model               | Training Cost | Inference Cost | Tokens Used |
+| ------------------- | ------------- | -------------- | ----------- |
+| 3.5 Finetuned (20)  | 0.664         | 0.15           | 43,612      | 
+| 3.5 Finetuned (50)  | 1.112         | 0.153          | 45,128      |
+| 3.5 Finetuned (100) | 2.328         | 0.153          | 44,925      |
+| GPT-4 Turbo         | -             | 1.41           | 265,397     |
+| GPT-4               | -             | 7.63           | 238,290     |
+
+!!! note
+
+    Using a fine-tuned model was able to reduce the inference time by almost 20-40x while keeping entity density relatively constant. At the same time, our costs dropped by almost 10x when compared against `GPT-4 Turbo` and by almost 150x when compared against GPT-4. This is a strong nod to the power of fine-tuning and generating small models to perform niche tasks.
+
+## Conclusion
+
+There's a large area of improvement that you could take on to improve the performance of this fine-tuned model and the quality of the dataset. We chose the first 100 rows as training data for convinience but there's really a whole variety of other ways to improve it
+
+Here are some you might want to consider.
+
+1. Consider conducting more expensive tests to determine the impact of data size.
+2. Perform fine-tuning on data sizes of 20, 50, 100, and 200.
+3. Create a plot illustrating the relationship between data size and entity density.
+4. It would be valuable to determine whether a data size of 20 is sufficient or if investing in 200 is worthwhile.
+5. Introducing a more sophisticated mechanism to handle de-duplication of new entities being identified. ( GPT-4 sometimes identifies the same entity multiple times )
+
+We've seen how `Instructor` can make your life easier, from fine-tuning to distillation. If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!
