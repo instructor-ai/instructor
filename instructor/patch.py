@@ -122,7 +122,7 @@ def retry_sync(
                 None,
             )
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(dict(**response.choices[0].message))  # type: ignore
+            kwargs["messages"].append(response.choices[0].message)  # type: ignore
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -139,7 +139,6 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     async def new_chatcompletion_async(
-        cls,
         response_model=None,
         validation_context=None,
         max_retries=1,
@@ -161,7 +160,6 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     @wraps(func)
     def new_chatcompletion_sync(
-        cls,
         response_model=None,
         validation_context=None,
         max_retries=1,
@@ -183,7 +181,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
     wrapper_function = new_chatcompletion_async if is_async else new_chatcompletion_sync
     wrapper_function.__doc__ = OVERRIDE_DOCS
-    return classmethod(wrapper_function)
+    return wrapper_function
 
 
 def patch(client):

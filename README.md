@@ -22,7 +22,7 @@ Built to interact solely with openai's function calling api from python. It's de
 ## Usage
 
 ```py hl_lines="5 13"
-from openai import OpenAI()
+from openai import OpenAI
 import instructor
 
 # Enables `response_model`

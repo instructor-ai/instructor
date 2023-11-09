@@ -191,16 +191,10 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-        message = completion["choices"][0]["message"]
-
-        if throw_error:
-            assert "function_call" in message, "No function call detected"
-            assert (
-                message["function_call"]["name"] == cls.openai_schema["name"]
-            ), "Function name does not match"
+        message = completion.choices[0].message
 
         return cls.model_validate_json(
-            message["function_call"]["arguments"],
+            message.function_call.arguments,
             context=validation_context,
             strict=strict,
         )
