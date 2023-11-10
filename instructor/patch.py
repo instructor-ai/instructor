@@ -186,7 +186,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
 def patch(client):
     """
-    Patch the `client.chat.completions.create` and `client.chat.completions.create` methods
+    Patch the `client.chat.completions.create` method
 
     Enables the following features:
 
