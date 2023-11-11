@@ -1,9 +1,10 @@
 import inspect
-
 from functools import wraps
 from json import JSONDecodeError
-from pydantic import ValidationError, BaseModel
-from typing import Callable, Type, Optional
+from typing import Callable, Optional, Type
+
+from pydantic import BaseModel, ValidationError
+
 from .function_calls import OpenAISchema, openai_schema
 
 OVERRIDE_DOCS = """
@@ -212,6 +213,6 @@ def apatch(client):
     - `strict` parameter to use strict json parsing
     """
     client.chat.completions.acreate = wrap_chatcompletion(
-        client.chat.completions.acreate
+        client.chat.completions.create
     )
     return client

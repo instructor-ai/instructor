@@ -1,7 +1,7 @@
-from .function_calls import OpenAISchema, openai_function, openai_schema
 from .distil import FinetuneFormat, Instructions
-from .dsl import MultiTask, Maybe, llm_validator, CitationMixin
-from .patch import patch
+from .dsl import CitationMixin, Maybe, MultiTask, llm_validator
+from .function_calls import OpenAISchema, openai_function, openai_schema
+from .patch import apatch, patch
 
 __all__ = [
     "OpenAISchema",
@@ -11,6 +11,7 @@ __all__ = [
     "Maybe",
     "openai_schema",
     "patch",
+    "apatch",
     "llm_validator",
     "FinetuneFormat",
     "Instructions",

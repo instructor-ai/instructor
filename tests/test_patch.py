@@ -1,5 +1,7 @@
+from unittest.mock import Mock
+
+from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
-from openai import OpenAI
 
 import instructor
 
@@ -52,3 +54,11 @@ def test_runmodel_validator():
     assert hasattr(
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
+
+
+def test_patch_completes_successfully():
+    instructor.patch(OpenAI())
+
+
+def test_apatch_completes_successfully():
+    instructor.apatch(AsyncOpenAI())
