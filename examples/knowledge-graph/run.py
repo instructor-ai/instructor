@@ -1,10 +1,12 @@
+import instructor
+
 from graphviz import Digraph
 from pydantic import BaseModel, Field
 from typing import List
-import openai
-import instructor
+from openai import OpenAI
 
-instructor.patch()
+
+client = instructor.patch(OpenAI())
 
 
 class Node(BaseModel):
@@ -26,7 +28,7 @@ class KnowledgeGraph(BaseModel):
 
 
 def generate_graph(input) -> KnowledgeGraph:
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-16k",
         messages=[
             {

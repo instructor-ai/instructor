@@ -6,7 +6,6 @@ In this example, we will demonstrate how to leverage the `MultiTask` and `enum.E
 
     Extracting a list of tasks from text is a common use case for leveraging language models. This pattern can be applied to various applications, such as virtual assistants like Siri or Alexa, where understanding user intent and breaking down requests into actionable tasks is crucial. In this example, we will demonstrate how to use OpenAI Function Call to segment search queries and execute them in parallel.
 
-
 ## Defining the Structures
 
 Let's model the problem as breaking down a search request into a list of search queries. We will use an enum to represent different types of searches and take advantage of Python objects to add additional query logic.
@@ -14,14 +13,13 @@ Let's model the problem as breaking down a search request into a list of search 
 ```python
 import enum
 from pydantic import Field
-from instructor import OpenAISchema
 
 class SearchType(str, enum.Enum):
     """Enumeration representing the types of searches that can be performed."""
     VIDEO = "video"
     EMAIL = "email"
 
-class Search(OpenAISchema):
+class Search(BaseModel):
     """
     Class representing a single search query.
     """
@@ -40,14 +38,14 @@ Next, let's define a class to represent multiple search queries.
 ```python
 from typing import List
 
-class MultiSearch(OpenAISchema):
+class MultiSearch(BaseModel):
     "Correctly segmented set of search results"
     tasks: List[Search]
 ```
 
 The `MultiSearch` class has a single attribute, `tasks`, which is a list of `Search` objects.
 
-This pattern is so common that we've added a helper function `MultiTask` to makes this simpler 
+This pattern is so common that we've added a helper function `MultiTask` to makes this simpler
 
 ```python
 from instructor.dsl import MultiTask
@@ -60,10 +58,15 @@ MultiSearch = MultiTask(Search)
 To segment a search query, we will use the base openai api. We can define a function that takes a string and returns segmented search queries using the `MultiSearch` class.
 
 ```python hl_lines="7 8"
-import openai
+import instructor
+from openai import OpenAI
+
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
 
 def segment(data: str) -> MultiSearch:
-    completion = openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0.1,
         functions=[MultiSearch.openai_schema],
@@ -76,8 +79,6 @@ def segment(data: str) -> MultiSearch:
         ],
         max_tokens=1000,
     )
-
-    return MultiSearch.from_response(completion)
 ```
 
 The `segment` function takes a string `data` and creates a completion. It prompts the model to segment the data into multiple search queries and returns the result as a `MultiSearch` object.

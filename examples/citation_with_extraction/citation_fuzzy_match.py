@@ -1,11 +1,11 @@
-from typing import List
-from loguru import logger
-
-import openai
 import instructor
 
-
+from typing import List
+from loguru import logger
+from openai import OpenAI
 from pydantic import Field, BaseModel, FieldValidationInfo, model_validator
+
+client = instructor.patch(OpenAI())
 
 
 class Fact(BaseModel):
@@ -82,7 +82,7 @@ class QuestionAnswer(instructor.OpenAISchema):
 
 
 def ask_ai(question: str, context: str) -> QuestionAnswer:
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
         functions=[QuestionAnswer.openai_schema],

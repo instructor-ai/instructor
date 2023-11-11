@@ -3,6 +3,7 @@
 In this guide, you'll discover how to visualize a detailed knowledge graph for understanding complex topics, in this case, quantum mechanics. We leverage OpenAI's API and the Graphviz library to bring structure to intricate subjects.
 
 !!! tips "Motivation"
+
     Knowledge graphs offer a visually appealing and coherent way to understand complicated topics like quantum mechanics. By generating these graphs automatically, you can accelerate the learning process and make it easier to digest complex information.
 
 ## Defining the Structures
@@ -34,15 +35,15 @@ class KnowledgeGraph(BaseModel):
 The **`generate_graph`** function leverages OpenAI's API to generate a knowledge graph based on the input query.
 
 ```python
-import openai
+from openai import OpenAI
 import instructor
 
 # Adds response_model to ChatCompletion
 # Allows the return of Pydantic model rather than raw JSON
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 def generate_graph(input) -> KnowledgeGraph:
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {

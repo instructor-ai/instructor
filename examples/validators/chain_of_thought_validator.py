@@ -1,10 +1,11 @@
 import instructor
-import openai
+from openai import OpenAI
+
 from pydantic import BaseModel, Field, model_validator
 from typing import Optional
 
 # Enables `response_model` and `max_retries` parameters
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 
 class Validation(BaseModel):
@@ -20,7 +21,7 @@ class Validation(BaseModel):
 def validator(values):
     chain_of_thought = values["chain_of_thought"]
     answer = values["answer"]
-    resp = openai.ChatCompletion.create(
+    resp = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {

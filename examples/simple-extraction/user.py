@@ -1,9 +1,10 @@
 import instructor
-import openai
+
+from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import Optional
 
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -13,7 +14,7 @@ class UserDetail(BaseModel):
 
 
 def get_user_detail(string) -> UserDetail:
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=UserDetail,
         messages=[

@@ -2,7 +2,9 @@ import asyncio
 from typing_extensions import Annotated
 from pydantic import BaseModel, BeforeValidator
 from instructor import llm_validator, patch
-import openai
+from openai import AsyncOpenAI
+
+aclient = AsyncOpenAI()
 
 patch()
 
@@ -22,7 +24,7 @@ async def main():
     question = "What is the meaning of life?"
 
     try:
-        qa: QuestionAnswerNoEvil = await openai.ChatCompletion.acreate(
+        qa: QuestionAnswerNoEvil = await aclient.chat.completions.create(
             model="gpt-3.5-turbo",
             response_model=QuestionAnswerNoEvil,
             max_retries=2,

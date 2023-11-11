@@ -1,13 +1,6 @@
-# Integrated Validation and Reask with LLMs and Pydantic
+# Validation and Reask with LLMs and Pydantic
 
 Instead of framing "self-critique" or "self-reflection" in AI as new concepts, we can view them as validation errors with clear error messages that the systen can use to self heal.
-
-## Applications and Scenarios
-
-- **Content Moderation**: LLMs can be trained or guided to recognize and filter out objectionable or sensitive material, ensuring a safer user experience.
-- **Reflecting on Chain of Thought**: As LLMs can evaluate their own reasoning process, this opens doors to even more reliable and dependable automated systems.
-- **Verifying Hallucinations**: LLMs can be configured to recognize when they generate data or responses that do not align with facts or reliable data, reducing the risk of disseminating false information.
-- **Data Integrity**: Enforces data quality standards.
 
 ## Pythonic Validation with Pydantic and Instructor
 
@@ -20,6 +13,7 @@ Instead of framing "self-critique" or "self-reflection" in AI as new concepts, w
 Validation is crucial when using Large Language Models (LLMs) for data extraction. It ensures data integrity, ensuring both quantitative and qualititave correctness with code and llm validations.
 
 !!! note "Pydantic Validation Docs"
+
     Pydantic supports validation individual fields or the whole model dict all at once.
 
     - [Field-Level Validation](https://docs.pydantic.dev/latest/usage/validators/)
@@ -27,11 +21,10 @@ Validation is crucial when using Large Language Models (LLMs) for data extractio
 
     To see the most up to date examples check out our repo [jxnl/instructor/examples/validators](https://github.com/jxnl/instructor/tree/main/examples/validators)
 
-
 ### Code-Based Validation Example
 
 !!! note "Model Level Evaluation"
-    Right now we only go over the field level examples, check out [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators) if you want to see how to do model level evaluation
+Right now we only go over the field level examples, check out [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators) if you want to see how to do model level evaluation
 
 Enforce a naming rule using Pydantic's built-in validation:
 
@@ -75,7 +68,7 @@ from instruct import llm_validator
 class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
-        str, 
+        str,
         BeforeValidator(llm_validator("don't say objectionable things"))
     ]
 
@@ -107,7 +100,6 @@ Its a great layer of defense against bad outputs of two forms.
 1. Pydantic Validation Errors (code or llm based)
 2. JSON Decoding Errors (when the model returns a bad response)
 
-
 ### Step 1: Define the Response Model with Validators
 
 Noticed the field validator wants the name in uppercase, but the user input is lowercase. The validator will raise a `ValueError` if the name is not in uppercase.
@@ -117,7 +109,7 @@ import instructor
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 class UserDetails(BaseModel):
     name: str
@@ -136,7 +128,7 @@ class UserDetails(BaseModel):
 Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
 ```python hl_lines="4 10"
-model = openai.ChatCompletion.create(
+model = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetails,
     max_retries=2,
@@ -150,7 +142,7 @@ assert model.name == "JASON"
 
 ### What happens behind the scenes?
 
-Behind the scenes, the `instructor.patch()` method adds a `max_retries` parameter to the `openai.ChatCompletion.create()` method.  The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
+Behind the scenes, the `instructor.patch()` method adds a `max_retries` parameter to the `openai.ChatCompletion.create()` method. The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
 
 ```python
 try:

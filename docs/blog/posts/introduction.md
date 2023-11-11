@@ -30,10 +30,10 @@ Instructor uses Pydantic to simplify the interaction between the programmer and 
 ```python
 import pydantic
 import instructor
-import openai
+from openai import OpenAI
 
 # Enables the response_model
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 class UserDetail(pydantic.BaseModel):
     name: str
@@ -42,7 +42,7 @@ class UserDetail(pydantic.BaseModel):
     def introduce(self):
         return f"Hello I'm {self.name} and I'm {self.age} years old"
 
-user: UserDetail = openai.ChatCompletion.create(
+user: UserDetail = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
@@ -60,7 +60,7 @@ from typing_extensions import Annotated
 from pydantic import BaseModel, BeforeValidator
 from instructor import llm_validator, patch
 
-import openai
+from openai import OpenAI
 
 class QuestionAnswerNoEvil(BaseModel):
     question: str
@@ -161,7 +161,7 @@ async def get_user(user_id: int) -> UserDetails:
 
 ```python
 def extract_user(str) -> UserDetails:
-    return openai.ChatCompletion(
+    return client.chat.completions(
            response_model=UserDetails,
            messages=[...]
     )

@@ -1,63 +1,101 @@
-# Instructor (openai_function_call)
+# Getting Started with Instructor
 
-!!! note "Renaming from openai_function_call"
-    This library used to be called `openai_function_call` simply change the import and you should be good to go!
+_Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control._
 
-    ```sh
-    find /path/to/dir -type f -exec sed -i 's/openai_function_call/instructor/g' {} \;
+Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
+
+---
+
+[Star us on Github!](https://jxnl.github.io/instructor)
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
+[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
+[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
+[![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
+[![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
+[![Github discussions](https://img.shields.io/github/discussions/jxnl/instructor)](https:github.com/jxnl/instructor/discussions)
+[![PyPI version](https://img.shields.io/pypi/v/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/instructor.svg)](https://pypi.python.org/pypi/instructor)
+
+---
+
+## Usage
+
+```py hl_lines="5 13"
+from openai import OpenAI()
+import instructor
+
+# Enables `response_model`
+client = instructor.patch(OpenAI())
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+user = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract Jason is 25 years old"},
+    ]
+)
+
+assert isinstance(user, UserDetail)
+assert user.name == "Jason"
+assert user.age == 25
+```
+
+!!! note "Using `openai<1.0.0`"
+
+    If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
+    where you can patch a global client like so:
+
+    ```python hl_lines="4 8"
+    import openai
+    import instructor
+
+    instructor.patch()
+
+    user = openai.ChatCompletion.create(
+        ...,
+        response_model=UserDetail,
+    )
     ```
 
-*Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control.*
+## Installation
 
------
-
-This library is built to interact with openai's function call api from python code, with python structs / objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
-
-The approach of combining a human prompt and a "response schema" is not necessarily unique; however, it shows great promise. As we have been concentrating on translating user intent into structured data, we have discovered that Python with Pydantic is exceptionally well-suited for this task. 
-
-**OpenAISchema** is based on Python type annotations, and powered by Pydantic.
-
-The key features are:
-
-* **Intuitive to write**: Great support for editors, completions. Spend less time debugging.
-* **Writing prompts as code**: Collocate docstrings and descriptions as part of your prompting.
-* **Extensible**: Bring your own kitchen sink without being weighted down by abstractions.
-
-## Structured Extraction with `openai`
-
-Welcome to the Quick Start Guide for OpenAI Function Call. This guide will walk you through the installation process and provide examples demonstrating the usage of function calls and schemas with OpenAI and Pydantic.
-
-### Requirements
-
-This library depends on **Pydantic** and **OpenAI** that's all.
-
-### Installation
-
-To get started with OpenAI Function Call, you need to install it using `pip`. Run the following command in your terminal:
-
-!!! note Requirement
-    Ensure you have Python version 3.9 or above.
+To get started you need to install it using `pip`. Run the following command in your terminal:
 
 ```sh
 $ pip install instructor
 ```
 
-## Quick Start with Patching ChatCompletion
+## Quick Start
 
-To simplify your work with OpenAI models and streamline the extraction of Pydantic objects from prompts, we offer a patching mechanism for the `ChatCompletion`` class. Here's a step-by-step guide:
+To simplify your work with OpenAI we offer a patching mechanism for the `ChatCompletion` class.
+The patch introduces 3 features to the `ChatCompletion` class:
 
-### Step 1: Import and Patch the Module
+1. The `response_model` parameter, which allows you to specify a Pydantic model to extract data into.
+2. The `max_retries` parameter, which allows you to specify the number of times to retry the request if it fails.
+3. The `validation_context` parameter, which allows you to specify a context object that validators have access to.
+
+!!! note "Using Validators"
+
+    Learn more about validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
+
+### Step 1: Patch the client
 
 First, import the required libraries and apply the patch function to the OpenAI module. This exposes new functionality with the response_model parameter.
 
-```python
-import openai
+```python hl_lines="6"
 import instructor
-from pydantic import BaseModel
+from openai import OpenAI
 
 # This enables response_model keyword
-# from openai.ChatCompletion.create
-instructor.patch()
+# from client.chat.completions.create
+client = instructor.patch(OpenAI())
 ```
 
 ### Step 2: Define the Pydantic Model
@@ -65,69 +103,100 @@ instructor.patch()
 Create a Pydantic model to define the structure of the data you want to extract. This model will map directly to the information in the prompt.
 
 ```python
+from pydantic import BaseModel
+
 class UserDetail(BaseModel):
     name: str
     age: int
 ```
 
-### Step 3: Extract Data with ChatCompletion
+### Step 3: Extract
 
-Use the openai.ChatCompletion.create method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
+Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction. Its helpful to annotate the variable with the type of the response model.
+which will help your IDE provide autocomplete and spell check.
 
-```python
-user: UserDetail = openai.ChatCompletion.create(
+```python hl_lines="3"
+user: UserDetail = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ]
 )
-```
 
-### Step 4: Validate the Extracted Data
-
-You can then validate the extracted data by asserting the expected values. By adding the type things you also get a bunch of nice benefits with your IDE like spell check and auto complete!
-
-```python
 assert user.name == "Jason"
 assert user.age == 25
 ```
 
-## IDE Support 
+## Advanced: Pydantic Validation
 
-Everything is designed for you to get the best developer experience possible, with the best editor support.
+Validation can also be plugged into the same Pydantic model. Here, if the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error.
 
-Including **autocompletion**:
+```python hl_lines="9 15"
+from pydantic import BaseModel, ValidationError, BeforeValidator
+from typing_extensions import Annotated
+from instructor import llm_validator
 
-![autocomplete](img/ide_support.png)
+class QuestionAnswer(BaseModel):
+    question: str
+    answer: Annotated[
+        str,
+        BeforeValidator(llm_validator("don't say objectionable things"))
+    ]
 
-And even **inline errors**
-
-![errors](img/error2.png)
-
-## OpenAI Schema and Pydantic
-
-This quick start guide provided you with a basic understanding of how to use OpenAI Function Call for schema extraction and function calls. You can now explore more advanced use cases and creative applications of this library.
-
-Since `UserDetails` is a `OpenAISchems` and a `pydantic.BaseModel` you can use inheritance and nesting to create more complex emails while avoiding code duplication
-
-```python
-class UserDetails(OpenAISchema):
-    name: str = Field(..., description="User's full name")
-    age: int
-
-class UserWithAddress(UserDetails):
-    address: str 
-
-class UserWithFriends(UserDetails):
-    best_friend: UserDetails
-    friends: List[UserDetails]
+try:
+    qa = QuestionAnswer(
+        question="What is the meaning of life?",
+        answer="The meaning of life is to be evil and steal",
+    )
+except ValidationError as e:
+    print(e)
 ```
 
-If you have any questions, feel free to leave an issue or reach out to the library's author on [Twitter](https://twitter.com/jxnlco). For a more comprehensive solution with additional features, consider checking out [MarvinAI](https://www.askmarvin.ai/).
+Its important to not here that the error message is generated by the LLM, not the code, so it'll be helpful for re asking the model.
 
-To see more examples of how we can create interesting models check out some [examples.](examples/index.md)
+```plaintext hl_lines="3"
+1 validation error for QuestionAnswer
+answer
+   Assertion failed, The statement is objectionable. (type=assertion_error)
+```
+
+## Advanced: Reask on validation error
+
+Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
+
+```python hl_lines="15-18 22 23 29"
+import instructor
+
+from openai import OpenAI
+from pydantic import BaseModel, field_validator
+
+# Apply the patch to the OpenAI client
+client = instructor.patch(OpenAI())
+
+class UserDetails(BaseModel):
+    name: str
+    age: int
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v):
+        if v.upper() != v:
+            raise ValueError("Name must be in uppercase.")
+        return v
+
+model = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetails,
+    max_retries=2,
+    messages=[
+        {"role": "user", "content": "Extract jason is 25 years old"},
+    ],
+)
+
+assert model.name == "JASON"
+```
 
 ## License
 
-This project is licensed under ther terms of the MIT License.
+This project is licensed under the terms of the MIT License.
