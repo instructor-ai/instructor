@@ -3,6 +3,8 @@ from functools import wraps
 from json import JSONDecodeError
 from typing import Callable, Optional, Type
 
+from openai import AsyncOpenAI, OpenAI
+from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from pydantic import BaseModel, ValidationError
 
 from .function_calls import OpenAISchema, openai_schema
@@ -67,6 +69,18 @@ def process_response(
     return response
 
 
+def dump_message(message: ChatCompletionMessage) -> dict:
+    """Dumps a message to a dict, to be returned to the OpenAI API.
+
+    Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
+    if it isn't used.
+    """
+    dumped_message = message.model_dump()
+    if not dumped_message.get("tool_calls"):
+        del dumped_message["tool_calls"]
+    return dumped_message
+
+
 async def retry_async(
     func,
     response_model,
@@ -79,7 +93,7 @@ async def retry_async(
     retries = 0
     while retries <= max_retries:
         try:
-            response = await func(*args, **kwargs)
+            response: ChatCompletion = await func(*args, **kwargs)
             return (
                 process_response(
                     response,
@@ -90,7 +104,7 @@ async def retry_async(
                 None,
             )
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(dict(**response.choices[0].message))  # type: ignore
+            kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -123,7 +137,7 @@ def retry_sync(
                 None,
             )
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(response.choices[0].message)  # type: ignore
+            kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -135,8 +149,15 @@ def retry_sync(
                 raise e
 
 
+def is_async(func: Callable) -> bool:
+    """Returns true if the callable is async, accounting for wrapped callables"""
+    return inspect.iscoroutinefunction(func) or (
+        hasattr(func, "__wrapped__") and inspect.iscoroutinefunction(func.__wrapped__)
+    )
+
+
 def wrap_chatcompletion(func: Callable) -> Callable:
-    is_async = inspect.iscoroutinefunction(func)
+    func_is_async = is_async(func)
 
     @wraps(func)
     async def new_chatcompletion_async(
@@ -180,12 +201,14 @@ def wrap_chatcompletion(func: Callable) -> Callable:
             raise ValueError(error)
         return response
 
-    wrapper_function = new_chatcompletion_async if is_async else new_chatcompletion_sync
+    wrapper_function = (
+        new_chatcompletion_async if func_is_async else new_chatcompletion_sync
+    )
     wrapper_function.__doc__ = OVERRIDE_DOCS
     return wrapper_function
 
 
-def patch(client):
+def patch(client: OpenAI | AsyncOpenAI):
     """
     Patch the `client.chat.completions.create` method
 
@@ -201,9 +224,11 @@ def patch(client):
     return client
 
 
-def apatch(client):
+def apatch(client: AsyncOpenAI):
     """
-    Patch the `client.chat.completions.acreate` and `client.chat.completions.acreate` methods
+    No longer necessary, use `patch` instead.
+
+    Patch the `client.chat.completions.create` method
 
     Enables the following features:
 
@@ -212,7 +237,4 @@ def apatch(client):
     - `validation_context` parameter to validate the response using the pydantic model
     - `strict` parameter to use strict json parsing
     """
-    client.chat.completions.acreate = wrap_chatcompletion(
-        client.chat.completions.create
-    )
-    return client
+    return patch(client)

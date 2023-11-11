@@ -1,9 +1,11 @@
-from unittest.mock import Mock
+import functools
 
+import pytest
 from openai import AsyncOpenAI, OpenAI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import instructor
+from instructor.patch import is_async, wrap_chatcompletion
 
 client = instructor.patch(OpenAI())
 
@@ -62,3 +64,71 @@ def test_patch_completes_successfully():
 
 def test_apatch_completes_successfully():
     instructor.apatch(AsyncOpenAI())
+
+
+@pytest.mark.asyncio
+async def test_wrap_chatcompletion_wraps_async_input_function():
+    async def input_function(*args, **kwargs):
+        return "Hello, World!"
+
+    wrapped_function = wrap_chatcompletion(input_function)
+    result = await wrapped_function()
+
+    assert result == "Hello, World!"
+
+
+def test_wrap_chatcompletion_wraps_input_function():
+    def input_function(*args, **kwargs):
+        return "Hello, World!"
+
+    wrapped_function = wrap_chatcompletion(input_function)
+    result = wrapped_function()
+
+    assert result == "Hello, World!"
+
+
+@pytest.mark.asyncio
+async def test_patched_client_works():
+    patched_client = instructor.patch(AsyncOpenAI())
+
+    class ExtractedData(BaseModel):
+        content: str = Field(description="The user's message")
+
+    result = await patched_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        response_model=ExtractedData,
+        messages=[
+            {
+                "role": "system",
+                "content": "This is a test. Please make a mistake when calling the provided function. I'm testing how we handle errors.",
+            },
+            {"role": "user", "content": "Hello, World!"},
+        ],
+    )
+
+    assert result.content == "Hello, World!"
+
+
+def test_is_async_returns_true_if_function_is_async():
+    async def async_function():
+        pass
+
+    assert is_async(async_function) is True
+
+
+def test_is_async_returns_false_if_function_is_not_async():
+    def sync_function():
+        pass
+
+    assert is_async(sync_function) is False
+
+
+def test_is_async_returns_true_if_wrapped_function_is_async():
+    async def async_function():
+        pass
+
+    @functools.wraps(async_function)
+    def wrapped_function():
+        pass
+
+    assert is_async(wrapped_function) is True
