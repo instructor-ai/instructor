@@ -6,12 +6,11 @@ from openai import OpenAI, AsyncOpenAI
 import instructor
 
 client = instructor.patch(OpenAI())
+aclient = instructor.apatch(AsyncOpenAI())
+
 
 @pytest.mark.asyncio
 async def test_async_runmodel():
-
-
-aclient = instructor.apatch(AsyncOpenAI())
     class UserExtract(BaseModel):
         name: str
         age: int

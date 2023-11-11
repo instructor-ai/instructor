@@ -135,7 +135,6 @@ def retry_sync(
 
 
 def wrap_chatcompletion(func: Callable, is_async: bool = None) -> Callable:
-
     @wraps(func)
     async def new_chatcompletion_async(
         response_model=None,
