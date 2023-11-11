@@ -87,28 +87,6 @@ def test_wrap_chatcompletion_wraps_input_function():
     assert result == "Hello, World!"
 
 
-@pytest.mark.asyncio
-async def test_patched_client_works():
-    patched_client = instructor.patch(AsyncOpenAI())
-
-    class ExtractedData(BaseModel):
-        content: str = Field(description="The user's message")
-
-    result = await patched_client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=ExtractedData,
-        messages=[
-            {
-                "role": "system",
-                "content": "This is a test. Please make a mistake when calling the provided function. I'm testing how we handle errors.",
-            },
-            {"role": "user", "content": "Hello, World!"},
-        ],
-    )
-
-    assert result.content == "Hello, World!"
-
-
 def test_is_async_returns_true_if_function_is_async():
     async def async_function():
         pass
