@@ -1,11 +1,12 @@
-import openai
-from pydantic import Field
 from typing import Optional
+
 from openai import OpenAI
-import instructor
+from pydantic import Field
+
+from instructor.function_calls import OpenAISchema
 
 
-class Validator(instructor.OpenAISchema):
+class Validator(OpenAISchema):
     """
     Validate if an attribute is correct and if not,
     return a new value with an error message
