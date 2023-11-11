@@ -18,7 +18,7 @@ This approach to "chain of thought" improves data quality but can have modular c
 from pydantic import BaseModel, Field
 
 class Role(BaseModel):
-    chain_of_thought: str = Field(..., 
+    chain_of_thought: str = Field(...,
         description="Think step by step to determine the correct title")
     title: str
 
@@ -92,8 +92,18 @@ class UserDetail(BaseModel):
     age: int
     name: str
     role: Role = Field(description="Correctly assign one of the predefined roles to the user.")
-
 ```
+
+If you're having a hard time with `Enum` and alternative is to use `Literal`
+
+```python hl_lines="4"
+class UserDetail(BaseModel):
+    age: int
+    name: str
+    role: Literal["PRINCIPAL", "TEACHER", "STUDENT", "OTHER"]
+```
+
+If you'd like to improve performance more you can reiterate the requirements in the field descriptions or in the docstrings.
 
 ## Reiterate Long Instructions
 
@@ -166,7 +176,7 @@ For multiple users, aim to use consistent key names when extracting properties.
 ```python
 class UserDetails(BaseModel):
     """
-    Extract information for multiple users. 
+    Extract information for multiple users.
     Use consistent key names for properties across users.
     """
     users: List[UserDetail]
@@ -215,4 +225,3 @@ class TimeRange(BaseModel):
     start_time: int = Field(..., description="The start time in hours.")
     end_time: int = Field(..., description="The end time in hours.")
 ```
-

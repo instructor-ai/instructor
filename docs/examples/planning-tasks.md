@@ -3,8 +3,9 @@
 This example demonstrates how to use the OpenAI Function Call ChatCompletion model to plan and execute a query plan in a question-answering system. By breaking down a complex question into smaller sub-questions with defined dependencies, the system can systematically gather the necessary information to answer the main question.
 
 !!! tips "Motivation"
+
     The goal of this example is to showcase how query planning can be used to handle complex questions, facilitate iterative information gathering, automate workflows, and optimize processes. By leveraging the OpenAI Function Call model, you can design and execute a structured plan to find answers effectively.
-    
+
      **Use Cases:**
 
     * Complex question answering
@@ -23,7 +24,6 @@ import enum
 from typing import List
 
 from pydantic import Field
-from instructor import OpenAISchema
 
 
 class QueryType(str, enum.Enum):
@@ -33,7 +33,7 @@ class QueryType(str, enum.Enum):
     MERGE_MULTIPLE_RESPONSES = "MERGE_MULTIPLE_RESPONSES"
 
 
-class Query(OpenAISchema):
+class Query(BaseModel):
     """Class representing a single question in a query plan."""
 
     id: int = Field(..., description="Unique id of the query")
@@ -51,7 +51,7 @@ class Query(OpenAISchema):
     )
 
 
-class QueryPlan(OpenAISchema):
+class QueryPlan(BaseModel):
     """Container class representing a tree of questions to ask a question answering system."""
 
     query_graph: List[Query] = Field(
@@ -64,6 +64,7 @@ class QueryPlan(OpenAISchema):
 ```
 
 !!! warning "Graph Generation"
+
     Notice that this example produces a flat list of items with dependencies that resemble a graph, while pydantic allows for recursive definitions, it's much easier and less confusing for the model to generate flat schemas rather than recursive schemas. If you want to see a recursive example, see [recursive schemas](recursive.md)
 
 ## Planning a Query Plan
@@ -72,8 +73,12 @@ Now, let's demonstrate how to plan and execute a query plan using the defined mo
 
 ```python
 import asyncio
+import instructor
+from openai import OpenAI
 
-import openai
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
 
 def query_planner(question: str) -> QueryPlan:
     PLANNING_MODEL = "gpt-4-0613"
@@ -89,18 +94,15 @@ def query_planner(question: str) -> QueryPlan:
         },
     ]
 
-    completion = openai.ChatCompletion.create(
+    QueryPlan = client.chat.completions.create(
         model=PLANNING_MODEL,
         temperature=0,
-        functions=[QueryPlan.openai_schema],
-        function_call={"name": QueryPlan.openai_schema["name"]},
+        response_model=QueryPlan,
         messages=messages,
         max_tokens=1000,
     )
-    root = QueryPlan.from_response(completion)
     return root
 ```
-
 
 ```
 plan = query_planner(
@@ -110,6 +112,7 @@ plan.dict()
 ```
 
 !!! warning "No RAG"
+
     While we build the query plan in this example, we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrival and calls openai for retrival augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
 
 ```python
@@ -128,15 +131,14 @@ plan.dict()
                     {'dependancies': [2, 3],
                     'id': 4,
                     'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
-                    'question': 'Calculate the difference in populations between '
-                                "Canada and Jason's home country"}]} 
+                    'question': 'Calculate the difference in populations between Canada and Jason's home country"}]}
 ```
 
 In the above code, we define a `query_planner` function that takes a question as input and generates a query plan using the OpenAI API.
 
 ## Conclusion
 
-In this example, we demonstrated how to use the OpenAI Function Call `ChatCompletion` model to plan and execute a query plan using a question-answering system. We defined the necessary structures using Pydantic, created a query planner function. 
+In this example, we demonstrated how to use the OpenAI Function Call `ChatCompletion` model to plan and execute a query plan using a question-answering system. We defined the necessary structures using Pydantic, created a query planner function.
 
 If you want to see multiple versions of this style of code, please visit:
 

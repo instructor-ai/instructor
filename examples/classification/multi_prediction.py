@@ -1,10 +1,11 @@
-from typing import List
 import enum
-import openai
-from pydantic import BaseModel
-from instructor import patch
+import instructor
 
-patch()
+from typing import List
+from openai import OpenAI
+from pydantic import BaseModel
+
+client = instructor.patch(OpenAI())
 
 
 # Define new Enum class for multiple labels
@@ -21,7 +22,7 @@ class MultiClassPrediction(BaseModel):
 
 # Modify the classify function
 def multi_classify(data: str) -> MultiClassPrediction:
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=MultiClassPrediction,
         messages=[

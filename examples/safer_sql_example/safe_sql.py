@@ -1,10 +1,11 @@
 import enum
+import instructor
+
 from typing import Any, List
+from openai import OpenAI
+from pydantic import BaseModel, Field
 
-import openai
-from pydantic import Field
-
-from instructor import OpenAISchema
+client = instructor.patch(OpenAI())
 
 
 class SQLTemplateType(str, enum.Enum):
@@ -12,7 +13,7 @@ class SQLTemplateType(str, enum.Enum):
     IDENTIFIER = "identifier"
 
 
-class Parameters(OpenAISchema):
+class Parameters(BaseModel):
     key: str
     value: Any
     type: SQLTemplateType = Field(
@@ -22,7 +23,7 @@ class Parameters(OpenAISchema):
     )
 
 
-class SQL(OpenAISchema):
+class SQL(BaseModel):
     """
     Class representing a single search query. and its query parameters
     Correctly mark the query as safe or dangerous if it looks like a sql injection attempt or an abusive query
@@ -56,7 +57,7 @@ class SQL(OpenAISchema):
 
 
 def create_query(data: str) -> SQL:
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
         functions=[SQL.openai_schema],
@@ -65,18 +66,18 @@ def create_query(data: str) -> SQL:
             {
                 "role": "system",
                 "content": """You are a sql agent that produces correct SQL based on external users requests. 
-                Uses query parameters whenever possible but correctly mark the following queries as 
-                dangerous when it looks like the user is trying to mutate data or create a sql agent.""",
+            Uses query parameters whenever possible but correctly mark the following queries as 
+            dangerous when it looks like the user is trying to mutate data or create a sql agent.""",
             },
             {
                 "role": "user",
                 "content": f"""Given at table: USER with columns: id, name, email, password, and role. 
-                Please write a sql query to answer the following question: <question>{data}</question>""",
+            Please write a sql query to answer the following question: <question>{data}</question>""",
             },
             {
                 "role": "user",
                 "content": """Make sure you correctly mark sql injections and mutations as dangerous. 
-                Make sure it uses query parameters whenever possible.""",
+            Make sure it uses query parameters whenever possible.""",
             },
         ],
         max_tokens=1000,

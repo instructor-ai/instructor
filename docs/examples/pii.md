@@ -39,17 +39,17 @@ class PIIDataExtraction(BaseModel):
 The OpenAI API is utilized to extract PII information from a given document.
 
 ```python
-import openai
+from openai import OpenAI
 import instructor
 
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 EXAMPLE_DOCUMENT = """
 # Fake Document with PII for Testing PII Scrubbing Model
 # (The content here)
 """
 
-pii_data: PIIDataExtraction = openai.ChatCompletion.create(
+pii_data: PIIDataExtraction = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=PIIDataExtraction,
     messages=[

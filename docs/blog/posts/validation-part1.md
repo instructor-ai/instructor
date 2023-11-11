@@ -31,20 +31,20 @@ def validation_function(value):
 `Instructor` helps to ensure you get the exact response type you're looking for when using openai's function call api. Once you've defined the `Pydantic` model for your desired response, `Instructor` handles all the complicated logic in-between - from the parsing/validation of the response to the automatic retries for invalid responses. This means that we can build in validators 'for free' and have a clear separation of concerns between the prompt and the code that calls openai.
 
 ```python
-import openai
+from openai import OpenAI
 import instructor # pip install instructor
 from pydantic import BaseModel
 
 # This enables response_model keyword
-# from openai.ChatCompletion.create
-instructor.patch() # (1)!
+# from client.chat.completions.create
+client = instructor.patch(OpenAI()) # (1)!
 
 class UserDetail(BaseModel):
     name: str
     age: int
 
 
-user: UserDetail = openai.ChatCompletion.create(
+user: UserDetail = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
@@ -210,14 +210,14 @@ Using this structure, we can implement the same logic as before and utilize `Ins
 
 ```python
 import instructor
-import openai
+from openai import OpenAI
 
 # Enables `response_model` and `max_retries` parameters
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 def validator(v):
     statement = "don't say objectionable things"
-    resp = openai.ChatCompletion.create(
+    resp = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {
@@ -229,7 +229,7 @@ def validator(v):
                 "content": f"Does `{v}` follow the rules: {statement}",
             },
         ],
-        # this comes from instructor.patch()
+        # this comes from client = instructor.patch(OpenAI())
         response_model=Validation, # (1)!
     )
     if not resp.is_valid:
@@ -237,7 +237,7 @@ def validator(v):
     return v
 ```
 
-1. The new parameter of `response_model` comes from `instructor.patch()` and does not exist in the original OpenAI SDK. This
+1. The new parameter of `response_model` comes from `client = instructor.patch(OpenAI())` and does not exist in the original OpenAI SDK. This
    allows us to pass in the `Pydantic` model that we want as a response.
 
 Now we can use this validator in the same way we used the `llm_validator` from `Instructor`.
@@ -259,7 +259,7 @@ We can utilise `Pydantic` and `Instructor` to perform a validation to check of t
 def validate_chain_of_thought(values):
     chain_of_thought = values["chain_of_thought"]
     answer = values["answer"]
-    resp = openai.ChatCompletion.create(
+    resp = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {
@@ -271,7 +271,7 @@ def validate_chain_of_thought(values):
                 "content": f"Verify that `{answer}` follows the chain of thought: {chain_of_thought}",
             },
         ],
-        # this comes from instructor.patch()
+        # this comes from client = instructor.patch(OpenAI())
         response_model=Validation,
     )
     if not resp.is_valid:
@@ -366,19 +366,19 @@ Value error, Citation `Jason is cool` not found in text chunks [type=value_error
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
 
-## Putting it all together with `instructor.patch()`
+## Putting it all together with `client = instructor.patch(OpenAI())`
 
-To pass this context from the `openai.ChatCompletion.create` call, `instructor.patch()` also passes the `validation_context`, which will be accessible from the `info` argument in the decorated validator functions.
+To pass this context from the `client.chat.completions.create` call, `client = instructor.patch(OpenAI())` also passes the `validation_context`, which will be accessible from the `info` argument in the decorated validator functions.
 
 ```python
-import openai
+from openai import OpenAI
 import instructor
 
 # Enables `response_model` and `max_retries` parameters
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {
@@ -393,7 +393,7 @@ def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
 
 ## Error Handling and Re-Asking
 
-Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. The by running `instructor.patch()` not only do we add `response_model` and `validation_context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
+Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. The by running `client = instructor.patch(OpenAI())` not only do we add `response_model` and `validation_context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
 
 This approach provides a layer of defense against two types of bad outputs:
 
@@ -422,12 +422,12 @@ class UserModel(BaseModel):
 This is where the `max_retries` parameter comes in. It allows the model to self correct and retry the prompt using the error message rather than the prompt.
 
 ```python
-model = openai.ChatCompletion.create(
+model = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
     ],
-    # Powered by instructor.patch()
+    # Powered by client = instructor.patch(OpenAI())
     response_model=UserModel,
     max_retries=2,
 )

@@ -1,11 +1,10 @@
-import instructor
-import openai
 from typing import List
 from pydantic import BaseModel
 
-instructor.patch()
+import instructor
+from openai import OpenAI
 
-# Define Schemas for PII data
+client = instructor.patch(OpenAI())
 
 
 class Data(BaseModel):
@@ -50,7 +49,7 @@ At the moment, John is employed at Company A. He started his role as a Software 
 """
 
 # Define the PII Scrubbing Model
-pii_data: PIIDataExtraction = openai.ChatCompletion.create(
+pii_data: PIIDataExtraction = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=PIIDataExtraction,
     messages=[

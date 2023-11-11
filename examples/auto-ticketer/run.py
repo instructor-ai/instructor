@@ -1,10 +1,11 @@
-import openai
+import instructor
+from openai import OpenAI
+
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from instructor import patch
 from enum import Enum
 
-patch()
+client = instructor.patch(OpenAI())
 
 
 class PriorityEnum(str, Enum):
@@ -49,7 +50,7 @@ class ActionItems(BaseModel):
 
 
 def generate(data: str) -> ActionItems:
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=ActionItems,
         messages=[

@@ -3,7 +3,7 @@
 In this guide, we demonstrate how to extract and resolve entities from a sample legal contract. Then, we visualize these entities and their dependencies as an entity graph. This approach can be invaluable for legal tech applications, aiding in the understanding of complex documents.
 
 !!! tips "Motivation"
-    Legal contracts are full of intricate details and interconnected clauses. Automatically extracting and visualizing these elements can make it easier to understand the document's overall structure and terms.
+Legal contracts are full of intricate details and interconnected clauses. Automatically extracting and visualizing these elements can make it easier to understand the document's overall structure and terms.
 
 ## Defining the Data Structures
 
@@ -51,15 +51,15 @@ class DocumentExtraction(BaseModel):
 The **`ask_ai`** function utilizes OpenAI's API to extract and resolve entities from the input content.
 
 ```python
-import openai
 import instructor
+from openai import OpenAI
 
-# Adds response_model to ChatCompletion
-# Allows the return of Pydantic model rather than raw JSON
-instructor.patch()
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
 
 def ask_ai(content) -> DocumentExtraction:
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-4",
         response_model=DocumentExtraction,
         messages=[
@@ -89,15 +89,15 @@ def generate_html_label(entity: Entity) -> str:
 
 def generate_graph(data: DocumentExtraction):
     dot = Digraph(comment="Entity Graph", node_attr={"shape": "plaintext"})
-    
+
     for entity in data.entities:
         label = generate_html_label(entity)
         dot.node(str(entity.id), label)
-    
+
     for entity in data.entities:
         for dep_id in entity.dependencies:
             dot.edge(str(entity.id), str(dep_id))
-    
+
     dot.render("entity.gv", view=True)
 ```
 
@@ -134,6 +134,6 @@ model = ask_ai(content)
 generate_graph(model)
 ```
 
-This will produce a graphical representation of the entities and their dependencies, stored as "entity.gv". 
+This will produce a graphical representation of the entities and their dependencies, stored as "entity.gv".
 
 ![Entity Graph](entity_resolution.png)

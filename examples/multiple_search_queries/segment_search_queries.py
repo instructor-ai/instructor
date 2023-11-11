@@ -1,28 +1,11 @@
-"""
-This script is used to segment a request into multiple search queries and perform them asynchronously.
-The `Search` class represents a single search query and has the `execute` method to perform the search.
-The `MultiSearch` class represents multiple searches and has an `execute` method that runs all the 
-searches concurrently using asyncio.
-The `segment` function uses OpenAI's GPT-3 model to convert a given string into multiple search queries,
-which are then run by calling the `execute` method of the returned `MultiSearch` object.
-
-Examples:
->>> queries = segment(
-...     "Please send me the video from last week about the investment case study and also documents about your GPDR policy?"
-... )
->>> queries.execute()
-# Expected output:
-# >>> Searching for `Video` with query `investment case study` using `SearchType.VIDEO`
-# >>> Searching for `Documents` with query `GPDR policy` using `SearchType.EMAIL`
-"""
-
 import enum
+import instructor
+
 from typing import List
+from openai import OpenAI
+from pydantic import Field, BaseModel
 
-import openai
-from pydantic import Field
-
-from instructor import OpenAISchema
+client = instructor.patch(OpenAI())
 
 
 class SearchType(str, enum.Enum):
@@ -32,7 +15,7 @@ class SearchType(str, enum.Enum):
     EMAIL = "email"
 
 
-class Search(OpenAISchema):
+class Search(BaseModel):
     """
     Class representing a single search query which contains title, query and the search type
     """
@@ -50,7 +33,7 @@ class Search(OpenAISchema):
         )
 
 
-class MultiSearch(OpenAISchema):
+class MultiSearch(BaseModel):
     """
     Class representing multiple search queries.
     Make sure they contain all the required attributes
@@ -81,11 +64,10 @@ def segment(data: str) -> MultiSearch:
         MultiSearch: An object representing the multiple search queries.
     """
 
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model="gpt-4-0613",
         temperature=0.1,
-        functions=[MultiSearch.openai_schema],
-        function_call={"name": MultiSearch.openai_schema["name"]},
+        response_model=MultiSearch,
         messages=[
             {
                 "role": "system",

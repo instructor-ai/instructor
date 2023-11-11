@@ -2,10 +2,9 @@
 
 This example shows how to create a multiple files program based on specifications by utilizing the OpenAI Function Call. We will define the necessary data structures using Pydantic and demonstrate how to convert a specification (prompt) into multiple files.
 
-
 !!! note "Motivation"
-    Creating multiple file programs based on specifications is a challenging and rewarding skill that can help you build complex and scalable applications. 
-    With OpenAI Function Call, you can leverage the power of language models to generate an entire codebase and code snippets that match your specifications.
+Creating multiple file programs based on specifications is a challenging and rewarding skill that can help you build complex and scalable applications.
+With OpenAI Function Call, you can leverage the power of language models to generate an entire codebase and code snippets that match your specifications.
 
 ## Defining the Data Structures
 
@@ -14,10 +13,10 @@ Let's start by defining the data structure of `File` and `Program`.
 ```python
 from typing import List
 from pydantic import Field
-from instructor import OpenAISchema
+from instructor import BaseModel
 
 
-class File(OpenAISchema):
+class File(BaseModel):
     """
     Correctly named file with contents.
     """
@@ -32,7 +31,7 @@ class File(OpenAISchema):
             f.write(self.body)
 
 
-class Program(OpenAISchema):
+class Program(BaseModel):
     """
     Set of files that represent a complete and correct program
     """
@@ -40,26 +39,31 @@ class Program(OpenAISchema):
     files: List[File] = Field(..., description="List of files")
 ```
 
-The `File` class represents a single file or script, and it contains a `name` attribute and `body` for the text content of the file. 
+The `File` class represents a single file or script, and it contains a `name` attribute and `body` for the text content of the file.
 Notice that we added the `save` method to the `File` class. This method is used to writes the body of the file to disk using the name as path.
 
-The `Program` class represents a collection of files that form a complete and correct program. 
+The `Program` class represents a collection of files that form a complete and correct program.
 It contains a list of `File` objects in the `files` attribute.
 
 ## Calling Completions
 
-To create the files, we will use the base `openai` API. 
+To create the files, we will use the base `openai` API.
 We can define a function that takes in a string and returns a `Program` object.
 
 ```python
-import openai
+import instructor
+from openai import OpenAI
+
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
+
 
 def develop(data: str) -> Program:
-    completion = openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0.1,
-        functions=[Program.openai_schema],
-        function_call={"name": Program.openai_schema["name"]},
+        response_model=Program,
         messages=[
             {
                 "role": "system",
@@ -72,7 +76,6 @@ def develop(data: str) -> Program:
         ],
         max_tokens=1000,
     )
-    return Program.from_response(completion)
 ```
 
 ## Evaluating an Example
@@ -82,10 +85,10 @@ Let's evaluate the example by specifying the program to create and print the res
 ```python
 program = develop(
         """
-        Create a fastapi app with a readme.md file and a main.py file with 
-        some basic math functions. the datamodels should use pydantic and 
-        the main.py should use fastapi. the readme.md should have a title 
-        and a description. The readme should contain some helpful infromation 
+        Create a fastapi app with a readme.md file and a main.py file with
+        some basic math functions. the datamodels should use pydantic and
+        the main.py should use fastapi. the readme.md should have a title
+        and a description. The readme should contain some helpful infromation
         and a curl example"""
     )
 
@@ -97,29 +100,31 @@ for file in program.files:
 ```
 
 The output will be:
-```markdown
+
+````markdown
 # readme.md
--
-    # FastAPI App
 
-    This is a FastAPI app that provides some basic math functions.
+- # FastAPI App
 
-    ## Usage
+  This is a FastAPI app that provides some basic math functions.
 
-    To use this app, follow the instructions below:
+  ## Usage
 
-    1. Install the required dependencies by running `pip install -r requirements.txt`.
-    2. Start the app by running `uvicorn main:app --reload`.
-    3. Open your browser and navigate to `http://localhost:8000/docs` to access the Swagger UI documentation.
+  To use this app, follow the instructions below:
 
-    ## Example
+  1. Install the required dependencies by running `pip install -r requirements.txt`.
+  2. Start the app by running `uvicorn main:app --reload`.
+  3. Open your browser and navigate to `http://localhost:8000/docs` to access the Swagger UI documentation.
 
-    You can use the following curl command to test the `/add` endpoint:
+  ## Example
 
-    ```bash
-    $ curl -X POST -H "Content-Type: application/json" -d '{"a": 2, "b": 3}' http://localhost:8000/add
-    ```
-```
+  You can use the following curl command to test the `/add` endpoint:
+
+  ```bash
+  $ curl -X POST -H "Content-Type: application/json" -d '{"a": 2, "b": 3}' http://localhost:8000/add
+  ```
+````
+
 ```python
 # main.py
 -
@@ -155,12 +160,13 @@ The output will be:
             return {'error': 'Cannot divide by zero'}
         return {'result': numbers.a / numbers.b}
 ```
+
 ```markdown
 # requirements.txt
--
-    fastapi
-    uvicorn
-    pydantic
+
+- fastapi
+  uvicorn
+  pydantic
 ```
 
 ## Add Refactoring Capabilities
@@ -173,9 +179,9 @@ This will be our definition for a change in our code base:
 
 ```python
 from pydantic import Field
-from instructor import OpenAISchema
+from instructor import BaseModel
 
-class Diff(OpenAISchema):
+class Diff(BaseModel):
     """
     Changes that must be correctly made in a program's code repository defined as a
     complete diff (Unified Format) file which will be used to `patch` the repository.
@@ -226,26 +232,24 @@ class Diff(OpenAISchema):
     )
 ```
 
-The `diff` class represents a *diff* file, with a set of changes that can be applied to our program using a tool like patch or Git.
+The `diff` class represents a _diff_ file, with a set of changes that can be applied to our program using a tool like patch or Git.
 
 ## Calling Refactor Completions
 
 We'll define a function that will pass the program and the new specifications to the OpenAI API:
 
 ```python
-import openai
 from generate import Program
 
 def refactor(new_requirements: str, program: Program) -> Diff:
     program_description = "\n".join(
         [f"{code.file_name}\n[[[\n{code.body}\n]]]\n" for code in program.files]
     )
-    completion = openai.ChatCompletion.create(
+    return client.chat.completions.create(
         # model="gpt-3.5-turbo-0613",
         model="gpt-4",
         temperature=0,
-        functions=[Diff.openai_schema],
-        function_call={"name": Diff.openai_schema["name"]},
+        response_model=Diff,
         messages=[
             {
                 "role": "system",
@@ -268,7 +272,6 @@ def refactor(new_requirements: str, program: Program) -> Diff:
         ],
         max_tokens=1000,
     )
-    return Diff.from_response(completion)
 ```
 
 Notice we're using here the version `gpt-4` of the model, which is more powerful but, also, more expensive.
@@ -287,7 +290,7 @@ print(changes.diff)
 
 The output will be this:
 
-```diff
+````diff
 --- readme.md
 +++ readme.md
 @@ -1,9 +1,9 @@
@@ -312,7 +315,7 @@ The output will be this:
  ```bash
 -curl -X POST -H "Content-Type: application/json" -d '{"operation": "add", "operands": [2, 3]}' http://localhost:8000/calculate
 +curl -X POST -H "Content-Type: application/json" -d '{"operation": "add", "operands": [2, 3]}' http://localhost:5000/calculate
- ```
+````
 
 --- main.py
 +++ main.py
@@ -322,46 +325,54 @@ The output will be this:
 +from flask import Flask, request, jsonify
 
 -app = FastAPI()
-+app = Flask(__name__)
-
++app = Flask(**name**)
 
 -class Operation(BaseModel):
--    operation: str
--    operands: list
-+@app.route('/calculate', methods=['POST'])
-+def calculate():
-+    data = request.get_json()
-+    operation = data.get('operation')
-+    operands = data.get('operands')
 
+- operation: str
+- operands: list
+  +@app.route('/calculate', methods=['POST'])
+  +def calculate():
+
+* data = request.get_json()
+* operation = data.get('operation')
+* operands = data.get('operands')
 
 -@app.post('/calculate')
 -async def calculate(operation: Operation):
--    if operation.operation == 'add':
+
+- if operation.operation == 'add':
 -        result = sum(operation.operands)
--    elif operation.operation == 'subtract':
+- elif operation.operation == 'subtract':
 -        result = operation.operands[0] - sum(operation.operands[1:])
--    elif operation.operation == 'multiply':
-+    if operation == 'add':
-+        result = sum(operands)
-+    elif operation == 'subtract':
-+        result = operands[0] - sum(operands[1:])
-+    elif operation == 'multiply':
-         result = 1
+- elif operation.operation == 'multiply':
+
+* if operation == 'add':
+*        result = sum(operands)
+* elif operation == 'subtract':
+*        result = operands[0] - sum(operands[1:])
+* elif operation == 'multiply':
+  result = 1
+
 -        for operand in operation.operands:
-+        for operand in operands:
+
+*        for operand in operands:
              result *= operand
--    elif operation.operation == 'divide':
+
+- elif operation.operation == 'divide':
 -        result = operation.operands[0]
 -        for operand in operation.operands[1:]:
-+    elif operation == 'divide':
-+        result = operands[0]
-+        for operand in operands[1:]:
+
+* elif operation == 'divide':
+*        result = operands[0]
+*        for operand in operands[1:]:
              result /= operand
-     else:
-         result = None
--    return {'result': result}
-+    return jsonify({'result': result})
+  else:
+  result = None
+
+- return {'result': result}
+
+* return jsonify({'result': result})
 
 --- requirements.txt
 +++ requirements.txt
@@ -371,4 +382,7 @@ The output will be this:
 -pydantic
 +flask
 +flask-cors
+
+```
+
 ```

@@ -7,20 +7,19 @@ In this example, we will demonstrate how define and use a recursive class defini
 We will use Pydantic to define the necessary data structures representing the directory tree and its nodes. We have two classes, `Node` and `DirectoryTree`, which are used to model individual nodes and the entire directory tree, respectively.
 
 !!! warning "Flat is better than nested"
-    While it's easier to model things as nested, returning flat items with dependencies tends to yield better results. For a flat example, check out [planning tasks](planning-tasks.md) where we model a query plan as a dag.
+While it's easier to model things as nested, returning flat items with dependencies tends to yield better results. For a flat example, check out [planning tasks](planning-tasks.md) where we model a query plan as a dag.
 
 ```python
 import enum
 from typing import List
 from pydantic import Field
-from instructor import OpenAISchema
 
 class NodeType(str, enum.Enum):
     """Enumeration representing the types of nodes in a filesystem."""
     FILE = "file"
     FOLDER = "folder"
 
-class Node(OpenAISchema):
+class Node(BaseModel):
     """
     Class representing a single node in a filesystem. Can be either a file or a folder.
     Note that a file cannot have children, but a folder can.
@@ -54,7 +53,7 @@ class Node(OpenAISchema):
         else:
             print(f"{parent_path}/{self.name}", self.node_type)
 
-class DirectoryTree(OpenAISchema):
+class DirectoryTree(BaseModel):
     """
     Container class representing a directory tree.
 
@@ -83,7 +82,12 @@ The `DirectoryTree` class represents the entire directory tree. It has a single 
 We define a function `parse_tree_to_filesystem` to convert a string representing a directory tree into a filesystem structure using OpenAI.
 
 ```python
-import openai
+import instructor
+from openai import OpenAI
+
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
 
 def parse_tree_to_filesystem(data: str) -> DirectoryTree:
     """
@@ -97,11 +101,9 @@ def parse_tree_to_filesystem(data: str) -> DirectoryTree:
         DirectoryTree: The directory tree representing the filesystem.
     """
 
-    completion = openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
-        temperature=0.2,
-        functions=[DirectoryTree.openai_schema],
-        function_call={"name": DirectoryTree.openai_schema["name"]},
+        response_model=DirectoryTree,
         messages=[
             {
                 "role": "system",
@@ -114,8 +116,6 @@ def parse_tree_to_filesystem(data: str) -> DirectoryTree:
         ],
         max_tokens=1000,
     )
-    root = DirectoryTree.from_response(completion)
-    return root
 
 ```
 

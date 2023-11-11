@@ -3,7 +3,9 @@ from graphviz import Digraph
 from pydantic import BaseModel, Field
 
 import instructor
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 # Patch openai to use instructor
 # allows for response_model
@@ -43,7 +45,7 @@ class DocumentExtraction(BaseModel):
 
 
 def ask_ai(content) -> DocumentExtraction:
-    resp: DocumentExtraction = openai.ChatCompletion.create(
+    resp: DocumentExtraction = client.chat.completions.create(
         model="gpt-4",
         response_model=DocumentExtraction,
         messages=[

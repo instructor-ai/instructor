@@ -1,9 +1,10 @@
 import enum
-import openai
-from pydantic import BaseModel
-from instructor import patch
+import instructor
+from openai import OpenAI
 
-patch()
+from pydantic import BaseModel
+
+client = instructor.patch(OpenAI())
 
 
 class Labels(str, enum.Enum):
@@ -20,7 +21,7 @@ class SinglePrediction(BaseModel):
 
 
 def classify(data: str) -> SinglePrediction:
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=SinglePrediction,
         messages=[

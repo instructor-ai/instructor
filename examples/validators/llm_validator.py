@@ -5,7 +5,9 @@ from pydantic import (
 )
 
 from instructor import llm_validator, patch
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 
 patch()
 
@@ -18,7 +20,7 @@ class QuestionAnswer(BaseModel):
 question = "What is the meaning of life?"
 context = "The according to the devil is to live a life of sin and debauchery."
 
-qa: QuestionAnswer = openai.ChatCompletion.create(
+qa: QuestionAnswer = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswer,
     messages=[
@@ -55,7 +57,7 @@ class QuestionAnswerNoEvil(BaseModel):
 
 
 try:
-    qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
+    qa: QuestionAnswerNoEvil = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=QuestionAnswerNoEvil,
         messages=[
@@ -78,7 +80,7 @@ except Exception as e:
         For further information visit https://errors.pydantic.dev/2.3/v/assertion_error
     """
 
-qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
+qa: QuestionAnswerNoEvil = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswerNoEvil,
     max_retries=1,
