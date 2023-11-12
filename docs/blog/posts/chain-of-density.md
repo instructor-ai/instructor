@@ -17,7 +17,7 @@ authors:
 
 > Discover how to distil an interative method like chain of density into a single finetune.
 
-In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to increase latency by 40x, reduce costs by 10x and maintain entity density. Showing massive efficiency gains by finetuning and distiling capabilities into specialized models.
+In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to increase latency by 20x, reduce costs by 50x and maintain entity density. 
 
 By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's great tooling), capable of producing summaries that rival the effectiveness of Chain of Density. As always, all code is readily available in our `examples/chain-of-density` folder in our repo for your reference.
 
@@ -35,7 +35,7 @@ First introduced by Salesforce's AI Research wing in their paper - [From Sparse 
 
 ??? info "Implementation Details"
 
-    Note that our implementation uses a validator to ensure that the rewritten summary has a minimum length rather than a prompt. As a result, we match the original paper on entity count but not entity density.
+    Note that our implementation uses a validator to ensure that the rewritten summary has a minimum length rather than a prompt. We also perform just 3 and not 5 rounds of rewrites, resulting in a lower final entity density.
 
 ### Original Prompt
 
@@ -153,14 +153,19 @@ class RewrittenSummary(BaseModel):
     library, we recommend checking out our previous article on LLM
     validation - [Good LLM Validation is just Good Validation](/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
 
-Ideally, we'd like for `Missing` to have a length between 1 and 3, `Absent` to be an empty list and for our summary to be around 80 tokens. With `Instructor`, we can implement this logic using native `Pydantic` validators that are simply declared as part of the class itself.
+Ideally, we'd like for `Missing` to have a length between 1 and 3, `Absent` to be an empty list and for our rewritten summaries to keep a minimum entity density. With `Instructor`, we can implement this logic using native `Pydantic` validators that are simply declared as part of the class itself.
 
-```py hl_lines="3"
+```py hl_lines="8 40 44"
+import nltk
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
 @field_validator("summary")
 def min_length(cls, v: str):
     tokens = nltk.word_tokenize(v) #(1)!
     num_tokens = len(tokens)
-    if num_tokens < 75:
+    if num_tokens < 60:
         raise ValueError(
             "The current summary is too short. Please make sure that you generate a new summary that is around 80 words long."
         )
@@ -183,10 +188,31 @@ def has_no_absent_entities(cls, absent_entities: List[str]):
             f"Do not omit the following Entities {absent_entity_string} from the new summary"
         )
     return absent_entities
+
+@field_validator("summary")
+    def min_entity_density(cls, v: str):
+        tokens = nltk.word_tokenize(v)
+        num_tokens = len(tokens)
+
+        # Extract Entities
+        doc = nlp(v) #(2)!
+        num_entities = len(doc.ents)
+
+        density = num_entities / num_tokens
+        if density < 0.08: #(3)!
+            raise ValueError(
+                f"The summary of {v} has too few entities. Please regenerate a new summary with more new entities added to it. Remember that new entities can be added at any point of the summary."
+            )
+
+        return v
 ```
 
 1.  Similar to the original paper, we utilize the `NLTK` word tokenizer to count the number of tokens within our generated sentences.
-    We aim for at least 75 tokens in our generated summary so that we don't lose information.
+    We aim for at least 60 tokens in our generated summary so that we don't lose information.
+
+2.  We also use the spaCy library to calculate the entity density of the generated summary. 
+
+3.  We also implement a minimum entity density so that we stay within a given range. 0.08 is arbitrarily chosen in this case
 
 ### Putting it all Together
 
@@ -257,7 +283,7 @@ def summarize_article(article: str, summary_steps: int = 3):
                 },
                 *missing_entity_message,
             ],
-            max_retries=3,
+            max_retries=3, #(4)!
             max_tokens=1000,
             response_model=RewrittenSummary,
         )
@@ -278,6 +304,8 @@ def summarize_article(article: str, summary_steps: int = 3):
 3.  We slightly modify the original system prompt used in the original paper to perform a rewrite of the summary.
     Using `Instructor`, we also get validation of the generated output with our `field_validator`s that we defined above
 
+4.  If you've chosen a value that is larger than 0.08, make sure to increase this value in case you need to do multiple rewrites
+
 This summarization function yields a result which triples the number of entities while mantaining the same number of tokens. We can also see that stylistically, the summary is a lot more natural.
 
 **First Iteration**
@@ -296,20 +324,17 @@ In this section, we'll look into how to fine-tune a GPT 3.5 model so that it is 
 
 Let's first segregate our train and test set so that we don't have any sort of contamination - this corresponds to our `train.csv` and `test.csv` in our [Hugging Face Dataset](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density). Now, we just need to import the `Instructions` module from the `Instructor` package which allows you to generate a nicely formatted `.jsonl` file to be used for fine-tuning
 
-```py hl_lines="2 9 13-20 25 28"
+```py hl_lines="2 9 11-18 37 40"
 from typing import List
 from chain_of_density import summarize_article #(1)!
 import csv
 import logging
 import instructor
-from itertools import islice
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+logging.basicConfig(level=logging.INFO) #(2)!
 
-logging.basicConfig(level=logging.INFO)
-
-instructions = instructor.Instructions( #(2)!
+instructions = instructor.Instructions( #(3)!
     name="Chain Of Density",
     finetune_format="messages",
     # log handler is used to save the data to a file
@@ -319,17 +344,31 @@ instructions = instructor.Instructions( #(2)!
 )
 
 class GeneratedSummary(BaseModel):
-    summary: str
+    """
+    This represents a highly concise summary that includes as many entities as possible from the original source article.
 
-@instructions.distil #(3)!
+    An Entity is a real-world object that's assigned a name - for example, a person, country a product or a book title.
+
+    Guidelines
+    - Make every word count
+    - The new summary should be highly dense and concise yet self-contained, eg., easily understood without the Article.
+    - Make space with fusion, compression, and removal of uninformative phrases like "the article discusses"
+    """
+
+    summary: str = Field(
+        ...,
+        description="This represents the final summary generated that captures the meaning of the original article which is as concise as possible. ",
+    )
+
+@instructions.distil #(4)!
 def distil_summarization(text: str) -> GeneratedSummary:
     summary_chain: List[str] = summarize_article(text)
-    return GeneratedSummary(summary=summary_chain[-1]) #(4)!
+    return GeneratedSummary(summary=summary_chain[-1]) #(5)!
 
 with open("train.csv", "r") as file:
     reader = csv.reader(file)
     next(reader)  # Skip the header
-    for index, (article, summary) in enumerate(reader):
+    for article, summary in reader:
         # Run Distillisation to generate the values
         distil_summarization(article)
 ```
@@ -337,13 +376,15 @@ with open("train.csv", "r") as file:
 1.  In this example, we're using the summarize_article that we defined up above. We saved it in a local file called `chain_of_density.py`,
     hence the import
 
-2.  We instantiate a `Instruction` object which will help us handle the conversion of our function calls into a valid `.jsonl` file. We also define
+2. We also need to configure logging at the `INFO` level. This is very important, if this is not configured, your output will not be generated.
+
+3.  We instantiate a `Instruction` object which will help us handle the conversion of our function calls into a valid `.jsonl` file. We also define
     the name of the `.jsonl` file in the `log_handlers` parameter
 
-3.  We add in an `instructions.distil` annotation so that we automatically capture the input and output of the function we'd like to
+4.  We add in an `instructions.distil` annotation so that we automatically capture the input and output of the function we'd like to
     fine-tune our model to output
 
-4.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
+5.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
     be returned when using the `instructions.distil` annotation
 
 !!! warning "Rate Limiting"
@@ -380,7 +421,7 @@ With that, you've now got your own fine-tuned model ready to go and serve data i
 
 ## Results and Benchmarks
 
-We fine-tuned a total of 3 different models, giving each 20, 50 and 100 samples respectively to see if more data improved the models. We then compared the output of these fine tuned models to GPT-4 and the newly released GPT-4-Turbo to see how they match up.
+We fine-tuned a total of 3 different models, giving each 20, 50 and 76 samples respectively to see if more data improved the models. We then compared the output of these fine tuned models to GPT-4 and GPT-3 summaries that were generated using chain-of-density methods.
 
 We'll be comparing these models in three main ways
 
@@ -392,26 +433,35 @@ We used a total of 20 articles as a validation set which our fine tuned models h
 
 | Model               | Mean Latency (s) | Mean Entity Count | Mean Entity Density | Tokens |
 | ------------------- | ---------------- | ----------------- | ------------------- | ------ |
-| GPT-4               | 87.2             | 10.15             | 0.116               | 86.65  |
-| GPT-4-Turbo         | 41.1             | 10.05             | 0.116               | 87.25  |
-| 3.5 Finetuned (20)  | 2.05             | 10.9              | 0.125               | 87.4   |
-| 3.5 Finetuned (50)  | 2.00             | 10.85             | 0.114               | 94.95  |
-| 3.5 Finetuned (100) | 2.09             | 10.10             | 0.115               | 88     |
+| GPT-4 (COD)         | 49.5             | 11.3              | 0.138               | 81.65  |
+| GPT-3 (COD)         | 145.94           | 11.05             | 0.105               | 105.7  |
+| 3.5 Finetuned (20)  | 2.25             | 14.7              | 0.154               | 95.45  |
+| 3.5 Finetuned (50)  | 2.09             | 12.4              | 0.140               | 88.35  |
+| 3.5 Finetuned (76)  | 2.17             | 11.65             | 0.142               | 82.05  |
+
+??? notes "Finetuning Datasets"
+
+    For our finetuned models, we did a few optimisations to raise the performance.
+    
+    We only included summaries that had a minimum density of 0.15 in the dataset, took the summary in the entire chain with the highest density as the final one, forced every regenerated summary to have a minimum density of 0.12 and regenerated summaries up to three times if they didn't meet the summaries. **This is a much more expensive strategy and can cost up to 2.5x or more what we do in this tutorial**
+
+    This resulted in the total cost of $63.46 to generate just 75 examples due to the stringent requirements, translating to about $0.85 per generated summary example.
 
 Using the OpenAI Usage Dashboard, we can calculate the cost of generating 20 summaries as seen below.
 
-| Model               | Training Cost ($) | Inference Cost ($) | Tokens Used | Total Cost ($) |
+| Model               | Training Cost ($) | Inference Cost ($) | Tokens Used | Total Cost ($) | 
 | ------------------- | ----------------- | ------------------ | ----------- | -------------- |
-| 3.5 Finetuned (20)  | 0.66              | 0.153              | 43,612      | 0.817          |
-| 3.5 Finetuned (50)  | 1.11              | 0.153              | 45,128      | 1.266          |
-| 3.5 Finetuned (100) | 2.32              | 0.153              | 44,925      | 2.481          |
-| GPT-4 Turbo         | -                 | 1.41               | 265,397     | 1.41           |
-| GPT-4               | -                 | 7.63               | 238,290     | 7.69           |
+| 3.5 Finetuned (20)  | 0.664             | 0.207              | 56,573      | 0.817          |
+| 3.5 Finetuned (50)  | 1.368             | 0.165              | 49,057      | 1.266          |
+| 3.5 Finetuned (76)  | 1.824             | 0.174              | 51,583      | 2.481          |
+| GPT-4 (COD)         | -                 | 12.9               | 409,062     | 12.9           |
+| GPT-3 (COD)         | -                 | 0.45               | 290,164     | 0.45           |
 
-Here, `GPT-4-Turbo` has an approximate inference cost of `$0.07` per summary while our finetuned models have an inference cost of `$0.008` per summary, **which ~ 10x cheaper.**
+
+Here, we can see that `GPT-4` has an approximate inference cost of `0.65` per summary while our finetuned models have an inference cost of `0.0091` per summary which is ~ `72x` cheaper. 
 
 ## Conclusions
 
-Finetuning this iterative method was 20-40x faster while keeping entity density relatively constant. Our token costs also dropped by almost 10x when compared against `GPT-4 Turbo` and by almost 150x when compared against GPT-4, resulting in massive efficiency gains by finetuning and distiling capabilities into specialized models.
+Finetuning this iterative method was 20-40x faster while improving overall performance, resulting in massive efficiency gains by finetuning and distilling capabilities into specialized models.
 
 We've seen how `Instructor` can make your life easier, from data modeling to distilation and finetuning. If you enjoy the content or want to try out `instructor` check out the [github](https://github.com/jxnl/instructor) and don't forget to give us a star!

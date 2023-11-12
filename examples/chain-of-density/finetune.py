@@ -3,19 +3,36 @@ from chain_of_density import summarize_article
 import csv
 import logging
 import instructor
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 logging.basicConfig(level=logging.INFO)
 
 instructions = instructor.Instructions(
     name="Chain Of Density",
     finetune_format="messages",
-    log_handlers=[logging.FileHandler("summarization.jsonl")],
+    # log handler is used to save the data to a file
+    # you can imagine saving it to a database or other storage
+    # based on your needs!
+    log_handlers=[logging.FileHandler("generated.jsonl")],
 )
 
 
 class GeneratedSummary(BaseModel):
-    summary: str
+    """
+    This represents a highly concise summary that includes as many entities as possible from the original source article.
+
+    An Entity is a real-world object that's assigned a name - for example, a person, country a product or a book title.
+
+    Guidelines
+    - Make every word count
+    - The new summary should be highly dense and concise yet self-contained, eg., easily understood without the Article.
+    - Make space with fusion, compression, and removal of uninformative phrases like "the article discusses"
+    """
+
+    summary: str = Field(
+        ...,
+        description="This represents the final summary generated that captures the meaning of the original article which is as concise as possible. ",
+    )
 
 
 @instructions.distil
@@ -24,7 +41,6 @@ def distil_summarization(text: str) -> GeneratedSummary:
     return GeneratedSummary(summary=summary_chain[-1])
 
 
-# Read in the csv file we have
 with open("test.csv", "r") as file:
     reader = csv.reader(file)
     next(reader)  # Skip the header

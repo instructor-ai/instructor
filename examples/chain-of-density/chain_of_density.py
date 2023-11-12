@@ -3,8 +3,10 @@ from typing import List
 import instructor
 import nltk
 from openai import OpenAI
+import spacy
 
 client = instructor.patch(OpenAI())
+nlp = spacy.load("en_core_web_sm")
 
 
 class InitialSummary(BaseModel):
@@ -47,10 +49,28 @@ class RewrittenSummary(BaseModel):
     )
 
     @field_validator("summary")
+    def min_entity_density(cls, v: str):
+        # We want to make sure we have a minimum density of 0.12 whenever we do a rewrite. This ensures that the summary quality is always going up
+        tokens = nltk.word_tokenize(v)
+        num_tokens = len(tokens)
+
+        # Extract Entities
+        doc = nlp(v)
+        num_entities = len(doc.ents)
+
+        density = num_entities / num_tokens
+        if density < 0.08:
+            raise ValueError(
+                f"The summary of {v} has too few entities. Please regenerate a new summary with more new entities added to it. Remember that new entities can be added at any point of the summary."
+            )
+
+        return v
+
+    @field_validator("summary")
     def min_length(cls, v: str):
         tokens = nltk.word_tokenize(v)
         num_tokens = len(tokens)
-        if num_tokens < 75:
+        if num_tokens < 60:
             raise ValueError(
                 "The current summary is too short. Please make sure that you generate a new summary that is around 80 words long."
             )
@@ -84,7 +104,7 @@ def summarize_article(article: str, summary_steps: int = 3):
         messages=[
             {
                 "role": "system",
-                "content": "Write a summary about the article that is long (4-5 sentences) yet highly non-specific. Use overly, verbose language and fillers(eg.,'this article discusses') to reach ~80 words",
+                "content": "Write a summary about the article that is long (4-5 sentences) yet highly non-specific. Use overly, verbose language and fillers(eg.,'this article discusses') to reach ~80 words. ",
             },
             {"role": "user", "content": f"Here is the Article: {article}"},
             {
@@ -94,25 +114,15 @@ def summarize_article(article: str, summary_steps: int = 3):
         ],
         max_retries=2,
     )
-    prev_summary = None
     summary_chain.append(summary.summary)
     for i in range(summary_steps):
-        missing_entity_message = (
-            []
-            if prev_summary is None
-            else [
-                {
-                    "role": "user",
-                    "content": f"Please include these Missing Entities: {','.join(prev_summary.missing)}",
-                },
-            ]
-        )
         new_summary: RewrittenSummary = client.chat.completions.create(
             model="gpt-4-0613",
             messages=[
                 {
                     "role": "system",
-                    "content": """
+                    "content": f"""
+                Article: {article}
                 You are going to generate an increasingly concise,entity-dense summary of the following article.
 
                 Perform the following two tasks
@@ -127,18 +137,15 @@ def summarize_article(article: str, summary_steps: int = 3):
                 - Never drop entities from the previous summary. If space cannot be made, add fewer new entities.
                 """,
                 },
-                {"role": "user", "content": f"Here is the Article: {article}"},
                 {
                     "role": "user",
                     "content": f"Here is the previous summary: {summary_chain[-1]}",
                 },
-                *missing_entity_message,
             ],
-            max_retries=3,
+            max_retries=5,
             max_tokens=1000,
             response_model=RewrittenSummary,
         )
         summary_chain.append(new_summary.summary)
-        prev_summary = new_summary
 
     return summary_chain
