@@ -1,13 +1,35 @@
 import functools
-
 import pytest
+
 from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel, Field
 
 import instructor
+
 from instructor.patch import is_async, wrap_chatcompletion
 
 client = instructor.patch(OpenAI())
+aclient = instructor.patch(AsyncOpenAI())
+
+
+@pytest.mark.asyncio
+async def test_async_runmodel():
+    class UserExtract(BaseModel):
+        name: str
+        age: int
+
+    model = await aclient.chat.completions.create(
+        model="gpt-3.5-turbo",
+        response_model=UserExtract,
+        messages=[
+            {"role": "user", "content": "Extract jason is 25 years old"},
+        ],
+    )
+    assert isinstance(model, UserExtract), "Should be instance of UserExtract"
+    assert model.name.lower() == "jason"
+    assert hasattr(
+        model, "_raw_response"
+    ), "The raw response should be available from OpenAI"
 
 
 def test_runmodel():
