@@ -7,7 +7,7 @@ tags:
   - chain of density
   - finetuneing
   - gpt-3.5-turbo
-  - distilation
+  - distillation
 authors:
   - ivanleomk
   - jxnl
@@ -17,7 +17,7 @@ authors:
 
 > Discover how to distil an interative method like chain of density into a single finetune.
 
-In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to increase latency by 20x, reduce costs by 50x and maintain entity density. 
+In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to decrease latency by 20x, reduce costs by 50x and maintain entity density. 
 
 By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's great tooling), capable of producing summaries that rival the effectiveness of Chain of Density. As always, all code is readily available in our `examples/chain-of-density` folder in our repo for your reference.
 
@@ -464,4 +464,4 @@ Here, we can see that `GPT-4` has an approximate inference cost of `0.65` per su
 
 Finetuning this iterative method was 20-40x faster while improving overall performance, resulting in massive efficiency gains by finetuning and distilling capabilities into specialized models.
 
-We've seen how `Instructor` can make your life easier, from data modeling to distilation and finetuning. If you enjoy the content or want to try out `instructor` check out the [github](https://github.com/jxnl/instructor) and don't forget to give us a star!
+We've seen how `Instructor` can make your life easier, from data modeling to distillation and finetuning. If you enjoy the content or want to try out `instructor` check out the [github](https://github.com/jxnl/instructor) and don't forget to give us a star!
