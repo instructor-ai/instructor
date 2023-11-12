@@ -45,22 +45,47 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-!!! note "Using `openai<1.0.0`"
+**"Using `openai<1.0.0`"**
 
-    If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
-    where you can patch a global client like so:
+If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
+where you can patch a global client like so:
 
-    ```python hl_lines="4 8"
-    import openai
-    import instructor
+```python hl_lines="4 8"
+import openai
+import instructor
 
-    instructor.patch()
+instructor.patch()
 
-    user = openai.ChatCompletion.create(
-        ...,
-        response_model=UserDetail,
-    )
-    ```
+user = openai.ChatCompletion.create(
+    ...,
+    response_model=UserDetail,
+)
+```
+
+**"Using async clients"**
+
+For async clients you must use apatch vs patch like so:
+
+```py
+import instructor
+from openai import AsyncOpenAI
+
+aclient = instructor.apatch(AsyncOpenAI())
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+model = await aclient.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserExtract,
+    messages=[
+        {"role": "user", "content": "Extract jason is 25 years old"},
+    ],
+)
+
+assert isinstance(model, UserExtract)
+```
 
 ## Installation
 

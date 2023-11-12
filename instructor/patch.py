@@ -134,9 +134,7 @@ def retry_sync(
                 raise e
 
 
-def wrap_chatcompletion(func: Callable) -> Callable:
-    is_async = inspect.iscoroutinefunction(func)
-
+def wrap_chatcompletion(func: Callable, is_async: bool = None) -> Callable:
     @wraps(func)
     async def new_chatcompletion_async(
         response_model=None,
@@ -186,7 +184,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
 
 def patch(client):
     """
-    Patch the `client.chat.completions.create` and `client.chat.completions.create` methods
+    Patch the `client.chat.completions.create` method
 
     Enables the following features:
 
@@ -211,7 +209,7 @@ def apatch(client):
     - `validation_context` parameter to validate the response using the pydantic model
     - `strict` parameter to use strict json parsing
     """
-    client.chat.completions.acreate = wrap_chatcompletion(
-        client.chat.completions.acreate
+    client.chat.completions.create = wrap_chatcompletion(
+        client.chat.completions.create, is_async=True
     )
     return client
