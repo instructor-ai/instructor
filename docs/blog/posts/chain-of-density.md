@@ -15,9 +15,9 @@ authors:
 
 # Better Summaries by Finetuning Chain of Density
 
-> Discover how to distil an interative method like chain of density into a single finetune.
+> Discover how to distil an iterative method like chain of Chain Of Density into a single finetune.
 
-In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to increase latency by 20x, reduce costs by 50x and maintain entity density. 
+In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to decrease latency by 20x, reduce costs by 50x and maintain entity density. 
 
 By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's great tooling), capable of producing summaries that rival the effectiveness of Chain of Density. As always, all code is readily available in our `examples/chain-of-density` folder in our repo for your reference.
 
@@ -27,7 +27,7 @@ By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's gr
 
 ## Part 1) Chain of Density
 
-Summarizing extensive texts with AI can be challenging, often relying on inconsistent techniques. Salesforce AI Research's novel method, chain of density, enhances AI-based text summarization, outperforming human-generated summaries.
+Summarizing extensive texts with AI can be challenging, often relying on inconsistent techniques. Salesforce AI Research's novel method, Chain Of Density, enhances AI-based text summarization, outperforming human-generated summaries.
 
 Initially, an AI produces a summary, then refines it through multiple iterations, adding missing article entities. Each iteration adds new article entities to the summary, keeping length consistent, leading to an entity-dense, informative summary called Chain Of Density.
 
@@ -39,7 +39,7 @@ First introduced by Salesforce's AI Research wing in their paper - [From Sparse 
 
 ### Original Prompt
 
-We can implement the original prompt using `pip install instructor` by breaking down the entire process into smaller api calls. This allows us to introduce validation at each step to ensure that we're getting the results that we want.
+We can break down the original process into smaller api calls. This allows us to introduce validation at each step to ensure that we're getting the results that we want.
 
 ??? note "Original Chain of Density Prompt"
 
@@ -92,11 +92,71 @@ We can implement the original prompt using `pip install instructor` by breaking 
 
 ### Data Modelling
 
+Before we begin modelling the data, let's make sure we install all of our dependencies
+
+```
+pip install instructor aiohttp rich
+```
+
 #### Initial Summary
 
 Let's start by walking through some of the data models that we'll be using as the `response_model` for our open ai function calls
 
-Firstly, we'll need a data model for the initial summary that we will be generating. We'll take the description of this class straight from the original prompt. Its important to note that these docstrings serve a purpose, they are directly used by the LLM when generating the outputs.
+Firstly, we'll need a data model for the initial summary that we will be generating. We'll take the description of this class straight from the original prompt. It's important to note that these docstrings serve a purpose, they are **directly used by the LLM when generating the outputs**.
+
+??? note "A quick note on Docstrings"
+
+    Under the hood, Instructor parses the `response_model` that you give us into a function call for OpenAI to execute. This means that the final output will be closely linked to the Pydantic model you specify. 
+
+    For instance, this simple model that we later use in fine-tuning.
+
+    ```py
+    class GeneratedSummary(BaseModel):
+    """
+    This represents a highly concise summary that includes as many entities as possible from the original source article.
+
+    An Entity is a real-world object that's assigned a name - for example, a person, country a product or a book title.
+
+    Guidelines
+    - Make every word count
+    - The new summary should be highly dense and concise yet self-contained, eg., easily understood without the Article.
+    - Make space with fusion, compression, and removal of uninformative phrases like "the article discusses"
+    """
+
+    summary: str = Field(
+        ...,
+        description="This represents the final summary generated that captures the meaning of the original article which is as concise as possible. ",
+    )
+    ```
+
+    We eventually transform it into an OpenAI function call as seen below.
+
+    ```
+    {
+    "functions": [
+        {
+        "name": "GeneratedSummary",
+        "description": "This represents a highly concise summary that includes as many entities as possible from the original source article.\n\nAn Entity is a real-world object that's assigned a name - for example, a person, country a product or a book title.\n\nGuidelines\n- Make every word count\n- The new summary should be highly dense and concise yet self-contained, eg., easily understood without the Article.\n- Make space with fusion, compression, and removal of uninformative phrases like \"the article discusses\"",
+        "parameters": {
+            "properties": {
+            "summary": {
+                "description": "This represents the final summary generated that captures the meaning of the original article which is as concise as possible. ",
+                "title": "Summary",
+                "type": "string"
+            }
+            },
+            "required": [
+            "summary"
+            ],
+            "type": "object"
+        }
+        }
+    ]
+    }
+    }
+    ```
+
+    Therefore this means that the more elaborate and detailed your descriptions are, the better the outputs you will be able to get back. But we don't just stop there, since it's all Pydantic under the hood, you can validate and parse the resulting output to make sure it is **exactly what you specify**. It's all python all the way down. 
 
 ```py
 class InitialSummary(BaseModel):
@@ -306,7 +366,7 @@ def summarize_article(article: str, summary_steps: int = 3):
 
 4.  If you've chosen a value that is larger than 0.08, make sure to increase this value in case you need to do multiple rewrites
 
-This summarization function yields a result which triples the number of entities while mantaining the same number of tokens. We can also see that stylistically, the summary is a lot more natural.
+This summarization function yields a result which triples the number of entities while maintaining the same number of tokens. We can also see that stylistically, the summary is a lot more natural.
 
 **First Iteration**
 
@@ -318,29 +378,33 @@ This summarization function yields a result which triples the number of entities
 
 ## Part 2) Fine-Tuning
 
-In this section, we'll look into how to fine-tune a GPT 3.5 model so that it is able to perform at an equivalent level as a GPT-4 model. We'll then compare the performance of our model against that of `GPT-4` and `GPT-4-Turbo` to see how it stacks up.
+In this section, we'll look into how to fine-tune a GPT 3.5 model so that it is able to perform at an equivalent level as a GPT-4 model. We'll then compare the performance of our model against that of `GPT-4` to see how it stacks up.
 
 ### Creating a Training Set
 
-Let's first segregate our train and test set so that we don't have any sort of contamination - this corresponds to our `train.csv` and `test.csv` in our [Hugging Face Dataset](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density). Now, we just need to import the `Instructions` module from the `Instructor` package which allows you to generate a nicely formatted `.jsonl` file to be used for fine-tuning
+In order to prevent any contamination of data during testing, we randomly sampled 120 articles from the `griffin/chain-of-density` dataset and split these articles into a `train.csv` and a `test.csv` file which we uploaded to [Hugging Face](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density). Now, we just neeed to import the `Instructions` module from the `Instructor` package which allows you to generate a nicely formatted `.jsonl` file to be used for fine-tuning
 
-```py hl_lines="2 9 11-18 37 40"
+```py hl_lines="2 9 11 13-21 40 43"
 from typing import List
 from chain_of_density import summarize_article #(1)!
 import csv
 import logging
 import instructor
 from pydantic import BaseModel
+from openai import OpenAI
 
-logging.basicConfig(level=logging.INFO) #(2)!
+client = instructor.patch(OpenAI()) # (2)!
 
-instructions = instructor.Instructions( #(3)!
+logging.basicConfig(level=logging.INFO) #(3)!
+
+instructions = instructor.Instructions( #(4)!
     name="Chain Of Density",
     finetune_format="messages",
     # log handler is used to save the data to a file
     # you can imagine saving it to a database or other storage
     # based on your needs!
     log_handlers=[logging.FileHandler("generated.jsonl")],
+    openai_client=client,
 )
 
 class GeneratedSummary(BaseModel):
@@ -376,15 +440,17 @@ with open("train.csv", "r") as file:
 1.  In this example, we're using the summarize_article that we defined up above. We saved it in a local file called `chain_of_density.py`,
     hence the import
 
-2. We also need to configure logging at the `INFO` level. This is very important, if this is not configured, your output will not be generated.
+2.  We patch the default OpenAI client so that we can use the Instructor library with it
 
-3.  We instantiate a `Instruction` object which will help us handle the conversion of our function calls into a valid `.jsonl` file. We also define
+3.  We also need to configure logging at the `INFO` level. This is very important, if this is not configured, your output will not be generated.
+
+4.  We instantiate a `Instruction` object which will help us handle the conversion of our function calls into a valid `.jsonl` file. We also define
     the name of the `.jsonl` file in the `log_handlers` parameter
 
-4.  We add in an `instructions.distil` annotation so that we automatically capture the input and output of the function we'd like to
+5.  We add in an `instructions.distil` annotation so that we automatically capture the input and output of the function we'd like to
     fine-tune our model to output
 
-5.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
+6.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
     be returned when using the `instructions.distil` annotation
 
 !!! warning "Rate Limiting"
@@ -421,23 +487,32 @@ With that, you've now got your own fine-tuned model ready to go and serve data i
 
 ## Results and Benchmarks
 
-We fine-tuned a total of 3 different models, giving each 20, 50 and 76 samples respectively to see if more data improved the models. We then compared the output of these fine tuned models to GPT-4 and GPT-3 summaries that were generated using chain-of-density methods.
-
-We'll be comparing these models in three main ways
+We'l be comparing the following models in 3 ways using 20 articles that were not used for fine-tuning.
 
 - Entity Density : This is entities per token, the higher the better for density.
 - Latency : Time to last token generated in seconds
-- Costs : How much does the entire experiment cost
+- Costs : Total cost to generate outputs - we break down the cost into training and inference costs for easy reference
 
-We used a total of 20 articles as a validation set which our fine tuned models had not seen before. This was the overall performance that we observed.
+`3.5 Finetuned (n)	`
 
-| Model               | Mean Latency (s) | Mean Entity Count | Mean Entity Density | Tokens |
-| ------------------- | ---------------- | ----------------- | ------------------- | ------ |
-| GPT-4 (COD)         | 49.5             | 11.3              | 0.138               | 81.65  |
-| GPT-3 (COD)         | 145.94           | 11.05             | 0.105               | 105.7  |
-| 3.5 Finetuned (20)  | 2.25             | 14.7              | 0.154               | 95.45  |
-| 3.5 Finetuned (50)  | 2.09             | 12.4              | 0.140               | 88.35  |
-| 3.5 Finetuned (76)  | 2.17             | 11.65             | 0.142               | 82.05  |
+:   This is a GPT 3.5 model that we fine-tuned on `n` examples. Each model was finetuned for 4-5 epochs ( This was automatically decided by the OpenAI scheduler )
+
+`GPT-4 (COD)`
+
+:   This is a GPT4 model which we applied 3 rounds of Chain Of Density rewrites to generate a summary with using the methodology above
+
+`GPT-3 (Vanilla)`
+
+:   This is a GPT 3.5 model that we asked to generate entity-dense summaries which were concise. Summaries were generated in a single pass
+
+
+| Model               | Mean Latency (s) | Mean Entity Count | Mean Entity Density | Mean Tokens |
+| ------------------- | ---------------- | ----------------- | ------------------- | ----------- |
+| GPT-4 (COD)         | 49.5             | 11.3              | 0.138               | 81.65       |
+| GPT-3.5 (Vanilla)   | 16.8             | 11.95             | 0.122               | 98.35       |
+| 3.5 Finetuned (20)  | 2.25             | 14.7              | 0.154               | 95.45       |
+| 3.5 Finetuned (50)  | 2.09             | 12.4              | 0.140               | 88.35       |
+| 3.5 Finetuned (76)  | 2.17             | 11.65             | 0.142               | 82.05       |
 
 ??? notes "Finetuning Datasets"
 
@@ -455,10 +530,12 @@ Using the OpenAI Usage Dashboard, we can calculate the cost of generating 20 sum
 | 3.5 Finetuned (50)  | 1.368             | 0.165              | 49,057      | 1.266          |
 | 3.5 Finetuned (76)  | 1.824             | 0.174              | 51,583      | 2.481          |
 | GPT-4 (COD)         | -                 | 12.9               | 409,062     | 12.9           |
-| GPT-3 (COD)         | -                 | 0.45               | 290,164     | 0.45           |
+| GPT-3.5 (Vanilla)   | -                 | 0.20               | 51,162      | 0.2            |
 
 
 Here, we can see that `GPT-4` has an approximate inference cost of `0.65` per summary while our finetuned models have an inference cost of `0.0091` per summary which is ~ `72x` cheaper. 
+
+Interestingly, the model finetuned with the least examples seems to outperform the others. While the reason for this is unknown, a few potential reasons could be that either we didn't train for sufficient epochs ( We chose the default 5 epochs ) or that the models started learning to imitate other behaviour such as more abstract writing styles from the larger variety of samples, resulting in a decrease in entity density. 
 
 ## Conclusions
 
