@@ -1,4 +1,5 @@
 from typing import List
+from openai import OpenAI
 from chain_of_density import summarize_article
 import csv
 import logging
@@ -7,6 +8,8 @@ from pydantic import BaseModel, Field
 
 logging.basicConfig(level=logging.INFO)
 
+client = instructor.patch(OpenAI())
+
 instructions = instructor.Instructions(
     name="Chain Of Density",
     finetune_format="messages",
@@ -14,6 +17,7 @@ instructions = instructor.Instructions(
     # you can imagine saving it to a database or other storage
     # based on your needs!
     log_handlers=[logging.FileHandler("generated.jsonl")],
+    openai_client=client,
 )
 
 

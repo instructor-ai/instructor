@@ -383,23 +383,27 @@ In this section, we'll look into how to fine-tune a GPT 3.5 model so that it is 
 
 In order to prevent any contamination of data during testing, we randomly sampled 120 articles from the `griffin/chain-of-density` dataset and split it into a `train.csv` and a `test.csv` file which we uploaded to [Hugging Face](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density). Now, we just neeed to import the `Instructions` module from the `Instructor` package which allows you to generate a nicely formatted `.jsonl` file to be used for fine-tuning
 
-```py hl_lines="2 9 11-18 37 40"
+```py hl_lines="2 9 11 13-21 40 43"
 from typing import List
 from chain_of_density import summarize_article #(1)!
 import csv
 import logging
 import instructor
 from pydantic import BaseModel
+from openai import OpenAI
 
-logging.basicConfig(level=logging.INFO) #(2)!
+client = instructor.patch(OpenAI()) # (2)!
 
-instructions = instructor.Instructions( #(3)!
+logging.basicConfig(level=logging.INFO) #(3)!
+
+instructions = instructor.Instructions( #(4)!
     name="Chain Of Density",
     finetune_format="messages",
     # log handler is used to save the data to a file
     # you can imagine saving it to a database or other storage
     # based on your needs!
     log_handlers=[logging.FileHandler("generated.jsonl")],
+    openai_client=client,
 )
 
 class GeneratedSummary(BaseModel):
@@ -435,15 +439,17 @@ with open("train.csv", "r") as file:
 1.  In this example, we're using the summarize_article that we defined up above. We saved it in a local file called `chain_of_density.py`,
     hence the import
 
-2. We also need to configure logging at the `INFO` level. This is very important, if this is not configured, your output will not be generated.
+2.  We patch the default OpenAI client so that we can use the Instructor library with it
 
-3.  We instantiate a `Instruction` object which will help us handle the conversion of our function calls into a valid `.jsonl` file. We also define
+3.  We also need to configure logging at the `INFO` level. This is very important, if this is not configured, your output will not be generated.
+
+4.  We instantiate a `Instruction` object which will help us handle the conversion of our function calls into a valid `.jsonl` file. We also define
     the name of the `.jsonl` file in the `log_handlers` parameter
 
-4.  We add in an `instructions.distil` annotation so that we automatically capture the input and output of the function we'd like to
+5.  We add in an `instructions.distil` annotation so that we automatically capture the input and output of the function we'd like to
     fine-tune our model to output
 
-5.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
+6.  We return a `Pydantic` object which matches the annotation that we use on our function. Note that we must specify a `Pydantic` object to
     be returned when using the `instructions.distil` annotation
 
 !!! warning "Rate Limiting"
