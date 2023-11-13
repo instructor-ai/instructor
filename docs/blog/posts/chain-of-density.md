@@ -13,11 +13,11 @@ authors:
   - jxnl
 ---
 
-# Better Summaries by Finetuning Chain of Density
+# Finetuning Faster Smarter Summaries with OpenAI's GPT-3.5-turbo
 
-> Discover how to distil an iterative method like chain of Chain Of Density into a single finetune.
+> Discover how to distil an iterative method like Chain Of Density into a single finetuned model using Instructor
 
-In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to decrease latency by 20x, reduce costs by 50x and maintain entity density. 
+In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to decrease latency by 20x, reduce costs by 50x and maintain entity density.
 
 By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's great tooling), capable of producing summaries that rival the effectiveness of Chain of Density. As always, all code is readily available in our `examples/chain-of-density` folder in our repo for your reference.
 
@@ -106,7 +106,7 @@ Firstly, we'll need a data model for the initial summary that we will be generat
 
 ??? note "A quick note on Docstrings"
 
-    Under the hood, Instructor parses the `response_model` that you give us into a function call for OpenAI to execute. This means that the final output will be closely linked to the Pydantic model you specify. 
+    Under the hood, Instructor parses the `response_model` that you give us into a function call for OpenAI to execute. This means that the final output will be closely linked to the Pydantic model you specify.
 
     For instance, this simple model that we later use in fine-tuning.
 
@@ -156,7 +156,7 @@ Firstly, we'll need a data model for the initial summary that we will be generat
     }
     ```
 
-    Therefore this means that the more elaborate and detailed your descriptions are, the better the outputs you will be able to get back. But we don't just stop there, since it's all Pydantic under the hood, you can validate and parse the resulting output to make sure it is **exactly what you specify**. It's all python all the way down. 
+    Therefore this means that the more elaborate and detailed your descriptions are, the better the outputs you will be able to get back. But we don't just stop there, since it's all Pydantic under the hood, you can validate and parse the resulting output to make sure it is **exactly what you specify**. It's all python all the way down.
 
 ```py
 class InitialSummary(BaseModel):
@@ -270,7 +270,7 @@ def has_no_absent_entities(cls, absent_entities: List[str]):
 1.  Similar to the original paper, we utilize the `NLTK` word tokenizer to count the number of tokens within our generated sentences.
     We aim for at least 60 tokens in our generated summary so that we don't lose information.
 
-2.  We also use the spaCy library to calculate the entity density of the generated summary. 
+2.  We also use the spaCy library to calculate the entity density of the generated summary.
 
 3.  We also implement a minimum entity density so that we stay within a given range. 0.08 is arbitrarily chosen in this case
 
@@ -495,47 +495,45 @@ We'l be comparing the following models in 3 ways using 20 articles that were not
 
 `3.5 Finetuned (n)	`
 
-:   This is a GPT 3.5 model that we fine-tuned on `n` examples. Each model was finetuned for 4-5 epochs ( This was automatically decided by the OpenAI scheduler )
+: This is a GPT 3.5 model that we fine-tuned on `n` examples. Each model was finetuned for 4-5 epochs ( This was automatically decided by the OpenAI scheduler )
 
 `GPT-4 (COD)`
 
-:   This is a GPT4 model which we applied 3 rounds of Chain Of Density rewrites to generate a summary with using the methodology above
+: This is a GPT4 model which we applied 3 rounds of Chain Of Density rewrites to generate a summary with using the methodology above
 
 `GPT-3 (Vanilla)`
 
-:   This is a GPT 3.5 model that we asked to generate entity-dense summaries which were concise. Summaries were generated in a single pass
+: This is a GPT 3.5 model that we asked to generate entity-dense summaries which were concise. Summaries were generated in a single pass
 
-
-| Model               | Mean Latency (s) | Mean Entity Count | Mean Entity Density | Mean Tokens |
-| ------------------- | ---------------- | ----------------- | ------------------- | ----------- |
-| GPT-4 (COD)         | 49.5             | 11.3              | 0.138               | 81.65       |
-| GPT-3.5 (Vanilla)   | 16.8             | 11.95             | 0.122               | 98.35       |
-| 3.5 Finetuned (20)  | 2.25             | 14.7              | 0.154               | 95.45       |
-| 3.5 Finetuned (50)  | 2.09             | 12.4              | 0.140               | 88.35       |
-| 3.5 Finetuned (76)  | 2.17             | 11.65             | 0.142               | 82.05       |
+| Model              | Mean Latency (s) | Mean Entity Count | Mean Entity Density | Mean Tokens |
+| ------------------ | ---------------- | ----------------- | ------------------- | ----------- |
+| GPT-4 (COD)        | 49.5             | 11.3              | 0.138               | 81.65       |
+| GPT-3.5 (Vanilla)  | 16.8             | 11.95             | 0.122               | 98.35       |
+| 3.5 Finetuned (20) | 2.25             | 14.7              | 0.154               | 95.45       |
+| 3.5 Finetuned (50) | 2.09             | 12.4              | 0.140               | 88.35       |
+| 3.5 Finetuned (76) | 2.17             | 11.65             | 0.142               | 82.05       |
 
 ??? notes "Finetuning Datasets"
 
     For our finetuned models, we did a few optimisations to raise the performance.
-    
+
     We only included summaries that had a minimum density of 0.15 in the dataset, took the summary in the entire chain with the highest density as the final one, forced every regenerated summary to have a minimum density of 0.12 and regenerated summaries up to three times if they didn't meet the summaries. **This is a much more expensive strategy and can cost up to 2.5x or more what we do in this tutorial**
 
     This resulted in the total cost of $63.46 to generate just 75 examples due to the stringent requirements, translating to about $0.85 per generated summary example.
 
 Using the OpenAI Usage Dashboard, we can calculate the cost of generating 20 summaries as seen below.
 
-| Model               | Training Cost ($) | Inference Cost ($) | Tokens Used | Total Cost ($) | 
-| ------------------- | ----------------- | ------------------ | ----------- | -------------- |
-| 3.5 Finetuned (20)  | 0.664             | 0.207              | 56,573      | 0.817          |
-| 3.5 Finetuned (50)  | 1.368             | 0.165              | 49,057      | 1.266          |
-| 3.5 Finetuned (76)  | 1.824             | 0.174              | 51,583      | 2.481          |
-| GPT-4 (COD)         | -                 | 12.9               | 409,062     | 12.9           |
-| GPT-3.5 (Vanilla)   | -                 | 0.20               | 51,162      | 0.2            |
+| Model              | Training Cost ($) | Inference Cost ($) | Tokens Used | Total Cost ($) |
+| ------------------ | ----------------- | ------------------ | ----------- | -------------- |
+| 3.5 Finetuned (20) | 0.664             | 0.207              | 56,573      | 0.817          |
+| 3.5 Finetuned (50) | 1.368             | 0.165              | 49,057      | 1.266          |
+| 3.5 Finetuned (76) | 1.824             | 0.174              | 51,583      | 2.481          |
+| GPT-4 (COD)        | -                 | 12.9               | 409,062     | 12.9           |
+| GPT-3.5 (Vanilla)  | -                 | 0.20               | 51,162      | 0.2            |
 
+Here, we can see that `GPT-4` has an approximate inference cost of `0.65` per summary while our finetuned models have an inference cost of `0.0091` per summary which is ~ `72x` cheaper.
 
-Here, we can see that `GPT-4` has an approximate inference cost of `0.65` per summary while our finetuned models have an inference cost of `0.0091` per summary which is ~ `72x` cheaper. 
-
-Interestingly, the model finetuned with the least examples seems to outperform the others. While the reason for this is unknown, a few potential reasons could be that either we didn't train for sufficient epochs ( We chose the default 5 epochs ) or that the models started learning to imitate other behaviour such as more abstract writing styles from the larger variety of samples, resulting in a decrease in entity density. 
+Interestingly, the model finetuned with the least examples seems to outperform the others. While the reason for this is unknown, a few potential reasons could be that either we didn't train for sufficient epochs ( We chose the default 5 epochs ) or that the models started learning to imitate other behaviour such as more abstract writing styles from the larger variety of samples, resulting in a decrease in entity density.
 
 ## Conclusions
 
