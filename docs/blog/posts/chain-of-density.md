@@ -1,6 +1,7 @@
 ---
 draft: False
 date: 2023-11-05
+slug: chain-of-density
 tags:
   - pydantic
   - validation
@@ -13,7 +14,7 @@ authors:
   - jxnl
 ---
 
-# Finetuning Faster Smarter Summaries with OpenAI's GPT-3.5-turbo
+# Smarter Summaries w/ Finetuning GPT-3.5 and Chain of Density
 
 > Discover how to distil an iterative method like Chain Of Density into a single finetuned model using Instructor
 
