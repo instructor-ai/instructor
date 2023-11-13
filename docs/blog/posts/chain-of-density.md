@@ -10,6 +10,7 @@ tags:
   - distilation
 authors:
   - ivanleomk
+  - jxnl
 ---
 
 # Better Summaries by Finetuning Chain of Density
