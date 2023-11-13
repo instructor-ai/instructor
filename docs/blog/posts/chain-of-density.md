@@ -20,7 +20,7 @@ authors:
 
 In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to decrease latency by 20x, reduce costs by 50x and maintain entity density.
 
-By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's great tooling), capable of producing summaries that rival the effectiveness of Chain of Density. As always, all code is readily available in our `examples/chain-of-density` folder in our repo for your reference.
+By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's great tooling), capable of producing summaries that rival the effectiveness of Chain of Density [[Adams et al. (2023)]](https://arxiv.org/abs/2309.04269). As always, all code is readily available in our `examples/chain-of-density` folder in our repo for your reference.
 
 ??? abstract "Datasets and Colab Notebook"
 
@@ -28,11 +28,11 @@ By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's gr
 
 ## Part 1) Chain of Density
 
-Summarizing extensive texts with AI can be challenging, often relying on inconsistent techniques. Salesforce AI Research's novel method, Chain Of Density, enhances AI-based text summarization, outperforming human-generated summaries.
+Summarizing extensive texts with AI can be challenging, often relying on inconsistent techniques. Their novel method, Chain Of Density prompting, enhances AI-based text summarization, outperforming human-generated summaries.
 
 Initially, an AI produces a summary, then refines it through multiple iterations, adding missing article entities. Each iteration adds new article entities to the summary, keeping length consistent, leading to an entity-dense, informative summary called Chain Of Density.
 
-First introduced by Salesforce's AI Research wing in their paper - [From Sparse to Dense: GPT-4 Summarization with Chain of Density Prompting](https://arxiv.org/abs/2309.04269). The team has found that this method is able to consistently beats similar summaries written by human annotators.
+First introduced in the paper - [From Sparse to Dense: GPT-4 Summarization with Chain of Density Prompting](https://arxiv.org/abs/2309.04269). The team has found that this method is able to consistently beats similar summaries written by human annotators.
 
 ??? info "Implementation Details"
 
