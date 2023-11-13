@@ -382,7 +382,7 @@ In this section, we'll look into how to fine-tune a GPT 3.5 model so that it is 
 
 ### Creating a Training Set
 
-In order to prevent any contamination of data during testing, we randomly sampled 120 articles from the `griffin/chain-of-density` dataset and split it into a `train.csv` and a `test.csv` file which we uploaded to [Hugging Face](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density). Now, we just neeed to import the `Instructions` module from the `Instructor` package which allows you to generate a nicely formatted `.jsonl` file to be used for fine-tuning
+In order to prevent any contamination of data during testing, we randomly sampled 120 articles from the `griffin/chain-of-density` dataset and split these articles into a `train.csv` and a `test.csv` file which we uploaded to [Hugging Face](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density). Now, we just neeed to import the `Instructions` module from the `Instructor` package which allows you to generate a nicely formatted `.jsonl` file to be used for fine-tuning
 
 ```py hl_lines="2 9 11 13-21 40 43"
 from typing import List
