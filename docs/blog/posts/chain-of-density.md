@@ -15,7 +15,7 @@ authors:
 
 # Better Summaries by Finetuning Chain of Density
 
-> Discover how to distil an interative method like chain of Chain Of Density into a single finetune.
+> Discover how to distil an iterative method like chain of Chain Of Density into a single finetune.
 
 In this article, we'll guide you through implementing the original Chain of Density method using Instructor, then show how to distile a GPT 3.5 model to match GPT-4's iterative summarization capabilities. Using these methods were able to decrease latency by 20x, reduce costs by 50x and maintain entity density. 
 
@@ -366,7 +366,7 @@ def summarize_article(article: str, summary_steps: int = 3):
 
 4.  If you've chosen a value that is larger than 0.08, make sure to increase this value in case you need to do multiple rewrites
 
-This summarization function yields a result which triples the number of entities while mantaining the same number of tokens. We can also see that stylistically, the summary is a lot more natural.
+This summarization function yields a result which triples the number of entities while maintaining the same number of tokens. We can also see that stylistically, the summary is a lot more natural.
 
 **First Iteration**
 
