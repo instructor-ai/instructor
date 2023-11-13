@@ -152,6 +152,24 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
+!!! note "Accessing the original response"
+
+    If you want to access anything like usage or other metadata, the original response is available on the `Model._raw_response` attribute.
+
+    ```python
+    user: UserDetail = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        response_model=UserDetail,
+        messages=[
+            {"role": "user", "content": "Extract Jason is 25 years old"},
+        ]
+    )
+
+    from openai.types.chat.chat_completion import ChatCompletion
+
+    assert isinstance(user._raw_response, ChatCompletion)
+    ```
+
 ## Pydantic Validation
 
 Validation can also be plugged into the same Pydantic model. Here, if the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error.
