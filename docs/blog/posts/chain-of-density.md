@@ -502,7 +502,7 @@ We'l be comparing the following models in 3 ways using 20 articles that were not
 
 : This is a GPT4 model which we applied 3 rounds of Chain Of Density rewrites to generate a summary with using the methodology above
 
-`GPT-3 (Vanilla)`
+`GPT-3.5 (Vanilla)`
 
 : This is a GPT 3.5 model that we asked to generate entity-dense summaries which were concise. Summaries were generated in a single pass
 
