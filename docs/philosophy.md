@@ -1,10 +1,12 @@
 # Philosophy
 
-The instructor library embodies a philosophy of simplicity and flexibility in leveraging language models (LLMs). It offers a streamlined approach for structured output, avoiding unnecessary dependencies or complex abstractions.
+The instructor values [simplicity](https://eugeneyan.com/writing/simplicity/) and flexibility in leveraging language models (LLMs). It offers a streamlined approach for structured output, avoiding unnecessary dependencies or complex abstractions. Let [Pydantic](https://docs.pydantic.dev/latest/) do the heavy lifting.
+
+> “Simplicity is a great virtue but it requires hard work to achieve it and education to appreciate it. And to make matters worse: complexity sells better.” — Edsger Dijkstra
 
 ## The Bridge to Object-Oriented Programming
 
-`instructor` acts as a bridge converting text-based LLM interactions into a familiar object-oriented format. Its integration with Pydantic provides type hints, runtime validation, and robust IDE support; love and supported by many in the Python ecosystem. By treating LLMs as callable functions returning typed objects, instructor makes language models backwards compatible with code, making them practical for everyday use while being complex enough for advanced applications.
+`instructor` acts as a bridge converting text-based LLM interactions into a familiar object-oriented format. Its integration with Pydantic provides type hints, runtime validation, and robust IDE support; love and supported by many in the Python ecosystem. By treating LLMs as callable functions returning typed objects, instructor makes [language models backwards compatible with code](https://www.youtube.com/watch?v=yj-wSRJwrrc), making them practical for everyday use while being complex enough for advanced applications.
 
 ## The zen of `instructor`
 
@@ -21,7 +23,7 @@ It should be that simple.
 
 ## My Goals
 
-The goal for the library, documentation, and blog, is to help you be a better python programmer and as a result a better AI engineer.
+The goal for the library, [documentation](https://jxnl.github.io/instructor/), and [blog](https://jxnl.github.io/instructor/blog/), is to help you be a better python programmer and as a result a better AI engineer.
 
 - The library is a result of my desire for simplicity.
 - The library should help maintain simplicity in your codebase.
@@ -29,3 +31,5 @@ The goal for the library, documentation, and blog, is to help you be a better py
 - I don't try to create indirections or abstractions that make it hard to debug in the future
 
 Please note that the library is designed to be adaptable and open-ended, allowing you to customize and extend its functionality based on your specific requirements. If you have any further questions or ideas hit me up on [twitter](https://twitter.com/jxnlco)
+
+Cheers!
