@@ -152,8 +152,8 @@ As you can see, the `for` loop is the slowest, while `asyncio.as_completed` and 
 | Method               | Execution Time | Rate Limited (Semaphore) |
 | -------------------- | -------------- | ------------------------ |
 | For Loop             | 6.17 seconds   |                          |
-| Asyncio.gather       | 1.11 seconds   |                          |
-| Asyncio.as_completed | 0.87 seconds   |                          |
+| Asyncio.gather       | 0.85 seconds   |                          |
+| Asyncio.as_completed | 0.95 seconds   |                          |
 | Asyncio.gather       | 3.04 seconds   | 2                        |
 | Asyncio.as_completed | 3.26 seconds   | 2                        |
 
