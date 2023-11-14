@@ -1,7 +1,6 @@
 import inspect
 from functools import wraps
 from json import JSONDecodeError
-from logging import warn
 from typing import Callable, Optional, Type, Union
 
 from openai import AsyncOpenAI, OpenAI
@@ -238,10 +237,4 @@ def apatch(client: AsyncOpenAI):
     - `validation_context` parameter to validate the response using the pydantic model
     - `strict` parameter to use strict json parsing
     """
-    
-    # Emit a deprecation warning
-    warn(
-        "instructor.apatch is deprecated, use instructor.patch instead",
-        DeprecationWarning,
-    )
     return patch(client)
