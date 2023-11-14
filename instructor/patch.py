@@ -104,7 +104,7 @@ async def retry_async(
                 None,
             )
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(dump_message(response.choices[0].message))
+            kwargs["messages"].append(response.choices[0].message)  # type: ignore
             kwargs["messages"].append(
                 {
                     "role": "user",
