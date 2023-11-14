@@ -121,14 +121,15 @@ markdown_extensions:
   - pymdownx.tilde
 nav:
   - Introduction: 
-      - Getting Started: 'index.md'
+      - Quick Start: 'index.md'
+      - Validators: "reask_validation.md"
+      - Distillation: "distillation.md"
       - Prompt Engineering Tips: 'tips/index.md'
-      - Using Validations: "reask_validation.md"
-      - Streaming Lists: "multitask.md"
-      - Handling Missing Content: "maybe.md"
-      - Philosophy: 'philosophy.md'
+  - Philosophy: 'philosophy.md'
   - Cookbook:
     - Overview: 'examples/index.md'
+    - Streaming Lists: "examples/multitask.md"
+    - Handling Missing Content: "examples/maybe.md"
     - Text Classification: 'examples/classification.md'
     - Self Critique: 'examples/self_critique.md'
     - Citations: 'examples/exact_citations.md'
@@ -141,8 +142,6 @@ nav:
     - Action Item and Dependency Mapping: 'examples/action_items.md'
     - Multi-File Code Generation: 'examples/gpt-engineer.md'
     - PII Data Sanitization: 'examples/pii.md'
-  - Distillation: 
-    - Distilation: "distillation.md"
   - CLI Reference:
       - "Introduction": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
