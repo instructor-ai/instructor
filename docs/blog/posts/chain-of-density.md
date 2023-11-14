@@ -494,7 +494,7 @@ We'l be comparing the following models in 3 ways using 20 articles that were not
 - Latency : Time to last token generated in seconds
 - Costs : Total cost to generate outputs - we break down the cost into training and inference costs for easy reference
 
-`3.5 Finetuned (n)	`
+`3.5 Finetuned (n)`
 
 : This is a GPT 3.5 model that we fine-tuned on `n` examples. Each model was finetuned for 4-5 epochs ( This was automatically decided by the OpenAI scheduler )
 
@@ -504,15 +504,15 @@ We'l be comparing the following models in 3 ways using 20 articles that were not
 
 `GPT-3.5 (Vanilla)`
 
-: This is a GPT 3.5 model that we asked to generate entity-dense summaries which were concise. Summaries were generated in a single pass
+: This is a GPT 3.5 model that we asked to generate entity-dense summaries which were concise. Summaries were generated in a single pass targetting about 80-90 tokens.
 
-| Model              | Mean Latency (s) | Mean Entity Count | Mean Entity Density | Mean Tokens |
-| ------------------ | ---------------- | ----------------- | ------------------- | ----------- |
-| GPT-4 (COD)        | 49.5             | 11.3              | 0.138               | 81.65       |
-| GPT-3.5 (Vanilla)  | 16.8             | 11.95             | 0.122               | 98.35       |
-| 3.5 Finetuned (20) | 2.25             | 14.7              | 0.154               | 95.45       |
-| 3.5 Finetuned (50) | 2.09             | 12.4              | 0.140               | 88.35       |
-| 3.5 Finetuned (76) | 2.17             | 11.65             | 0.142               | 82.05       |
+| Model              | Mean Latency (s) | Mean Entity Density |
+| ------------------ | ---------------- | ------------------- |
+| 3.5 Finetuned (20) | 2.1              | 0.15                |
+| 3.5 Finetuned (50) | 2.1              | 0.14                |
+| 3.5 Finetuned (76) | 2.1              | 0.14                |
+| GPT-3.5 (Vanilla)  | 16.8             | 0.12                |
+| GPT-4 (COD)        | 49.5             | 0.15                |
 
 ??? notes "Finetuning Datasets"
 
@@ -526,11 +526,11 @@ Using the OpenAI Usage Dashboard, we can calculate the cost of generating 20 sum
 
 | Model              | Training Cost ($) | Inference Cost ($) | Tokens Used | Total Cost ($) |
 | ------------------ | ----------------- | ------------------ | ----------- | -------------- |
-| 3.5 Finetuned (20) | 0.664             | 0.207              | 56,573      | 0.817          |
-| 3.5 Finetuned (50) | 1.368             | 0.165              | 49,057      | 1.266          |
-| 3.5 Finetuned (76) | 1.824             | 0.174              | 51,583      | 2.481          |
-| GPT-4 (COD)        | -                 | 12.9               | 409,062     | 12.9           |
 | GPT-3.5 (Vanilla)  | -                 | 0.20               | 51,162      | 0.2            |
+| 3.5 Finetuned (20) | 0.7               | 0.20               | 56,573      | 0.8            |
+| 3.5 Finetuned (50) | 1.4               | 0.17               | 49,057      | 1.3            |
+| 3.5 Finetuned (76) | 1.8               | 0.17               | 51,583      | 2.5            |
+| GPT-4 (COD)        | -                 | 12.9               | 409,062     | 12.9           |
 
 Here, we can see that `GPT-4` has an approximate inference cost of `0.65` per summary while our finetuned models have an inference cost of `0.0091` per summary which is ~ `72x` cheaper.
 
