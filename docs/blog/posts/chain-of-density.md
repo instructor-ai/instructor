@@ -488,7 +488,7 @@ With that, you've now got your own fine-tuned model ready to go and serve data i
 
 ## Results and Benchmarks
 
-We'l be comparing the following models in 3 ways using 20 articles that were not used for fine-tuning.
+We'll be comparing the following models in 3 ways using 20 articles that were not used for fine-tuning.
 
 - Entity Density : This is entities per token, the higher the better for density.
 - Latency : Time to last token generated in seconds
