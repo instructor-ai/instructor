@@ -107,6 +107,10 @@ This method is a great way to handle large datasets. We can start processing the
 
 However, these methods aim to complete as many tasks as possible as quickly as possible. This can be problematic if we want to be considerate to the server we're making requests to. This is where rate limiting comes into play. While there are libraries available to assist with rate limiting, for our initial defense, we will use a semaphore to limit the number of concurrent requests we make.
 
+!!! note "Ordering of results"
+
+    Its important to note that the order of the results will not be the same as the order of the dataset. This is because the tasks are completed in the order they finish, not the order they were started. If you need to preserve the order of the results, you can use `asyncio.gather` instead.
+
 ### **Rate-Limited Gather**: Using semaphores to limit concurrency.
 
 ```python hl_lines="4 8 9"
