@@ -12,21 +12,21 @@ authors:
   - jxnl
 ---
 
-# Learning `asyncio` in using ` OpenAI` w/ `Instructor`
+# Learning `asyncio` with `OpenAI` and an instructor
 
-Today, I will introduce you to various approaches for utilizing asyncio in Python. We will apply this to batch processing data using `instructor` and study how to apply `asyncio.gather` and `asyncio.as_completed` to process data concurrently. And how to use `asyncio.Semaphore` to limit the number of concurrent requests we make to a server.
+Today, I will introduce you to various approaches for using asyncio in Python. We will apply this to batch process data using `instructor` and learn how to use `asyncio.gather` and `asyncio.as_completed` for concurrent data processing. Additionally, we will explore how to limit the number of concurrent requests to a server using `asyncio.Semaphore`.
 
-We'll look at defining a canonical `async` function, and then look at four different ways to run it. We'll look at the pros and cons of each approach, and then we'll look at the results of running each approach on a small batch.
+We will start by defining an `async` function that calls `openai` to extract data, and then examine four different ways to execute it. We will discuss the pros and cons of each approach and analyze the results of running them on a small batch.
 
-## Basic Concepts of `asyncio`
+## Understanding `asyncio`
 
-`asyncio` is a Python library used for writing concurrent code using the async/await syntax. It's ideal for IO-bound and high-level structured network code. If you've used `OpenAI`'s SDK you'll notice that theres both a `OpenAI()` and `AsyncOpenAI()` class. The `AsyncOpenAI()` class is a subclass of `OpenAI()` processes data asynchronously.
+`asyncio` is a Python library that enables writing concurrent code using the async/await syntax. It is particularly useful for IO-bound and structured network code. If you are familiar with OpenAI's SDK, you might have encountered two classes: `OpenAI()` and `AsyncOpenAI()`. Today, we will be using the `AsyncOpenAI()` class, which processes data asynchronously.
 
-By doing so in the context of serving a web application or batch processing tasks, we can improve the performance of our application by allowing it to handle multiple requests concurrently!
+By utilizing these tools in web applications or batch processing, we can significantly improve performance by handling multiple requests concurrently instead of sequentially.
 
-## Batch Processing in Action
+## Example: Batch Processing
 
-Today we'll be looking at an example that demonstrates the use of AsyncIO for batch processing tasks, specifically extracting and processing data concurrently. The script will extract data from a list of texts and process it concurrently using AsyncIO.
+In this example, we will demonstrate how to use `asyncio` for batch processing tasks, specifically for extracting and processing data concurrently. The script will extract data from a list of texts and process it concurrently using `asyncio`.
 
 ```python
 import instructor
@@ -68,83 +68,86 @@ dataset = [
     ]
 ```
 
-1. **`for` Loop**: Running tasks sequentially.
+### **`for loop`**: Running tasks sequentially.
 
-```python
+```python hl_lines="3"
+persons = []
 for text in dataset:
     person = await extract_person(text)
     persons.append(person)
 ```
 
-Here even tho theres an await we still have to wait for each task to finish before we can start the next one. This is because we're using a for loop to iterate over the dataset. This will be the slowest method of the four we'll be looking at today.
+Even though there is an `await` keyword, we still have to wait for each task to finish before starting the next one. This is because we're using a `for` loop to iterate over the dataset. This method, which uses a `for` loop, will be the slowest among the four methods discussed today.
 
-2. **`asyncio.gather`**: Running tasks concurrently.
+### **`asyncio.gather`**: Running tasks concurrently.
 
-```python
-async def gather()
+```python hl_lines="3"
+async def gather():
     tasks_get_persons = [extract_person(text) for text in dataset]
     all_persons = await asyncio.gather(*tasks_get_persons) # (1)!
 ```
 
-1.  We use `await` here to wait for all the tasks to finish before we assign the result to `all_persons`. This is because `asyncio.gather` returns a coroutine object, not the result of the coroutine. We can also use `asyncio.as_completed` to do this.
+1. We use `await` here to wait for all the tasks to finish before assigning the result to `all_persons`. This is because `asyncio.gather` returns a coroutine object, not the result of the coroutine. Alternatively, we can use `asyncio.as_completed` to achieve the same result.
 
-Using gather means we want to return everything all at once. This is a great way to speed up our code, but it's not the only way. In particular if we have a large dataset we might not want to wait for everything to finish before we start processing the results. This is where `asyncio.as_completed` comes in.
+Using `asyncio.gather` allows us to return all the results at once. It is an effective way to speed up our code, but it's not the only way. Particularly, if we have a large dataset, we might not want to wait for everything to finish before starting to process the results. This is where `asyncio.as_completed` comes into play.
 
-3. **`asyncio.as_completed`**: Handling tasks as they complete.
+### **`asyncio.as_completed`**: Handling tasks as they complete.
 
-```python
-async def as_completed()
+```python hl_lines="5 4"
+async def as_completed():
     all_persons = []
     tasks_get_persons = [extract_person(text) for text in dataset]
     for person in asyncio.as_completed(tasks_get_persons):
         all_persons.append(await person) # (1)!
 ```
 
-1.  We use `await` here to wait for each task to complete before we append it to the list. This is because `as_completed` returns a coroutine object, not the result of the coroutine. We can also use `asyncio.gather` to do this.
+1. We use `await` here to wait for each task to complete before appending it to the list. This is because `as_completed` returns a coroutine object, not the result of the coroutine. Alternatively, we can use `asyncio.gather` to achieve the same result.
 
-This is a great way to handle large datasets. We can start processing the results as they come in. Espcially if we are streaming data back to a client.
+This method is a great way to handle large datasets. We can start processing the results as they come in, especially if we are streaming data back to a client.
 
-However these methods try to do as much as possible as fast as possible. This can be a problem if we're trying to be polite to the server we're making requests to. This is where rate limiting comes in. While there are libraries that can help with this, we'll be using a semaphore to limit the number of concurrent requests we make as a first defense.
+However, these methods aim to complete as many tasks as possible as quickly as possible. This can be problematic if we want to be considerate to the server we're making requests to. This is where rate limiting comes into play. While there are libraries available to assist with rate limiting, for our initial defense, we will use a semaphore to limit the number of concurrent requests we make.
 
-4. **Rate-Limited Gather**: Using semaphores to limit concurrency.
+### **Rate-Limited Gather**: Using semaphores to limit concurrency.
 
-```python
+```python hl_lines="4 8 9"
 sem = asyncio.Semaphore(2)
 
 async def rate_limited_extract_person(text: str, sem: Semaphore) -> Person:
     async with sem: # (1)!
         return await extract_person(text)
 
-async def rate_limited_gather(sem: Semaphore)
+async def rate_limited_gather(sem: Semaphore):
     tasks_get_persons = [rate_limited_extract_person(text, sem) for text in dataset]
     resp = await asyncio.gather(*tasks_get_persons)
 ```
 
-1.  We use a semaphore to limit the number of concurrent requests we make to 2. This is a great way to balance speed with politeness to the server we're making requests to.
+1. We use a semaphore to limit the number of concurrent requests to 2. This approach strikes a balance between speed and being considerate to the server we're making requests to.
 
-2.  **Rate-Limited As Completed**: Using semaphores to limit concurrency.
+### **Rate-Limited As Completed**: Using semaphores to limit concurrency.
 
-```python
+```python hl_lines="4 9 10"
 sem = asyncio.Semaphore(2)
 
 async def rate_limited_extract_person(text: str, sem: Semaphore) -> Person:
     async with sem: # (1)!
         return await extract_person(text)
 
-async def rate_limited_as_completed(sem: Semaphore)
+async def rate_limited_as_completed(sem: Semaphore):
     all_persons = []
     tasks_get_persons = [rate_limited_extract_person(text, sem) for text in dataset]
     for person in asyncio.as_completed(tasks_get_persons):
         all_persons.append(await person) # (2)!
 ```
 
-1.  We use a semaphore to limit the number of concurrent requests we make to 2. This is a great way to balance speed with politeness to the server we're making requests to.
+1. We use a semaphore to limit the number of concurrent requests to 2. This approach strikes a balance between speed and being considerate to the server we're making requests to.
 
-2.  We use `await` here to wait for each task to complete before we append it to the list. This is because `as_completed` returns a coroutine object, not the result of the coroutine. We can also use `asyncio.gather` to do this.
+2. We use `await` here to wait for each task to complete before appending it to the list. This is because `as_completed` returns a coroutine object, not the result of the coroutine. Alternatively, we can use `asyncio.gather` to achieve the same result.
 
-Now that we've seen the code, lets look at the results, of processing 7 texts. You can imagine as prompts get longer, or we use gpt-4, the difference between the methods will become more pronounced.
+Now that we have seen the code, let's examine the results of processing 7 texts. As the prompts become longer or if we use GPT-4, the differences between these methods will become more pronounced.
 
-## Analysis of Results
+## Results
+
+As you can see, the `for` loop is the slowest, while `asyncio.as_completed` and `asyncio.gather` are the fastest without any rate limiting.
 
 | Method               | Execution Time | Rate Limited (Semaphore) |
 | -------------------- | -------------- | ------------------------ |
@@ -154,30 +157,14 @@ Now that we've seen the code, lets look at the results, of processing 7 texts. Y
 | Asyncio.gather       | 3.04 seconds   | 2                        |
 | Asyncio.as_completed | 3.26 seconds   | 2                        |
 
-## Practical implications for batch processing
+## Practical implications of batch processing
 
-Choosing the right approach depends on the task's nature and the desired balance between speed and resource utilization.
+The choice of approach depends on the task's nature and the desired balance between speed and resource utilization.
 
-### Best Practices for AsyncIO and Batch Processing
+Here are some guidelines to consider:
 
-#### Tips for Optimal Performance
-
-- Use `asyncio.gather` for speed when handling multiple independent tasks.
+- Use `asyncio.gather` for handling multiple independent tasks quickly.
 - Apply `asyncio.as_completed` for large datasets to process tasks as they complete.
 - Implement rate-limiting to avoid overwhelming servers or API endpoints.
 
-#### When to Use Different AsyncIO Strategies
-
-Selecting an AsyncIO strategy should be based on the specific requirements of your task, such as speed, resource constraints, and the nature of the tasks.
-
-## Conclusion
-
-AsyncIO offers a flexible and efficient approach to handling asynchronous tasks in Python, with various strategies to suit different scenarios.
-
-## Potential Use Cases for Instructor and AsyncIO in Python Projects
-
-This approach is particularly beneficial for web scraping, API interactions, and any I/O-bound operations requiring concurrent processing.
-
-This blog post demonstrates the practicality and adaptability of AsyncIO in Python, providing insights and guidance for leveraging its full potential in various programming tasks.
-
-If you enjoy the content or want to try out `Instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!
+If you find the content helpful or want to try out `Instructor`, please visit our [GitHub](https://github.com/jxnl/instructor) page and give us a star!
