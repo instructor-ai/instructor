@@ -121,11 +121,11 @@ markdown_extensions:
   - pymdownx.tilde
 nav:
   - Introduction: 
-      - Quick Start: 'index.md'
-      - Validators: "reask_validation.md"
-      - Distillation: "distillation.md"
-      - Prompt Engineering Tips: 'tips/index.md'
-  - Philosophy: 'philosophy.md'
+    - Quick Start: 'index.md'
+    - Validators: "reask_validation.md"
+    - Distillation: "distillation.md"
+    - Prompt Engineering Tips: 'tips/index.md'
+    - Philosophy: 'philosophy.md'
   - Cookbook:
     - Overview: 'examples/index.md'
     - Streaming Lists: "examples/multitask.md"
