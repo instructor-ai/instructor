@@ -3,13 +3,10 @@ from pydantic import (
     BaseModel,
     BeforeValidator,
 )
-
-from instructor import llm_validator, patch
+import instructor
 from openai import OpenAI
 
-client = OpenAI()
-
-patch()
+client = instructor.patch(OpenAI())
 
 
 class QuestionAnswer(BaseModel):
@@ -51,7 +48,7 @@ class QuestionAnswerNoEvil(BaseModel):
     answer: Annotated[
         str,
         BeforeValidator(
-            llm_validator("don't say objectionable things", allow_override=True)
+            instructor.llm_validator("don't say objectionable things", allow_override=True)
         ),
     ]
 

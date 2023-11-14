@@ -1,12 +1,10 @@
 import asyncio
 from typing_extensions import Annotated
 from pydantic import BaseModel, BeforeValidator
-from instructor import llm_validator, patch
+import instructor
 from openai import AsyncOpenAI
 
-aclient = AsyncOpenAI()
-
-patch()
+aclient = instructor.apatch(AsyncOpenAI())
 
 
 class QuestionAnswerNoEvil(BaseModel):
@@ -14,7 +12,7 @@ class QuestionAnswerNoEvil(BaseModel):
     answer: Annotated[
         str,
         BeforeValidator(
-            llm_validator("don't say objectionable things", allow_override=True)
+            instructor.llm_validator("don't say objectionable things", allow_override=True)
         ),
     ]
 
