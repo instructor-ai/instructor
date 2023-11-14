@@ -14,7 +14,9 @@ authors:
 
 # Learning `asyncio` in using ` OpenAI` w/ `Instructor`
 
-More and more I'm finding instructor as a light weight library that tries to also teach some of the best practices in python. This blog post is a great example of that. Today I'm going to introduce you to some ways of using asyncio in python, applying what we learn to batch processing tasks. We'll explore a script that demonstrates the use of AsyncIO for batch processing tasks, specifically extracting and processing data concurrently.
+Today, I will introduce you to various approaches for utilizing asyncio in Python. We will apply this to batch processing data using `instructor` and study how to apply `asyncio.gather` and `asyncio.as_completed` to process data concurrently. And how to use `asyncio.Semaphore` to limit the number of concurrent requests we make to a server.
+
+We'll look at defining a canonical `async` function, and then look at four different ways to run it. We'll look at the pros and cons of each approach, and then we'll look at the results of running each approach on a small batch.
 
 ## Basic Concepts of `asyncio`
 
