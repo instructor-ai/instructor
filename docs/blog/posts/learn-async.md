@@ -1,6 +1,7 @@
 ---
 draft: False
 date: 2023-11-13
+slug: learn-async
 tags:
   - python
   - batch
@@ -11,7 +12,7 @@ authors:
   - jxnl
 ---
 
-# Learning AsyncIO in Python with Instructor
+# Learning `asyncio` in using ` OpenAI` w/ `Instructor`
 
 More and more I'm finding instructor as a light weight library that tries to also teach some of the best practices in python. This blog post is a great example of that. Today I'm going to introduce you to some ways of using asyncio in python, applying what we learn to batch processing tasks. We'll explore a script that demonstrates the use of AsyncIO for batch processing tasks, specifically extracting and processing data concurrently.
 
