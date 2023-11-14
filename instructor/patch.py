@@ -1,7 +1,7 @@
 import inspect
 from functools import wraps
 from json import JSONDecodeError
-from typing import Callable, Optional, Type
+from typing import Callable, Optional, Type, Union
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
@@ -207,7 +207,7 @@ def wrap_chatcompletion(func: Callable) -> Callable:
     return wrapper_function
 
 
-def patch(client: OpenAI | AsyncOpenAI):
+def patch(client: Union[OpenAI, AsyncOpenAI]):
     """
     Patch the `client.chat.completions.create` method
 
