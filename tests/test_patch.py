@@ -1,10 +1,12 @@
 import functools
 import pytest
-
-from openai import AsyncOpenAI, OpenAI
-from pydantic import BaseModel, Field
-
 import instructor
+
+from pydantic import BaseModel, Field, ValidationError, BeforeValidator
+from openai import OpenAI, AsyncOpenAI
+from instructor import llm_validator
+from typing_extensions import Annotated
+
 
 from instructor.patch import is_async, wrap_chatcompletion
 
@@ -163,3 +165,20 @@ async def test_async_runmodel_validator():
     assert hasattr(
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
+
+
+def test_runmodel_validator_error():
+
+
+    class QuestionAnswerNoEvil(BaseModel):
+        question: str
+        answer: Annotated[
+            str,
+            BeforeValidator(llm_validator("don't say objectionable things", openai_client=client))
+        ]
+
+    with pytest.raises(ValidationError):
+        QuestionAnswerNoEvil(
+            question="What is the meaning of life?",
+            answer="The meaning of life is to be evil and steal",
+        )
