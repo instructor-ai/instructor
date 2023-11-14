@@ -79,6 +79,7 @@ def test_runmodel_validator():
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
 
+
 def test_patch_completes_successfully():
     instructor.patch(OpenAI())
 
@@ -131,6 +132,7 @@ def test_is_async_returns_true_if_wrapped_function_is_async():
         pass
 
     assert is_async(wrapped_function) is True
+
 
 @pytest.mark.asyncio
 async def test_async_runmodel_validator():

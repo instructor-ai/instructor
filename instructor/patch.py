@@ -158,6 +158,7 @@ def is_async(func: Callable) -> bool:
 
 def wrap_chatcompletion(func: Callable) -> Callable:
     func_is_async = is_async(func)
+
     @wraps(func)
     async def new_chatcompletion_async(
         response_model=None,
