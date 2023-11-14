@@ -1,4 +1,3 @@
-import openai
 from pydantic import Field
 from typing import Optional
 from openai import OpenAI
