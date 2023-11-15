@@ -28,6 +28,16 @@ We will start by defining an `async` function that calls `openai` to extract dat
 
 By utilizing these tools in web applications or batch processing, we can significantly improve performance by handling multiple requests concurrently instead of sequentially.
 
+### Understanding `async` and `await`
+
+We will be using the `async` and `await` keywords to define asynchronous functions. The `async` keyword is used to define a function that returns a coroutine object. The `await` keyword is used to wait for the result of a coroutine object.
+
+If you want to understand the deeper details of `asyncio`, I recommend reading [this article](https://realpython.com/async-io-python/) by Real Python.
+
+### Understanding `gather` vs `as_completed`
+
+In this post we'll show two ways to run tasks concurrently: `asyncio.gather` and `asyncio.as_completed`. The `gather` method is used to run multiple tasks concurrently and return the results as a list. The `as_completed` method is used to run multiple tasks concurrently and return the results as they complete.
+
 ## Example: Batch Processing
 
 In this example, we will demonstrate how to use `asyncio` for batch processing tasks, specifically for extracting and processing data concurrently. The script will extract data from a list of texts and process it concurrently using `asyncio`.
