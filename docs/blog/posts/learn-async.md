@@ -16,6 +16,10 @@ authors:
 
 Today, I will introduce you to various approaches for using asyncio in Python. We will apply this to batch process data using `instructor` and learn how to use `asyncio.gather` and `asyncio.as_completed` for concurrent data processing. Additionally, we will explore how to limit the number of concurrent requests to a server using `asyncio.Semaphore`.
 
+!!! notes "Github Example"
+
+    If you want to run the code examples in this article, you can find them on [jxnl/instructor](https://github.com/jxnl/instructor/blob/main/examples/learn-async/run.py)
+
 We will start by defining an `async` function that calls `openai` to extract data, and then examine four different ways to execute it. We will discuss the pros and cons of each approach and analyze the results of running them on a small batch.
 
 ## Understanding `asyncio`
