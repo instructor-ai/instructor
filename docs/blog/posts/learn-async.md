@@ -36,7 +36,7 @@ If you want to understand the deeper details of `asyncio`, I recommend reading [
 
 ### Understanding `gather` vs `as_completed`
 
-In this post we'll show two ways to run tasks concurrently: `asyncio.gather` and `asyncio.as_completed`. The `gather` method is used to run multiple tasks concurrently and return the results as a list. The `as_completed` method is used to run multiple tasks concurrently and return the results as they complete.
+In this post we'll show two ways to run tasks concurrently: `asyncio.gather` and `asyncio.as_completed`. The `gather` method is used to run multiple tasks concurrently and return the results as a `list`. The `as_completed` returns a `iterable` is used to run multiple tasks concurrently and return the results as they complete. Another great resource on the differences between the two can be found [here](https://medium.com/dev-bits/a-minimalistic-guide-for-understanding-asyncio-in-python-52c436c244ea).
 
 ## Example: Batch Processing
 
