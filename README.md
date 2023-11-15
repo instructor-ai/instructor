@@ -4,7 +4,7 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 
 ---
 
-[Star us on Github!](https://jxnl.github.io/instructor).
+[Star us on Github!](www.github.com/jxnl/instructor).
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)

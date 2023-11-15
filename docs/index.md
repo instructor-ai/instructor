@@ -4,18 +4,12 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 
 ---
 
-[Star us on Github!](https://jxnl.github.io/instructor).
+[Star us on Github!](www.github.com/jxnl/instructor).
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
-[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
-[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
-[![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
-[![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
-[![Github discussions](https://img.shields.io/github/discussions/jxnl/instructor)](https:github.com/jxnl/instructor/discussions)
-[![PyPI version](https://img.shields.io/pypi/v/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
 Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
 
