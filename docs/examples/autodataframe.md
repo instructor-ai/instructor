@@ -81,7 +81,7 @@ def dataframe(data: str) -> Database:
     return client.chat.completions.create(
         model="gpt-4-0613",
         temperature=0.1,
-        response_model=Database
+        response_model=Database,
         messages=[
             {
                 "role": "system",
