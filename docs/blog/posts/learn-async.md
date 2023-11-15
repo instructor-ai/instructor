@@ -153,6 +153,13 @@ async def rate_limited_as_completed(sem: Semaphore):
 
 Now that we have seen the code, let's examine the results of processing 7 texts. As the prompts become longer or if we use GPT-4, the differences between these methods will become more pronounced.
 
+!!! note "Other Options"
+
+    Its important to also note that here we are using a `semaphore` to limit the number of concurrent requests. However, there are other ways to limit concurrency esp since we have rate limit information from the `openai` request. You can imagine using a library like `ratelimit` to limit the number of requests per second. OR catching rate limit exceptions and using `tenacity` to retry the request after a certain amount of time.
+
+    - [tenacity](https://pypi.org/project/tenacity/)
+    - [aiolimiter](https://pypi.org/project/aiolimiter/)
+
 ## Results
 
 As you can see, the `for` loop is the slowest, while `asyncio.as_completed` and `asyncio.gather` are the fastest without any rate limiting.
