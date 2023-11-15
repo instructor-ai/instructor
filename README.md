@@ -95,6 +95,10 @@ To get started you need to install it using `pip`. Run the following command in 
 $ pip install instructor
 ```
 
+## Contributing
+
+If you want to help out checkout some of the issues marked as `good-first-issue` or `help-wanted`. Found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cook book.
+
 ## Quick Start
 
 To simplify your work with OpenAI we offer a patching mechanism for the `ChatCompletion` class.
