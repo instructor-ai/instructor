@@ -1,4 +1,4 @@
-# Getting Started with Instructor
+# Welcome to Instructor - Your Gateway to Structured Outputs with OpenAI
 
 _Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control._
 
@@ -6,12 +6,32 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 
 [Star us on Github!](www.github.com/jxnl/instructor).
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
-[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
+[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
+[![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 
-Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
+Dive into the world of Python-based structured extraction, empowered by OpenAI's cutting-edge function calling API. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and its results insightful.
+
+## Get Started in Moments
+
+Installing Instructor is a breeze. Just run `pip install instructor` in your terminal and you're on your way to a smoother data handling experience.
+
+## How Instructor Enhances Your Workflow
+
+Our `instructor.patch` for the `OpenAI` class introduces three key enhancements:
+
+- **Response Mode:** Specify a Pydantic model to streamline data extraction.
+- **Max Retries:** Set your desired number of retry attempts for requests.
+- **Validation Context:** Provide a context object for enhanced validator access.
+  A Glimpse into Instructor's Capabilities
+
+!!! note "Using Validators"
+
+    Learn more about validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
+
+With Instructor, your code becomes more efficient and readable. Here’s a quick peek:
 
 ## Usage
 
@@ -39,68 +59,47 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-!!! warning "Using `openai<1.0.0`"
+**"Using `openai<1.0.0`"**
 
-    If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
-    where you can patch a global client like so:
+If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
+where you can patch a global client like so:
 
-    ```python hl_lines="4 8"
-    import openai
-    import instructor
+```python hl_lines="4 8"
+import openai
+import instructor
 
-    instructor.patch()
+instructor.patch()
 
-    user = openai.ChatCompletion.create(
-        ...,
-        response_model=UserDetail,
-    )
-    ```
-
-!!! note "Using async clients"
-
-    For async clients you must use apatch vs patch like so:
-
-    ```py
-    import instructor
-    from openai import AsyncOpenAI
-
-    aclient = instructor.apatch(AsyncOpenAI())
-
-    class UserExtract(BaseModel):
-        name: str
-        age: int
-
-    model = await aclient.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserExtract,
-        messages=[
-            {"role": "user", "content": "Extract jason is 25 years old"},
-        ],
-    )
-
-    assert isinstance(model, UserExtract)
-    ```
-
-## Installation
-
-To get started you need to install it using `pip`. Run the following command in your terminal:
-
-```sh
-$ pip install instructor
+user = openai.ChatCompletion.create(
+    ...,
+    response_model=UserDetail,
+)
 ```
 
-## Quick Start
+**"Using async clients"**
 
-To simplify your work with OpenAI we offer a patching mechanism for the `ChatCompletion` class.
-The patch introduces 3 features to the `ChatCompletion` class:
+For async clients you must use apatch vs patch like so:
 
-1. The `response_model` parameter, which allows you to specify a Pydantic model to extract data into.
-2. The `max_retries` parameter, which allows you to specify the number of times to retry the request if it fails.
-3. The `validation_context` parameter, which allows you to specify a context object that validators have access to.
+```py
+import instructor
+from openai import AsyncOpenAI
 
-!!! note "Using Validators"
+aclient = instructor.apatch(AsyncOpenAI())
 
-    Learn more about validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+model = await aclient.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserExtract,
+    messages=[
+        {"role": "user", "content": "Extract jason is 25 years old"},
+    ],
+)
+
+assert isinstance(model, UserExtract)
+```
 
 ### Step 1: Patch the client
 
@@ -146,24 +145,6 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-!!! note "Accessing the original response"
-
-    If you want to access anything like usage or other metadata, the original response is available on the `Model._raw_response` attribute.
-
-    ```python
-    user: UserDetail = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserDetail,
-        messages=[
-            {"role": "user", "content": "Extract Jason is 25 years old"},
-        ]
-    )
-
-    from openai.types.chat.chat_completion import ChatCompletion
-
-    assert isinstance(user._raw_response, ChatCompletion)
-    ```
-
 ## Pydantic Validation
 
 Validation can also be plugged into the same Pydantic model. Here, if the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error.
@@ -202,9 +183,9 @@ answer
 Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
 ```python
-from openai import OpenAI
 import instructor
 
+from openai import OpenAI
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
@@ -233,6 +214,25 @@ model = client.chat.completions.create(
 assert model.name == "JASON"
 ```
 
+## Contributing
+
+If you want to help out checkout some of the issues marked as `good-first-issue` or `help-wanted`. Found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cook book.
+
 ## License
 
 This project is licensed under the terms of the MIT License.
+
+# Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+<a href="https://github.com/jxnl/instructor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
+</a>

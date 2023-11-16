@@ -1,4 +1,4 @@
-# Getting Started with Instructor
+# Welcome to Instructor - Your Gateway to Structured Outputs with OpenAI
 
 _Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control._
 
@@ -6,18 +6,32 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 
 [Star us on Github!](www.github.com/jxnl/instructor).
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
 [![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
-[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
-[![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
-[![Github discussions](https://img.shields.io/github/discussions/jxnl/instructor)](https:github.com/jxnl/instructor/discussions)
-[![PyPI version](https://img.shields.io/pypi/v/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 
-Built to interact solely with openai's function calling api from python. It's designed to be intuitive, easy to use, and provide great visibility into your prompts.
+Dive into the world of Python-based structured extraction, empowered by OpenAI's cutting-edge function calling API. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and its results insightful.
+
+## Get Started in Moments
+
+Installing Instructor is a breeze. Just run `pip install instructor` in your terminal and you're on your way to a smoother data handling experience.
+
+## How Instructor Enhances Your Workflow
+
+Our `instructor.patch` for the `OpenAI` class introduces three key enhancements:
+
+- **Response Mode:** Specify a Pydantic model to streamline data extraction.
+- **Max Retries:** Set your desired number of retry attempts for requests.
+- **Validation Context:** Provide a context object for enhanced validator access.
+  A Glimpse into Instructor's Capabilities
+
+!!! note "Using Validators"
+
+    Learn more about validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
+
+With Instructor, your code becomes more efficient and readable. Here’s a quick peek:
 
 ## Usage
 
@@ -86,31 +100,6 @@ model = await aclient.chat.completions.create(
 
 assert isinstance(model, UserExtract)
 ```
-
-## Installation
-
-To get started you need to install it using `pip`. Run the following command in your terminal:
-
-```sh
-$ pip install instructor
-```
-
-## Contributing
-
-If you want to help out checkout some of the issues marked as `good-first-issue` or `help-wanted`. Found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cook book.
-
-## Quick Start
-
-To simplify your work with OpenAI we offer a patching mechanism for the `ChatCompletion` class.
-The patch introduces 3 features to the `ChatCompletion` class:
-
-1. The `response_model` parameter, which allows you to specify a Pydantic model to extract data into.
-2. The `max_retries` parameter, which allows you to specify the number of times to retry the request if it fails.
-3. The `validation_context` parameter, which allows you to specify a context object that validators have access to.
-
-!!! note "Using Validators"
-
-    Learn more about validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
 
 ### Step 1: Patch the client
 
@@ -194,9 +183,9 @@ answer
 Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
 ```python
-from openai import OpenAI
 import instructor
 
+from openai import OpenAI
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
@@ -224,6 +213,10 @@ model = client.chat.completions.create(
 
 assert model.name == "JASON"
 ```
+
+## Contributing
+
+If you want to help out checkout some of the issues marked as `good-first-issue` or `help-wanted`. Found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cook book.
 
 ## License
 
