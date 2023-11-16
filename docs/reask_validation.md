@@ -61,15 +61,22 @@ name
 LLM-based validation can also be plugged into the same Pydantic model. Here, if the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error.
 
 ```python hl_lines="9 15"
+import instructor
+
+from openai import OpenAI
+from instructor import llm_validator
 from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
-from instruct import llm_validator
+
+# Apply the patch to the OpenAI client
+client = instructor.patch(OpenAI())
+
 
 class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
         str,
-        BeforeValidator(llm_validator("don't say objectionable things"))
+        BeforeValidator(llm_validator("don't say objectionable things", openai_client=client))
     ]
 
 try:
@@ -148,7 +155,7 @@ Behind the scenes, the `instructor.patch()` method adds a `max_retries` paramete
 try:
     ...
 except (ValidationError, JSONDecodeError) as e:
-    kwargs["messages"].append(dict(**response.choices[0].message))
+    kwargs["messages"].append(response.choices[0].message)
     kwargs["messages"].append(
         {
             "role": "user",

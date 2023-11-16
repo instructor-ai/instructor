@@ -2,6 +2,10 @@
 
 ## Quick Links
 
+- [Streaming Lists](multitask.md): Stream lists of objects from the same prompt.
+
+- [Missing Objects](maybe.md): Handle missing objects with `Maybe` and `Optional`.
+
 - [Classifying Text](classification.md): Single and multi-label classification using enums.
 
 - [Self-Assessment via Validators](self_critique.md): Implement AI self-assessment with `llm_validator`.
@@ -18,10 +22,9 @@
 
 - [Working with Recursive Schemas](recursive.md): Implement and understand recursive schemas.
 
-
 - [Table Extraction from Text](autodataframe.md): Extract tables, potentially multiple, automatically from textual data.
 
-- [Multi-File Code Generation](gpt-engineer.md): Generate multi-file programs with contents and paths. 
+- [Multi-File Code Generation](gpt-engineer.md): Generate multi-file programs with contents and paths.
 
 - [PII Data Sanitization](pii.md): Extract and sanitize Personally Identifiable Information (PII) from documents.
 
