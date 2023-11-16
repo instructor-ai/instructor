@@ -470,7 +470,7 @@ instructor jobs create-from-file generated.jsonl
 
 ??? notes "Finetuning Reference"
 
-    Checking out our [Finetuning CLI](/instructor/cli/finetune/) to learn about other hyperparameters that you can tune to improve your model's performance.
+    Checking out our [Finetuning CLI](cli/finetune/) to learn about other hyperparameters that you can tune to improve your model's performance.
 
 Once the job is complete, all we need to do is to then change the annotation in the function call to `distil_summarization` in our original file above to start using our new model.
 
