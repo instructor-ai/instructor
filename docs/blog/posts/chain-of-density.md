@@ -8,7 +8,7 @@ tags:
   - chain of density
   - finetuneing
   - gpt-3.5-turbo
-  - distilation
+  - distillation
 authors:
   - ivanleomk
   - jxnl
@@ -540,4 +540,4 @@ Interestingly, the model finetuned with the least examples seems to outperform t
 
 Finetuning this iterative method was 20-40x faster while improving overall performance, resulting in massive efficiency gains by finetuning and distilling capabilities into specialized models.
 
-We've seen how `Instructor` can make your life easier, from data modeling to distilation and finetuning. If you enjoy the content or want to try out `instructor` check out the [github](https://github.com/jxnl/instructor) and don't forget to give us a star!
+We've seen how `Instructor` can make your life easier, from data modeling to distillation and finetuning. If you enjoy the content or want to try out `instructor` check out the [github](https://github.com/jxnl/instructor) and don't forget to give us a star!
