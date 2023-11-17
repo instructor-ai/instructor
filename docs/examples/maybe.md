@@ -1,12 +1,16 @@
-# Error Handling Using Maybe Pattern
+# Handling Missing Data with `Maybe`
 
-## Introduction
+In this post, we will demonstrate how to use the `Maybe` pattern to manage missing data and employ pattern matching to handle errors in a structured manner.
 
-The `Maybe` pattern is a functional programming concept used for error handling. Instead of raising exceptions or returning `None`, you can use a `Maybe` type to encapsulate both the result and possible errors.
+## What is `Maybe`?
 
-## Define Models with Pydantic
+The `Maybe` pattern is a concept in functional programming used for error handling. Instead of raising exceptions or returning `None`, you can use a `Maybe` type to encapsulate both the result and potential errors. This pattern is particularly useful when making OpenAI API calls, as providing language models with an escape mechanism effectively reduces hallucinations. Consequently, we can construct a prompt that closely resembles regular programming.
 
-Using Pydantic, define the `UserDetail` and `MaybeUser` classes.
+Towards the end, we will demonstrate how to use `Maybe` instances in pattern matching, which offers an excellent approach for handling errors in a structured manner.
+
+## Defining the Model
+
+Using Pydantic, we'll first define the `UserDetail` and `MaybeUser` classes.
 
 ```python
 from pydantic import BaseModel, Field, Optional
@@ -25,30 +29,32 @@ class MaybeUser(BaseModel):
         return self.result is not None
 ```
 
-## Implementing `Maybe` Pattern with `instructor`
+Notice that `MaybeUser` has a `result` field that is an optional `UserDetail` instance where the extracted data will be stored. The `error` field is a boolean that indicates whether an error occurred, and the `message` field is an optional string that contains the error message.
 
-You can use `instructor` to generalize the `Maybe` pattern.
+## Defining the function
 
-```python
-import instructor
-
-MaybeUser = instructor.Maybe(UserDetail)
-```
-
-## Function Example: `get_user_detail`
-
-Here's a function example that returns a `MaybeUser` instance. The function simulates an API call to get user details.
+Once we have the model defined, we can create a function that uses the `Maybe` pattern to extract the data.
 
 ```python
-from typing import Optional
 import random
+import instructor
+from openai import OpenAI
+from typing import Optional
 
-def get_user_detail(string: str) -> MaybeUser:
-    ...
-    return
+# This enables the `response_model` keyword
+client = instructor.patch(OpenAI())
 
-# Example usage
-user1 = get_user_detail("Jason is a 25 years old scientist")
+def extract(content: str) -> MaybeUser:
+    return openai.chat.completions.create(
+        model="gpt-3.5-turbo",
+        response_model=MaybeUser,
+        messages=[
+            {"role": "user", "content": f"Extract `{content}`"},
+        ],
+    )
+
+user1 = extract("Jason is a 25-year-old scientist")
+# output:
 {
   "result": {
     "age": 25,
@@ -59,8 +65,8 @@ user1 = get_user_detail("Jason is a 25 years old scientist")
   "message": null
 }
 
-
-user2 = get_user_detail("Unknown user")
+user2 = extract("Unknown user")
+# output:
 {
   "result": null,
   "error": true,
@@ -68,6 +74,35 @@ user2 = get_user_detail("Unknown user")
 }
 ```
 
-## Conclusion
+As you can see, when the data is extracted successfully, the `result` field contains the `UserDetail` instance. When an error occurs, the `error` field is set to `True`, and the `message` field contains the error message.
 
-The `Maybe` pattern enables a more structured approach to error handling. This example illustrated its implementation using Python and Pydantic.
+## Handle the result
+
+There are a few ways we can handle the result. Normally, we can just access the individual fields.
+
+```python
+def process_user_detail(maybe_user: MaybeUser):
+  if not maybe_user.error:
+      user = maybe_user.result
+      print(f"User {user.name} is {user.age} years old")
+  else:
+      print(f"Not found: {user1.message}")
+```
+
+## Pattern Matching
+
+We can also use pattern matching to handle the result. This is a great way to handle errors in a structured way.
+
+```python
+def process_user_detail(maybe_user: MaybeUser):
+    match maybe_user:
+        case MaybeUser(error=True, message=msg):
+            print(f"Error: {msg}")
+        case MaybeUser(result=user_detail) if user_detail:
+            assert isinstance(user_detail, UserDetail)
+            print(f"User {user_detail.name} is {user_detail.age} years old")
+        case _:
+            print("Unknown error")
+```
+
+If you want to learn more about pattern matching, check out Pydantic's docs on [Structural Pattern Matching](https://docs.pydantic.dev/latest/concepts/models/#structural-pattern-matching)
