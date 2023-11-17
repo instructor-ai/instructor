@@ -164,11 +164,6 @@ plugins:
             members_order: alphabetical
             allow_inspection: true
             show_bases: true
-  - group:
-      enabled: !ENV CI
-      plugins:
-        - optimize
-        - minify
   - blog:
       enabled: !ENV CI
       blog_dir: "blog"
