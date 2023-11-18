@@ -34,10 +34,12 @@ With Instructor, your code becomes more efficient and readable. Here’s a quick
 ## Usage
 
 ```py hl_lines="5 13"
-from openai import OpenAI
 import instructor
+from openai import OpenAI
+from pydantic import BaseModel
 
-# Enables `response_model`
+# This enables response_model keyword
+# from client.chat.completions.create
 client = instructor.patch(OpenAI())
 
 class UserDetail(BaseModel):
