@@ -1,6 +1,8 @@
-from pydantic import BaseModel, create_model, Field
-from typing import Optional, List, Type
-from instructor import OpenAISchema
+from typing import List, Optional, Type
+
+from pydantic import BaseModel, Field, create_model
+
+from instructor.function_calls import OpenAISchema
 
 
 class MultiTaskBase:

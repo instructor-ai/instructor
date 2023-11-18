@@ -12,6 +12,20 @@ theme:
     repo: fontawesome/brands/github
     edit: material/pencil 
     view: material/eye
+    theme:
+    admonition:
+      note: octicons/tag-16
+      abstract: octicons/checklist-16
+      info: octicons/info-16
+      tip: octicons/squirrel-16
+      success: octicons/check-16
+      question: octicons/question-16
+      warning: octicons/alert-16
+      failure: octicons/x-circle-16
+      danger: octicons/zap-16
+      bug: octicons/bug-16
+      example: octicons/beaker-16
+      quote: octicons/quote-16
   features:
     - announce.dismiss
     - content.action.edit
@@ -59,6 +73,7 @@ theme:
 markdown_extensions:
   - abbr
   - admonition
+  - pymdownx.details
   - attr_list
   - def_list
   - footnotes
@@ -106,12 +121,18 @@ markdown_extensions:
   - pymdownx.tilde
 nav:
   - Introduction: 
-      - Getting Started: 'index.md'
-      - Prompt Engineering Tips: 'tips/index.md'
-      - Using Validations: "reask_validation.md"
-      - Streaming Lists: "multitask.md"
-      - Handling Missing Content: "maybe.md"
-      - Philosophy: 'philosophy.md'
+    - Welcome To Instructor: 'index.md'
+    - Why use Instructor?: 'why.md'
+    - Help with Instructor: 'help.md'
+    - Installation: 'installation.md'
+    - Contributing: 'contributing.md'
+  - Concepts:
+    - Schema Engineering: 'concepts/prompting.md'
+    - Lists: "concepts/multitask.md"
+    - Missing Content: "concepts/maybe.md"
+    - Validators: "concepts/reask_validation.md"
+    - Distillation: "concepts/distillation.md"
+    - Philosophy: 'concepts/philosophy.md'
   - Cookbook:
     - Overview: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
@@ -126,8 +147,6 @@ nav:
     - Action Item and Dependency Mapping: 'examples/action_items.md'
     - Multi-File Code Generation: 'examples/gpt-engineer.md'
     - PII Data Sanitization: 'examples/pii.md'
-  - Distillation: 
-    - Distilation: "distillation.md"
   - CLI Reference:
       - "Introduction": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
@@ -150,11 +169,6 @@ plugins:
             members_order: alphabetical
             allow_inspection: true
             show_bases: true
-  - group:
-      enabled: !ENV CI
-      plugins:
-        - optimize
-        - minify
   - blog:
       enabled: !ENV CI
       blog_dir: "blog"
@@ -163,6 +177,14 @@ plugins:
       post_date_format: yyyy/MM/dd
       post_url_format: "{date}/{slug}"
       authors_file: "{blog}/.authors.yml"
+  - rss:
+      match_path: blog/posts/.* 
+      date_from_meta:
+        as_creation: date
+      categories:
+        - categories
+        - tags 
+      enabled: !ENV [CI, false]
 extra:
   analytics:
     provider: google

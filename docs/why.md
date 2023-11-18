@@ -1,24 +1,22 @@
-# Welcome to Instructor - Your Gateway to Structured Outputs with OpenAI
+# Why use Instructor?
 
-_Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control._
+??? question "Why use Pydantic?"
 
----
+    Its hard to answer the question of why use Instructor without first answering [why use Pydantic.](https://docs.pydantic.dev/latest/why/):
 
-[Star us on Github!](www.github.com/jxnl/instructor).
 
-[![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
-[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
-[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
-[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
+    - **Powered by type hints** &mdash; with Pydantic, schema validation and serialization are controlled by type annotations; less to learn, less code to write, and integration with your IDE and static analysis tools.
 
-Dive into the world of Python-based structured extraction, empowered by OpenAI's cutting-edge function calling API. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and its results insightful.
+    - **Speed** &mdash; Pydantic's core validation logic is written in Rust. As a result, Pydantic is among the fastest data validation libraries for Python.
 
-## Get Started in Moments
+    - **JSON Schema** &mdash; Pydantic models can emit JSON Schema, allowing for easy integration with other tools. [Learn more…]
 
-Installing Instructor is a breeze. Just run `pip install instructor` in your terminal and you're on your way to a smoother data handling experience.
+    - **Customisation** &mdash; Pydantic allows custom validators and serializers to alter how data is processed in many powerful ways.
 
-## How Instructor Enhances Your Workflow
+    - **Ecosystem** &mdash; around 8,000 packages on PyPI use Pydantic, including massively popular libraries like
+    _FastAPI_, _huggingface_, _Django Ninja_, _SQLModel_, & _LangChain_.
+
+    - **Battle tested** &mdash; Pydantic is downloaded over 70M times/month and is used by all FAANG companies and 20 of the 25 largest companies on NASDAQ. If you're trying to do something with Pydantic, someone else has probably already done it.
 
 Our `instructor.patch` for the `OpenAI` class introduces three key enhancements:
 
@@ -33,73 +31,9 @@ Our `instructor.patch` for the `OpenAI` class introduces three key enhancements:
 
 With Instructor, your code becomes more efficient and readable. Here’s a quick peek:
 
-## Usage
+## Understanding the `patch`
 
-```py hl_lines="5 13"
-from openai import OpenAI
-import instructor
-
-# Enables `response_model`
-client = instructor.patch(OpenAI())
-
-class UserDetail(BaseModel):
-    name: str
-    age: int
-
-user = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=UserDetail,
-    messages=[
-        {"role": "user", "content": "Extract Jason is 25 years old"},
-    ]
-)
-
-assert isinstance(user, UserDetail)
-assert user.name == "Jason"
-assert user.age == 25
-```
-
-**"Using `openai<1.0.0`"**
-
-If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
-where you can patch a global client like so:
-
-```python hl_lines="4 8"
-import openai
-import instructor
-
-instructor.patch()
-
-user = openai.ChatCompletion.create(
-    ...,
-    response_model=UserDetail,
-)
-```
-
-**"Using async clients"**
-
-For async clients you must use apatch vs patch like so:
-
-```py
-import instructor
-from openai import AsyncOpenAI
-
-aclient = instructor.apatch(AsyncOpenAI())
-
-class UserExtract(BaseModel):
-    name: str
-    age: int
-
-model = await aclient.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=UserExtract,
-    messages=[
-        {"role": "user", "content": "Extract jason is 25 years old"},
-    ],
-)
-
-assert isinstance(model, UserExtract)
-```
+Lets go over the `patch` function. And see how we can leverage it to make use of instructor
 
 ### Step 1: Patch the client
 
@@ -145,7 +79,7 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
-## Pydantic Validation
+## Understanding Validation
 
 Validation can also be plugged into the same Pydantic model. Here, if the answer attribute contains content that violates the rule "don't say objectionable things," Pydantic will raise a validation error.
 
@@ -178,7 +112,7 @@ answer
    Assertion failed, The statement is objectionable. (type=assertion_error)
 ```
 
-## Reask on validation error
+## Self Correcting on Validation Error
 
 Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
@@ -214,25 +148,4 @@ model = client.chat.completions.create(
 assert model.name == "JASON"
 ```
 
-## Contributing
-
-If you want to help out checkout some of the issues marked as `good-first-issue` or `help-wanted`. Found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cook book.
-
-## License
-
-This project is licensed under the terms of the MIT License.
-
-# Contributors
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-<a href="https://github.com/jxnl/instructor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
-</a>
+As you can see, we've baked in a self correcting mechanism into the model. This is a powerful way to make your models more robust and less brittle without include a lot of extra code or prompt.

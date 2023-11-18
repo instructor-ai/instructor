@@ -1,15 +1,12 @@
-from typing_extensions import Annotated
-from pydantic import (
-    BaseModel,
-    BeforeValidator,
-)
+import instructor
 
-from instructor import llm_validator, patch
 from openai import OpenAI
+from instructor import llm_validator
+from pydantic import BaseModel, ValidationError, BeforeValidator
+from typing_extensions import Annotated
 
-client = OpenAI()
-
-patch()
+# Apply the patch to the OpenAI client
+client = instructor.patch(OpenAI())
 
 
 class QuestionAnswer(BaseModel):
@@ -46,15 +43,28 @@ After validation with `llm_validator`
 """
 
 
+
+
 class QuestionAnswerNoEvil(BaseModel):
     question: str
     answer: Annotated[
         str,
-        BeforeValidator(
-            llm_validator("don't say objectionable things", allow_override=True)
-        ),
+        BeforeValidator(llm_validator("don't say objectionable things", openai_client=client))
     ]
 
+try:
+    qa = QuestionAnswerNoEvil(
+        question="What is the meaning of life?",
+        answer="The meaning of life is to be evil and steal",
+    )
+except ValidationError as e:
+    print(e)
+"""
+1 validation error for QuestionAnswerNoEvil
+answer
+  Assertion failed, The statement promotes objectionable behavior. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.4/v/assertion_error
+"""
 
 try:
     qa: QuestionAnswerNoEvil = client.chat.completions.create(

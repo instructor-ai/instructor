@@ -18,10 +18,9 @@
 
 - [Working with Recursive Schemas](recursive.md): Implement and understand recursive schemas.
 
-
 - [Table Extraction from Text](autodataframe.md): Extract tables, potentially multiple, automatically from textual data.
 
-- [Multi-File Code Generation](gpt-engineer.md): Generate multi-file programs with contents and paths. 
+- [Multi-File Code Generation](gpt-engineer.md): Generate multi-file programs with contents and paths.
 
 - [PII Data Sanitization](pii.md): Extract and sanitize Personally Identifiable Information (PII) from documents.
 
