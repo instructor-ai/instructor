@@ -4,12 +4,9 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 
 ---
 
-[Star us on Github!](www.github.com/jxnl/instructor)
-
 [![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
 [![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
 [![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
 
@@ -18,10 +15,12 @@ Dive into the world of Python-based structured extraction, by OpenAI's function 
 ## Usage
 
 ```py hl_lines="5 13"
-from openai import OpenAI
 import instructor
+from openai import OpenAI
+from pydantic import BaseModel
 
-# Enables `response_model`
+# This enables response_model keyword
+# from client.chat.completions.create
 client = instructor.patch(OpenAI())
 
 class UserDetail(BaseModel):
@@ -68,7 +67,7 @@ assert isinstance(model, UserExtract)
 
 ## Why use Instructor?
 
-Why use Instructor is fundamentally a question of why use Pydantic.
+The question of using Instructor is fundamentally a question of why to use Pydantic.
 
 1. **Powered by type hints** — Instructor is powered by Pydantic, which is powered by type hints. Schema validation, prompting is controleld by type annotations; less to learn, less code ot write,and integrates with your IDE.
 
