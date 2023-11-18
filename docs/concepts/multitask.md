@@ -22,17 +22,15 @@ Defining a task and creating a list of classes is a common enough pattern that w
 
 By using multitask you get a very convient class with prompts and names automatically defined. You get `from_response` just like any other `BaseModel` you're able to extract the list of objects data you want with `MultTask.tasks`.
 
-```python hl_lines="13"
+```python
 import instructor
 from openai import OpenAI
 
 client = instructor.patch(OpenAI())
 
-
 class User(BaseModel):
     name: str
     age: int
-
 
 MultiUser = instructor.MultiTask(User)
 
@@ -70,7 +68,7 @@ Lets look at an example in action with the same class
 MultiUser = instructor.MultiTask(User)
 
 completion = client.chat.completions.create(
-    model="gpt-4-0613",
+    model="gpt-4",
     temperature=0.1,
     stream=True,
     response_model=MultiUser,

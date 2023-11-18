@@ -4,7 +4,7 @@ If you need help getting started with Instructor or with advanced usage, the fol
 
 ## :material-creation: Concepts
 
-The [concepts](concepts/index.md) section explains the core concepts of Instructor and how to prompt with models.
+The [concepts](concepts/prompting.md) section explains the core concepts of Instructor and how to prompt with models.
 
 ## :material-chef-hat: Cookbooks
 

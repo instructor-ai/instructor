@@ -2,10 +2,6 @@
 
 ## Quick Links
 
-- [Streaming Lists](multitask.md): Stream lists of objects from the same prompt.
-
-- [Missing Objects](maybe.md): Handle missing objects with `Maybe` and `Optional`.
-
 - [Classifying Text](classification.md): Single and multi-label classification using enums.
 
 - [Self-Assessment via Validators](self_critique.md): Implement AI self-assessment with `llm_validator`.

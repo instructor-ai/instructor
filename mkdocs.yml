@@ -128,13 +128,13 @@ nav:
     - Contributing: 'contributing.md'
   - Concepts:
     - Schema Engineering: 'concepts/prompting.md'
+    - Lists: "concepts/multitask.md"
+    - Missing Content: "concepts/maybe.md"
     - Validators: "concepts/reask_validation.md"
     - Distillation: "concepts/distillation.md"
     - Philosophy: 'concepts/philosophy.md'
   - Cookbook:
     - Overview: 'examples/index.md'
-    - Streaming Lists: "examples/multitask.md"
-    - Handling Missing Content: "examples/maybe.md"
     - Text Classification: 'examples/classification.md'
     - Self Critique: 'examples/self_critique.md'
     - Citations: 'examples/exact_citations.md'
