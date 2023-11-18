@@ -212,7 +212,7 @@ class RewrittenSummary(BaseModel):
 
     For a more in-depth walkthrough on how to use `Pydantic` validators with the `Instructor`
     library, we recommend checking out our previous article on LLM
-    validation - [Good LLM Validation is just Good Validation](/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
+    validation - [Good LLM Validation is just Good Validation](../posts/validation-part1.md)
 
 Ideally, we'd like for `Missing` to have a length between 1 and 3, `Absent` to be an empty list and for our rewritten summaries to keep a minimum entity density. With `Instructor`, we can implement this logic using native `Pydantic` validators that are simply declared as part of the class itself.
 
@@ -470,7 +470,7 @@ instructor jobs create-from-file generated.jsonl
 
 ??? notes "Finetuning Reference"
 
-    Checking out our [Finetuning CLI](cli/finetune/) to learn about other hyperparameters that you can tune to improve your model's performance.
+    Checking out our [Finetuning CLI](../../cli/finetune.md) to learn about other hyperparameters that you can tune to improve your model's performance.
 
 Once the job is complete, all we need to do is to then change the annotation in the function call to `distil_summarization` in our original file above to start using our new model.
 
