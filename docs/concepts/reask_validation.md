@@ -1,30 +1,18 @@
-# Validation and Reask with LLMs and Pydantic
+# Validation and Reasking
 
-Instead of framing "self-critique" or "self-reflection" in AI as new concepts, we can view them as validation errors with clear error messages that the systen can use to self heal.
+Instead of framing "self-critique" or "self-reflection" in AI as new concepts, we can view them as validation errors with clear error messages that the systen can use to self correct.
 
-## Pythonic Validation with Pydantic and Instructor
+## Pydantic
 
-1. **Uniform Validation API**: Pydantic provides identical developer experience, whether using code-based or LLM-based validation.
-2. **Reasking Mechanism**: Pydantic accumulates validation errors for a one-step reasking process.
-3. **Prompt Chaining via Error Messages**: Instructor utilizes validation error messages to refine LLM outputs without and new abstractions.
+Pydantic offers an customizable and expressive validation framework for Python. Instructor leverages Pydantic's validation framework to provide a uniform developer experience for both code-based and LLM-based validation, as well as a reasking mechanism for correcting LLM outputs based on validation errors. To learn more check out the [Pydantic docs](https://docs.pydantic.dev/latest/concepts/validators/) on validators.
 
-## Uniform Validation: Code-Based vs. LLM
+!!! note "Good llm validation is just good validation"
 
-Validation is crucial when using Large Language Models (LLMs) for data extraction. It ensures data integrity, ensuring both quantitative and qualititave correctness with code and llm validations.
-
-!!! note "Pydantic Validation Docs"
-
-    Pydantic supports validation individual fields or the whole model dict all at once.
-
-    - [Field-Level Validation](https://docs.pydantic.dev/latest/usage/validators/)
-    - [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators)
-
-    To see the most up to date examples check out our repo [jxnl/instructor/examples/validators](https://github.com/jxnl/instructor/tree/main/examples/validators)
+    If you want to see some more examples on validators checkout our blog post [Good llm validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
 
 ### Code-Based Validation Example
 
-!!! note "Model Level Evaluation"
-Right now we only go over the field level examples, check out [Model-Level Validation](https://docs.pydantic.dev/latest/usage/validators/#model-validators) if you want to see how to do model level evaluation
+First define a Pydantic model with a validator using the `Annotation` class from `typing_extensions`.
 
 Enforce a naming rule using Pydantic's built-in validation:
 
@@ -55,6 +43,8 @@ except ValidationError as e:
 name
    Value error, name must contain a space (type=value_error)
 ```
+
+As we can see, Pydantic raises a validation error when the name attribute does not contain a space. This is a simple example, but it demonstrates how Pydantic can be used to validate attributes of a model.
 
 ### LLM-Based Validation Example
 
@@ -166,7 +156,7 @@ except (ValidationError, JSONDecodeError) as e:
 
 ## Advanced Validation Techniques
 
-The docs are currently incomplete, but we have a few advanced validation techniques that we're working on documenting better, for a example of model level validation, and using a validation context check out our example on [verifying citations](examples/exact_citations.md) which covers
+The docs are currently incomplete, but we have a few advanced validation techniques that we're working on documenting better, for a example of model level validation, and using a validation context check out our example on [verifying citations](../examples/exact_citations.md) which covers
 
 1. Validate the entire object with all attributes rather than one attribute at a time
 2. Using some 'context' to validate the object, in this case we use the `context` to check if the citation existed in the original text.

@@ -1,6 +1,4 @@
-# Prompt Engineering for Function Calling
-
-The overarching theme of using instructor and pydantic for function calling is to make the models as self-descriptive, modular, and flexible as possible, while maintaining data integrity and ease of use.
+The overarching theme of using Instructor and Pydantic for function calling is to make the models as self-descriptive, modular, and flexible as possible, while maintaining data integrity and ease of use.
 
 - **Modularity**: Design self-contained components for reuse.
 - **Self-Description**: Use Pydantic's `Field` for clear field descriptions.
@@ -39,7 +37,6 @@ class UserDetail(BaseModel):
     age: int
     name: str
     role: Optional[str] = Field(default=None)
-
 ```
 
 ## Handling Errors Within Function Calls
@@ -121,7 +118,6 @@ class UserDetail(BaseModel):
     age: int
     name: str
     role: Role
-
 ```
 
 ## Handle Arbitrary Properties
@@ -139,7 +135,6 @@ class UserDetail(BaseModel):
     age: int
     name: str
     properties: List[Property] = Field(..., description="Extract any other properties that might be relevant.")
-
 ```
 
 ## Limiting the Length of Lists
