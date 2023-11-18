@@ -17,3 +17,18 @@ We welcome pull requests! There is plenty to do, and we are happy to discuss any
 If it is not a small change, please start by [filing an issue](https://github.com/jxnl/instructor/issues) first.
 
 If you need ideas, you can check out the [help wanted](https://github.com/jxnl/instructor/labels/help%20wanted) or [good first issue](https://github.com/jxnl/instructor/labels/good%20first%20issue) labels.
+
+# Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+<a href="https://github.com/jxnl/instructor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
+</a>
