@@ -16,7 +16,7 @@ Currently we have the following notebooks avaliable
 
 ## Installation
 
-We utilise the Graphviz package in this tutorial series. If you don't have it on hand, you should download it. Mac users can do so by running `brew install graphviz` while Linux users can try `sudo apt install graphviz` ( modify to your system specific package manager).
+We utilise the Graphviz package in this tutorial series. If you don't have it on hand, you should download it. Mac users can do so by running `brew install graphviz` while Linux users can try `sudo apt install graphviz` ( modify to your system specific package manager). Here is a link to their official [documentation](Install Graphviz based on your operation system https://graphviz.org/download/)
 
 If you're encountering an error like the following when trying to run graphviz after installing it, just restart the notebook and verify you've got graphviz installed by running `dot -v` in your shell.
 
