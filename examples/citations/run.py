@@ -192,6 +192,14 @@ class AnswerWithCitaton(BaseModel):
         raise ValueError(resp.error_messages)
 
 
+""" 
+Using LLMs for citation verification is inefficient during runtime. 
+However, we can utilize them to create a dataset consisting only of accurate responses 
+where citations must be valid (as determined by LLM, fuzzy text search, etc.). 
+
+This approach would require an initial investment during data generation to obtain 
+a finely-tuned model for improved citation.
+"""
 try:
     AnswerWithCitaton.model_validate(
         {
