@@ -1,6 +1,22 @@
+---
+draft: False
+date: 2023-11-18
+slug: validate-citations
+tags:
+  - pydantic
+  - validation
+  - finetuneing
+  - citations
+  - hallucination
+authors:
+  - jxnl
+---
+
 # Verifying LLM Citations with Pydantic
 
-Ensuring the accuracy of information is crucial. This blog post explores how Pydantic's validators can enhance data accuracy through citation verification.
+Ensuring the accuracy of information is crucial. This blog post explores how Pydantic's powerful and flexible validators can enhance data accuracy through citation verification.
+
+We'll start with using a simple substring check to verify citations. Then we'll use `instructor` itself to power an LLM to verify citations and align answers with the given citations. Finally, we'll explore how we can use these techniques to generate a dataset of accurate responses.
 
 ## Example 1: Simple Substring Check
 
@@ -26,7 +42,7 @@ class Statements(BaseModel):
         context = info.context.get("text_chunks", None)
 
         for text_chunk in context.values():
-            if v in text_chunk:
+            if v in text_chunk: # (1)
                 return v
         raise ValueError("Could not find substring_quote `{v}` in contexts")
 
@@ -35,6 +51,8 @@ class AnswerWithCitaton(BaseModel):
     question: str
     answer: List[Statements]
 ```
+
+1. While we use a simple substring check in this example, we can use more complex techniques like regex or Levenshtein distance.
 
 Once the class is defined, we can use it to validate the context and raise an error if the substring is not found.
 
@@ -245,4 +263,6 @@ except ValidationError as e:
 
 ## Conclusion
 
-These examples demonstrate the potential of using Pydantic and OpenAI to enhance data accuracy through citation verification. While the LLM-based approach may not be efficient for runtime operations, it has exciting implications for generating a dataset of accurate responses. By leveraging this method during data generation, we can fine-tune a model that excels in citation accuracy.
+These examples demonstrate the potential of using Pydantic and OpenAI to enhance data accuracy through citation verification. While the LLM-based approach may not be efficient for runtime operations, it has exciting implications for generating a dataset of accurate responses. By leveraging this method during data generation, we can fine-tune a model that excels in citation accuracy. Similar to our last post on [finetuning a better summarizer](https://jxnl.github.io/instructor/blog/2023/11/05/chain-of-density/).
+
+If you like the content check out our [GitHub](https://github.com/jxnl/instructor) as give us a start and checkout the library.
