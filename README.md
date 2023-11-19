@@ -4,7 +4,7 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 
 ---
 
-[Star us on Github!](www.github.com/jxnl/instructor).
+[Star us on Github!](https://www.github.com/jxnl/instructor)
 
 [![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
