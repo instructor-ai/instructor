@@ -4,9 +4,10 @@ The goal of the blog is to capture some content that does not neatly fit within 
 
 ## Advanced Topics
 
-- [Query Understanding and Expansion for RAG](posts/rag-and-beyond.md)
-- [GPT-4 Level summarization with GPT3.5 Finetuning](posts/chain-of-density.md)
-- [Deepdive on LLM Guardrails / Validation](posts/validation-part1.md)
+- [Query Understanding for RAG: Beyond Embeddings](posts/rag-and-beyond.md)
+- [Finetuning: GPT-4 level summaries with GPT-3.5-turbo](posts/chain-of-density.md)
+- [Introduction to Guardrails and Validation](posts/validation-part1.md)
+- [Validating Citations](posts/citations.md)
 - [A Guide to Fine-Tuning and Distillation](posts/distilation-part1.md)
 
 ## Learning Python
