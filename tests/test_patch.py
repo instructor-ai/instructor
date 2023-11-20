@@ -2,13 +2,13 @@ import functools
 import pytest
 import instructor
 
-from pydantic import BaseModel, Field, ValidationError, BeforeValidator
+from pydantic import BaseModel, ValidationError, BeforeValidator
 from openai import OpenAI, AsyncOpenAI
 from instructor import llm_validator
 from typing_extensions import Annotated
 
 
-from instructor.patch import is_async, wrap_chatcompletion
+from instructor.patch import is_async, wrap_chatcompletion, OVERRIDE_DOCS
 
 client = instructor.patch(OpenAI())
 aclient = instructor.patch(AsyncOpenAI())
@@ -182,3 +182,6 @@ def test_runmodel_validator_error():
             question="What is the meaning of life?",
             answer="The meaning of life is to be evil and steal",
         )
+
+def test_override_docs():
+    assert "response_model" in OVERRIDE_DOCS, "response_model should be in OVERRIDE_DOCS"
