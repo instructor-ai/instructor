@@ -1,9 +1,8 @@
 from typing import Optional
 
+from instructor.function_calls import OpenAISchema
 from openai import OpenAI
 from pydantic import Field
-
-from instructor.function_calls import OpenAISchema
 
 
 class Validator(OpenAISchema):
@@ -98,3 +97,40 @@ def llm_validator(
         return v
 
     return llm
+
+def OpenAIModeration(openai_client=None):
+    """
+    Validates a message using OpenAI moderation model. 
+    
+    Should only be used for monitoring inputs and outputs of OpenAI APIs as per 
+    https://platform.openai.com/docs/guides/moderation/overview
+
+    Example:
+    ```python
+    from instructor import OpenAIModeration
+
+    class Response(BaseModel):
+        message: Annotated[str, AfterValidator(OpenAIModeration(openai_client=client))]
+
+    Response(message="I hate you")
+    ```
+
+    ```
+     ValidationError: 1 validation error for Response
+     message
+    Value error, `I hate you.` was flagged for ['harassment'] [type=value_error, input_value='I hate you.', input_type=str]
+    ```
+    """
+
+    openai_client = openai_client or OpenAI()
+
+    def message_must_comply_with_openai_mod(v: str) -> str:
+        response = openai_client.moderations.create(input=v)
+        out = response.results[0]
+        cats = dict(out.categories)
+        if out.flagged:
+            raise ValueError(f"`{v}` was flagged for {[i for i in cats if cats[i]]}")
+        
+        return v
+    
+    return message_must_comply_with_openai_mod
