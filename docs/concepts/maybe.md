@@ -1,12 +1,6 @@
-# Handling Missing Data with `Maybe`
+# Handling Missing Data
 
-In this post, we will demonstrate how to use the `Maybe` pattern to manage missing data and employ pattern matching to handle errors in a structured manner.
-
-## What is `Maybe`?
-
-The `Maybe` pattern is a concept in functional programming used for error handling. Instead of raising exceptions or returning `None`, you can use a `Maybe` type to encapsulate both the result and potential errors. This pattern is particularly useful when making OpenAI API calls, as providing language models with an escape mechanism effectively reduces hallucinations. Consequently, we can construct a prompt that closely resembles regular programming.
-
-Towards the end, we will demonstrate how to use `Maybe` instances in pattern matching, which offers an excellent approach for handling errors in a structured manner.
+The `Maybe` pattern is a concept in functional programming used for error handling. Instead of raising exceptions or returning `None`, you can use a `Maybe` type to encapsulate both the result and potential errors. This pattern is particularly useful when making llm calls, as providing language models with an escape hatch can effectively reduce hallucinations.
 
 ## Defining the Model
 
@@ -76,7 +70,7 @@ user2 = extract("Unknown user")
 
 As you can see, when the data is extracted successfully, the `result` field contains the `UserDetail` instance. When an error occurs, the `error` field is set to `True`, and the `message` field contains the error message.
 
-## Handle the result
+## Handling the result
 
 There are a few ways we can handle the result. Normally, we can just access the individual fields.
 
@@ -89,7 +83,7 @@ def process_user_detail(maybe_user: MaybeUser):
       print(f"Not found: {user1.message}")
 ```
 
-## Pattern Matching
+### Pattern Matching
 
 We can also use pattern matching to handle the result. This is a great way to handle errors in a structured way.
 

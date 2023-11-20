@@ -126,11 +126,17 @@ nav:
     - Help with Instructor: 'help.md'
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
+  - Tips: 'concepts/prompting.md'
   - Concepts:
-    - Schema Engineering: 'concepts/prompting.md'
-    - Lists: "concepts/multitask.md"
-    - Missing Content: "concepts/maybe.md"
+    - Models: 'concepts/models.md'
+    - Fields: 'concepts/fields.md'
+    - Types: 'concepts/types.md'
+    - Streaming: "concepts/lists.md"
+    - Union: 'concepts/union.md'
+    - Alias: 'concepts/alias.md'
+    - Type Adapter: 'concepts/typeadapter.md'
     - Validators: "concepts/reask_validation.md"
+    - Missing: "concepts/maybe.md"
     - Distillation: "concepts/distillation.md"
     - Philosophy: 'concepts/philosophy.md'
   - Cookbook:
