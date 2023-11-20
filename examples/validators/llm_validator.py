@@ -43,14 +43,15 @@ After validation with `llm_validator`
 """
 
 
-
-
 class QuestionAnswerNoEvil(BaseModel):
     question: str
     answer: Annotated[
         str,
-        BeforeValidator(llm_validator("don't say objectionable things", openai_client=client))
+        BeforeValidator(
+            llm_validator("don't say objectionable things", openai_client=client)
+        ),
     ]
+
 
 try:
     qa = QuestionAnswerNoEvil(

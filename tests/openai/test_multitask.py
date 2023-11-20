@@ -9,9 +9,11 @@ import instructor
 
 client = instructor.patch(OpenAI())
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 def test_multi_user():
     def stream_extract(input: str, cls) -> Iterable[User]:

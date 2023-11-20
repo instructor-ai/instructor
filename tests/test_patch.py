@@ -64,5 +64,8 @@ def test_is_async_returns_true_if_wrapped_function_is_async():
 
     assert is_async(wrapped_function) is True
 
+
 def test_override_docs():
-    assert "response_model" in OVERRIDE_DOCS, "response_model should be in OVERRIDE_DOCS"
+    assert (
+        "response_model" in OVERRIDE_DOCS
+    ), "response_model should be in OVERRIDE_DOCS"

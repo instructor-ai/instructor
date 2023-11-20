@@ -20,9 +20,9 @@ class UserExtract(BaseModel):
         if v.upper() != v:
             raise ValueError("Name should be uppercase")
         return v
-        
-def test_runmodel_validator():
 
+
+def test_runmodel_validator():
     model = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=UserExtract,
@@ -69,7 +69,9 @@ async def test_async_runmodel():
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
-    assert isinstance(model, UserExtractSimple), "Should be instance of UserExtractSimple"
+    assert isinstance(
+        model, UserExtractSimple
+    ), "Should be instance of UserExtractSimple"
     assert model.name.lower() == "jason"
     assert hasattr(
         model, "_raw_response"
@@ -77,7 +79,6 @@ async def test_async_runmodel():
 
 
 def test_runmodel():
-
     model = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=UserExtractSimple,
@@ -85,7 +86,9 @@ def test_runmodel():
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
-    assert isinstance(model, UserExtractSimple), "Should be instance of UserExtractSimple"
+    assert isinstance(
+        model, UserExtractSimple
+    ), "Should be instance of UserExtractSimple"
     assert model.name.lower() == "jason"
     assert hasattr(
         model, "_raw_response"
@@ -93,12 +96,13 @@ def test_runmodel():
 
 
 def test_runmodel_validator_error():
-
     class QuestionAnswerNoEvil(BaseModel):
         question: str
         answer: Annotated[
             str,
-            BeforeValidator(llm_validator("don't say objectionable things", openai_client=client))
+            BeforeValidator(
+                llm_validator("don't say objectionable things", openai_client=client)
+            ),
         ]
 
     with pytest.raises(ValidationError):

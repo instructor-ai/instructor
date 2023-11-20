@@ -8,6 +8,7 @@ from openai import AsyncOpenAI
 
 client = instructor.apatch(AsyncOpenAI())
 
+
 class Timer:
     def __init__(self, name):
         self.name = name
@@ -110,7 +111,6 @@ async def main():
         for person in asyncio.as_completed(tasks_get_persons):
             all_persons.append(await person)
         print("asyncio.as_completed (rate limited):", all_persons)
-
 
 
 if __name__ == "__main__":
