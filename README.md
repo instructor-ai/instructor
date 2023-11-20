@@ -11,6 +11,7 @@ _Structured extraction in Python, powered by OpenAI's function calling api, desi
 [![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
 [![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
+[![Coverage Status](https://coveralls.io/repos/github/jxnl/instructor/badge.svg?branch=add-coveralls)](https://coveralls.io/github/jxnl/instructor?branch=add-coveralls)
 
 Dive into the world of Python-based structured extraction, empowered by OpenAI's cutting-edge function calling API. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and its results insightful.
 
