@@ -128,7 +128,7 @@ def OpenAIModeration(openai_client=None):
     def message_must_comply_with_openai_mod(v: str) -> str:
         response = openai_client.moderations.create(input=v)
         out = response.results[0]
-        cats = dict(out.categories)
+        cats = out.categories.model_dump()
         if out.flagged:
             raise ValueError(f"`{v}` was flagged for {[i for i in cats if cats[i]]}")
         
