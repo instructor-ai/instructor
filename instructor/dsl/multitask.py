@@ -33,11 +33,11 @@ class MultiTaskBase:
     @staticmethod
     def extract_json(completion):
         for chunk in completion:
-            if chunk["choices"]:
-                delta = chunk["choices"][0]["delta"]
-                if "function_call" in delta:
-                    if "arguments" in delta["function_call"]:
-                        yield delta["function_call"]["arguments"]
+            try:
+                if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                    yield json_chunk
+            except AttributeError:
+                pass
 
     @staticmethod
     def get_object(str, stack):
