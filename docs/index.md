@@ -87,7 +87,7 @@ assert isinstance(model, UserExtract)
 
 The question of using Instructor is fundamentally a question of why to use Pydantic.
 
-1. **Powered by type hints** — Instructor is powered by Pydantic, which is powered by type hints. Schema validation, prompting is controleld by type annotations; less to learn, less code ot write,and integrates with your IDE.
+1. **Powered by type hints** — Instructor is powered by Pydantic, which is powered by type hints. Schema validation, prompting is controleld by type annotations; less to learn, less code ot write, and integrates with your IDE.
 
 2. **Powered by OpenAI** — Instructor is powered by OpenAI's function calling API. This means you can use the same API for both prompting and extraction.
 
