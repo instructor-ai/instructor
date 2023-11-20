@@ -2,6 +2,8 @@ import functools
 import pytest
 import instructor
 
+import openai
+
 from pydantic import BaseModel, Field, ValidationError, BeforeValidator
 from openai import OpenAI, AsyncOpenAI
 from instructor import llm_validator
@@ -9,6 +11,7 @@ from typing_extensions import Annotated
 
 
 from instructor.patch import is_async, wrap_chatcompletion
+
 
 client = instructor.patch(OpenAI())
 aclient = instructor.patch(AsyncOpenAI())

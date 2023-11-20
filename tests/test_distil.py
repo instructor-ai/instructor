@@ -1,6 +1,8 @@
 import pytest
 import instructor
 
+import openai
+
 from openai import OpenAI
 from pydantic import BaseModel
 
@@ -10,6 +12,7 @@ from instructor.distil import (
     get_signature_from_fn,
     is_return_type_base_model_or_instance,
 )
+
 
 client = instructor.patch(OpenAI())
 
