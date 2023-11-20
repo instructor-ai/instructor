@@ -4,16 +4,16 @@ The goal of the blog is to capture some content that does not neatly fit within 
 
 ## Advanced Topics
 
-- [Query Understanding for RAG: Beyond Embeddings](posts/rag-and-beyond.md)
-- [Finetuning: GPT-4 level summaries with GPT-3.5-turbo](posts/chain-of-density.md)
-- [Introduction to Guardrails and Validation](posts/validation-part1.md)
-- [Validating Citations](posts/citations.md)
-- [A Guide to Fine-Tuning and Distillation](posts/distilation-part1.md)
+1. [What is Query Understanding, how does it go beyond embeddings?](posts/rag-and-beyond.md)
+2. [How can one achieve GPT-4 level summaries using GPT-3.5-turbo?](posts/chain-of-density.md)
+3. [What are the basics of Guardrails and Validation in AI models?](posts/validation-part1.md)
+4. [How does one validate citations in AI-generated content?](posts/citations.md)
+5. [What are the methods and benefits of fine-tuning and distillation in AI models?](posts/distilation-part1.md)
 
 ## Learning Python
 
-- [Understanding Batch Processing with async](posts/learn-async.md)
+- [What are the fundamentals of batch processing with async in Python?](posts/learn-async.md)
 
 ## Talks
 
-- [AI Engineering Summit 2023](posts/aisummit-2023.md)
+- [What were the key insights and topics covered at the AI Engineering Summit 2023?](posts/aisummit-2023.md)
