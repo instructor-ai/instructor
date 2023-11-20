@@ -125,7 +125,7 @@ def OpenAIModeration(openai_client=None):
 
     openai_client = openai_client or OpenAI()
 
-    def message_must_comply_with_openai_mod(v: str) -> str:
+    def validate_message_with_openai_mod(v: str) -> str:
         response = openai_client.moderations.create(input=v)
         out = response.results[0]
         cats = out.categories.model_dump()
@@ -134,4 +134,4 @@ def OpenAIModeration(openai_client=None):
         
         return v
     
-    return message_must_comply_with_openai_mod
+    return validate_message_with_openai_mod
