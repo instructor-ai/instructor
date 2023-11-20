@@ -25,6 +25,7 @@ mkdocs-material = "^9.1.18"
 mkdocstrings = "^0.22.0"
 mkdocstrings-python = "^1.1.2"
 pytest-asyncio = "^0.21.1"
+coverage = "^7.3.2"
 
 [build-system]
 requires = ["poetry-core"]
