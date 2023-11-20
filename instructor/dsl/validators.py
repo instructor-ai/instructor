@@ -101,8 +101,9 @@ def llm_validator(
 def OpenAIModeration(openai_client=None):
     """
     Validates a message using OpenAI moderation model. 
-    
-    Should only be used for monitoring inputs and outputs of OpenAI APIs as per 
+
+    Should only be used for monitoring inputs and outputs of OpenAI APIs
+    Other use cases are disallowed as per: 
     https://platform.openai.com/docs/guides/moderation/overview
 
     Example:
