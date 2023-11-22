@@ -98,7 +98,7 @@ def llm_validator(
 
     return llm
 
-def OpenAIModeration(openai_client=None):
+def openai_moderation(openai_client=None):
     """
     Validates a message using OpenAI moderation model. 
 
@@ -130,7 +130,7 @@ def OpenAIModeration(openai_client=None):
         out = response.results[0]
         cats = out.categories.model_dump()
         if out.flagged:
-            raise ValueError(f"`{v}` was flagged for {[i for i in cats if cats[i]]}")
+            raise ValueError(f"`{v}` was flagged for {', '.join(cat for cat in cats if cats[cat])}")
         
         return v
     
