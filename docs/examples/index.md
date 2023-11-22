@@ -26,4 +26,6 @@
 
 - [Action Item and Dependency Mapping](action_items.md): Generate action items and their dependencies from transcripts.
 
+- [OpenAI moderation validator](moderation.md): Flag outputs for harmful content using OpenAI moderation [endpoint](https://platform.openai.com/docs/guides/moderation/quickstart).
+
 Happy exploring!
