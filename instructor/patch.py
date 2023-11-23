@@ -7,7 +7,7 @@ from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, ValidationError
 
-from .function_calls import OpenAISchema, openai_schema, PatchMode
+from .function_calls import OpenAISchema, openai_schema, Mode
 
 import warnings
 
@@ -46,7 +46,7 @@ def handle_response_model(
     *,
     response_model: Type[BaseModel],
     kwargs,
-    mode: PatchMode = PatchMode.FUNCTION_CALL,
+    mode: Mode = Mode.FUNCTIONS,
 ):
     new_kwargs = kwargs.copy()
     if response_model is not None:
@@ -54,14 +54,12 @@ def handle_response_model(
             response_model = openai_schema(response_model)  # type: ignore
 
         match mode:
-            case PatchMode.FUNCTION_CALL:
-                print("Patching function call")
+            case Mode.FUNCTIONS:
                 new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
                 new_kwargs["function_call"] = {
                     "name": response_model.openai_schema["name"]
                 }  # type: ignore
-            case PatchMode.TOOL_CALL:
-                print("Patching tool call")
+            case Mode.TOOLS:
                 new_kwargs["tools"] = [
                     {
                         "type": "function",
@@ -72,8 +70,7 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
-            case PatchMode.JSON_MODE:
-                print("Patching json mode")
+            case Mode.JSON:
                 new_kwargs["response_format"] = {"type": "json_object"}
 
                 # check that the first message is a system message
@@ -111,7 +108,7 @@ def process_response(
     response_model: Type[BaseModel],
     validation_context: dict = None,
     strict=None,
-    mode: PatchMode = PatchMode.FUNCTION_CALL,
+    mode: Mode = Mode.FUNCTIONS,
 ):  # type: ignore
     """Processes a OpenAI response with the response model, if available
     It can use `validation_context` and `strict` to validate the response
@@ -140,7 +137,7 @@ async def retry_async(
     kwargs,
     max_retries,
     strict: Optional[bool] = None,
-    mode: PatchMode = PatchMode.FUNCTION_CALL,
+    mode: Mode = Mode.FUNCTIONS,
 ):
     retries = 0
     while retries <= max_retries:
@@ -174,7 +171,7 @@ def retry_sync(
     kwargs,
     max_retries,
     strict: Optional[bool] = None,
-    mode: PatchMode = PatchMode.FUNCTION_CALL,
+    mode: Mode = Mode.FUNCTIONS,
 ):
     retries = 0
     while retries <= max_retries:
@@ -209,7 +206,7 @@ def is_async(func: Callable) -> bool:
 
 
 def wrap_chatcompletion(
-    func: Callable, mode: PatchMode = PatchMode.FUNCTION_CALL
+    func: Callable, mode: Mode = Mode.FUNCTIONS
 ) -> Callable:
     func_is_async = is_async(func)
 
@@ -221,7 +218,7 @@ def wrap_chatcompletion(
         *args,
         **kwargs,
     ):
-        if mode == PatchMode.TOOL_CALL:
+        if mode == Mode.TOOLS:
             max_retries = 0
             warnings.warn("max_retries is not supported when using tool calls")
 
@@ -247,7 +244,7 @@ def wrap_chatcompletion(
         *args,
         **kwargs,
     ):
-        if mode == PatchMode.TOOL_CALL:
+        if mode == Mode.TOOLS:
             max_retries = 0
             warnings.warn("max_retries is not supported when using tool calls")
 
@@ -273,7 +270,7 @@ def wrap_chatcompletion(
 
 
 def patch(
-    client: Union[OpenAI, AsyncOpenAI], mode: PatchMode = PatchMode.FUNCTION_CALL
+    client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS
 ):
     """
     Patch the `client.chat.completions.create` method
@@ -292,7 +289,7 @@ def patch(
     return client
 
 
-def apatch(client: AsyncOpenAI, mode: PatchMode = PatchMode.FUNCTION_CALL):
+def apatch(client: AsyncOpenAI, mode: Mode = Mode.FUNCTIONS):
     """
     No longer necessary, use `patch` instead.
 

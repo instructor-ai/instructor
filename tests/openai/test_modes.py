@@ -1,4 +1,4 @@
-from instructor.function_calls import OpenAISchema, PatchMode
+from instructor.function_calls import OpenAISchema, Mode
 from openai import OpenAI
 
 
@@ -35,7 +35,7 @@ def test_tool_call():
     assert len(tool_calls) == 1
     assert tool_calls[0].function.name == "UserExtract"
     assert tool_calls[0].function
-    user = UserExtract.from_response(response, mode=PatchMode.TOOL_CALL)
+    user = UserExtract.from_response(response, mode=Mode.TOOLS)
     assert user.name.lower() == "jason"
     assert user.age == 25
 
@@ -55,7 +55,6 @@ def test_json_mode():
             },
         ],
     )
-    print(response.choices[0].message.content)
-    user = UserExtract.from_response(response, mode=PatchMode.JSON_MODE)
+    user = UserExtract.from_response(response, mode=Mode.JSON)
     assert user.name.lower() == "jason"
     assert user.age == 25

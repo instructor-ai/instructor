@@ -1,12 +1,10 @@
+from pydantic import BaseModel
 import pytest
 import instructor
 
-from instructor import llm_validator
-from typing_extensions import Annotated
-from pydantic import field_validator, BaseModel, BeforeValidator, ValidationError
 from openai import OpenAI, AsyncOpenAI
 
-from instructor.function_calls import PatchMode
+from instructor.function_calls import Mode
 
 aclient = instructor.patch(AsyncOpenAI())
 client = instructor.patch(OpenAI())
@@ -18,7 +16,7 @@ class UserExtract(BaseModel):
 
 
 @pytest.mark.parametrize(
-    "mode", [PatchMode.FUNCTION_CALL, PatchMode.JSON_MODE, PatchMode.TOOL_CALL]
+    "mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
 )
 def test_runmodel(mode):
     client = instructor.patch(OpenAI(), mode=mode)
@@ -39,7 +37,7 @@ def test_runmodel(mode):
 
 
 @pytest.mark.parametrize(
-    "mode", [PatchMode.FUNCTION_CALL, PatchMode.JSON_MODE, PatchMode.TOOL_CALL]
+    "mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
 )
 @pytest.mark.asyncio
 async def test_runmodel_async(mode):
@@ -72,7 +70,7 @@ class UserExtractValidated(BaseModel):
         return v
 
 
-@pytest.mark.parametrize("mode", [PatchMode.FUNCTION_CALL, PatchMode.JSON_MODE])
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON])
 def test_runmodel_validator(mode):
     client = instructor.patch(OpenAI(), mode=mode)
     model = client.chat.completions.create(
@@ -90,7 +88,7 @@ def test_runmodel_validator(mode):
     ), "The raw response should be available from OpenAI"
 
 
-@pytest.mark.parametrize("mode", [PatchMode.FUNCTION_CALL, PatchMode.JSON_MODE])
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON])
 @pytest.mark.asyncio
 async def test_runmodel_async_validator(mode):
     aclient = instructor.patch(AsyncOpenAI(), mode=mode)

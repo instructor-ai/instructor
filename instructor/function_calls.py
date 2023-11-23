@@ -8,12 +8,12 @@ from pydantic import BaseModel, create_model, validate_arguments
 import enum
 
 
-class PatchMode(enum.Enum):
+class Mode(enum.Enum):
     """The mode to use for patching the client"""
 
-    FUNCTION_CALL: str = "function_call"
-    TOOL_CALL: str = "tool_call"
-    JSON_MODE: str = "json_mode"
+    FUNCTIONS: str = "function_call"
+    TOOLS: str = "tool_call"
+    JSON: str = "json_mode"
 
 
 class openai_function:
@@ -189,7 +189,7 @@ class OpenAISchema(BaseModel):
         completion,
         validation_context=None,
         strict: bool = None,
-        mode: PatchMode = PatchMode.FUNCTION_CALL,
+        mode: Mode = Mode.FUNCTIONS,
     ):
         """Execute the function from the response of an openai chat completion
 
@@ -205,7 +205,7 @@ class OpenAISchema(BaseModel):
         message = completion.choices[0].message
 
         match mode:
-            case PatchMode.FUNCTION_CALL:
+            case Mode.FUNCTIONS:
                 assert (
                     message.function_call.name == cls.openai_schema["name"]
                 ), "Function name does not match"
@@ -214,7 +214,7 @@ class OpenAISchema(BaseModel):
                     context=validation_context,
                     strict=strict,
                 )
-            case PatchMode.TOOL_CALL:
+            case Mode.TOOLS:
                 assert (
                     len(message.tool_calls) == 1
                 ), "Instructor does not support multiple tool calls, use List[Model] instead."
@@ -227,7 +227,7 @@ class OpenAISchema(BaseModel):
                     context=validation_context,
                     strict=strict,
                 )
-            case PatchMode.JSON_MODE:
+            case Mode.JSON:
                 return cls.model_validate_json(
                     message.content,
                     context=validation_context,
