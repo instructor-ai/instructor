@@ -47,6 +47,7 @@ For async clients you must use apatch vs patch like so:
 ```py
 import instructor
 from openai import AsyncOpenAI
+from pydantic import BaseModel
 
 aclient = instructor.apatch(AsyncOpenAI())
 
