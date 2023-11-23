@@ -2,10 +2,7 @@ import functools
 import pytest
 import instructor
 
-from pydantic import BaseModel, ValidationError, BeforeValidator
 from openai import OpenAI, AsyncOpenAI
-from instructor import llm_validator
-from typing_extensions import Annotated
 
 
 from instructor.patch import is_async, wrap_chatcompletion, OVERRIDE_DOCS
