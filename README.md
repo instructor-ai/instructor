@@ -37,8 +37,9 @@ With Instructor, your code becomes more efficient and readable. Here’s a quick
 ## Usage
 
 ```py hl_lines="5 13"
-from openai import OpenAI
 import instructor
+from openai import OpenAI
+from pydantic import BaseModel
 
 # Enables `response_model`
 client = instructor.patch(OpenAI())
@@ -84,6 +85,7 @@ For async clients you must use apatch vs patch like so:
 ```py
 import instructor
 from openai import AsyncOpenAI
+from pydantic import BaseModel
 
 aclient = instructor.apatch(AsyncOpenAI())
 
