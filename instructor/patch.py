@@ -53,44 +53,43 @@ def handle_response_model(
         if not issubclass(response_model, OpenAISchema):
             response_model = openai_schema(response_model)  # type: ignore
 
-        match mode:
-            case Mode.FUNCTIONS:
-                new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
-                new_kwargs["function_call"] = {
-                    "name": response_model.openai_schema["name"]
-                }  # type: ignore
-            case Mode.TOOLS:
-                new_kwargs["tools"] = [
-                    {
-                        "type": "function",
-                        "function": response_model.openai_schema,
-                    }
-                ]
-                new_kwargs["tool_choice"] = {
+        if mode == Mode.FUNCTIONS:
+            new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
+            new_kwargs["function_call"] = {
+                "name": response_model.openai_schema["name"]
+            }  # type: ignore
+        elif mode == Mode.TOOLS:
+            new_kwargs["tools"] = [
+                {
                     "type": "function",
-                    "function": {"name": response_model.openai_schema["name"]},
+                    "function": response_model.openai_schema,
                 }
-            case Mode.JSON:
-                new_kwargs["response_format"] = {"type": "json_object"}
+            ]
+            new_kwargs["tool_choice"] = {
+                "type": "function",
+                "function": {"name": response_model.openai_schema["name"]},
+            }
+        elif mode == Mode.JSON:
+            new_kwargs["response_format"] = {"type": "json_object"}
 
-                # check that the first message is a system message
-                # if it is not, add a system message to the beginning
-                message = f"Make sure that your response to any message matchs the json_schema below, do not deviate at all: \n{response_model.model_json_schema()['properties']}"
+            # check that the first message is a system message
+            # if it is not, add a system message to the beginning
+            message = f"Make sure that your response to any message matchs the json_schema below, do not deviate at all: \n{response_model.model_json_schema()['properties']}"
 
-                if new_kwargs["messages"][0]["role"] != "system":
-                    new_kwargs["messages"].insert(
-                        0,
-                        {
-                            "role": "system",
-                            "content": message,
-                        },
-                    )
+            if new_kwargs["messages"][0]["role"] != "system":
+                new_kwargs["messages"].insert(
+                    0,
+                    {
+                        "role": "system",
+                        "content": message,
+                    },
+                )
 
-                # if the first message is a system append the schema to the end
-                if new_kwargs["messages"][0]["role"] == "system":
-                    new_kwargs["messages"][0]["content"] += f"\n\n{message}"
-            case _:
-                raise ValueError(f"Invalid patch mode: {mode}")
+            # if the first message is a system append the schema to the end
+            if new_kwargs["messages"][0]["role"] == "system":
+                new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+        else:
+            raise ValueError(f"Invalid patch mode: {mode}")
 
     if new_kwargs.get("stream", False) and response_model is not None:
         import warnings

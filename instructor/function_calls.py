@@ -204,37 +204,36 @@ class OpenAISchema(BaseModel):
         """
         message = completion.choices[0].message
 
-        match mode:
-            case Mode.FUNCTIONS:
-                assert (
-                    message.function_call.name == cls.openai_schema["name"]
-                ), "Function name does not match"
-                return cls.model_validate_json(
-                    message.function_call.arguments,
-                    context=validation_context,
-                    strict=strict,
-                )
-            case Mode.TOOLS:
-                assert (
-                    len(message.tool_calls) == 1
-                ), "Instructor does not support multiple tool calls, use List[Model] instead."
-                tool_call = message.tool_calls[0]
-                assert (
-                    tool_call.function.name == cls.openai_schema["name"]
-                ), "Tool name does not match"
-                return cls.model_validate_json(
-                    tool_call.function.arguments,
-                    context=validation_context,
-                    strict=strict,
-                )
-            case Mode.JSON:
-                return cls.model_validate_json(
-                    message.content,
-                    context=validation_context,
-                    strict=strict,
-                )
-            case _:
-                raise ValueError(f"Invalid patch mode: {mode}")
+        if mode == Mode.FUNCTIONS:
+            assert (
+                message.function_call.name == cls.openai_schema["name"]
+            ), "Function name does not match"
+            return cls.model_validate_json(
+                message.function_call.arguments,
+                context=validation_context,
+                strict=strict,
+            )
+        elif mode == Mode.TOOLS:
+            assert (
+                len(message.tool_calls) == 1
+            ), "Instructor does not support multiple tool calls, use List[Model] instead."
+            tool_call = message.tool_calls[0]
+            assert (
+                tool_call.function.name == cls.openai_schema["name"]
+            ), "Tool name does not match"
+            return cls.model_validate_json(
+                tool_call.function.arguments,
+                context=validation_context,
+                strict=strict,
+            )
+        elif mode == Mode.JSON:
+            return cls.model_validate_json(
+                message.content,
+                context=validation_context,
+                strict=strict,
+            )
+        else:
+            raise ValueError(f"Invalid patch mode: {mode}")
 
 
 def openai_schema(cls) -> OpenAISchema:
