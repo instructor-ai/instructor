@@ -4,6 +4,7 @@ from openai import OpenAI
 
 client = OpenAI()
 
+
 class UserExtract(OpenAISchema):
     name: str
     age: int
