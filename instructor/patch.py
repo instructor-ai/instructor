@@ -92,7 +92,7 @@ def handle_response_model(
             raise ValueError(f"Invalid patch mode: {mode}")
 
     if new_kwargs.get("stream", False) and response_model is not None:
-        import warnings
+        raise NotImplementedError("stream=True is not supported when using response_model parameter")
 
         warnings.warn(
             "stream=True is not supported when using response_model parameter"
