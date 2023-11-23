@@ -98,3 +98,43 @@ def llm_validator(
         return v
 
     return llm
+
+def openai_moderation(client: OpenAI = None):
+    """
+    Validates a message using OpenAI moderation model.
+
+    Should only be used for monitoring inputs and outputs of OpenAI APIs
+    Other use cases are disallowed as per:
+    https://platform.openai.com/docs/guides/moderation/overview
+
+    Example:
+    ```python
+    from instructor import OpenAIModeration
+
+    class Response(BaseModel):
+        message: Annotated[str, AfterValidator(OpenAIModeration(openai_client=client))]
+
+    Response(message="I hate you")
+    ```
+
+    ```
+     ValidationError: 1 validation error for Response
+     message
+    Value error, `I hate you.` was flagged for ['harassment'] [type=value_error, input_value='I hate you.', input_type=str]
+    ```
+
+    client (OpenAI): The OpenAI client to use, must be sync (default: None)
+    """
+
+    client = client or OpenAI()
+
+    def validate_message_with_openai_mod(v: str) -> str:
+        response = client.moderations.create(input=v)
+        out = response.results[0]
+        cats = out.categories.model_dump()
+        if out.flagged:
+            raise ValueError(f"`{v}` was flagged for {', '.join(cat for cat in cats if cats[cat])}")
+        
+        return v
+    
+    return validate_message_with_openai_mod

@@ -14,5 +14,6 @@
 10. [How is multi-file code generation accomplished?](gpt-engineer.md)
 11. [How is Personally Identifiable Information sanitized from documents?](pii.md)
 12. [How are action items and dependencies generated from transcripts?](action_items.md)
+13. [How to enable OpenAI's moderation](moderation.md)
 
 Explore more!
