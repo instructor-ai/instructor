@@ -17,12 +17,12 @@ The following code defines a function to validate content using OpenAI's Moderat
 2. Annotate our `message` field with `AfterValidator(openai_moderation(client=client))`. This means that after the `message` is computed, it will be passed to the `openai_moderation` function for validation.
 
 ```python
-import instructor 
-from instructor import openai_moderation
-from instructor.dsl.validators import AfterValidator
+import instructor
 
-from pydantic import BaseModel
-from pydantic.typing import Annotated
+from instructor import openai_moderation
+
+from typing_extensions import Annotated
+from pydantic import BaseModel, AfterValidator, ValidationError
 from openai import OpenAI
 
 client = instructor.patch(OpenAI())
@@ -47,7 +47,7 @@ message
   Value error, `I want to make them suffer the consequences` was flagged for harassment, harassment_threatening, violence, harassment/threatening [type=value_error, input_value='I want to make them suffer the consequences', input_type=str]
 ```
 
-Let's try another example which violates a different policy: self-harm. 
+Let's try another example which violates a different policy: self-harm.
 
 ```python
 Response(message="I want to hurt myself.")
@@ -57,6 +57,8 @@ In this case, our validator will flag the output but return a different error me
 
 ValidationError: 1 validation error for Response
 message
-  Value error, `I want to hurt myself` was flagged for self_harm, self_harm_intent, violence, self-harm, self-harm/intent [type=value_error, input_value='I want to hurt myself', input_type=str]
+Value error, `I want to hurt myself` was flagged for self_harm, self_harm_intent, violence, self-harm, self-harm/intent [type=value_error, input_value='I want to hurt myself', input_type=str]
+
 ```
 
+```
