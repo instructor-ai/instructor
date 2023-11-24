@@ -265,4 +265,4 @@ except ValidationError as e:
 
 These examples demonstrate the potential of using Pydantic and OpenAI to enhance data accuracy through citation verification. While the LLM-based approach may not be efficient for runtime operations, it has exciting implications for generating a dataset of accurate responses. By leveraging this method during data generation, we can fine-tune a model that excels in citation accuracy. Similar to our last post on [finetuning a better summarizer](https://jxnl.github.io/instructor/blog/2023/11/05/chain-of-density/).
 
-If you like the content check out our [GitHub](https://github.com/jxnl/instructor) as give us a start and checkout the library.
+If you like the content check out our [GitHub](https://github.com/jxnl/instructor) as give us a star and checkout the library.
