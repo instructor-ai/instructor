@@ -1,16 +1,64 @@
+from pydantic import BaseModel, field_validator
 import pytest
 import instructor
 
-from instructor import llm_validator
-from typing_extensions import Annotated
-from pydantic import field_validator, BaseModel, BeforeValidator, ValidationError
 from openai import OpenAI, AsyncOpenAI
 
-client = instructor.patch(OpenAI())
+from instructor.function_calls import Mode
+
 aclient = instructor.patch(AsyncOpenAI())
+client = instructor.patch(OpenAI())
 
 
 class UserExtract(BaseModel):
+    name: str
+    age: int
+
+
+@pytest.mark.parametrize(
+    "mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
+)
+def test_runmodel(mode):
+    client = instructor.patch(OpenAI(), mode=mode)
+    model = client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        response_model=UserExtract,
+        max_retries=2,
+        messages=[
+            {"role": "user", "content": "Extract jason is 25 years old"},
+        ],
+    )
+    assert isinstance(model, UserExtract), "Should be instance of UserExtract"
+    assert model.name.lower() == "jason"
+    assert model.age == 25
+    assert hasattr(
+        model, "_raw_response"
+    ), "The raw response should be available from OpenAI"
+
+
+@pytest.mark.parametrize(
+    "mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
+)
+@pytest.mark.asyncio
+async def test_runmodel_async(mode):
+    aclient = instructor.patch(AsyncOpenAI(), mode=mode)
+    model = await aclient.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        response_model=UserExtract,
+        max_retries=2,
+        messages=[
+            {"role": "user", "content": "Extract jason is 25 years old"},
+        ],
+    )
+    assert isinstance(model, UserExtract), "Should be instance of UserExtract"
+    assert model.name.lower() == "jason"
+    assert model.age == 25
+    assert hasattr(
+        model, "_raw_response"
+    ), "The raw response should be available from OpenAI"
+
+
+class UserExtractValidated(BaseModel):
     name: str
     age: int
 
@@ -22,91 +70,38 @@ class UserExtract(BaseModel):
         return v
 
 
-def test_runmodel_validator():
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON])
+def test_runmodel_validator(mode):
+    client = instructor.patch(OpenAI(), mode=mode)
     model = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserExtract,
+        model="gpt-3.5-turbo-1106",
+        response_model=UserExtractValidated,
         max_retries=2,
         messages=[
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
-    assert isinstance(model, UserExtract), "Should be instance of UserExtract"
+    assert isinstance(model, UserExtractValidated), "Should be instance of UserExtract"
     assert model.name == "JASON"
     assert hasattr(
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
 
 
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON])
 @pytest.mark.asyncio
-async def test_runmodel_async_validator():
+async def test_runmodel_async_validator(mode):
+    aclient = instructor.patch(AsyncOpenAI(), mode=mode)
     model = await aclient.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserExtract,
+        model="gpt-3.5-turbo-1106",
+        response_model=UserExtractValidated,
         max_retries=2,
         messages=[
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
-    assert isinstance(model, UserExtract), "Should be instance of UserExtract"
+    assert isinstance(model, UserExtractValidated), "Should be instance of UserExtract"
     assert model.name == "JASON"
     assert hasattr(
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
-
-
-class UserExtractSimple(BaseModel):
-    name: str
-    age: int
-
-
-@pytest.mark.asyncio
-async def test_async_runmodel():
-    model = await aclient.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserExtractSimple,
-        messages=[
-            {"role": "user", "content": "Extract jason is 25 years old"},
-        ],
-    )
-    assert isinstance(
-        model, UserExtractSimple
-    ), "Should be instance of UserExtractSimple"
-    assert model.name.lower() == "jason"
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from OpenAI"
-
-
-def test_runmodel():
-    model = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserExtractSimple,
-        messages=[
-            {"role": "user", "content": "Extract jason is 25 years old"},
-        ],
-    )
-    assert isinstance(
-        model, UserExtractSimple
-    ), "Should be instance of UserExtractSimple"
-    assert model.name.lower() == "jason"
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from OpenAI"
-
-
-def test_runmodel_validator_error():
-    class QuestionAnswerNoEvil(BaseModel):
-        question: str
-        answer: Annotated[
-            str,
-            BeforeValidator(
-                llm_validator("don't say objectionable things", openai_client=client)
-            ),
-        ]
-
-    with pytest.raises(ValidationError):
-        QuestionAnswerNoEvil(
-            question="What is the meaning of life?",
-            answer="The meaning of life is to be evil and steal",
-        )

@@ -131,6 +131,7 @@ nav:
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
     - Types: 'concepts/types.md'
+    - Patching: 'concepts/patching.md'
     - Streaming: "concepts/lists.md"
     - Union: 'concepts/union.md'
     - Alias: 'concepts/alias.md'
