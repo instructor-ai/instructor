@@ -2,15 +2,15 @@ from typing import List, Optional, Type
 
 from pydantic import BaseModel, Field, create_model
 
-from instructor.function_calls import OpenAISchema
+from instructor.function_calls import OpenAISchema, Mode
 
 
 class MultiTaskBase:
     task_type = None  # type: ignore
 
     @classmethod
-    def from_streaming_response(cls, completion):
-        json_chunks = cls.extract_json(completion)
+    def from_streaming_response(cls, completion, mode: Mode):
+        json_chunks = cls.extract_json(completion, mode)
         yield from cls.tasks_from_chunks(json_chunks)
 
     @classmethod
@@ -31,11 +31,22 @@ class MultiTaskBase:
                 yield obj
 
     @staticmethod
-    def extract_json(completion):
+    def extract_json(completion, mode: Mode):
         for chunk in completion:
             try:
-                if json_chunk := chunk.choices[0].delta.function_call.arguments:
-                    yield json_chunk
+                if mode == Mode.FUNCTIONS:
+                    if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                        yield json_chunk
+                elif mode == Mode.JSON:
+                    if json_chunk := chunk.choices[0].delta.content:
+                        yield json_chunk
+                elif mode == Mode.TOOLS:
+                    if json_chunk := chunk.choices[0].delta.tool_calls:
+                        yield json_chunk[0].function.arguments
+                else:
+                    raise NotImplementedError(
+                        f"Mode {mode} is not supported for MultiTask streaming"
+                    )
             except AttributeError:
                 pass
 

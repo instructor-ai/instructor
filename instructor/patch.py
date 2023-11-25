@@ -57,7 +57,13 @@ def handle_response_model(
             response_model = MultiTask(iterable_element_class)
         if not issubclass(response_model, OpenAISchema):
             response_model = openai_schema(response_model)  # type: ignore
+        
+        if new_kwargs.get("stream", False) and not issubclass(response_model, MultiTaskBase):
+            raise NotImplementedError("stream=True is not supported when using response_model parameter for non-iterables")
 
+            warnings.warn(
+                "stream=True is not supported when using response_model parameter for non-iterables"
+            )
         if mode == Mode.FUNCTIONS:
             new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
             new_kwargs["function_call"] = {
@@ -96,12 +102,6 @@ def handle_response_model(
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 
-    if new_kwargs.get("stream", False) and response_model is not None and not issubclass(response_model, MultiTaskBase):
-        raise NotImplementedError("stream=True is not supported when using response_model parameter for non-iterables")
-
-        warnings.warn(
-            "stream=True is not supported when using response_model parameter for non-iterables"
-        )
 
     return response_model, new_kwargs
 

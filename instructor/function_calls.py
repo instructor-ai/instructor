@@ -205,7 +205,7 @@ class OpenAISchema(BaseModel):
         """
         if stream_multitask:
             return cls.from_streaming_response(
-                completion
+                completion, mode
             )
 
         message = completion.choices[0].message
