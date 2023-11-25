@@ -12,8 +12,8 @@ The goal of the blog is to capture some content that does not neatly fit within 
 
 ## Learning Python
 
-- [What are the fundamentals of batch processing with async in Python?](posts/learn-async.md)
 - [How can I effectively cache my functions in Python?](posts/caching.md)
+- [What are the fundamentals of batch processing with async in Python?](posts/learn-async.md)
 
 ## Talks
 
