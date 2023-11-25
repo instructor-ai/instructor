@@ -1,7 +1,9 @@
 import inspect
 from functools import wraps
+from instructor.dsl.multitask import MultiTask, MultiTaskBase
 from json import JSONDecodeError
-from typing import Callable, Optional, Type, Union
+from typing import get_origin, get_args, Callable, Optional, Type, Union
+from collections.abc import Iterable
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import ChatCompletion
@@ -50,6 +52,9 @@ def handle_response_model(
 ):
     new_kwargs = kwargs.copy()
     if response_model is not None:
+        if get_origin(response_model) is Iterable:
+            iterable_element_class = get_args(response_model)[0]
+            response_model = MultiTask(iterable_element_class)
         if not issubclass(response_model, OpenAISchema):
             response_model = openai_schema(response_model)  # type: ignore
 
@@ -107,9 +112,10 @@ def process_response(
     response_model: Type[BaseModel],
     validation_context: dict = None,
     strict=None,
+    stream=False,
     mode: Mode = Mode.FUNCTIONS,
 ):  # type: ignore
-    """Processes a OpenAI response with the response model, if available
+    """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
     via the pydantic model
 
@@ -120,10 +126,12 @@ def process_response(
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
     if response_model is not None:
+        stream_multitask = stream and issubclass(response_model, MultiTaskBase)
         model = response_model.from_response(
-            response, validation_context=validation_context, strict=strict, mode=mode
+            response, validation_context=validation_context, strict=strict, mode=mode, stream_multitask=stream_multitask
         )
-        model._raw_response = response
+        if not stream:
+            model._raw_response = response
         return model
     return response
 
@@ -142,12 +150,14 @@ async def retry_async(
     while retries <= max_retries:
         try:
             response: ChatCompletion = await func(*args, **kwargs)
+            stream = kwargs.get("stream", False)
             return process_response(
                 response,
                 response_model=response_model,
                 validation_context=validation_context,
                 strict=strict,
                 mode=mode,
+                stream=stream,
             )
         except (ValidationError, JSONDecodeError) as e:
             kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
@@ -177,12 +187,14 @@ def retry_sync(
         # Excepts ValidationError, and JSONDecodeError
         try:
             response = func(*args, **kwargs)
+            stream = kwargs.get("stream", False)
             return process_response(
                 response,
                 response_model=response_model,
                 validation_context=validation_context,
                 strict=strict,
                 mode=mode,
+                stream=stream
             )
         except (ValidationError, JSONDecodeError) as e:
             kwargs["messages"].append(response.choices[0].message)

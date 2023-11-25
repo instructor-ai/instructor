@@ -190,6 +190,7 @@ class OpenAISchema(BaseModel):
         validation_context=None,
         strict: bool = None,
         mode: Mode = Mode.FUNCTIONS,
+        stream_multitask: bool = False,
     ):
         """Execute the function from the response of an openai chat completion
 
@@ -202,6 +203,11 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
+        if stream_multitask:
+            return cls.from_streaming_response(
+                completion
+            )
+
         message = completion.choices[0].message
 
         if mode == Mode.FUNCTIONS:
