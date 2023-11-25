@@ -61,9 +61,6 @@ def handle_response_model(
         if new_kwargs.get("stream", False) and not issubclass(response_model, MultiTaskBase):
             raise NotImplementedError("stream=True is not supported when using response_model parameter for non-iterables")
 
-            warnings.warn(
-                "stream=True is not supported when using response_model parameter for non-iterables"
-            )
         if mode == Mode.FUNCTIONS:
             new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
             new_kwargs["function_call"] = {
@@ -110,9 +107,9 @@ def process_response(
     response,
     *,
     response_model: Type[BaseModel],
+    stream: bool,
     validation_context: dict = None,
     strict=None,
-    stream=False,
     mode: Mode = Mode.FUNCTIONS,
 ):  # type: ignore
     """Processes a OpenAI response with the response model, if available.
@@ -122,6 +119,7 @@ def process_response(
     Args:
         response (ChatCompletion): The response from OpenAI's API
         response_model (BaseModel): The response model to use for parsing the response
+        stream (bool): Whether the response is a stream
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
@@ -154,10 +152,10 @@ async def retry_async(
             return process_response(
                 response,
                 response_model=response_model,
+                stream=stream,
                 validation_context=validation_context,
                 strict=strict,
                 mode=mode,
-                stream=stream,
             )
         except (ValidationError, JSONDecodeError) as e:
             kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
@@ -191,10 +189,10 @@ def retry_sync(
             return process_response(
                 response,
                 response_model=response_model,
+                stream=stream,
                 validation_context=validation_context,
                 strict=strict,
                 mode=mode,
-                stream=stream
             )
         except (ValidationError, JSONDecodeError) as e:
             kwargs["messages"].append(response.choices[0].message)
