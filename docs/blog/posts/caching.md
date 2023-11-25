@@ -12,7 +12,7 @@ authors:
   - jxnl
 ---
 
-# Mastering Caching in Python
+# Introduction to Caching in Python
 
 > Instructor make working with language models easy, but they are still computationally expensive.
 
@@ -54,12 +54,12 @@ import functools
 @functools.cache
 def extract(data):
     return client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=UserDetail,
-    messages=[
-        {"role": "user", "content": data},
-    ]
-)
+        model="gpt-3.5-turbo",
+        response_model=UserDetail,
+        messages=[
+            {"role": "user", "content": data},
+        ]
+    )
 ```
 
 !!! warning "Changing the Model does not Invalidate the Cache"
