@@ -71,19 +71,21 @@ Now we can call `extract` multiple times with the same argument, and the result 
 ```python hl_lines="4 8 12"
 import time
 
-start = time.perf_counter()
+start = time.perf_counter() # (1)
 model = extract("Extract jason is 25 years old")
 print(f"Time taken: {time.perf_counter() - start}")
 
 start = time.perf_counter()
-model = extract("Extract jason is 25 years old") # (1)
+model = extract("Extract jason is 25 years old") # (2)
 print(f"Time taken: {time.perf_counter() - start}")
 
 >>> Time taken: 0.9267581660533324
->>> Time taken: 1.2080417945981026e-06
+>>> Time taken: 1.2080417945981026e-06 # (3)
 ```
 
-1. The second call to `extract` is much faster because the result is cached in memory.
+1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
+2. The second time we call `extract`, the result is returned from the cache, and the function is not called.
+3. The second call to `extract` is much faster because the result is returned from the cache!
 
 **Benefits**: Easy to implement, provides fast access due to in-memory storage, and requires no additional libraries.
 
@@ -94,9 +96,9 @@ print(f"Time taken: {time.perf_counter() - start}")
     ```python hl_lines="3-5 9"
     def decorator(func):
         def wrapper(*args, **kwargs):
-            print("Do something before")
+            print("Do something before") # (1)
             result = func(*args, **kwargs)
-            print("Do something after")
+            print("Do something after") # (2)
             return result
         return wrapper
 
@@ -110,6 +112,9 @@ print(f"Time taken: {time.perf_counter() - start}")
     >>> "Do something after"
     ```
 
+    1. The code is executed before the function is called
+    2. The code is executed after the function is called
+
 ## 2. `diskcache` for Persistent, Large Data Caching
 
 ??? note "Copy Caching Code"
@@ -121,12 +126,12 @@ print(f"Time taken: {time.perf_counter() - start}")
     import inspect
     import diskcache
 
-    cache = diskcache.Cache('./my_cache_directory')
+    cache = diskcache.Cache('./my_cache_directory') # (1)
 
     def instructor_cache(func):
         """Cache a function that returns a Pydantic model"""
         return_type = inspect.signature(func).return_annotation
-        if not issubclass(return_type, BaseModel):
+        if not issubclass(return_type, BaseModel): # (2)
             raise ValueError("The return type must be a Pydantic model")
 
         @functools.wraps(func)
@@ -146,6 +151,9 @@ print(f"Time taken: {time.perf_counter() - start}")
 
         return wrapper
     ```
+
+    1. We create a new `diskcache.Cache` instance to store the cached data. This will create a new directory called `my_cache_directory` in the current working directory.
+    2. We only want to cache functions that return a Pydantic model to simplify serialization and deserialization logic in this example code
 
     Remember that you can change this code to support non-Pydantic models, or to use a different caching backend. More over, don't forget that this cache does not invalidate when the model changes, so you might want to encode the `Model.model_json_schema()` as part of the key.
 
