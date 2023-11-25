@@ -132,6 +132,7 @@ nav:
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
     - Missing: "concepts/maybe.md"
+    - Patching: 'concepts/patching.md'
     - Streaming: "concepts/lists.md"
     - Caching: 'concepts/caching.md'
     - Validators: "concepts/reask_validation.md"
