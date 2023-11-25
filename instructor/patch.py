@@ -96,11 +96,11 @@ def handle_response_model(
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 
-    if new_kwargs.get("stream", False) and response_model is not None:
-        raise NotImplementedError("stream=True is not supported when using response_model parameter")
+    if new_kwargs.get("stream", False) and response_model is not None and not issubclass(response_model, MultiTaskBase):
+        raise NotImplementedError("stream=True is not supported when using response_model parameter for non-iterables")
 
         warnings.warn(
-            "stream=True is not supported when using response_model parameter"
+            "stream=True is not supported when using response_model parameter for non-iterables"
         )
 
     return response_model, new_kwargs
