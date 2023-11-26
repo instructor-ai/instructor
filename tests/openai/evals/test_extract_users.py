@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from openai import OpenAI
 import instructor
 from instructor.function_calls import Mode
+import os
 
 
 class UserDetails(BaseModel):
@@ -12,7 +13,7 @@ class UserDetails(BaseModel):
 
 
 # Lists for models, test data, and modes
-models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
+models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview", "meta/llama-2-70b-chat"]
 test_data = [
     ("Jason is 10", "Jason", 10),
     ("Alice is 25", "Alice", 25),
@@ -29,9 +30,19 @@ def test_extract(model, data, mode):
         pytest.skip(
             "JSON mode is not supported for gpt-3.5-turbo and gpt-4, skipping test"
         )
+    if mode == Mode.FUNCTIONS and model == "meta/llama-2-70b-chat":
+        pytest.skip(
+            "FUNCTIONS mode is not supported for meta/llama-2-70b-chat, skipping test"
+        )
 
     # Setting up the client with the instructor patch
-    client = instructor.patch(OpenAI(), mode=mode)
+    client = instructor.patch(
+        OpenAI(
+            base_url="https://proxy.braintrustapi.com/v1",
+            api_key=os.environ["BRAINTRUST_API_KEY"],
+        ),
+        mode=mode,
+    )
 
     # Calling the extract function with the provided model, sample data, and mode
     response = client.chat.completions.create(
