@@ -1,5 +1,5 @@
 ---
-draft: False 
+draft: False
 date: 2023-09-17
 tags:
   - RAG
@@ -16,7 +16,7 @@ authors:
 With the advent of large language models (LLM), retrival augmented generation (RAG) has become a hot topic. However throught the past year of [helping startups](https://jxnl.notion.site/Working-with-me-ec2bb36a5ac048c2a8f6bd888faea6c2?pvs=4) integrate LLMs into their stack I've noticed that the pattern of taking user queries, embedding them, and directly searching a vector store is effectively demoware.
 
 !!! note "What is RAG?"
-    Retrival augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
+Retrival augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
 
 <figure markdown>
   ![RAG](img/dumb_rag.png)
@@ -34,7 +34,6 @@ When you ask a question like, "what is the capital of France?" The RAG 'dumb' mo
 - **Query-Document Mismatch**: This model assumes that query embedding and the content embedding are similar in the embedding space, which is not always true based on the text you're trying to search over. Only using queries that are semantically similar to the content is a huge limitation!
 
 - **Monolithic Search Backend**: Assumes a single search backend, which is not always the case. You may have multiple search backends, each with their own API, and you want to route the query to vector stores, search clients, sql databases, and more.
-  
 - **Limitation of text search**: Restricts complex queries to a single string (`{query: str}`), sacrificing expressiveness, in using keywords, filters, and other advanced features. For example, asking `what problems did we fix last week` cannot be answered by a simple text search since documents that contain `problem, last week` are going to be present at every week.
 
 - **Limited ability to plan**: Assumes that the query is the only input to the search backend, but you may want to use other information to improve the search, like the user's location, or the time of day using the context to rewrite the query. For example, if you present the language model of more context its able to plan a suite of queries to execute to return the best results.
@@ -44,10 +43,9 @@ Now let's dive into how we can make it smarter with query understanding. This is
 ## Improving the RAG Model with Query Understanding
 
 !!! note "Shoutouts"
-    Much of this work has been inspired by / done in collab with a few of my clients at [new.computer](https://new.computer), [Metaphor Systems](https://metaphor.systems),  and [Naro](https://narohq.com), go check them out!
+Much of this work has been inspired by / done in collab with a few of my clients at [new.computer](https://new.computer), [Metaphor Systems](https://metaphor.systems), and [Naro](https://narohq.com), go check them out!
 
-
-Ultimately what you want to deploy is a [system that understands](https://en.wikipedia.org/wiki/Query_understanding) how to take the query and rewrite it to improve precision and recall. 
+Ultimately what you want to deploy is a [system that understands](https://en.wikipedia.org/wiki/Query_understanding) how to take the query and rewrite it to improve precision and recall.
 
 <figure markdown>
   ![RAG](img/query_understanding.png)
@@ -89,10 +87,10 @@ class MetaphorQuery(BaseModel):
         return await metaphor.search(...)
 ```
 
-Note how we model a rewritten query, range of published dates, and a list of domains to search in. This powerful pattern allows the user query to be restructured for better performance without the user having to know the details of how the search backend works. 
+Note how we model a rewritten query, range of published dates, and a list of domains to search in. This powerful pattern allows the user query to be restructured for better performance without the user having to know the details of how the search backend works.
 
 ```python
-import instructor 
+import instructor
 from openai import OpenAI
 
 # Enables response_model in the openai client
@@ -103,11 +101,11 @@ query = client.chat.completions.create(
     response_model=MetaphorQuery,
     messages=[
         {
-            "role": "system", 
+            "role": "system",
             "content": "You're a query understanding system for the Metafor Systems search engine. Here are some tips: ..."
         },
         {
-            "role": "user", 
+            "role": "user",
             "content": "What are some recent developments in AI?"
         }
     ],
@@ -118,12 +116,12 @@ query = client.chat.completions.create(
 
 ```json
 {
-    "rewritten_query": "novel developments advancements ai artificial intelligence machine learning",
-    "published_daterange": {
-        "start": "2023-09-17",
-        "end": "2021-06-17"
-    },
-    "domains_allow_list": ["arxiv.org"]
+  "rewritten_query": "novel developments advancements ai artificial intelligence machine learning",
+  "published_daterange": {
+    "start": "2023-09-17",
+    "end": "2021-06-17"
+  },
+  "domains_allow_list": ["arxiv.org"]
 }
 ```
 
@@ -174,7 +172,7 @@ class Retrival(BaseModel):
 Now we can call this with a simple query like "What do I have today?" and it will try to async dispatch to the correct backend. It's still important to prompt the language model well, but we'll leave that for another day.
 
 ```python
-import instructor 
+import instructor
 from openai import OpenAI
 
 # Enables response_model in the openai client
@@ -219,7 +217,7 @@ retrival = client.chat.completions.create(
 Notice that we have a list of queries that route to different search backends (email and calendar). We can even dispatch them async to be as performance as possible. Not only do we dispatch to different backends (that we have no control over), but you are likely going to render them to the user differently as well. Perhaps you want to summarize the emails in text, but you want to render the calendar events as a list that they can scroll across on a mobile app.
 
 !!! Note "Can I used framework X?"
-    I get this question a lot, but it's just code. Within these dispatchs you can do whatever you want. You can use `input()` to ask the user for more information, make a post request, call a Langchain agent or LLamaindex query engine to get more information. The sky is the limit.
+I get this question a lot, but it's just code. Within these dispatchs you can do whatever you want. You can use `input()` to ask the user for more information, make a post request, call a Langchain agent or LLamaindex query engine to get more information. The sky is the limit.
 
 Both of these examples showcase how both search providors and consumers can use `instructor` to model their systems. This is a powerful pattern that allows you to build a system that can be used by anyone, and can be used to build an LLM layer, from scratch, in front of any arbitrary backend.
 
@@ -230,8 +228,5 @@ This isnt about fancy embedding tricks, it's just plain old information retrival
 ## What's Next?
 
 Here I want to show that `instructor`` isn’t just about data extraction. It’s a powerful framework for building a data model and integrating it with your LLM. Structured output is just the beginning — the untapped goldmine is skilled use of tools and APIs.
-
-I believe collaboration between domain experts and AI engineers is the key to enable advanced tool use. I’ve been building a new tool on top of instructor that enables seamless collaboration and experimentation on LLMs with structured outputs. If you’re interested, visit [useinstructor.com](https://useinstructor.com) and take our survey to join the waitlist.
-
 
 If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!

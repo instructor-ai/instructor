@@ -1,3 +1,5 @@
+import pytest
+import instructor
 from instructor.function_calls import OpenAISchema, Mode
 from openai import OpenAI
 
@@ -56,5 +58,22 @@ def test_json_mode():
         ],
     )
     user = UserExtract.from_response(response, mode=Mode.JSON)
+    assert user.name.lower() == "jason"
+    assert user.age == 25
+
+
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS])
+def test_mode(mode):
+    client = instructor.patch(OpenAI(), mode=mode)
+    user = client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        response_model=UserExtract,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract jason is 25 years old",
+            },
+        ],
+    )
     assert user.name.lower() == "jason"
     assert user.age == 25
