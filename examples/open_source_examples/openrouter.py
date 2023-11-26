@@ -29,9 +29,10 @@ user_message = {"role": "user","content": "Extract the user details from the fol
 # Let's call the model
 user = client.chat.completions.create(response_format={"type": "json_object"}, model=model, messages=[system_message,user_message])
 
-# Make some assertions
+# Unmarshal Json
 detail = UserDetail.model_validate_json(user.choices[0].message.content)
-print(detail)
+
+# Make assertions
 assert isinstance(detail, UserDetail)
 assert detail.name == "Brandon"
 assert detail.age == 33
