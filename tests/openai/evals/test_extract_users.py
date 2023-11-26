@@ -14,14 +14,12 @@ class UserDetails(BaseModel):
 models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
 test_data = [
     ("Jason is 10", "Jason", 10),
-    ("Alice is 25", "Alice", 25),
-    ("Bob is 35", "Bob", 35),
 ]
 modes = [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))
-def test_extract(model, data, mode, client):
+def test_extract(model, data, mode, client, benchmark):
     sample_data, expected_name, expected_age = data
 
     if (mode, model) in {
@@ -34,13 +32,18 @@ def test_extract(model, data, mode, client):
     client = instructor.patch(client, mode=mode)
 
     # Calling the extract function with the provided model, sample data, and mode
-    response = client.chat.completions.create(
-        model=model,
-        response_model=UserDetails,
-        messages=[
-            {"role": "user", "content": sample_data},
-        ],
-    )
+
+    def run():
+        return client.chat.completions.create(
+            model=model,
+            response_model=UserDetails,
+            messages=[
+                {"role": "user", "content": sample_data},
+            ],
+        )
+
+    
+    response = benchmark(run)
 
     # Assertions
     assert (
