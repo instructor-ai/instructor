@@ -19,7 +19,7 @@ def client():
         yield wrap_openai(
             OpenAI(
                 api_key=os.environ["BRAINTRUST_API_KEY"],
-                base_url="https://proxy.braintrustapi.com/v1",
+                base_url="https://braintrustproxy.com/v1",
             )
         )
     else:
@@ -32,7 +32,7 @@ def aclient():
         yield wrap_openai(
             AsyncOpenAI(
                 api_key=os.environ["BRAINTRUST_API_KEY"],
-                base_url="https://proxy.braintrustapi.com/v1",
+                base_url="https://braintrustproxy.com/v1",
             )
         )
     else:
