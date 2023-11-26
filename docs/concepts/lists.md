@@ -60,7 +60,7 @@ completion = client.chat.completions.create(
 
 ## Streaming Tasks
 
-Since a `MultiTask(T)` is well contrained to `tasks: List[T]` we can make assuptions on how tokens are used and provide a helper method that allows you generate tasks as the the tokens are streamed in
+We can also generate tasks as the the tokens are streamed in by defining an `Iterable[T]` type.
 
 Lets look at an example in action with the same class
 
