@@ -128,18 +128,19 @@ nav:
     - Contributing: 'contributing.md'
   - Tips: 'concepts/prompting.md'
   - Concepts:
+    - Philosophy: 'concepts/philosophy.md'
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
-    - Types: 'concepts/types.md'
+    - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
     - Streaming: "concepts/lists.md"
+    - Caching: 'concepts/caching.md'
+    - Validators: "concepts/reask_validation.md"
+    - Distillation: "concepts/distillation.md"
+    - Types: 'concepts/types.md'
     - Union: 'concepts/union.md'
     - Alias: 'concepts/alias.md'
     - Type Adapter: 'concepts/typeadapter.md'
-    - Validators: "concepts/reask_validation.md"
-    - Missing: "concepts/maybe.md"
-    - Distillation: "concepts/distillation.md"
-    - Philosophy: 'concepts/philosophy.md'
   - Cookbook:
     - Overview: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
