@@ -50,16 +50,12 @@ users = client.chat.completions.create(
         },
     ],
 )
-users.model_dump_json()
-```
+for user in users:
+    assert isinstance(user, User)
+    print(user)
 
-```json
-{
-  "tasks": [
-    { "name": "Jason", "age": 10 },
-    { "name": "John", "age": 30 }
-  ]
-}
+>>> name="Jason" "age"=10
+>>> name="John" "age"=10
 ```
 
 ## Streaming Tasks

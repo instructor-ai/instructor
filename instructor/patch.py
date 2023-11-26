@@ -121,12 +121,14 @@ def process_response(
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
     if response_model is not None:
-        stream_multitask = stream and issubclass(response_model, MultiTaskBase)
+        is_model_multitask = issubclass(response_model, MultiTaskBase)
         model = response_model.from_response(
-            response, validation_context=validation_context, strict=strict, mode=mode, stream_multitask=stream_multitask
+            response, validation_context=validation_context, strict=strict, mode=mode, stream_multitask=stream and is_model_multitask
         )
         if not stream:
             model._raw_response = response
+            if is_model_multitask:
+                return model.tasks
         return model
     return response
 
