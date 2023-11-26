@@ -189,6 +189,7 @@ class OpenAISchema(BaseModel):
         validation_context=None,
         strict: bool = None,
         mode: Mode = Mode.FUNCTIONS,
+        stream_multitask: bool = False,
     ):
         """Execute the function from the response of an openai chat completion
 
@@ -197,10 +198,17 @@ class OpenAISchema(BaseModel):
             throw_error (bool): Whether to throw an error if the function call is not detected
             validation_context (dict): The validation context to use for validating the response
             strict (bool): Whether to use strict json parsing
+            mode (Mode): The openai completion mode
+            stream_multitask (bool): Whether to stream a multitask response
 
         Returns:
             cls (OpenAISchema): An instance of the class
         """
+        if stream_multitask:
+            return cls.from_streaming_response(
+                completion, mode
+            )
+
         message = completion.choices[0].message
 
         if mode == Mode.FUNCTIONS:
