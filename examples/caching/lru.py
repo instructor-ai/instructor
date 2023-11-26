@@ -5,9 +5,11 @@ import functools
 
 client = instructor.patch(OpenAI())
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
+
 
 @functools.lru_cache
 def extract(data):
@@ -16,12 +18,12 @@ def extract(data):
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
 
 
 def test_extract():
-    import time 
+    import time
 
     start = time.perf_counter()
     model = extract("Extract jason is 25 years old")
@@ -34,6 +36,7 @@ def test_extract():
     assert model.name.lower() == "jason"
     assert model.age == 25
     print(f"Time taken: {time.perf_counter() - start}")
+
 
 if __name__ == "__main__":
     test_extract()

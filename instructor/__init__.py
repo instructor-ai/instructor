@@ -1,6 +1,6 @@
 from .distil import FinetuneFormat, Instructions
 from .dsl import CitationMixin, Maybe, MultiTask, llm_validator, openai_moderation
-from .function_calls import OpenAISchema, openai_function, openai_schema
+from .function_calls import OpenAISchema, openai_function, openai_schema, Mode
 from .patch import apatch, patch
 
 __all__ = [
@@ -10,6 +10,7 @@ __all__ = [
     "MultiTask",
     "Maybe",
     "openai_schema",
+    "Mode",
     "patch",
     "apatch",
     "llm_validator",

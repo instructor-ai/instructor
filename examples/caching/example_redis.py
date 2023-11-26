@@ -9,6 +9,7 @@ from openai import OpenAI
 client = instructor.patch(OpenAI())
 cache = redis.Redis("localhost")
 
+
 def instructor_cache(func):
     """Cache a function that returns a Pydantic model"""
     return_type = inspect.signature(func).return_annotation
@@ -38,6 +39,7 @@ class UserDetail(BaseModel):
     name: str
     age: int
 
+
 @instructor_cache
 def extract(data) -> UserDetail:
     # Assuming client.chat.completions.create returns a UserDetail instance
@@ -46,11 +48,12 @@ def extract(data) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
 
+
 def test_extract():
-    import time 
+    import time
 
     start = time.perf_counter()
     model = extract("Extract jason is 25 years old")

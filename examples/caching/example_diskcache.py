@@ -8,11 +8,14 @@ from pydantic import BaseModel
 
 client = instructor.patch(OpenAI())
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
 
-cache = diskcache.Cache('./my_cache_directory')
+
+cache = diskcache.Cache("./my_cache_directory")
+
 
 def instructor_cache(func):
     """Cache a function that returns a Pydantic model"""
@@ -38,6 +41,7 @@ def instructor_cache(func):
 
     return wrapper
 
+
 @instructor_cache
 def extract(data) -> UserDetail:
     return client.chat.completions.create(
@@ -45,12 +49,12 @@ def extract(data) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
 
 
 def test_extract():
-    import time 
+    import time
 
     start = time.perf_counter()
     model = extract("Extract jason is 25 years old")

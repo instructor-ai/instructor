@@ -55,9 +55,7 @@ def handle_response_model(
 
         if mode == Mode.FUNCTIONS:
             new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
-            new_kwargs["function_call"] = {
-                "name": response_model.openai_schema["name"]
-            }  # type: ignore
+            new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}  # type: ignore
         elif mode == Mode.TOOLS:
             new_kwargs["tools"] = [
                 {
@@ -92,7 +90,9 @@ def handle_response_model(
             raise ValueError(f"Invalid patch mode: {mode}")
 
     if new_kwargs.get("stream", False) and response_model is not None:
-        raise NotImplementedError("stream=True is not supported when using response_model parameter")
+        raise NotImplementedError(
+            "stream=True is not supported when using response_model parameter"
+        )
 
         warnings.warn(
             "stream=True is not supported when using response_model parameter"
@@ -204,9 +204,7 @@ def is_async(func: Callable) -> bool:
     )
 
 
-def wrap_chatcompletion(
-    func: Callable, mode: Mode = Mode.FUNCTIONS
-) -> Callable:
+def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable:
     func_is_async = is_async(func)
 
     @wraps(func)
@@ -268,9 +266,7 @@ def wrap_chatcompletion(
     return wrapper_function
 
 
-def patch(
-    client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS
-):
+def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS):
     """
     Patch the `client.chat.completions.create` method
 

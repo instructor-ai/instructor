@@ -15,9 +15,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-@pytest.mark.parametrize(
-    "mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
-)
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS])
 def test_runmodel(mode):
     client = instructor.patch(OpenAI(), mode=mode)
     model = client.chat.completions.create(
@@ -36,9 +34,7 @@ def test_runmodel(mode):
     ), "The raw response should be available from OpenAI"
 
 
-@pytest.mark.parametrize(
-    "mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
-)
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS])
 @pytest.mark.asyncio
 async def test_runmodel_async(mode):
     aclient = instructor.patch(AsyncOpenAI(), mode=mode)
