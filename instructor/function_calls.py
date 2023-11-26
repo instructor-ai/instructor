@@ -199,6 +199,8 @@ class OpenAISchema(BaseModel):
             throw_error (bool): Whether to throw an error if the function call is not detected
             validation_context (dict): The validation context to use for validating the response
             strict (bool): Whether to use strict json parsing
+            mode (Mode): The openai completion mode
+            stream_multitask (bool): Whether to stream a multitask response
 
         Returns:
             cls (OpenAISchema): An instance of the class

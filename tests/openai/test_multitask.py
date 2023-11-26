@@ -8,9 +8,6 @@ import instructor
 from instructor.function_calls import OpenAISchema, Mode
 
 
-#client = instructor.patch(OpenAI())
-
-
 class User(BaseModel):
     name: str
     age: int

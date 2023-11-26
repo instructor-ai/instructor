@@ -82,7 +82,7 @@ def handle_response_model(
 
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
-            message = f"Make sure that your response to any message matchs the json_schema below, do not deviate at all: \n{response_model.model_json_schema()['properties']}"
+            message = f"Make sure that your response to any message matches the json_schema below, do not deviate at all: \n{response_model.model_json_schema()['properties']}"
 
             if new_kwargs["messages"][0]["role"] != "system":
                 new_kwargs["messages"].insert(
