@@ -1,5 +1,9 @@
 We would love for you to contribute to `Instructor`.
 
+## [Evals](https://github.com/jxnl/instructor/tree/main/tests/openai/evals)
+
+We invite you to contribute evals in pytest as a way to monitor the quality of the openai models and the instructor library. To get started check out the [jxnl/instructor/tests/evals](https://github.com/jxnl/instructor/tree/main/tests/openai/evals) and contribute your own evals in the form of pytest tests. These evals will be run once a week and the results will be posted.
+
 ## Issues
 
 If you find a bug, please file an issue on [our issue tracker on GitHub](https://github.com/jxnl/instructor/issues).
