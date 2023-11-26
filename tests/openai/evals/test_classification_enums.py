@@ -8,6 +8,7 @@ from openai import OpenAI
 
 from pydantic import BaseModel
 
+
 class Labels(str, enum.Enum):
     SPAM = "spam"
     NOT_SPAM = "not_spam"
@@ -19,6 +20,7 @@ class SinglePrediction(BaseModel):
     """
 
     class_label: Labels
+
 
 models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
 modes = [instructor.Mode.FUNCTIONS, instructor.Mode.JSON, instructor.Mode.TOOLS]
@@ -32,6 +34,7 @@ data = [
         Labels.NOT_SPAM,
     ),
 ]
+
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 def test_classification(model, data, mode):
@@ -67,6 +70,7 @@ class MultiLabels(str, enum.Enum):
 class MultiClassPrediction(BaseModel):
     predicted_labels: List[MultiLabels]
 
+
 data = [
     (
         "I am having trouble with my billing",
@@ -82,9 +86,9 @@ data = [
     ),
 ]
 
+
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 def test_multi_classify(model, data, mode):
-
     client = instructor.patch(OpenAI(), mode=mode)
 
     if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
@@ -103,5 +107,5 @@ def test_multi_classify(model, data, mode):
                 "content": f"Classify the following support ticket: {input}",
             },
         ],
-    ) 
+    )
     assert set(resp.predicted_labels) == set(expected)

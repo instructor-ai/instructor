@@ -8,6 +8,7 @@ from openai import AsyncOpenAI, OpenAI
 
 from pydantic import BaseModel
 
+
 class SinglePrediction(BaseModel):
     """
     Correct class label for the given text
@@ -15,18 +16,14 @@ class SinglePrediction(BaseModel):
 
     class_label: Literal["spam", "not_spam"]
 
+
 models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
 modes = [instructor.Mode.FUNCTIONS, instructor.Mode.JSON, instructor.Mode.TOOLS]
 data = [
-    (
-        "I am a spammer",
-        "spam"
-    ),
-    (
-        "I am not a spammer",
-        "not_spam"
-    ),
+    ("I am a spammer", "spam"),
+    ("I am not a spammer", "not_spam"),
 ]
+
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 @pytest.mark.asyncio
@@ -56,6 +53,7 @@ async def test_classification(model, data, mode):
 class MultiClassPrediction(BaseModel):
     predicted_labels: List[Literal["billing", "general_query", "hardware"]]
 
+
 data = [
     (
         "I am having trouble with my billing",
@@ -71,10 +69,10 @@ data = [
     ),
 ]
 
+
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 @pytest.mark.asyncio
 async def test_multi_classify(model, data, mode):
-
     client = instructor.patch(AsyncOpenAI(), mode=mode)
 
     if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
@@ -93,5 +91,5 @@ async def test_multi_classify(model, data, mode):
                 "content": f"Classify the following support ticket: {input}",
             },
         ],
-    ) 
+    )
     assert set(resp.predicted_labels) == set(expected)

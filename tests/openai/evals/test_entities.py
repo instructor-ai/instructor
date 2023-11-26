@@ -83,7 +83,6 @@ The contract can be terminated with a 30-day notice, unless there are outstandin
 """
 
 
-
 models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
 modes = [instructor.Mode.FUNCTIONS, instructor.Mode.JSON, instructor.Mode.TOOLS]
 
