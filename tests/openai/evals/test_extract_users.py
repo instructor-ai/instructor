@@ -1,7 +1,6 @@
 import pytest
 from itertools import product
 from pydantic import BaseModel
-from openai import OpenAI
 import instructor
 from instructor.function_calls import Mode
 
@@ -22,16 +21,17 @@ modes = [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))
-def test_extract(model, data, mode):
+def test_extract(model, data, mode, client):
     sample_data, expected_name, expected_age = data
 
-    if mode == Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
-        pytest.skip(
-            "JSON mode is not supported for gpt-3.5-turbo and gpt-4, skipping test"
-        )
+    if (mode, model) in {
+        (Mode.JSON, "gpt-3.5-turbo"),
+        (Mode.JSON, "gpt-4"),
+    }:
+        pytest.skip(f"{mode} mode is not supported for {model}, skipping test")
 
     # Setting up the client with the instructor patch
-    client = instructor.patch(OpenAI(), mode=mode)
+    client = instructor.patch(client, mode=mode)
 
     # Calling the extract function with the provided model, sample data, and mode
     response = client.chat.completions.create(
