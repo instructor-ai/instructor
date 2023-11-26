@@ -65,13 +65,13 @@ Since a `MultiTask(T)` is well contrained to `tasks: List[T]` we can make assupt
 Lets look at an example in action with the same class
 
 ```python hl_lines="6 26"
-MultiUser = instructor.MultiTask(User)
+Users = Iterable[User]
 
-completion = client.chat.completions.create(
+users = client.chat.completions.create(
     model="gpt-4",
     temperature=0.1,
     stream=True,
-    response_model=MultiUser,
+    response_model=Users,
     messages=[
         {
             "role": "system",
@@ -89,7 +89,7 @@ completion = client.chat.completions.create(
     max_tokens=1000,
 )
 
-for user in MultiUser.from_streaming_response(completion):
+for user in users:
     assert isinstance(user, User)
     print(user)
 
