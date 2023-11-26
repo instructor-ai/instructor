@@ -12,12 +12,10 @@ except ImportError:
     def wrap_openai(x):
         return x
 
-    pass
-
 
 @pytest.fixture(scope="session")
 def client():
-    if "BRAINTRUST_API_KEY" in os.environ:
+    if os.environ.get("BRAINTRUST_API_KEY"):
         yield wrap_openai(
             OpenAI(
                 api_key=os.environ["BRAINTRUST_API_KEY"],
@@ -30,7 +28,7 @@ def client():
 
 @pytest.fixture(scope="session")
 def aclient():
-    if "BRAINTRUST_API_KEY" in os.environ:
+    if os.environ.get("BRAINTRUST_API_KEY"):
         yield wrap_openai(
             AsyncOpenAI(
                 api_key=os.environ["BRAINTRUST_API_KEY"],
