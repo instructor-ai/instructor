@@ -1,4 +1,4 @@
-# Streaming and MultiTask
+# Multi-task and Streaming
 
 A common use case of structured extraction is defining a single schema class and then making another schema to create a list to do multiple extraction
 
@@ -13,40 +13,44 @@ class Users(BaseModel):
     users: List[User]
 ```
 
-Defining a task and creating a list of classes is a common enough pattern that we define a helper function `MultiTask` It procides a function to dynamically create a new class that:
+Defining a task and creating a list of classes is a common enough pattern that we make this convenient by making use of `Iterable[T]`. This lets us dynamically create a new class that:
 
-1. Dynamic docstrings and class name baed on the task
-2. Helper method to support streaming by collectin function_call tokens until a object back out.
+1. Has dynamic docstrings and class name based on the task
+2. Support streaming by collecting tokens until a task is received back out.
 
-## Extracting Tasks using MultiTask
+## Extracting Tasks using Iterable
 
-By using multitask you get a very convient class with prompts and names automatically defined. You get `from_response` just like any other `BaseModel` you're able to extract the list of objects data you want with `MultTask.tasks`.
+By using `Iterable` you get a very convient class with prompts and names automatically defined:
 
 ```python
 import instructor
 from openai import OpenAI
+from typing import Iterable
+from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.JSON)
 
 class User(BaseModel):
     name: str
     age: int
 
-MultiUser = instructor.MultiTask(User)
+Users = Iterable[User]
 
-completion = client.chat.completions.create(
-    model="gpt-4-0613",
+users = client.chat.completions.create(
+    model="gpt-3.5-turbo-1106",
     temperature=0.1,
+    response_model=Users,
     stream=False,
-    functions=[MultiUser.openai_schema],
-    function_call={"name": MultiUser.openai_schema["name"]},
     messages=[
         {
             "role": "user",
-            "content": f"Consider the data below: Jason is 10 and John is 30",
+            "content": "Consider this data: Jason is 10 and John is 30.\
+                         Correctly segment it into entitites\
+                        Make sure the JSON is correct",
         },
     ],
 )
+users.model_dump_json()
 ```
 
 ```json
@@ -60,11 +64,13 @@ completion = client.chat.completions.create(
 
 ## Streaming Tasks
 
-We can also generate tasks as the the tokens are streamed in by defining an `Iterable[T]` type.
+We can also generate tasks as the tokens are streamed in by defining an `Iterable[T]` type.
 
 Lets look at an example in action with the same class
 
 ```python hl_lines="6 26"
+from typing import Iterable
+
 Users = Iterable[User]
 
 users = client.chat.completions.create(
