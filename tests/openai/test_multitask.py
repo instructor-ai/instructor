@@ -1,4 +1,3 @@
-import time
 
 from typing import Iterable
 from openai import OpenAI

@@ -4,7 +4,8 @@ from pydantic import BaseModel, Field
 import pytest
 
 import instructor
-from openai import OpenAI
+
+from instructor.function_calls import Mode
 
 
 class Property(BaseModel):
@@ -39,9 +40,9 @@ class DocumentExtraction(BaseModel):
     )
 
 
-def ask_ai(content, model, mode, client) -> DocumentExtraction:
+def ask_ai(content, model, client) -> DocumentExtraction:
     resp: DocumentExtraction = client.chat.completions.create(
-        model="gpt-4",
+        model=model,
         response_model=DocumentExtraction,
         messages=[
             {
@@ -88,13 +89,14 @@ modes = [instructor.Mode.FUNCTIONS, instructor.Mode.JSON, instructor.Mode.TOOLS]
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_extract(model, mode):
-    client = instructor.patch(OpenAI(), mode=mode)
-    if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
-        pytest.skip(
-            "JSON mode is not supported for gpt-3.5-turbo and gpt-4, skipping test"
-        )
+def test_extract(model, mode, client):
+    client = instructor.patch(client, mode=mode)
+    if (mode, model) in {
+        (Mode.JSON, "gpt-3.5-turbo"),
+        (Mode.JSON, "gpt-4"),
+    }:
+        pytest.skip(f"{mode} mode is not supported for {model}, skipping test")
 
     # Honestly, if there are no errors, then it's a pass
-    extract = ask_ai(content, model, mode, client)
+    extract = ask_ai(content=content, model=model, client=client)
     assert len(extract.entities) > 0

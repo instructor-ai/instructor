@@ -3,7 +3,6 @@ import uuid
 import pytest
 from itertools import product
 from pydantic import BaseModel
-from openai import OpenAI
 import instructor
 from instructor.function_calls import Mode
 import os
@@ -27,7 +26,7 @@ run_id = uuid.uuid4().hex
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))
-def test_extract(model, data, mode):
+def test_extract(model, data, mode, client):
     sample_data, expected_name, expected_age = data
 
     if mode == Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
@@ -50,12 +49,7 @@ def test_extract(model, data, mode):
         ) as span:
             # Setting up the client with the instructor patch
             client = instructor.patch(
-                braintrust.wrap_openai(
-                    OpenAI(
-                        base_url="https://proxy.braintrustapi.com/v1",
-                        api_key=os.environ["BRAINTRUST_API_KEY"],
-                    )
-                ),
+                braintrust.wrap_openai(client),
                 mode=mode,
             )
 
