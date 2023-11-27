@@ -17,7 +17,7 @@ def test_patch_completes_successfully():
             str, AfterValidator(instructor.openai_moderation(client=client))
         ]
 
-    with pytest.raises(ValidationError) as e:
+    with pytest.raises(ValidationError):
         Response(message="I want to make them suffer the consequences")
 
 

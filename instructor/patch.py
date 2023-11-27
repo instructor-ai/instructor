@@ -1,7 +1,9 @@
 import inspect
 from functools import wraps
+from instructor.dsl.multitask import MultiTask, MultiTaskBase
 from json import JSONDecodeError
-from typing import Callable, Optional, Type, Union
+from typing import get_origin, get_args, Callable, Optional, Type, Union
+from collections.abc import Iterable
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import ChatCompletion
@@ -50,8 +52,14 @@ def handle_response_model(
 ):
     new_kwargs = kwargs.copy()
     if response_model is not None:
+        if get_origin(response_model) is Iterable:
+            iterable_element_class = get_args(response_model)[0]
+            response_model = MultiTask(iterable_element_class)
         if not issubclass(response_model, OpenAISchema):
             response_model = openai_schema(response_model)  # type: ignore
+        
+        if new_kwargs.get("stream", False) and not issubclass(response_model, MultiTaskBase):
+            raise NotImplementedError("stream=True is not supported when using response_model parameter for non-iterables")
 
         if mode == Mode.FUNCTIONS:
             new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
@@ -72,7 +80,7 @@ def handle_response_model(
 
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
-            message = f"Make sure that your response to any message matchs the json_schema below, do not deviate at all: \n{response_model.model_json_schema()['properties']}"
+            message = f"Make sure that your response to any message matches the json_schema below, do not deviate at all: \n{response_model.model_json_schema()['properties']}"
 
             if new_kwargs["messages"][0]["role"] != "system":
                 new_kwargs["messages"].insert(
@@ -89,15 +97,6 @@ def handle_response_model(
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 
-    if new_kwargs.get("stream", False) and response_model is not None:
-        raise NotImplementedError(
-            "stream=True is not supported when using response_model parameter"
-        )
-
-        warnings.warn(
-            "stream=True is not supported when using response_model parameter"
-        )
-
     return response_model, new_kwargs
 
 
@@ -105,25 +104,31 @@ def process_response(
     response,
     *,
     response_model: Type[BaseModel],
+    stream: bool,
     validation_context: dict = None,
     strict=None,
     mode: Mode = Mode.FUNCTIONS,
 ):  # type: ignore
-    """Processes a OpenAI response with the response model, if available
+    """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
     via the pydantic model
 
     Args:
         response (ChatCompletion): The response from OpenAI's API
         response_model (BaseModel): The response model to use for parsing the response
+        stream (bool): Whether the response is a stream
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
     if response_model is not None:
+        is_model_multitask = issubclass(response_model, MultiTaskBase)
         model = response_model.from_response(
-            response, validation_context=validation_context, strict=strict, mode=mode
+            response, validation_context=validation_context, strict=strict, mode=mode, stream_multitask=stream and is_model_multitask
         )
-        model._raw_response = response
+        if not stream:
+            model._raw_response = response
+            if is_model_multitask:
+                return model.tasks
         return model
     return response
 
@@ -142,9 +147,11 @@ async def retry_async(
     while retries <= max_retries:
         try:
             response: ChatCompletion = await func(*args, **kwargs)
+            stream = kwargs.get("stream", False)
             return process_response(
                 response,
                 response_model=response_model,
+                stream=stream,
                 validation_context=validation_context,
                 strict=strict,
                 mode=mode,
@@ -177,9 +184,11 @@ def retry_sync(
         # Excepts ValidationError, and JSONDecodeError
         try:
             response = func(*args, **kwargs)
+            stream = kwargs.get("stream", False)
             return process_response(
                 response,
                 response_model=response_model,
+                stream=stream,
                 validation_context=validation_context,
                 strict=strict,
                 mode=mode,
