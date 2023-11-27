@@ -15,7 +15,9 @@ if not openrouter_api_key:
     raise ValueError("OPENROUTER_API_KEY is not set in environment variables")
 
 # Base URL for OpenAI
-openrouter_base_url = "https://openrouter.ai/api/v1"
+openrouter_base_url = os.environ.get("OPENROUTER_BASE_URL")
+if not openrouter_base_url:
+    raise ValueError("OPENROUTER_BASE_URL is not set in environment variables")
 
 # Pydantic model for user details
 
@@ -103,5 +105,4 @@ for message in user_detail_messages:
             raise ValueError(user.message)
 
     if user.result:
-        assert isinstance(user, MaybeUser)
         print(user.result)
