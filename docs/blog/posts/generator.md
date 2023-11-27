@@ -78,7 +78,7 @@ response_generator = openai.ChatCompletion.create(
 )
 
 for chunk in response_generator:
-    print(chunk)
+    print(chunk, end="")
 ```
 
 This is great, but what if we want to do some structured extraction on this stream? For instance, we might want to render frontend components that are streamed out by an LLM. The LLM output could be an ordered list of product recommendations on an ecommerce store.
