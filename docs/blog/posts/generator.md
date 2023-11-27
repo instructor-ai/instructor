@@ -11,7 +11,7 @@ authors:
   - anmol
 ---
 
-# Intro to Generators and LLM Streaming in Python
+# Generators and LLM Streaming Structured Outputs in Python
 
 In production apps, latency is crucial, especially in eCommerce or newer chat applications like ChatGPT. Streaming is the solution that enables us to enhance the user experience without the need for faster response times. In this post, we'll explore Python generators from the ground up and then delve into integrating them with LLM streaming using the Instructor library.
 
