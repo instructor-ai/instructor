@@ -17,7 +17,7 @@ In production apps, latency is crucial, especially in eCommerce or newer chat ap
 
 ## Python Generators: An Efficient Approach to Iterables
 
-Generators in Python are a game-changer for handling large data sets and stream processing. They allow functions to yield values one at a time, pausing and resuming their state, which is a more memory-efficient approach compared to traditional collections that store all elements in memory.
+Generators in Python are a game-changer for handling large data sets and stream processing. They allow functions to yield values one at a time, pausing and resuming their state, which is a faster and more memory-efficient approach compared to traditional collections that store all elements in memory.
 
 ### The Basics: Yielding Values
 
@@ -39,10 +39,49 @@ for num in count_to_3():
 ```
 
 ### Advantages Over Traditional Collections
-
+- **Lazy Evaluation & reduced latency**: The time to get the first element (or time-to-first-token in LLM land) from a generator is significantly lower. Generators only produce one value at a time, whereas a collection will need to generator the entire collection before returning a value.
 - **Memory Efficiency**: Only one item is in memory at a time.
-- **Lazy Evaluation**: Values are generated on-the-fly.
 - **Maintain State**: Automatically maintains state between executions.
+
+Let's see how much faster generators are:
+
+
+```python
+import time
+
+def expensive_func(x):
+    """Simulate an expensive operation."""
+    time.sleep(1)
+    return x ** 2
+
+def calculate_time_for_first_result_with_list(func_input, func):
+    """Calculate using a list comprehension and return the first result with its computation time."""
+    start_perf = time.perf_counter()
+    result = [func(x) for x in func_input][0]
+    end_perf = time.perf_counter()
+    print(f"Time for first result (list): {end_perf - start_perf:.2f} seconds")
+    return result
+
+def calculate_time_for_first_result_with_generator(func_input, func):
+    """Calculate using a generator and return the first result with its computation time."""
+    start_perf = time.perf_counter()
+    result = next(func(x) for x in func_input)
+    end_perf = time.perf_counter()
+    print(f"Time for first result (generator): {end_perf - start_perf:.2f} seconds")
+    return result
+
+# Prepare a list of numbers
+numbers = [1, 2, 3, 4, 5]
+
+# Benchmarking
+first_result_list = calculate_time_for_first_result_with_list(numbers, expensive_func)
+first_result_gen = calculate_time_for_first_result_with_generator(numbers, expensive_func)
+```
+```
+Time for first result (list): 5.02 seconds
+Time for first result (generator): 1.01 seconds
+```
+The generator computes one expensive operation and returns the first result immediately, while the list comprehension computes the expensive operation for all elements in the list before returning the first result.
 
 ### Generator Expressions: A Shortcut
 
@@ -151,7 +190,6 @@ client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.JSON)
 class ProductRecommendation(BaseModel):
     product_id: str
     product_name: str
-    relevance_score: float
 
 Recommendations = Iterable[ProductRecommendation]
 ```
@@ -160,7 +198,7 @@ Now let's use our instructor patch. Since we don't want to wait for all the toke
 
 prompt = f"Based on the following user profile:\n{profile_data}\nRank the following products from most relevant to least relevant:\n" + '\n'.join(f"{product['product_id']} {product['product_name']}" for product in products)
 
-
+start_perf = time.perf_counter()
 recommendations_stream = client.chat.completions.create(
     model="gpt-3.5-turbo-1106",
     temperature=0.1,
@@ -171,15 +209,42 @@ recommendations_stream = client.chat.completions.create(
         {"role": "user", "content": prompt}
     ]
 )
+for product in recommendations_stream:
+    print(product)
+    end_perf = time.perf_counter()
+    print(f"Time for first result (generator): {end_perf - start_perf:.2f} seconds")
+    break
+```
+```
+product_id='1' product_name='Apple MacBook Air (2023)'
+Time for first result (generator): 4.33 seconds
 ```
 
-`recommendations_stream` is a generator! It yields the extracted products as it's processing the stream in real-time. We can simply iterate over this:
+`recommendations_stream` is a generator! It yields the extracted products as it's processing the stream in real-time. Now let's get the same response without streaming and see how they compare. 
 
 ```python
-for recommendation in recommendations_stream:
-    assert isinstance(recommendation, ProductRecommendation)
-    print(f"Recommended Product: {recommendation.product_name}")
+start_perf = time.perf_counter()
+recommendations_list = client.chat.completions.create(
+    model="gpt-3.5-turbo-1106",
+    temperature=0.1,
+    response_model=Iterable[ProductRecommendation],
+    stream=False,
+    messages=[
+        {"role": "system", "content": "Generate product recommendations based on the customer profile. Return in order of highest recommended first."},
+        {"role": "user", "content": prompt}
+    ]
+)
+print(recommendations_list[0])
+end_perf = time.perf_counter()
+print(f"Time for first result (list): {end_perf - start_perf:.2f} seconds")
 ```
+
+```
+product_id='1' product_name='Apple MacBook Air (2023)'
+Time for first result (list): 8.63 seconds
+```
+
+Our web application now displays results faster. Even a 100ms improvement can lead to a 1% increase in revenue. 
 
 
 Don't forget to check our [GitHub](https://github.com/jxnl/instructor) for more resources and give us a star if you find the library helpful!
