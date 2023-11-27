@@ -1,3 +1,5 @@
 openai>=1.1.0
 pydantic
 docstring-parser
+rich
+aiohttp

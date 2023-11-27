@@ -98,6 +98,8 @@ The question of using Instructor is fundamentally a question of why to use Pydan
 
 5. **Battle Tested** — Pydantic is downloaded over 100M times per month, and supported by a large community of contributors.
 
+6. **Easy Integration with CLI** - We offer a variety of CLI tools like `instructor jobs`, `instructor files` and `instructor usage` to track your OpenAI usage, fine-tuning jobs and more, just check out our [CLI Documentation](cli/index.md) to find out more.
+
 ## More Examples
 
 If you'd like to see more check out our [cookbook](examples/index.md).
