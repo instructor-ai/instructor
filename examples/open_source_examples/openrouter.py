@@ -42,39 +42,29 @@ client = instructor.patch(
 MaybeUser = Maybe(UserDetail)
 
 
-def get_user_details(model: str, user_message: dict) -> MaybeUser:
+def get_user_details(model: str, messages: list[dict]) -> MaybeUser:
     """
     Extract user details using Open soure model.
     """
 
-    system_message = {
-        "role": "system",
-        "content": f"You are an expert at outputting json. You always output valid pydantic model_json_schemas.",
-    }
-
     response = client.chat.completions.create(
-        response_model=MaybeUser, model=model, messages=[system_message, user_message]
+        response_model=MaybeUser, model=model, messages=messages
     )
 
     return response
 
 
-def create_user_message(content: str, error=False) -> dict:
-    if error:
-        return [
-            {
-                "role": "system",
-                "content": f"You experienced an error with the previous context: {error}. Please try again.",
-            },
-            {
-                "role": "user",
-                "content": f"Extract the user details from the following text: {content}",
-            },
-        ]
-    return {
-        "role": "user",
-        "content": f"Extract the user details from the following text: {content}. Match your response to this json_schema:{MaybeUser.model_json_schema()}",
-    }
+def create_user_message(content: str) -> list[dict]:
+    return [
+        {
+            "role": "system",
+            "content": f"You are an expert at outputting json. You always output valid pydantic model_json_schemas.",
+        },
+        {
+            "role": "user",
+            "content": f"Extract the user details from the following text: {content}. Match your response to this json_schema:{MaybeUser.model_json_schema()}",
+        },
+    ]
 
 
 # Define model and user message
@@ -95,14 +85,8 @@ user_detail_messages = [
 for message in user_detail_messages:
     user_message = create_user_message(message)
     user = get_user_details(model, user_message)
-    # Assertions for validation
+    # Output the error or the result.
     if user.error:
-        retry_message = create_user_message(message, user.message)
-        user = get_user_details(model, retry_message)
-        if user.result:
-            print(user.result)
-        else:
-            raise ValueError(user.message)
-
+        print(user.message)
     if user.result:
         print(user.result)
