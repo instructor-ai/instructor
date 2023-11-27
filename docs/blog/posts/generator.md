@@ -137,7 +137,7 @@ products = [
 ]
 ```
 
-Let's not define our models for structured extraction. Note: instructor will conveniently let us use `Iterable` to model an iterable of our class. In this case, once we define our product recommendation model, we can slap on `Iterable` to define what we ultimately want - a (ranked) list of product recommendations. 
+Let's now define our models for structured extraction. Note: instructor will conveniently let us use `Iterable` to model an iterable of our class. In this case, once we define our product recommendation model, we can slap on `Iterable` to define what we ultimately want - a (ranked) list of product recommendations. 
 
 
 ```python
