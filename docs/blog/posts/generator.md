@@ -173,12 +173,12 @@ recommendations_stream = client.chat.completions.create(
 )
 ```
 
-`recommendations_stream` is a generator! It yields the extracted product as it's processing the stream in real-time. We can simply iterate over this:
+`recommendations_stream` is a generator! It yields the extracted products as it's processing the stream in real-time. We can simply iterate over this:
 
 ```python
 for recommendation in recommendations_stream:
     assert isinstance(recommendation, ProductRecommendation)
-    print(f"Recommended Product: {recommendation.product_name}, Score: {recommendation.relevance_score}")
+    print(f"Recommended Product: {recommendation.product_name}")
 ```
 
 
