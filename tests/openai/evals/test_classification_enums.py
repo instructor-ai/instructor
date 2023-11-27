@@ -4,9 +4,10 @@ from typing import List
 
 import pytest
 import instructor
-from openai import OpenAI
 
 from pydantic import BaseModel
+
+from instructor.function_calls import Mode
 
 
 class Labels(str, enum.Enum):
@@ -37,8 +38,8 @@ data = [
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
-def test_classification(model, data, mode):
-    client = instructor.patch(OpenAI(), mode=mode)
+def test_classification(model, data, mode, client):
+    client = instructor.patch(client, mode=mode)
 
     if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
         pytest.skip(
@@ -88,13 +89,14 @@ data = [
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
-def test_multi_classify(model, data, mode):
-    client = instructor.patch(OpenAI(), mode=mode)
+def test_multi_classify(model, data, mode, client):
+    client = instructor.patch(client, mode=mode)
 
-    if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
-        pytest.skip(
-            "JSON mode is not supported for gpt-3.5-turbo and gpt-4, skipping test"
-        )
+    if (mode, model) in {
+        (Mode.JSON, "gpt-3.5-turbo"),
+        (Mode.JSON, "gpt-4"),
+    }:
+        pytest.skip(f"{mode} mode is not supported for {model}, skipping test")
 
     input, expected = data
 

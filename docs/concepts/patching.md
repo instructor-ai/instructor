@@ -27,7 +27,7 @@ client = instructor.patch(OpenAI())
 import instructor
 from instructor import Mode
 
-client = instructor.patch(OpenAI(), mode=Mode.TOOL_CALL)
+client = instructor.patch(OpenAI(), mode=Mode.TOOLS)
 ```
 
 ## JSON Mode

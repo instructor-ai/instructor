@@ -16,14 +16,14 @@ class User(BaseModel):
     age: int
 
 
-def stream_extract(input: str, cls) -> Iterable[User]:
-    MultiUser = instructor.MultiTask(cls)
-    completion = client.chat.completions.create(
+Users = Iterable[User]
+
+def stream_extract(input: str) -> Users:
+    return client.chat.completions.create(
         model="gpt-4-0613",
         temperature=0.1,
         stream=True,
-        functions=[MultiUser.openai_schema],
-        function_call={"name": MultiUser.openai_schema["name"]},
+        response_model=Users,
         messages=[
             {
                 "role": "system",
@@ -40,13 +40,11 @@ def stream_extract(input: str, cls) -> Iterable[User]:
         ],
         max_tokens=1000,
     )
-    return MultiUser.from_streaming_response(completion)
 
 
 start = time.time()
 for user in stream_extract(
-    input="Create 5 characters from the book Three Body Problem",
-    cls=User,
+    input="Create 5 characters from the book Three Body Problem"
 ):
     delay = round(time.time() - start, 1)
     print(f"{delay} s: User({user})")
