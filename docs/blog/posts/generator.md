@@ -13,7 +13,7 @@ authors:
 
 # Intro to Generators and LLM Streaming in Python
 
-Python's generators provide a unique way to work with iterable sequences without holding the entire collection in memory. Coupled with LLMs like GPT-4, they unlock new potentials in real-time data processing and streaming applications. In this post, we'll explore Python generators from the ground up and then delve into integrating them with LLM streaming using the Instructor library.
+In production apps, latency is crucial, especially in eCommerce or newer chat applications like ChatGPT. Streaming is the solution that enables us to enhance the user experience without the need for faster response times. In this post, we'll explore Python generators from the ground up and then delve into integrating them with LLM streaming using the Instructor library.
 
 ## Python Generators: An Efficient Approach to Iterables
 
