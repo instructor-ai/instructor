@@ -164,7 +164,7 @@ prompt = f"Based on the following user profile:\n{profile_data}\nRank the follow
 recommendations_stream = client.chat.completions.create(
     model="gpt-3.5-turbo-1106",
     temperature=0.1,
-    response_model=Recommendations,
+    response_model=Iterable[ProductRecommendation],
     stream=True,
     messages=[
         {"role": "system", "content": "Generate product recommendations based on the customer profile. Return in order of highest recommended first."},
