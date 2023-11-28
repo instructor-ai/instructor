@@ -106,12 +106,14 @@ If you've used ChatGPT, you'll see that the tokens are streamed out one by one, 
 Here's how a vanilla openai generator looks:
 
 ```python
-import openai
+from openai import OpenAI
 
 # Set your OpenAI API key
-openai.api_key = 'your-api-key'
+client = OpenAI(
+    api_key="My API Key",
+)
 
-response_generator = openai.ChatCompletion.create(
+response_generator = client.chat.completions.create(
     model='gpt-3.5-turbo',
     messages=[
         {'role': 'user', 'content': "What are some good reasons to smile?"}
@@ -121,7 +123,7 @@ response_generator = openai.ChatCompletion.create(
 )
 
 for chunk in response_generator:
-    print(chunk, end="")
+    print(chunk.choices[0].delta.content, end="")
 ```
 
 This is great, but what if we want to do some structured extraction on this stream? For instance, we might want to render frontend components that are streamed out by an LLM. The LLM output could be an ordered list of product recommendations on an ecommerce store.
