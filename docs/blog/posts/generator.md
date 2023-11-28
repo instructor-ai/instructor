@@ -246,6 +246,8 @@ Time for first result (list): 8.63 seconds
 
 Our web application now displays results faster. Even a 100ms improvement can lead to a 1% increase in revenue. 
 
+<img src="https://i.ibb.co/g9rzF6R/DALL-E-2023-11-27-13-45-28-A-mobile-web-UI-design-featuring-a-vertical-list-of-product-recommendatio.png" alt="drawing" width="200"/>
+
 
 Don't forget to check our [GitHub](https://github.com/jxnl/instructor) for more resources and give us a star if you find the library helpful!
 
