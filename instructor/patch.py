@@ -57,9 +57,13 @@ def handle_response_model(
             response_model = MultiTask(iterable_element_class)
         if not issubclass(response_model, OpenAISchema):
             response_model = openai_schema(response_model)  # type: ignore
-        
-        if new_kwargs.get("stream", False) and not issubclass(response_model, MultiTaskBase):
-            raise NotImplementedError("stream=True is not supported when using response_model parameter for non-iterables")
+
+        if new_kwargs.get("stream", False) and not issubclass(
+            response_model, MultiTaskBase
+        ):
+            raise NotImplementedError(
+                "stream=True is not supported when using response_model parameter for non-iterables"
+            )
 
         if mode == Mode.FUNCTIONS:
             new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
@@ -123,7 +127,11 @@ def process_response(
     if response_model is not None:
         is_model_multitask = issubclass(response_model, MultiTaskBase)
         model = response_model.from_response(
-            response, validation_context=validation_context, strict=strict, mode=mode, stream_multitask=stream and is_model_multitask
+            response,
+            validation_context=validation_context,
+            strict=strict,
+            mode=mode,
+            stream_multitask=stream and is_model_multitask,
         )
         if not stream:
             model._raw_response = response
