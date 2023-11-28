@@ -1,7 +1,7 @@
 ---
 draft: False
 date: 2023-11-26
-slug: python-generators
+slug: python-generators-and-llm-streaming
 tags:
   - generators
   - streaming
@@ -36,6 +36,7 @@ def count_to_3():
 for num in count_to_3():
     print(num)
 ```
+
 ```
 1
 2
@@ -43,12 +44,12 @@ for num in count_to_3():
 ```
 
 ### Advantages Over Traditional Collections
+
 - **Lazy Evaluation & reduced latency**: The time to get the first element (or time-to-first-token in LLM land) from a generator is significantly lower. Generators only produce one value at a time, whereas a collection will need to generator the entire collection before returning a value.
 - **Memory Efficiency**: Only one item is in memory at a time.
 - **Maintain State**: Automatically maintains state between executions.
 
 Let's see how much faster generators are:
-
 
 ```python
 import time
@@ -81,10 +82,12 @@ numbers = [1, 2, 3, 4, 5]
 first_result_list = calculate_time_for_first_result_with_list(numbers, expensive_func)
 first_result_gen = calculate_time_for_first_result_with_generator(numbers, expensive_func)
 ```
+
 ```
 Time for first result (list): 5.02 seconds
 Time for first result (generator): 1.01 seconds
 ```
+
 The generator computes one expensive operation and returns the first result immediately, while the list comprehension computes the expensive operation for all elements in the list before returning the first result.
 
 ### Generator Expressions: A Shortcut
@@ -101,7 +104,7 @@ Generators shine in scenarios like reading large files, data streaming (eg. llm 
 
 ## LLM Streaming
 
-If you've used ChatGPT, you'll see that the tokens are streamed out one by one, instead of the full response being shown at the end (can you imagine waiting for the full response??). This is made possible by generators. 
+If you've used ChatGPT, you'll see that the tokens are streamed out one by one, instead of the full response being shown at the end (can you imagine waiting for the full response??). This is made possible by generators.
 
 Here's how a vanilla openai generator looks:
 
@@ -128,13 +131,11 @@ for chunk in response_generator:
 
 This is great, but what if we want to do some structured extraction on this stream? For instance, we might want to render frontend components that are streamed out by an LLM. The LLM output could be an ordered list of product recommendations on an ecommerce store.
 
-Should we wait for the entire stream to finish before extracting & validating the list of components or can we extract & validate the components in real time as they are streamed? 
+Should we wait for the entire stream to finish before extracting & validating the list of components or can we extract & validate the components in real time as they are streamed?
 
 In e-commerce, every millisecond matters so the time-to-first-render can differentiate a successful and not-so-successful e commerce store (and i know how a failing e commerce store feels :/ ).
 
-
 Let's see how we can Instructor to handle extraction from this real time stream!
-
 
 ### Enhanced Personalized E-commerce Product Recommendations
 
@@ -165,6 +166,7 @@ Preferred Shopping Times: Weekend Evenings
 ...
 """
 ```
+
 We want to rank the following products for this user:
 
 ```python
@@ -182,8 +184,7 @@ products = [
 ]
 ```
 
-Let's now define our models for structured extraction. Note: instructor will conveniently let us use `Iterable` to model an iterable of our class. In this case, once we define our product recommendation model, we can slap on `Iterable` to define what we ultimately want - a (ranked) list of product recommendations. 
-
+Let's now define our models for structured extraction. Note: instructor will conveniently let us use `Iterable` to model an iterable of our class. In this case, once we define our product recommendation model, we can slap on `Iterable` to define what we ultimately want - a (ranked) list of product recommendations.
 
 ```python
 import instructor
@@ -199,7 +200,9 @@ class ProductRecommendation(BaseModel):
 
 Recommendations = Iterable[ProductRecommendation]
 ```
+
 Now let's use our instructor patch. Since we don't want to wait for all the tokens to finish, will set stream to `True` and process each product recommendation as it comes in:
+
 ```python
 
 prompt = f"Based on the following user profile:\n{profile_data}\nRank the following products from most relevant to least relevant:\n" + '\n'.join(f"{product['product_id']} {product['product_name']}" for product in products)
@@ -221,12 +224,13 @@ for product in recommendations_stream:
     print(f"Time for first result (generator): {end_perf - start_perf:.2f} seconds")
     break
 ```
+
 ```
 product_id='1' product_name='Apple MacBook Air (2023)'
 Time for first result (generator): 4.33 seconds
 ```
 
-`recommendations_stream` is a generator! It yields the extracted products as it's processing the stream in real-time. Now let's get the same response without streaming and see how they compare. 
+`recommendations_stream` is a generator! It yields the extracted products as it's processing the stream in real-time. Now let's get the same response without streaming and see how they compare.
 
 ```python
 start_perf = time.perf_counter()
@@ -250,15 +254,16 @@ product_id='1' product_name='Apple MacBook Air (2023)'
 Time for first result (list): 8.63 seconds
 ```
 
-Our web application now displays results faster. Even a 100ms improvement can lead to a 1% increase in revenue. 
+Our web application now displays results faster. Even a 100ms improvement can lead to a 1% increase in revenue.
 
 <img src="https://i.ibb.co/g9rzF6R/DALL-E-2023-11-27-13-45-28-A-mobile-web-UI-design-featuring-a-vertical-list-of-product-recommendatio.png" alt="drawing" width="200"/>
 
 ## Key Takeaways
+
 To summarize, we looked at:
 
-	•	Generators in Python: A powerful feature that allows for efficient data handling with reduced latency
-	•	LLM Streaming: LLMs provide us generators to stream tokens and Instructor can let us validate and extract data from this stream. Real-time data validation ftw!
+    •	Generators in Python: A powerful feature that allows for efficient data handling with reduced latency
+    •	LLM Streaming: LLMs provide us generators to stream tokens and Instructor can let us validate and extract data from this stream. Real-time data validation ftw!
 
 Don't forget to check our [GitHub](https://github.com/jxnl/instructor) for more resources and give us a star if you find the library helpful!
 
