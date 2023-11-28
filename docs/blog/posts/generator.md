@@ -97,9 +97,9 @@ squares = (x*x for x in range(10))
 
 ### Use Cases in Real-World Applications
 
-Generators shine in scenarios like reading large files, data streaming, and pipeline creation for data processing.
+Generators shine in scenarios like reading large files, data streaming (eg. llm token streaming), and pipeline creation for data processing.
 
-## Integrating Generators with LLM Streaming
+## LLM Streaming
 
 If you've used ChatGPT, you'll see that the tokens are streamed out one by one, instead of the full response being shown at the end (can you imagine waiting for the full response??). This is made possible by generators. 
 
@@ -126,12 +126,12 @@ for chunk in response_generator:
 
 This is great, but what if we want to do some structured extraction on this stream? For instance, we might want to render frontend components that are streamed out by an LLM. The LLM output could be an ordered list of product recommendations on an ecommerce store.
 
-Should we wait for the entire stream to finish before extracting the list of components or can we extract & validate the components in real time? 
+Should we wait for the entire stream to finish before extracting & validating the list of components or can we extract & validate the components in real time as they are streamed? 
 
 In e-commerce, every millisecond matters so the time-to-first-render can differentiate a successful and not-so-successful e commerce store (and i know how a failing e commerce store feels :/ ).
 
 
-Let's use Instructor to see how we might tackle this!
+Let's see how we can Instructor to handle extraction from this real time stream!
 
 
 ### Enhanced Personalized E-commerce Product Recommendations
