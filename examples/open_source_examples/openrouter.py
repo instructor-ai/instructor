@@ -4,33 +4,14 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import Optional
 from instructor import Maybe, Mode
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Extract API key from environment
 openrouter_api_key = os.environ.get("OPENROUTER_API_KEY")
-if not openrouter_api_key:
-    raise ValueError("OPENROUTER_API_KEY is not set in environment variables")
+assert openrouter_api_key, "OPENROUTER_API_KEY is not set in environment variables"
 
 # Base URL for OpenAI
 openrouter_base_url = os.environ.get("OPENROUTER_BASE_URL")
-if not openrouter_base_url:
-    raise ValueError("OPENROUTER_BASE_URL is not set in environment variables")
-
-# Pydantic model for user details
-
-
-class UserDetail(BaseModel):
-    """Details in the text about the user"""
-
-    name: str = Field(description="Name extracted from the text")
-    age: int = Field(description="Age extracted from the text")
-    occupation: Optional[str] = Field(
-        default=None, description="Occupation extracted from the text"
-    )
-
+assert openrouter_base_url, "OPENROUTER_BASE_URL is not set in environment variables"
 
 # Initialize OpenAI client
 client = instructor.patch(
@@ -38,40 +19,7 @@ client = instructor.patch(
     mode=Mode.JSON,
 )
 
-# Wrap Userdetail in Maybe BaseModel
-MaybeUser = Maybe(UserDetail)
-
-
-def get_user_details(model: str, messages: list[dict]) -> MaybeUser:
-    """
-    Extract user details using Open soure model.
-    """
-
-    response = client.chat.completions.create(
-        response_model=MaybeUser, model=model, messages=messages
-    )
-
-    return response
-
-
-def create_user_message(content: str) -> list[dict]:
-    return [
-        {
-            "role": "system",
-            "content": f"You are an expert at outputting json. You always output valid pydantic model_json_schemas.",
-        },
-        {
-            "role": "user",
-            "content": f"Extract the user details from the following text: {content}. Match your response to this json_schema:{MaybeUser.model_json_schema()}",
-        },
-    ]
-
-
-# Define model and user message
-model = "teknium/openhermes-2.5-mistral-7b"
-
-# Create items to evaluate output
-user_detail_messages = [
+data = [
     "Brandon is 33 years old. He works as a solution architect.",
     "Jason is 25 years old. He is the GOAT.",
     "Dominic is 45 years old. He is retired.",
@@ -82,11 +30,30 @@ user_detail_messages = [
 ]
 
 
-for message in user_detail_messages:
-    user_message = create_user_message(message)
-    user = get_user_details(model, user_message)
-    # Output the error or the result.
-    if user.error:
-        print(user.message)
-    if user.result:
-        print(user.result)
+if __name__ == "__main__":
+    class UserDetail(BaseModel):
+        name: str = Field(description="Name extracted from the text")
+        age: int = Field(description="Age extracted from the text")
+        occupation: Optional[str] = Field(
+            default=None, description="Occupation extracted from the text"
+        )
+
+    for content in data:
+        MaybeUser = Maybe(UserDetail)
+        user = client.chat.completions.create(
+            response_model=MaybeUser, model="teknium/openhermes-2.5-mistral-7b", messages=[
+            {
+                "role": "system",
+                "content": f"You are an expert at outputting json. You always output valid json based on this schema: {MaybeUser.model_json_schema()}",
+            },
+            {
+                "role": "user",
+                "content": f"Extract the user details from the following text: {content}. Match your response the correct schema",
+            },
+        ]
+        )
+        # Output the error or the result.
+        if user.error:
+            print(f"Error: {user.error}")
+        if user.result:
+            print(f"Result: {user.result}")
