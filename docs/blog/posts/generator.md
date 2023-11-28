@@ -13,7 +13,7 @@ authors:
 
 # Generators and LLM Streaming
 
-Latency is crucial, especially in eCommerce or newer chat applications like ChatGPT. Streaming is the solution that enables us to enhance the user experience without the need for faster response times.
+Latency is crucial, especially in eCommerce and newer chat applications like ChatGPT. Streaming is the solution that enables us to enhance the user experience without the need for faster response times.
 
 And what makes streaming possible? Generators!
 
@@ -45,11 +45,11 @@ for num in count_to_3():
 
 ### Advantages Over Traditional Collections
 
-- **Lazy Evaluation & reduced latency**: The time to get the first element (or time-to-first-token in LLM land) from a generator is significantly lower. Generators only produce one value at a time, whereas a collection will need to generator the entire collection before returning a value.
+- **Lazy Evaluation & reduced latency**: The time to get the first element (or time-to-first-token in LLM land) from a generator is significantly lower. Generators only produce one value at a time, whereas accessing the first element of a collection will require that the whole collection be created first.
 - **Memory Efficiency**: Only one item is in memory at a time.
 - **Maintain State**: Automatically maintains state between executions.
 
-Let's see how much faster generators are:
+Let's see how much faster generators are and where they really shine:
 
 ```python
 import time
@@ -75,7 +75,7 @@ def calculate_time_for_first_result_with_generator(func_input, func):
     print(f"Time for first result (generator): {end_perf - start_perf:.2f} seconds")
     return result
 
-# Prepare a list of numbers
+# Prepare inputs for the function
 numbers = [1, 2, 3, 4, 5]
 
 # Benchmarking
@@ -129,25 +129,27 @@ for chunk in response_generator:
     print(chunk.choices[0].delta.content, end="")
 ```
 
-This is great, but what if we want to do some structured extraction on this stream? For instance, we might want to render frontend components that are streamed out by an LLM. The LLM output could be an ordered list of product recommendations on an ecommerce store.
+This is great, but what if we want to do some structured extraction on this stream? For instance, we might want to render frontend components based on product rankings that are streamed out by an LLM.
 
 Should we wait for the entire stream to finish before extracting & validating the list of components or can we extract & validate the components in real time as they are streamed?
 
 In e-commerce, every millisecond matters so the time-to-first-render can differentiate a successful and not-so-successful e commerce store (and i know how a failing e commerce store feels :/ ).
 
-Let's see how we can Instructor to handle extraction from this real time stream!
+Let's see how we can use Instructor to handle extraction from this real time stream!
 
-### Enhanced Personalized E-commerce Product Recommendations
+### E-commerce Product Ranking
 
-#### Scenario Setup
+#### Scenario
 
-Imagine an e-commerce platform where the customer profile includes a detailed history of purchases, browsing behavior, product ratings, preferences in various categories, search history, and even responses to previous recommendations. This extensive data is crucial for generating highly personalized and relevant product suggestions.
+Imagine an e-commerce platform where we have:
+- **a customer profile**: this includes a detailed history of purchases, browsing behavior, product ratings, preferences in various categories, search history, and even responses to previous recommendations. This extensive data is crucial for generating highly personalized and relevant product suggestions.
+- **a list of candidate products**: these could be some shortlisted products we think the customer would like.
 
-#### Stream Processing Approach with Extensive Profile Data
+Our goal is to re-rerank these candidate products for the best conversion and we'll use an LLM!
 
-- **Process**: The LLM is fed with segmented parts of the extensive customer profile, and product recommendations are streamed back as they are generated, adapting to the nuances of the customer's behavior and preferences.
+#### Stream Processing
 
-- **Profile Data Example**:
+**User Data**:
 
 Let's assume we have the following user profile:
 
@@ -159,7 +161,7 @@ Frequently Browsed Categories: [Electronics, Books, Fitness Equipment]
 Product Ratings: {Laptop: 5 stars, Wireless Headphones: 4 stars}
 Recent Search History: [best budget laptops 2023, latest sci-fi books, yoga mats]
 Preferred Brands: [Apple, AllBirds, Bench]
-Responses to Previous Recommendations: {Product123: Interested, Product456: Not Interested}
+Responses to Previous Recommendations: {Philips: Not Interested, Adidas: Not Interested}
 Loyalty Program Status: Gold Member
 Average Monthly Spend: $500
 Preferred Shopping Times: Weekend Evenings
