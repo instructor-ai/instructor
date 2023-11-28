@@ -13,15 +13,13 @@ authors:
 
 # Generators and LLM Streaming
 
-Latency is crucial, especially in eCommerce or newer chat applications like ChatGPT. Streaming is the solution that enables us to enhance the user experience without the need for faster response times.
+Latency is crucial, especially in traditional applicatinos like ecommerce or newer chat applications like ChatGPT. Streaming is the solution that enables us to enhance the user experience without the need for faster response times.
 
-And what makes streaming possible? Generators!
-
-In this post, we're going to dive into the cool world of Python generators — these tools are more than just a coding syntax trick. We'll explore Python generators from the ground up and then delve into LLM streaming using the Instructor library.
+In this post, we're going to dive into the cool world of Python generators — these tools are more than just a coding syntax trick. We'll explore Python generators from the ground up and then delve into LLM streaming using the Instructor library and showcase an example of how we can use generators to enhance the user experience in an e-commerce application.
 
 ## Python Generators: An Efficient Approach to Iterables
 
-Generators in Python are a game-changer for handling large data sets and stream processing. They allow functions to yield values one at a time, pausing and resuming their state, which is a faster and more memory-efficient approach compared to traditional collections that store all elements in memory.
+Traditionally generators in Python are a game-changer for handling large data sets and stream processing. They allow functions to yield values one at a time, pausing and resuming their state, which is a faster and more memory-efficient approach compared to traditional collections that store all elements in memory.
 
 ### The Basics: Yielding Values
 
@@ -43,13 +41,13 @@ for num in count_to_3():
 3
 ```
 
-### Advantages Over Traditional Collections
+### Advantages Over Collections
 
-- **Lazy Evaluation & reduced latency**: The time to get the first element (or time-to-first-token in LLM land) from a generator is significantly lower. Generators only produce one value at a time, whereas a collection will need to generator the entire collection before returning a value.
+- **Lazy Evaluation & reduced latency**: The time to get the first element (or time-to-first-token in LLM land) from a generator is significantly lower. Generators only produce one value at a time, whereas a collection will need to produce the entire collection before returning single value.
 - **Memory Efficiency**: Only one item is in memory at a time.
 - **Maintain State**: Automatically maintains state between executions.
 
-Let's see how much faster generators are:
+Let's see how much more efficient generators are:
 
 ```python
 import time
@@ -88,23 +86,15 @@ Time for first result (list): 5.02 seconds
 Time for first result (generator): 1.01 seconds
 ```
 
-The generator computes one expensive operation and returns the first result immediately, while the list comprehension computes the expensive operation for all elements in the list before returning the first result.
-
-### Generator Expressions: A Shortcut
-
-Python also allows creating generators in a single line of code, known as generator expressions. They are syntactically similar to list comprehensions but use parentheses.
-
-```python
-squares = (x*x for x in range(10))
-```
+The generator computes one expensive operation and returns the first result immediately, while the list comprehension computes the expensive operation for all elements in the list before returning the first result. This is a huge difference in _percieved_ latency!
 
 ### Use Cases in Real-World Applications
 
 Generators shine in scenarios like reading large files, data streaming (eg. llm token streaming), and pipeline creation for data processing.
 
-## LLM Streaming
+## Streaming Structured Data With Instructor
 
-If you've used ChatGPT, you'll see that the tokens are streamed out one by one, instead of the full response being shown at the end (can you imagine waiting for the full response??). This is made possible by generators.
+If you've used ChatGPT, you'll see that the tokens are streamed out one by one, instead of the full response being shown at the end (can you imagine waiting for the full response??, it would take over 30 seconds before you got a response).
 
 Here's how a vanilla openai generator looks:
 
@@ -192,7 +182,7 @@ from openai import OpenAI
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.JSON)
+client = instructor.patch(OpenAI())
 
 class ProductRecommendation(BaseModel):
     product_id: str
@@ -230,7 +220,7 @@ product_id='1' product_name='Apple MacBook Air (2023)'
 Time for first result (generator): 4.33 seconds
 ```
 
-`recommendations_stream` is a generator! It yields the extracted products as it's processing the stream in real-time. Now let's get the same response without streaming and see how they compare.
+As you can see, `recommendations_stream` is a generator! It yields the extracted products as it's processing the stream in token by token. Now let's get the same response without streaming and see how they compare.
 
 ```python
 start_perf = time.perf_counter()
@@ -254,9 +244,7 @@ product_id='1' product_name='Apple MacBook Air (2023)'
 Time for first result (list): 8.63 seconds
 ```
 
-Our web application now displays results faster. Even a 100ms improvement can lead to a 1% increase in revenue.
-
-<img src="https://i.ibb.co/g9rzF6R/DALL-E-2023-11-27-13-45-28-A-mobile-web-UI-design-featuring-a-vertical-list-of-product-recommendatio.png" alt="drawing" width="200"/>
+Our web application now displays results twice as fast. When we've see that 100ms improvement can lead to a 1% increase in revenue this is a huge improvement for the user.
 
 ## Key Takeaways
 
