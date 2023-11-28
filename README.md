@@ -226,6 +226,16 @@ We invite you to contribute evals in pytest as a way to monitor the quality of t
 
 If you want to help out checkout some of the issues marked as `good-first-issue` or `help-wanted`. Found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cook book.
 
+## CLI 
+
+We also provide some added CLI functionality for easy convinience
+
+- `instructor jobs` : This helps with the creation of fine-tuning jobs with OpenAI. Simple use `instructor jobs create-from-file --help` to get started creating your first fine-tuned GPT3.5 model
+
+- `instructor files` : Manage your uploaded files with ease. You'll be able to create, delete and upload files all from the command line
+
+- `instructor usage` : Instead of heading to the OpenAI site each time, you can monitor your usage from the cli and filter by date and time period. Note that usage often takes ~5-10 minutes to update from OpenAI's side
+
 ## License
 
 This project is licensed under the terms of the MIT License.

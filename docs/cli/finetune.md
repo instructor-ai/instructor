@@ -9,7 +9,6 @@ The instructor CLI provides functionalities for managing fine-tuning jobs on Ope
         If you want to contribute we're looking for a few things:
 
         1. Adding filenames on upload
-        2. Adding model prefixes to the model names
 
 ## Creating a Fine-Tuning Job
 
@@ -41,24 +40,23 @@ The create-from-file command uploads and trains a model in a single step.
 ```sh
 ❯ instructor jobs create-from-file --help
                                                                                          
- Usage: instructor jobs create-from-file [OPTIONS] FILE                                  
-                                                                                         
- Create a fine-tuning job from a file.                                                   
-                                                                                         
-╭─ Arguments ───────────────────────────────────────────────────────────────────────────╮
-│ *    file      TEXT  Path to the file for fine-tuning [default: None] [required]      │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Options ─────────────────────────────────────────────────────────────────────────────╮
-│ --model                           TEXT     Model to use for fine-tuning               │
-│                                            [default: gpt-3.5-turbo]                   │
-│ --poll                            INTEGER  Polling interval in seconds [default: 2]   │
-│ --n-epochs                        INTEGER  Number of epochs for fine-tuning           │
-│ --batch-size                      TEXT     Batch size for fine-tuning                 │
-│ --learning-rate-multiplier        TEXT     Learning rate multiplier for fine-tuning   │
-│ --validation-file                 TEXT     Path to the validation file                │
-│                                            [default: None]                            │
-│ --help                                     Show this message and exit.                │
-╰───────────────────────────────────────────────────────────────────────────────────────╯
+Usage: instructor jobs create-from-file [OPTIONS] FILE                                              
+                                                                                                     
+ Create a fine-tuning job from a file.                                                               
+                                                                                                     
+╭─ Arguments ───────────────────────────────────────────────────────────────────────────────────────╮
+│ *    file      TEXT  Path to the file for fine-tuning [default: None] [required]                  │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────╮
+│ --model                           TEXT     Model to use for fine-tuning [default: gpt-3.5-turbo]  │
+│ --poll                            INTEGER  Polling interval in seconds [default: 2]               │
+│ --n-epochs                        INTEGER  Number of epochs for fine-tuning                       │
+│ --batch-size                      TEXT     Batch size for fine-tuning                             │
+│ --learning-rate-multiplier        TEXT     Learning rate multiplier for fine-tuning               │
+│ --validation-file                 TEXT     Path to the validation file [default: None]            │
+│ --model-suffix                    TEXT     Suffix to identify the model [default: None]           │
+│ --help                                     Show this message and exit.                            │
+╰────────────────────────────────────────────────────────────────────────────────
 ```
 
 #### Usage
