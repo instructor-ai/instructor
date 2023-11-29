@@ -1,4 +1,3 @@
-
 from typing import Iterable
 from openai import OpenAI
 from pydantic import BaseModel
@@ -11,12 +10,13 @@ class User(BaseModel):
     name: str
     age: int
 
-Users = Iterable[User]
 
+Users = Iterable[User]
 
 
 def test_multi_user_function_mode():
     client = instructor.patch(OpenAI(), mode=Mode.FUNCTIONS)
+
     def stream_extract(input: str) -> Iterable[User]:
         return client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -46,8 +46,10 @@ def test_multi_user_function_mode():
     assert resp[1].name == "Sarah"
     assert resp[1].age == 30
 
+
 def test_multi_user_json_mode():
     client = instructor.patch(OpenAI(), mode=Mode.JSON)
+
     def stream_extract(input: str) -> Iterable[User]:
         return client.chat.completions.create(
             model="gpt-3.5-turbo-1106",
@@ -73,9 +75,11 @@ def test_multi_user_json_mode():
     assert resp[0].age == 20
     assert resp[1].name == "Sarah"
     assert resp[1].age == 30
+
 
 def test_multi_user_tools_mode():
     client = instructor.patch(OpenAI(), mode=Mode.TOOLS)
+
     def stream_extract(input: str) -> Iterable[User]:
         return client.chat.completions.create(
             model="gpt-3.5-turbo-1106",
@@ -101,6 +105,7 @@ def test_multi_user_tools_mode():
     assert resp[0].age == 20
     assert resp[1].name == "Sarah"
     assert resp[1].age == 30
+
 
 def test_multi_user_legacy():
     def stream_extract(input: str, cls) -> Iterable[User]:

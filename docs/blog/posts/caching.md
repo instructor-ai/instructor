@@ -14,7 +14,7 @@ authors:
 
 # Introduction to Caching in Python
 
-> Instructor make working with language models easy, but they are still computationally expensive.
+> Instructor makes working with language models easy, but they are still computationally expensive.
 
 Today, we're diving into optimizing instructor code while maintaining the excellent DX offered by [Pydantic](https://docs.pydantic.dev/latest/) models. We'll tackle the challenges of caching Pydantic models, typically incompatible with `pickle`, and explore solutions that use `decorators` like `functools.cache`. Then, we'll craft custom decorators with `diskcache` and `redis` to support persistent caching and distributed systems.
 
@@ -46,7 +46,7 @@ Now imagine batch processing data, running tests or experiments, or simply calli
 
 ## 1. `functools.cache` for Simple In-Memory Caching
 
-**When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application where we don't need to persist the cache between sessions.
+**When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session or in an application where we don't need to persist the cache between sessions.
 
 ```python
 import functools
