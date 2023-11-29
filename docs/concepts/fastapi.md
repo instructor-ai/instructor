@@ -51,7 +51,7 @@ def endpoint_function(data: UserData) -> UserDetail:
 ```python hl_lines="6-7"
 # Route to handle SSE events and return users
 @app.post("/extract", response_class=StreamingResponse)
-async def extract(userdata: UserData):
+async def extract(data: UserData):
     users = await client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=Iterable[UserDetail],
