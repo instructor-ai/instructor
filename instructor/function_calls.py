@@ -205,9 +205,7 @@ class OpenAISchema(BaseModel):
             cls (OpenAISchema): An instance of the class
         """
         if stream_multitask:
-            return cls.from_streaming_response(
-                completion, mode
-            )
+            return cls.from_streaming_response(completion, mode)
 
         message = completion.choices[0].message
 
