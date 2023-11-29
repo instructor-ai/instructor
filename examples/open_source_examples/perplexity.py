@@ -21,7 +21,15 @@ client = instructor.patch(
 
 # For direct reference here. See https://docs.perplexity.ai/docs/model-cards for updates
 # Recommended is pplx-70b-chat
-models = ["codellama-34b-instruct", "llama-2-70b-chat", "mistral-7b-instruct", "pplx-7b-chat", "pplx-70b-chat", "pplx-7b-online", "pplx-70b-online"]
+models = [
+    "codellama-34b-instruct",
+    "llama-2-70b-chat",
+    "mistral-7b-instruct",
+    "pplx-7b-chat",
+    "pplx-70b-chat",
+    "pplx-7b-online",
+    "pplx-70b-online",
+]
 
 data = [
     "Brandon is 33 years old. He works as a solution architect.",
@@ -35,6 +43,7 @@ data = [
 
 
 if __name__ == "__main__":
+
     class UserDetail(BaseModel):
         name: str = Field(description="Name extracted from the text")
         age: int = Field(description="Age extracted from the text")
@@ -45,17 +54,19 @@ if __name__ == "__main__":
     for content in data:
         MaybeUser = Maybe(UserDetail)
         user = client.chat.completions.create(
-            response_model=MaybeUser, model="pplx-70b-chat", messages=[
-            {
-                "role": "system",
-                "content": f"You are an expert at outputting json. You always output valid JSON based on the pydantic schema given to you.",
-            },
-            {
-                "role": "user",
-                "content": f"Extract the user details from the following text: {content}. Match your response to the following schema: {MaybeUser.model_json_schema()}",
-            },
-        ],
-        max_retries=3
+            response_model=MaybeUser,
+            model="pplx-70b-chat",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are an expert at outputting json. You always output valid JSON based on the pydantic schema given to you.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Extract the user details from the following text: {content}. Match your response to the following schema: {MaybeUser.model_json_schema()}",
+                },
+            ],
+            max_retries=3,
         )
         # Output the error or the result.
         if user.error:
