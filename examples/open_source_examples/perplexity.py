@@ -7,11 +7,11 @@ from instructor import Maybe, Mode
 
 # Extract API key from environment
 perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")
-assert perplexity_api_key, "perplexity_api_key is not set in environment variables"
+assert perplexity_api_key, "PERPLEXITY_API_KEY is not set in environment variables"
 
 # Base URL for OpenAI
 perplexity_base_url = os.environ.get("PERPLEXITY_BASE_URL")
-assert perplexity_base_url, "OPENROUTER_BASE_URL is not set in environment variables"
+assert perplexity_base_url, "PERPLEXITY_BASE_URL is not set in environment variables"
 
 # Initialize OpenAI client
 client = instructor.patch(
