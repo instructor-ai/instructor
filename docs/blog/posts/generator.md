@@ -260,7 +260,7 @@ Our web application now displays results faster. Even a 100ms improvement can le
 
 
 ### FastAPI
-We can also take this and set up a streaming LLM API endpoint using FastAPI. Check out our docs on using FastAPI here](../../concepts/fastapi.md)! 
+We can also take this and set up a streaming LLM API endpoint using FastAPI. Check out our docs on using FastAPI [here](../../concepts/fastapi.md)! 
 
 
 ## Key Takeaways
