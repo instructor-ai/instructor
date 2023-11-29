@@ -49,6 +49,8 @@ def endpoint_function(data: UserData) -> UserDetail:
 `FastAPI` supports streaming responses, which is useful for returning large amounts of data. This feature is particularly useful when working with large language models (LLMs) that generate a large amount of data.
 
 ```python hl_lines="6-7"
+from fastapi import StreamingResponse
+
 # Route to handle SSE events and return users
 @app.post("/extract", response_class=StreamingResponse)
 async def extract(data: UserData):
