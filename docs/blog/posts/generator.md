@@ -265,6 +265,7 @@ Our web application now displays results faster. Even a 100ms improvement can le
 To summarize, we looked at:
 
 •	Generators in Python: A powerful feature that allows for efficient data handling with reduced latency
+
 •	LLM Streaming: LLMs provide us generators to stream tokens and Instructor can let us validate and extract data from this stream. Real-time data validation ftw!
 
 Don't forget to check our [GitHub](https://github.com/jxnl/instructor) for more resources and give us a star if you find the library helpful!
