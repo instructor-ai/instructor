@@ -69,7 +69,7 @@ While it calls out the objectionable content, it doesn't provide any details on 
 ## Adding Custom Validation
 
 By adding a validator to the `answer` field, we can try to catch the issue and correct it.
-Lets integrate `llm_validator` into the model and see the error message. Its important to not that you can use all of pydantic's validators as you would normally as long as you raise a `ValidationError` with a helpful error message as it will be used as part of the self correction prompt.
+Lets integrate `llm_validator` into the model and see the error message. Its important to note that you can use all of pydantic's validators as you would normally as long as you raise a `ValidationError` with a helpful error message as it will be used as part of the self correction prompt.
 
 ```python
 class QuestionAnswerNoEvil(BaseModel):
