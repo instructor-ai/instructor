@@ -142,8 +142,10 @@ Let's see how we can use Instructor to handle extraction from this real time str
 #### Scenario
 
 Imagine an e-commerce platform where we have:
-- **a customer profile**: this includes a detailed history of purchases, browsing behavior, product ratings, preferences in various categories, search history, and even responses to previous recommendations. This extensive data is crucial for generating highly personalized and relevant product suggestions.
-- **a list of candidate products**: these could be some shortlisted products we think the customer would like.
+
+• **a customer profile**: this includes a detailed history of purchases, browsing behavior, product ratings, preferences in various categories, search history, and even responses to previous recommendations. This extensive data is crucial for generating highly personalized and relevant product suggestions.
+
+• **a list of candidate products**: these could be some shortlisted products we think the customer would like.
 
 Our goal is to re-rerank these candidate products for the best conversion and we'll use an LLM!
 
