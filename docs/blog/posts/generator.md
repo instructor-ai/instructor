@@ -259,6 +259,9 @@ Time for first result (list): 8.63 seconds
 Our web application now displays results faster. Even a 100ms improvement can lead to a 1% increase in revenue.
 
 
+### FastAPI
+We can also take this and set up a streaming LLM API endpoint using FastAPI. Check out our docs on using FastAPI [here](https://jxnl.github.io/instructor/concepts/fastapi/)! 
+
 
 ## Key Takeaways
 
