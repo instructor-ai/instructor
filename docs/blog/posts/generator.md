@@ -258,14 +258,14 @@ Time for first result (list): 8.63 seconds
 
 Our web application now displays results faster. Even a 100ms improvement can lead to a 1% increase in revenue.
 
-<img src="https://i.ibb.co/g9rzF6R/DALL-E-2023-11-27-13-45-28-A-mobile-web-UI-design-featuring-a-vertical-list-of-product-recommendatio.png" alt="drawing" width="200"/>
+
 
 ## Key Takeaways
 
 To summarize, we looked at:
 
-    •	Generators in Python: A powerful feature that allows for efficient data handling with reduced latency
-    •	LLM Streaming: LLMs provide us generators to stream tokens and Instructor can let us validate and extract data from this stream. Real-time data validation ftw!
+•	Generators in Python: A powerful feature that allows for efficient data handling with reduced latency
+•	LLM Streaming: LLMs provide us generators to stream tokens and Instructor can let us validate and extract data from this stream. Real-time data validation ftw!
 
 Don't forget to check our [GitHub](https://github.com/jxnl/instructor) for more resources and give us a star if you find the library helpful!
 
