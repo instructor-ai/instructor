@@ -6,3 +6,5 @@ patterns:
   - name: github.com/getgrit/hcl#*
   - name: github.com/getgrit/python#openai
     level: info
+  - name: github.com/getgrit/python#no_skipped_tests
+    level: error
