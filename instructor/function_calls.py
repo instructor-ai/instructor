@@ -240,10 +240,8 @@ class OpenAISchema(BaseModel):
                 strict=strict,
             )
         elif mode == Mode.MD_JSON:
-            pattern = r'```(?:json)?(.*?)```'
-            json_content = re.findall(pattern, message.content, re.DOTALL)[0].strip()
             return cls.model_validate_json(
-                json_content.strip(),
+                message.content,
                 context=validation_context,
                 strict=strict,
             )
