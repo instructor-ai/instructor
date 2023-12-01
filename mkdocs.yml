@@ -1,4 +1,4 @@
-site_name: Instructor (openai_function_call)
+site_name: Instructor
 site_author: Jason Liu
 site_description: Enhancing OpenAI function calling with Pydantic 
 repo_name: instructor
@@ -134,6 +134,7 @@ nav:
     - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
     - Streaming: "concepts/lists.md"
+    - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'
     - Validators: "concepts/reask_validation.md"
     - Distillation: "concepts/distillation.md"

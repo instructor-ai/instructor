@@ -22,6 +22,8 @@ If it is not a small change, please start by [filing an issue](https://github.co
 
 If you need ideas, you can check out the [help wanted](https://github.com/jxnl/instructor/labels/help%20wanted) or [good first issue](https://github.com/jxnl/instructor/labels/good%20first%20issue) labels.
 
+[Grit](https://docs.grit.io/) is used to enforce best practices. You can run `grit check` to check your code before submitting a pull request.
+
 # Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
