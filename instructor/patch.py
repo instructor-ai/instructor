@@ -42,7 +42,7 @@ def dump_message(message) -> dict:
     dumped_message.pop("tool_calls", None)
     ret = {k: v for k, v in dumped_message.items() if v}
 
-    if ret.get("content"):
+    if ret.get("content") is None:
         ret["content"] = ''
 
     return ret
