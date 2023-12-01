@@ -8,8 +8,6 @@ on:
     branches: [ main ]
     paths-ignore:
       - '**'  # Ignore all paths to ensure it only triggers on schedule
-  pull_request:
-    branches: [ main ]
 
 jobs:
   weekly-tests:
