@@ -88,10 +88,6 @@ def handle_response_model(
                         do not deviate at all: \n{response_model.model_json_schema()['properties']}
                         """
             else:
-                if not "vision" in new_kwargs.get("model", ""):
-                    raise ValueError(
-                        "MD_JSON is only supported for vision models, please specify a vision model"
-                    )
                 message = f"""
                     As a genius expert, your task is to understand the content and provide 
                     the parsed objects in json that match the following json_schema (do not deviate at all and its okay if you cant be exact):\n
