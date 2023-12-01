@@ -1,5 +1,3 @@
-#
-
 import os
 import instructor
 from openai import OpenAI
@@ -48,22 +46,19 @@ if __name__ == "__main__":
         )
 
     for content in data:
-        prompt_template = f"""
-            <|im_start|>system
-            You are an expert at outputting json. You output valid JSON.<|im_end|>
-            <|im_start|>user
-            Extract the user details from the following text: {content}. Match your response to the following schema: {UserDetail.model_json_schema()}<|im_end|>
-            <|im_start|>assistant
-            """
         try:
             user = client.chat.completions.create(
                 response_model=UserDetail,
                 model="TheBloke_OpenHermes-2.5-Mistral-7B-GPTQ",
                 messages=[
                     {
+                        "role": "system",
+                        "content": "You are an expert at outputting json. You output valid JSON.",
+                    },
+                    {
                         "role": "user",
-                        "content": prompt_template,
-                    }
+                        "content": f"Extract the user details from the following text: {content}. Match your response to the following schema: {UserDetail.model_json_schema()}",
+                    },
                 ],
                 max_retries=1,
             )

@@ -24,3 +24,4 @@
 6. Navigate to Pods[Left selection menu], wait until you see `Connect` button on the Pod you just deployed, click it. Right click `HTTP Service[Port 5000]` and copy the link address. - https://www.runpod.io/console/pods
     - Add Runpod API endpoint to environment - `export RUNPOD_BASE_URL=your-runpod-link/v1` <-- Make sure to add v1 as well
     - Add Runpod API key to environment -  `export RUNPOD_API_KEY="None"` <-- This should be none.
+7. When done running, stop instance by clicking the stop icon on the Pod page. - https://www.runpod.io/console/pods
