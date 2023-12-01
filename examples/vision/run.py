@@ -36,7 +36,7 @@ def draw_circle(image_size, num_circles, path):
 
     image.save(path)
 
-img_path = 'circle.jpeg'
+img_path = 'circle.jpg'
 draw_circle((1024,1024), 1, img_path)
 base64_image = encode_image(img_path)
 
