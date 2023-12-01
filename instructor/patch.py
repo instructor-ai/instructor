@@ -39,9 +39,13 @@ def dump_message(message) -> dict:
     if it isn't used.
     """
     dumped_message = message.model_dump()
-    if not dumped_message.get("tool_calls"):
-        del dumped_message["tool_calls"]
-    return {k: v for k, v in dumped_message.items() if v}
+    dumped_message.pop("tool_calls", None)
+    ret = {k: v for k, v in dumped_message.items() if v}
+
+    if ret.get("content"):
+        ret["content"] = ''
+
+    return ret
 
 
 def handle_response_model(
@@ -202,7 +206,7 @@ def retry_sync(
                 mode=mode,
             )
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(response.choices[0].message)
+            kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
                     "role": "user",
