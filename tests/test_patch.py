@@ -3,6 +3,7 @@ import functools
 import pytest
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageParam
+from openai.types.chat.chat_completion_message import FunctionCall
 from openai.types.chat.chat_completion_message_tool_call import (
     ChatCompletionMessageToolCall,
     Function,
@@ -73,9 +74,10 @@ def test_override_docs():
 
 
 @pytest.mark.parametrize(
-    "message, expected",
+    "name_of_test, message, expected",
     [
         (
+            "tool_calls and content and no function_call",
             ChatCompletionMessage(
                 role="assistant",
                 content="Hello, world!",
@@ -93,6 +95,7 @@ def test_override_docs():
             },
         ),
         (
+            "tool_calls and no content and no function_call",
             ChatCompletionMessage(
                 role="assistant",
                 content=None,
@@ -110,6 +113,7 @@ def test_override_docs():
             },
         ),
         (
+            "no tool_calls and no content no function_call",
             ChatCompletionMessage(
                 role="assistant",
                 content=None,
@@ -119,9 +123,54 @@ def test_override_docs():
                 "content": "",
             },
         ),
+        (
+            "no tool_calls and content and function_call",
+            ChatCompletionMessage(
+                role="assistant",
+                content="Hello, world!",
+                function_call=FunctionCall(arguments="", name="test_tool"),
+            ),
+            {
+                "role": "assistant",
+                "content": 'Hello, world!{"arguments": "", "name": "test_tool"}',
+            },
+        ),
+        (
+            "no tool_calls and no content and function_call",
+            ChatCompletionMessage(
+                role="assistant",
+                content=None,
+                function_call=FunctionCall(arguments="", name="test_tool"),
+            ),
+            {
+                "role": "assistant",
+                "content": '{"arguments": "", "name": "test_tool"}',
+            },
+        ),
+        (
+            "tool_calls and no content and function_call",
+            ChatCompletionMessage(
+                role="assistant",
+                content=None,
+                function_call=FunctionCall(arguments="", name="test_tool"),
+                tool_calls=[
+                    ChatCompletionMessageToolCall(
+                        id="test_tool",
+                        function=Function(arguments="", name="test_tool"),
+                        type="function",
+                    )
+                ],
+            ),
+            {
+                "role": "assistant",
+                "content": '[{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}]{"arguments": "", "name": "test_tool"}',
+            },
+        ),
     ],
 )
 def test_dump_message(
-    message: ChatCompletionMessage, expected: ChatCompletionMessageParam
+    name_of_test: str,
+    message: ChatCompletionMessage,
+    expected: ChatCompletionMessageParam,
 ):
-    assert dump_message(message) == expected
+    assert dump_message(message) == expected, name_of_test
