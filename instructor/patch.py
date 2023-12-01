@@ -185,6 +185,13 @@ async def retry_async(
                     "content": f"Recall the function correctly, exceptions found\n{e}",
                 }
             )
+            if mode == Mode.MD_JSON:
+                kwargs["messages"].append(
+                    {
+                        "role": "assistant",
+                        "content": "```json",
+                    },
+                )
             retries += 1
             if retries > max_retries:
                 raise e
@@ -222,6 +229,13 @@ def retry_sync(
                     "content": f"Recall the function correctly, exceptions found\n{e}",
                 }
             )
+            if mode == Mode.MD_JSON:
+                kwargs["messages"].append(
+                    {
+                        "role": "assistant",
+                        "content": "```json",
+                    },
+                )
             retries += 1
             if retries > max_retries:
                 raise e
