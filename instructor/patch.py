@@ -10,7 +10,7 @@ from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, ValidationError
 
 if TYPE_CHECKING:
-    from openai.types.chat import ChatCompletionMessage
+    from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageParam
 
 from .function_calls import OpenAISchema, openai_schema, Mode
 
@@ -36,23 +36,16 @@ Parameters:
 """
 
 
-def dump_message(message: ChatCompletionMessage) -> dict:
+def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     """Dumps a message to a dict, to be returned to the OpenAI API.
     Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
     if it isn't used.
     """
-    dumped_message = message.model_dump()
-    tool_calls = dumped_message.pop("tool_calls", None)
-
-    ret = {k: v for k, v in dumped_message.items() if v}
-
-    if ret.get("content") is None:
-        ret["content"] = ''
-
-    if tool_calls:
-        ret["content"] += str(tool_calls)
-
+    ret: ChatCompletionMessageParam = {"role": message.role, "content": message.content}
+    if message.tool_calls is not None:
+        ret["content"] += message.tool_calls
     return ret
+
 
 
 def handle_response_model(
