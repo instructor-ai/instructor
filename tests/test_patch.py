@@ -1,11 +1,15 @@
 import functools
+
 import pytest
+from openai import AsyncOpenAI, OpenAI
+from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageParam
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
+
 import instructor
-
-from openai import OpenAI, AsyncOpenAI
-
-
-from instructor.patch import is_async, wrap_chatcompletion, OVERRIDE_DOCS
+from instructor.patch import OVERRIDE_DOCS, dump_message, is_async, wrap_chatcompletion
 
 
 def test_patch_completes_successfully():
@@ -66,3 +70,58 @@ def test_override_docs():
     assert (
         "response_model" in OVERRIDE_DOCS
     ), "response_model should be in OVERRIDE_DOCS"
+
+
+@pytest.mark.parametrize(
+    "message, expected",
+    [
+        (
+            ChatCompletionMessage(
+                role="assistant",
+                content="Hello, world!",
+                tool_calls=[
+                    ChatCompletionMessageToolCall(
+                        id="test_tool",
+                        function=Function(arguments="", name="test_tool"),
+                        type="function",
+                    )
+                ],
+            ),
+            {
+                "role": "assistant",
+                "content": 'Hello, world![{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}]',
+            },
+        ),
+        (
+            ChatCompletionMessage(
+                role="assistant",
+                content=None,
+                tool_calls=[
+                    ChatCompletionMessageToolCall(
+                        id="test_tool",
+                        function=Function(arguments="", name="test_tool"),
+                        type="function",
+                    )
+                ],
+            ),
+            {
+                "role": "assistant",
+                "content": '[{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}]',
+            },
+        ),
+        (
+            ChatCompletionMessage(
+                role="assistant",
+                content=None,
+            ),
+            {
+                "role": "assistant",
+                "content": "",
+            },
+        ),
+    ],
+)
+def test_dump_message(
+    message: ChatCompletionMessage, expected: ChatCompletionMessageParam
+):
+    assert dump_message(message) == expected

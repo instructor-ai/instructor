@@ -1,20 +1,22 @@
 import inspect
-from functools import wraps
-from instructor.dsl.multitask import MultiTask, MultiTaskBase
-from json import JSONDecodeError
-from typing import get_origin, get_args, Callable, Optional, Type, Union, TYPE_CHECKING
+import json
+import warnings
 from collections.abc import Iterable
+from functools import wraps
+from json import JSONDecodeError
+from typing import Callable, Optional, Type, Union, get_args, get_origin
 
 from openai import AsyncOpenAI, OpenAI
-from openai.types.chat import ChatCompletion
+from openai.types.chat import (
+    ChatCompletion,
+    ChatCompletionMessage,
+    ChatCompletionMessageParam,
+)
 from pydantic import BaseModel, ValidationError
 
-if TYPE_CHECKING:
-    from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageParam
+from instructor.dsl.multitask import MultiTask, MultiTaskBase
 
-from .function_calls import OpenAISchema, openai_schema, Mode
-
-import warnings
+from .function_calls import Mode, OpenAISchema, openai_schema
 
 OVERRIDE_DOCS = """
 Creates a new chat completion for the provided messages and parameters.
@@ -41,11 +43,13 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
     if it isn't used.
     """
-    ret: ChatCompletionMessageParam = {"role": message.role, "content": message.content}
+    ret: ChatCompletionMessageParam = {
+        "role": message.role,
+        "content": message.content or "",
+    }
     if message.tool_calls is not None:
-        ret["content"] += message.tool_calls
+        ret["content"] += json.dumps(message.model_dump()["tool_calls"])
     return ret
-
 
 
 def handle_response_model(
