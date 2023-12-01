@@ -2,12 +2,15 @@ import inspect
 from functools import wraps
 from instructor.dsl.multitask import MultiTask, MultiTaskBase
 from json import JSONDecodeError
-from typing import get_origin, get_args, Callable, Optional, Type, Union
+from typing import get_origin, get_args, Callable, Optional, Type, Union, TYPE_CHECKING
 from collections.abc import Iterable
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, ValidationError
+
+if TYPE_CHECKING:
+    from openai.types.chat import ChatCompletionMessage
 
 from .function_calls import OpenAISchema, openai_schema, Mode
 
@@ -33,17 +36,21 @@ Parameters:
 """
 
 
-def dump_message(message) -> dict:
+def dump_message(message: ChatCompletionMessage) -> dict:
     """Dumps a message to a dict, to be returned to the OpenAI API.
     Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
     if it isn't used.
     """
     dumped_message = message.model_dump()
-    dumped_message.pop("tool_calls", None)
+    tool_calls = dumped_message.pop("tool_calls", None)
+
     ret = {k: v for k, v in dumped_message.items() if v}
 
     if ret.get("content") is None:
         ret["content"] = ''
+
+    if tool_calls:
+        ret["content"] += str(tool_calls)
 
     return ret
 
