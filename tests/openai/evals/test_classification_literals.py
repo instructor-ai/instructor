@@ -18,7 +18,7 @@ class SinglePrediction(BaseModel):
 
 
 models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
-modes = [instructor.Mode.FUNCTIONS, instructor.Mode.JSON, instructor.Mode.TOOLS]
+modes = [instructor.Mode.FUNCTIONS, instructor.Mode.JSON, instructor.Mode.TOOLS, instructor.Mode.MD_JSON]
 data = [
     ("I am a spammer", "spam"),
     ("I am not a spammer", "not_spam"),

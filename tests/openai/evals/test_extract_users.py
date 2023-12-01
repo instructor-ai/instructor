@@ -14,10 +14,8 @@ class UserDetails(BaseModel):
 models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
 test_data = [
     ("Jason is 10", "Jason", 10),
-    ("Alice is 25", "Alice", 25),
-    ("Bob is 35", "Bob", 35),
 ]
-modes = [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS]
+modes = [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON]
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))

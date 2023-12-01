@@ -15,7 +15,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS])
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
 def test_runmodel(mode):
     client = instructor.patch(OpenAI(), mode=mode)
     model = client.chat.completions.create(
