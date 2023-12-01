@@ -1,4 +1,5 @@
 import json
+import re 
 from docstring_parser import parse
 from functools import wraps
 from typing import Any, Callable
@@ -13,6 +14,7 @@ class Mode(enum.Enum):
     FUNCTIONS: str = "function_call"
     TOOLS: str = "tool_call"
     JSON: str = "json_mode"
+    MD_JSON: str = "markdown_json_mode"
 
 
 class openai_function:
@@ -234,6 +236,14 @@ class OpenAISchema(BaseModel):
         elif mode == Mode.JSON:
             return cls.model_validate_json(
                 message.content,
+                context=validation_context,
+                strict=strict,
+            )
+        elif mode == Mode.MD_JSON:
+            pattern = r'```(?:json)?(.*?)```'
+            json_content = re.findall(pattern, message.content, re.DOTALL)[0].strip()
+            return cls.model_validate_json(
+                json_content.strip(),
                 context=validation_context,
                 strict=strict,
             )
