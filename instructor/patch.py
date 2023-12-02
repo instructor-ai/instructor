@@ -1,17 +1,22 @@
 import inspect
-from functools import wraps
-from instructor.dsl.multitask import MultiTask, MultiTaskBase
-from json import JSONDecodeError
-from typing import get_origin, get_args, Callable, Optional, Type, Union
+import json
+import warnings
 from collections.abc import Iterable
+from functools import wraps
+from json import JSONDecodeError
+from typing import Callable, Optional, Type, Union, get_args, get_origin
 
 from openai import AsyncOpenAI, OpenAI
-from openai.types.chat import ChatCompletion
+from openai.types.chat import (
+    ChatCompletion,
+    ChatCompletionMessage,
+    ChatCompletionMessageParam,
+)
 from pydantic import BaseModel, ValidationError
 
-from .function_calls import OpenAISchema, openai_schema, Mode
+from instructor.dsl.multitask import MultiTask, MultiTaskBase
 
-import warnings
+from .function_calls import Mode, OpenAISchema, openai_schema
 
 OVERRIDE_DOCS = """
 Creates a new chat completion for the provided messages and parameters.
@@ -33,15 +38,20 @@ Parameters:
 """
 
 
-def dump_message(message) -> dict:
+def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     """Dumps a message to a dict, to be returned to the OpenAI API.
     Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
     if it isn't used.
     """
-    dumped_message = message.model_dump()
-    if not dumped_message.get("tool_calls"):
-        del dumped_message["tool_calls"]
-    return {k: v for k, v in dumped_message.items() if v}
+    ret: ChatCompletionMessageParam = {
+        "role": message.role,
+        "content": message.content or "",
+    }
+    if message.tool_calls is not None:
+        ret["content"] += json.dumps(message.model_dump()["tool_calls"])
+    if message.function_call is not None:
+        ret["content"] += json.dumps(message.model_dump()["function_call"])
+    return ret
 
 
 def handle_response_model(
@@ -202,7 +212,7 @@ def retry_sync(
                 mode=mode,
             )
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(response.choices[0].message)
+            kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
                     "role": "user",
