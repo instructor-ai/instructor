@@ -58,7 +58,7 @@ def test_json_mode():
         ],
     )
     user = UserExtract.from_response(response, mode=Mode.JSON)
-    assert user.name.lower()
+    assert user.name.lower() == "jason"
     assert user.age == 25
 
 
@@ -79,7 +79,7 @@ def test_markdown_json_mode():
         ],
     )
     user = UserExtract.from_response(response, mode=Mode.MD_JSON)
-    assert user.name.lower()
+    assert user.name.lower() == "jason"
     assert user.age == 25
 
 
