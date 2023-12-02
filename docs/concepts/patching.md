@@ -44,7 +44,7 @@ client = instructor.patch(OpenAI(), mode=Mode.JSON)
 
 !!! warning "Experimental"
 
-     This is not recommended, and may not be supported in the future, this is just left to support vision models.
+    This is not recommended, and may not be supported in the future, this is just left to support vision models.
 
 ```python
 import instructor
