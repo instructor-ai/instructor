@@ -3,7 +3,7 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 import instructor
-from instructor.function_calls import OpenAISchema, Mode
+from instructor.function_calls import Mode
 
 
 class User(BaseModel):

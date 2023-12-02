@@ -62,7 +62,6 @@ def test_json_mode():
     assert user.age == 25
 
 
-
 def test_markdown_json_mode():
     response = client.chat.completions.create(
         model="gpt-3.5-turbo-1106",

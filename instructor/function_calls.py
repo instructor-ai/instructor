@@ -1,5 +1,4 @@
 import json
-import re 
 from docstring_parser import parse
 from functools import wraps
 from typing import Any, Callable
