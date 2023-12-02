@@ -40,6 +40,20 @@ from openai import OpenAI
 client = instructor.patch(OpenAI(), mode=Mode.JSON)
 ```
 
+## Markdown JSON Mode
+
+!!! warning "Experimental"
+
+    This is not recommended, and may not be supported in the future, this is just left to support vision models.
+
+```python
+import instructor
+from instructor import Mode
+from openai import OpenAI
+
+client = instructor.patch(OpenAI(), mode=Mode.MD_JSON)
+
+```
 ### Schema Integration
 
 In JSON Mode, the schema is part of the system message:

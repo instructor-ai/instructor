@@ -1,6 +1,7 @@
 name: Weekly Tests
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'  # Runs at 00:00 UTC every Sunday
   push:
@@ -36,3 +37,5 @@ jobs:
 
       - name: Run all tests
         run: poetry run pytest tests/
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
