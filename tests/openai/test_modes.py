@@ -62,6 +62,27 @@ def test_json_mode():
     assert user.age == 25
 
 
+
+def test_markdown_json_mode():
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        response_format={"type": "json_object"},
+        messages=[
+            {
+                "role": "system",
+                "content": f"Make sure that your response to any message matchs the json_schema below, do not deviate at all: \n{UserExtract.model_json_schema()['properties']}",
+            },
+            {
+                "role": "user",
+                "content": "Extract jason is 25 years old",
+            },
+        ],
+    )
+    user = UserExtract.from_response(response, mode=Mode.MD_JSON)
+    assert user.name.lower() == "jason"
+    assert user.age == 25
+
+
 @pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS])
 def test_mode(mode):
     client = instructor.patch(OpenAI(), mode=mode)
