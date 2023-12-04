@@ -31,6 +31,7 @@ data = [
 
 
 if __name__ == "__main__":
+
     class UserDetail(BaseModel):
         name: str = Field(description="Name extracted from the text")
         age: int = Field(description="Age extracted from the text")
@@ -41,16 +42,18 @@ if __name__ == "__main__":
     for content in data:
         MaybeUser = Maybe(UserDetail)
         user = client.chat.completions.create(
-            response_model=MaybeUser, model="teknium/openhermes-2.5-mistral-7b", messages=[
-            {
-                "role": "system",
-                "content": f"You are an expert at outputting json. You always output valid json based on this schema: {MaybeUser.model_json_schema()}",
-            },
-            {
-                "role": "user",
-                "content": f"Extract the user details from the following text: {content}. Match your response the correct schema",
-            },
-        ]
+            response_model=MaybeUser,
+            model="teknium/openhermes-2.5-mistral-7b",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are an expert at outputting json. You always output valid json based on this schema: {MaybeUser.model_json_schema()}",
+                },
+                {
+                    "role": "user",
+                    "content": f"Extract the user details from the following text: {content}. Match your response the correct schema",
+                },
+            ],
         )
         # Output the error or the result.
         if user.error:

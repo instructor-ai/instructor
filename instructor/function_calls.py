@@ -13,6 +13,7 @@ class Mode(enum.Enum):
     FUNCTIONS: str = "function_call"
     TOOLS: str = "tool_call"
     JSON: str = "json_mode"
+    MD_JSON: str = "markdown_json_mode"
 
 
 class openai_function:
@@ -232,6 +233,12 @@ class OpenAISchema(BaseModel):
                 strict=strict,
             )
         elif mode == Mode.JSON:
+            return cls.model_validate_json(
+                message.content,
+                context=validation_context,
+                strict=strict,
+            )
+        elif mode == Mode.MD_JSON:
             return cls.model_validate_json(
                 message.content,
                 context=validation_context,

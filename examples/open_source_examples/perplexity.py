@@ -59,7 +59,7 @@ if __name__ == "__main__":
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are an expert at outputting json. You always output valid JSON based on the pydantic schema given to you.",
+                    "content": "You are an expert at outputting json. You always output valid JSON based on the pydantic schema given to you.",
                 },
                 {
                     "role": "user",

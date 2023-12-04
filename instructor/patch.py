@@ -1,17 +1,22 @@
 import inspect
-from functools import wraps
-from instructor.dsl.multitask import MultiTask, MultiTaskBase
-from json import JSONDecodeError
-from typing import get_origin, get_args, Callable, Optional, Type, Union
+import json
+import warnings
 from collections.abc import Iterable
+from functools import wraps
+from json import JSONDecodeError
+from typing import Callable, Optional, Type, Union, get_args, get_origin
 
 from openai import AsyncOpenAI, OpenAI
-from openai.types.chat import ChatCompletion
+from openai.types.chat import (
+    ChatCompletion,
+    ChatCompletionMessage,
+    ChatCompletionMessageParam,
+)
 from pydantic import BaseModel, ValidationError
 
-from .function_calls import OpenAISchema, openai_schema, Mode
+from instructor.dsl.multitask import MultiTask, MultiTaskBase
 
-import warnings
+from .function_calls import Mode, OpenAISchema, openai_schema
 
 OVERRIDE_DOCS = """
 Creates a new chat completion for the provided messages and parameters.
@@ -33,15 +38,20 @@ Parameters:
 """
 
 
-def dump_message(message) -> dict:
+def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     """Dumps a message to a dict, to be returned to the OpenAI API.
     Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
     if it isn't used.
     """
-    dumped_message = message.model_dump()
-    if not dumped_message.get("tool_calls"):
-        del dumped_message["tool_calls"]
-    return {k: v for k, v in dumped_message.items() if v}
+    ret: ChatCompletionMessageParam = {
+        "role": message.role,
+        "content": message.content or "",
+    }
+    if message.tool_calls is not None:
+        ret["content"] += json.dumps(message.model_dump()["tool_calls"])
+    if message.function_call is not None:
+        ret["content"] += json.dumps(message.model_dump()["function_call"])
+    return ret
 
 
 def handle_response_model(
@@ -79,13 +89,27 @@ def handle_response_model(
                 "type": "function",
                 "function": {"name": response_model.openai_schema["name"]},
             }
-        elif mode == Mode.JSON:
-            new_kwargs["response_format"] = {"type": "json_object"}
-
-            # check that the first message is a system message
-            # if it is not, add a system message to the beginning
-            message = f"Make sure that your response to any message matches the json_schema below, do not deviate at all: \n{response_model.model_json_schema()['properties']}"
-
+        elif mode == Mode.JSON or mode == Mode.MD_JSON:
+            if mode == Mode.JSON:
+                new_kwargs["response_format"] = {"type": "json_object"}
+                # check that the first message is a system message
+                # if it is not, add a system message to the beginning
+                message = f"""Make sure that your response to any message matches the json_schema below,
+                        do not deviate at all: \n{response_model.model_json_schema()['properties']}
+                        """
+            else:
+                message = f"""
+                    As a genius expert, your task is to understand the content and provide 
+                    the parsed objects in json that match the following json_schema (do not deviate at all and its okay if you cant be exact):\n
+                    {response_model.model_json_schema()['properties']}
+                    """
+                new_kwargs["messages"].append(
+                    {
+                        "role": "assistant",
+                        "content": "```json",
+                    },
+                )
+                new_kwargs["stop"] = "```"
             if new_kwargs["messages"][0]["role"] != "system":
                 new_kwargs["messages"].insert(
                     0,
@@ -100,7 +124,6 @@ def handle_response_model(
                 new_kwargs["messages"][0]["content"] += f"\n\n{message}"
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
-
     return response_model, new_kwargs
 
 
@@ -172,6 +195,13 @@ async def retry_async(
                     "content": f"Recall the function correctly, exceptions found\n{e}",
                 }
             )
+            if mode == Mode.MD_JSON:
+                kwargs["messages"].append(
+                    {
+                        "role": "assistant",
+                        "content": "```json",
+                    },
+                )
             retries += 1
             if retries > max_retries:
                 raise e
@@ -202,13 +232,20 @@ def retry_sync(
                 mode=mode,
             )
         except (ValidationError, JSONDecodeError) as e:
-            kwargs["messages"].append(response.choices[0].message)
+            kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
                     "role": "user",
                     "content": f"Recall the function correctly, exceptions found\n{e}",
                 }
             )
+            if mode == Mode.MD_JSON:
+                kwargs["messages"].append(
+                    {
+                        "role": "assistant",
+                        "content": "```json",
+                    },
+                )
             retries += 1
             if retries > max_retries:
                 raise e
