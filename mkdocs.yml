@@ -156,6 +156,7 @@ nav:
     - Action Item and Dependency Mapping: 'examples/action_items.md'
     - Multi-File Code Generation: 'examples/gpt-engineer.md'
     - PII Data Sanitization: 'examples/pii.md'
+    - Open Source: 'examples/open_source.md'
   - CLI Reference:
       - "Introduction": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
