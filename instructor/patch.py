@@ -92,11 +92,13 @@ def handle_response_model(
         elif mode == Mode.JSON or mode == Mode.MD_JSON:
             if mode == Mode.JSON:
                 new_kwargs["response_format"] = {"type": "json_object"}
-                # check that the first message is a system message
-                # if it is not, add a system message to the beginning
                 message = f"""Make sure that your response to any message matches the json_schema below,
-                        do not deviate at all: \n{response_model.model_json_schema()['properties']}
-                        """
+                            do not deviate at all: \n{response_model.model_json_schema()['properties']}
+                            """
+                # Check for nested models
+                if '$defs' in response_model.model_json_schema():
+                    message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
+                    
             else:
                 message = f"""
                     As a genius expert, your task is to understand the content and provide 
@@ -110,6 +112,8 @@ def handle_response_model(
                     },
                 )
                 new_kwargs["stop"] = "```"
+            # check that the first message is a system message
+            # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":
                 new_kwargs["messages"].insert(
                     0,
