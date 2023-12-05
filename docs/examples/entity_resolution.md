@@ -85,7 +85,7 @@ from graphviz import Digraph
 def generate_html_label(entity: Entity) -> str:
     rows = [f"<tr><td>{prop.key}</td><td>{prop.resolved_absolute_value}</td></tr>" for prop in entity.properties]
     table_rows = "".join(rows)
-    return f"<table border='0' cellborder='1' cellspacing='0'><tr><td colspan='2'><b>{entity.entity_title}</b></td></tr>{table_rows}</table>>"
+    return f"<<table border='0' cellborder='1' cellspacing='0'><tr><td colspan='2'><b>{entity.entity_title}</b></td></tr>{table_rows}</table>>"
 
 def generate_graph(data: DocumentExtraction):
     dot = Digraph(comment="Entity Graph", node_attr={"shape": "plaintext"})
