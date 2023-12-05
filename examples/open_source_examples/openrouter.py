@@ -9,7 +9,7 @@ from instructor import Maybe, Mode
 openrouter_api_key = os.environ.get("OPENROUTER_API_KEY")
 assert openrouter_api_key, "OPENROUTER_API_KEY is not set in environment variables"
 
-# Base URL for OpenAI
+# Base URL for OpenAI client
 openrouter_base_url = os.environ.get("OPENROUTER_BASE_URL")
 assert openrouter_base_url, "OPENROUTER_BASE_URL is not set in environment variables"
 
