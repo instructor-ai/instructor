@@ -9,7 +9,7 @@ from instructor import Mode
 runpod_api_key = os.environ.get("RUNPOD_API_KEY")
 assert runpod_api_key, "RUNPOD_API_KEY is not set in environment variables"
 
-# Base URL for OpenAI
+# Base URL for OpenAI client
 runpod_base_url = os.environ.get("RUNPOD_BASE_URL")
 assert runpod_base_url, "RUNPOD_BASE_URL is not set in environment variables"
 
@@ -19,11 +19,6 @@ client = instructor.patch(
     mode=Mode.JSON,
 )
 
-# For direct reference here. See https://docs.perplexity.ai/docs/model-cards for updates
-# Recommended is pplx-70b-chat
-models = [
-    "TheBloke_OpenHermes-2.5-Mistral-7B-GPTQ",
-]
 
 data = [
     "Brandon is 33 years old. He works as a solution architect.",
@@ -60,7 +55,6 @@ if __name__ == "__main__":
                         "content": f"Extract the user details from the following text: {content}. Match your response to the following schema: {UserDetail.model_json_schema()}",
                     },
                 ],
-                max_retries=1,
             )
             print(f"Result: {user}")
         except Exception as e:
