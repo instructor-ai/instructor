@@ -17,10 +17,10 @@ import instructor
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-from openai import AsyncOpenAI
+from openai import OpenAI
 
 # Enables response_model
-client = instructor.patch(AsyncOpenAI())
+client = instructor.patch(OpenAI())
 app = FastAPI()
 
 class UserData(BaseModel):
@@ -34,7 +34,7 @@ class UserDetail(BaseModel):
 
 @app.post("/endpoint", response_model=UserDetail)
 def endpoint_function(data: UserData) -> UserDetail:
-    user_detail = await client.chat.completions.create(
+    user_detail = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
