@@ -1,6 +1,6 @@
 import inspect
 import json
-import warnings
+import logging
 from collections.abc import Iterable
 from functools import wraps
 from json import JSONDecodeError
@@ -18,7 +18,7 @@ from instructor.dsl.multitask import MultiTask, MultiTaskBase
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
-logger = warnings.getLogger("instructor")
+logger = logging.getLogger("instructor")
 
 OVERRIDE_DOCS = """
 Creates a new chat completion for the provided messages and parameters.
@@ -279,7 +279,7 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
     ):
         if mode == Mode.TOOLS:
             max_retries = 0
-            warnings.warn("max_retries is not supported when using tool calls")
+            logger.warning("max_retries is not supported when using tool calls")
 
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, kwargs=kwargs, mode=mode
@@ -305,7 +305,7 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
     ):
         if mode == Mode.TOOLS:
             max_retries = 0
-            warnings.warn("max_retries is not supported when using tool calls")
+            logger.warning("max_retries is not supported when using tool calls")
 
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, kwargs=kwargs, mode=mode
