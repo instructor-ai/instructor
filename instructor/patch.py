@@ -18,6 +18,8 @@ from instructor.dsl.multitask import MultiTask, MultiTaskBase
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
+logger = warnings.getLogger("instructor")
+
 OVERRIDE_DOCS = """
 Creates a new chat completion for the provided messages and parameters.
 
@@ -96,9 +98,9 @@ def handle_response_model(
                             do not deviate at all: \n{response_model.model_json_schema()['properties']}
                             """
                 # Check for nested models
-                if '$defs' in response_model.model_json_schema():
+                if "$defs" in response_model.model_json_schema():
                     message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
-                    
+
             else:
                 message = f"""
                     As a genius expert, your task is to understand the content and provide 
@@ -236,6 +238,7 @@ def retry_sync(
                 mode=mode,
             )
         except (ValidationError, JSONDecodeError) as e:
+            logger.exception(f"Retrying, exception: {e}")
             kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
@@ -252,6 +255,7 @@ def retry_sync(
                 )
             retries += 1
             if retries > max_retries:
+                logger.exception(f"Max retries reached, exception: {e}")
                 raise e
 
 
@@ -336,6 +340,7 @@ def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS):
     - `strict` parameter to use strict json parsing
     """
 
+    logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
     client.chat.completions.create = wrap_chatcompletion(
         client.chat.completions.create, mode=mode
     )
