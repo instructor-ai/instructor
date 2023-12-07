@@ -255,7 +255,7 @@ def retry_sync(
                 )
             retries += 1
             if retries > max_retries:
-                logger.exception(f"Max retries reached, exception: {e}")
+                logger.warning(f"Max retries reached, exception: {e}")
                 raise e
 
 
