@@ -38,3 +38,18 @@ If you need ideas, you can check out the [help wanted](https://github.com/jxnl/i
 <a href="https://github.com/jxnl/instructor/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
 </a>
+
+
+## Additional Resources
+
+To enhance your understanding of the documentation, here are some useful references:
+
+- **mkdocs serve:** The `mkdocs serve` command is used to preview your documentation locally during the development phase. When you run this command in your terminal, MkDocs starts a development server, allowing you to view and interact with your documentation in a web browser. This is helpful for checking how your changes look before publishing the documentation. Learn more in the [mkdocs serve documentation](https://www.mkdocs.org/commands/serve/).
+
+- **hl_lines in Code Blocks:** The `hl_lines` feature in code blocks allows you to highlight specific lines within the code block. This is useful for drawing attention to particular lines of code when explaining examples or providing instructions. You can specify the lines to highlight using the `hl_lines` option in your code block configuration. For more details and examples, you can refer to the [hl_lines documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#syntax-highlighting).
+
+- **Admonitions:** Admonitions are a way to visually emphasize or call attention to certain pieces of information in your documentation. They come in various styles, such as notes, warnings, tips, etc. Admonitions provide a structured and consistent way to present important content. For usage examples and details on incorporating admonitions into your documentation, you can refer to the [admonitions documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#admonitions).
+
+For more details about the documentation structure and features, refer to the [MkDocs Material documentation](https://squidfunk.github.io/mkdocs-material/).
+  
+Thank you for your contributions, and happy coding!
