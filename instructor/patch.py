@@ -201,7 +201,7 @@ async def process_response_async(
             if is_model_multitask:
                 return model.tasks
         return model
-    return await response
+    return response
 
 async def retry_async(
     func,
