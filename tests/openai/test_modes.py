@@ -132,7 +132,7 @@ async def test_tool_call_async():
     assert user.age == 25
 
 @pytest.mark.asyncio
-async def test_json_mode():
+async def test_json_mode_async():
     client = AsyncOpenAI()
     response = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
