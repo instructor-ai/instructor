@@ -1,4 +1,3 @@
-from typing import Iterable
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import List
