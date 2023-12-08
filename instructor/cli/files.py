@@ -101,7 +101,7 @@ def delete(file_id: str = typer.Argument(..., help="ID of the file to delete")):
     help="Monitor the status of a file on OpenAI's servers",
 )
 def status(
-    file_id: str = typer.Argument(..., help="ID of the file to check the status of")
+    file_id: str = typer.Argument(..., help="ID of the file to check the status of"),
 ):
     with console.status(f"Monitoring status of file {file_id}...") as status:
         while True:
