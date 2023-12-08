@@ -16,7 +16,7 @@ class MultiTaskBase:
     @classmethod
     async def from_streaming_response_async(cls, completion, mode: Mode):
         json_chunks = cls.extract_json_async(completion, mode)
-        return cls.tasks_from_chunks(json_chunks)
+        return cls.tasks_from_chunks_async(json_chunks)
 
     @classmethod
     def tasks_from_chunks(cls, json_chunks):
@@ -35,7 +35,7 @@ class MultiTaskBase:
                 obj = cls.task_type.model_validate_json(task_json)  # type: ignore
                 yield obj
     @classmethod
-    async def tasks_from_chunks(cls, json_chunks):
+    async def tasks_from_chunks_async(cls, json_chunks):
         started = False
         potential_object = ""
         async for chunk in json_chunks:
