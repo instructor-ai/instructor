@@ -79,7 +79,7 @@ class TaskPlan(BaseModel):
         tmp_dep_graph = {item.id: set(item.subtasks) for item in self.task_graph}
 
         def topological_sort(
-            dep_graph: dict[int, set[int]]
+            dep_graph: dict[int, set[int]],
         ) -> Generator[set[int], None, None]:
             while True:
                 ordered = set(item for item, dep in dep_graph.items() if len(dep) == 0)
