@@ -246,7 +246,7 @@ class OpenAISchema(BaseModel):
             )
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
-    
+
     @classmethod
     async def from_response_async(
         cls,

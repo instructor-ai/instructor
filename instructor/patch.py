@@ -173,6 +173,7 @@ def process_response(
         return model
     return response
 
+
 async def process_response_async(
     response,
     *,
@@ -208,6 +209,7 @@ async def process_response_async(
                 return model.tasks
         return model
     return response
+
 
 async def retry_async(
     func,
