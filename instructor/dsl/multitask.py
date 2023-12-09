@@ -12,7 +12,7 @@ class MultiTaskBase:
     def from_streaming_response(cls, completion, mode: Mode):
         json_chunks = cls.extract_json(completion, mode)
         yield from cls.tasks_from_chunks(json_chunks)
-    
+
     @classmethod
     async def from_streaming_response_async(cls, completion, mode: Mode):
         json_chunks = cls.extract_json_async(completion, mode)
@@ -34,6 +34,7 @@ class MultiTaskBase:
             if task_json:
                 obj = cls.task_type.model_validate_json(task_json)  # type: ignore
                 yield obj
+
     @classmethod
     async def tasks_from_chunks_async(cls, json_chunks):
         started = False
@@ -50,6 +51,7 @@ class MultiTaskBase:
             if task_json:
                 obj = cls.task_type.model_validate_json(task_json)  # type: ignore
                 yield obj
+
     @staticmethod
     def extract_json(completion, mode: Mode):
         for chunk in completion:
@@ -57,7 +59,7 @@ class MultiTaskBase:
                 if mode == Mode.FUNCTIONS:
                     if json_chunk := chunk.choices[0].delta.function_call.arguments:
                         yield json_chunk
-                elif mode == Mode.JSON:
+                elif mode in {Mode.JSON, Mode.MD_JSON}:
                     if json_chunk := chunk.choices[0].delta.content:
                         yield json_chunk
                 elif mode == Mode.TOOLS:
@@ -69,7 +71,7 @@ class MultiTaskBase:
                     )
             except AttributeError:
                 pass
-            
+
     @staticmethod
     async def extract_json_async(completion, mode: Mode):
         async for chunk in completion:
@@ -77,7 +79,7 @@ class MultiTaskBase:
                 if mode == Mode.FUNCTIONS:
                     if json_chunk := chunk.choices[0].delta.function_call.arguments:
                         yield json_chunk
-                elif mode == Mode.JSON:
+                elif mode in {Mode.JSON, Mode.MD_JSON}:
                     if json_chunk := chunk.choices[0].delta.content:
                         yield json_chunk
                 elif mode == Mode.TOOLS:

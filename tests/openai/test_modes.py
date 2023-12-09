@@ -4,7 +4,6 @@ from instructor.function_calls import OpenAISchema, Mode
 from openai import OpenAI, AsyncOpenAI
 
 
-
 class UserExtract(OpenAISchema):
     name: str
     age: int
@@ -100,6 +99,7 @@ def test_mode(mode):
     assert user.name.lower() == "jason"
     assert user.age == 25
 
+
 @pytest.mark.asyncio
 async def test_tool_call_async():
     client = AsyncOpenAI()
@@ -131,6 +131,7 @@ async def test_tool_call_async():
     assert user.name.lower() == "jason"
     assert user.age == 25
 
+
 @pytest.mark.asyncio
 async def test_json_mode_async():
     client = AsyncOpenAI()
@@ -151,6 +152,7 @@ async def test_json_mode_async():
     user = UserExtract.from_response(response, mode=Mode.JSON)
     assert user.name.lower() == "jason"
     assert user.age == 25
+
 
 @pytest.mark.asyncio
 async def test_markdown_json_mode_async():
