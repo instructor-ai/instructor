@@ -1,4 +1,3 @@
-from typing import Literal
 
 import pytest
 from pydantic import BaseModel
