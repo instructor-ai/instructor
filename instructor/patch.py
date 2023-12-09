@@ -107,6 +107,10 @@ def handle_response_model(
                     the parsed objects in json that match the following json_schema (do not deviate at all and its okay if you cant be exact):\n
                     {response_model.model_json_schema()['properties']}
                     """
+                # Check for nested models
+                if "$defs" in response_model.model_json_schema():
+                    message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
+
                 new_kwargs["messages"].append(
                     {
                         "role": "assistant",
