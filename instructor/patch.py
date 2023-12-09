@@ -173,6 +173,41 @@ def process_response(
         return model
     return response
 
+async def process_response_async(
+    response,
+    *,
+    response_model: Type[BaseModel],
+    stream: bool,
+    validation_context: dict = None,
+    strict=None,
+    mode: Mode = Mode.FUNCTIONS,
+):  # type: ignore
+    """Processes a OpenAI response with the response model, if available.
+    It can use `validation_context` and `strict` to validate the response
+    via the pydantic model
+
+    Args:
+        response (ChatCompletion): The response from OpenAI's API
+        response_model (BaseModel): The response model to use for parsing the response
+        stream (bool): Whether the response is a stream
+        validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
+        strict (bool, optional): Whether to use strict json parsing. Defaults to None.
+    """
+    if response_model is not None:
+        is_model_multitask = issubclass(response_model, MultiTaskBase)
+        model = await response_model.from_response_async(
+            response,
+            validation_context=validation_context,
+            strict=strict,
+            mode=mode,
+            stream_multitask=stream and is_model_multitask,
+        )
+        if not stream:
+            model._raw_response = response
+            if is_model_multitask:
+                return model.tasks
+        return model
+    return response
 
 async def retry_async(
     func,
@@ -189,7 +224,7 @@ async def retry_async(
         try:
             response: ChatCompletion = await func(*args, **kwargs)
             stream = kwargs.get("stream", False)
-            return process_response(
+            return await process_response_async(
                 response,
                 response_model=response_model,
                 stream=stream,

@@ -12,6 +12,11 @@ class MultiTaskBase:
     def from_streaming_response(cls, completion, mode: Mode):
         json_chunks = cls.extract_json(completion, mode)
         yield from cls.tasks_from_chunks(json_chunks)
+    
+    @classmethod
+    async def from_streaming_response_async(cls, completion, mode: Mode):
+        json_chunks = cls.extract_json_async(completion, mode)
+        return cls.tasks_from_chunks_async(json_chunks)
 
     @classmethod
     def tasks_from_chunks(cls, json_chunks):
@@ -29,10 +34,45 @@ class MultiTaskBase:
             if task_json:
                 obj = cls.task_type.model_validate_json(task_json)  # type: ignore
                 yield obj
+    @classmethod
+    async def tasks_from_chunks_async(cls, json_chunks):
+        started = False
+        potential_object = ""
+        async for chunk in json_chunks:
+            potential_object += chunk
+            if not started:
+                if "[" in chunk:
+                    started = True
+                    potential_object = chunk[chunk.find("[") + 1 :]
+                continue
 
+            task_json, potential_object = cls.get_object(potential_object, 0)
+            if task_json:
+                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                yield obj
     @staticmethod
     def extract_json(completion, mode: Mode):
         for chunk in completion:
+            try:
+                if mode == Mode.FUNCTIONS:
+                    if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                        yield json_chunk
+                elif mode == Mode.JSON:
+                    if json_chunk := chunk.choices[0].delta.content:
+                        yield json_chunk
+                elif mode == Mode.TOOLS:
+                    if json_chunk := chunk.choices[0].delta.tool_calls:
+                        yield json_chunk[0].function.arguments
+                else:
+                    raise NotImplementedError(
+                        f"Mode {mode} is not supported for MultiTask streaming"
+                    )
+            except AttributeError:
+                pass
+            
+    @staticmethod
+    async def extract_json_async(completion, mode: Mode):
+        async for chunk in completion:
             try:
                 if mode == Mode.FUNCTIONS:
                     if json_chunk := chunk.choices[0].delta.function_call.arguments:
