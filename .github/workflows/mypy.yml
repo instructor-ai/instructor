@@ -1,0 +1,37 @@
+name: Continuous Integration
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+env:
+  CUSTOM_FLAGS: "--python-version=3.9 --color-output --no-pretty --follow-imports=skip"
+  CUSTOM_PACKAGES: "instructor/cli/cli.py instructor/cli/usage.py"
+
+jobs:
+  continuous-integration:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      PACKAGES_TO_CHECK: "common_utils examples" # "package1 package2 package3"
+      WORKING_DIRECTORY: "."
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Environment setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dev dependencies
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install -r requirements.txt
+      - name: Run Continuous Integration Action
+        run: |
+          export CUSTOM_PACKAGES="${{ env.PACKAGES_TO_CHECK }}" &&
+          export CUSTOM_FLAGS="${{ env.CUSTOM_FLAGS }}" &&
+          curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/continuous-integration/scripts/devops/continuous-integration/type_mypy.sh |
+          bash
