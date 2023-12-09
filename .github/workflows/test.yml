@@ -43,8 +43,8 @@ jobs:
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
-          poetry run coverage run -m pytest tests/ -k "not openai"
-          poetry run coverage report 
+          poetry run coverage run -m pytest tests/ -k "not evals"
+          poetry run coverage report
           poetry run coverage html
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
