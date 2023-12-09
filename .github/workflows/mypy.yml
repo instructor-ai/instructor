@@ -6,6 +6,8 @@ on:
     branches: [ main ]
 
 env:
+  WORKING_DIRECTORY: "."
+  MYPY_OUTPUT_FILENAME: "mypy.log"
   CUSTOM_FLAGS: "--python-version=3.9 --color-output --no-pretty --follow-imports=skip"
   CUSTOM_PACKAGES: "instructor/cli/cli.py instructor/cli/usage.py"
 
@@ -31,4 +33,9 @@ jobs:
           export CUSTOM_PACKAGES="${{ env.CUSTOM_PACKAGES }}" &&
           export CUSTOM_FLAGS="${{ env.CUSTOM_FLAGS }}" &&
           curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/continuous-integration/scripts/devops/continuous-integration/type_mypy.sh |
-          bash
+          bash | tee ${{ env.WORKING_DIRECTORY }}/${{ env.MYPY_OUTPUT_FILENAME }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: mypy-log
+          path: ${{ env.WORKING_DIRECTORY }}/${{ env.MYPY_OUTPUT_FILENAME }}
