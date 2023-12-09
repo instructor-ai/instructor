@@ -1,8 +1,6 @@
-import json
 from docstring_parser import parse
 from functools import wraps
-from typing import Any, Callable
-from pydantic import BaseModel, create_model, validate_arguments
+from pydantic import BaseModel, create_model
 
 import enum
 
@@ -14,89 +12,6 @@ class Mode(enum.Enum):
     TOOLS: str = "tool_call"
     JSON: str = "json_mode"
     MD_JSON: str = "markdown_json_mode"
-
-
-class openai_function:
-    """
-    Decorator to convert a function into an OpenAI function.
-
-    This decorator will convert a function into an OpenAI function. The
-    function will be validated using pydantic and the schema will be
-    generated from the function signature.
-
-    Example:
-        ```python
-        @openai_function
-        def sum(a: int, b: int) -> int:
-            return a + b
-
-        completion = openai.ChatCompletion.create(
-            ...
-            messages=[{
-                "content": "What is 1 + 1?",
-                "role": "user"
-            }]
-        )
-        sum.from_response(completion)
-        # 2
-        ```
-    """
-
-    def __init__(self, func: Callable) -> None:
-        self.func = func
-        self.validate_func = validate_arguments(func)
-        self.docstring = parse(self.func.__doc__ or "")
-
-        parameters = self.validate_func.model.model_json_schema()
-        parameters["properties"] = {
-            k: v
-            for k, v in parameters["properties"].items()
-            if k not in ("v__duplicate_kwargs", "args", "kwargs")
-        }
-        for param in self.docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (
-                description := param.description
-            ):
-                parameters["properties"][name]["description"] = description
-        parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() if "default" not in v
-        )
-        self.openai_schema = {
-            "name": self.func.__name__,
-            "description": self.docstring.short_description,
-            "parameters": parameters,
-        }
-        self.model = self.validate_func.model
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        @wraps(self.func)
-        def wrapper(*args, **kwargs):
-            return self.validate_func(*args, **kwargs)
-
-        return wrapper(*args, **kwargs)
-
-    def from_response(self, completion, throw_error=True, strict: bool = None):
-        """
-        Parse the response from OpenAI's API and return the function call
-
-        Parameters:
-            completion (openai.ChatCompletion): The response from OpenAI's API
-            throw_error (bool): Whether to throw an error if the response does not contain a function call
-
-        Returns:
-            result (any): result of the function call
-        """
-        message = completion["choices"][0]["message"]
-
-        if throw_error:
-            assert "function_call" in message, "No function call detected"
-            assert (
-                message["function_call"]["name"] == self.openai_schema["name"]
-            ), "Function name does not match"
-
-        function_call = message["function_call"]
-        arguments = json.loads(function_call["arguments"], strict=strict)
-        return self.validate_func(**arguments)
 
 
 class OpenAISchema(BaseModel):
@@ -246,7 +161,7 @@ class OpenAISchema(BaseModel):
             )
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
-    
+
     @classmethod
     async def from_response_async(
         cls,
