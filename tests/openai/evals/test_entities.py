@@ -57,6 +57,22 @@ def ask_ai(content, model, client) -> DocumentExtraction:
     )  # type: ignore
     return resp
 
+async def ask_ai_async(content, model, client) -> DocumentExtraction:
+    resp: DocumentExtraction = await client.chat.completions.create(
+        model=model,
+        response_model=DocumentExtraction,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a perfect entity resolution system that extracts facts from the document. Extract and resolve a list of entities from the following document:",
+            },
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+    )  # type: ignore
+    return resp
 
 content = """
 Sample Legal Contract
@@ -99,4 +115,18 @@ def test_extract(model, mode, client):
 
     # Honestly, if there are no errors, then it's a pass
     extract = ask_ai(content=content, model=model, client=client)
+    assert len(extract.entities) > 0
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("model, mode", product(models, modes))
+async def test_extract_async(model, mode, aclient):
+    aclient = instructor.patch(aclient, mode=mode)
+    if (mode, model) in {
+        (Mode.JSON, "gpt-3.5-turbo"),
+        (Mode.JSON, "gpt-4"),
+    }:
+        pytest.skip(f"{mode} mode is not supported for {model}, skipping test")
+
+    # Honestly, if there are no errors, then it's a pass
+    extract = await ask_ai_async(content=content, model=model, client=aclient)
     assert len(extract.entities) > 0

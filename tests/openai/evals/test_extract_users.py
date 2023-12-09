@@ -49,3 +49,34 @@ def test_extract(model, data, mode, client):
     assert (
         response.age == expected_age
     ), f"Expected age {expected_age}, got {response.age}"
+
+
+@pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))
+async def test_extract_async(model, data, mode, aclient):
+    sample_data, expected_name, expected_age = data
+
+    if (mode, model) in {
+        (Mode.JSON, "gpt-3.5-turbo"),
+        (Mode.JSON, "gpt-4"),
+    }:
+        pytest.skip(f"{mode} mode is not supported for {model}, skipping test")
+
+    # Setting up the client with the instructor patch
+    aclient = instructor.patch(aclient, mode=mode)
+
+    # Calling the extract function with the provided model, sample data, and mode
+    response = await aclient.chat.completions.create(
+        model=model,
+        response_model=UserDetails,
+        messages=[
+            {"role": "user", "content": sample_data},
+        ],
+    )
+
+    # Assertions
+    assert (
+        response.name == expected_name
+    ), f"Expected name {expected_name}, got {response.name}"
+    assert (
+        response.age == expected_age
+    ), f"Expected age {expected_age}, got {response.age}"
