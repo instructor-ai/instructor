@@ -15,9 +15,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-    env:
-      PACKAGES_TO_CHECK: "common_utils examples" # "package1 package2 package3"
-      WORKING_DIRECTORY: "."
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -31,7 +28,7 @@ jobs:
           python3 -m pip install -r requirements.txt
       - name: Run Continuous Integration Action
         run: |
-          export CUSTOM_PACKAGES="${{ env.PACKAGES_TO_CHECK }}" &&
+          export CUSTOM_PACKAGES="${{ env.CUSTOM_PACKAGES }}" &&
           export CUSTOM_FLAGS="${{ env.CUSTOM_FLAGS }}" &&
           curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/continuous-integration/scripts/devops/continuous-integration/type_mypy.sh |
           bash
