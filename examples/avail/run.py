@@ -10,13 +10,29 @@ client = instructor.patch(OpenAI())
 
 class DateRange(BaseModel):
     explain: str = Field(
-        ..., description="Explination of the date range in the context of the text"
+        ...,
+        description="Explain the  date range in the context of the text before generating the date range and the repeat pattern.",
     )
     start: datetime
     end: datetime
     repeats: Literal["daily", "weekly", "monthly", None] = Field(
         default=None,
         description="If the date range repeats, and how often, this way we can generalize the date range to the future., if its special, then we can assume it is a one time event.",
+    )
+    days_of_week: List[
+        Literal[
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+            None,
+        ]
+    ] = Field(
+        ...,
+        description="If the date range repeats, which days of the week does it repeat on.",
     )
 
 
