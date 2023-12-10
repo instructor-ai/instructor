@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import Iterable, List, Literal
-from datetime import datetime, timedelta
+from typing import Iterable, List, Literal, Optional
+from datetime import date, datetime, timedelta
 
 from openai import OpenAI
 import instructor
@@ -33,6 +33,10 @@ class DateRange(BaseModel):
     ] = Field(
         ...,
         description="If the date range repeats, which days of the week does it repeat on.",
+    )
+    repeats_until: Optional[date] = Field(
+        default=None,
+        description="If the date range repeats, until when does it repeat. This is useful for the case where the date range repeats until a specific date, like a holiday.",
     )
 
 
