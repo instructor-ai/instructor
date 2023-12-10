@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Iterable, List
+from typing import Iterable, List, Literal
 from datetime import datetime, timedelta
 
 from openai import OpenAI
@@ -9,11 +9,15 @@ client = instructor.patch(OpenAI())
 
 
 class DateRange(BaseModel):
-    explination: str = Field(
+    explain: str = Field(
         ..., description="Explination of the date range in the context of the text"
     )
     start: datetime
     end: datetime
+    repeats: Literal["daily", "weekly", "monthly", None] = Field(
+        default=None,
+        description="If the date range repeats, and how often, this way we can generalize the date range to the future., if its special, then we can assume it is a one time event.",
+    )
 
 
 class AvailabilityResponse(BaseModel):
@@ -70,51 +74,53 @@ if __name__ == "__main__":
     schedules = parse_availability(text)
     for schedule in schedules:
         print(schedule.model_dump_json(indent=2))
-    {
-        "availability": [
-            {
-                "explination": "General availability from December 8th to December 24th, 9am - 5pm Monday to Saturday",
-                "start": "2023-12-11T09:00:00",
-                "end": "2023-12-16T17:00:00",
-            },
-            {
-                "explination": "General availability for the Sundays within the range of December 8th to December 24th, 10am - 5pm.",
-                "start": "2023-12-10T10:00:00",
-                "end": "2023-12-10T17:00:00",
-            },
-            {
-                "explination": "Continuation of general availability from December 8th to December 24th, 9am - 5pm Monday to Saturday for the following week.",
-                "start": "2023-12-18T09:00:00",
-                "end": "2023-12-23T17:00:00",
-            },
-            {
-                "explination": "Continuation of general availability for the last Sunday within the range of December 8th to December 24th, 10am - 5pm.",
-                "start": "2023-12-17T10:00:00",
-                "end": "2023-12-17T17:00:00",
-            },
-        ]
-    }
+        {
+            "availability": [
+                {
+                    "explain": "Availability from December 8th to December 24th, opening at 9am and closing at 5pm from Monday to Saturday.",
+                    "start": "2023-12-08T09:00:00",
+                    "end": "2023-12-08T17:00:00",
+                    "repeats": "daily",
+                },
+                {
+                    "explain": "On Sundays during the same period, the opening hours are 10am to 5pm.",
+                    "start": "2023-12-10T10:00:00",
+                    "end": "2023-12-10T17:00:00",
+                    "repeats": "weekly",
+                },
+                {
+                    "explain": "Availability from December 8th to December 24th, opening at 9am and closing at 5pm from Monday to Saturday, excluding Sundays.",
+                    "start": "2023-12-11T09:00:00",
+                    "end": "2023-12-11T17:00:00",
+                    "repeats": "weekly",
+                },
+                {
+                    "explain": "Repeated availability every Monday to Saturday excluding the first Sunday.",
+                    "start": "2023-12-12T09:00:00",
+                    "end": "2023-12-12T17:00:00",
+                    "repeats": "daily",
+                },
+            ]
+        }
 {
     "availability": [
         {
-            "explination": "Special availability for the Friday after Thanksgiving, assumed to be November 24th, 2023 based on the given next days.",
+            "explain": "Open the Friday after Thanksgiving, which would vary each year, so we will need the date for the specific year to provide the exact range.",
             "start": "2023-11-24T09:00:00",
             "end": "2023-11-24T17:00:00",
+            "repeats": null,
         },
         {
-            "explination": "Saturdays availability from after Thanksgiving up to the foreseeable Saturdays, 9am till dusk (assumed to be 5pm based on the general availability previously mentioned).",
-            "start": "2023-11-25T09:00:00",
-            "end": "2023-11-25T17:00:00",
-        },
-        {
-            "explination": "Sundays availability from after Thanksgiving up to the foreseeable Sundays, 9am till dusk (assumed to be 5pm).",
-            "start": "2023-12-10T09:00:00",
-            "end": "2023-12-10T17:00:00",
-        },
-        {
-            "explination": "Continuation of Saturdays availability, 9am till dusk.",
+            "explain": "Open on Saturdays and Sundays from 9am until dusk. Assuming dusk to be at 5pm, which may vary throughout the year.",
             "start": "2023-12-16T09:00:00",
             "end": "2023-12-16T17:00:00",
+            "repeats": "weekly",
+        },
+        {
+            "explain": "Continued availability every Saturday and Sunday starting from December 16th.",
+            "start": "2023-12-17T09:00:00",
+            "end": "2023-12-17T17:00:00",
+            "repeats": "weekly",
         },
     ]
 }
