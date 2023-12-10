@@ -93,50 +93,43 @@ if __name__ == "__main__":
         {
             "availability": [
                 {
-                    "explain": "Availability from December 8th to December 24th, opening at 9am and closing at 5pm from Monday to Saturday.",
+                    "explain": "The availability from December 8th to December 24th, from 9am to 5pm, repeats weekly from Monday to Saturday.",
                     "start": "2023-12-08T09:00:00",
                     "end": "2023-12-08T17:00:00",
-                    "repeats": "daily",
+                    "repeats": "weekly",
+                    "days_of_week": [
+                        "monday",
+                        "tuesday",
+                        "wednesday",
+                        "thursday",
+                        "friday",
+                        "saturday",
+                    ],
                 },
                 {
-                    "explain": "On Sundays during the same period, the opening hours are 10am to 5pm.",
+                    "explain": "On Sundays, within the same date range from December 8th to December 24th, the availability is from 10am to 5pm.",
                     "start": "2023-12-10T10:00:00",
                     "end": "2023-12-10T17:00:00",
                     "repeats": "weekly",
-                },
-                {
-                    "explain": "Availability from December 8th to December 24th, opening at 9am and closing at 5pm from Monday to Saturday, excluding Sundays.",
-                    "start": "2023-12-11T09:00:00",
-                    "end": "2023-12-11T17:00:00",
-                    "repeats": "weekly",
-                },
-                {
-                    "explain": "Repeated availability every Monday to Saturday excluding the first Sunday.",
-                    "start": "2023-12-12T09:00:00",
-                    "end": "2023-12-12T17:00:00",
-                    "repeats": "daily",
+                    "days_of_week": ["sunday"],
                 },
             ]
         }
 {
     "availability": [
         {
-            "explain": "Open the Friday after Thanksgiving, which would vary each year, so we will need the date for the specific year to provide the exact range.",
+            "explain": "Open on Friday after Thanksgiving, which is the first Friday following the fourth Thursday of November. As it's a fixed date related to Thanksgiving, the repeat is not applicable.",
             "start": "2023-11-24T09:00:00",
             "end": "2023-11-24T17:00:00",
-            "repeats": null,
+            "repeats": None,
+            "days_of_week": ["friday"],
         },
         {
-            "explain": "Open on Saturdays and Sundays from 9am until dusk. Assuming dusk to be at 5pm, which may vary throughout the year.",
-            "start": "2023-12-16T09:00:00",
-            "end": "2023-12-16T17:00:00",
+            "explain": "The availability on Saturdays and Sundays from next day after Friday after Thanksgiving, starting at 9 a.m. until dusk, repeats weekly.",
+            "start": "2023-11-25T09:00:00",
+            "end": "2023-11-25T17:00:00",
             "repeats": "weekly",
-        },
-        {
-            "explain": "Continued availability every Saturday and Sunday starting from December 16th.",
-            "start": "2023-12-17T09:00:00",
-            "end": "2023-12-17T17:00:00",
-            "repeats": "weekly",
+            "days_of_week": ["saturday", "sunday"],
         },
     ]
 }
