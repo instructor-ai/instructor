@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Iterable, List, Literal, Optional
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from openai import OpenAI
 import instructor
@@ -34,7 +34,7 @@ class DateRange(BaseModel):
         ...,
         description="If the date range repeats, which days of the week does it repeat on.",
     )
-    repeats_until: Optional[date] = Field(
+    repeats_until: Optional[datetime] = Field(
         default=None,
         description="If the date range repeats, until when does it repeat. This is useful for the case where the date range repeats until a specific date, like a holiday.",
     )
@@ -97,10 +97,10 @@ if __name__ == "__main__":
         {
             "availability": [
                 {
-                    "explain": "The availability from December 8th to December 24th, from 9am to 5pm, repeats weekly from Monday to Saturday.",
+                    "explain": "The availability from December 8th to December 24th, 9 am to 5 pm Monday to Saturday, and 10 am to 5 pm on Sunday. This is a one-time event for a specified period.",
                     "start": "2023-12-08T09:00:00",
-                    "end": "2023-12-08T17:00:00",
-                    "repeats": "weekly",
+                    "end": "2023-12-24T17:00:00",
+                    "repeats": None,
                     "days_of_week": [
                         "monday",
                         "tuesday",
@@ -108,32 +108,37 @@ if __name__ == "__main__":
                         "thursday",
                         "friday",
                         "saturday",
+                        "sunday",
                     ],
+                    "repeats_until": None,
                 },
                 {
-                    "explain": "On Sundays, within the same date range from December 8th to December 24th, the availability is from 10am to 5pm.",
+                    "explain": "On Sundays during the same period, the availability starts at 10 am instead of 9 am.",
                     "start": "2023-12-10T10:00:00",
-                    "end": "2023-12-10T17:00:00",
-                    "repeats": "weekly",
+                    "end": "2023-12-24T17:00:00",
+                    "repeats": None,
                     "days_of_week": ["sunday"],
+                    "repeats_until": None,
                 },
             ]
         }
-{
-    "availability": [
-        {
-            "explain": "Open on Friday after Thanksgiving, which is the first Friday following the fourth Thursday of November. As it's a fixed date related to Thanksgiving, the repeat is not applicable.",
-            "start": "2023-11-24T09:00:00",
-            "end": "2023-11-24T17:00:00",
-            "repeats": None,
-            "days_of_week": ["friday"],
-        },
-        {
-            "explain": "The availability on Saturdays and Sundays from next day after Friday after Thanksgiving, starting at 9 a.m. until dusk, repeats weekly.",
-            "start": "2023-11-25T09:00:00",
-            "end": "2023-11-25T17:00:00",
-            "repeats": "weekly",
-            "days_of_week": ["saturday", "sunday"],
-        },
-    ]
-}
+    {
+        "availability": [
+            {
+                "explain": "The availability is for Fridays, after Thanksgiving, and then Saturdays and Sundays from 9 am until dusk, which we will consider as the end of the standard working day. The phrase 'after Thanksgiving' implies that it is a repeating event every year starting from the day after Thanksgiving.",
+                "start": "2023-11-24T09:00:00",
+                "end": "2023-11-24T18:00:00",
+                "repeats": "weekly",
+                "days_of_week": ["friday"],
+                "repeats_until": None,
+            },
+            {
+                "explain": "Saturdays and Sundays also have the same availability as Fridays, but starting from the Saturday following Thanksgiving.",
+                "start": "2023-11-25T09:00:00",
+                "end": "2023-11-25T18:00:00",
+                "repeats": "weekly",
+                "days_of_week": ["saturday", "sunday"],
+                "repeats_until": None,
+            },
+        ]
+    }
