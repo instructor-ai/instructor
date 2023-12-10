@@ -12,7 +12,7 @@ env:
   CUSTOM_PACKAGES: "instructor/cli/cli.py instructor/cli/usage.py"
 
 jobs:
-  continuous-integration:
+  MyPy:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
