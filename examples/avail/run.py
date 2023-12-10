@@ -44,16 +44,6 @@ class AvailabilityResponse(BaseModel):
     availability: List[DateRange]
 
 
-text = """
-#1
-12/8-12/24
-9am - 5pm Monday - Saturday
-10am - 5pm Sunday
-#2
-We are open Friday, after Thanksgiving, and then Saturdays and Sundays 9 a.m. till dusk.``
-"""
-
-
 def prepare_dates(n=7) -> str:
     # Current date and time
     now = datetime.now()
@@ -91,16 +81,24 @@ def parse_availability(text: str) -> Iterable[AvailabilityResponse]:
 
 
 if __name__ == "__main__":
+    text = """
+    #1
+    
+    12/8-12/24
+    9am - 5pm Monday - Saturday
+    10am - 5pm Sunday
+
+    #2
+    We are open Friday, after Thanksgiving, and then Saturdays and Sundays 9 a.m. till dusk.``
+    """
     schedules = parse_availability(text)
     for schedule in schedules:
         print(schedule.model_dump_json(indent=2))
         {
             "availability": [
                 {
-                    "explain": "The availability from December 8th to December 24th, 9 am to 5 pm Monday to Saturday, and 10 am to 5 pm on Sunday. This is a one-time event for a specified period.",
-                    "start": "2023-12-08T09:00:00",
-                    "end": "2023-12-24T17:00:00",
-                    "repeats": None,
+                    "explain": "For the first date range, the availability is from December 8 to December 24, from 9 am to 5 pm on Mondays through Saturdays",
+                    "repeats": "weekly",
                     "days_of_week": [
                         "monday",
                         "tuesday",
@@ -108,37 +106,27 @@ if __name__ == "__main__":
                         "thursday",
                         "friday",
                         "saturday",
-                        "sunday",
                     ],
-                    "repeats_until": None,
+                    "time_start": "2023-12-08T09:00:00",
+                    "time_end": "2023-12-08T17:00:00",
                 },
                 {
-                    "explain": "On Sundays during the same period, the availability starts at 10 am instead of 9 am.",
-                    "start": "2023-12-10T10:00:00",
-                    "end": "2023-12-24T17:00:00",
-                    "repeats": None,
+                    "explain": "For the same date range, the availability on Sundays is from 10 am to 5 pm",
+                    "repeats": "weekly",
                     "days_of_week": ["sunday"],
-                    "repeats_until": None,
+                    "time_start": "2023-12-10T10:00:00",
+                    "time_end": "2023-12-10T17:00:00",
                 },
             ]
         }
     {
         "availability": [
             {
-                "explain": "The availability is for Fridays, after Thanksgiving, and then Saturdays and Sundays from 9 am until dusk, which we will consider as the end of the standard working day. The phrase 'after Thanksgiving' implies that it is a repeating event every year starting from the day after Thanksgiving.",
-                "start": "2023-11-24T09:00:00",
-                "end": "2023-11-24T18:00:00",
+                "explain": "The second date range starting from the Friday after Thanksgiving, which is November 24, 2023, and then on Saturdays and Sundays from 9 am until dusk. Assuming 'dusk' means approximately 5 pm, similar to the previous timings.",
                 "repeats": "weekly",
-                "days_of_week": ["friday"],
-                "repeats_until": None,
-            },
-            {
-                "explain": "Saturdays and Sundays also have the same availability as Fridays, but starting from the Saturday following Thanksgiving.",
-                "start": "2023-11-25T09:00:00",
-                "end": "2023-11-25T18:00:00",
-                "repeats": "weekly",
-                "days_of_week": ["saturday", "sunday"],
-                "repeats_until": None,
-            },
+                "days_of_week": ["friday", "saturday", "sunday"],
+                "time_start": "2023-11-24T09:00:00",
+                "time_end": "2023-11-24T17:00:00",
+            }
         ]
     }
