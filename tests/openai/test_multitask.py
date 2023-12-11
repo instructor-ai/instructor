@@ -1,7 +1,8 @@
 from typing import Iterable
-from openai import OpenAI, AsyncOpenAI
-from pydantic import BaseModel
+
 import pytest
+from openai import AsyncOpenAI, OpenAI
+from pydantic import BaseModel, ValidationError, validator
 
 import instructor
 from instructor.function_calls import Mode
@@ -13,6 +14,16 @@ class User(BaseModel):
 
 
 Users = Iterable[User]
+
+
+class NotBob(BaseModel):
+    name: str
+
+    @validator("name")
+    def name_cannot_be_alice(cls, value):
+        if value.lower() == "bob":
+            raise ValueError('name cannot be "bob"')
+        return value
 
 
 @pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
@@ -81,3 +92,51 @@ async def test_multi_user_tools_mode_async(mode):
     assert resp[0].age == 20
     assert resp[1].name == "Sarah"
     assert resp[1].age == 30
+
+
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
+def test_stream_objects_with_throw_stream_exceptions(mode):
+    client = instructor.patch(OpenAI(), mode=mode)
+    with pytest.raises(ValidationError):
+        stream = client.chat.completions.create(
+            model="gpt-3.5-turbo-1106",
+            stream=True,
+            response_model=Iterable[NotBob],
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
+                {
+                    "role": "user",
+                    "content": "Return a list of 3 JSON objects. The first object must have a key 'name' with the value 'alice'. The second object must have a key 'name' with the value 'bob'. The third object must have a key 'name' with the value 'carol'.",
+                },
+            ],
+            max_tokens=1000,
+            throw_stream_exceptions=True,
+        )
+        for user in stream:
+            assert isinstance(user, NotBob)
+
+
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
+def test_stream_objects_without_throw_stream_exceptions(mode):
+    client = instructor.patch(OpenAI(), mode=mode)
+
+    stream = client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        stream=True,
+        response_model=Iterable[NotBob],
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
+            {
+                "role": "user",
+                "content": "Return a list of 3 JSON objects. The first object must have a key 'name' with the value 'alice'. The second object must have a key 'name' with the value 'bob'. The third object must have a key 'name' with the value 'carol'.",
+            },
+        ],
+        max_tokens=1000,
+        throw_stream_exceptions=False,
+    )
+
+    users = [user for user in stream]
+
+    assert len(users) == 2
+    assert users[0].name == "alice"
+    assert users[1].name == "carol"

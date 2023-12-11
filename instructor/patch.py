@@ -70,9 +70,7 @@ def handle_response_model(
         if not issubclass(response_model, OpenAISchema):
             response_model = openai_schema(response_model)  # type: ignore
 
-        if new_kwargs.get("stream", False) and not issubclass(
-            response_model, MultiTaskBase
-        ):
+        if new_kwargs.get("stream", False) and not issubclass(response_model, MultiTaskBase):
             raise NotImplementedError(
                 "stream=True is not supported when using response_model parameter for non-iterables"
             )
@@ -145,6 +143,7 @@ def process_response(
     validation_context: dict = None,
     strict=None,
     mode: Mode = Mode.FUNCTIONS,
+    throw_stream_exceptions=True,
 ):  # type: ignore
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
@@ -156,6 +155,8 @@ def process_response(
         stream (bool): Whether the response is a stream
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
+        mode (Mode, optional): The openai completion mode. Defaults to Mode.FUNCTIONS.
+        throw_stream_exceptions (bool): Whether to stop the stream if an exception is thrown
     """
     if response_model is not None:
         is_model_multitask = issubclass(response_model, MultiTaskBase)
@@ -165,6 +166,7 @@ def process_response(
             strict=strict,
             mode=mode,
             stream_multitask=stream and is_model_multitask,
+            throw_stream_exceptions=throw_stream_exceptions,
         )
         if not stream:
             model._raw_response = response
@@ -182,6 +184,7 @@ async def process_response_async(
     validation_context: dict = None,
     strict=None,
     mode: Mode = Mode.FUNCTIONS,
+    throw_stream_exceptions=True,
 ):  # type: ignore
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
@@ -193,6 +196,8 @@ async def process_response_async(
         stream (bool): Whether the response is a stream
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
+        mode (Mode, optional): The openai completion mode. Defaults to Mode.FUNCTIONS.
+        throw_stream_exceptions (bool): Whether to stop the stream if an exception is thrown
     """
     if response_model is not None:
         is_model_multitask = issubclass(response_model, MultiTaskBase)
@@ -202,6 +207,7 @@ async def process_response_async(
             strict=strict,
             mode=mode,
             stream_multitask=stream and is_model_multitask,
+            throw_stream_exceptions=throw_stream_exceptions,
         )
         if not stream:
             model._raw_response = response
@@ -220,6 +226,7 @@ async def retry_async(
     max_retries,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
+    throw_stream_exceptions=True,
 ):
     retries = 0
     while retries <= max_retries:
@@ -233,6 +240,7 @@ async def retry_async(
                 validation_context=validation_context,
                 strict=strict,
                 mode=mode,
+                throw_stream_exceptions=throw_stream_exceptions,
             )
         except (ValidationError, JSONDecodeError) as e:
             kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
@@ -263,6 +271,7 @@ def retry_sync(
     max_retries,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
+    throw_stream_exceptions=True,
 ):
     retries = 0
     while retries <= max_retries:
@@ -277,6 +286,7 @@ def retry_sync(
                 validation_context=validation_context,
                 strict=strict,
                 mode=mode,
+                throw_stream_exceptions=throw_stream_exceptions,
             )
         except (ValidationError, JSONDecodeError) as e:
             logger.exception(f"Retrying, exception: {e}")
@@ -315,6 +325,7 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
         response_model=None,
         validation_context=None,
         max_retries=1,
+        throw_stream_exceptions=True,
         *args,
         **kwargs,
     ):
@@ -322,9 +333,7 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
             max_retries = 0
             logger.warning("max_retries is not supported when using tool calls")
 
-        response_model, new_kwargs = handle_response_model(
-            response_model=response_model, kwargs=kwargs, mode=mode
-        )  # type: ignore
+        response_model, new_kwargs = handle_response_model(response_model=response_model, kwargs=kwargs, mode=mode)  # type: ignore
         response = await retry_async(
             func=func,
             response_model=response_model,
@@ -333,6 +342,7 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
             args=args,
             kwargs=new_kwargs,
             mode=mode,
+            throw_stream_exceptions=throw_stream_exceptions,
         )  # type: ignore
         return response
 
@@ -341,6 +351,7 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
         response_model=None,
         validation_context=None,
         max_retries=1,
+        throw_stream_exceptions=True,
         *args,
         **kwargs,
     ):
@@ -348,9 +359,7 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
             max_retries = 0
             logger.warning("max_retries is not supported when using tool calls")
 
-        response_model, new_kwargs = handle_response_model(
-            response_model=response_model, kwargs=kwargs, mode=mode
-        )  # type: ignore
+        response_model, new_kwargs = handle_response_model(response_model=response_model, kwargs=kwargs, mode=mode)  # type: ignore
         response = retry_sync(
             func=func,
             response_model=response_model,
@@ -359,12 +368,11 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
             args=args,
             kwargs=new_kwargs,
             mode=mode,
+            throw_stream_exceptions=throw_stream_exceptions,
         )  # type: ignore
         return response
 
-    wrapper_function = (
-        new_chatcompletion_async if func_is_async else new_chatcompletion_sync
-    )
+    wrapper_function = new_chatcompletion_async if func_is_async else new_chatcompletion_sync
     wrapper_function.__doc__ = OVERRIDE_DOCS
     return wrapper_function
 
@@ -382,9 +390,7 @@ def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS):
     """
 
     logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
-    client.chat.completions.create = wrap_chatcompletion(
-        client.chat.completions.create, mode=mode
-    )
+    client.chat.completions.create = wrap_chatcompletion(client.chat.completions.create, mode=mode)
     return client
 
 
