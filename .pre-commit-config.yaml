@@ -8,3 +8,16 @@ repos:
         args: [ --fix ]
       # Run the formatter.
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: ci_type_mypy
+        name: Static Type Check
+        entry: >
+            bash -c 'set -o pipefail;
+            export CUSTOM_PACKAGES="instructor/cli/cli.py instructor/cli/usage.py" &&
+            export CUSTOM_FLAGS="--python-version=3.9 --color-output --no-pretty" &&
+            curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/continuous-integration/scripts/devops/continuous-integration/type_mypy.sh |
+            bash'
+        language: system
+        types: [python]
+        pass_filenames: false
