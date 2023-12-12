@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any, Union, DefaultDict
 from datetime import datetime, timedelta
 import typer
 import os
@@ -9,13 +9,16 @@ from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress
 
+from instructor._types._alias import ModelNames
+
+
 app = typer.Typer()
 console = Console()
 
 api_key = os.environ.get("OPENAI_API_KEY")
 
 
-async def fetch_usage(date: str) -> dict:
+async def fetch_usage(date: str) -> Dict[str, Any]:
     headers = {"Authorization": f"Bearer {api_key}"}
     url = f"https://api.openai.com/v1/usage?date={date}"
     async with aiohttp.ClientSession() as session:
@@ -23,7 +26,7 @@ async def fetch_usage(date: str) -> dict:
             return await resp.json()
 
 
-async def get_usage_for_past_n_days(n_days: int) -> List[dict]:
+async def get_usage_for_past_n_days(n_days: int) -> List[Dict[str, Any]]:
     tasks = []
     all_data = []
     with Progress() as progress:
@@ -43,7 +46,13 @@ async def get_usage_for_past_n_days(n_days: int) -> List[dict]:
 
 
 # Define the cost per unit for each model
-MODEL_COSTS = {
+# Add temporary body type hint here because mypy may infer the dict type
+# from the first few items (?) in the dict, which may not be representative of
+# the entire dict.
+MODEL_COSTS: Dict[
+    ModelNames,
+    Union[Dict[str, float], float],
+] = {
     "gpt-3.5-turbo": {"prompt": 0.0015 / 1000, "completion": 0.002 / 1000},
     "gpt-3.5-turbo-16k": {"prompt": 0.003 / 1000, "completion": 0.004 / 1000},
     "gpt-4": {"prompt": 0.03 / 1000, "completion": 0.03 / 1000},
@@ -53,7 +62,9 @@ MODEL_COSTS = {
 }
 
 
-def get_model_cost(model: str):
+def get_model_cost(
+    model: ModelNames,
+) -> Union[Dict[str, float], float]:
     """Get the cost details for a given model."""
     if model in MODEL_COSTS:
         return MODEL_COSTS[model]
@@ -72,7 +83,9 @@ def get_model_cost(model: str):
 
 
 def calculate_cost(
-    snapshot_id: str, n_context_tokens: int, n_generated_tokens: int
+    snapshot_id: ModelNames,
+    n_context_tokens: int,
+    n_generated_tokens: int,
 ) -> float:
     """Calculate the cost based on the snapshot ID and number of tokens."""
     cost = get_model_cost(snapshot_id)
@@ -85,9 +98,11 @@ def calculate_cost(
     return prompt_cost + completion_cost
 
 
-def group_and_sum_by_date_and_snapshot(usage_data: List[dict]) -> Table:
+def group_and_sum_by_date_and_snapshot(usage_data: List[Dict[str, Any]]) -> Table:
     """Group and sum the usage data by date and snapshot, including costs."""
-    summary = defaultdict(
+    summary: DefaultDict[
+        str, DefaultDict[str, Dict[str, Union[int, float]]]
+    ] = defaultdict(
         lambda: defaultdict(
             lambda: {"total_requests": 0, "total_tokens": 0, "total_cost": 0.0}
         )
@@ -131,10 +146,10 @@ def group_and_sum_by_date_and_snapshot(usage_data: List[dict]) -> Table:
     return table
 
 
-@app.command(help="Displays OpenAI API usage data for the past N days.")
+@app.command(help="Displays OpenAI API usage data for the past N days.") # type: ignore
 def list(
     n: int = typer.Option(0, help="Number of days."),
-):
+) -> None:
     all_data = asyncio.run(get_usage_for_past_n_days(n))
     table = group_and_sum_by_date_and_snapshot(all_data)
     console.print(table)
