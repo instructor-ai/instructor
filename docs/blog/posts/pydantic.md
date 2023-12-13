@@ -10,7 +10,7 @@ authors:
 
 # Steering Large Language Models with Pydantic
 
-In the past year, significant progress has been made in utilizing large language models. Prompt engineering, in particular, has gained attention, and new prompting techniques are being developed to guide language models toward specific tasks. While many are building chat bots, an even more exciting application is the generation of structured outputs, whether its extracting structured data, augmenting your RAG application, or even generating
+In the past year, significant progress has been made in utilizing large language models. Prompt engineering, in particular, has gained attention, and new prompting techniques are being developed to guide language models toward specific tasks. While many are building chat bots, an even more exciting application is the generation of structured outputs, whether its extracting structured data, augmenting your RAG application, or even generating synthetic data.
 
 ??? question "What is Prompt Engineering?"
 
