@@ -1,12 +1,8 @@
 from itertools import product
-from math import prod
 from pydantic import BaseModel, field_validator
 import pytest
 import instructor
 
-from openai import OpenAI, AsyncOpenAI
-
-from instructor.function_calls import Mode
 from tests.openai.util import models, modes
 
 
@@ -19,7 +15,7 @@ class UserExtract(BaseModel):
 def test_runmodel(model, mode, client):
     client = instructor.patch(client, mode=mode)
     model = client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=UserExtract,
         max_retries=2,
         messages=[
@@ -39,7 +35,7 @@ def test_runmodel(model, mode, client):
 async def test_runmodel_async(model, mode, aclient):
     aclient = instructor.patch(aclient, mode=mode)
     model = await aclient.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=UserExtract,
         max_retries=2,
         messages=[
@@ -62,7 +58,9 @@ class UserExtractValidated(BaseModel):
     @classmethod
     def validate_name(cls, v):
         if v.upper() != v:
-            raise ValueError("Name should be uppercase")
+            raise ValueError(
+                "Name should be uppercase, make sure to use the `uppercase` version of the name"
+            )
         return v
 
 
@@ -89,7 +87,7 @@ def test_runmodel_validator(model, mode, client):
 async def test_runmodel_async_validator(model, mode, aclient):
     aclient = instructor.patch(aclient, mode=mode)
     model = await aclient.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=UserExtractValidated,
         max_retries=2,
         messages=[

@@ -206,13 +206,7 @@ class OpenAISchema(BaseModel):
                 context=validation_context,
                 strict=strict,
             )
-        elif mode == Mode.JSON:
-            return cls.model_validate_json(
-                message.content,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode == Mode.MD_JSON:
+        elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
             return cls.model_validate_json(
                 message.content,
                 context=validation_context,
