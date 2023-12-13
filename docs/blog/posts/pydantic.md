@@ -12,6 +12,10 @@ authors:
 
 In the past year, significant progress has been made in utilizing large language models. Prompt engineering, in particular, has gained attention, and new prompting techniques are being developed to guide language models toward specific tasks. While many are building chat bots, an even more exciting application is the generation of structured outputs, whether its extracting structured data, augmenting your RAG application, or even generating
 
+??? question "What is Prompt Engineering?"
+
+    Prompt Engineering, also known as In-Context Prompting, is a method used to guide the behavior of LLMs without updating the model. It involves techniques to enhance the quality of outputs, formatting, reasoning, and factuality. You can learn more about it in [this post](https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/).
+
 While some have resorted to [threatening human life](https://twitter.com/goodside/status/1657396491676164096?s=20) to generate structured data, we have found that Pydantic even more effective.
 
 In this post, we will explore how we can easily validate structured outputs from language models using Pydantic and OpenAI, to write code that we can trust, then we will introduce a new library called "instructor" that simplifies this process even further while adding additional features as well.
