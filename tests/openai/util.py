@@ -1,7 +1,7 @@
 import os
 import instructor
 
-if os.getenv("OPENAI_BASE_URL") == "https://api.endpoints.anyscale.com/v1":
+if os.getenv("OPENAI_BASE_URL", None) == "https://api.endpoints.anyscale.com/v1":
     models = ["mistralai/Mistral-7B-Instruct-v0.1"]
     modes = [instructor.Mode.JSON_SCHEMA]
 else:
@@ -12,3 +12,7 @@ else:
         instructor.Mode.TOOLS,
         instructor.Mode.MD_JSON,
     ]
+
+if __name__ == "__main__":
+    print(models)
+    print(modes)
