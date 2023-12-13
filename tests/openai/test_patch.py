@@ -15,7 +15,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS])
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
 def test_runmodel(mode):
     client = instructor.patch(OpenAI(), mode=mode)
     model = client.chat.completions.create(
@@ -34,7 +34,7 @@ def test_runmodel(mode):
     ), "The raw response should be available from OpenAI"
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS])
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
 @pytest.mark.asyncio
 async def test_runmodel_async(mode):
     aclient = instructor.patch(AsyncOpenAI(), mode=mode)
@@ -66,7 +66,7 @@ class UserExtractValidated(BaseModel):
         return v
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON])
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.MD_JSON])
 def test_runmodel_validator(mode):
     client = instructor.patch(OpenAI(), mode=mode)
     model = client.chat.completions.create(
@@ -84,7 +84,7 @@ def test_runmodel_validator(mode):
     ), "The raw response should be available from OpenAI"
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON])
+@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.MD_JSON])
 @pytest.mark.asyncio
 async def test_runmodel_async_validator(mode):
     aclient = instructor.patch(AsyncOpenAI(), mode=mode)
