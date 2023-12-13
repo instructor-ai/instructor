@@ -18,7 +18,7 @@ In the past year, significant progress has been made in utilizing large language
 
 While some have resorted to [threatening human life](https://twitter.com/goodside/status/1657396491676164096?s=20) to generate structured data, we have found that Pydantic even more effective.
 
-In this post, we will explore how we can easily validate structured outputs from language models using Pydantic and OpenAI, to write code that we can trust, then we will introduce a new library called "instructor" that simplifies this process even further while adding additional features as well.
+In this post, we will discuss validating structured outputs from language models using Pydantic and OpenAI. We'll show you how to write reliable code. Additionally, we'll introduce a new library called "instructor" that simplifies this process and offers extra features to leverage validation to improve the quality of your outputs.
 
 ## Pydantic
 
@@ -64,9 +64,7 @@ Unlike libraries like `dataclasses`, `Pydantic` goes a step further and allows y
     >>> 11
     ```
 
-    As shown above, the `age` field is now an `int` instead of a `str`.
-
-    More importantly, if we provide data that cannot be converted to an `int`, we will receive an error. T
+    The `age` field has been updated to an `int` from a `str` in the demonstration. Pydantic validates and coerces the type, ensuring the correct type is obtained. If we provide data that cannot be converted to an `int`, an error will be returned.
 
     ```python
     Person(name="Sam", age="13.4")
