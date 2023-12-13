@@ -22,7 +22,10 @@ def client():
                 base_url="https://braintrustproxy.com/v1",
             )
         )
-    elif os.environ.get("OPENAI_BASE_URL") == "https://api.endpoints.anyscale.com/v1":
+    elif (
+        os.environ.get("OPENAI_BASE_URL", None)
+        == "https://api.endpoints.anyscale.com/v1"
+    ):
         yield OpenAI(
             api_key=os.environ["OPENAI_API_KEY"],
             base_url="https://api.endpoints.anyscale.com/v1",
@@ -41,7 +44,10 @@ def aclient():
                 base_url="https://braintrustproxy.com/v1",
             )
         )
-    elif os.environ.get("OPENAI_BASE_URL") == "https://api.endpoints.anyscale.com/v1":
+    elif (
+        os.environ.get("OPENAI_BASE_URL", None)
+        == "https://api.endpoints.anyscale.com/v1"
+    ):
         yield AsyncOpenAI(
             api_key=os.environ["OPENAI_API_KEY"],
             base_url="https://api.endpoints.anyscale.com/v1",
