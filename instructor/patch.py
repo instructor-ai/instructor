@@ -120,11 +120,9 @@ def handle_response_model(
                     },
                 )
                 new_kwargs["stop"] = "```"
-            else:
-                raise ValueError(f"Invalid patch mode: {mode}")
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
-            if new_kwargs["messages"][0]["role"] != "system" and len(message) > 0:
+            if new_kwargs["messages"][0]["role"] != "system":
                 new_kwargs["messages"].insert(
                     0,
                     {
