@@ -4,7 +4,6 @@ from pydantic import BaseModel
 import pytest
 
 import instructor
-from instructor.function_calls import Mode
 from tests.openai.util import models, modes
 
 

@@ -1,5 +1,4 @@
 from itertools import product
-from math import prod
 import pytest
 
 import instructor
