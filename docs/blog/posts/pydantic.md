@@ -12,7 +12,7 @@ authors:
 
 In the past year, significant progress has been made in utilizing large language models. Prompt engineering, in particular, has gained attention, and new prompting techniques are being developed to guide language models toward specific tasks. While many are building chat bots, an even more exciting application is the generation of structured outputs, whether its extracting structured data, augmenting your RAG application, or even generating synthetic data.
 
-??? question "What is Prompt Engineering?"
+!!! question "What is Prompt Engineering?"
 
     Prompt Engineering, also known as In-Context Prompting, is a method used to guide the behavior of LLMs without updating the model. It involves techniques to enhance the quality of outputs, formatting, reasoning, and factuality. You can learn more about it in [this post](https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/).
 
@@ -22,7 +22,61 @@ In this post, we will explore how we can easily validate structured outputs from
 
 ## Pydantic
 
-Unlike libraries like `dataclasses` or `attrs`, `Pydantic` goes a step further and allows you to define a schema for your dataclass. This schema can be used to validate data, but also to generate documentation and even to generate a JSON schema, which is perfect for our use case of generating structured data with language models!
+Unlike libraries like `dataclasses`, `Pydantic` goes a step further and allows you to define a schema for your dataclass. This schema can be used to validate data, but also to generate documentation and even to generate a JSON schema, which is perfect for our use case of generating structured data with language models!
+
+??? note "Understanding Validation"
+
+    A simple example of validation involves ensuring that a value has the correct type. For instance, let's consider a `Person` dataclass with a `name` field of type `str`. We can validate that the value is indeed a string.
+
+    ```python
+    from dataclasses import dataclass
+
+    @dataclass
+    class Person:
+        name: str
+        age: int
+
+    Person(name="Sam", age="10")
+    >>> Person(name="Sam", age="10")
+    ```
+
+    By using the `dataclass` decorator, we can pass in the values as strings without any complaints from the dataclass.
+    This would mean that we could run into issues later on if we try to use the `age` field as an `int`.
+
+    ```python
+    Person(name="Sam", age="10").age + 1
+    >>> TypeError: can only concatenate str (not "int") to str
+    ```
+
+    However, if we use `Pydantic`, we will obtain the correct type!
+
+    ```python
+    from pydantic import BaseModel
+
+    class Person(BaseModel):
+        name: str
+        age: int
+
+    Person(name="Sam", age="10")
+    >>> Person(name='Sam', age=10)
+
+    Person(name="Sam", age="10").age + 1
+    >>> 11
+    ```
+
+    As shown above, the `age` field is now an `int` instead of a `str`.
+
+    More importantly, if we provide data that cannot be converted to an `int`, we will receive an error. T
+
+    ```python
+    Person(name="Sam", age="13.4")
+    >>> ValidationError: 1 validation error for Person
+    >>> age
+    >>> Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='13.4', input_type=str]
+    >>>        For further information visit https://errors.pydantic.dev/2.5/v/int_parsing
+    ```
+
+    This behavior is great when we may not have trusted inputs, but is even more critical when inputs are coming from a language model!
 
 By Just prompting the model with the following prompt, we can generate a JSON schema for a `PythonPackage` dataclass.
 
@@ -50,27 +104,37 @@ resp = client.chat.completions.create(
 Package.model_validate_json(resp.choices[0].message.content)
 ```
 
-If all is well, we might get `{"name": "pydantic", "author": "Samuel Colvin"}` as a response. But if something is wrong, we might get a whole bunch of invalid json that contains prose or markdown code blocks that we'd have to parse ourselves:
+If all is well, we might get something that looks like `json.loads({"name": "pydantic", "author": "Samuel Colvin"})` which is correctly deserialized. But if something is wrong, we might get a whole bunch of text that contains prose or markdown code blocks that we'd have to reasonable
 
-````text
+**LLM responses with markdown code blocks**
+
+````python
+json.loads("""
 ```json
 {
   "name": "pydantic",
   "author": "Samuel Colvin"
 }
 ```
-```
+""")
+>>> JSONDecodeError: Expecting value: line 1 column 1 (char 0
+````
 
-```text
+**LLM responses with prose**
+
+```python
+json.loads("""
 Ok heres the authors of pydantic: Samuel Colvin, and the name this library
 
 {
   "name": "pydantic",
   "author": "Samuel Colvin"
 }
-````
+""")
+>>> JSONDecodeError: Expecting value: line 1 column 1 (char 0
+```
 
-All of which is invalid JSON, but could contain useful information that we would have to handle ourselves. Luckily, `OpenAI` has given us a few options to handle this.
+The content may contain valid JSON, but it isn't considered valid JSON without understanding the language model's behavior. However, it could still provide useful information that we need to handle independently. Fortunately, `OpenAI` offers several options to address this situation.
 
 ## Introducing Tools Calling
 
@@ -79,6 +143,7 @@ While tool calling was originally designed to make calls to external APIs using 
 In this example, instead of describing the desired output in plain text, we can simply provide the JSON schema for the `Packages` class, which includes a list of `Package` objects.
 
 As an exercise, try prompting the model to generate this prompt without using Pydantic!
+
 ??? note "Example without Pydantic"
 
     Heres the same example as below without using pydantic's schema generation
@@ -196,7 +261,7 @@ Packages.model_validate_json(
 }
 ```
 
-## Instructor
+## Using `pip install instructor`
 
 Although this example may seem contrived, it demonstrates how Pydantic can be used to generate structured data from language models. To simplify this pattern, I have developed a small library called `instructor` that patches the `OpenAI` client. This library offers convenient features such as JSON mode, function calling, tool usage, and open source models.
 
