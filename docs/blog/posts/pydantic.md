@@ -40,8 +40,7 @@ Unlike libraries like `dataclasses`, `Pydantic` goes a step further and allows y
     >>> Person(name="Sam", age="10")
     ```
 
-    By using the `dataclass` decorator, we can pass in the values as strings without any complaints from the dataclass.
-    This would mean that we could run into issues later on if we try to use the `age` field as an `int`.
+    By using the `dataclass` decorator, we can pass in the values as strings without any complaints from the dataclass. This would mean that we could run into issues later on if we try to use the `age` field as an `int`.
 
     ```python
     Person(name="Sam", age="10").age + 1
@@ -75,6 +74,8 @@ Unlike libraries like `dataclasses`, `Pydantic` goes a step further and allows y
     ```
 
     This behavior is great when we may not have trusted inputs, but is even more critical when inputs are coming from a language model!
+
+    To learn more about validation, check out the section [validation is a misnomer](https://docs.pydantic.dev/latest/concepts/models/#tldr)
 
 By Just prompting the model with the following prompt, we can generate a JSON schema for a `PythonPackage` dataclass.
 
