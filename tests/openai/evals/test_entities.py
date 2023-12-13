@@ -6,6 +6,7 @@ import pytest
 import instructor
 
 from instructor.function_calls import Mode
+from tests.openai.util import models, modes
 
 
 class Property(BaseModel):
@@ -82,10 +83,6 @@ Article 4: Termination
 
 The contract can be terminated with a 30-day notice, unless there are outstanding obligations that must be fulfilled after the [DeliveryDate].
 """
-
-
-models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
-modes = [instructor.Mode.FUNCTIONS, instructor.Mode.JSON, instructor.Mode.TOOLS]
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))

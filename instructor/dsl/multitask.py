@@ -59,7 +59,7 @@ class MultiTaskBase:
                 if mode == Mode.FUNCTIONS:
                     if json_chunk := chunk.choices[0].delta.function_call.arguments:
                         yield json_chunk
-                elif mode in {Mode.JSON, Mode.MD_JSON}:
+                elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                     if json_chunk := chunk.choices[0].delta.content:
                         yield json_chunk
                 elif mode == Mode.TOOLS:
@@ -79,7 +79,7 @@ class MultiTaskBase:
                 if mode == Mode.FUNCTIONS:
                     if json_chunk := chunk.choices[0].delta.function_call.arguments:
                         yield json_chunk
-                elif mode in {Mode.JSON, Mode.MD_JSON}:
+                elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                     if json_chunk := chunk.choices[0].delta.content:
                         yield json_chunk
                 elif mode == Mode.TOOLS:

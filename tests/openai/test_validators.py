@@ -1,17 +1,16 @@
+from itertools import product
 import pytest
 
 import instructor
 
 from typing_extensions import Annotated
 from pydantic import BaseModel, AfterValidator, BeforeValidator, ValidationError
-from openai import OpenAI
 
 from instructor.dsl.validators import llm_validator
+from tests.openai.util import models, modes
 
-client = instructor.patch(OpenAI())
 
-
-def test_patch_completes_successfully():
+def test_patch_completes_successfully(client):
     class Response(BaseModel):
         message: Annotated[
             str, AfterValidator(instructor.openai_moderation(client=client))
@@ -21,13 +20,18 @@ def test_patch_completes_successfully():
         Response(message="I want to make them suffer the consequences")
 
 
-def test_runmodel_validator_error():
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_runmodel_validator_error(model, mode, client):
+    client = instructor.patch(client, mode=mode)
+
     class QuestionAnswerNoEvil(BaseModel):
         question: str
         answer: Annotated[
             str,
             BeforeValidator(
-                llm_validator("don't say objectionable things", openai_client=client)
+                llm_validator(
+                    "don't say objectionable things", model=model, openai_client=client
+                )
             ),
         ]
 

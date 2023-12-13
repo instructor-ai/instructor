@@ -1,13 +1,9 @@
+from itertools import product
 from pydantic import BaseModel, field_validator
 import pytest
 import instructor
 
-from openai import OpenAI, AsyncOpenAI
-
-from instructor.function_calls import Mode
-
-aclient = instructor.patch(AsyncOpenAI())
-client = instructor.patch(OpenAI())
+from tests.openai.util import models, modes
 
 
 class UserExtract(BaseModel):
@@ -15,11 +11,11 @@ class UserExtract(BaseModel):
     age: int
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
-def test_runmodel(mode):
-    client = instructor.patch(OpenAI(), mode=mode)
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_runmodel(model, mode, client):
+    client = instructor.patch(client, mode=mode)
     model = client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=UserExtract,
         max_retries=2,
         messages=[
@@ -34,12 +30,12 @@ def test_runmodel(mode):
     ), "The raw response should be available from OpenAI"
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
+@pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
-async def test_runmodel_async(mode):
-    aclient = instructor.patch(AsyncOpenAI(), mode=mode)
+async def test_runmodel_async(model, mode, aclient):
+    aclient = instructor.patch(aclient, mode=mode)
     model = await aclient.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=UserExtract,
         max_retries=2,
         messages=[
@@ -62,15 +58,17 @@ class UserExtractValidated(BaseModel):
     @classmethod
     def validate_name(cls, v):
         if v.upper() != v:
-            raise ValueError("Name should be uppercase")
+            raise ValueError(
+                "Name should be uppercase, make sure to use the `uppercase` version of the name"
+            )
         return v
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.MD_JSON])
-def test_runmodel_validator(mode):
-    client = instructor.patch(OpenAI(), mode=mode)
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_runmodel_validator(model, mode, client):
+    client = instructor.patch(client, mode=mode)
     model = client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=UserExtractValidated,
         max_retries=2,
         messages=[
@@ -84,12 +82,12 @@ def test_runmodel_validator(mode):
     ), "The raw response should be available from OpenAI"
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.MD_JSON])
+@pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
-async def test_runmodel_async_validator(mode):
-    aclient = instructor.patch(AsyncOpenAI(), mode=mode)
+async def test_runmodel_async_validator(model, mode, aclient):
+    aclient = instructor.patch(aclient, mode=mode)
     model = await aclient.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=UserExtractValidated,
         max_retries=2,
         messages=[
