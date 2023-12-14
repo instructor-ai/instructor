@@ -22,7 +22,7 @@ In this post, we will discuss validating structured outputs from language models
 
 ## Pydantic
 
-Unlike libraries like `dataclasses`, `Pydantic` goes a step further and allows you to define a schema for your dataclass. This schema can be used to validate data, but also to generate documentation and even to generate a JSON schema, which is perfect for our use case of generating structured data with language models!
+Unlike libraries like `dataclasses`, `Pydantic` goes a step further and defines a schema for your dataclass. This schema is used to validate data, but also to generate documentation and even to generate a JSON schema, which is perfect for our use case of generating structured data with language models!
 
 ??? note "Understanding Validation"
 
@@ -75,9 +75,9 @@ Unlike libraries like `dataclasses`, `Pydantic` goes a step further and allows y
 
     This behavior is great when we may not have trusted inputs, but is even more critical when inputs are coming from a language model!
 
-    To learn more about validation, check out the section [validation is a misnomer](https://docs.pydantic.dev/latest/concepts/models/#tldr)
+    To learn more about validation, check out the section [validation — a deliberate misnomer](https://docs.pydantic.dev/latest/concepts/models/#tldr)
 
-By Just prompting the model with the following prompt, we can generate a JSON schema for a `PythonPackage` dataclass.
+By providing the model with the following prompt, we can generate a JSON schema for a `PythonPackage` dataclass.
 
 ```python
 from pydantic import BaseModel
@@ -86,7 +86,7 @@ from openai import OpenAI
 client = OpenAI()
 
 
-class Package(BaseModel):
+class PythonPackage(BaseModel):
     name: str
     author: str
 
@@ -103,7 +103,7 @@ resp = client.chat.completions.create(
 Package.model_validate_json(resp.choices[0].message.content)
 ```
 
-If all is well, we might get something that looks like `json.loads({"name": "pydantic", "author": "Samuel Colvin"})` which is correctly deserialized. But if something is wrong, we might get a whole bunch of text that contains prose or markdown code blocks that we'd have to reasonable
+If all is well, we might get something that looks like what you'd get from `json.loads({"name": "pydantic", "author": "Samuel Colvin"})`. But if something is wrong, `resp.choices[0].message.content` might contain prose or markdown code blocks that we'd have to reasonable
 
 **LLM responses with markdown code blocks**
 
@@ -135,17 +135,17 @@ Ok heres the authors of pydantic: Samuel Colvin, and the name this library
 
 The content may contain valid JSON, but it isn't considered valid JSON without understanding the language model's behavior. However, it could still provide useful information that we need to handle independently. Fortunately, `OpenAI` offers several options to address this situation.
 
-## Introducing Tools Calling
+## Calling Tools
 
-While tool calling was originally designed to make calls to external APIs using JSON schema, its real value lies in allowing us to specify the desired output. Fortunately, `Pydantic` provides utilities for generating a JSON schema and supports nested structures, which would be difficult to describe in plain text.
+While tool-calling was originally designed to make calls to external APIs using JSON schema, its real value lies in allowing us to specify the desired output format. Fortunately, `Pydantic` provides utilities for generating a JSON schema and supports nested structures, which would be difficult to describe in plain text.
 
-In this example, instead of describing the desired output in plain text, we can simply provide the JSON schema for the `Packages` class, which includes a list of `Package` objects.
+In this example, instead of describing the desired output in plain text, we simply provide the JSON schema for the `Packages` class, which includes a list of `Package` objects:
 
 As an exercise, try prompting the model to generate this prompt without using Pydantic!
 
 ??? note "Example without Pydantic"
 
-    Heres the same example as below without using pydantic's schema generation
+    Heres the same example as above without using pydantic's schema generation
 
     ```python
     resp = client.chat.completions.create(
@@ -197,7 +197,7 @@ As an exercise, try prompting the model to generate this prompt without using Py
     resp = json.loads(resp.choices[0].message.tool_calls[0].function.arguments)
     ```
 
-Now, notice in this example that the prompts we use contain purely the data we want, where the tools and tools choice now capture the schemas we want to output. This speration of concerns makes it much easier organize the 'data' and the 'description' of the data that we want back out.
+Now, notice in this example that the prompts we use contain purely the data we want, where the `tools` and `tool_choice` now capture the schemas we want to output. This separation of concerns makes it much easier to organize the 'data' and the 'description' of the data that we want back out.
 
 ```python
 from typing import List
