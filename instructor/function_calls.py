@@ -69,20 +69,27 @@ class OpenAISchema(BaseModel):
         """
         schema = cls.model_json_schema()
         docstring = parse(cls.__doc__ or "")
-        parameters = {k: v for k, v in schema.items() if k not in ("title", "description")}
+        parameters = {
+            k: v for k, v in schema.items() if k not in ("title", "description")
+        }
         for param in docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
+            if (name := param.arg_name) in parameters["properties"] and (
+                description := param.description
+            ):
                 if "description" not in parameters["properties"][name]:
                     parameters["properties"][name]["description"] = description
 
-        parameters["required"] = sorted(k for k, v in parameters["properties"].items() if "default" not in v)
+        parameters["required"] = sorted(
+            k for k, v in parameters["properties"].items() if "default" not in v
+        )
 
         if "description" not in schema:
             if docstring.short_description:
                 schema["description"] = docstring.short_description
             else:
                 schema["description"] = (
-                    f"Correctly extracted `{cls.__name__}` with all " f"the required parameters with correct types"
+                    f"Correctly extracted `{cls.__name__}` with all "
+                    f"the required parameters with correct types"
                 )
 
         return {
@@ -116,12 +123,16 @@ class OpenAISchema(BaseModel):
             cls (OpenAISchema): An instance of the class
         """
         if stream_multitask:
-            return cls.from_streaming_response(completion, mode, throw_stream_exceptions=throw_stream_exceptions)
+            return cls.from_streaming_response(
+                completion, mode, throw_stream_exceptions=throw_stream_exceptions
+            )
 
         message = completion.choices[0].message
 
         if mode == Mode.FUNCTIONS:
-            assert message.function_call.name == cls.openai_schema["name"], "Function name does not match"
+            assert (
+                message.function_call.name == cls.openai_schema["name"]
+            ), "Function name does not match"
             return cls.model_validate_json(
                 message.function_call.arguments,
                 context=validation_context,
@@ -132,7 +143,9 @@ class OpenAISchema(BaseModel):
                 len(message.tool_calls) == 1
             ), "Instructor does not support multiple tool calls, use List[Model] instead."
             tool_call = message.tool_calls[0]
-            assert tool_call.function.name == cls.openai_schema["name"], "Tool name does not match"
+            assert (
+                tool_call.function.name == cls.openai_schema["name"]
+            ), "Tool name does not match"
             return cls.model_validate_json(
                 tool_call.function.arguments,
                 context=validation_context,
@@ -185,7 +198,9 @@ class OpenAISchema(BaseModel):
         message = completion.choices[0].message
 
         if mode == Mode.FUNCTIONS:
-            assert message.function_call.name == cls.openai_schema["name"], "Function name does not match"
+            assert (
+                message.function_call.name == cls.openai_schema["name"]
+            ), "Function name does not match"
             return cls.model_validate_json(
                 message.function_call.arguments,
                 context=validation_context,
@@ -196,7 +211,9 @@ class OpenAISchema(BaseModel):
                 len(message.tool_calls) == 1
             ), "Instructor does not support multiple tool calls, use List[Model] instead."
             tool_call = message.tool_calls[0]
-            assert tool_call.function.name == cls.openai_schema["name"], "Tool name does not match"
+            assert (
+                tool_call.function.name == cls.openai_schema["name"]
+            ), "Tool name does not match"
             return cls.model_validate_json(
                 tool_call.function.arguments,
                 context=validation_context,

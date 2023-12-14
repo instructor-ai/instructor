@@ -103,7 +103,10 @@ def test_stream_objects_with_throw_stream_exceptions(mode):
             stream=True,
             response_model=Iterable[NotBob],
             messages=[
-                {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant designed to output JSON.",
+                },
                 {
                     "role": "user",
                     "content": "Return a list of 3 JSON objects. The first object must have a key 'name' with the value 'alice'. The second object must have a key 'name' with the value 'bob'. The third object must have a key 'name' with the value 'carol'.",
@@ -125,7 +128,10 @@ def test_stream_objects_without_throw_stream_exceptions(mode):
         stream=True,
         response_model=Iterable[NotBob],
         messages=[
-            {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
+            {
+                "role": "system",
+                "content": "You are a helpful assistant designed to output JSON.",
+            },
             {
                 "role": "user",
                 "content": "Return a list of 3 JSON objects. The first object must have a key 'name' with the value 'alice'. The second object must have a key 'name' with the value 'bob'. The third object must have a key 'name' with the value 'carol'.",

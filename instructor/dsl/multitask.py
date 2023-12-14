@@ -9,14 +9,22 @@ class MultiTaskBase:
     task_type = None  # type: ignore
 
     @classmethod
-    def from_streaming_response(cls, completion, mode: Mode, throw_stream_exceptions=True):
+    def from_streaming_response(
+        cls, completion, mode: Mode, throw_stream_exceptions=True
+    ):
         json_chunks = cls.extract_json(completion, mode)
-        yield from cls.tasks_from_chunks(json_chunks, throw_stream_exceptions=throw_stream_exceptions)
+        yield from cls.tasks_from_chunks(
+            json_chunks, throw_stream_exceptions=throw_stream_exceptions
+        )
 
     @classmethod
-    async def from_streaming_response_async(cls, completion, mode: Mode, throw_stream_exceptions=True):
+    async def from_streaming_response_async(
+        cls, completion, mode: Mode, throw_stream_exceptions=True
+    ):
         json_chunks = cls.extract_json_async(completion, mode)
-        return cls.tasks_from_chunks_async(json_chunks, throw_stream_exceptions=throw_stream_exceptions)
+        return cls.tasks_from_chunks_async(
+            json_chunks, throw_stream_exceptions=throw_stream_exceptions
+        )
 
     @classmethod
     def tasks_from_chunks(cls, json_chunks, throw_stream_exceptions=True):
@@ -74,7 +82,9 @@ class MultiTaskBase:
                     if json_chunk := chunk.choices[0].delta.tool_calls:
                         yield json_chunk[0].function.arguments
                 else:
-                    raise NotImplementedError(f"Mode {mode} is not supported for MultiTask streaming")
+                    raise NotImplementedError(
+                        f"Mode {mode} is not supported for MultiTask streaming"
+                    )
             except AttributeError:
                 pass
 
@@ -92,7 +102,9 @@ class MultiTaskBase:
                     if json_chunk := chunk.choices[0].delta.tool_calls:
                         yield json_chunk[0].function.arguments
                 else:
-                    raise NotImplementedError(f"Mode {mode} is not supported for MultiTask streaming")
+                    raise NotImplementedError(
+                        f"Mode {mode} is not supported for MultiTask streaming"
+                    )
             except AttributeError:
                 pass
 
@@ -184,6 +196,10 @@ def MultiTask(
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class
 
-    new_cls.__doc__ = f"Correct segmentation of `{task_name}` tasks" if description is None else description
+    new_cls.__doc__ = (
+        f"Correct segmentation of `{task_name}` tasks"
+        if description is None
+        else description
+    )
 
     return new_cls

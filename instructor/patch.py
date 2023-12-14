@@ -70,7 +70,9 @@ def handle_response_model(
         if not issubclass(response_model, OpenAISchema):
             response_model = openai_schema(response_model)  # type: ignore
 
-        if new_kwargs.get("stream", False) and not issubclass(response_model, MultiTaskBase):
+        if new_kwargs.get("stream", False) and not issubclass(
+            response_model, MultiTaskBase
+        ):
             raise NotImplementedError(
                 "stream=True is not supported when using response_model parameter for non-iterables"
             )
@@ -333,7 +335,9 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
             max_retries = 0
             logger.warning("max_retries is not supported when using tool calls")
 
-        response_model, new_kwargs = handle_response_model(response_model=response_model, kwargs=kwargs, mode=mode)  # type: ignore
+        response_model, new_kwargs = handle_response_model(
+            response_model=response_model, kwargs=kwargs, mode=mode
+        )  # type: ignore
         response = await retry_async(
             func=func,
             response_model=response_model,
@@ -359,7 +363,9 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
             max_retries = 0
             logger.warning("max_retries is not supported when using tool calls")
 
-        response_model, new_kwargs = handle_response_model(response_model=response_model, kwargs=kwargs, mode=mode)  # type: ignore
+        response_model, new_kwargs = handle_response_model(
+            response_model=response_model, kwargs=kwargs, mode=mode
+        )  # type: ignore
         response = retry_sync(
             func=func,
             response_model=response_model,
@@ -372,7 +378,9 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
         )  # type: ignore
         return response
 
-    wrapper_function = new_chatcompletion_async if func_is_async else new_chatcompletion_sync
+    wrapper_function = (
+        new_chatcompletion_async if func_is_async else new_chatcompletion_sync
+    )
     wrapper_function.__doc__ = OVERRIDE_DOCS
     return wrapper_function
 
@@ -390,7 +398,9 @@ def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS):
     """
 
     logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
-    client.chat.completions.create = wrap_chatcompletion(client.chat.completions.create, mode=mode)
+    client.chat.completions.create = wrap_chatcompletion(
+        client.chat.completions.create, mode=mode
+    )
     return client
 
 
