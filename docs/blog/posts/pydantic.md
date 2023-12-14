@@ -262,29 +262,13 @@ Packages.model_validate_json(
 
 ## Using `pip install instructor`
 
-Although this example may seem contrived, it demonstrates how Pydantic can be used to generate structured data from language models. To simplify this pattern, I have developed a small library called `instructor` that patches the `OpenAI` client. This library offers convenient features such as JSON mode, function calling, tool usage, and open source models.
-
-To achieve the same result using `instructor`, simply follow these steps:
+The example we provided above is somewhat contrived, but it illustrates how Pydantic can be utilized to generate structured data from language models. Now, let's employ a library called "Instructor" to streamline this process. Instructor is a compact library that enhances the OpenAI client by offering convenient features. In the upcoming blog post, we will delve into reasking and validation. However, for now, let's explore a practical example using Instructor.
 
 ```python
-from typing import List
-from pydantic import BaseModel
-from openai import OpenAI
-
+# pip install instructor
 import instructor
 
 client = instructor.patch(OpenAI())
-
-
-class Package(BaseModel):
-    name: str
-    author: str
-
-
-class Packages(BaseModel):
-    """A list of packages and their first authors"""
-    packages: List[Package]
-
 
 packages = client.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -296,8 +280,89 @@ packages = client.chat.completions.create(
     ],
     response_model=Packages,
 )
+
+assert isinstance(resp, Packages)
+assert isinstance(resp.packages, list)
+assert isinstance(resp.packages[0], Package)
 ```
 
-Now, by using the `response_model` argument, inspired by `FastAPI`, you can specify the desired output, and `instructor` will take care of the rest!
+### Case Study: Search query segmentation
+
+Let's consider a practical example. Imagine we have a search engine capable of comprehending intricate queries. For instance, if we make a request to find "recent advancements in AI", we could provide the following payload:
+
+```json
+{
+  "rewritten_query": "novel developments advancements ai artificial intelligence machine learning",
+  "published_daterange": {
+    "start": "2023-09-17",
+    "end": "2021-06-17"
+  },
+  "domains_allow_list": ["arxiv.org"]
+}
+```
+
+If we peek under the hood, we can see that the query is actually a complex object, with a date range, and a list of domains to search in. We can model this structured output in Pydantic using the instructor library
+
+```python
+from typing import List
+import datetime
+from pydantic import BaseModel
+
+class DateRange(BaseModel):
+    start: datetime.date
+    end: datetime.date
+
+class SearchQuery(BaseModel):
+    rewritten_query: str
+    published_daterange: DateRange
+    domains_allow_list: List[str]
+
+    async def execute():
+        # Return the search results of the rewritten query
+        return api.search(json=self.model_dump())
+```
+
+This pattern empowers us to restructure the user's query for improved performance, without requiring the user to understand the inner workings of the search backend.
+
+```python
+import instructor
+from openai import OpenAI
+
+# Enables response_model in the openai client
+client = instructor.patch(OpenAI())
+
+def search(query:str) -> SearchQuery:
+    return client.chat.completions.create(
+        model="gpt-4",
+        response_model=SearchQuery,
+        messages=[
+            {
+                "role": "system",
+                "content": f"You're a query understanding system for a search engine. Today's date is {datetime.date.today()}"
+            },
+            {
+                "role": "user",
+                "content": query
+            }
+        ],
+    )
+
+search("recent advancements in AI")
+```
+
+**Example Output**
+
+```json
+{
+  "rewritten_query": "novel developments advancements ai artificial intelligence machine learning",
+  "published_daterange": {
+    "start": "2023-12-15",
+    "end": "2023-01-01"
+  },
+  "domains_allow_list": ["arxiv.org"]
+}
+```
+
+By defining the api payload as a Pydantic model, we can leverage the `response_model` argument to instruct the model to generate the desired output. This is a powerful feature that allows us to generate structured data from any language model!
 
 In our upcoming posts, we will provide more practical examples and explore how we can leverage `Pydantic`'s validation features to ensure that the data we receive is not only valid JSON, but also valid data.
