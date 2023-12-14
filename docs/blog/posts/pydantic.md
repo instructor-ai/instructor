@@ -286,7 +286,11 @@ assert isinstance(resp.packages, list)
 assert isinstance(resp.packages[0], Package)
 ```
 
-### Case Study: Search query segmentation
+!!! note "Tips on Prompting with Pydantic"
+
+    If you're looking for tips on now to design these kinds of models check out [prompting tips](https://jxnl.github.io/instructor/concepts/prompting/) from the Instructor documentation.
+
+## Case Study: Search query segmentation
 
 Let's consider a practical example. Imagine we have a search engine capable of comprehending intricate queries. For instance, if we make a request to find "recent advancements in AI", we could provide the following payload:
 
