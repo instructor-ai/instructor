@@ -103,7 +103,7 @@ resp = client.chat.completions.create(
 Package.model_validate_json(resp.choices[0].message.content)
 ```
 
-If all is well, we might get something that looks like what you'd get from `json.loads({"name": "pydantic", "author": "Samuel Colvin"})`. But if something is wrong, `resp.choices[0].message.content` might contain prose or markdown code blocks that we'd have to reasonable
+If everything is fine, we might receive an output similar to `json.loads({"name": "pydantic", "author": "Samuel Colvin"})`. However, if there is an issue, `resp.choices[0].message.content` could include text or code blocks in prose or markdown format that we need to handle appropriately.
 
 **LLM responses with markdown code blocks**
 
