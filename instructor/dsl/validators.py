@@ -67,12 +67,9 @@ def llm_validator(
         openai_client (OpenAI): The OpenAI client to use (default: None)
     """
 
-    openai_client = openai_client or OpenAI()
-
     def llm(v):
         resp = openai_client.chat.completions.create(
-            functions=[Validator.openai_schema],
-            function_call={"name": Validator.openai_schema["name"]},
+            response_model=Validator,
             messages=[
                 {
                     "role": "system",
@@ -86,7 +83,6 @@ def llm_validator(
             model=model,
             temperature=temperature,
         )  # type: ignore
-        resp = Validator.from_response(resp)
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.

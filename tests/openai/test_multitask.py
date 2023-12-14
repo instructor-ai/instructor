@@ -1,10 +1,10 @@
+from itertools import product
 from typing import Iterable
-from openai import OpenAI, AsyncOpenAI
 from pydantic import BaseModel
 import pytest
 
 import instructor
-from instructor.function_calls import Mode
+from tests.openai.util import models, modes
 
 
 class User(BaseModel):
@@ -15,13 +15,13 @@ class User(BaseModel):
 Users = Iterable[User]
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
-def test_multi_user(mode):
-    client = instructor.patch(OpenAI(), mode=mode)
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_multi_user(model, mode, client):
+    client = instructor.patch(client, mode=mode)
 
     def stream_extract(input: str) -> Iterable[User]:
         return client.chat.completions.create(
-            model="gpt-3.5-turbo-1106",
+            model=model,
             stream=True,
             response_model=Users,
             messages=[
@@ -50,13 +50,13 @@ def test_multi_user(mode):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
-async def test_multi_user_tools_mode_async(mode):
-    client = instructor.patch(AsyncOpenAI(), mode=mode)
+@pytest.mark.parametrize("model, mode", product(models, modes))
+async def test_multi_user_tools_mode_async(model, mode, aclient):
+    client = instructor.patch(aclient, mode=mode)
 
     async def stream_extract(input: str) -> Iterable[User]:
         return await client.chat.completions.create(
-            model="gpt-3.5-turbo-1106",
+            model=model,
             stream=True,
             response_model=Users,
             messages=[

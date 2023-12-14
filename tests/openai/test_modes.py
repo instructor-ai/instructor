@@ -1,11 +1,11 @@
-from openai import OpenAI
+from itertools import product
 from pydantic import BaseModel, Field
 from typing import List
 
 import pytest
 
 import instructor
-from instructor.function_calls import Mode
+from tests.openai.util import models, modes
 
 
 class Item(BaseModel):
@@ -18,10 +18,9 @@ class Order(BaseModel):
     customer: str
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
-def test_nested(mode):
-    client = instructor.patch(OpenAI(), mode=mode)
-
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_nested(model, mode, client):
+    client = instructor.patch(client, mode=mode)
     content = """
     Order Details:
     Customer: Jason
@@ -33,7 +32,7 @@ def test_nested(mode):
     """
 
     resp = client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=Order,
         messages=[
             {
@@ -62,9 +61,9 @@ class LibraryRecord(BaseModel):
     library_id: str
 
 
-@pytest.mark.parametrize("mode", [Mode.FUNCTIONS, Mode.JSON, Mode.TOOLS, Mode.MD_JSON])
-def test_complex_nested_model(mode):
-    client = instructor.patch(OpenAI(), mode=mode)
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_complex_nested_model(model, mode, client):
+    client = instructor.patch(client, mode=mode)
 
     content = """
     Library visit details:
@@ -76,7 +75,7 @@ def test_complex_nested_model(mode):
     """
 
     resp = client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=model,
         response_model=LibraryRecord,
         messages=[
             {
