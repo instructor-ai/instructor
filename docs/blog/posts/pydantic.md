@@ -16,7 +16,7 @@ In the past year, significant progress has been made in utilizing large language
 
     Prompt Engineering, also known as In-Context Prompting, is a method used to guide the behavior of LLMs without updating the model. It involves techniques to enhance the quality of outputs, formatting, reasoning, and factuality. You can learn more about it in [this post](https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/).
 
-While some have resorted to [threatening human life](https://twitter.com/goodside/status/1657396491676164096?s=20) to generate structured data, we have found that Pydantic even more effective.
+While some have resorted to [threatening human life](https://twitter.com/goodside/status/1657396491676164096?s=20) to generate structured data, we have found that Pydantic is even more effective.
 
 In this post, we will discuss validating structured outputs from language models using Pydantic and OpenAI. We'll show you how to write reliable code. Additionally, we'll introduce a new library called "instructor" that simplifies this process and offers extra features to leverage validation to improve the quality of your outputs.
 
