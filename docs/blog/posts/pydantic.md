@@ -10,11 +10,11 @@ authors:
 
 # Steering Large Language Models with Pydantic
 
-In the past year, significant progress has been made in utilizing large language models. Prompt engineering, in particular, has gained attention, and new prompting techniques are being developed to guide language models toward specific tasks. While many are building chat bots, an even more exciting application is the generation of structured outputs, whether its extracting structured data, augmenting your RAG application, or even generating synthetic data.
+In the last year, there's been a big leap in how we use advanced AI programs, especially in how we communicate with them to get specific tasks done. People are not just making chatbots; they're also using these AIs to sort information, improve their apps, and create synthetic data to train smaller task specific models.
 
 !!! question "What is Prompt Engineering?"
 
-    Prompt Engineering, also known as In-Context Prompting, is a method used to guide the behavior of LLMs without updating the model. It involves techniques to enhance the quality of outputs, formatting, reasoning, and factuality. You can learn more about it in [this post](https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/).
+    Prompt Engineering is a technique to direct large language models (LLMs) like ChatGPT. It doesn't change the AI itself but tweaks how we ask questions or give instructions. This method improves the AI's responses, making them more accurate and helpful. It's like finding the best way to ask something to get the answer you need. There's a detailed article about it [here](https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/).
 
 While some have resorted to [threatening human life](https://twitter.com/goodside/status/1657396491676164096?s=20) to generate structured data, we have found that Pydantic is even more effective.
 
