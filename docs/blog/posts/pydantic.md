@@ -207,13 +207,13 @@ from openai import OpenAI
 client = OpenAI()
 
 
-class Package(BaseModel):
+class PythonPackage(BaseModel):
     name: str
     author: str
 
 
 class Packages(BaseModel):
-    packages: List[Package]
+    packages: List[PythonPackage]
 
 
 resp = client.chat.completions.create(
