@@ -5,5 +5,4 @@ modes = [
     instructor.Mode.FUNCTIONS,
     instructor.Mode.JSON,
     instructor.Mode.TOOLS,
-    instructor.Mode.MD_JSON,
 ]
