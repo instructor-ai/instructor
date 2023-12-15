@@ -1,6 +1,7 @@
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
+from instructor.exceptions import IncompleteOutputException
 
 import enum
 
@@ -121,6 +122,9 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
+        if completion.choices[0].finish_reason == 'length':
+            raise IncompleteOutputException()
+      
         if stream_multitask:
             return cls.from_streaming_response(completion, mode)
 
@@ -179,6 +183,9 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
+        if completion.choices[0].finish_reason == 'length':
+            raise IncompleteOutputException()
+        
         if stream_multitask:
             return await cls.from_streaming_response_async(completion, mode)
 
