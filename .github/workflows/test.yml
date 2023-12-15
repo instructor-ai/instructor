@@ -38,12 +38,12 @@ jobs:
         run: poetry install --with dev
 
       - name: Run tests
-        run: poetry run pytest tests/ -k "not openai"
+        run: poetry run pytest tests/ -k "not evals"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Generate coverage report
-        if: matrix.python-version == '3.1'
+        if: matrix.python-version == '3.11'
         run: |
           poetry run coverage run -m pytest tests/ -k "not openai"
           poetry run coverage report
