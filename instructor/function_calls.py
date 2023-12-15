@@ -123,7 +123,7 @@ class OpenAISchema(BaseModel):
             cls (OpenAISchema): An instance of the class
         """
         if completion.choices[0].finish_reason == 'length':
-          raise IncompleteOutputException()
+            raise IncompleteOutputException()
       
         if stream_multitask:
             return cls.from_streaming_response(completion, mode)
@@ -184,7 +184,7 @@ class OpenAISchema(BaseModel):
             cls (OpenAISchema): An instance of the class
         """
         if completion.choices[0].finish_reason == 'length':
-          raise IncompleteOutputException()
+            raise IncompleteOutputException()
         
         if stream_multitask:
             return await cls.from_streaming_response_async(completion, mode)
