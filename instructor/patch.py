@@ -241,7 +241,7 @@ async def retry_async(
             kwargs["messages"].append(
                 {
                     "role": "user",
-                    "content": f"Recall the function correctly, exceptions found\n{e}",
+                    "content": f"Recall the function correctly, fix the errors, exceptions found\n{e}",
                 }
             )
             if mode == Mode.MD_JSON:
@@ -286,7 +286,7 @@ def retry_sync(
             kwargs["messages"].append(
                 {
                     "role": "user",
-                    "content": f"Recall the function correctly, exceptions found\n{e}",
+                    "content": f"Recall the function correctly, fix the errorsexceptions found\n{e}",
                 }
             )
             if mode == Mode.MD_JSON:
