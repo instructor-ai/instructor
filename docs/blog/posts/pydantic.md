@@ -335,7 +335,7 @@ from openai import OpenAI
 # Enables response_model in the openai client
 client = instructor.patch(OpenAI())
 
-def search(query:str) -> SearchQuery:
+def search(query: str) -> SearchQuery:
     return client.chat.completions.create(
         model="gpt-4",
         response_model=SearchQuery,
