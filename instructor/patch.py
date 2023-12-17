@@ -237,6 +237,8 @@ async def retry_async(
                 mode=mode,
             )
         except (ValidationError, JSONDecodeError) as e:
+            logger.exception(f"Retrying, exception: {e}")
+            logger.debug(f"Error response: {response}")
             kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
                 {
@@ -282,6 +284,7 @@ def retry_sync(
             )
         except (ValidationError, JSONDecodeError) as e:
             logger.exception(f"Retrying, exception: {e}")
+            logger.debug(f"Error response: {response}")
             kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
