@@ -1,5 +1,5 @@
 ---
-draft: False 
+draft: False
 date: 2023-09-11
 tags:
   - Introduction
@@ -38,7 +38,7 @@ client = instructor.patch(OpenAI())
 class UserDetail(pydantic.BaseModel):
     name: str
     age: int
-    
+
     def introduce(self):
         return f"Hello I'm {self.name} and I'm {self.age} years old"
 
@@ -77,6 +77,7 @@ class QuestionAnswerNoEvil(BaseModel):
 Pydantic allows for modular output schemas. This leads to more organized code.
 
 ### Composition of Schemas
+
 ```python
 class UserDetails(BaseModel):
     name: str
@@ -87,6 +88,7 @@ class UserWithAddress(UserDetails):
 ```
 
 ### Defining Relationships
+
 ```python
 class UserDetail(BaseModel):
     id: int
@@ -99,6 +101,7 @@ class UserRelationships(BaseModel):
 ```
 
 ### Using Enums
+
 ```python
 from enum import Enum, auto
 
@@ -115,6 +118,7 @@ class UserDetail(BaseModel):
 ```
 
 ### Flexible Schemas
+
 ```python
 from typing import List
 
@@ -129,6 +133,7 @@ class UserDetail(BaseModel):
 ```
 
 ### Chain of Thought
+
 ```python
 class TimeRange(BaseModel):
     chain_of_thought: str
@@ -168,6 +173,7 @@ def extract_user(str) -> UserDetails:
 ```
 
 ### Response Modeling
+
 ```python
 class MaybeUser(BaseModel):
     result: Optional[UserDetail]

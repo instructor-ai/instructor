@@ -1,8 +1,9 @@
 # Using the Command Line Interface
+
 The instructor CLI provides functionalities for managing fine-tuning jobs on OpenAI.
 
 !!! warning "Incomplete API"
-    The CLI is still under development and does not yet support all features of the API. If you would like to use a feature that is not yet supported, please consider using the contributing to our library [jxnl/instructor](https://www.github.com/jxnl/instructor) instead.
+The CLI is still under development and does not yet support all features of the API. If you would like to use a feature that is not yet supported, please consider using the contributing to our library [jxnl/instructor](https://www.github.com/jxnl/instructor) instead.
 
     !!! note "Low hanging fruit"
 
@@ -15,12 +16,12 @@ The instructor CLI provides functionalities for managing fine-tuning jobs on Ope
 ### View Jobs Options
 
 ```sh
-$ instructor jobs --help 
-                                                                                                               
- Usage: instructor jobs [OPTIONS] COMMAND [ARGS]...                                                            
-                                                                                                               
- Monitor and create fine tuning jobs                                                                           
-                                                                                                               
+$ instructor jobs --help
+
+ Usage: instructor jobs [OPTIONS] COMMAND [ARGS]...
+
+ Monitor and create fine tuning jobs
+
 ╭─ Options ───────────────────────────────────────────────────────────────────────────────╮
 │ --help                            Display the help message.                             │
 ╰─────────────────────────────────────────────────────────────────────────────────────────╯
@@ -39,11 +40,11 @@ The create-from-file command uploads and trains a model in a single step.
 
 ```sh
 ❯ instructor jobs create-from-file --help
-                                                                                         
-Usage: instructor jobs create-from-file [OPTIONS] FILE                                              
-                                                                                                     
- Create a fine-tuning job from a file.                                                               
-                                                                                                     
+
+Usage: instructor jobs create-from-file [OPTIONS] FILE
+
+ Create a fine-tuning job from a file.
+
 ╭─ Arguments ───────────────────────────────────────────────────────────────────────────────────────╮
 │ *    file      TEXT  Path to the file for fine-tuning [default: None] [required]                  │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────╯
@@ -71,11 +72,11 @@ The create-from-id command uses an uploaded file and trains a model
 
 ```sh
 ❯ instructor jobs create-from-id --help
-                                                                                         
- Usage: instructor jobs create-from-id [OPTIONS] ID                                      
-                                                                                         
- Create a fine-tuning job from an existing ID.                                           
-                                                                                         
+
+ Usage: instructor jobs create-from-id [OPTIONS] ID
+
+ Create a fine-tuning job from an existing ID.
+
 ╭─ Arguments ───────────────────────────────────────────────────────────────────────────╮
 │ *    id      TEXT  ID of the existing fine-tuning job [default: None] [required]      │
 ╰───────────────────────────────────────────────────────────────────────────────────────╯
@@ -95,21 +96,20 @@ The create-from-id command uses an uploaded file and trains a model
 
 ```sh
 $ instructor files upload transformed_data.jsonl
-$ instructor files upload validation_data.jsonl 
+$ instructor files upload validation_data.jsonl
 $ instructor files list
 ...
 $ instructor jobs create_from_id <file_id> --validation_file <validation_file_id> --n_epochs 3 --batch_size 16 --learning_rate_multiplier 0.5
 ```
-
 
 ### Viewing Files and Jobs
 
 #### Viewing Jobs
 
 ```sh
-$ instructor jobs list 
+$ instructor jobs list
 
-OpenAI Fine Tuning Job Monitoring                                                
+OpenAI Fine Tuning Job Monitoring
 ┏━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
 ┃                ┃              ┃                ┃     Completion ┃                 ┃                ┃        ┃                 ┃
 ┃ Job ID         ┃ Status       ┃  Creation Time ┃           Time ┃ Model Name      ┃ File ID        ┃ Epochs ┃ Base Model      ┃
@@ -126,25 +126,23 @@ OpenAI Fine Tuning Job Monitoring
                                     Automatically refreshes every 5 seconds, press Ctrl+C to exit
 ```
 
-
 #### Viewing Files
 
 ```sh
-$ instructor files list 
+$ instructor files list
 
-OpenAI Files                                                      
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━┓                         
-┃ File ID                       ┃ Size (bytes) ┃ Creation Time       ┃ Filename ┃ Purpose   ┃                         
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━┩                         
-│ file-0lw2BSNRUlXZXRRu2beCCWjl │       369523 │ 2023-08-23 23:31:57 │ file     │ fine-tune │                         
-│ file-IHaUXcMEykmFUp1kt2puCDEq │       369523 │ 2023-08-23 23:09:35 │ file     │ fine-tune │                         
-│ file-ja9vRBf0FydEOTolaa3BMqES │       369523 │ 2023-08-23 22:42:29 │ file     │ fine-tune │                         
-│ file-F7lJg6Z47CREvmx4kyvyZ6Sn │       369523 │ 2023-08-23 22:42:03 │ file     │ fine-tune │                         
-│ file-YUxqZPyJRl5GJCUTw3cNmA46 │       369523 │ 2023-08-23 22:29:10 │ file     │ fine-tune │                         
-└───────────────────────────────┴──────────────┴─────────────────────┴──────────┴───────────┘   
+OpenAI Files
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━┓
+┃ File ID                       ┃ Size (bytes) ┃ Creation Time       ┃ Filename ┃ Purpose   ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━┩
+│ file-0lw2BSNRUlXZXRRu2beCCWjl │       369523 │ 2023-08-23 23:31:57 │ file     │ fine-tune │
+│ file-IHaUXcMEykmFUp1kt2puCDEq │       369523 │ 2023-08-23 23:09:35 │ file     │ fine-tune │
+│ file-ja9vRBf0FydEOTolaa3BMqES │       369523 │ 2023-08-23 22:42:29 │ file     │ fine-tune │
+│ file-F7lJg6Z47CREvmx4kyvyZ6Sn │       369523 │ 2023-08-23 22:42:03 │ file     │ fine-tune │
+│ file-YUxqZPyJRl5GJCUTw3cNmA46 │       369523 │ 2023-08-23 22:29:10 │ file     │ fine-tune │
+└───────────────────────────────┴──────────────┴─────────────────────┴──────────┴───────────┘
 ```
 
-# Contributions 
+# Contributions
 
 We aim to provide a light wrapper around the API rather than offering a complete CLI. Contributions are welcome! Please feel free to make an issue at [jxnl/instructor/issues](https://github.com/jxnl/instructor/issues) or submit a pull request.
-
