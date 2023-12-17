@@ -31,6 +31,10 @@ Instructor's patch enhances a openai api it with the following features:
 
 The good news is that Anyscale employs the same OpenAI client, and its models support some of these output modes too!
 
+!!! note "Getting access"
+
+    If you want to try this out for yourself check out the [Anyscale](https://anyscale.com/) website. You can get started [here](https://docs.anyscale.com/get-started).
+
 Let's explore one of the models available in Anyscale's extensive collection!
 
 ```python
