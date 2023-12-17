@@ -52,7 +52,7 @@ class UserDetails(BaseModel):
 client = instructor.patch(
     OpenAI(
         base_url="https://api.endpoints.anyscale.com/v1",
-        api_key="<YOUR_ANYSCALE_API_KEY>
+        api_key="<YOUR_ANYSCALE_API_KEY>"
     ),
     # This uses Anyscale's json schema output mode
     mode=instructor.Mode.JSON_SCHEMA
@@ -73,7 +73,7 @@ resp = client.chat.completions.create(
     response_model=UserDetails,
 )
 print(resp)
->>> name='Jason' age=20
+# >>> name='Jason' age=20
 ```
 
 You can find more information about Anyscale's output mode support [here](https://docs.endpoints.anyscale.com/).
