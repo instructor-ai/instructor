@@ -19,4 +19,4 @@ The goal of the blog is to capture some content that does not neatly fit within 
 
 ## Talks
 
-- [What were the key insights and topics covered at the AI Engineering Summit 2023?](posts/aisummit-2023.md)
+- [AI Engineering Summit 2023](posts/aisummit-2023.md)
