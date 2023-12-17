@@ -25,7 +25,7 @@ Instructor's patch enhances a openai api it with the following features:
 
 !!! note "Learn More"
 
-    To learn more check out the [docs](../../index.md)
+    To learn more, please refer to the [docs](../../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../../why.md) page.
 
 ## Anyscale
 
