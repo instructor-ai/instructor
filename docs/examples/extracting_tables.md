@@ -2,6 +2,8 @@
 
 This post demonstrates how to use Python's type annotations and OpenAI's new vision model to extract tables from images and convert them into markdown format. This method is particularly useful for data analysis and automation tasks.
 
+The full code is available on [GitHub](https://github.com/jxnl/instructor/blob/main/examples/vision/run_table.py)
+
 ## Building the Custom Type for Markdown Tables
 
 First, we define a custom type, `MarkdownDataFrame`, to handle pandas DataFrames formatted in markdown. This type uses Python's `Annotated` and `InstanceOf` types, along with decorators `BeforeValidator` and `PlainSerializer`, to process and serialize the data.
