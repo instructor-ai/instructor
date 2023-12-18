@@ -146,6 +146,8 @@ nav:
     - Overview: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
     - Self Critique: 'examples/self_critique.md'
+    - Image Extracting Tables: 'examples/extracting_tables.md'
+    - Moderation: 'examples/moderation.md'
     - Citations: 'examples/exact_citations.md'
     - Knowledge Graph: 'examples/knowledge_graph.md'
     - Entity Resolution: 'examples/entity_resolution.md'
