@@ -1,4 +1,6 @@
-Certainly! Here's a comprehensive guide on using type annotations to extract markdown tables from images with OpenAI's new vision model. This guide includes all necessary code snippets, explanations, and a practical example.
+# Extracting Tables From Images
+
+This guide includes all necessary code snippets, explanations, and a practical example.
 
 ## Introduction
 
