@@ -20,7 +20,7 @@ Defining a task and creating a list of classes is a common enough pattern that w
 
 ## Extracting Tasks using Iterable
 
-By using `Iterable` you get a very convient class with prompts and names automatically defined:
+By using `Iterable` you get a very convenient class with prompts and names automatically defined:
 
 ```python
 import instructor
