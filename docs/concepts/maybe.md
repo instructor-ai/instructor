@@ -1,6 +1,8 @@
 # Handling Missing Data
 
-The `Maybe` pattern is a concept in functional programming used for error handling. Instead of raising exceptions or returning `None`, you can use a `Maybe` type to encapsulate both the result and potential errors. This pattern is particularly useful when making llm calls, as providing language models with an escape hatch can effectively reduce hallucinations.
+The `Maybe` pattern is a concept in functional programming used for error handling. Instead of raising exceptions or returning `None`, you can use a `Maybe` type to encapsulate both the result and potential errors. 
+
+This pattern is particularly useful when making LLM calls, as providing language models with an escape hatch can effectively reduce hallucinations.
 
 ## Defining the Model
 
