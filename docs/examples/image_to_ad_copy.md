@@ -174,6 +174,9 @@ https://images.unsplash.com/photo-1702499125332-75e7a9a64621?crop=entropy
 
 ??? Note "Expand to see the output"
 
+    ![](https://images.unsplash.com/photo-1702261343783-0e97c493a07b?crop=entropy)
+    ![](https://images.unsplash.com/photo-1702499125332-75e7a9a64621?crop=entropy)
+
     ```json
     {
         "products":
