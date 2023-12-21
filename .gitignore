@@ -161,4 +161,4 @@ cython_debug/
 #.idea/
 examples/citation_with_extraction/fly.toml
 my_cache_directory/
-tutorials/wandb/latest-run
+tutorials/wandb/*
