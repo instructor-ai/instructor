@@ -15,7 +15,7 @@ repos:
         entry: >
             bash -c 'set -o pipefail;
             export CUSTOM_PACKAGES="instructor/cli/cli.py instructor/cli/usage.py" &&
-            export CUSTOM_FLAGS="--python-version=3.9 --color-output --no-pretty" &&
+            export CUSTOM_FLAGS="--python-version=3.9 --color-output --no-pretty --follow-imports=skip" &&
             curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/continuous-integration/scripts/devops/continuous-integration/type_mypy.sh |
             bash'
         language: system
