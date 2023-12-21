@@ -51,9 +51,6 @@ class Product(BaseModel):
             prompt += f"Key Features: {', '.join(self.key_features)}\n"
         return prompt
 
-    def __repr__(self):
-        return self.generate_prompt()
-
 
 class IdentifiedProduct(BaseModel):
     """
@@ -98,12 +95,6 @@ class AdCopy(BaseModel):
         description="The name of the product being advertised.",
         example="Headphones",
     )
-
-    def __str__(self):
-        return f"{self.name}: \n" + "-" * 100 + f"{self.headline}\n{self.ad_copy}"
-
-    def __repr__(self):
-        return str(self)
 
 
 # Define clients
@@ -227,3 +218,55 @@ if __name__ == "__main__":
             f,
             indent=4,
         )
+
+""" 
+Example output:
+{
+    "products": [
+        {
+            "name": "Ice Skates",
+            "key_features": [
+                "Lace-up closure",
+                "Durable blade",
+                "Ankle support"
+            ],
+            "description": "A pair of ice skates with lace-up closure for secure fit, durable blade for ice skating, and reinforced ankle support."
+        },
+        {
+            "name": "Hiking Boots",
+            "key_features": [
+                "High-top design",
+                "Rugged outsole",
+                "Water-resistant"
+            ],
+            "description": "Sturdy hiking boots featuring a high-top design for ankle support, rugged outsole for grip on uneven terrain, and water-resistant construction."
+        },
+        {
+            "name": "Winter Boots",
+            "key_features": [
+                "Insulated lining",
+                "Waterproof lower",
+                "Slip-resistant sole"
+            ],
+            "description": "Warm winter boots with insulated lining for cold weather, waterproof lower section to keep feet dry, and a slip-resistant sole for stability."
+        }
+    ],
+    "ad_copies": [
+        {
+            "headline": "Glide with Confidence - Discover the Perfect Ice Skates!",
+            "ad_copy": "Step onto the ice with poise and precision with our premium Ice Skates. Designed for both beginners and seasoned skaters, these skates offer a perfect blend of comfort and performance. The lace-up closure ensures a snug fit that keeps you stable as you carve through the ice. With a durable blade that withstands the test of time, you can focus on perfecting your moves rather than worrying about your equipment. The reinforced ankle support provides the necessary protection and aids in preventing injuries, allowing you to skate with peace of mind. Whether you're practicing your spins, jumps, or simply enjoying a leisurely glide across the rink, our Ice Skates are the ideal companion for your ice adventures. Lace up and get ready to experience the thrill of ice skating like never before!",
+            "name": "Ice Skates"
+        },
+        {
+            "headline": "Conquer Every Trail with Confidence!",
+            "ad_copy": "Embark on your next adventure with our top-of-the-line Hiking Boots! Designed for the trail-blazing spirits, these boots boast a high-top design that provides unparalleled ankle support to keep you steady on any path. The rugged outsole ensures a firm grip on the most uneven terrains, while the water-resistant construction keeps your feet dry as you traverse through streams and muddy trails. Whether you're a seasoned hiker or just starting out, our Hiking Boots are the perfect companion for your outdoor escapades. Lace up and step into the wild with confidence - your journey awaits!",
+            "name": "Hiking Boots"
+        },
+        {
+            "headline": "Conquer the Cold with Comfort!",
+            "ad_copy": "Step into the season with confidence in our Winter Boots, the ultimate ally against the chill. Designed for those who don't let the cold dictate their moves, these boots feature an insulated lining that wraps your feet in a warm embrace, ensuring that the biting cold is a worry of the past. But warmth isn't their only virtue. With a waterproof lower section, your feet will remain dry and cozy, come rain, snow, or slush. And let's not forget the slip-resistant sole that stands between you and the treacherous ice, offering stability and peace of mind with every step you take. Whether you're braving a blizzard or just nipping out for a coffee, our Winter Boots are your trusty companions, keeping you warm, dry, and upright. Don't let winter slow you down. Lace up and embrace the elements!",
+            "name": "Winter Boots"
+        }
+    ]
+}
+"""
