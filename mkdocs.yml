@@ -147,6 +147,7 @@ nav:
     - Text Classification: 'examples/classification.md'
     - Self Critique: 'examples/self_critique.md'
     - Image Extracting Tables: 'examples/extracting_tables.md'
+    - Image to Ad Copy: 'examples/image_to_ad_copy.md'
     - Moderation: 'examples/moderation.md'
     - Citations: 'examples/exact_citations.md'
     - Knowledge Graph: 'examples/knowledge_graph.md'
