@@ -25,7 +25,7 @@ class Product(BaseModel):
     name: str = Field(
         description="A generic name for the product.", example="Headphones"
     )
-    key_features: Optional[list[str]] = Field(
+    key_features: Optional[List[str]] = Field(
         description="A list of key features of the product that stand out.",
         default=None,
     )
@@ -174,3 +174,8 @@ Finally, we can put it all together in a single function that takes a list of im
 ## Input file
 
 The input file is currently a list of image URLs, but this trivial to change to any required format.
+
+```plaintext
+https://images.unsplash.com/photo-1702261343783-0e97c493a07b?crop=entropy
+https://images.unsplash.com/photo-1702499125332-75e7a9a64621?crop=entropy
+```
