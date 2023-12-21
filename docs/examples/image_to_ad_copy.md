@@ -2,7 +2,7 @@
 
 This post demonstrates how to use GPT-4 Vision API and the Chat API to automatically generate advertising copy from product images. This method can be useful for marketing and advertising teams, as well as for e-commerce platforms.
 
-The full code is available on [GitHub](https://www.github.com/openai/gpt-4).
+The full code is available on [GitHub](https://www.github.com/jxnl/instructor/examples/vision/image_to_ad_copy.py).
 
 ## Building the models
 
