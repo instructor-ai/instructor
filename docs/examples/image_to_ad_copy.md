@@ -107,7 +107,7 @@ class AdCopy(BaseModel):
 The `read_images` function uses OpenAI's vision model to process a list of image URLs and identify products in each of them. We utilize the `instructor` library to patch the OpenAI client for this purpose.
 
 ```python
-def read_images(image_urls: List[str]):
+def read_images(image_urls: List[str]) -> IdentifiedProduct:
     """
     Given a list of image URLs, identify the products in the images.
     """
