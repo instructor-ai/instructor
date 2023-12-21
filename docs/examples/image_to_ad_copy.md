@@ -10,7 +10,7 @@ The full code is available on [GitHub](https://www.github.com/jxnl/instructor/ex
 
 For the `Product` model, we define a class that represents a product extracted from an image and store the name, key features, and description. The product attributes are dynamically determined based on the content of the image.
 
-Note that it is easy to add Validators and other Pydantic features to the model to ensure that the data is valid and consistent.
+Note that it is easy to add [Validators](https://jxnl.github.io/instructor/concepts/reask_validation/) and other Pydantic features to the model to ensure that the data is valid and consistent.
 
 ```python
 class Product(BaseModel):
@@ -169,7 +169,7 @@ def generate_ad_copy(product: Product):
 
 ### Putting it all together
 
-Finally, we can put it all together in a single function that takes a list of image URLs and generates advertising copy for the products identified in the images.
+Finally, we can put it all together in a single function that takes a list of image URLs and generates advertising copy for the products identified in the images. Please refer to the [full code](https://www.github.com/jxnl/instructor/examples/vision/image_to_ad_copy.py) for the complete implementation.
 
 ## Input file
 
