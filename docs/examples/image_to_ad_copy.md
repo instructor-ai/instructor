@@ -138,7 +138,7 @@ Then, we can use the `generate_ad_copy` function to generate advertising copy fo
 Two clients are defined for the two different models. This is because the `gpt-4-vision-preview` model is not compatible with the `gpt-4-1106-preview` model in terms of their response format.
 
 ```python
-def generate_ad_copy(product: Product):
+def generate_ad_copy(product: Product) -> AdCopy:
     """
     Given a product, generate an ad copy for the product.
     """
