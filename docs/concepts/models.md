@@ -1,8 +1,11 @@
 # Response Model
 
-Defining llm output schemas in Pydantic is done via `pydantic.BaseModel`. To learn more about models in pydantic checkout their [documentation](https://docs.pydantic.dev/latest/concepts/models/).
+Defining LLM output schemas in Pydantic is done via `pydantic.BaseModel`. To learn more about models in Pydantic, check out their [documentation](https://docs.pydantic.dev/latest/concepts/models/).
 
-After defining a pydantic model, we can use it as as the `response_model` in your client `create` calls to openai. The job of the `response_model` is to define the schema and prompts for the language model and validate the response from the API and return a pydantic model instance.
+After defining a Pydantic model, we can use it as the `response_model` in your client `create` calls to OpenAI or any other supported model. The job of the `response_model` parameter is to: 
+- Define the schema and prompts for the language model
+- Validate the response from the API
+- Return a Pydantic model instance.
 
 ## Prompting
 
@@ -24,7 +27,7 @@ Here all docstrings, types, and field annotations will be used to generate the p
 
 ## Optional Values
 
-If we use `Optional` and `default` they will be considered not required when sent to the language model
+If we use `Optional` and `default`, they will be considered not required when sent to the language model
 
 ```python
 class User(BaseModel):
@@ -35,7 +38,7 @@ class User(BaseModel):
 
 ## Dynamic model creation
 
-There are some occasions where it is desirable to create a model using runtime information to specify the fields. For this Pydantic provides the create_model function to allow models to be created on the fly:
+There are some occasions where it is desirable to create a model using runtime information to specify the fields. For this, Pydantic provides the create_model function to allow models to be created on the fly:
 
 ```python
 from pydantic import BaseModel, create_model
@@ -94,7 +97,7 @@ print(BarModel.model_fields.keys())
 
 ## Structural Pattern Matching
 
-Pydantic supports structural pattern matching for models, as introduced by PEP 636 in Python 3.10.
+Pydantic supports structural pattern matching for models, as introduced by [PEP 636](https://peps.python.org/pep-0636/) in Python 3.10.
 
 ```python
 from pydantic import BaseModel
@@ -119,7 +122,7 @@ match a:
 
 ## Adding Behavior
 
-We can add methods to our pydantic models just as any plain python class. We might want to do this to add some custom logic to our models.
+We can add methods to our Pydantic models, just as any plain Python class. We might want to do this to add some custom logic to our models.
 
 ```python
 from pydantic import BaseModel
