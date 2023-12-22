@@ -5,14 +5,24 @@ from typing import Any, Callable
 from pydantic import BaseModel, create_model, validate_arguments
 
 import enum
+import warnings
 
 
 class Mode(enum.Enum):
-    """The mode to use for patching the client"""
+    """The mode to use for patching the client. Note: 'FUNCTIONS' is deprecated and will be removed in future versions. Use 'TOOLS' instead."""
 
-    FUNCTIONS: str = "function_call"
+    FUNCTIONS: str = "function_call"  # Deprecated
     TOOLS: str = "tool_call"
     JSON: str = "json_mode"
+
+    def __getattribute__(self, name):
+        if name == "FUNCTIONS":
+            warnings.warn(
+                "The 'FUNCTIONS' mode is deprecated and will be removed in a future version. Use 'TOOLS' instead.",
+                DeprecationWarning,
+                stacklevel=2
+            )
+        return super().__getattribute__(name)
 
 
 class openai_function:

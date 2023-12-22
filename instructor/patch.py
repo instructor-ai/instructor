@@ -107,7 +107,7 @@ def process_response(
     response_model: Type[BaseModel],
     validation_context: dict = None,
     strict=None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ):  # type: ignore
     """Processes a OpenAI response with the response model, if available
     It can use `validation_context` and `strict` to validate the response
@@ -170,7 +170,7 @@ def retry_sync(
     kwargs,
     max_retries,
     strict: Optional[bool] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ):
     retries = 0
     while retries <= max_retries:
@@ -266,7 +266,7 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
     return wrapper_function
 
 
-def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS):
+def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.TOOLS):
     """
     Patch the `client.chat.completions.create` method
 
@@ -284,7 +284,7 @@ def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS):
     return client
 
 
-def apatch(client: AsyncOpenAI, mode: Mode = Mode.FUNCTIONS):
+def apatch(client: AsyncOpenAI, mode: Mode = Mode.TOOLS):
     """
     No longer necessary, use `patch` instead.
 
