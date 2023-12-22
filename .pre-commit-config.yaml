@@ -5,7 +5,7 @@ repos:
       - id: ruff # Run the linter.
         name: Run Linter Check (Ruff)
         args: [ --fix ]
-        files: ^instructor/
+        files: ^(instructor|tests|examples)/
       - id: ruff-format       # Run the formatter.
         name: Run Formatter (Ruff)
   - repo: local
