@@ -168,3 +168,4 @@ tutorials/results.csv
 tutorials/results.jsonl
 tutorials/results.jsonlines
 tutorials/schema.json
+wandb/settings
