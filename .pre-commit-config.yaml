@@ -11,7 +11,7 @@ repos:
   - repo: local
     hooks:
       - id: ci_type_mypy
-        name: Static Type Check
+        name: Run Type Check (Mypy)
         entry: >
             bash -c 'set -o pipefail;
             export CUSTOM_PACKAGES="instructor/cli/cli.py instructor/cli/usage.py" &&

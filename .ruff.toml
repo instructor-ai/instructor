@@ -58,5 +58,5 @@ ignore-init-module-imports = true
 "tests/test_distil.py" = ["ARG001"]
 "tests/test_patch.py" = ["ARG001"]
 "examples/task_planner/task_planner_topological_sort.py" = ["ARG002"]
-"examples/citation_with_extraction/main.py" = ["ARG001", "B008"]
+"examples/citation_with_extraction/main.py" = ["ARG001"]
 

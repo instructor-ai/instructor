@@ -9,7 +9,7 @@ env:
   WORKING_DIRECTORY: "."
   RUFF_OUTPUT_FILENAME: "ruff.log"
   CUSTOM_FLAGS: ""
-  CUSTOM_PACKAGES: "instructor"
+  CUSTOM_PACKAGES: "instructor examples tests"
 
 jobs:
   Ruff:
