@@ -115,7 +115,7 @@ def summarize_article(article: str, summary_steps: int = 3):
         max_retries=2,
     )
     summary_chain.append(summary.summary)
-    for i in range(summary_steps):
+    for _i in range(summary_steps):
         new_summary: RewrittenSummary = client.chat.completions.create(
             model="gpt-4-0613",
             messages=[
@@ -127,7 +127,7 @@ def summarize_article(article: str, summary_steps: int = 3):
 
                 Perform the following two tasks
                 - Identify 1-3 informative entities from the following article which is missing from the previous summary
-                - Write a new denser summary of identical length which covers every entity and detail from the previous summary plus the Missing Entities 
+                - Write a new denser summary of identical length which covers every entity and detail from the previous summary plus the Missing Entities
 
                 Guidelines
                 - Make every word count: re-write the previous summary to improve flow and make space for additional entities
