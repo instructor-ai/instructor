@@ -162,3 +162,8 @@ cython_debug/
 examples/citation_with_extraction/fly.toml
 my_cache_directory/
 tutorials/wandb/*
+tutorials/results.csv
+tutorials/results.jsonl
+tutorials/results.jsonlines
+tutorials/schema.json
+wandb/settings

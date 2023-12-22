@@ -1,0 +1,5 @@
+[default]
+entity = instructor
+project = query-understanding
+base_url = https://api.wandb.ai
+
