@@ -35,16 +35,18 @@ class TakeAction(BaseModel):
         """Process the action."""
         return self.action.process()
 
-
-# Enables `response_model`
-client = instructor.patch(OpenAI())
-action = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=TakeAction,
-    messages=[
-        {"role": "user", "content": "Please choose one action"},
-    ]
-)
-assert isinstance(action, TakeAction)
-print(action.process())
+try:
+    # Enables `response_model`
+    client = instructor.patch(OpenAI())
+    action = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        response_model=TakeAction,
+        messages=[
+            {"role": "user", "content": "Please choose one action"},
+        ]
+    )
+    assert isinstance(action, TakeAction), "The action is not TakeAction"
+    print(action.process())
+except Exception as e:
+    print(f"An error occurred: {e}")
 
