@@ -1,3 +1,4 @@
+.DS_Store
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -5,6 +6,7 @@ __pycache__/
 
 # C extensions
 *.so
+
 
 # Distribution / packaging
 .Python
@@ -161,3 +163,9 @@ cython_debug/
 #.idea/
 examples/citation_with_extraction/fly.toml
 my_cache_directory/
+tutorials/wandb/*
+tutorials/results.csv
+tutorials/results.jsonl
+tutorials/results.jsonlines
+tutorials/schema.json
+wandb/settings

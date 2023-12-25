@@ -91,26 +91,28 @@ def handle_response_model(
                 "type": "function",
                 "function": {"name": response_model.openai_schema["name"]},
             }
-        elif mode == Mode.JSON or mode == Mode.MD_JSON:
+        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+            # If its a JSON Mode we need to massage the prompt a bit
+            # in order to get the response we want in a json format
+            message = f"""
+                As a genius expert, your task is to understand the content and provide 
+                the parsed objects in json that match the following json_schema:\n
+                {response_model.model_json_schema()['properties']}
+                """
+            # Check for nested models
+            if "$defs" in response_model.model_json_schema():
+                message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
+
             if mode == Mode.JSON:
                 new_kwargs["response_format"] = {"type": "json_object"}
-                message = f"""Make sure that your response to any message matches the json_schema below,
-                            do not deviate at all: \n{response_model.model_json_schema()['properties']}
-                            """
-                # Check for nested models
-                if "$defs" in response_model.model_json_schema():
-                    message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
 
-            else:
-                message = f"""
-                    As a genius expert, your task is to understand the content and provide 
-                    the parsed objects in json that match the following json_schema (do not deviate at all and its okay if you cant be exact):\n
-                    {response_model.model_json_schema()['properties']}
-                    """
-                # Check for nested models
-                if "$defs" in response_model.model_json_schema():
-                    message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
+            elif mode == Mode.JSON_SCHEMA:
+                new_kwargs["response_format"] = {
+                    "type": "json_object",
+                    "schema": response_model.model_json_schema(),
+                }
 
+            elif mode == Mode.MD_JSON:
                 new_kwargs["messages"].append(
                     {
                         "role": "assistant",
@@ -245,11 +247,13 @@ async def retry_async(
                 throw_stream_exceptions=throw_stream_exceptions,
             )
         except (ValidationError, JSONDecodeError) as e:
+            logger.exception(f"Retrying, exception: {e}")
+            logger.debug(f"Error response: {response}")
             kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
                 {
                     "role": "user",
-                    "content": f"Recall the function correctly, exceptions found\n{e}",
+                    "content": f"Recall the function correctly, fix the errors, exceptions found\n{e}",
                 }
             )
             if mode == Mode.MD_JSON:
@@ -292,11 +296,12 @@ def retry_sync(
             )
         except (ValidationError, JSONDecodeError) as e:
             logger.exception(f"Retrying, exception: {e}")
+            logger.debug(f"Error response: {response}")
             kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
                     "role": "user",
-                    "content": f"Recall the function correctly, exceptions found\n{e}",
+                    "content": f"Recall the function correctly, fix the errorsexceptions found\n{e}",
                 }
             )
             if mode == Mode.MD_JSON:

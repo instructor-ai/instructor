@@ -8,6 +8,7 @@ import instructor
 from pydantic import BaseModel
 
 from instructor.function_calls import Mode
+from tests.openai.util import models, modes
 
 
 class Labels(str, enum.Enum):
@@ -23,8 +24,6 @@ class SinglePrediction(BaseModel):
     class_label: Labels
 
 
-models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
-modes = [instructor.Mode.FUNCTIONS, instructor.Mode.JSON, instructor.Mode.TOOLS]
 data = [
     (
         "I am a spammer",

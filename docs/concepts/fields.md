@@ -1,4 +1,4 @@
-The `pydantic.Field` function is used to customize and add metadata to fields of models. To learn more check out the pydantic [documentation](https://docs.pydantic.dev/latest/concepts/fields/) as this is a near replica of that documentation that is relevant to prompting.
+The `pydantic.Field` function is used to customize and add metadata to fields of models. To learn more, check out the Pydantic [documentation](https://docs.pydantic.dev/latest/concepts/fields/) as this is a near replica of that documentation that is relevant to prompting.
 
 ## Default values
 
@@ -88,15 +88,14 @@ print(date_range.model_dump_json())
 
 ## Customizing JSON Schema
 
-There are fields that exclusively to customise the generated JSON Schema:
+There are some fields that are exclusively used to customise the generated JSON Schema:
 
 - `title`: The title of the field.
 - `description`: The description of the field.
 - `examples`: The examples of the field.
 - `json_schema_extra`: Extra JSON Schema properties to be added to the field.
 
-These all work as great opportunities to add more information to the JSON Schema as part
-of your prompt engineering.
+These all work as great opportunities to add more information to the JSON schema as part of your prompt engineering.
 
 Here's an example:
 

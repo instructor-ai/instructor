@@ -1,5 +1,7 @@
 import enum
 from functools import wraps
+from pydantic import BaseModel, create_model
+from instructor.exceptions import IncompleteOutputException
 
 from docstring_parser import parse
 from pydantic import BaseModel, create_model
@@ -12,6 +14,7 @@ class Mode(enum.Enum):
     TOOLS: str = "tool_call"
     JSON: str = "json_mode"
     MD_JSON: str = "markdown_json_mode"
+    JSON_SCHEMA: str = "json_schema_mode"
 
 
 class OpenAISchema(BaseModel):
@@ -127,6 +130,9 @@ class OpenAISchema(BaseModel):
                 completion, mode, throw_stream_exceptions=throw_stream_exceptions
             )
 
+        if completion.choices[0].finish_reason == "length":
+            raise IncompleteOutputException()
+
         message = completion.choices[0].message
 
         if mode == Mode.FUNCTIONS:
@@ -151,13 +157,7 @@ class OpenAISchema(BaseModel):
                 context=validation_context,
                 strict=strict,
             )
-        elif mode == Mode.JSON:
-            return cls.model_validate_json(
-                message.content,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode == Mode.MD_JSON:
+        elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
             return cls.model_validate_json(
                 message.content,
                 context=validation_context,
@@ -180,7 +180,6 @@ class OpenAISchema(BaseModel):
 
         Parameters:
             completion (openai.ChatCompletion): The response from an openai chat completion
-            throw_error (bool): Whether to throw an error if the function call is not detected
             validation_context (dict): The validation context to use for validating the response
             strict (bool): Whether to use strict json parsing
             mode (Mode): The openai completion mode
@@ -190,10 +189,14 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
+
         if stream_multitask:
             return await cls.from_streaming_response_async(
                 completion, mode, throw_stream_exceptions=throw_stream_exceptions
             )
+
+        if completion.choices[0].finish_reason == "length":
+            raise IncompleteOutputException()
 
         message = completion.choices[0].message
 
@@ -219,13 +222,7 @@ class OpenAISchema(BaseModel):
                 context=validation_context,
                 strict=strict,
             )
-        elif mode == Mode.JSON:
-            return cls.model_validate_json(
-                message.content,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode == Mode.MD_JSON:
+        elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
             return cls.model_validate_json(
                 message.content,
                 context=validation_context,

@@ -1,0 +1,12 @@
+# Reference: https://docs.ellipsis.dev
+version: 1.1
+pr_review:
+  auto_review_enabled: true
+  auto_summarize_pr: true
+  confidence_threshold: 0.9
+  rules:
+    # Control what gets flagged during PR review with custom rules. Here are some to get you started:
+    - "Code should be DRY (Dont Repeat Yourself)"
+    - "Extremely Complicated Code Needs Comments"
+    - "Use Descriptive Variable and Constant Names"
+    - "Function and Method Naming Should Follow Consistent Patterns"
