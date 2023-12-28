@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: MyPy
 
 on:
   push:
@@ -24,6 +24,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
+          cache: "pip"
       - name: Install dev dependencies
         run: |
           python3 -m pip install --upgrade pip setuptools wheel

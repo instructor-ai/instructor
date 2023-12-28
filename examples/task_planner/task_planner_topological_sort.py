@@ -1,10 +1,10 @@
 """
 Proof of Concept for a task planning and execution system using
-OpenAIs Functions and topological sort, based on the idea in 
+OpenAIs Functions and topological sort, based on the idea in
 query_planner_execution.py.py.
 
-Additionally: There are also cases where the "pure" recursive approach has advantages; 
-If subtasks for different parent tasks that start in parallel have different runtimes, 
+Additionally: There are also cases where the "pure" recursive approach has advantages;
+If subtasks for different parent tasks that start in parallel have different runtimes,
 we will wait unnecessarily with my current implementation.
 
 Added by Jan Philipp Harries / @jpdus
@@ -39,14 +39,14 @@ class Task(BaseModel):
     id: int = Field(..., description="Unique id of the task")
     task: str = Field(
         ...,
-        description="""Contains the task in text form. If there are multiple tasks, 
+        description="""Contains the task in text form. If there are multiple tasks,
         this task can only be executed when all dependant subtasks have been answered.""",
     )
     subtasks: List[int] = Field(
         default_factory=list,
-        description="""List of the IDs of subtasks that need to be answered before 
-        we can answer the main question. Use a subtask when anything may be unknown 
-        and we need to ask multiple questions to get the answer. 
+        description="""List of the IDs of subtasks that need to be answered before
+        we can answer the main question. Use a subtask when anything may be unknown
+        and we need to ask multiple questions to get the answer.
         Dependencies must only be other tasks.""",
     )
 

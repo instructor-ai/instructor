@@ -18,7 +18,7 @@ from jinja2 import Template
 from models import {{title}}
 
 import openai
-import instructor 
+import instructor
 
 instructor.patch()
 
@@ -59,7 +59,7 @@ def load_json_schema(json_schema_path: str) -> dict:
         with open(json_schema_path) as f:
             return json.load(f)
     except Exception as e:
-        raise ValueError(f"Failed to load JSON schema: {e}")
+        raise ValueError(f"Failed to load JSON schema: {e}") from e
 
 
 def generate_pydantic_model(json_schema_path: str):

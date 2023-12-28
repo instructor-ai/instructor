@@ -125,7 +125,7 @@ def get_api_key(request: Request):
 
 # Route to handle SSE events and return users
 @app.post("/extract", response_class=StreamingResponse)
-async def extract(question: Question, openai_key=Depends(get_api_key)):
+async def extract(question: Question, openai_key: str = Depends(get_api_key)):
     raise Exception(
         "The 'openai.api_key' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(api_key=openai_key)'"
     )
