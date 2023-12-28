@@ -176,8 +176,8 @@ https://contents.mediadecathlon.com/p2047870/8712c55568dd9928c83b19c6a4067bf1618
 
 ??? Note "Expand to see the output"
 
-    ![](https://images.unsplash.com/photo-1702261343783-0e97c493a07b?crop=entropy)
-    ![](https://images.unsplash.com/photo-1702499125332-75e7a9a64621?crop=entropy)
+    ![](https://contents.mediadecathlon.com/p1279823/9a1c59ad97a4084a346c014740ae4d3ff860ea70b485ee65f34017ff5e9ae5f7/recreational-ice-skates-fit-50-black.jpg?format=auto)
+    ![](https://contents.mediadecathlon.com/p2329893/1ed75517602a5e00245b89ab6a1c6be6d8968a5a227c932b10599f857f3ed4cd/mens-hiking-leather-boots-sh-100-x-warm.jpg?format=auto)
 
     ```json
     {

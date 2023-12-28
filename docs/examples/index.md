@@ -16,5 +16,6 @@
 12. [How are action items and dependencies generated from transcripts?](action_items.md)
 13. [How to enable OpenAI's moderation](moderation.md)
 14. [How to extract tables from images](extracting_tables.md)
+15. [How to generate advertising copy from image inputs](image_to_ad_copy.md)
 
 Explore more!
