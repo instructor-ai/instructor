@@ -116,22 +116,34 @@ plan.model_dump()
     While we build the query plan in this example, we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrival and calls openai for retrival augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
 
 ```python
-{'query_graph': [{'dependencies': [],
-                    'id': 1,
-                    'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
-                    'question': "Identify Jason's home country"},
-                    {'dependencies': [],
-                    'id': 2,
-                    'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
-                    'question': 'Find the population of Canada'},
-                    {'dependencies': [1],
-                    'id': 3,
-                    'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
-                    'question': "Find the population of Jason's home country"},
-                    {'dependencies': [2, 3],
-                    'id': 4,
-                    'node_type': <QueryType.SINGLE_QUESTION: 'SINGLE'>,
-                    'question': 'Calculate the difference in populations between Canada and Jason's home country"}]}
+{
+    "query_graph": [
+        {
+            "dependencies": [],
+            "id": 1,
+            "node_type": "SINGLE",
+            "question": "Identify Jason's home country",
+        },
+        {
+            "dependencies": [],
+            "id": 2,
+            "node_type": "SINGLE",
+            "question": "Find the population of Canada",
+        },
+        {
+            "dependencies": [1],
+            "id": 3,
+            "node_type": "SINGLE",
+            "question": "Find the population of Jason's home country",
+        },
+        {
+            "dependencies": [2, 3],
+            "id": 4,
+            "node_type": "SINGLE",
+            "question": "Calculate the difference in populations between Canada and Jasons home country",
+        },
+    ]
+}
 ```
 
 In the above code, we define a `query_planner` function that takes a question as input and generates a query plan using the OpenAI API.
