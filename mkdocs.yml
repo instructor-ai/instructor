@@ -133,6 +133,7 @@ nav:
     - Fields: 'concepts/fields.md'
     - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
+    - Raw Response: 'concepts/raw_response.md'
     - Streaming: "concepts/lists.md"
     - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'
