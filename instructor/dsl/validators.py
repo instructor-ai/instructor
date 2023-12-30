@@ -67,6 +67,8 @@ def llm_validator(
         openai_client (OpenAI): The OpenAI client to use (default: None)
     """
 
+    openai_client = openai_client or OpenAI()
+
     def llm(v):
         resp = openai_client.chat.completions.create(
             response_model=Validator,
