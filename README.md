@@ -18,7 +18,7 @@ Dive into the world of Python-based structured extraction, empowered by OpenAI's
 
 ## Get Started in Moments
 
-Installing Instructor is a breeze. Simply run `pip install instructor` in your terminal and you're on your way to a smoother data handling experience!
+Installing Instructor is a breeze. Simply run `pip install instructor` in your terminal (or `pip install 'instructor[cli]'` to include CLI support) and you're on your way to a smoother data handling experience!
 
 ## How Instructor Enhances Your Workflow
 
@@ -233,6 +233,8 @@ We also provide some added CLI functionality for easy convinience:
 - `instructor files` : Manage your uploaded files with ease. You'll be able to create, delete and upload files all from the command line
 
 - `instructor usage` : Instead of heading to the OpenAI site each time, you can monitor your usage from the cli and filter by date and time period. Note that usage often takes ~5-10 minutes to update from OpenAI's side
+
+Note that the CLI has additional dependencies which are optionally installed.
 
 ## License
 

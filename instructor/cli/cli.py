@@ -1,7 +1,14 @@
+import importlib
 import typer
+import warnings
 import instructor.cli.jobs as jobs
 import instructor.cli.files as files
 import instructor.cli.usage as usage
+
+try:
+    _ = importlib.import_module('rich')
+except ImportError:
+    warnings.warn('attempt to use the CLI without the "rich" module installed may fail; be sure to install with the "cli" extra dependencies set')
 
 app = typer.Typer(
     name="instructor-ft",
