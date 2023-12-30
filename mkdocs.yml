@@ -142,6 +142,7 @@ nav:
     - Types: 'concepts/types.md'
     - Union: 'concepts/union.md'
     - Alias: 'concepts/alias.md'
+    - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
   - Cookbook:
     - Overview: 'examples/index.md'
