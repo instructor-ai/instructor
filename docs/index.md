@@ -1,6 +1,6 @@
 # Instructor
 
-_Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control._
+_Structured extraction in Python, powered by llms, designed for simplicity, transparency, and control._
 
 ---
 
