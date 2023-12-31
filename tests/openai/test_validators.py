@@ -40,3 +40,21 @@ def test_runmodel_validator_error(model, mode, client):
             question="What is the meaning of life?",
             answer="The meaning of life is to be evil and steal",
         )
+
+
+@pytest.mark.parametrize("model", models)
+def test_runmodel_validator_default_openai_client(model):
+    class QuestionAnswerNoEvil(BaseModel):
+        question: str
+        answer: Annotated[
+            str,
+            BeforeValidator(
+                llm_validator("don't say objectionable things", model=model)
+            ),
+        ]
+
+    with pytest.raises(ValidationError):
+        QuestionAnswerNoEvil(
+            question="What is the meaning of life?",
+            answer="The meaning of life is to be evil and steal",
+        )

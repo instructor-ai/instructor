@@ -4,7 +4,7 @@ from openai import OpenAI
 from pydantic import Field
 
 from instructor.function_calls import OpenAISchema
-from instructor import patch
+from instructor.patch import patch
 
 
 class Validator(OpenAISchema):
