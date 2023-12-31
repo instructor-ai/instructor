@@ -10,3 +10,6 @@ pr_review:
     - "Extremely Complicated Code Needs Comments"
     - "Use Descriptive Variable and Constant Names"
     - "Function and Method Naming Should Follow Consistent Patterns"
+    - "If library code changes, expect documentation to be updated"
+    - "If library code changes, check if tests are updated"
+    - "If a new `md` file is created in `docs` make sure its added to mkdocs.yml"
