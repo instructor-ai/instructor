@@ -42,7 +42,7 @@ assert user.age == 25
 
 **Using async clients**
 
-For async clients you must use apatch vs patch like so:
+For async clients you must use `apatch` vs `patch` like so:
 
 ```py
 import instructor
@@ -88,7 +88,7 @@ assert isinstance(model, UserExtract)
 
 The question of using Instructor is fundamentally a question of why to use Pydantic.
 
-1. **Powered by type hints** — Instructor is powered by Pydantic, which is powered by type hints. Schema validation, prompting is controleld by type annotations; less to learn, less code ot write, and integrates with your IDE.
+1. **Powered by type hints** — Instructor is powered by Pydantic, which is powered by type hints. Schema validation, prompting is controlled by type annotations; less to learn, less code to write, and integrates with your IDE.
 
 2. **Powered by OpenAI** — Instructor is powered by OpenAI's function calling API. This means you can use the same API for both prompting and extraction.
 
@@ -108,7 +108,7 @@ If you'd like to see more check out our [cookbook](examples/index.md).
 
 ## Contributing
 
-If you want to help out checkout some of the issues marked as `good-first-issue` or `help-wanted`. Found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cook book.
+If you want to help out, checkout some of the issues marked as `good-first-issue` or `help-wanted`. Found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cook book.
 
 ## License
 
