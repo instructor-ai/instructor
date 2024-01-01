@@ -1,15 +1,22 @@
-from pydantic import BaseModel, create_model, Field
-from typing import Optional, List, Type, Union
-from instructor import OpenAISchema
+from typing import List, Optional, Type
+
+from pydantic import BaseModel, Field, create_model
+
+from instructor.function_calls import OpenAISchema, Mode
 
 
 class MultiTaskBase:
     task_type = None  # type: ignore
 
     @classmethod
-    def from_streaming_response(cls, completion):
-        json_chunks = cls.extract_json(completion)
+    def from_streaming_response(cls, completion, mode: Mode):
+        json_chunks = cls.extract_json(completion, mode)
         yield from cls.tasks_from_chunks(json_chunks)
+
+    @classmethod
+    async def from_streaming_response_async(cls, completion, mode: Mode):
+        json_chunks = cls.extract_json_async(completion, mode)
+        return cls.tasks_from_chunks_async(json_chunks)
 
     @classmethod
     def tasks_from_chunks(cls, json_chunks):
@@ -28,12 +35,64 @@ class MultiTaskBase:
                 obj = cls.task_type.model_validate_json(task_json)  # type: ignore
                 yield obj
 
+    @classmethod
+    async def tasks_from_chunks_async(cls, json_chunks):
+        started = False
+        potential_object = ""
+        async for chunk in json_chunks:
+            potential_object += chunk
+            if not started:
+                if "[" in chunk:
+                    started = True
+                    potential_object = chunk[chunk.find("[") + 1 :]
+                continue
+
+            task_json, potential_object = cls.get_object(potential_object, 0)
+            if task_json:
+                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                yield obj
+
     @staticmethod
-    def extract_json(completion):
+    def extract_json(completion, mode: Mode):
         for chunk in completion:
-            delta = chunk["choices"][0]["delta"]
-            if "function_call" in delta:
-                yield delta["function_call"]["arguments"]
+            try:
+                if chunk.choices:
+                    if mode == Mode.FUNCTIONS:
+                        if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                            yield json_chunk
+                    elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+                        if json_chunk := chunk.choices[0].delta.content:
+                            yield json_chunk
+                    elif mode == Mode.TOOLS:
+                        if json_chunk := chunk.choices[0].delta.tool_calls:
+                            yield json_chunk[0].function.arguments
+                    else:
+                        raise NotImplementedError(
+                            f"Mode {mode} is not supported for MultiTask streaming"
+                        )
+            except AttributeError:
+                pass
+
+    @staticmethod
+    async def extract_json_async(completion, mode: Mode):
+        async for chunk in completion:
+            try:
+                if chunk.choices:
+                    if mode == Mode.FUNCTIONS:
+                        if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                            yield json_chunk
+                    elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+                        if json_chunk := chunk.choices[0].delta.content:
+                            yield json_chunk
+                    elif mode == Mode.TOOLS:
+                        if json_chunk := chunk.choices[0].delta.tool_calls:
+                            yield json_chunk[0].function.arguments
+                    else:
+                        raise NotImplementedError(
+                            f"Mode {mode} is not supported for MultiTask streaming"
+                        )
+            except AttributeError:
+                pass
 
     @staticmethod
     def get_object(str, stack):
@@ -58,21 +117,39 @@ def MultiTask(
     for a specific task, names and descriptions are automatically generated. However
     they can be overridden.
 
-    Note:
-        Using this function is equivalent to creating a class that inherits from
-        OpenAISchema and has a list of the subtask class as a field.
+    ## Usage
 
-        ```python
-        class MultiTask(OpenAISchema):
-            \"""
-            Correct segmentation of `{subtask_class.__name__}` tasks
-            \"""
-            tasks: List[subtask_class] = Field(
-                default_factory=list,
-                repr=False,
-                description=f"Correctly segmented list of `{subtask_class.__name__}` tasks",
-            )
-        ```
+    ```python
+    from pydantic import BaseModel, Field
+    from instructor import MultiTask
+
+    class User(BaseModel):
+        name: str = Field(description="The name of the person")
+        age: int = Field(description="The age of the person")
+        role: str = Field(description="The role of the person")
+
+    MultiUser = MultiTask(User)
+    ```
+
+    ## Result
+
+    ```python
+    class MultiUser(OpenAISchema, MultiTaskBase):
+        tasks: List[User] = Field(
+            default_factory=list,
+            repr=False,
+            description="Correctly segmented list of `User` tasks",
+        )
+
+        @classmethod
+        def from_streaming_response(cls, completion) -> Generator[User]:
+            '''
+            Parse the streaming response from OpenAI and yield a `User` object
+            for each task in the response
+            '''
+            json_chunks = cls.extract_json(completion)
+            yield from cls.tasks_from_chunks(json_chunks)
+    ```
 
     Parameters:
         subtask_class (Type[OpenAISchema]): The base class to use for the MultiTask
@@ -100,7 +177,7 @@ def MultiTask(
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, MultiTaskBase),
+        __base__=(OpenAISchema, MultiTaskBase),  # type: ignore
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class

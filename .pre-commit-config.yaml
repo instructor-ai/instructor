@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.7 # Ruff version
+    hooks:
+      - id: ruff # Run the linter.
+        name: Run Linter Check (Ruff)
+        args: [ --fix ]
+        files: ^(instructor|tests|examples)/
+      - id: ruff-format       # Run the formatter.
+        name: Run Formatter (Ruff)
+  - repo: local
+    hooks:
+      - id: ci_type_mypy
+        name: Run Type Check (Mypy)
+        entry: >
+            bash -c 'set -o pipefail;
+            export CUSTOM_PACKAGES="instructor/cli/cli.py instructor/cli/usage.py" &&
+            export CUSTOM_FLAGS="--python-version=3.9 --color-output --no-pretty --follow-imports=skip" &&
+            curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/continuous-integration/scripts/devops/continuous-integration/type_mypy.sh |
+            bash'
+        language: system
+        types: [python]
+        pass_filenames: false

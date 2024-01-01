@@ -1,9 +1,50 @@
-from typing import Literal
-
 import pytest
 from pydantic import BaseModel
+from openai.resources.chat.completions import ChatCompletion
 
-from instructor import openai_schema, OpenAISchema, openai_function
+from instructor import openai_schema, OpenAISchema
+from instructor.exceptions import IncompleteOutputException
+
+
+@pytest.fixture
+def test_model():
+    class TestModel(OpenAISchema):
+        name: str = "TestModel"
+        data: str
+
+    return TestModel
+
+
+@pytest.fixture
+def mock_completion(request):
+    finish_reason = "stop"
+    data_content = '{\n"data": "complete data"\n}'
+
+    if hasattr(request, "param"):
+        finish_reason = request.param.get("finish_reason", finish_reason)
+        data_content = request.param.get("data_content", data_content)
+
+    mock_choices = [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "function_call": {"name": "TestModel", "arguments": data_content},
+                "content": data_content,
+            },
+            "finish_reason": finish_reason,
+        }
+    ]
+
+    completion = ChatCompletion(
+        id="test_id",
+        choices=mock_choices,
+        created=1234567890,
+        model="gpt-3.5-turbo",
+        object="chat.completion",
+    )
+
+    return completion
 
 
 def test_openai_schema():
@@ -44,44 +85,33 @@ def test_no_docstring():
     )
 
 
-def test_openai_function():
-    @openai_function
-    def get_current_weather(
-        location: str, format: Literal["celsius", "fahrenheit"] = "celsius"
-    ):
-        """
-        Gets the current weather in a given location, use this function for any questions related to the weather
+@pytest.mark.parametrize(
+    "mock_completion",
+    [{"finish_reason": "length", "data_content": '{\n"data": "incomplete dat"\n}'}],
+    indirect=True,
+)
+def test_incomplete_output_exception(test_model, mock_completion):
+    with pytest.raises(IncompleteOutputException):
+        test_model.from_response(mock_completion)
 
-        Parameters
-        ----------
-        location
-            The city to get the weather, e.g. San Francisco. Guess the location from user messages
 
-        format
-            A string with the full content of what the given role said
-        """
+def test_complete_output_no_exception(test_model, mock_completion):
+    test_model_instance = test_model.from_response(mock_completion)
+    assert test_model_instance.data == "complete data"
 
-    @openai_function
-    def get_current_weather_no_format_docstring(
-        location: str, format: Literal["celsius", "fahrenheit"] = "celsius"
-    ):
-        """
-        Gets the current weather in a given location, use this function for any questions related to the weather
 
-        Parameters
-        ----------
-        location
-            The city to get the weather, e.g. San Francisco. Guess the location from user messages
-        """
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "mock_completion",
+    [{"finish_reason": "length", "data_content": '{\n"data": "incomplete dat"\n}'}],
+    indirect=True,
+)
+async def test_incomplete_output_exception_raise(test_model, mock_completion):
+    with pytest.raises(IncompleteOutputException):
+        await test_model.from_response(mock_completion)
 
-    scheme_missing_param = get_current_weather_no_format_docstring.openai_schema
-    assert (
-        scheme_missing_param["parameters"]["properties"]["location"]["description"]
-        == "The city to get the weather, e.g. San Francisco. Guess the location from user messages"
-    )
-    assert scheme_missing_param["parameters"]["properties"]["format"]["enum"] == [
-        "celsius",
-        "fahrenheit",
-    ]
-    with pytest.raises(KeyError, match="description"):
-        scheme_missing_param["parameters"]["properties"]["format"]["description"]
+
+@pytest.mark.asyncio
+async def test_async_complete_output_no_exception(test_model, mock_completion):
+    test_model_instance = await test_model.from_response_async(mock_completion)
+    assert test_model_instance.data == "complete data"

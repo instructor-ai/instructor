@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "instructor"
-version = "0.2.7"
+version = "0.4.5"
 description = "Helper functions that allow us to improve openai's function_call ergonomics"
-authors = ["Jason <jason@jxnl.co>"]
+authors = ["Jason Liu <jason@jxnl.co>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "instructor"}]
@@ -10,10 +10,12 @@ repository = "https://github.com/jxnl/instructor"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-openai = "^0.27.8"
+openai = "^1.1.0"
 pydantic = "^2.0.2"
 docstring-parser = "^0.15"
-typer = "^0.9.0" 
+typer = "^0.9.0"
+rich = "^13.7.0"
+aiohttp = "^3.9.1"
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"
@@ -24,6 +26,9 @@ mkdocs = "^1.4.3"
 mkdocs-material = "^9.1.18"
 mkdocstrings = "^0.22.0"
 mkdocstrings-python = "^1.1.2"
+pytest-asyncio = "^0.21.1"
+coverage = "^7.3.2"
+mypy = "^1.7.1"
 
 [build-system]
 requires = ["poetry-core"]

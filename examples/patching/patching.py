@@ -1,9 +1,11 @@
-import openai
+import instructor
+
+from openai import OpenAI
 from pydantic import BaseModel
-from instructor import patch
+
 
 # By default, the patch function will patch the ChatCompletion.create and ChatCompletion.acreate methods. to support response_model parameter
-patch()
+client = instructor.patch(OpenAI())
 
 
 # Now, we can use the response_model parameter using only a base model
@@ -13,7 +15,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user: UserExtract = openai.ChatCompletion.create(
+user: UserExtract = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserExtract,
     messages=[
@@ -22,3 +24,7 @@ user: UserExtract = openai.ChatCompletion.create(
 )  # type: ignore
 
 print(user)
+{
+    "name": "Jason",
+    "age": 25,
+}

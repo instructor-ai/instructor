@@ -1,21 +1,21 @@
 from typing import List
-from typing_extensions import Annotated
-from rich.live import Live
 from rich.table import Table
-from rich.spinner import Spinner
 from rich.console import Console
 
 from datetime import datetime
+from openai import OpenAI
+
 import openai
 import typer
 import time
 
+client = OpenAI()
 app = typer.Typer()
 console = Console()
 
 
 # Sample response data
-def generate_file_table(files: List[openai.File]) -> Table:
+def generate_file_table(files: List[openai.types.FileObject]) -> Table:
     table = Table(
         title="OpenAI Files",
     )
@@ -37,15 +37,16 @@ def generate_file_table(files: List[openai.File]) -> Table:
     return table
 
 
-def get_files(limit: int = 5) -> List[openai.File]:
-    files = openai.File.list(limit=limit)["data"]  # type: ignore
-    files = sorted(files, key=lambda x: x["created_at"], reverse=True)
+def get_files(limit: int = 5) -> List[openai.types.FileObject]:
+    files = client.files.list(limit=limit)
+    files = files.data
+    files = sorted(files, key=lambda x: x.created_at, reverse=True)
     return files[:limit]
 
 
 def get_file_status(file_id: str) -> str:
-    response = openai.File.retrieve(file_id)
-    return response["status"]
+    response = client.files.retrieve(file_id)
+    return response.status
 
 
 @app.command(
@@ -57,7 +58,7 @@ def upload(
     poll: int = typer.Option(5, help="Polling interval in seconds"),
 ):
     with open(filepath, "rb") as file:
-        response = openai.File.create(file=file, purpose=purpose)
+        response = client.files.create(file=file, purpose=purpose)
     file_id = response["id"]
     with console.status(f"Monitoring upload: {file_id}...") as status:
         status.spinner_style = "dots"
@@ -76,10 +77,8 @@ def download(
     file_id: str = typer.Argument(..., help="ID of the file to download"),
     output: str = typer.Argument(..., help="Output path for the downloaded file"),
 ):
-    with console.status(
-        f"[bold green]Downloading file {file_id}...", spinner="dots"
-    ) as status:
-        content = openai.File.download(file_id)
+    with console.status(f"[bold green]Downloading file {file_id}...", spinner="dots"):
+        content = client.files.download(file_id)
         with open(output, "wb") as file:
             file.write(content)
         console.log(f"[bold green]File {file_id} downloaded successfully!")
@@ -89,11 +88,9 @@ def download(
     help="Delete a file from OpenAI's servers",
 )
 def delete(file_id: str = typer.Argument(..., help="ID of the file to delete")):
-    with console.status(
-        f"[bold red]Deleting file {file_id}...", spinner="dots"
-    ) as status:
+    with console.status(f"[bold red]Deleting file {file_id}...", spinner="dots"):
         try:
-            openai.File.delete(file_id)
+            client.files.delete(file_id)
             console.log(f"[bold red]File {file_id} deleted successfully!")
         except Exception as e:
             console.log(f"[bold red]Error deleting file {file_id}: {e}")
@@ -104,7 +101,7 @@ def delete(file_id: str = typer.Argument(..., help="ID of the file to delete")):
     help="Monitor the status of a file on OpenAI's servers",
 )
 def status(
-    file_id: str = typer.Argument(..., help="ID of the file to check the status of")
+    file_id: str = typer.Argument(..., help="ID of the file to check the status of"),
 ):
     with console.status(f"Monitoring status of file {file_id}...") as status:
         while True:

@@ -1,13 +1,12 @@
+import instructor
+
+from openai import OpenAI
+from instructor import llm_validator
+from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
-from pydantic import (
-    BaseModel,
-    BeforeValidator,
-)
 
-from instructor import llm_validator, patch
-import openai
-
-patch()
+# Apply the patch to the OpenAI client
+client = instructor.patch(OpenAI())
 
 
 class QuestionAnswer(BaseModel):
@@ -18,7 +17,7 @@ class QuestionAnswer(BaseModel):
 question = "What is the meaning of life?"
 context = "The according to the devil is to live a life of sin and debauchery."
 
-qa: QuestionAnswer = openai.ChatCompletion.create(
+qa: QuestionAnswer = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswer,
     messages=[
@@ -49,13 +48,27 @@ class QuestionAnswerNoEvil(BaseModel):
     answer: Annotated[
         str,
         BeforeValidator(
-            llm_validator("don't say objectionable things", allow_override=True)
+            llm_validator("don't say objectionable things", openai_client=client)
         ),
     ]
 
 
 try:
-    qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
+    qa = QuestionAnswerNoEvil(
+        question="What is the meaning of life?",
+        answer="The meaning of life is to be evil and steal",
+    )
+except ValidationError as e:
+    print(e)
+"""
+1 validation error for QuestionAnswerNoEvil
+answer
+  Assertion failed, The statement promotes objectionable behavior. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.4/v/assertion_error
+"""
+
+try:
+    qa: QuestionAnswerNoEvil = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=QuestionAnswerNoEvil,
         messages=[
@@ -78,7 +91,7 @@ except Exception as e:
         For further information visit https://errors.pydantic.dev/2.3/v/assertion_error
     """
 
-qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
+qa: QuestionAnswerNoEvil = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswerNoEvil,
     max_retries=1,

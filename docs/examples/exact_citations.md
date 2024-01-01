@@ -1,190 +1,135 @@
-# Example: Answering Questions with Citations
+# Example: Answering Questions with Validated Citations
 
-In this example, we'll demonstrate how to use OpenAI Function Call to ask an AI a question and get back an answer with correct citations. We'll define the necessary data structures using Pydantic and show how to retrieve the citations for each answer.
+For the full code example check out [examples/citation_fuzzy_match.py](https://github.com/jxnl/instructor/blob/main/examples/citation_with_extraction/citation_fuzzy_match.py)
 
-!!! tips "Motivation"
-    When using AI models to answer questions, it's important to provide accurate and reliable information with appropriate citations. By including citations for each statement, we can ensure the information is backed by reliable sources and help readers verify the information themselves.
+## Overview
 
+This example shows how to use Instructor with validators to not only add citations to answers generated but also prevent hallucinations by ensuring that every statement made by the LLM is backed up by a direct quote from the context provided, and that those quotes exist!.Two Python classes, `Fact` and `QuestionAnswer`, are defined to encapsulate the information of individual facts and the entire answer, respectively.
 
-## Defining the Data Structures
+## Data Structures
 
-Let's start by defining the data structures required for this task: `Fact` and `QuestionAnswer`.
+### The `Fact` Class
 
-!!! tip "Prompting as documentation"
-    Make sure to include detailed and useful docstrings and fields for your class definitions. Naming becomes very important since they are semantically meaningful in the prompt.
+The `Fact` class encapsulates a single statement or fact. It contains two fields:
 
-    * `substring_quote` performs better than `quote` since it suggests it should be a substring of the original content.
-    * Notice that there are instructions on splitting facts in the docstring which will be used by OpenAI
+- `fact`: A string representing the body of the fact or statement.
+- `substring_quote`: A list of strings. Each string is a direct quote from the context that supports the `fact`.
 
-```python
-import openai
-from pydantic import Field, BaseModel
+#### Validation Method: `validate_sources`
+
+This method validates the sources (`substring_quote`) in the context. It utilizes regex to find the span of each substring quote in the given context. If the span is not found, the quote is removed from the list.
+
+```python hl_lines="6 8-13"
+from pydantic import Field, BaseModel, model_validator, FieldValidationInfo
 from typing import List
-from instructor import OpenAISchema
-
 
 class Fact(BaseModel):
-    """
-    Each fact has a body and a list of sources.
-    If there are multiple facts, make sure to break them apart such that each one only uses a set of sources that are relevant to it.
-    """
+    fact: str = Field(...)
+    substring_quote: List[str] = Field(...)
 
-    fact: str = Field(..., description="Body of the sentence as part of a response")
-    substring_quote: List[str] = Field(
-        ...,
-        description="Each source should be a direct quote from the context, as a substring of the original content",
-    )
-
-    def _get_span(self, quote, context, errs=100):
-        import regex
-
-        minor = quote
-        major = context
-
-        errs_ = 0
-        s = regex.search(f"({minor}){{e<={errs_}}}", major)
-        while s is None and errs_ <= errs:
-            errs_ += 1
-            s = regex.search(f"({minor}){{e<={errs_}}}", major)
-
-        if s is not None:
-            yield from s.spans()
+    @model_validator(mode="after")
+    def validate_sources(self, info: FieldValidationInfo) -> "Fact":
+        text_chunks = info.context.get("text_chunk", None)
+        spans = list(self.get_spans(text_chunks))
+        self.substring_quote = [text_chunks[span[0] : span[1]] for span in spans]
+        return self
 
     def get_spans(self, context):
         for quote in self.substring_quote:
             yield from self._get_span(quote, context)
 
-
-class QuestionAnswer(OpenAISchema):
-    """
-    Class representing a question and its answer as a list of facts, where each fact should have a source.
-    Each sentence contains a body and a list of sources.
-    """
-
-    question: str = Field(..., description="Question that was asked")
-    answer: List[Fact] = Field(
-        ...,
-        description="Body of the answer, each fact should be its separate object with a body and a list of sources",
-    )
+    def _get_span(self, quote, context):
+        for match in re.finditer(re.escape(quote), context):
+            yield match.span()
 ```
 
-The `Fact` class represents a single statement in the answer. It contains a `fact` attribute for the body of the sentence and a `substring_quote` attribute for the sources, which are direct quotes from the context.
+### The `QuestionAnswer` Class
 
-The `QuestionAnswer` class represents a question and its answer. It consists of a `question` attribute for the question asked and a list of `Fact` objects in the `answer` attribute.
+This class encapsulates the question and its corresponding answer. It contains two fields:
 
-!!! tip "Embedding computation"
-    While it's not the best idea to get too crazy with adding 100 methods to your class
-    collocating some computation is oftentimes useful, here we implement the substring search directly with the `Fact` class.
+- `question`: The question asked.
+- `answer`: A list of `Fact` objects that make up the answer.
 
-## Asking AI a Question
+#### Validation Method: `validate_sources`
 
-To ask the AI a question and get back an answer with citations, we can define a function `ask_ai` that takes a question and context as input and returns a `QuestionAnswer` object.
+This method checks that each `Fact` object in the `answer` list has at least one valid source. If a `Fact` object has no valid sources, it is removed from the `answer` list.
 
-!!! tips "Prompting Tip: Expert system"
-    Expert prompting is a great trick to get results, it can be easily done by saying things like:
+```python hl_lines="5-8"
+class QuestionAnswer(BaseModel):
+    question: str = Field(...)
+    answer: List[Fact] = Field(...)
 
-    *  you are an world class expert that can correctly ...
-    *  you are jeff dean give me a code review ...
+    @model_validator(mode="after")
+    def validate_sources(self) -> "QuestionAnswer":
+        self.answer = [fact for fact in self.answer if len(fact.substring_quote) > 0]
+        return self
+```
 
-```python
+## Function to Ask AI a Question
+
+### The `ask_ai` Function
+
+This function takes a string `question` and a string `context` and returns a `QuestionAnswer` object. It uses the OpenAI API to fetch the answer and then validates the sources using the defined classes.
+
+To understand the validation context work from pydantic check out [pydantic's docs](https://docs.pydantic.dev/usage/validators/#model-validators)
+
+```python hl_lines="5 6 14"
+from openai import OpenAI
+import instructor
+
+# Apply the patch to the OpenAI client
+# enables response_model, validation_context keyword
+client = instructor.patch(OpenAI())
+
 def ask_ai(question: str, context: str) -> QuestionAnswer:
-    """
-    Function to ask AI a question and get back an Answer object.
-    but should be updated to use the actual method for making a request to the AI.
-
-    Args:
-        question (str): The question to ask the AI.
-        context (str): The context for the question.
-
-    Returns:
-        Answer: The Answer object.
-    """
-
-    # Making a request to the hypothetical 'openai' module
-    completion = openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
-        temperature=0.2,
-        max_tokens=1000,
-        functions=[QuestionAnswer.openai_schema],
-        function_call={"name": QuestionAnswer.openai_schema["name"]},
+        temperature=0,
+        response_model=QuestionAnswer,
         messages=[
-            {
-                "role": "system",
-                "content": f"You are a world class algorithm to answer questions with correct and exact citations. ",
-            },
-            {"role": "user", "content": f"Answer question using the following context"},
+            {"role": "system", "content": "You are a world class algorithm to answer questions with correct and exact citations."},
             {"role": "user", "content": f"{context}"},
-            {"role": "user", "content": f"Question: {question}"},
-            {
-                "role": "user",
-                "content": f"Tips: Make sure to cite your sources, and use the exact words from the context.",
-            },
+            {"role": "user", "content": f"Question: {question}"}
         ],
+        validation_context={"text_chunk": context},
     )
-
-    # Creating an Answer object from the completion response
-    return QuestionAnswer.from_response(completion)
 ```
 
-The `ask_ai` function takes a string `question` and a string `context` as input. It makes a completion request to the AI model, providing the question and context as part of the prompt. The resulting completion is then converted into a `QuestionAnswer` object.
+## Example
 
-## Evaluating an Example
-
-Let's evaluate the example by asking the AI a question and getting back an answer with citations. We'll ask the question "What did the author do during college?" with the given context.
-
-!!! usage "Highlight"
-    This just adds some color and captures the citation in `<>`
-
-    ```python
-    def highlight(text, span):
-        return (
-            "..."
-            + text[span[0] - 50 : span[0]].replace("\n", "")
-            + "\033[91m"
-            + "<"
-            + text[span[0] : span[1]].replace("\n", "")
-            + "> "
-            + "\033[0m"
-            + text[span[1] : span[1] + 20].replace("\n", "")
-            + "..."
-        )
-    ```
+dd
+Here's an example of using these classes and functions to ask a question and validate the answer.
 
 ```python
 question = "What did the author do during college?"
 context = """
 My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.
-I went to an arts high school but in university I studied Computational Mathematics and physics. 
+I went to an arts high school but in university I studied Computational Mathematics and physics.
 As part of coop I worked at many companies including Stitchfix, Facebook.
 I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.
 """
-
-answer = ask_ai(question, context)
-
-print("Question:", question)
-print()
-for fact in answer.answer:
-    print("Statement:", fact.fact)
-    for span in fact.get_spans(context):
-        print("Citation:", highlight(context, span))
-    print()
 ```
 
-In this code snippet, we print the question and iterate over each fact in the answer. For each fact, we print the statement and highlight the corresponding citation in the context using the `highlight` function.
+The output would be a `QuestionAnswer` object containing validated facts and their sources.
 
-Here is the expected output for the example:
-
+```python
+{
+  "question": "where did he go to school?",
+  "answer": [
+    {
+      "statement": "Jason Liu went to an arts highschool.",
+      "substring_phrase": [
+        "arts highschool"
+      ]
+    },
+    {
+      "statement": "Jason Liu studied Computational Mathematics and physics in university.",
+      "substring_phrase": [
+        "university"
+      ]
+    }
+  ]
+}
 ```
-Question: What did the author do during college?
 
-Statement: The author studied Computational Mathematics and physics in university.
-Citation: ...s born in China.I went to an arts high school but <in university I studied Computational Mathematics and physics> . As part of coop I...
-
-Statement: The author started the Data Science club at the University of Waterloo and was the president of the club for 2 years.
-Citation: ...y companies including Stitchfix, Facebook.I also <started the Data Science club at the University of Waterloo>  and I was the presi...
-Citation: ... club at the University of Waterloo and I was the <president of the club for 2 years> ...
-```
-
-The output includes the question, followed by each statement in the answer with its corresponding citation highlighted in the context.
-
-Feel free to try this code with different questions and contexts to see how the AI responds with accurate citations.
+This ensures that every piece of information in the answer has been validated against the context.

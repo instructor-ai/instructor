@@ -1,11 +1,12 @@
 import enum
+import instructor
+
 from typing import List
+from openai import OpenAI
+from pydantic import BaseModel, Field
 
-import openai
-from pydantic import Field
-from tenacity import retry, stop_after_attempt
 
-from instructor import OpenAISchema
+client = instructor.patch(OpenAI())
 
 
 class NodeType(str, enum.Enum):
@@ -15,7 +16,7 @@ class NodeType(str, enum.Enum):
     FOLDER = "folder"
 
 
-class Node(OpenAISchema):
+class Node(BaseModel):
     """
     Class representing a single node in a filesystem. Can be either a file or a folder.
     Note that a file cannot have children, but a folder can.
@@ -54,7 +55,7 @@ class Node(OpenAISchema):
             print(f"{parent_path}/{self.name}", self.node_type)
 
 
-class DirectoryTree(OpenAISchema):
+class DirectoryTree(BaseModel):
     """
     Container class representing a directory tree.
 
@@ -77,7 +78,6 @@ Node.model_rebuild()
 DirectoryTree.model_rebuild()
 
 
-@retry(stop=stop_after_attempt(3))
 def parse_tree_to_filesystem(data: str) -> DirectoryTree:
     """
     Convert a string representing a directory tree into a filesystem structure
@@ -90,11 +90,9 @@ def parse_tree_to_filesystem(data: str) -> DirectoryTree:
         DirectoryTree: The directory tree representing the filesystem.
     """
 
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
-        temperature=0.2,
-        functions=[DirectoryTree.openai_schema],
-        function_call={"name": DirectoryTree.openai_schema["name"]},
+        response_model=DirectoryTree,
         messages=[
             {
                 "role": "system",

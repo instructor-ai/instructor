@@ -9,9 +9,9 @@ The OpenAI API Usage CLI tool provides functionalities for monitoring your OpenA
 ```sh
 $ instructor usage --help
 
- Usage: instructor usage [OPTIONS] COMMAND [ARGS]...                                                           
+ Usage: instructor usage [OPTIONS] COMMAND [ARGS]...
 
- Check OpenAI API usage data                                                                                   
+ Check OpenAI API usage data
 
 ╭─ Options ───────────────────────────────────────────────────────╮
 │ --help          Show this message and exit.                     │
@@ -51,7 +51,6 @@ To display the API usage for today, simply run:
 $ instructor usage list
 ```
 
-# Contributions 
+# Contributions
 
 We aim to provide a light wrapper around the API rather than offering a complete CLI. Contributions are welcome! Please feel free to make an issue at [jxnl/instructor/issues](https://github.com/jxnl/instructor/issues) or submit a pull request.
-

@@ -1,24 +1,182 @@
-site_name: Instructor (openai_function_call)
+site_name: Instructor
+site_author: Jason Liu
 site_description: Enhancing OpenAI function calling with Pydantic 
 repo_name: instructor
-repo_url: https://github.com/jxnl/instructor
-site_url: https://jxnl.github.io/instructor
+repo_url: https://github.com/jxnl/instructor/
+site_url: https://jxnl.github.io/instructor/
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2023 Jason Liu 
 theme:
   name: material
   icon:
     repo: fontawesome/brands/github
+    edit: material/pencil 
+    view: material/eye
+    theme:
+    admonition:
+      note: octicons/tag-16
+      abstract: octicons/checklist-16
+      info: octicons/info-16
+      tip: octicons/squirrel-16
+      success: octicons/check-16
+      question: octicons/question-16
+      warning: octicons/alert-16
+      failure: octicons/x-circle-16
+      danger: octicons/zap-16
+      bug: octicons/bug-16
+      example: octicons/beaker-16
+      quote: octicons/quote-16
   features:
-    - navigation.instant
-    - navigation.tabs
-    - navigation.tabs.sticky
-    - navigation.expand
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
     - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
     - navigation.footer
-    - search.suggest
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    # - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
     - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    # - toc.integrate
+  palette:
+      - scheme: default
+        primary: indigo
+        accent: indigo
+        toggle:
+          icon: material/brightness-7
+          name: Switch to dark mode
+      - scheme: slate
+        primary: black
+        accent: indigo
+        toggle:
+          icon: material/brightness-4
+          name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: jxnl 
+      repo: instructor
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/mkdocs.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+nav:
+  - Introduction: 
+    - Welcome To Instructor: 'index.md'
+    - Why use Instructor?: 'why.md'
+    - Help with Instructor: 'help.md'
+    - Installation: 'installation.md'
+    - Contributing: 'contributing.md'
+  - Tips: 'concepts/prompting.md'
+  - Concepts:
+    - Philosophy: 'concepts/philosophy.md'
+    - Models: 'concepts/models.md'
+    - Fields: 'concepts/fields.md'
+    - Missing: "concepts/maybe.md"
+    - Patching: 'concepts/patching.md'
+    - Raw Response: 'concepts/raw_response.md'
+    - Streaming: "concepts/lists.md"
+    - FastAPI: 'concepts/fastapi.md'
+    - Caching: 'concepts/caching.md'
+    - Validators: "concepts/reask_validation.md"
+    - Distillation: "concepts/distillation.md"
+    - Types: 'concepts/types.md'
+    - Union: 'concepts/union.md'
+    - Alias: 'concepts/alias.md'
+    - Enums: 'concepts/enums.md'
+    - Type Adapter: 'concepts/typeadapter.md'
+  - Cookbook:
+    - Overview: 'examples/index.md'
+    - Text Classification: 'examples/classification.md'
+    - Self Critique: 'examples/self_critique.md'
+    - Image Extracting Tables: 'examples/extracting_tables.md'
+    - Image to Ad Copy: 'examples/image_to_ad_copy.md'
+    - Moderation: 'examples/moderation.md'
+    - Citations: 'examples/exact_citations.md'
+    - Knowledge Graph: 'examples/knowledge_graph.md'
+    - Entity Resolution: 'examples/entity_resolution.md'
+    - Search Queries: 'examples/search.md'
+    - Query Decomposition: 'examples/planning-tasks.md'
+    - Recursive Schemas: 'examples/recursive.md'
+    - Table Extraction: 'examples/autodataframe.md'
+    - Action Item and Dependency Mapping: 'examples/action_items.md'
+    - Multi-File Code Generation: 'examples/gpt-engineer.md'
+    - PII Data Sanitization: 'examples/pii.md'
+    - Open Source: 'examples/open_source.md'
+  - CLI Reference:
+      - "Introduction": "cli/index.md"
+      - "Finetuning GPT-3.5": "cli/finetune.md"
+      - "Usage Tracking": "cli/usage.md"
+  - API Reference:
+      - 'Core Library': 'api.md'
+  - Blog:
+    - "blog/index.md"
+  
 plugins:
   - social
-  - search
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - minify:
+      minify_html: true
   - mkdocstrings:
       handlers:
         python:
@@ -26,56 +184,40 @@ plugins:
             members_order: alphabetical
             allow_inspection: true
             show_bases: true
-markdown_extensions:
-  - pymdownx.critic
-  - pymdownx.caret
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.tilde
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences
-  - attr_list
-  - md_in_html
-  - admonition
-nav:
-  - Introduction: 
-      - Getting Started: 'index.md'
-      - Prompt Engineering Tips: 'tips/index.md'
-      - Helpers:
-        - Reasking and Validation Overview: "reask_validation.md"
-        - Multiple Extractions: "multitask.md"
-        - Handling Missing Content: "maybe.md"
-      - Philosophy: 'philosophy.md'
-  - Use Cases:
-    - Overview: 'examples/index.md'
-    - Text Classification Techniques: 'examples/classification.md'
-    - AI Self-Assessment: 'examples/self_critique.md'
-    - Citation Retrieval via Regex: 'examples/exact_citations.md'
-    - Search Query Segmentation: 'examples/search.md'
-    - Query Decomposition in One Go: 'examples/planning-tasks.md'
-    - Working with Recursive Schemas: 'examples/recursive.md'
-    - Table Extraction from Text: 'examples/autodataframe.md'
-    - Action Item and Dependency Mapping: 'examples/action_items.md'
-    - Multi-File Code Generation: 'examples/gpt-engineer.md'
-    - PII Data Sanitization: 'examples/pii.md'
-  - CLI Reference:
-      - "Introduction": "cli/index.md"
-      - "Usage Tracking": "cli/usage.md"
-      - "Finetuning GPT": "cli/finetune.md"
-  - API Reference:
-      - 'OpenAISchema': 'openai_schema.md'
-      - 'MultiTask': 'api_multitask.md'
-      - "Introduction: Writing Prompts": "writing-prompts.md"
-      - "Prompting Templates": "chat-completion.md"
+  - blog:
+      enabled: !ENV CI
+      blog_dir: "blog"
+      blog_toc: true
+      post_dir: blog/posts
+      post_date_format: yyyy/MM/dd
+      post_url_format: "{date}/{slug}"
+      authors_file: "{blog}/.authors.yml"
+  - rss:
+      match_path: blog/posts/.* 
+      date_from_meta:
+        as_creation: date
+      categories:
+        - categories
+        - tags 
+      enabled: !ENV [CI, false]
 extra:
   analytics:
     provider: google
     property: G-5CR8QXF5CN
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: >- 
+            Thanks for your feedback! Help us improve this page by
+            using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
   social:
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/jxnlco

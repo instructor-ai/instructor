@@ -1,5 +1,6 @@
 from instructor import OpenAISchema, dsl
 from pydantic import Field
+import json
 
 
 class SearchQuery(OpenAISchema):
@@ -31,9 +32,7 @@ task = (
     )
     | SearchResponse
 )
-import pprint
 
-import json
 
 print(json.dumps(task.kwargs, indent=1))
 """

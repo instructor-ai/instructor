@@ -1,10 +1,10 @@
 """
 Proof of Concept for a task planning and execution system using
-OpenAIs Functions and topological sort, based on the idea in 
+OpenAIs Functions and topological sort, based on the idea in
 query_planner_execution.py.py.
 
-Additionally: There are also cases where the "pure" recursive approach has advantages; 
-If subtasks for different parent tasks that start in parallel have different runtimes, 
+Additionally: There are also cases where the "pure" recursive approach has advantages;
+If subtasks for different parent tasks that start in parallel have different runtimes,
 we will wait unnecessarily with my current implementation.
 
 Added by Jan Philipp Harries / @jpdus
@@ -13,10 +13,13 @@ Added by Jan Philipp Harries / @jpdus
 import asyncio
 from typing import List, Generator
 
-import openai
+from openai import OpenAI
+
 from pydantic import Field, BaseModel
 
-from instructor import OpenAISchema
+import instructor
+
+client = instructor.patch(OpenAI())
 
 
 class TaskResult(BaseModel):
@@ -28,7 +31,7 @@ class TaskResults(BaseModel):
     results: List[TaskResult]
 
 
-class Task(OpenAISchema):
+class Task(BaseModel):
     """
     Class representing a single task in a task plan.
     """
@@ -36,14 +39,14 @@ class Task(OpenAISchema):
     id: int = Field(..., description="Unique id of the task")
     task: str = Field(
         ...,
-        description="""Contains the task in text form. If there are multiple tasks, 
+        description="""Contains the task in text form. If there are multiple tasks,
         this task can only be executed when all dependant subtasks have been answered.""",
     )
     subtasks: List[int] = Field(
         default_factory=list,
-        description="""List of the IDs of subtasks that need to be answered before 
-        we can answer the main question. Use a subtask when anything may be unknown 
-        and we need to ask multiple questions to get the answer. 
+        description="""List of the IDs of subtasks that need to be answered before
+        we can answer the main question. Use a subtask when anything may be unknown
+        and we need to ask multiple questions to get the answer.
         Dependencies must only be other tasks.""",
     )
 
@@ -57,7 +60,7 @@ class Task(OpenAISchema):
         return TaskResult(task_id=self.id, result=f"`{self.task}`")
 
 
-class TaskPlan(OpenAISchema):
+class TaskPlan(BaseModel):
     """
     Container class representing a tree of tasks and subtasks.
     Make sure every task is in the tree, and every task is done only once.
@@ -76,7 +79,7 @@ class TaskPlan(OpenAISchema):
         tmp_dep_graph = {item.id: set(item.subtasks) for item in self.task_graph}
 
         def topological_sort(
-            dep_graph: dict[int, set[int]]
+            dep_graph: dict[int, set[int]],
         ) -> Generator[set[int], None, None]:
             while True:
                 ordered = set(item for item, dep in dep_graph.items() if len(dep) == 0)
@@ -137,8 +140,8 @@ class TaskPlan(OpenAISchema):
         return task_results
 
 
-Task.update_forward_refs()
-TaskPlan.update_forward_refs()
+Task.model_rebuild()
+TaskPlan.model_rebuild()
 
 
 def task_planner(question: str) -> TaskPlan:
@@ -153,11 +156,10 @@ def task_planner(question: str) -> TaskPlan:
         },
     ]
 
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model="gpt-4-0613",
         temperature=0,
-        functions=[TaskPlan.openai_schema],
-        function_call={"name": TaskPlan.openai_schema["name"]},
+        response_model=TaskPlan,
         messages=messages,
         max_tokens=1000,
     )
@@ -167,52 +169,42 @@ def task_planner(question: str) -> TaskPlan:
 
 
 if __name__ == "__main__":
-    from pprint import pprint
-
     plan = task_planner(
         "What is the difference in populations betweend the adjacent countries of Jan's home country and the adjacent countries of Jason's home country?"
     )
-    pprint(plan.dict())
-    """
-    {'task_graph': [{'id': 1,
-                 'subtasks': [],
-                 'task': "Identify Jan's home country"},
-                {'id': 2,
-                 'subtasks': [1],
-                 'task': "Identify the adjacent countries of Jan's home "
-                         'country'},
-                {'id': 3,
-                 'subtasks': [2],
-                 'task': 'Calculate the total population of the adjacent '
-                         "countries of Jan's home country"},
-                {'id': 4,
-                 'subtasks': [],
-                 'task': "Identify Jason's home country"},
-                {'id': 5,
-                 'subtasks': [4],
-                 'task': "Identify the adjacent countries of Jason's home "
-                         'country'},
-                {'id': 6,
-                 'subtasks': [5],
-                 'task': 'Calculate the total population of the adjacent '
-                         "countries of Jason's home country"},
-                {'id': 7,
-                 'subtasks': [3, 6],
-                 'task': 'Calculate the difference in populations between the '
-                         "adjacent countries of Jan's home country and the "
-                         "adjacent countries of Jason's home country"}]}
-    """
-
-    # execute the plan
-    results = asyncio.run(plan.execute())
-
-    pprint(results, sort_dicts=False)
-    """
-    {1: TaskResult(task_id=1, result="`Identify Jan's home country`"),
-     4: TaskResult(task_id=4, result="`Identify Jason's home country`"),
-     2: TaskResult(task_id=2, result="`Identify the adjacent countries of Jan's home country`"),
-     5: TaskResult(task_id=5, result="`Identify the adjacent countries of Jason's home country`"),
-     3: TaskResult(task_id=3, result="`Calculate the total population of the adjacent countries of Jan's home country`"),
-     6: TaskResult(task_id=6, result="`Calculate the total population of the adjacent countries of Jason's home country`"),
-     7: TaskResult(task_id=7, result="`Calculate the difference in populations between the adjacent countries of Jan's home country and the adjacent countries of Jason's home country`")}
-    """
+    print(plan.model_dump_json(indent=2))
+    {
+        "task_graph": [
+            {"id": 1, "subtasks": [], "task": "Identify Jan's home country"},
+            {
+                "id": 2,
+                "subtasks": [1],
+                "task": "Identify the adjacent countries of Jan's home " "country",
+            },
+            {
+                "id": 3,
+                "subtasks": [2],
+                "task": "Calculate the total population of the adjacent "
+                "countries of Jan's home country",
+            },
+            {"id": 4, "subtasks": [], "task": "Identify Jason's home country"},
+            {
+                "id": 5,
+                "subtasks": [4],
+                "task": "Identify the adjacent countries of Jason's home " "country",
+            },
+            {
+                "id": 6,
+                "subtasks": [5],
+                "task": "Calculate the total population of the adjacent "
+                "countries of Jason's home country",
+            },
+            {
+                "id": 7,
+                "subtasks": [3, 6],
+                "task": "Calculate the difference in populations between the "
+                "adjacent countries of Jan's home country and the "
+                "adjacent countries of Jason's home country",
+            },
+        ]
+    }

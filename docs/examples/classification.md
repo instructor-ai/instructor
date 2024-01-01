@@ -34,11 +34,16 @@ class SinglePrediction(BaseModel):
 The function **`classify`** will perform the single-label classification.
 
 ```python
-import openai
+from openai import OpenAI
+import instructor
+
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.patch(OpenAI())
 
 def classify(data: str) -> SinglePrediction:
     """Perform single-label classification on the input text."""
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=SinglePrediction,
         messages=[
@@ -48,7 +53,6 @@ def classify(data: str) -> SinglePrediction:
             },
         ],
     )  # type: ignore
-
 ```
 
 ### Testing and Evaluation
@@ -91,7 +95,7 @@ The function **`multi_classify`** is responsible for multi-label classification.
 ```python
 def multi_classify(data: str) -> MultiClassPrediction:
     """Perform multi-label classification on the input text."""
-    return openai.ChatCompletion.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=MultiClassPrediction,
         messages=[

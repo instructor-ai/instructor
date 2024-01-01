@@ -1,43 +1,119 @@
-# Instructor (openai_function_call)
+# Welcome to Instructor - Your Gateway to Structured Outputs with OpenAI
 
+_Structured extraction in Python, powered by OpenAI's function calling API, designed for simplicity, transparency, and control._
+
+---
+
+[Star us on Github!](https://www.github.com/jxnl/instructor)
+
+[![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
+[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/jxnl/instructor.svg)](https://github.com/jxnl/instructor/network)
-[![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
-[![GitHub license](https://img.shields.io/github/license/jxnl/instructor.svg)](https://github.com/jxnl/instructor/blob/main/LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow)](https://www.buymeacoffee.com/jxnlco)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
+[![Coverage Status](https://coveralls.io/repos/github/jxnl/instructor/badge.svg?branch=add-coveralls)](https://coveralls.io/github/jxnl/instructor?branch=add-coveralls)
+[![Instructor](https://img.shields.io/badge/instructor-blog-blue)](https://jxnl.github.io/instructor/blog/)
 
-*Structured extraction in Python, powered by OpenAI's function calling api, designed for simplicity, transparency, and control.*
+Dive into the world of Python-based structured extraction, empowered by OpenAI's cutting-edge function calling API. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and its results insightful.
 
-This library is built to interact with openai's function call api from python code, with python structs / objects. It's designed to be intuitive, easy to use, but give great visibily in how we call openai.
+## Get Started in Moments
 
-### Requirements
+Installing Instructor is a breeze. Simply run `pip install instructor` in your terminal and you're on your way to a smoother data handling experience!
 
-This library depends on **Pydantic** and **OpenAI** that's all.
+## How Instructor Enhances Your Workflow
 
-### Installation
+Our `instructor.patch` for the `OpenAI` class introduces three key enhancements:
 
-To get started with OpenAI Function Call, you need to install it using `pip`. Run the following command in your terminal:
+- **Response Mode:** Specify a Pydantic model to streamline data extraction.
+- **Max Retries:** Set your desired number of retry attempts for requests.
+- **Validation Context:** Provide a context object for enhanced validator access. A Glimpse into Instructor's Capabilities.
 
-```sh
-$ pip install instructor
+### Using Validators
+To learn more about validators, checkout our blog post [Good LLM validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
+
+## Usage
+With Instructor, your code becomes more efficient and readable. Here’s a quick peek:
+
+```py hl_lines="5 13"
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+# Enables `response_model`
+client = instructor.patch(OpenAI())
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+user = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract Jason is 25 years old"},
+    ]
+)
+
+assert isinstance(user, UserDetail)
+assert user.name == "Jason"
+assert user.age == 25
 ```
 
-## Quick Start with Patching ChatCompletion
+### Using `openai<1.0.0`
 
-To simplify your work with OpenAI models and streamline the extraction of Pydantic objects from prompts, we offer a patching mechanism for the `ChatCompletion`` class. Here's a step-by-step guide:
+If you're using `openai<1.0.0` then make sure you `pip install instructor<0.3.0`
+where you can patch a global client like so:
 
-### Step 1: Import and Patch the Module
+```python hl_lines="4 8"
+import openai
+import instructor
 
-First, import the required libraries and apply the patch function to the OpenAI module. This exposes new functionality with the response_model parameter.
+instructor.patch()
+
+user = openai.ChatCompletion.create(
+    ...,
+    response_model=UserDetail,
+)
+```
+
+### Using async clients
+
+For async clients you must use `apatch` vs. `patch`, as shown:
+
+```py
+import instructor
+from openai import AsyncOpenAI
+from pydantic import BaseModel
+
+aclient = instructor.apatch(AsyncOpenAI())
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+model = await aclient.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserExtract,
+    messages=[
+        {"role": "user", "content": "Extract jason is 25 years old"},
+    ],
+)
+
+assert isinstance(model, UserExtract)
+```
+
+### Step 1: Patch the client
+
+First, import the required libraries and apply the `patch` function to the OpenAI module. This exposes new functionality with the `response_model` parameter.
 
 ```python
-import openai
+import instructor
+from openai import OpenAI
 from pydantic import BaseModel
-from instructor import patch
 
-patch()
+# This enables response_model keyword
+# from client.chat.completions.create
+client = instructor.patch(OpenAI())
 ```
 
 ### Step 2: Define the Pydantic Model
@@ -45,192 +121,134 @@ patch()
 Create a Pydantic model to define the structure of the data you want to extract. This model will map directly to the information in the prompt.
 
 ```python
+from pydantic import BaseModel
+
 class UserDetail(BaseModel):
     name: str
     age: int
 ```
 
-### Step 3: Extract Data with ChatCompletion
+### Step 3: Extract
 
-Use the openai.ChatCompletion.create method to send a prompt and extract the data into the Pydantic object. The response_model parameter specifies the Pydantic model to use for extraction.
+Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The `response_model` parameter specifies the Pydantic model to use for extraction. It is helpful to annotate the variable with the type of the response model which will help your IDE provide autocomplete and spell check.
 
 ```python
-user: UserDetail = openai.ChatCompletion.create(
+user: UserDetail = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ]
 )
-```
 
-### Step 4: Validate the Extracted Data
-
-You can then validate the extracted data by asserting the expected values. By adding the type things you also get a bunch of nice benefits with your IDE like spell check and auto complete!
-
-```python
 assert user.name == "Jason"
 assert user.age == 25
 ```
 
-## Introduction to `OpenAISchema`
+## Pydantic Validation
 
-If you want more control than just passing a single class we can use the `OpenAISchema` which extends `BaseModel`.
+Validation can also be plugged into the same Pydantic model. 
 
-This quick start guide contains the follow sections:
+In this example, if the answer attribute contains content that violates the rule "Do not say objectionable things", Pydantic will raise a validation error.
 
-1. Defining a schema 
-2. Adding Additional Prompting
-3. Calling the ChatCompletion
-4. Deserializing back to the instance
+```python hl_lines="9 15"
+from pydantic import BaseModel, ValidationError, BeforeValidator
+from typing_extensions import Annotated
+from instructor import llm_validator
 
-OpenAI Function Call allows you to leverage OpenAI's powerful language models for function calls and schema extraction. This guide provides a quick start for using OpenAI Function Call.
+class QuestionAnswer(BaseModel):
+    question: str
+    answer: Annotated[
+        str,
+        BeforeValidator(llm_validator("don't say objectionable things"))
+    ]
 
-### Section 1: Defining a Schema
+try:
+    qa = QuestionAnswer(
+        question="What is the meaning of life?",
+        answer="The meaning of life is to be evil and steal",
+    )
+except ValidationError as e:
+    print(e)
+```
 
-To begin, let's define a schema using OpenAI Function Call. A schema describes the structure of the input and output data for a function. In this example, we'll define a simple schema for a `User` object:
+It is important to note here that the **error message is generated by the LLM**, not the code. Thus, it is helpful for re-asking the model.
+
+```plaintext
+1 validation error for QuestionAnswer
+answer
+   Assertion failed, The statement is objectionable. (type=assertion_error)
+```
+
+## Re-ask on validation error
+
+Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
 ```python
-from instructor import OpenAISchema
+import instructor
 
-class UserDetails(OpenAISchema):
+from openai import OpenAI
+from pydantic import BaseModel, field_validator
+
+# Apply the patch to the OpenAI client
+client = instructor.patch(OpenAI())
+
+class UserDetails(BaseModel):
     name: str
     age: int
-```
 
-In this schema, we define a `UserDetails` class that extends `OpenAISchema`. We declare two fields, `name` and `age`, of type `str` and `int` respectively. 
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v):
+        if v.upper() != v:
+            raise ValueError("Name must be in uppercase.")
+        return v
 
-### Section 2: Adding Additional Prompting
-
-To enhance the performance of the OpenAI language model, you can add additional prompting in the form of docstrings and field descriptions. They can provide context and guide the model on how to process the data.
-
-!!! note Using `patch`
-    these docstrings and fields descriptions are powered by `pydantic.BaseModel` so they'll work via the patching approach as well.
-
-```python hl_lines="5 6"
-from instructor import OpenAISchema
-from pydantic import Field
-
-class UserDetails(OpenAISchema):
-    "Correctly extracted user information"
-    name: str = Field(..., description="User's full name")
-    age: int
-```
-
-In this updated schema, we use the `Field` class from `pydantic` to add descriptions to the `name` field. The description provides information about the field, giving even more context to the language model.
-
-
-!!! note "Code, schema, and prompt"
-     We can run `openai_schema` to see exactly what the API will see, notice how the docstrings, attributes, types, and field descriptions are now part of the schema. This describes on this library's core philosophies.
-
-```python hl_lines="2 3"
-class UserDetails(OpenAISchema):
-    "Correctly extracted user information"
-
-    name: str = Field(..., description="User's full name")
-    age: int
-
-UserDetails.openai_schema
-```
-
-```json
-{
-"name": "UserDetails",
-"description": "Correctly extracted user information",
-"parameters": {
-    "type": "object",
-    "properties": {
-    "name": {
-        "description": "User's full name",
-        "type": "string"
-    },
-    "age": {
-        "type": "integer"
-    }
-    },
-    "required": [
-    "age",
-    "name"
-    ]
-}
-}
-```
-
-### Section 3: Calling the ChatCompletion
-
-With the schema defined, let's proceed with calling the `ChatCompletion` API using the defined schema and messages.
-
-```python hl_lines="11 12 15"
-from instructor import OpenAISchema
-from pydantic import Field
-
-class UserDetails(OpenAISchema):
-    "Correctly extracted user information"
-    name: str = Field(..., description="User's full name")
-    age: int
-
-completion = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo-0613",
-    functions=[UserDetails.openai_schema],
-    function_call={"name": UserDetails.openai_schema["name"]},
+model = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserDetails,
+    max_retries=2,
     messages=[
-        {"role": "system", "content": "Extract user details from my requests"},
-        {"role": "user", "content": "My name is John Doe and I'm 30 years old."},
+        {"role": "user", "content": "Extract jason is 25 years old"},
     ],
 )
+
+assert model.name == "JASON"
 ```
 
-In this example, we make a call to the `ChatCompletion` API by providing the model name (`gpt-3.5-turbo-0613`) and a list of messages. The messages consist of a system message and a user message. The system message sets the context by requesting user details, while the user message provides the input with the user's name and age.
+## [Evals](https://github.com/jxnl/instructor/tree/main/tests/openai/evals)
 
-Note that we have omitted the additional parameters that can be included in the API request, such as `temperature`, `max_tokens`, and `n`. These parameters can be customized according to your requirements.
+We invite you to contribute to evals in `pytest` as a way to monitor the quality of the OpenAI models and the `instructor` library. To get started check out the [jxnl/instructor/tests/evals](https://github.com/jxnl/instructor/tree/main/tests/openai/evals) and contribute your own evals in the form of pytest tests. These evals will be run once a week and the results will be posted.
 
-### Section 4: Deserializing Back to the Instance
+## Contributing
 
-To deserialize the response from the `ChatCompletion` API back into an instance of the `UserDetails` class, we can use the `from_response` method.
+If you want to help, checkout some of the issues marked as `good-first-issue` or `help-wanted` found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cookbook.
 
-```python hl_lines="1"
-user = UserDetails.from_response(completion)
-print(user.name)  # Output: John Doe
-print(user.age)   # Output: 30
-```
+## CLI
 
-By calling `UserDetails.from_response`, we create an instance of the `UserDetails` class using the response from the API call. Subsequently, we can access the extracted user details through the `name` and `age` attributes of the `user` object.
+We also provide some added CLI functionality for easy convinience:
 
-## IDE Support 
+- `instructor jobs` : This helps with the creation of fine-tuning jobs with OpenAI. Simple use `instructor jobs create-from-file --help` to get started creating your first fine-tuned GPT3.5 model
 
-Everything is designed for you to get the best developer experience possible, with the best editor support.
+- `instructor files` : Manage your uploaded files with ease. You'll be able to create, delete and upload files all from the command line
 
-Including **autocompletion**:
-
-![autocomplete](docs/img/ide_support.png)
-
-And even **inline errors**
-
-![errors](docs/img/error2.png)
-
-## OpenAI Schema and Pydantic
-
-This quick start guide provided you with a basic understanding of how to use OpenAI Function Call for schema extraction and function calls. You can now explore more advanced use cases and creative applications of this library.
-
-Since `UserDetails` is a `OpenAISchems` and a `pydantic.BaseModel` you can use inheritance and nesting to create more complex emails while avoiding code duplication
-
-```python
-class UserDetails(OpenAISchema):
-    name: str = Field(..., description="User's full name")
-    age: int
-
-class UserWithAddress(UserDetails):
-    address: str 
-
-class UserWithFriends(UserDetails):
-    best_friend: UserDetails
-    friends: List[UserDetails]
-```
-
-If you have any questions, feel free to leave an issue or reach out to the library's author on [Twitter](https://twitter.com/jxnlco). For a more comprehensive solution with additional features, consider checking out [MarvinAI](https://www.askmarvin.ai/).
-
-To see more examples of how we can create interesting models check out some [examples.](examples/index.md)
+- `instructor usage` : Instead of heading to the OpenAI site each time, you can monitor your usage from the cli and filter by date and time period. Note that usage often takes ~5-10 minutes to update from OpenAI's side
 
 ## License
 
 This project is licensed under the terms of the MIT License.
+
+# Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+<a href="https://github.com/jxnl/instructor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
+</a>

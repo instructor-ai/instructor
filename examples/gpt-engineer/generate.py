@@ -1,8 +1,11 @@
-import openai
+import instructor
 
+from openai import OpenAI
 from typing import List
 from pydantic import Field
 from instructor import OpenAISchema
+
+client = instructor.patch(OpenAI())
 
 
 class File(OpenAISchema):
@@ -29,7 +32,7 @@ class Program(OpenAISchema):
 
 
 def develop(data: str) -> Program:
-    completion = openai.ChatCompletion.create(
+    completion = client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0.1,
         functions=[Program.openai_schema],

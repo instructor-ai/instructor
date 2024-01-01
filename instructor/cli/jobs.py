@@ -1,20 +1,24 @@
 from typing import List
-import openai
+from openai import OpenAI
+
 import typer
 import time
-
 from rich.live import Live
 from rich.table import Table
 from rich.console import Console
 from datetime import datetime
+from typing import cast
+from openai.types.fine_tuning import FineTuningJob
 
+client = OpenAI()
 app = typer.Typer()
 console = Console()
 
 
 def generate_table(jobs):
     # Sorting the jobs by creation time
-    jobs = sorted(jobs, key=lambda x: x["created_at"], reverse=True)
+    jobs = sorted(jobs, key=lambda x: (cast(FineTuningJob, x)).created_at, reverse=True)
+    jobs = cast(List[FineTuningJob], jobs)
 
     table = Table(
         title="OpenAI Fine Tuning Job Monitoring",
@@ -36,23 +40,21 @@ def generate_table(jobs):
             "succeeded": "✅",
             "failed": "❌",
             "cancelled": "🚫",
-        }.get(job["status"], "❓")
+        }.get(job.status, "❓")
 
         finished_at = (
-            str(datetime.fromtimestamp(job["finished_at"]))
-            if job["finished_at"]
-            else "N/A"
+            str(datetime.fromtimestamp(job.finished_at)) if job.finished_at else "N/A"
         )
 
         table.add_row(
-            job["id"],
-            f"{status_emoji} [{status_color(job['status'])}]{job['status']}[/]",
-            str(datetime.fromtimestamp(job["created_at"])),
+            job.id,
+            f"{status_emoji} [{status_color(job.status)}]{job.status}[/]",
+            str(datetime.fromtimestamp(job.created_at)),
             finished_at,
-            job["fine_tuned_model"],
-            job["training_file"],
-            str(job["hyperparameters"]["n_epochs"]),
-            job["model"],
+            job.fine_tuned_model,
+            job.training_file,
+            str(job.hyperparameters.n_epochs),
+            job.model,
         )
 
     return table
@@ -64,13 +66,13 @@ def status_color(status: str) -> str:
     )
 
 
-def get_jobs(limit: int = 5) -> List[openai.FineTuningJob]:
-    return openai.FineTuningJob.list(limit=limit)["data"]
+def get_jobs(limit: int = 5) -> List:
+    return client.fine_tuning.jobs.list(limit=limit).data
 
 
 def get_file_status(file_id: str) -> str:
-    response = openai.File.retrieve(file_id)
-    return response["status"]
+    response = client.files.retrieve(file_id)
+    return response.status
 
 
 @app.command(
@@ -99,11 +101,36 @@ def watch(
 def create_from_id(
     id: str = typer.Argument(..., help="ID of the existing fine-tuning job"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
+    n_epochs: int = typer.Option(
+        None, help="Number of epochs for fine-tuning", show_default=False
+    ),
+    batch_size: str = typer.Option(
+        None, help="Batch size for fine-tuning", show_default=False
+    ),
+    learning_rate_multiplier: str = typer.Option(
+        None, help="Learning rate multiplier for fine-tuning", show_default=False
+    ),
+    validation_file_id: str = typer.Option(
+        None, help="ID of the uploaded validation file"
+    ),
 ):
+    hyperparameters_dict = {}
+    if n_epochs is not None:
+        hyperparameters_dict["n_epochs"] = n_epochs
+    if batch_size is not None:
+        hyperparameters_dict["batch_size"] = batch_size
+    if learning_rate_multiplier is not None:
+        hyperparameters_dict["learning_rate_multiplier"] = learning_rate_multiplier
+
     with console.status(
         f"[bold green]Creating fine-tuning job from ID {id}...", spinner="dots"
-    ) as status:
-        job = openai.FineTuningJob.create(training_file=id, model=model)
+    ):
+        job = client.fine_tuning.jobs.create(
+            training_file=id,
+            model=model,
+            hyperparameters=hyperparameters_dict if hyperparameters_dict else None,
+            validation_file=validation_file_id if validation_file_id else None,
+        )
         console.log(f"[bold green]Fine-tuning job created with ID: {job.id}")  # type: ignore
     watch(limit=5, poll=2, screen=False)
 
@@ -115,27 +142,77 @@ def create_from_file(
     file: str = typer.Argument(..., help="Path to the file for fine-tuning"),
     model: str = typer.Option("gpt-3.5-turbo", help="Model to use for fine-tuning"),
     poll: int = typer.Option(2, help="Polling interval in seconds"),
+    n_epochs: int = typer.Option(
+        None, help="Number of epochs for fine-tuning", show_default=False
+    ),
+    batch_size: str = typer.Option(
+        None, help="Batch size for fine-tuning", show_default=False
+    ),
+    learning_rate_multiplier: str = typer.Option(
+        None, help="Learning rate multiplier for fine-tuning", show_default=False
+    ),
+    validation_file: str = typer.Option(None, help="Path to the validation file"),
+    model_suffix: str = typer.Option(None, help="Suffix to identify the model"),
 ):
-    with open(file, "rb") as file:
-        response = openai.File.create(file=file, purpose="fine-tune")
+    hyperparameters_dict = {}
+    if n_epochs is not None:
+        hyperparameters_dict["n_epochs"] = n_epochs
+    if batch_size is not None:
+        hyperparameters_dict["batch_size"] = batch_size
+    if learning_rate_multiplier is not None:
+        hyperparameters_dict["learning_rate_multiplier"] = learning_rate_multiplier
 
-    file_id = response["id"]
+    with open(file, "rb") as file:
+        response = client.files.create(file=file, purpose="fine-tune")
+
+    file_id = response.id
+
+    validation_file_id = None
+    if validation_file:
+        with open(validation_file, "rb") as val_file:
+            val_response = client.files.create(file=val_file, purpose="fine-tune")
+        validation_file_id = val_response.id
 
     with console.status(f"Monitoring upload: {file_id} before finetuning...") as status:
         status.spinner_style = "dots"
         while True:
             file_status = get_file_status(file_id)
+            if validation_file_id:
+                validation_file_status = get_file_status(validation_file_id)
 
-            if file_status == "processed":
+            if file_status == "processed" and (
+                not validation_file_id or validation_file_status == "processed"
+            ):
                 console.log(f"[bold green]File {file_id} uploaded successfully!")
+                if validation_file_id:
+                    console.log(
+                        f"[bold green]Validation file {validation_file_id} uploaded successfully!"
+                    )
                 break
 
             time.sleep(poll)
 
-    job = openai.FineTuningJob.create(training_file=file_id, model=model)
-    console.log(
-        f"[bold green]Fine-tuning job created with ID: {job['id']} from file ID: {file_id}"
+    additional_params = {}
+    if hyperparameters_dict:
+        additional_params["hyperparameters"] = hyperparameters_dict
+    if validation_file:
+        additional_params["validation_file"] = validation_file
+    if model_suffix:
+        additional_params["suffix"] = model_suffix
+
+    job = client.fine_tuning.jobs.create(
+        training_file=file_id,
+        model=model,
+        **additional_params,
     )
+    if validation_file_id:
+        console.log(
+            f"[bold green]Fine-tuning job created with ID: {job.id} from file ID: {file_id} and validation_file ID: {validation_file_id}"
+        )
+    else:
+        console.log(
+            f"[bold green]Fine-tuning job created with ID: {job.id} from file ID: {file_id}"
+        )
     watch(limit=5, poll=poll, screen=False)
 
 
@@ -143,9 +220,9 @@ def create_from_file(
     help="Cancel a fine-tuning job.",
 )
 def cancel(id: str = typer.Argument(..., help="ID of the fine-tuning job to cancel")):
-    with console.status(f"[bold red]Cancelling job {id}...", spinner="dots") as status:
+    with console.status(f"[bold red]Cancelling job {id}...", spinner="dots"):
         try:
-            openai.FineTuningJob.cancel(id)
+            client.fine_tuning.jobs.cancel(id)
             console.log(f"[bold red]Job {id} cancelled successfully!")
         except Exception as e:
             console.log(f"[bold red]Error cancelling job {id}: {e}")

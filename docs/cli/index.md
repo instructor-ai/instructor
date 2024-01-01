@@ -25,7 +25,6 @@ pip install instructor
 ## Features
 
 - **API Usage Monitoring**: Keep tabs on your API usage right from the terminal. Track token counts, total requests, and even calculate the costs. To learn more, consult the [Usage Guide](usage.md).
-  
 - **Model Fine-Tuning**: Optimize your models to meet your specific requirements using our fine-tuning app. For more details, check out the [Fine-Tuning Guide](finetune.md).
 
 ---

@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-openai
+openai>=1.0.0
 pydantic
 instructor
 regex
