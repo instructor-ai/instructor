@@ -139,6 +139,7 @@ Firstly, we'll need a data model for the initial summary that we will be generat
         "name": "GeneratedSummary",
         "description": "This represents a highly concise summary that includes as many entities as possible from the original source article.\n\nAn Entity is a real-world object that's assigned a name - for example, a person, country a product or a book title.\n\nGuidelines\n- Make every word count\n- The new summary should be highly dense and concise yet self-contained, eg., easily understood without the Article.\n- Make space with fusion, compression, and removal of uninformative phrases like \"the article discusses\"",
         "parameters": {
+            "type": "object",
             "properties": {
             "summary": {
                 "description": "This represents the final summary generated that captures the meaning of the original article which is as concise as possible. ",
@@ -148,8 +149,8 @@ Firstly, we'll need a data model for the initial summary that we will be generat
             },
             "required": [
             "summary"
-            ],
-            "type": "object"
+            ]
+            
         }
         }
     ]
