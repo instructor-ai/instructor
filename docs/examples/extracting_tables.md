@@ -30,7 +30,7 @@ def md_to_df(data: Any) -> Any:
     return data
 
 MarkdownDataFrame = Annotated[
-    InstanceOf(pd.DataFrame),
+    InstanceOf[pd.DataFrame],
     BeforeValidator(md_to_df),
     PlainSerializer(lambda df: df.to_markdown()),
     WithJsonSchema(
