@@ -69,6 +69,7 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
+  custom_dir: docs/overrides
 # Extensions
 markdown_extensions:
   - abbr
