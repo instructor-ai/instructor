@@ -4,6 +4,7 @@ from openai import OpenAI
 from pydantic import Field
 
 from instructor.function_calls import OpenAISchema
+from instructor.patch import patch
 
 
 class Validator(OpenAISchema):
@@ -66,6 +67,8 @@ def llm_validator(
         temperature (float): The temperature to use for the LLM (default: 0)
         openai_client (OpenAI): The OpenAI client to use (default: None)
     """
+
+    openai_client = openai_client if openai_client else patch(OpenAI())
 
     def llm(v):
         resp = openai_client.chat.completions.create(
