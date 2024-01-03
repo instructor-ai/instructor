@@ -12,6 +12,15 @@ _Structured extraction in Python, powered by llms, designed for simplicity, tran
 
 Dive into the world of Python-based structured extraction, by OpenAI's function calling API and Pydantic, the most widely used data validation library for Python. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and steerable.
 
+!!! tip "Support in other languages"
+
+    Check out ports to other languages below:
+
+    - [Typescript / Javascript](https://www.github.com/jxnl/instructor-js)
+    - [Elixir](https://github.com/thmsmlr/instructor_ex/)
+
+    If you want to port Instructor to another language, please reach out to us on [Twitter](https://twitter.com/jxnlco) we'd love to help you get started!
+
 ## Usage
 
 ```py hl_lines="5 13"
