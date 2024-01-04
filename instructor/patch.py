@@ -240,6 +240,15 @@ async def retry_async(
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
             kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
+            if mode == Mode.TOOLS:
+                kwargs["messages"].append(
+                    {
+                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
+                        "role": "tool",
+                        "name": response.choices[0].message.tool_calls[0].function.name,
+                        "content": "Failure"
+                    }                
+            )
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -286,6 +295,15 @@ def retry_sync(
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
             kwargs["messages"].append(dump_message(response.choices[0].message))
+            if mode == Mode.TOOLS:
+                kwargs["messages"].append(
+                    {
+                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
+                        "role": "tool",
+                        "name": response.choices[0].message.tool_calls[0].function.name,
+                        "content": "Failure"
+                    }
+                )
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -323,10 +341,6 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
         *args,
         **kwargs,
     ):
-        if mode == Mode.TOOLS:
-            max_retries = 0
-            logger.warning("max_retries is not supported when using tool calls")
-
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, kwargs=kwargs, mode=mode
         )  # type: ignore
@@ -349,10 +363,6 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
         *args,
         **kwargs,
     ):
-        if mode == Mode.TOOLS:
-            max_retries = 0
-            logger.warning("max_retries is not supported when using tool calls")
-
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, kwargs=kwargs, mode=mode
         )  # type: ignore
