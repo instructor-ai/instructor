@@ -2,6 +2,10 @@
 
 If you need help getting started with Instructor or with advanced usage, the following sources may be useful.
 
+## :material-discord: Discord
+
+The [Discord](https://discord.gg/CV8sPM5k5Y) is a great place to ask questions and get help from the community.
+
 ## :material-creation: Concepts
 
 The [concepts](concepts/prompting.md) section explains the core concepts of Instructor and how to prompt with models.
