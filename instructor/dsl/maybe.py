@@ -1,13 +1,14 @@
 from pydantic import BaseModel, Field, create_model
-from typing import Type, Optional
+from typing import Type, Optional, TypeVar, Generic
 
+T = TypeVar("T", bound=BaseModel)
 
-class MaybeBase(BaseModel):
+class MaybeBase(BaseModel, Generic[T]):
     """
     Extract a result from a model, if any, otherwise set the error and message fields.
     """
 
-    result: Optional[BaseModel]
+    result: Optional[T]
     error: bool = Field(default=False)
     message: Optional[str]
 
@@ -15,7 +16,7 @@ class MaybeBase(BaseModel):
         return self.result is not None  # type: ignore
 
 
-def Maybe(model: Type[BaseModel]) -> MaybeBase:
+def Maybe(model: Type[T]) -> Type[MaybeBase[T]]:
     """
     Create a Maybe model for a given Pydantic model. This allows you to return a model that includes fields for `result`, `error`, and `message` for sitatations where the data may not be present in the context.
 
@@ -52,10 +53,6 @@ def Maybe(model: Type[BaseModel]) -> MaybeBase:
         MaybeModel (Type[BaseModel]): A new Pydantic model that includes fields for `result`, `error`, and `message`.
     """
 
-    class MaybeBase(BaseModel):
-        def __bool__(self):
-            return self.result is not None  # type: ignore
-
     fields = {
         "result": (
             Optional[model],
@@ -74,6 +71,4 @@ def Maybe(model: Type[BaseModel]) -> MaybeBase:
         ),
     }
 
-    MaybeModel = create_model(f"Maybe{model.__name__}", __base__=MaybeBase, **fields)
-
-    return MaybeModel  # type: ignore
+    return create_model(f"Maybe{model.__name__}", __base__=MaybeBase, **fields)
