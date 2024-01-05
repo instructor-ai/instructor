@@ -91,7 +91,8 @@ def test_override_docs():
             ),
             {
                 "role": "assistant",
-                "content": 'Hello, world![{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}]',
+                "content": "",
+                "tool_calls": [{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}],
             },
         ),
         (
@@ -109,7 +110,8 @@ def test_override_docs():
             ),
             {
                 "role": "assistant",
-                "content": '[{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}]',
+                "content": "",
+                "tool_calls": [{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}],
             },
         ),
         (
@@ -151,7 +153,7 @@ def test_override_docs():
             "tool_calls and no content and function_call",
             ChatCompletionMessage(
                 role="assistant",
-                content=None,
+                content="",
                 function_call=FunctionCall(arguments="", name="test_tool"),
                 tool_calls=[
                     ChatCompletionMessageToolCall(
@@ -163,7 +165,8 @@ def test_override_docs():
             ),
             {
                 "role": "assistant",
-                "content": '[{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}]{"arguments": "", "name": "test_tool"}',
+                "content": '{"arguments": "", "name": "test_tool"}',
+                "tool_calls": [{"id": "test_tool", "function": {"arguments": "", "name": "test_tool"}, "type": "function"}]
             },
         ),
     ],
