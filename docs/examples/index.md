@@ -10,12 +10,11 @@
 6. [How are complex queries decomposed into subqueries in a single request?](planning-tasks.md)
 7. [How are entities extracted and resolved from documents?](entity_resolution.md)
 8. [How are recursive schemas implemented and understood?](recursive.md)
-9. [How are tables extracted automatically from textual data?](autodataframe.md)
-10. [How is multi-file code generation accomplished?](gpt-engineer.md)
-11. [How is Personally Identifiable Information sanitized from documents?](pii.md)
-12. [How are action items and dependencies generated from transcripts?](action_items.md)
-13. [How to enable OpenAI's moderation](moderation.md)
-14. [How to extract tables from images](extracting_tables.md)
-15. [How to generate advertising copy from image inputs](image_to_ad_copy.md)
+9. [How is multi-file code generation accomplished?](gpt-engineer.md)
+10. [How is Personally Identifiable Information sanitized from documents?](pii.md)
+11. [How are action items and dependencies generated from transcripts?](action_items.md)
+12. [How to enable OpenAI's moderation](moderation.md)
+13. [How to extract tables using GPT-Vision?](extracting_tables.md)
+14. [How to generate advertising copy from image inputs](image_to_ad_copy.md)
 
 Explore more!

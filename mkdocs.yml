@@ -149,8 +149,7 @@ nav:
     - Overview: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
     - Self Critique: 'examples/self_critique.md'
-    - Image Extracting Tables: 'examples/extracting_tables.md'
-    - Image to Ad Copy: 'examples/image_to_ad_copy.md'
+    - Extracting Tables: 'examples/extracting_tables.md'
     - Moderation: 'examples/moderation.md'
     - Citations: 'examples/exact_citations.md'
     - Knowledge Graph: 'examples/knowledge_graph.md'
@@ -158,11 +157,11 @@ nav:
     - Search Queries: 'examples/search.md'
     - Query Decomposition: 'examples/planning-tasks.md'
     - Recursive Schemas: 'examples/recursive.md'
-    - Table Extraction: 'examples/autodataframe.md'
     - Action Item and Dependency Mapping: 'examples/action_items.md'
     - Multi-File Code Generation: 'examples/gpt-engineer.md'
     - PII Data Sanitization: 'examples/pii.md'
     - Open Source: 'examples/open_source.md'
+    - Image to Ad Copy: 'examples/image_to_ad_copy.md'
   - CLI Reference:
       - "Introduction": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"

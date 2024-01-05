@@ -1,11 +1,61 @@
 from openai import OpenAI
+from io import StringIO
+from typing import Annotated, Any, Iterable
+from openai import OpenAI
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    PlainSerializer,
+    InstanceOf,
+    WithJsonSchema,
+)
+import pandas as pd
+import instructor
 
-client = OpenAI()
+
+client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
 
 
-response = client.chat.completions.create(
+def md_to_df(data: Any) -> Any:
+    if isinstance(data, str):
+        return (
+            pd.read_csv(
+                StringIO(data),  # Get rid of whitespaces
+                sep="|",
+                index_col=1,
+            )
+            .dropna(axis=1, how="all")
+            .iloc[1:]
+            .map(lambda x: x.strip())
+        )
+    return data
+
+
+MarkdownDataFrame = Annotated[
+    InstanceOf[pd.DataFrame],
+    BeforeValidator(md_to_df),
+    PlainSerializer(lambda x: x.to_markdown()),
+    WithJsonSchema(
+        {
+            "type": "string",
+            "description": """
+                The markdown representation of the table, 
+                each one should be tidy, do not try to join tables
+                that should be seperate""",
+        }
+    ),
+]
+
+
+class Table(BaseModel):
+    caption: str
+    dataframe: MarkdownDataFrame
+
+
+tables = client.chat.completions.create(
     model="gpt-4-vision-preview",
     max_tokens=1000,
+    response_model=Iterable[Table],
     messages=[
         {
             "role": "user",
@@ -38,4 +88,17 @@ response = client.chat.completions.create(
     ],
 )
 
-print(response.choices[0].message.content)
+for table in tables:
+    print(table.caption)
+    print(table.dataframe)
+    print()
+    """
+    D1 App Retention Rates July 2023 (Ireland & U.K.)
+                    Ireland   UK  
+    Category                       
+    Education             14%   12%
+    Entertainment         13%   11%
+    Games                 26%   25%
+    Social                27%   18%
+    Utilities             11%    9%
+    """
