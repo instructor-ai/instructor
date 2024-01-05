@@ -1,4 +1,4 @@
-import openai
+from openai import OpenAI
 import instructor
 
 from graphviz import Digraph
@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-instructor.patch()
+client = instructor.patch(OpenAI())
 
 
 class Node(BaseModel):
@@ -56,14 +56,12 @@ class KnowledgeGraph(BaseModel):
 
 def generate_graph(input: List[str]) -> KnowledgeGraph:
     cur_state = KnowledgeGraph()
-
     num_iterations = len(input)
-
     for i, inp in enumerate(input):
-        new_updates = openai.ChatCompletion.create(
+        new_updates = client.chat.completions.create(
             model="gpt-3.5-turbo-16k",
             messages=[
-                {
+"content": "You are an iterative knowledge graph builder. You are given the current state of the graph, and you must append the nodes and edges to it. Do not provide any duplicates and try to reuse nodes as much as possible."
                     "role": "system",
                     "content": """You are an iterative knowledge graph builder.
                     You are given the current state of the graph, and you must append the nodes and edges 
