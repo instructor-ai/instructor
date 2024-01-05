@@ -92,7 +92,7 @@ This will produce a visual representation of the knowledge graph, stored as "kno
 
 ## Iterative Updates
 
-By leveraging automated knowledge graphs, you can dissect complex topics into digestible pieces, making the learning journey less daunting and more effective. Now that we've figured out how to generate our knowledge graph, let's see how we can iteratively update our graph in light of new information.
+Now that we've seen how to generate a knowledge graph from a single input, let's see how we can iteratively update our knowledge graph with new information, or when informatino does not fit into a single prompt.
 
 Let's take an easy example where we want to visualise the combined knowledge graph that the following sentences represent.
 
@@ -107,9 +107,9 @@ text_chunks = [
 
 ### Updating Our Data Model
 
-Let's start by updating our data model to support our new iterative approach. Since Pydantic models are just regular python classes under the hood, we can define simple helper methods `update` and `draw` to help us to simplify our code.
+To support our new iterative approach, we need to update our data model. We can do this by adding helper methods `update` and `draw` to our Pydantic models. These methods will simplify our code and allow us to easily visualize the knowledge graph.
 
-> Note that we've simply migrated the code in our `visualize_knowledge_graph` method into our `KnowledgeGraph` class itself and added a new nodes and edges list
+In the `KnowledgeGraph` class, we have migrated the code from the `visualize_knowledge_graph` method and added new lists for nodes and edges.
 
 ```python
 class KnowledgeGraph(BaseModel):
@@ -126,17 +126,18 @@ class KnowledgeGraph(BaseModel):
     def draw(self, prefix: str = None):
         dot = Digraph(comment="Knowledge Graph")
 
-        # Add nodes
-        for node in self.nodes:
+        for node in self.nodes: #(1)!
             dot.node(str(node.id), node.label, color=node.color)
 
-        # Add edges
-        for edge in self.edges:
+        for edge in self.edges: #(2)!
             dot.edge(
                 str(edge.source), str(edge.target), label=edge.label, color=edge.color
             )
         dot.render(prefix, format="png", view=True)
 ```
+
+1. We iterate through all the nodes in our graph and add them to the graph
+2. We iterate through all the edges in our graph and add them to the graph
 
 We can modify our `generate_graph` function to now take in a list of strings. At each step, it'll extract out the key insights from the sentences in the form of edges and nodes like we've seen before. We can then combine these new edges and nodes with our existing knowledge graph through iterative updates to our graph before arriving at our final result.
 
