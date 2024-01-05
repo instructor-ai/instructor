@@ -50,6 +50,7 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
         "content": message.content or "",
     }
     if message.tool_calls is not None:
+        ret["tool_calls"] = message.model_dump()["tool_calls"]
         ret["content"] += json.dumps(message.model_dump()["tool_calls"])
     if message.function_call is not None:
         ret["content"] += json.dumps(message.model_dump()["function_call"])
@@ -240,6 +241,15 @@ async def retry_async(
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
             kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
+            if mode == Mode.TOOLS:
+                kwargs["messages"].append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
+                        "name": response.choices[0].message.tool_calls[0].function.name,
+                        "content": "failure"
+                    }
+            )
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -286,6 +296,15 @@ def retry_sync(
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
             kwargs["messages"].append(dump_message(response.choices[0].message))
+            if mode == Mode.TOOLS:
+                kwargs["messages"].append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
+                        "name": response.choices[0].message.tool_calls[0].function.name,
+                        "content": "failure"
+                    }
+                )
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -323,10 +342,6 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
         *args,
         **kwargs,
     ):
-        if mode == Mode.TOOLS:
-            max_retries = 0
-            logger.warning("max_retries is not supported when using tool calls")
-
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, kwargs=kwargs, mode=mode
         )  # type: ignore
@@ -349,10 +364,6 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
         *args,
         **kwargs,
     ):
-        if mode == Mode.TOOLS:
-            max_retries = 0
-            logger.warning("max_retries is not supported when using tool calls")
-
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, kwargs=kwargs, mode=mode
         )  # type: ignore
