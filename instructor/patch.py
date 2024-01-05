@@ -50,7 +50,8 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
         "content": message.content or "",
     }
     if message.tool_calls is not None:
-        ret["content"] += json.dumps(message.model_dump()["tool_calls"])
+        ret["tool_calls"] = message.model_dump()["tool_calls"]
+        ret["content"] = None
     if message.function_call is not None:
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
@@ -243,11 +244,11 @@ async def retry_async(
             if mode == Mode.TOOLS:
                 kwargs["messages"].append(
                     {
-                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "role": "tool",
+                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "Failure"
-                    }                
+                        "content": "failure"
+                    }
             )
             kwargs["messages"].append(
                 {
@@ -298,10 +299,10 @@ def retry_sync(
             if mode == Mode.TOOLS:
                 kwargs["messages"].append(
                     {
-                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "role": "tool",
+                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "Failure"
+                        "content": "failure"
                     }
                 )
             kwargs["messages"].append(
