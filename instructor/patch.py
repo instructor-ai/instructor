@@ -51,7 +51,7 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-        ret["content"] = ""
+        ret["content"] += json.dumps(message.model_dump()["tool_calls"])
     if message.function_call is not None:
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
