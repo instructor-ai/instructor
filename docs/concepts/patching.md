@@ -54,6 +54,7 @@ from openai import OpenAI
 client = instructor.patch(OpenAI(), mode=Mode.MD_JSON)
 
 ```
+
 ### Schema Integration
 
 In JSON Mode, the schema is part of the system message:
@@ -82,3 +83,64 @@ user = UserExtract.from_response(response, mode=Mode.JSON)
 assert user.name.lower() == "jason"
 assert user.age == 25
 ```
+
+## Understanding the Chat Completion Parametsrs
+
+### Mode: FUNCTIONS
+
+- Adds `functions` and `function_call` keys with OpenAI schema information.
+- No direct content change in messages, but function-based response processing is guided.
+
+```python
+if mode == Mode.FUNCTIONS:
+    chat_completion_parameters["functions"] = [response_model.openai_schema]
+    chat_completion_parameters["function_call"] = {"name": response_model.openai_schema["name"]}
+```
+
+### Mode: TOOLS
+
+- Adds `tools` and `tool_choice` keys with tool details following the OpenAI schema.
+- Messages aren't modified in content; tool-based response processing is guided.
+
+```python
+if mode == Mode.TOOLS:
+    chat_completion_parameters["tools"] = [{"type": "function", "function": response_model.openai_schema}]
+    chat_completion_parameters["tool_choice"] = {"type": "function", "function": {"name": response_model.openai_schema["name"]}}
+```
+
+### Mode: JSON
+
+- Appends `response_format` to indicate a JSON object type.
+- Adds or modifies a system message for JSON format adherence and schema instructions.
+
+```python
+if mode == Mode.JSON:
+    chat_completion_parameters["response_format"] = {"type": "json_object"}
+    chat_completion_parameters["messages"].append({"role": "system", "content": "Provide response in JSON format adhering to the specified schema."})
+```
+
+### Mode: MD_JSON
+
+- Similar to JSON mode, but with Markdown code block formatting.
+- Adds a stop sequence for the Markdown JSON response and system message for instructions.
+
+````python
+if mode == Mode.MD_JSON:
+    chat_completion_parameters["response_format"] = {"type": "json_object"}
+    chat_completion_parameters["stop"] = "```"
+    chat_completion_parameters["messages"].append({"role": "system", "content": "Provide response in Markdown-formatted JSON within the code block."})
+````
+
+### Mode: JSON_SCHEMA
+
+- Appends `response_format` with a JSON object type and specific schema.
+- Modifies system messages for JSON schema formatting instructions.
+- Only supported by Anyscale!
+
+```python
+if mode == Mode.JSON_SCHEMA:
+    chat_completion_parameters["response_format"] = {"type": "json_object", "schema": response_model.model_json_schema()}
+    chat_completion_parameters["messages"].append({"role": "system", "content": "Format the response according to the following JSON schema: " + str(response_model.model_json_schema())})
+```
+
+In each mode, the chat completion parameters are adapted to ensure the assistant's response adheres to the specific format required.

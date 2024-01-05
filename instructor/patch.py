@@ -49,10 +49,10 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
         "role": message.role,
         "content": message.content or "",
     }
-    if message.tool_calls is not None:
+    if message.get("tool_calls", None) is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
         ret["content"] += json.dumps(message.model_dump()["tool_calls"])
-    if message.function_call is not None:
+    if message.get("function_call", None) is not None:
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
 
@@ -247,9 +247,9 @@ async def retry_async(
                         "role": "tool",
                         "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure"
+                        "content": "failure",
                     }
-            )
+                )
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -302,7 +302,7 @@ def retry_sync(
                         "role": "tool",
                         "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure"
+                        "content": "failure",
                     }
                 )
             kwargs["messages"].append(
