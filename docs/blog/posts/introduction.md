@@ -11,6 +11,8 @@ authors:
 
 Language models have seen significant growth. Using them effectively often requires complex frameworks. This post discusses how Instructor simplifies this process using Pydantic.
 
+<!-- more -->
+
 ## The Problem with Existing LLM Frameworks
 
 Current frameworks for Language Learning Models (LLMs) have complex setups. Developers find it hard to control interactions with language models. Some frameworks require complex JSON Schema setups.

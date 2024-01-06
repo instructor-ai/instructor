@@ -26,6 +26,8 @@ def validation_function(value):
     return mutation(value)
 ```
 
+<!-- more -->
+
 ## What is Instructor?
 
 `Instructor` helps to ensure you get the exact response type you're looking for when using openai's function call api. Once you've defined the `Pydantic` model for your desired response, `Instructor` handles all the complicated logic in-between - from the parsing/validation of the response to the automatic retries for invalid responses. This means that we can build in validators 'for free' and have a clear separation of concerns between the prompt and the code that calls openai.

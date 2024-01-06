@@ -17,6 +17,8 @@ Latency is crucial, especially in eCommerce and newer chat applications like Cha
 
 And what makes streaming possible? Generators!
 
+<!-- more -->
+
 In this post, we're going to dive into the cool world of Python generators — these tools are more than just a coding syntax trick. We'll explore Python generators from the ground up and then delve into LLM streaming using the Instructor library.
 
 ## Python Generators: An Efficient Approach to Iterables
@@ -260,18 +262,17 @@ Time for first result (list): 8.63 seconds
 
 Our web application now displays results faster. Even a 100ms improvement can lead to a 1% increase in revenue.
 
-
 ### FastAPI
-We can also take this and set up a streaming LLM API endpoint using FastAPI. Check out our docs on using FastAPI [here](../../concepts/fastapi.md)! 
 
+We can also take this and set up a streaming LLM API endpoint using FastAPI. Check out our docs on using FastAPI [here](../../concepts/fastapi.md)!
 
 ## Key Takeaways
 
 To summarize, we looked at:
 
-•	Generators in Python: A powerful feature that allows for efficient data handling with reduced latency
+• Generators in Python: A powerful feature that allows for efficient data handling with reduced latency
 
-•	LLM Streaming: LLMs provide us generators to stream tokens and Instructor can let us validate and extract data from this stream. Real-time data validation ftw!
+• LLM Streaming: LLMs provide us generators to stream tokens and Instructor can let us validate and extract data from this stream. Real-time data validation ftw!
 
 Don't forget to check our [GitHub](https://github.com/jxnl/instructor) for more resources and give us a star if you find the library helpful!
 

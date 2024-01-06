@@ -22,6 +22,8 @@ In this article, we'll guide you through implementing the original Chain of Dens
 
 By the end you'll end up with a GPT 3.5 model, (fine-tuned using Instructor's great tooling), capable of producing summaries that rival the effectiveness of Chain of Density [[Adams et al. (2023)]](https://arxiv.org/abs/2309.04269). As always, all code is readily available in our `examples/chain-of-density` folder in our repo for your reference.
 
+<!-- more -->
+
 ??? abstract "Datasets and Colab Notebook"
 
     We've also uploaded all our generated data to Hugging Face [here](https://huggingface.co/datasets/ivanleomk/gpt4-chain-of-density) for you to use if you'd like to try reproducing these experiments. We've also added a [Colab Instance](https://colab.research.google.com/drive/1iBkrEh2G5U8yh8RmI8EkWxjLq6zIIuVm?usp=sharing) for you to check our generated values.
@@ -150,7 +152,7 @@ Firstly, we'll need a data model for the initial summary that we will be generat
             "required": [
             "summary"
             ]
-            
+
         }
         }
     ]
