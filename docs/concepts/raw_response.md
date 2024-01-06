@@ -23,6 +23,12 @@ user: UserExtract = client.chat.completions.create(
 print(user._raw_response)
 ```
 
+!!! tip "Accessing tokens usage"
+
+    This is the recommended way to access the tokens usage, since it is a pydantic model you can use any of the pydantic model methods on it. For example, you can access the `total_tokens` by doing `user._raw_response.usage.total_tokens`.
+
+    In the future, we may add additional hooks to the `raw_response` to make it easier to access the tokens usage.
+
 **Output:**
 
 ```python
