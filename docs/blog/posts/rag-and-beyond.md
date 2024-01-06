@@ -16,7 +16,8 @@ authors:
 With the advent of large language models (LLM), retrival augmented generation (RAG) has become a hot topic. However throught the past year of [helping startups](https://jxnl.co) integrate LLMs into their stack I've noticed that the pattern of taking user queries, embedding them, and directly searching a vector store is effectively demoware.
 
 !!! note "What is RAG?"
-Retrival augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
+
+    Retrival augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
 
 <figure markdown>
   ![RAG](img/dumb_rag.png)
@@ -24,6 +25,8 @@ Retrival augmented generation (RAG) is a technique that uses an LLM to generate 
 </figure>
 
 So let's kick things off by examining what I like to call the 'Dumb' RAG Model—a basic setup that's more common than you'd think.
+
+<!-- more -->
 
 ## The 'Dumb' RAG Model
 

@@ -18,6 +18,8 @@ authors:
 
 Today, we're diving into optimizing instructor code while maintaining the excellent DX offered by [Pydantic](https://docs.pydantic.dev/latest/) models. We'll tackle the challenges of caching Pydantic models, typically incompatible with `pickle`, and explore solutions that use `decorators` like `functools.cache`. Then, we'll craft custom decorators with `diskcache` and `redis` to support persistent caching and distributed systems.
 
+<!-- more -->
+
 Lets first consider our canonical example, using the `OpenAI` Python client to extract user details.
 
 ```python

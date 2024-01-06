@@ -1,5 +1,5 @@
 ---
-draft: False 
+draft: False
 date: 2023-10-17
 tags:
   - python
@@ -14,11 +14,13 @@ authors:
 
 ## Introduction
 
-Get ready to dive deep into the world of fine-tuning task specific language models with Python functions. We'll explore how the `instructor.instructions` streamlines this process, making the task you want to distil  more efficient and powerful while preserving its original functionality and backwards compatibility.
+Get ready to dive deep into the world of fine-tuning task specific language models with Python functions. We'll explore how the `instructor.instructions` streamlines this process, making the task you want to distil more efficient and powerful while preserving its original functionality and backwards compatibility.
 
 If you want to see the full example checkout [examples/distillation](https://github.com/jxnl/instructor/tree/main/examples/distilations)
 
-## Why use Instructor? 
+<!-- more -->
+
+## Why use Instructor?
 
 Imagine you're developing a backend service that uses a mix old and new school ML practises, it may involve pipelines with multiple function calls, validations, and data processing. Sounds cumbersome, right? That's where `Instructor` comes in. It simplifies complex procedures, making them more efficient and easier to manage by adding a decorator to your function that will automatically generate a dataset for fine-tuning and help you swap out the function implementation.
 
@@ -40,7 +42,7 @@ instructions = Instructions(
     finetune_format="messages",
     # log handler is used to save the data to a file
     # you can imagine saving it to a database or other storage
-    # based on your needs! 
+    # based on your needs!
     log_handlers=[logging.FileHandler("math_finetunes.jsonl")]
 )
 
@@ -80,6 +82,7 @@ The library offers two main benefits:
 The `from instructor import Instructions` feature is a time saver. It auto-generates a fine-tuning dataset, making it a breeze to imitate a function's behavior.
 
 ## Logging Output and Running a Finetune
+
 Here's how the logging output would look:
 
 ```python
@@ -87,10 +90,10 @@ Here's how the logging output would look:
     "messages": [
         {"role": "system", "content": 'Predict the results of this function: ...'},
         {"role": "user", "content": 'Return fn(133, b=539)'},
-        {"role": "assistant", 
-            "function_call": 
+        {"role": "assistant",
+            "function_call":
                 {
-                    "name": "Multiply", 
+                    "name": "Multiply",
                     "arguments": '{"a":133,"b":539,"result":89509}'
             }
         }
@@ -112,8 +115,8 @@ instructor jobs create-from-file math_finetunes.jsonl
 ```
 
 ## Next Steps and Future Plans
-Here's a sneak peek of what I'm planning:
 
+Here's a sneak peek of what I'm planning:
 
 ```python
 from instructor import Instructions, patch
@@ -135,7 +138,6 @@ def fn(a: int, b: int) -> Multiply:
     return Multiply(a=a, b=b, result=resp)
 ```
 
-
 1.  Don't forget to run the `patch()` command that we provide with the `Instructor` package. This helps
     automatically serialize the content back into the `Pydantic`` model that we're looking for.
 
@@ -147,6 +149,5 @@ With this, you can swap the function implementation, making it backward compatib
 ## Conclusion
 
 We've seen how `Instructor` can make your life easier, from fine-tuning to distillation. Now if you're thinking wow, I'd love a backend service to do this for continously, you're in luck! Please check out the survey at [useinstructor.com](https://useinstructor.com) and let us know who you are.
-
 
 If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!

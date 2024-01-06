@@ -18,6 +18,8 @@ Ensuring the accuracy of information is crucial. This blog post explores how Pyd
 
 We'll start with using a simple substring check to verify citations. Then we'll use `instructor` itself to power an LLM to verify citations and align answers with the given citations. Finally, we'll explore how we can use these techniques to generate a dataset of accurate responses.
 
+<!-- more -->
+
 ## Example 1: Simple Substring Check
 
 In this example, we use the `Statements` class to verify if a given substring quote exists within a text chunk. If the substring is not found, an error is raised.

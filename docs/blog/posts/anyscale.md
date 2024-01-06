@@ -16,6 +16,8 @@ Open-source LLMS are gaining popularity, and the release of Anyscale's Mistral m
 
 By the end of this blog post, you will learn how to effectively utilize the instructor at any scale. But before we proceed, let's first explore the concept of patching.
 
+<!-- more -->
+
 ## Patching
 
 Instructor's patch enhances a openai api it with the following features:
