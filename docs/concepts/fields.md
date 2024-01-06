@@ -68,7 +68,7 @@ from datetime import date
 
 class DateRange(BaseModel):
     chain_of_thought: str = Field(
-        description="Reasoning behind the date range."
+        description="Reasoning behind the date range.",
         exclude=True)
     start_date: date
     end_date: date
