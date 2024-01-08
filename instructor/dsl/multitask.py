@@ -2,10 +2,9 @@ from typing import List, Optional, Type
 
 from pydantic import BaseModel, Field, create_model
 
-from partialjson.json_parser import JSONParser
-
 from instructor.function_calls import OpenAISchema, Mode
 from instructor.dsl.partial import PartialBase
+from instructor.dsl.partialjson import JSONParser
 
 parser = JSONParser()
 
@@ -34,12 +33,10 @@ class MultiTaskBase:
                     potential_object = chunk[chunk.find("[") + 1 :]
                 continue
 
-            # task_json, potential_object = cls.get_object(potential_object, 0)
-            # print(f"start: {potential_object.strip().replace(" ", "")} end")
-            task_json = parser.parse(potential_object.strip().replace(" ", ""))
-            # print(f"start: {potential_object.strip().replace(" ", "")}###\n{task_json} end")
+            # Avoid parsing incomplete json when its just whitespace otherwise parser throws
+            # an exception
+            task_json = parser.parse(potential_object) if potential_object.strip() else None
             if task_json:
-                # print(task_json)
                 obj = cls.task_type.model_validate(task_json, strict=None)  # type: ignore
                 yield obj
 
@@ -67,7 +64,6 @@ class MultiTaskBase:
                 if chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
-                            # print(f"chunk {json_chunk} end")
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
