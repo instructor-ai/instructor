@@ -25,6 +25,7 @@ class MultiTaskBase:
     def tasks_from_chunks(cls, json_chunks):
         started = False
         potential_object = ""
+        prev_obj = None
         for chunk in json_chunks:
             potential_object += chunk
             if not started:
@@ -33,12 +34,13 @@ class MultiTaskBase:
                     potential_object = chunk[chunk.find("[") + 1 :]
                 continue
 
-            # Avoid parsing incomplete json when its just whitespace otherwise parser throws
-            # an exception
+            # Avoid parsing incomplete json when its just whitespace otherwise parser throws an exception
             task_json = parser.parse(potential_object) if potential_object.strip() else None
             if task_json:
                 obj = cls.task_type.model_validate(task_json, strict=None)  # type: ignore
-                yield obj
+                if obj != prev_obj:
+                    prev_obj = obj
+                    yield obj
 
     @classmethod
     async def tasks_from_chunks_async(cls, json_chunks):
