@@ -21,7 +21,7 @@ def make_all_fields_optional(model: Type[BaseModel]) -> Type[BaseModel]:
             new_fields[name] = (optional_nested_model, None)
         else:
             new_fields[name] = (Optional[annotation], None)
-    return create_model(f"Partial{model.__name__}", **new_fields)
+    return create_model(f"Partial{model.__name__}", __base__=PartialBase, **new_fields)
 
 
 def Partial(model: Type[T]) -> Type[PartialBase[T]]:

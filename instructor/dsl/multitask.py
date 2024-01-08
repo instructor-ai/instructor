@@ -2,8 +2,12 @@ from typing import List, Optional, Type
 
 from pydantic import BaseModel, Field, create_model
 
-from instructor.function_calls import OpenAISchema, Mode
+from partialjson.json_parser import JSONParser
 
+from instructor.function_calls import OpenAISchema, Mode
+from instructor.dsl.partial import PartialBase
+
+parser = JSONParser()
 
 class MultiTaskBase:
     task_type = None  # type: ignore
@@ -30,9 +34,13 @@ class MultiTaskBase:
                     potential_object = chunk[chunk.find("[") + 1 :]
                 continue
 
-            task_json, potential_object = cls.get_object(potential_object, 0)
+            # task_json, potential_object = cls.get_object(potential_object, 0)
+            # print(f"start: {potential_object.strip().replace(" ", "")} end")
+            task_json = parser.parse(potential_object.strip().replace(" ", ""))
+            # print(f"start: {potential_object.strip().replace(" ", "")}###\n{task_json} end")
             if task_json:
-                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                # print(task_json)
+                obj = cls.task_type.model_validate(task_json, strict=None)  # type: ignore
                 yield obj
 
     @classmethod
@@ -59,6 +67,7 @@ class MultiTaskBase:
                 if chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                            # print(f"chunk {json_chunk} end")
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
@@ -174,10 +183,12 @@ def MultiTask(
         ),
     )
 
+    new_base = (OpenAISchema, MultiTaskBase, PartialBase) if issubclass(subtask_class, PartialBase) else (OpenAISchema, MultiTaskBase)
+
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, MultiTaskBase),  # type: ignore
+        __base__=new_base,  # type: ignore
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class
