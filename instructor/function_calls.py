@@ -4,7 +4,7 @@ from pydantic import BaseModel, create_model
 from instructor.exceptions import IncompleteOutputException
 
 import enum
-
+import warnings
 
 class Mode(enum.Enum):
     """The mode to use for patching the client"""
@@ -15,6 +15,15 @@ class Mode(enum.Enum):
     MD_JSON: str = "markdown_json_mode"
     JSON_SCHEMA: str = "json_schema_mode"
 
+    def __new__(cls, value):
+        member = object.__new__(cls)
+        member._value_ = value
+
+        # Deprecation warning for FUNCTIONS
+        if value == "function_call":
+            warnings.warn("FUNCTIONS is deprecated and will be removed in future versions", DeprecationWarning, stacklevel=2)
+
+        return member
 
 class OpenAISchema(BaseModel):
     """
@@ -106,7 +115,7 @@ class OpenAISchema(BaseModel):
         completion,
         validation_context=None,
         strict: bool = None,
-        mode: Mode = Mode.FUNCTIONS,
+        mode: Mode = Mode.TOOLS,
         stream_multitask: bool = False,
     ):
         """Execute the function from the response of an openai chat completion
@@ -167,7 +176,7 @@ class OpenAISchema(BaseModel):
         completion,
         validation_context=None,
         strict: bool = None,
-        mode: Mode = Mode.FUNCTIONS,
+        mode: Mode = Mode.TOOLS,
         stream_multitask: bool = False,
     ):
         """Execute the function from the response of an openai chat completion
