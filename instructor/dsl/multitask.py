@@ -3,10 +3,7 @@ from typing import List, Optional, Type
 from pydantic import BaseModel, Field, create_model
 
 from instructor.function_calls import OpenAISchema, Mode
-from instructor.dsl.partial import PartialBase
-from instructor.dsl.partialjson import JSONParser
 
-parser = JSONParser()
 
 class MultiTaskBase:
     task_type = None  # type: ignore
@@ -25,7 +22,6 @@ class MultiTaskBase:
     def tasks_from_chunks(cls, json_chunks):
         started = False
         potential_object = ""
-        prev_obj = None
         for chunk in json_chunks:
             potential_object += chunk
             if not started:
@@ -34,13 +30,10 @@ class MultiTaskBase:
                     potential_object = chunk[chunk.find("[") + 1 :]
                 continue
 
-            # Avoid parsing incomplete json when its just whitespace otherwise parser throws an exception
-            task_json = parser.parse(potential_object) if potential_object.strip() else None
+            task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                obj = cls.task_type.model_validate(task_json, strict=None)  # type: ignore
-                if obj != prev_obj:
-                    prev_obj = obj
-                    yield obj
+                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                yield obj
 
     @classmethod
     async def tasks_from_chunks_async(cls, json_chunks):
@@ -181,12 +174,10 @@ def MultiTask(
         ),
     )
 
-    new_base = (OpenAISchema, MultiTaskBase, PartialBase) if issubclass(subtask_class, PartialBase) else (OpenAISchema, MultiTaskBase)
-
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=new_base,  # type: ignore
+        __base__=(OpenAISchema, MultiTaskBase),  # type: ignore
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class

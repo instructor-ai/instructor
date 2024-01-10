@@ -1,50 +1,53 @@
 import instructor
 from openai import OpenAI
-from typing import Iterable, Optional, List
-from pydantic import BaseModel, Field
-from instructor import Partial, Maybe
-import json
+from pydantic import BaseModel
+from typing import List
 
 client = instructor.patch(OpenAI())
 
-class Address(BaseModel):
-    state: str
+text_block = """
+In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
+
+- Name: John Doe, Email: johndoe@email.com, Twitter: @TechGuru44
+- Name: Jane Smith, Email: janesmith@email.com, Twitter: @DigitalDiva88
+- Name: Alex Johnson, Email: alexj@email.com, Twitter: @CodeMaster2023
+
+During the meeting, we agreed on several key points. The conference will be held on March 15th, 2024, at the Grand Tech Arena located at 4521 Innovation Drive. Dr. Emily Johnson, a renowned AI researcher, will be our keynote speaker.
+
+The budget for the event is set at $50,000, covering venue costs, speaker fees, and promotional activities. Each participant is expected to contribute an article to the conference blog by February 20th.
+
+A follow-up meeting is scheduled for January 25th at 3 PM GMT to finalize the agenda and confirm the list of speakers.
+"""
 
 class User(BaseModel):
     name: str
-    age: str
-    address: Address
+    email: str
+    twitter: str
+class MeetingInfo(BaseModel):
+   users: List[User]
+   date: str
+   location: str
+   budget: int
+   deadline: str
 
-PartialUser = Partial(User)
+PartialMeetingInfo = instructor.Partial[MeetingInfo]
 
-string = "Jason. free dives. He is 25 years old. He lives in California"
 
-users_stream = client.chat.completions.create(
+extraction_stream = client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
-        response_model=Iterable[PartialUser],
+        response_model=PartialMeetingInfo,
         messages=[
             {
                 "role": "user",
-                "content": f"Get only the user details for this information about the user {string}",
+                "content": f"Get only the user details for this information about the user {text_block}",
             },
         ],
-        stream=True
+        stream=True,
     )  # type: ignore
 
 
-for user in users_stream:
-    print(user)
+for extraction in extraction_stream:
+    print(extraction)
 
-
-# class User(BaseModel):
-#     name: str
-#     age: str
-
-# class Users(BaseModel):
-#    users: List[User]
-#    comments: str
-
-# Code below throws errors unable to make Users a Partial class
-# PartialUsers = Partial(Users)
-
-# print(json.dumps(PartialUser.model_json_schema()))
+print("extraction complete")
+print(extraction)

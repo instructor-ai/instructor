@@ -15,6 +15,7 @@ from openai.types.chat import (
 from pydantic import BaseModel, ValidationError
 
 from instructor.dsl.multitask import MultiTask, MultiTaskBase
+from instructor.dsl.partial import PartialBase
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
@@ -72,7 +73,7 @@ def handle_response_model(
             response_model = openai_schema(response_model)  # type: ignore
 
         if new_kwargs.get("stream", False) and not issubclass(
-            response_model, MultiTaskBase
+            response_model, (MultiTaskBase, PartialBase)
         ):
             raise NotImplementedError(
                 "stream=True is not supported when using response_model parameter for non-iterables"
@@ -162,12 +163,14 @@ def process_response(
     """
     if response_model is not None:
         is_model_multitask = issubclass(response_model, MultiTaskBase)
+        is_model_partial = issubclass(response_model, PartialBase)
         model = response_model.from_response(
             response,
             validation_context=validation_context,
             strict=strict,
             mode=mode,
             stream_multitask=stream and is_model_multitask,
+            stream_partial=stream and is_model_partial
         )
         if not stream:
             model._raw_response = response
@@ -199,12 +202,14 @@ async def process_response_async(
     """
     if response_model is not None:
         is_model_multitask = issubclass(response_model, MultiTaskBase)
+        is_model_partial = issubclass(response_model, PartialBase)
         model = await response_model.from_response_async(
             response,
             validation_context=validation_context,
             strict=strict,
             mode=mode,
             stream_multitask=stream and is_model_multitask,
+            stream_partial=stream and is_model_partial,
         )
         if not stream:
             model._raw_response = response
