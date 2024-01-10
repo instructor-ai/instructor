@@ -38,7 +38,7 @@ PartialMeetingInfo = instructor.Partial[MeetingInfo]
 
 
 extraction_stream = client.chat.completions.create(
-    model="gpt-3.5-turbo-0613",
+    model="gpt-4",
     response_model=PartialMeetingInfo,
     messages=[
         {
@@ -50,8 +50,11 @@ extraction_stream = client.chat.completions.create(
 )  # type: ignore
 
 
-for extraction in extraction_stream:
-    print(extraction.model_dump_json(indent=4))
+from rich.console import Console
 
-print("extraction complete")
-print(extraction.model_dump_json(indent=4))
+console = Console()
+
+for extraction in extraction_stream:
+    obj = extraction.model_dump()
+    console.clear()
+    console.print(obj)
