@@ -1,64 +1,98 @@
+# --------------------------------------------------------------------------------
+# The following code is adapted from a comment on GitHub in the pydantic/pydantic repository by silviumarcu.
+# Source: https://github.com/pydantic/pydantic/issues/6381#issuecomment-1831607091
+#
+# This code is used in accordance with the repository's license, and this reference
+# serves as an acknowledgment of the original author's contribution to this project.
+# --------------------------------------------------------------------------------
+
 from pydantic import BaseModel, create_model
-from typing import Type, TypeVar, Optional, get_type_hints, Generic
+from pydantic.fields import FieldInfo
+from typing import TypeVar, NoReturn, get_args, get_origin, Optional, Generic, List
+from copy import deepcopy
 
-T = TypeVar("T", bound=BaseModel)
+Model = TypeVar("Model", bound=BaseModel)
 
-class PartialBase(BaseModel, Generic[T]):
+class Partial(Generic[Model]):
+    """Generate a new class with all attributes optionals.
+
+    Notes:
+        This will wrap a class inheriting form BaseModel and will recursively
+        convert all its attributes and its children's attributes to optionals.
+
+    Example:
+        Partial[SomeModel]
     """
-    A base model for creating Partial models. A Partial model makes all fields of 
-    the original model optional, including nested models.
-    """
 
-def make_all_fields_optional(model: Type[BaseModel]) -> Type[BaseModel]:
-    """
-    Recursively make all fields of a Pydantic model optional, including fields of nested models. Renames the model and nested models to "Partial{model.__name__}"
-    """
-    new_fields = {}
-    for name, annotation in get_type_hints(model).items():
-        # Check if the field is a nested model
-        if issubclass(annotation, BaseModel):
-            optional_nested_model = Optional[make_all_fields_optional(annotation)]
-            new_fields[name] = (optional_nested_model, None)
-        else:
-            new_fields[name] = (Optional[annotation], None)
-    return create_model(f"Partial{model.__name__}", __base__=PartialBase, **new_fields)
+    def __new__(
+        cls,
+        *args: object,  # noqa :ARG003
+        **kwargs: object,  # noqa :ARG003
+    ) -> "Partial[Model]":
+        """Cannot instantiate.
+
+        Raises:
+            TypeError: Direct instantiation not allowed.
+        """
+        raise TypeError("Cannot instantiate abstract Partial class.")
+
+    def __init_subclass__(
+        cls,
+        *args: object,
+        **kwargs: object,
+    ) -> NoReturn:
+        """Cannot subclass.
+
+        Raises:
+           TypeError: Subclassing not allowed.
+        """
+        raise TypeError("Cannot subclass {}.Partial".format(cls.__module__))
+
+    def __class_getitem__(  # type: ignore[override]
+        cls,
+        wrapped_class: type[Model],
+    ) -> type[Model]:
+        """Convert model to a partial model with all fields being optionals."""
+
+        def _make_field_optional(
+            field: FieldInfo,
+        ) -> tuple[object, FieldInfo]:
+            tmp_field = deepcopy(field)
+
+            annotation = field.annotation
+
+            # Handle generics (like List, Dict, etc.)
+            if get_origin(annotation) is not None:
+                # Get the generic base (like List, Dict) and its arguments (like User in List[User])
+                generic_base = get_origin(annotation)
+                generic_args = get_args(annotation)
 
 
-def Partial(model: Type[T]) -> Type[PartialBase[T]]:
-    """
-    Create a Partial model for a given Pydantic model. This makes all fields (and nested fields) of the model optional.
+                # Recursively apply Partial to each of the generic arguments
+                modified_args = tuple(
+                    Partial[arg] if isinstance(arg, type) and issubclass(arg, BaseModel) else arg
+                    for arg in generic_args
+                )
 
-    ## Usage
+                # Reconstruct the generic type with modified arguments
+                tmp_field.annotation = Optional[generic_base[modified_args]]
+                tmp_field.default = None
+            # If the field is a BaseModel, then recursively convert it's
+            # attributes to optionals.
+            elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
+                tmp_field.annotation = Optional[Partial[annotation]]  # type: ignore[assignment, valid-type]
+                tmp_field.default = {}
+            else:
+                tmp_field.annotation = Optional[field.annotation]  # type: ignore[assignment]
+                tmp_field.default = None
+            return tmp_field.annotation, tmp_field
 
-    ```python
-    from pydantic import BaseModel
-    from your_module import Partial
-
-    class Address(BaseModel):
-        street: str
-        state: str
-
-    class User(BaseModel):
-        name: str
-        age: str
-        address: Address
-
-    PartialUser = Partial(User)
-    ```
-
-    ## Result
-
-    ```python
-    class PartialUser(BaseModel):
-        name: Optional[str] = None
-        age: Optional[str] = None
-        address: Optional[PartialAddress] = None
-    ```
-
-    Parameters:
-        model (Type[BaseModel]): The Pydantic model to transform into a Partial model.
-
-    Returns:
-        PartialModel (Type[BaseModel]): A new Pydantic model with all fields made optional.
-    """
-    return make_all_fields_optional(model)
+        return create_model(  # type: ignore[no-any-return, call-overload]
+            f"Partial{wrapped_class.__name__}",
+            __base__=wrapped_class,
+            __module__=wrapped_class.__module__,
+            **{
+                field_name: _make_field_optional(field_info)
+                for field_name, field_info in wrapped_class.model_fields.items()
+            },
+        ) 
