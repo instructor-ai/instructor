@@ -13,6 +13,9 @@ from copy import deepcopy
 
 Model = TypeVar("Model", bound=BaseModel)
 
+class PartialBase:
+    pass
+
 class Partial(Generic[Model]):
     """Generate a new class with all attributes optionals.
 
@@ -89,7 +92,7 @@ class Partial(Generic[Model]):
 
         return create_model(  # type: ignore[no-any-return, call-overload]
             f"Partial{wrapped_class.__name__}",
-            __base__=wrapped_class,
+            __base__=(wrapped_class, PartialBase),
             __module__=wrapped_class.__module__,
             **{
                 field_name: _make_field_optional(field_info)
