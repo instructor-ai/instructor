@@ -39,7 +39,7 @@ extraction_stream = client.chat.completions.create(
         messages=[
             {
                 "role": "user",
-                "content": f"Get only the user details for this information about the user {text_block}",
+                "content": f"Get the information about the meeting and the users {text_block}",
             },
         ],
         stream=True,
@@ -47,7 +47,7 @@ extraction_stream = client.chat.completions.create(
 
 
 for extraction in extraction_stream:
-    print(extraction)
+    print(extraction.model_dump_json(indent=4))
 
 print("extraction complete")
-print(extraction)
+print(extraction.model_dump_json(indent=4))
