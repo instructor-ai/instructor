@@ -192,7 +192,7 @@ class OpenAISchema(BaseModel):
             return await cls.from_streaming_response_async(completion, mode)
         
         if stream_partial:
-            return cls.from_streaming_response(completion, mode)
+            return cls.from_streaming_response_async(completion, mode)
 
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
