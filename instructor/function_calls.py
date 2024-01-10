@@ -173,7 +173,6 @@ class OpenAISchema(BaseModel):
         strict: bool = None,
         mode: Mode = Mode.FUNCTIONS,
         stream_multitask: bool = False,
-        stream_fields: bool = False,
         stream_partial: bool = False,
     ):
         """Execute the function from the response of an openai chat completion
