@@ -16,34 +16,38 @@ During the meeting, we agreed on several key points. The conference will be held
 
 The budget for the event is set at $50,000, covering venue costs, speaker fees, and promotional activities. Each participant is expected to contribute an article to the conference blog by February 20th.
 
-A follow-up meeting is scheduled for January 25th at 3 PM GMT to finalize the agenda and confirm the list of speakers.
+A follow-up meetingis scheduled for January 25th at 3 PM GMT to finalize the agenda and confirm the list of speakers.
 """
+
 
 class User(BaseModel):
     name: str
     email: str
     twitter: str
+
+
 class MeetingInfo(BaseModel):
-   users: List[User]
-   date: str
-   location: str
-   budget: int
-   deadline: str
+    users: List[User]
+    date: str
+    location: str
+    budget: int
+    deadline: str
+
 
 PartialMeetingInfo = instructor.Partial[MeetingInfo]
 
 
 extraction_stream = client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
-        response_model=PartialMeetingInfo,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Get the information about the meeting and the users {text_block}",
-            },
-        ],
-        stream=True,
-    )  # type: ignore
+    model="gpt-3.5-turbo-0613",
+    response_model=PartialMeetingInfo,
+    messages=[
+        {
+            "role": "user",
+            "content": f"Get the information about the meeting and the users {text_block}",
+        },
+    ],
+    stream=True,
+)  # type: ignore
 
 
 for extraction in extraction_stream:
