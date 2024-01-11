@@ -136,6 +136,7 @@ nav:
     - Patching: 'concepts/patching.md'
     - Raw Response: 'concepts/raw_response.md'
     - Streaming: "concepts/lists.md"
+    - Field Streaming: "concepts/field_streaming.md"
     - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'
     - Validators: "concepts/reask_validation.md"

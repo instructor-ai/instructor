@@ -1,3 +1,20 @@
+# Field Level Streaming
+
+Field level streaming provides incremental snapshots of the current state of the response model that are immediately useable. This approach is particularly relevant in contexts like rendering UI components.
+
+
+
+Instructor supports this pattern by making use of `Partial[T]`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`. 
+
+When specifying a partial response model and setting streaming to true, the response from Instructor becomes a generator. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction. 
+
+!!! warning "Important: Fewer validators are supported by `Partial` response models as streamed fields will natural raise validation errors"
+
+!!! note If you are looking for wider validator support or to stream out a list of completed objects one by one, take a look at [Multi-task Streaming](./lists.md).
+
+Lets look at an example of streaming an extraction of conference information.
+
+```python
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
@@ -58,3 +75,8 @@ for extraction in extraction_stream:
     obj = extraction.model_dump()
     console.clear()
     console.print(obj)
+
+```
+
+![Partial Streaming Gif](../img/partial_streaming.gif)
+
