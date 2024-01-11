@@ -247,9 +247,9 @@ async def retry_async(
                         "role": "tool",
                         "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure"
+                        "content": "failure",
                     }
-            )
+                )
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -302,7 +302,7 @@ def retry_sync(
                         "role": "tool",
                         "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure"
+                        "content": "failure",
                     }
                 )
             kwargs["messages"].append(

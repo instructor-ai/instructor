@@ -6,6 +6,7 @@ from instructor.exceptions import IncompleteOutputException
 import enum
 import warnings
 
+
 class Mode(enum.Enum):
     """The mode to use for patching the client"""
 
@@ -21,9 +22,14 @@ class Mode(enum.Enum):
 
         # Deprecation warning for FUNCTIONS
         if value == "function_call":
-            warnings.warn("FUNCTIONS is deprecated and will be removed in future versions", DeprecationWarning, stacklevel=2)
+            warnings.warn(
+                "FUNCTIONS is deprecated and will be removed in future versions",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         return member
+
 
 class OpenAISchema(BaseModel):
     """

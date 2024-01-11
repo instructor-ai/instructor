@@ -3,6 +3,7 @@ from typing import Type, Optional, TypeVar, Generic
 
 T = TypeVar("T", bound=BaseModel)
 
+
 class MaybeBase(BaseModel, Generic[T]):
     """
     Extract a result from a model, if any, otherwise set the error and message fields.
