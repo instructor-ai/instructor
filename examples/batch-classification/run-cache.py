@@ -15,7 +15,7 @@ client = instructor.patch(AsyncOpenAI(), mode=instructor.Mode.TOOLS)
 sem = asyncio.Semaphore(5)
 
 pwd = os.getcwd()
-cache = diskcache.Cache("./")
+cache = diskcache.Cache(pwd)
 
 
 def instructor_cache(func):
