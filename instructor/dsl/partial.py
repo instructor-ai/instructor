@@ -6,9 +6,9 @@
 # serves as an acknowledgment of the original author's contribution to this project.
 # --------------------------------------------------------------------------------
 
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, create_model, Field
 from pydantic.fields import FieldInfo
-from typing import TypeVar, NoReturn, get_args, get_origin, Optional, Generic, List
+from typing import TypeVar, NoReturn, get_args, get_origin, Optional, Generic, Annotated
 from copy import deepcopy
 
 from instructor.function_calls import Mode
@@ -22,15 +22,15 @@ class PartialBase:
     @classmethod
     def from_streaming_response(cls, completion, mode: Mode):
         json_chunks = cls.extract_json(completion, mode)
-        yield from cls.tasks_from_chunks(json_chunks)
+        yield from cls.model_from_chunks(json_chunks)
 
     @classmethod
     async def from_streaming_response_async(cls, completion, mode: Mode):
         json_chunks = cls.extract_json_async(completion, mode)
-        return cls.tasks_from_chunks_async(json_chunks)
+        return cls.model_from_chunks_async(json_chunks)
 
     @classmethod
-    def tasks_from_chunks(cls, json_chunks):
+    def model_from_chunks(cls, json_chunks):
         prev_obj = None 
         potential_object = ""
         for chunk in json_chunks:
@@ -41,12 +41,12 @@ class PartialBase:
             if task_json:
                 obj = cls.model_validate(task_json, strict=None)  # type: ignore
                 if obj != prev_obj:
+                    obj.__dict__["chunk"] = chunk # Provide the raw chunk for debugging and benchmarking
                     prev_obj = obj
                     yield obj
 
     @classmethod
-    async def tasks_from_chunks_async(cls, json_chunks):
-        started = False
+    async def model_from_chunks_async(cls, json_chunks):
         potential_object = ""
         async for chunk in json_chunks:
             potential_object += chunk
@@ -56,6 +56,7 @@ class PartialBase:
             if task_json:
                 obj = cls.model_validate(task_json, strict=None)  # type: ignore
                 if obj != prev_obj:
+                    obj.__dict__["chunk"] = chunk # Provide the raw chunk for debugging and benchmarking
                     prev_obj = obj
                     yield obj
 
