@@ -69,7 +69,6 @@ class PartialBase:
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
-                            print(json_chunk)
                             yield json_chunk
                     elif mode == Mode.TOOLS:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
