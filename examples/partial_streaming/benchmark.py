@@ -49,15 +49,13 @@ class MeetingInfo(BaseModel):
 
 
 PartialMeetingInfo = instructor.Partial[MeetingInfo]
-schema = instructor.openai_schema(PartialMeetingInfo).openai_schema
 
-def benchmark_response(response_model=None, model="gpt-4"):
+def benchmark_raw_stream(model="gpt-4"):
     client = instructor.patch(OpenAI())
     
-    if response_model:
-        content = f"Get the information about the meeting and the users {text_block}"
-    else:
-        content = f"Get the information about the meeting and the users {text_block}. Respond only in JSON that adheres to this schema: {schema} otherwise something bad will happen"
+    content = f"""Get the information about the meeting and the users {text_block}. 
+    Respond only in JSON tha would validate to this schema and include nothing extra. 
+    Otherwise something bad will happen:\n {PartialMeetingInfo.model_json_schema()}"""
 
     start_time = time.time()
     extraction_stream = client.chat.completions.create(
@@ -68,37 +66,30 @@ def benchmark_response(response_model=None, model="gpt-4"):
                 "content": content
             }
         ],
-        response_model=response_model,
         stream=True,
     )
 
     collected_messages = []
     for extraction in extraction_stream:
-        chunk_time = time.time() - start_time
-        print(extraction._raw_response)
-        return
-        if response_model:
-            collected_messages.append(extraction)
-        else:
-            collected_messages.append(extraction.choices[0].delta.content)
+        collected_messages.append(extraction.choices[0].delta.content)
 
     collected_messages = [m for m in collected_messages if m is not None]
     collected_messages = "".join(collected_messages)
-    print(collected_messages)
-    print(PartialMeetingInfo.model_validate_json(collected_messages))
-    print(f"Full response received {chunk_time:.2f} seconds after request")
-
-    # full_reply_content = "".join([m for m in collected_messages if m is not None])
-
-    # output_tokens = num_tokens_from_string(full_reply_content, model)
-    # char_per_sec = output_tokens / chunk_time
-
-    # print(f"{output_tokens} total output tokens")
-    # print(f"{char_per_sec:.2f} tok/s")
+    final_output = PartialMeetingInfo.model_validate_json(collected_messages)
+    end_time = time.time() - start_time
 
 
-# benchmark_response()
-benchmark_response(PartialMeetingInfo)
+    print(final_output)
+    print(f"Final response received {end_time:.2f} seconds after request")
+
+    output_tokens = num_tokens_from_string(collected_messages, model)
+    char_per_sec = output_tokens / end_time
+    print(f"{output_tokens} total output tokens")
+    print(f"{char_per_sec:.2f} tok/s")
+
+
+benchmark_raw_stream()
+# benchmark_response(PartialMeetingInfo)
 # benchmark_response(instructor.function_calls.Mode.MD_JSON)
 # print()
 # benchmark_response(instructor.function_calls.Mode.FUNCTIONS)
