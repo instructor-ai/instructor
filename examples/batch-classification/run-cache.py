@@ -2,7 +2,7 @@ import json
 import instructor
 import asyncio
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel, Field, field_validator
 from typing import List
 from enum import Enum
@@ -12,6 +12,7 @@ import inspect
 import functools
 
 client = instructor.patch(AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+sync_client = instructor.patch(OpenAI(), mode=instructor.Mode.TOOLS)
 sem = asyncio.Semaphore(5)
 
 pwd = os.getcwd()
@@ -32,17 +33,27 @@ def instructor_cache(func):
             # Deserialize from JSON based on the return type
             return return_type.model_validate_json(cached)
 
-        if inspect.iscoroutinefunction:
-            result = await func(*args, **kwargs)
+        result = await func(*args, **kwargs)
         # Call the function and cache its result
-        else:
-            result = func(*args, **kwargs)
+
         serialized_result = result.model_dump_json()
         cache.set(key, serialized_result)
 
         return result
 
-    return wrapper
+    @functools.wraps(func)
+    def sync_wrapper(*args, **kwargs):
+        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}"
+        if (cached := cache.get(key)) is not None:
+            return return_type.model_validate_json(cached)
+
+        result = func(*args, **kwargs)
+        serialized_result = result.model_dump_json()
+        cache.set(key, serialized_result)
+
+        return result
+
+    return wrapper if inspect.iscoroutinefunction(func) else sync_wrapper
 
 
 class QuestionType(Enum):
@@ -97,8 +108,24 @@ class QuestionClassification(BaseModel):
         return v
 
 
+@instructor_cache
 async def classify_question(user_question: str) -> QuestionClassification:
     return await client.chat.completions.create(
+        model="gpt-4",
+        response_model=QuestionClassification,
+        max_retries=2,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Classify the following question: {user_question}",
+            },
+        ],
+    )
+
+
+@instructor_cache
+def classify_question_sync(user_question: str) -> QuestionClassification:
+    return sync_client.chat.completions.create(
         model="gpt-4",
         response_model=QuestionClassification,
         max_retries=2,
@@ -147,5 +174,7 @@ if __name__ == "__main__":
 
     start = time.perf_counter()
     asyncio.run(main(questions, path_to_jsonl=path))
+    for question in questions:
+        print(classify_question_sync(question))
     end = time.perf_counter()
     print(f"Time Taken: {end-start}s")
