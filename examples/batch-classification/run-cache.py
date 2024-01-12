@@ -2,7 +2,7 @@ import json
 import instructor
 import asyncio
 
-from openai import AsyncOpenAI, OpenAI
+from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, field_validator
 from typing import List
 from enum import Enum
@@ -12,7 +12,6 @@ import inspect
 import functools
 
 client = instructor.patch(AsyncOpenAI(), mode=instructor.Mode.TOOLS)
-sync_client = instructor.patch(OpenAI(), mode=instructor.Mode.TOOLS)
 sem = asyncio.Semaphore(5)
 
 pwd = os.getcwd()
@@ -27,8 +26,7 @@ def instructor_cache(func):
 
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
-        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}"  #
-        # Check if the result is already cached
+        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}"
         if (cached := cache.get(key)) is not None:
             # Deserialize from JSON based on the return type
             return return_type.model_validate_json(cached)
@@ -123,21 +121,6 @@ async def classify_question(user_question: str) -> QuestionClassification:
     )
 
 
-@instructor_cache
-def classify_question_sync(user_question: str) -> QuestionClassification:
-    return sync_client.chat.completions.create(
-        model="gpt-4",
-        response_model=QuestionClassification,
-        max_retries=2,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Classify the following question: {user_question}",
-            },
-        ],
-    )
-
-
 async def classify(data: str) -> QuestionClassification:
     async with sem:  # some simple rate limiting
         return data, await classify_question(data)
@@ -162,7 +145,6 @@ async def main(
 
 if __name__ == "__main__":
     import asyncio
-    import time
 
     path = "./data.jsonl"
 
@@ -172,9 +154,4 @@ if __name__ == "__main__":
         "What was that ai app that i saw on the news the other day?",
     ]
 
-    start = time.perf_counter()
     asyncio.run(main(questions, path_to_jsonl=path))
-    for question in questions:
-        print(classify_question_sync(question))
-    end = time.perf_counter()
-    print(f"Time Taken: {end-start}s")
