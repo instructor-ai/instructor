@@ -75,3 +75,14 @@ Heres some more examples of capabilities:
 6. Document Metadata: "Show me documents that were created by X in the last week"
 
 These are all families of queries that cannot be solved via the embedding and require creative solutions based on your use case!
+
+**Failure Modes**
+
+- You literally just can't service many of the unless you bake them into your index.
+- If you don't have a maps index, you can't answer most directions questions.
+- If you don't have a video -> transcript index, you can't answer most video questions.
+- If you don't have a time based query capability, you can't answer timeline questions.
+
+## Eval Benefits of classifying by capability
+
+Once you've classified your questions by capability, you can also start specializing not only to generate response using specific capabilities, but also specialize your evaluation metrics. Imagine you're a construction site, and you have 'ownership' questions. If you knew that apriori, you'd know to add in the prompt that the responses of 'ownership' must result in not only the name of a person, but a full name and contact information. You can then, also validate in an eval if that criteria is met!
