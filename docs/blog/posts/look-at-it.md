@@ -21,6 +21,11 @@ authors:
 - I've been consulting some and a common question is "How do I improve my RAG?"
 - Theres always the black box responses like 'lets add cohere' or 'lets change chunk size', but generic solutinos get you generic results.
 - Instead my recommendation is to simply... look at your data.
+
+!!! note "Find the levers"
+
+    more like if you need to 'improve rag' its too general and you need to use analysis to identify levers
+
 - Once we look at the data we'll have plenty of information we need to itentify the best intervention strategy and also to figure out where we might want to specialize our model.
 
 In this blog we'll cover a range of things that can lead us into the right direction. Go over some examples of companies that can do this kind of exploration. We'll leave it open ended as to what the interventions are, but give you the tools to drill down into your data and figure out what you need to do. For example if if google learns that a large portion of queries are looking for directions or a location, they might want to build a seperate index and release a maps product rather than expecting a HTML page to be the best response.
