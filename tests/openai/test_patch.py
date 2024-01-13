@@ -1,5 +1,6 @@
 from itertools import product
 from pydantic import BaseModel, field_validator
+from openai.types.chat import ChatCompletion
 import pytest
 import instructor
 
@@ -29,6 +30,8 @@ def test_runmodel(model, mode, client):
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
 
+    ChatCompletion(**model._raw_response.model_dump())
+
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
@@ -48,6 +51,8 @@ async def test_runmodel_async(model, mode, aclient):
     assert hasattr(
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
+
+    ChatCompletion(**model._raw_response.model_dump())
 
 
 class UserExtractValidated(BaseModel):
@@ -81,6 +86,8 @@ def test_runmodel_validator(model, mode, client):
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
 
+    ChatCompletion(**model._raw_response.model_dump())
+
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
@@ -99,3 +106,5 @@ async def test_runmodel_async_validator(model, mode, aclient):
     assert hasattr(
         model, "_raw_response"
     ), "The raw response should be available from OpenAI"
+
+    ChatCompletion(**model._raw_response.model_dump())
