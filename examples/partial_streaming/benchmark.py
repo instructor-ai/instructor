@@ -1,7 +1,6 @@
 # Part of this code is adapted from the following examples from OpenAI Cookbook:
 # https://cookbook.openai.com/examples/how_to_stream_completions
 # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-from functools import partial
 import time
 import tiktoken
 import instructor
@@ -27,7 +26,7 @@ class User(BaseModel):
     age: int
 
 
-PartialMeetingInfo = instructor.Partial[User]
+PartialUser = instructor.Partial[User]
 
 
 def benchmark_raw_stream(model="gpt-4"):
@@ -62,8 +61,13 @@ def benchmark_partial_streaming(model="gpt-4"):
     start_time = time.time()
     extraction_stream = client.chat.completions.create(
         model=model,
-        response_model=PartialMeetingInfo,
-        messages=[{"role": "user", "content": "produce harry potter characters"}],
+        response_model=PartialUser,
+        messages=[
+            {
+                "role": "user",
+                "content": "give me a harry pottery character in json, name, role, age",
+            }
+        ],
         stream=True,
     )
 
@@ -88,3 +92,9 @@ if __name__ == "__main__":
 
     print(f"Partial streaming: {avg_partial_time:.2f} token/sec")
     print(f"Relative speedup: {avg_partial_time / avg_raw_time:.2f}x")
+
+    """
+    Raw streaming: 22.36 tokens/sec
+    Partial streaming: 15.46 token/sec
+    Relative speedup: 0.69x
+    """

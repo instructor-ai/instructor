@@ -6,9 +6,9 @@
 # serves as an acknowledgment of the original author's contribution to this project.
 # --------------------------------------------------------------------------------
 
-from pydantic import BaseModel, create_model, Field
+from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
-from typing import TypeVar, NoReturn, get_args, get_origin, Optional, Generic, Annotated
+from typing import TypeVar, NoReturn, get_args, get_origin, Optional, Generic
 from copy import deepcopy
 
 from instructor.function_calls import Mode
