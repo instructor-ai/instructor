@@ -62,10 +62,7 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
             model="gpt-3.5-turbo-16k",
             messages=[
                 {
-                    "content": "You are an iterative knowledge graph builder. You are given the current state of the graph, and you must append the nodes and edges to it. Do not provide any duplicates and try to reuse nodes as much as possible.",
                     "role": "system",
-                },
-                {
                     "content": """You are an iterative knowledge graph builder.
                     You are given the current state of the graph, and you must append the nodes and edges 
                     to it Do not procide any duplcates and try to reuse nodes as much as possible.""",
