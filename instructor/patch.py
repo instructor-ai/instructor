@@ -12,6 +12,7 @@ from openai.types.chat import (
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
+from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
 
 from instructor.dsl.multitask import MultiTask, MultiTaskBase
@@ -225,10 +226,18 @@ async def retry_async(
     mode: Mode = Mode.FUNCTIONS,
 ):
     retries = 0
+    total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     while retries <= max_retries:
         try:
             response: ChatCompletion = await func(*args, **kwargs)
             stream = kwargs.get("stream", False)
+            if isinstance(response, ChatCompletion) and response.usage is not None:
+                total_usage.completion_tokens += response.usage.completion_tokens
+                total_usage.prompt_tokens += response.usage.prompt_tokens
+                total_usage.total_tokens += response.usage.total_tokens
+                response.usage = (
+                    total_usage  # Replace each response usage with the total usage
+                )
             return await process_response_async(
                 response,
                 response_model=response_model,
@@ -279,11 +288,19 @@ def retry_sync(
     mode: Mode = Mode.FUNCTIONS,
 ):
     retries = 0
+    total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     while retries <= max_retries:
         # Excepts ValidationError, and JSONDecodeError
         try:
             response = func(*args, **kwargs)
             stream = kwargs.get("stream", False)
+            if isinstance(response, ChatCompletion) and response.usage is not None:
+                total_usage.completion_tokens += response.usage.completion_tokens
+                total_usage.prompt_tokens += response.usage.prompt_tokens
+                total_usage.total_tokens += response.usage.total_tokens
+                response.usage = (
+                    total_usage  # Replace each response usage with the total usage
+                )
             return process_response(
                 response,
                 response_model=response_model,
