@@ -2,11 +2,9 @@
 
 Field level streaming provides incremental snapshots of the current state of the response model that are immediately useable. This approach is particularly relevant in contexts like rendering UI components.
 
+Instructor supports this pattern by making use of `Partial[T]`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`.
 
-
-Instructor supports this pattern by making use of `Partial[T]`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`. 
-
-When specifying a partial response model and setting streaming to true, the response from Instructor becomes a generator. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction. 
+When specifying a partial response model and setting streaming to true, the response from Instructor becomes a generator. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction.
 
 !!! warning "Important: Fewer validators are supported by `Partial` response models as streamed fields will natural raise validation errors"
 
@@ -79,4 +77,3 @@ for extraction in extraction_stream:
 ```
 
 ![Partial Streaming Gif](../img/partial_streaming.gif)
-
