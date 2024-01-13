@@ -32,7 +32,7 @@ Using the `response_model` parameter, you can specify a response model to use fo
 
 If `stream=True` is specified, the response will be parsed using the `from_stream_response` method of the response model, if available, otherwise it will be parsed using the `from_response` method.
 
-If need to obtain the raw response from OpenAI's API, you can access it using the `_raw_response` attribute of the response model.
+If need to obtain the raw response from OpenAI's API, you can access it using the `_raw_response` attribute of the response model. The `_raw_response.usage` attribute is modified to reflect the token usage from the last successful response as well as from any previous unsuccessful attempts.
 
 Parameters:
     response_model (Union[Type[BaseModel], Type[OpenAISchema]]): The response model to use for parsing the response from OpenAI's API, if available (default: None)
