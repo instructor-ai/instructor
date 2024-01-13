@@ -18,6 +18,7 @@ parser = JSONParser()
 
 Model = TypeVar("Model", bound=BaseModel)
 
+
 class PartialBase:
     @classmethod
     def from_streaming_response(cls, completion, mode: Mode):
@@ -31,17 +32,21 @@ class PartialBase:
 
     @classmethod
     def model_from_chunks(cls, json_chunks):
-        prev_obj = None 
+        prev_obj = None
         potential_object = ""
         for chunk in json_chunks:
             potential_object += chunk
 
             # Avoid parsing incomplete json when its just whitespace otherwise parser throws an exception
-            task_json = parser.parse(potential_object) if potential_object.strip() else None 
+            task_json = (
+                parser.parse(potential_object) if potential_object.strip() else None
+            )
             if task_json:
                 obj = cls.model_validate(task_json, strict=None)  # type: ignore
                 if obj != prev_obj:
-                    obj.__dict__["chunk"] = chunk # Provide the raw chunk for debugging and benchmarking
+                    obj.__dict__[
+                        "chunk"
+                    ] = chunk  # Provide the raw chunk for debugging and benchmarking
                     prev_obj = obj
                     yield obj
 
@@ -52,11 +57,15 @@ class PartialBase:
             potential_object += chunk
 
             # Avoid parsing incomplete json when its just whitespace otherwise parser throws an exception
-            task_json = parser.parse(potential_object) if potential_object.strip() else None 
+            task_json = (
+                parser.parse(potential_object) if potential_object.strip() else None
+            )
             if task_json:
                 obj = cls.model_validate(task_json, strict=None)  # type: ignore
                 if obj != prev_obj:
-                    obj.__dict__["chunk"] = chunk # Provide the raw chunk for debugging and benchmarking
+                    obj.__dict__[
+                        "chunk"
+                    ] = chunk  # Provide the raw chunk for debugging and benchmarking
                     prev_obj = obj
                     yield obj
 
@@ -101,6 +110,7 @@ class PartialBase:
                         )
             except AttributeError:
                 pass
+
 
 class Partial(Generic[Model]):
     """Generate a new class with all attributes optionals.
@@ -156,10 +166,11 @@ class Partial(Generic[Model]):
                 generic_base = get_origin(annotation)
                 generic_args = get_args(annotation)
 
-
                 # Recursively apply Partial to each of the generic arguments
                 modified_args = tuple(
-                    Partial[arg] if isinstance(arg, type) and issubclass(arg, BaseModel) else arg
+                    Partial[arg]
+                    if isinstance(arg, type) and issubclass(arg, BaseModel)
+                    else arg
                     for arg in generic_args
                 )
 
@@ -184,4 +195,4 @@ class Partial(Generic[Model]):
                 field_name: _make_field_optional(field_info)
                 for field_name, field_info in wrapped_class.model_fields.items()
             },
-        ) 
+        )

@@ -15,6 +15,7 @@ versus using partial streaming from instructor
 
 client = instructor.patch(OpenAI())
 
+
 def num_tokens_from_string(string: str, model_name: str) -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.encoding_for_model(model_name)
@@ -56,6 +57,7 @@ class MeetingInfo(BaseModel):
 
 PartialMeetingInfo = instructor.Partial[MeetingInfo]
 
+
 def benchmark_raw_stream(model="gpt-4"):
     print("Raw Streaming Benchmark Start")
 
@@ -66,12 +68,7 @@ def benchmark_raw_stream(model="gpt-4"):
     start_time = time.time()
     extraction_stream = client.chat.completions.create(
         model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": content
-            }
-        ],
+        messages=[{"role": "user", "content": content}],
         stream=True,
     )
 
@@ -94,7 +91,8 @@ def benchmark_raw_stream(model="gpt-4"):
 
     print("Raw Streaming Benchmark End\n")
 
-def benchmark_partial_streaming(model="gpt-4"):    
+
+def benchmark_partial_streaming(model="gpt-4"):
     print("Partial Streaming Benchmark Start")
 
     content = f"Get the information about the meeting and the users {text_block}"
@@ -103,12 +101,7 @@ def benchmark_partial_streaming(model="gpt-4"):
     extraction_stream = client.chat.completions.create(
         model=model,
         response_model=PartialMeetingInfo,
-        messages=[
-            {
-                "role": "user",
-                "content": content
-            }
-        ],
+        messages=[{"role": "user", "content": content}],
         stream=True,
     )
 
@@ -129,6 +122,7 @@ def benchmark_partial_streaming(model="gpt-4"):
     print(f"{char_per_sec:.2f} tok/s")
 
     print("Partial Streaming Benchmark End")
+
 
 benchmark_raw_stream()
 """

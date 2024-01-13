@@ -170,7 +170,7 @@ def process_response(
             strict=strict,
             mode=mode,
             stream_multitask=stream and is_model_multitask,
-            stream_partial=stream and is_model_partial
+            stream_partial=stream and is_model_partial,
         )
         if not stream:
             model._raw_response = response
@@ -252,9 +252,9 @@ async def retry_async(
                         "role": "tool",
                         "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure"
+                        "content": "failure",
                     }
-            )
+                )
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -307,7 +307,7 @@ def retry_sync(
                         "role": "tool",
                         "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure"
+                        "content": "failure",
                     }
                 )
             kwargs["messages"].append(

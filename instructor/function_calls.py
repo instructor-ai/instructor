@@ -125,7 +125,7 @@ class OpenAISchema(BaseModel):
         """
         if stream_multitask:
             return cls.from_streaming_response(completion, mode)
-        
+
         if stream_partial:
             return cls.from_streaming_response(completion, mode)
 
@@ -190,7 +190,7 @@ class OpenAISchema(BaseModel):
 
         if stream_multitask:
             return await cls.from_streaming_response_async(completion, mode)
-        
+
         if stream_partial:
             return cls.from_streaming_response_async(completion, mode)
 

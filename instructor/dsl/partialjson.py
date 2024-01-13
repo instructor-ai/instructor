@@ -11,22 +11,23 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 import json
 
+
 class JSONParser:
     def __init__(self):
         self.parsers = {
-            ' ': self.parse_space,
-            '\r': self.parse_space,
-            '\n': self.parse_space,
-            '\t': self.parse_space,
-            '[': self.parse_array,
-            '{': self.parse_object,
+            " ": self.parse_space,
+            "\r": self.parse_space,
+            "\n": self.parse_space,
+            "\t": self.parse_space,
+            "[": self.parse_array,
+            "{": self.parse_object,
             '"': self.parse_string,
-            't': self.parse_true,
-            'f': self.parse_false,
-            'n': self.parse_null
+            "t": self.parse_true,
+            "f": self.parse_false,
+            "n": self.parse_null,
         }
         # Adding parsers for numbers
-        for c in '0123456789.-':
+        for c in "0123456789.-":
             self.parsers[c] = self.parse_number
 
         self.last_parse_reminding = None
@@ -64,13 +65,13 @@ class JSONParser:
         acc = []
         s = s.strip()
         while s:
-            if s[0] == ']':
+            if s[0] == "]":
                 s = s[1:]  # skip ending ']'
                 break
             res, s = self.parse_any(s, e)
             acc.append(res)
             s = s.strip()
-            if s.startswith(','):
+            if s.startswith(","):
                 s = s[1:]
                 s = s.strip()
         return acc, s
@@ -80,75 +81,79 @@ class JSONParser:
         acc = {}
         s = s.strip()
         while s:
-            if s[0] == '}':
+            if s[0] == "}":
                 s = s[1:]  # skip ending '}'
                 break
             key, s = self.parse_any(s, e)
             s = s.strip()
 
             # Handle case where object ends after a key
-            if not s or s[0] == '}':
+            if not s or s[0] == "}":
                 acc[key] = None
                 break
 
             # Expecting a colon after the key
-            if s[0] != ':':
+            if s[0] != ":":
                 raise e  # or handle this scenario as per your requirement
 
             s = s[1:]  # skip ':'
             s = s.strip()
 
             # Handle case where value is missing or incomplete
-            if not s or s[0] in ',}':
+            if not s or s[0] in ",}":
                 acc[key] = None
-                if s.startswith(','):
+                if s.startswith(","):
                     s = s[1:]
                 break
 
             value, s = self.parse_any(s, e)
             acc[key] = value
             s = s.strip()
-            if s.startswith(','):
+            if s.startswith(","):
                 s = s[1:]
                 s = s.strip()
         return acc, s
 
     def parse_string(self, s, e):
         end = s.find('"', 1)
-        while end != -1 and s[end - 1] == '\\':  # Handle escaped quotes
+        while end != -1 and s[end - 1] == "\\":  # Handle escaped quotes
             end = s.find('"', end + 1)
         if end == -1:
             # Return the incomplete string without the opening quote
             return s[1:], ""
-        str_val = s[:end + 1]
-        s = s[end + 1:]
+        str_val = s[: end + 1]
+        s = s[end + 1 :]
         return json.loads(str_val), s
 
     def parse_number(self, s, e):
         i = 0
-        while i < len(s) and s[i] in '0123456789.-':
+        while i < len(s) and s[i] in "0123456789.-":
             i += 1
         num_str = s[:i]
         s = s[i:]
-        if not num_str or num_str.endswith('.') or num_str.endswith('-'):
+        if not num_str or num_str.endswith(".") or num_str.endswith("-"):
             return num_str, ""  # Return the incomplete number as is
         try:
-            num = float(num_str) if '.' in num_str or 'e' in num_str or 'E' in num_str else int(num_str)
+            num = (
+                float(num_str)
+                if "." in num_str or "e" in num_str or "E" in num_str
+                else int(num_str)
+            )
         except ValueError:
             raise e
         return num, s
 
     def parse_true(self, s, e):
-        if s.startswith('true'):
+        if s.startswith("true"):
             return True, s[4:]
         raise e
 
     def parse_false(self, s, e):
-        if s.startswith('false'):
+        if s.startswith("false"):
             return False, s[5:]
         raise e
 
     def parse_null(self, s, e):
-        if s.startswith('null'):
+        if s.startswith("null"):
             return None, s[4:]
         raise e
