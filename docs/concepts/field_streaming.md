@@ -6,9 +6,13 @@ Instructor supports this pattern by making use of `Partial[T]`. This lets us dyn
 
 When specifying a partial response model and setting streaming to true, the response from Instructor becomes a generator. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction.
 
-!!! warning "Important: Fewer validators are supported by `Partial` response models as streamed fields will natural raise validation errors"
+!!! warning "Limited Validator Support"
 
-!!! note If you are looking for wider validator support or to stream out a list of completed objects one by one, take a look at [Multi-task Streaming](./lists.md).
+    Important: Fewer validators are supported by `Partial` response models as streamed fields will natural raise validation errors
+
+!!! note "Item Level Streaming"
+
+    If you are looking for wider validator support or to stream out a list of completed objects one by one, take a look at [Multi-task Streaming](./lists.md).
 
 Lets look at an example of streaming an extraction of conference information.
 
