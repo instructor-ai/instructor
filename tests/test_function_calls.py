@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from openai.resources.chat.completions import ChatCompletion
 
 from instructor import openai_schema, OpenAISchema
+import instructor
 from instructor.exceptions import IncompleteOutputException
 
 
@@ -92,11 +93,13 @@ def test_no_docstring():
 )
 def test_incomplete_output_exception(test_model, mock_completion):
     with pytest.raises(IncompleteOutputException):
-        test_model.from_response(mock_completion)
+        test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
 
 
 def test_complete_output_no_exception(test_model, mock_completion):
-    test_model_instance = test_model.from_response(mock_completion)
+    test_model_instance = test_model.from_response(
+        mock_completion, mode=instructor.Mode.FUNCTIONS
+    )
     assert test_model_instance.data == "complete data"
 
 
@@ -108,10 +111,12 @@ def test_complete_output_no_exception(test_model, mock_completion):
 )
 async def test_incomplete_output_exception_raise(test_model, mock_completion):
     with pytest.raises(IncompleteOutputException):
-        await test_model.from_response(mock_completion)
+        await test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
 
 
 @pytest.mark.asyncio
 async def test_async_complete_output_no_exception(test_model, mock_completion):
-    test_model_instance = await test_model.from_response_async(mock_completion)
+    test_model_instance = await test_model.from_response_async(
+        mock_completion, mode=instructor.Mode.FUNCTIONS
+    )
     assert test_model_instance.data == "complete data"
