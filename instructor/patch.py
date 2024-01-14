@@ -12,6 +12,7 @@ from openai.types.chat import (
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
+from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
 
 from instructor.dsl.multitask import MultiTask, MultiTaskBase
@@ -31,7 +32,7 @@ Using the `response_model` parameter, you can specify a response model to use fo
 
 If `stream=True` is specified, the response will be parsed using the `from_stream_response` method of the response model, if available, otherwise it will be parsed using the `from_response` method.
 
-If need to obtain the raw response from OpenAI's API, you can access it using the `_raw_response` attribute of the response model.
+If need to obtain the raw response from OpenAI's API, you can access it using the `_raw_response` attribute of the response model. The `_raw_response.usage` attribute is modified to reflect the token usage from the last successful response as well as from any previous unsuccessful attempts.
 
 Parameters:
     response_model (Union[Type[BaseModel], Type[OpenAISchema]]): The response model to use for parsing the response from OpenAI's API, if available (default: None)
@@ -225,10 +226,18 @@ async def retry_async(
     mode: Mode = Mode.FUNCTIONS,
 ):
     retries = 0
+    total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     while retries <= max_retries:
         try:
             response: ChatCompletion = await func(*args, **kwargs)
             stream = kwargs.get("stream", False)
+            if isinstance(response, ChatCompletion) and response.usage is not None:
+                total_usage.completion_tokens += response.usage.completion_tokens
+                total_usage.prompt_tokens += response.usage.prompt_tokens
+                total_usage.total_tokens += response.usage.total_tokens
+                response.usage = (
+                    total_usage  # Replace each response usage with the total usage
+                )
             return await process_response_async(
                 response,
                 response_model=response_model,
@@ -279,11 +288,19 @@ def retry_sync(
     mode: Mode = Mode.FUNCTIONS,
 ):
     retries = 0
+    total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     while retries <= max_retries:
         # Excepts ValidationError, and JSONDecodeError
         try:
             response = func(*args, **kwargs)
             stream = kwargs.get("stream", False)
+            if isinstance(response, ChatCompletion) and response.usage is not None:
+                total_usage.completion_tokens += response.usage.completion_tokens
+                total_usage.prompt_tokens += response.usage.prompt_tokens
+                total_usage.total_tokens += response.usage.total_tokens
+                response.usage = (
+                    total_usage  # Replace each response usage with the total usage
+                )
             return process_response(
                 response,
                 response_model=response_model,
