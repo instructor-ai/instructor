@@ -1,5 +1,12 @@
 from .distil import FinetuneFormat, Instructions
-from .dsl import CitationMixin, Maybe, MultiTask, llm_validator, openai_moderation
+from .dsl import (
+    CitationMixin,
+    Maybe,
+    Partial,
+    MultiTask,
+    llm_validator,
+    openai_moderation,
+)
 from .function_calls import OpenAISchema, openai_schema, Mode
 from .patch import apatch, patch
 
@@ -8,6 +15,7 @@ __all__ = [
     "CitationMixin",
     "MultiTask",
     "Maybe",
+    "Partial",
     "openai_schema",
     "Mode",
     "patch",
