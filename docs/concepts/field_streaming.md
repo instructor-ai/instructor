@@ -1,26 +1,51 @@
-# Field Level Streaming
+# Streaming Partial Responses
 
 Field level streaming provides incremental snapshots of the current state of the response model that are immediately useable. This approach is particularly relevant in contexts like rendering UI components.
 
 Instructor supports this pattern by making use of `Partial[T]`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`.
 
-When specifying a partial response model and setting streaming to true, the response from Instructor becomes a generator. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction.
+## Understanding Partial Responses
+
+Consider what happens whene we define a response model:
+
+```python
+class User(BaseModel):
+    name: str
+    age: int
+```
+
+If we streamed json out from OpenAI, we would only be able to parse when the object is completed returned!
+
+```
+{"name": "Jo
+{"name": "John", "ag
+{"name": "John", "age":
+{"name": "John", "age": 25} # Completed
+```
+
+When specifying a `Partial[T]` and setting `stream=True`, the response from `instructor` becomes a `Generator[T]`. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction!
+
+```
+{"name": "Jo                 => User(name="Jo", age=None)
+{"name": "John", "ag         => User(name="John", age=None)
+{"name": "John", "age:       => User(name="John", age=None)
+{"name": "John", "age": 25}  => User(name="John", age=25)
+```
 
 !!! warning "Limited Validator Support"
 
-    Important: Fewer validators are supported by `Partial` response models as streamed fields will natural raise validation errors
+    Fewer validators are supported by `Partial` response models as streamed fields will natural raise validation error, as we do not have a strong opinoin on how to handle them.
 
-!!! note "Item Level Streaming"
-
-    If you are looking for wider validator support or to stream out a list of completed objects one by one, take a look at [Multi-task Streaming](./lists.md).
-
-Lets look at an example of streaming an extraction of conference information.
+Let's look at an example of streaming an extraction of conference information, that would be used to stream in an react component.
 
 ```python
 import instructor
+
+from instructor import Partial
 from openai import OpenAI
 from pydantic import BaseModel
 from typing import List
+from rich.console import Console
 
 client = instructor.patch(OpenAI())
 
@@ -53,12 +78,9 @@ class MeetingInfo(BaseModel):
     deadline: str
 
 
-PartialMeetingInfo = instructor.Partial[MeetingInfo]
-
-
 extraction_stream = client.chat.completions.create(
     model="gpt-4",
-    response_model=PartialMeetingInfo,
+    response_model=Partial[MeetingInfo],
     messages=[
         {
             "role": "user",
@@ -66,10 +88,8 @@ extraction_stream = client.chat.completions.create(
         },
     ],
     stream=True,
-)  # type: ignore
+)
 
-
-from rich.console import Console
 
 console = Console()
 
@@ -80,4 +100,6 @@ for extraction in extraction_stream:
 
 ```
 
-![Partial Streaming Gif](../img/partial_streaming.gif)
+This will output the following:
+
+![Partial Streaming Gif](../img/partial.gif)
