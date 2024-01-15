@@ -23,7 +23,7 @@ Dive into the world of Python-based structured extraction, by OpenAI's function 
 
 ## Usage
 
-```py hl_lines="5 13"
+```py
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel

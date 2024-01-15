@@ -147,4 +147,115 @@ model = client.chat.completions.create(
 assert model.name == "JASON"
 ```
 
+## Iterables and Lists
+
+We can also generate tasks as the tokens are streamed in by defining an `Iterable[T]` type.
+
+Lets look at an example in action with the same class
+
+```python hl_lines="6 26"
+from typing import Iterable
+
+Users = Iterable[User]
+
+users = client.chat.completions.create(
+    model="gpt-4",
+    temperature=0.1,
+    stream=True,
+    response_model=Users,
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a perfect entity extraction system",
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Consider the data below:\n{input}"
+                "Correctly segment it into entitites"
+                "Make sure the JSON is correct"
+            ),
+        },
+    ],
+    max_tokens=1000,
+)
+
+for user in users:
+    assert isinstance(user, User)
+    print(user)
+
+>>> name="Jason" "age"=10
+>>> name="John" "age"=10
+```
+
+## Partial Extraction
+
+We also support partial extraction, which is useful for streaming in data that is incomplete.
+
+```python
+import instructor
+
+from instructor import Partial
+from openai import OpenAI
+from pydantic import BaseModel
+from typing import List
+from rich.console import Console
+
+client = instructor.patch(OpenAI())
+
+text_block = """
+In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
+
+- Name: John Doe, Email: johndoe@email.com, Twitter: @TechGuru44
+- Name: Jane Smith, Email: janesmith@email.com, Twitter: @DigitalDiva88
+- Name: Alex Johnson, Email: alexj@email.com, Twitter: @CodeMaster2023
+
+During the meeting, we agreed on several key points. The conference will be held on March 15th, 2024, at the Grand Tech Arena located at 4521 Innovation Drive. Dr. Emily Johnson, a renowned AI researcher, will be our keynote speaker.
+
+The budget for the event is set at $50,000, covering venue costs, speaker fees, and promotional activities. Each participant is expected to contribute an article to the conference blog by February 20th.
+
+A follow-up meetingis scheduled for January 25th at 3 PM GMT to finalize the agenda and confirm the list of speakers.
+"""
+
+
+class User(BaseModel):
+    name: str
+    email: str
+    twitter: str
+
+
+class MeetingInfo(BaseModel):
+    users: List[User]
+    date: str
+    location: str
+    budget: int
+    deadline: str
+
+
+extraction_stream = client.chat.completions.create(
+    model="gpt-4",
+    response_model=Partial[MeetingInfo],
+    messages=[
+        {
+            "role": "user",
+            "content": f"Get the information about the meeting and the users {text_block}",
+        },
+    ],
+    stream=True,
+)
+
+
+console = Console()
+
+for extraction in extraction_stream:
+    obj = extraction.model_dump()
+    console.clear()
+    console.print(obj)
+
+```
+
+This will output the following:
+
+![Partial Streaming Gif](./img/partial.gif)
+
 As you can see, we've baked in a self correcting mechanism into the model. This is a powerful way to make your models more robust and less brittle without including a lot of extra code or prompts.
