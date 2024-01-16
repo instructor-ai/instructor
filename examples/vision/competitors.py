@@ -29,10 +29,10 @@ class Industry(BaseModel):
     """
 
     name: str = Field(
-        description="the name of the industry for these competitors"
+        description="The name of the industry"
     )
     competitor_list: List[Competitor] = Field(
-        description="A dict of competitors where each key is an industry"
+        description="A list of competitors for this industry"
     )
 
 class Competition(BaseModel):
