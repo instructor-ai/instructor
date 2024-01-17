@@ -20,7 +20,7 @@ Today, we're diving into optimizing instructor code while maintaining the excell
 
 <!-- more -->
 
-Lets first consider our canonical example, using the `OpenAI` Python client to extract user details.
+Let's first consider our canonical example, using the `OpenAI` Python client to extract user details.
 
 ```python
 import instructor
@@ -320,7 +320,7 @@ def extract(data) -> UserDetail:
 
 !!! note "Looking carefully"
 
-    If you look carefully at the code above you'll notice that we're using the same `instructor_cache` decorator as before. The implementatino is the same, but we're using a different caching backend!
+    If you look carefully at the code above you'll notice that we're using the same `instructor_cache` decorator as before. The implementation is the same, but we're using a different caching backend!
 
 ## Conclusion
 

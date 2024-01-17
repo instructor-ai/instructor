@@ -404,7 +404,7 @@ This approach provides a layer of defense against two types of bad outputs:
 
 ### Define the Response Model with Validators
 
-To keep things simple lets assume we have a model that returns a `UserModel` object. We can define the response model using Pydantic and add a field validator to ensure that the name is in uppercase.
+To keep things simple let's assume we have a model that returns a `UserModel` object. We can define the response model using Pydantic and add a field validator to ensure that the name is in uppercase.
 
 ```python
 from pydantic import BaseModel, field_validator

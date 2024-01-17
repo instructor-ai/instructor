@@ -70,7 +70,7 @@ async def extract_person(text: str) -> Person:
 1.  We use `instructor.apatch` to patch the `create` method of `AsyncOpenAI` to accept a `response_model` argument. This is because the `create` method of `AsyncOpenAI` does not accept a `response_model` argument without this patch.
 2.  We use `await` here to wait for the response from the server before we return the result. This is because `create` returns a coroutine object, not the result of the coroutine.
 
-Notice that now there are `async` and `await` keywords in the function definition. This is because we're using the `asyncio` library to run the function concurrently. Now lets define a batch of texts to process.
+Notice that now there are `async` and `await` keywords in the function definition. This is because we're using the `asyncio` library to run the function concurrently. Now let's define a batch of texts to process.
 
 ```python
 dataset = [
@@ -125,7 +125,7 @@ However, these methods aim to complete as many tasks as possible as quickly as p
 
 !!! note "Ordering of results"
 
-    Its important to note that the order of the results will not be the same as the order of the dataset. This is because the tasks are completed in the order they finish, not the order they were started. If you need to preserve the order of the results, you can use `asyncio.gather` instead.
+    It is important to note that the order of the results will not be the same as the order of the dataset. This is because the tasks are completed in the order they finish, not the order they were started. If you need to preserve the order of the results, you can use `asyncio.gather` instead.
 
 ### **Rate-Limited Gather**: Using semaphores to limit concurrency.
 
@@ -167,7 +167,7 @@ Now that we have seen the code, let's examine the results of processing 7 texts.
 
 !!! note "Other Options"
 
-    Its important to also note that here we are using a `semaphore` to limit the number of concurrent requests. However, there are other ways to limit concurrency esp since we have rate limit information from the `openai` request. You can imagine using a library like `ratelimit` to limit the number of requests per second. OR catching rate limit exceptions and using `tenacity` to retry the request after a certain amount of time.
+    It is important to also note that here we are using a `semaphore` to limit the number of concurrent requests. However, there are other ways to limit concurrency especially since we have rate limit information from the `openai` request. You can imagine using a library like `ratelimit` to limit the number of requests per second. OR catching rate limit exceptions and using `tenacity` to retry the request after a certain amount of time.
 
     - [tenacity](https://pypi.org/project/tenacity/)
     - [aiolimiter](https://pypi.org/project/aiolimiter/)
