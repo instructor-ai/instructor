@@ -13,11 +13,11 @@ authors:
 
 # RAG is more than just embedding search
 
-With the advent of large language models (LLM), retrival augmented generation (RAG) has become a hot topic. However throught the past year of [helping startups](https://jxnl.co) integrate LLMs into their stack I've noticed that the pattern of taking user queries, embedding them, and directly searching a vector store is effectively demoware.
+With the advent of large language models (LLM), retrieval augmented generation (RAG) has become a hot topic. However throught the past year of [helping startups](https://jxnl.co) integrate LLMs into their stack I've noticed that the pattern of taking user queries, embedding them, and directly searching a vector store is effectively demoware.
 
 !!! note "What is RAG?"
 
-    Retrival augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
+    Retrieval augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
 
 <figure markdown>
   ![RAG](img/dumb_rag.png)
@@ -165,7 +165,7 @@ class SearchClient(BaseModel):
         elif self.source == ClientSource.CALENDAR:
             ...
 
-class Retrival(BaseModel):
+class Retrieval(BaseModel):
     queries: List[SearchClient]
 
     async def execute(self) -> str:
@@ -181,9 +181,9 @@ from openai import OpenAI
 # Enables response_model in the openai client
 client = instructor.patch(OpenAI())
 
-retrival = client.chat.completions.create(
+retrieval = client.chat.completions.create(
     model="gpt-4",
-    response_model=Retrival,
+    response_model=Retrieval,
     messages=[
         {"role": "system", "content": "You are Jason's personal assistant."},
         {"role": "user", "content": "What do I have today?"}
@@ -226,7 +226,7 @@ Both of these examples showcase how both search providors and consumers can use 
 
 ## Conclusion
 
-This isnt about fancy embedding tricks, it's just plain old information retrival and query understanding. The beauty of instructor is that it simplifies modeling the complex and lets you define the output of the language model, the prompts, and the payload we send to the backend in a single place.
+This isnt about fancy embedding tricks, it's just plain old information retrieval and query understanding. The beauty of instructor is that it simplifies modeling the complex and lets you define the output of the language model, the prompts, and the payload we send to the backend in a single place.
 
 ## What's Next?
 
