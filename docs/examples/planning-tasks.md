@@ -113,7 +113,7 @@ plan.model_dump()
 
 !!! warning "No RAG"
 
-    While we build the query plan in this example, we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrival and calls openai for retrival augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
+    While we build the query plan in this example, we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrieval and calls openai for retrieval augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
 
 ```python
 {

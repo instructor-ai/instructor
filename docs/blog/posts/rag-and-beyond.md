@@ -13,11 +13,11 @@ authors:
 
 # RAG is more than just embedding search
 
-With the advent of large language models (LLM), retrival augmented generation (RAG) has become a hot topic. However throught the past year of [helping startups](https://jxnl.co) integrate LLMs into their stack I've noticed that the pattern of taking user queries, embedding them, and directly searching a vector store is effectively demoware.
+With the advent of large language models (LLM), retrieval augmented generation (RAG) has become a hot topic. However throughout the past year of [helping startups](https://jxnl.co) integrate LLMs into their stack I've noticed that the pattern of taking user queries, embedding them, and directly searching a vector store is effectively demoware.
 
 !!! note "What is RAG?"
 
-    Retrival augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
+    Retrieval augmented generation (RAG) is a technique that uses an LLM to generate responses, but uses a search backend to augment the generation. In the past year using text embeddings with a vector databases has been the most popular approach I've seen being socialized.
 
 <figure markdown>
   ![RAG](img/dumb_rag.png)
@@ -30,7 +30,7 @@ So let's kick things off by examining what I like to call the 'Dumb' RAG Modelâ€
 
 ## The 'Dumb' RAG Model
 
-When you ask a question like, "what is the capital of France?" The RAG 'dumb' model embeds the query and searches in some unopinonated search endpoint. Limited to a single method API like `search(query: str) -> List[str]`. This is fine for simple queries, since you'd expect words like 'paris is the capital of france' to be in the top results of say, your wikipedia embeddings.
+When you ask a question like, "what is the capital of France?" The RAG 'dumb' model embeds the query and searches in some unopinionated search endpoint. Limited to a single method API like `search(query: str) -> List[str]`. This is fine for simple queries, since you'd expect words like 'paris is the capital of france' to be in the top results of say, your wikipedia embeddings.
 
 ### Why is this a problem?
 
@@ -39,7 +39,7 @@ When you ask a question like, "what is the capital of France?" The RAG 'dumb' mo
 - **Monolithic Search Backend**: Assumes a single search backend, which is not always the case. You may have multiple search backends, each with their own API, and you want to route the query to vector stores, search clients, sql databases, and more.
 - **Limitation of text search**: Restricts complex queries to a single string (`{query: str}`), sacrificing expressiveness, in using keywords, filters, and other advanced features. For example, asking `what problems did we fix last week` cannot be answered by a simple text search since documents that contain `problem, last week` are going to be present at every week.
 
-- **Limited ability to plan**: Assumes that the query is the only input to the search backend, but you may want to use other information to improve the search, like the user's location, or the time of day using the context to rewrite the query. For example, if you present the language model of more context its able to plan a suite of queries to execute to return the best results.
+- **Limited ability to plan**: Assumes that the query is the only input to the search backend, but you may want to use other information to improve the search, like the user's location, or the time of day using the context to rewrite the query. For example, if you present the language model of more context it is able to plan a suite of queries to execute to return the best results.
 
 Now let's dive into how we can make it smarter with query understanding. This is where things get interesting.
 
@@ -165,7 +165,7 @@ class SearchClient(BaseModel):
         elif self.source == ClientSource.CALENDAR:
             ...
 
-class Retrival(BaseModel):
+class Retrieval(BaseModel):
     queries: List[SearchClient]
 
     async def execute(self) -> str:
@@ -181,9 +181,9 @@ from openai import OpenAI
 # Enables response_model in the openai client
 client = instructor.patch(OpenAI())
 
-retrival = client.chat.completions.create(
+retrieval = client.chat.completions.create(
     model="gpt-4",
-    response_model=Retrival,
+    response_model=Retrieval,
     messages=[
         {"role": "system", "content": "You are Jason's personal assistant."},
         {"role": "user", "content": "What do I have today?"}
@@ -220,13 +220,13 @@ retrival = client.chat.completions.create(
 Notice that we have a list of queries that route to different search backends (email and calendar). We can even dispatch them async to be as performance as possible. Not only do we dispatch to different backends (that we have no control over), but you are likely going to render them to the user differently as well. Perhaps you want to summarize the emails in text, but you want to render the calendar events as a list that they can scroll across on a mobile app.
 
 !!! Note "Can I used framework X?"
-I get this question a lot, but it's just code. Within these dispatchs you can do whatever you want. You can use `input()` to ask the user for more information, make a post request, call a Langchain agent or LLamaindex query engine to get more information. The sky is the limit.
+I get this question a lot, but it's just code. Within these dispatches you can do whatever you want. You can use `input()` to ask the user for more information, make a post request, call a Langchain agent or LLamaindex query engine to get more information. The sky is the limit.
 
-Both of these examples showcase how both search providors and consumers can use `instructor` to model their systems. This is a powerful pattern that allows you to build a system that can be used by anyone, and can be used to build an LLM layer, from scratch, in front of any arbitrary backend.
+Both of these examples showcase how both search providers and consumers can use `instructor` to model their systems. This is a powerful pattern that allows you to build a system that can be used by anyone, and can be used to build an LLM layer, from scratch, in front of any arbitrary backend.
 
 ## Conclusion
 
-This isnt about fancy embedding tricks, it's just plain old information retrival and query understanding. The beauty of instructor is that it simplifies modeling the complex and lets you define the output of the language model, the prompts, and the payload we send to the backend in a single place.
+This is not about fancy embedding tricks, it's just plain old information retrieval and query understanding. The beauty of instructor is that it simplifies modeling the complex and lets you define the output of the language model, the prompts, and the payload we send to the backend in a single place.
 
 ## What's Next?
 
