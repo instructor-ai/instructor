@@ -18,15 +18,37 @@ authors:
 
     This is a work in progress I'm going to use bullet points to outline the main points of the article.
 
-- I've been consulting some and a common question is "How do I improve my RAG?"
-- Theres always the black box responses like 'lets add cohere' or 'lets change chunk size', but generic solutinos get you generic results.
-- Instead my recommendation is to simply... look at your data.
+It is my intention that by the end of this blog post you will have some tools to help you improve your RAG that are not just "try a different chunk size" or "try a different re-ranker". These are all great things to try, but I want to give you some tools to help you understand your data and make informed decisions on how to improve your RAG.
 
-!!! note "Find the levers"
+But before I do that, let's go over the generic advice so we can get that out of the way.
 
-    more like if you need to 'improve rag' its too general and you need to use analysis to identify levers
+## Evals
 
-- Once we look at the data we'll have plenty of information we need to itentify the best intervention strategy and also to figure out where we might want to specialize our model.
+The point of having evaluations is not to have an absolute metric to determine your success. The best way to improve is to have a set of evals that execute quickly, which allows you to spin up and prepare many experiments. Once we run them, the goal is that we are only looking for changes in a metric. It does not matter if the metric is a 3 or a 4. What matters is that the 3 can improve to a 3.5 and the 4 might improve to a 4.5.
+
+Evaluations help you iterate. And the faster you can evaluate, the more experiments you can run on your coffee break.
+
+## Rerankers
+
+Every company I've worked with so far has tried something like Kohiroi Rancors and have generally liked it very much. I don't have much to say here except for the fact that if you haven't tried it already, definitely consider running these and comparing how your metrics improve.
+
+## Parameter Sweeps
+
+This is a very generic piece of advice, run parameter sweeps. It's very common in machine learning to train dozens of models and just simply pick the best one for some metric. This is not any different in building these retrieval applications.
+
+If you want to spend an hour writing a design doc and how you might want to test different chunk sizes, you may as well just prepare the test suite. And being able to chunk differently and chunk quickly and define different overlaps and re-rankers will allow you to iterate by just writing these giant jobs over the weekends. Your only constraint really is going to be money and time.
+
+This could mean trying 200, 400, 800 chunk size with 20% and 50% overlap, Putting that in a queue and running it over the weekend. The trick here really is doing things quickly. I prefer to use tools like [Modal Labs](modal.com) to quickly spin up these experiments and run them in parallel. Then my only constraint is money. And if you're building something that makes money, this shouldn't be a problem.
+
+## Summary Index
+
+In a production-ranked application, we can't guarantee that the LLM will be able to answer the question correctly every time. But what we can do is give confidence to the user that the documents that are relevant are being shown. An easy way of doing that is to run some kind of summarization like [chain of density](./chain-of-density.md), embedding that summary, and doing retrieval of documents first, and then putting them into context rather than using chunks themselves.
+
+## Specific Advice
+
+This part becomes much more challenging because these issues are not going to be solved by simply playing around with re-rankers and chunk size. It requires examining your data and applying a range of data science techniques to gain a deep understanding of the data. This will enable us to make informed decisions on how to construct new indices and develop specific search engines that cater to your customers' needs.
+
+Once we analyze the data, we will have ample information to identify the most effective interventions and areas where specialization is necessary.
 
 In this blog we'll cover a range of things that can lead us into the right direction. Go over some examples of companies that can do this kind of exploration. We'll leave it open ended as to what the interventions are, but give you the tools to drill down into your data and figure out what you need to do. For example if if google learns that a large portion of queries are looking for directions or a location, they might want to build a seperate index and release a maps product rather than expecting a HTML page to be the best response.
 
