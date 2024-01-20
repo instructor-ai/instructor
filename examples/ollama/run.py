@@ -13,20 +13,21 @@ class UserExtract(BaseModel):
 
 
 user = completion(
-    model="ollama/mistral",
+    model="ollama/llama2",
     response_model=UserExtract,
     messages=[
         {
             "role": "system",
-            "content": "You are a JSON Output system, only return valid JSON. YOU CAN ONLY RETURN WITH JSON NO TALKING",
+            "content": "You are a JSON extractor. Please extract the following JSON, No Talk. You must return JSON right after the Codeblock",
         },
         {
             "role": "user",
-            "content": "Extract `My name is Jason and I am 25 years old` into JSON",
+            "content": "Extract `My name is Jason and I am 25 years old`",
         },
     ],
 )
 
+print(user.model_dump_json(indent=2))
 assert isinstance(user, UserExtract), "Should be instance of UserExtract"
 assert user.name.lower() == "jason"
 assert user.age == 25
