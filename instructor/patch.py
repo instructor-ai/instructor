@@ -119,7 +119,7 @@ def handle_response_model(
                 new_kwargs["messages"].append(
                     {
                         "role": "assistant",
-                        "content": "```json",
+                        "content": "Here is the perfectly correctly formatted JSON\n```json",
                     },
                 )
                 new_kwargs["stop"] = "```"
