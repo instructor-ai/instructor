@@ -16,7 +16,7 @@ Dive into the world of Python-based structured extraction, by OpenAI's function 
 
     Check out ports to other languages below:
 
-    - [Typescript / Javascript](https://www.github.com/jxnl/instructor-js)
+    - [Typescript / Javascript](instructor-ai.github.io/instructor-js/)
     - [Elixir](https://github.com/thmsmlr/instructor_ex/)
 
     If you want to port Instructor to another language, please reach out to us on [Twitter](https://twitter.com/jxnlco) we'd love to help you get started!
