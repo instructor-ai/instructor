@@ -51,10 +51,10 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
         "role": message.role,
         "content": message.content or "",
     }
-    if message.tool_calls is not None:
+    if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
         ret["content"] += json.dumps(message.model_dump()["tool_calls"])
-    if message.function_call is not None:
+    if hasattr(message, "function_call") and message.function_call is not None:
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
 
