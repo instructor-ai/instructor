@@ -237,9 +237,9 @@ async def retry_async(
             response: ChatCompletion = await func(*args, **kwargs)
             stream = kwargs.get("stream", False)
             if isinstance(response, ChatCompletion) and response.usage is not None:
-                total_usage.completion_tokens += response.usage.completion_tokens
-                total_usage.prompt_tokens += response.usage.prompt_tokens
-                total_usage.total_tokens += response.usage.total_tokens
+                total_usage.completion_tokens += response.usage.completion_tokens or 0
+                total_usage.prompt_tokens += response.usage.prompt_tokens or 0
+                total_usage.total_tokens += response.usage.total_tokens or 0
                 response.usage = (
                     total_usage  # Replace each response usage with the total usage
                 )
@@ -300,9 +300,9 @@ def retry_sync(
             response = func(*args, **kwargs)
             stream = kwargs.get("stream", False)
             if isinstance(response, ChatCompletion) and response.usage is not None:
-                total_usage.completion_tokens += response.usage.completion_tokens
-                total_usage.prompt_tokens += response.usage.prompt_tokens
-                total_usage.total_tokens += response.usage.total_tokens
+                total_usage.completion_tokens += response.usage.completion_tokens or 0
+                total_usage.prompt_tokens += response.usage.prompt_tokens or 0
+                total_usage.total_tokens += response.usage.total_tokens or 0
                 response.usage = (
                     total_usage  # Replace each response usage with the total usage
                 )
