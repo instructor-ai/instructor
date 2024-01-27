@@ -15,6 +15,11 @@ Open-source LLMS are gaining popularity, and the release of Together's Function 
 
 By the end of this blog post, you will learn how to effectively utilize instructor with Together Ai. But before we proceed, let's first explore the concept of patching.
 
+!!! note "Other Languages"
+
+    This blog post is written in Python, but the concepts are applicable to other languages as well, as we currently have support for [Javascript](
+        https://instructor-ai.github.io/instructor-js) and [Elixir](https://hexdocs.pm/instructor/Instructor.html)
+
 <!-- more -->
 
 ## Patching
