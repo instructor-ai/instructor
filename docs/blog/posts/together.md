@@ -53,7 +53,7 @@ client = openai.OpenAI(
 )
 
 
-# By default, the patch function will patch the ChatCompletion.create and ChatCompletion.acreate methods. to support response_model parameter
+# By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods to support the response_model parameter
 client = instructor.patch(client, mode=instructor.Mode.TOOLS)
 
 
