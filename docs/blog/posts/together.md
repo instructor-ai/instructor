@@ -24,7 +24,7 @@ By the end of this blog post, you will learn how to effectively utilize instruct
 
 ## Patching
 
-Instructor's patch enhances a openai api it with the following features:
+Instructor's patch enhances the openai api it with the following features:
 
 - `response_model` in `create` calls that returns a pydantic model
 - `max_retries` in `create` calls that retries the call if it fails by using a backoff strategy
