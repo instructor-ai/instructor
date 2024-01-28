@@ -13,7 +13,7 @@ authors:
 
 Open-source LLMS are gaining popularity, and with the release of Together's Function calling models, its been easier than ever to get structured outputs.
 
-By the end of this blog post, you will learn how to effectively utilize instructor with Together Ai. But before we proceed, let's first explore the concept of patching.
+By the end of this blog post, you will learn how to effectively utilize instructor with Together AI. But before we proceed, let's first explore the concept of patching.
 
 !!! note "Other Languages"
 
