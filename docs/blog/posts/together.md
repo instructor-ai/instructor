@@ -83,4 +83,4 @@ print(user.model_dump_json(indent=2))
 }
 ```
 
-You can find more information about Togethers's function calling support [here](https://docs.together.ai/docs/function-calling).
+You can find more information about Together's function calling support [here](https://docs.together.ai/docs/function-calling).
