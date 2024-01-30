@@ -330,7 +330,7 @@ def retry_sync(
             kwargs["messages"].append(
                 {
                     "role": "user",
-                    "content": f"Recall the function correctly, fix the errorsexceptions found\n{e}",
+                    "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
                 }
             )
             if mode == Mode.MD_JSON:
