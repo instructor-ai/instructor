@@ -4,7 +4,16 @@ import logging
 from collections.abc import Iterable
 from functools import wraps
 from json import JSONDecodeError
-from typing import Callable, Optional, Type, Union, get_args, get_origin
+from typing import (
+    Callable,
+    Optional,
+    ParamSpec,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+)
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import (
@@ -13,7 +22,7 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
 )
 from openai.types.completion_usage import CompletionUsage
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 from instructor.dsl.multitask import MultiTask, MultiTaskBase
 from instructor.dsl.partial import PartialBase
@@ -22,24 +31,11 @@ from .function_calls import Mode, OpenAISchema, openai_schema
 
 logger = logging.getLogger("instructor")
 
-OVERRIDE_DOCS = """
-Creates a new chat completion for the provided messages and parameters.
 
-See: https://platform.openai.com/docs/api-reference/chat-completions/create
-
-Additional Notes:
-
-Using the `response_model` parameter, you can specify a response model to use for parsing the response from OpenAI's API. If its present, the response will be parsed using the response model, otherwise it will be returned as is. 
-
-If `stream=True` is specified, the response will be parsed using the `from_stream_response` method of the response model, if available, otherwise it will be parsed using the `from_response` method.
-
-If need to obtain the raw response from OpenAI's API, you can access it using the `_raw_response` attribute of the response model. The `_raw_response.usage` attribute is modified to reflect the token usage from the last successful response as well as from any previous unsuccessful attempts.
-
-Parameters:
-    response_model (Union[Type[BaseModel], Type[OpenAISchema]]): The response model to use for parsing the response from OpenAI's API, if available (default: None)
-    max_retries (int): The maximum number of retries to attempt if the response is not valid (default: 0)
-    validation_context (dict): The validation context to use for validating the response (default: None)
-"""
+T_Model = TypeVar("T_Model", bound=OpenAISchema)
+T_Retval = TypeVar("T_Retval")
+T_ParamSpec = ParamSpec("T_ParamSpec")
+T = TypeVar("T")
 
 
 def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
@@ -60,11 +56,24 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
 
 
 def handle_response_model(
-    *,
-    response_model: Type[BaseModel],
-    kwargs,
-    mode: Mode = Mode.FUNCTIONS,
-):
+    response_model: T, mode: Mode = Mode.TOOLS, **kwargs
+) -> Union[Type[OpenAISchema], dict]:
+    """Prepare the response model type hint, and returns the response_model
+    along with the new modified kwargs needed to be able to use the response_model
+    parameter with the patch function.
+
+
+    Args:
+        response_model (T): The response model to use for parsing the response
+        mode (Mode, optional): The openai completion mode. Defaults to Mode.TOOLS.
+
+    Raises:
+        NotImplementedError: When using stream=True with a non-iterable response_model
+        ValueError: When using an invalid patch mode
+
+    Returns:
+        Union[Type[OpenAISchema], dict]: The response model to use for parsing the response
+    """
     new_kwargs = kwargs.copy()
     if response_model is not None:
         if get_origin(response_model) is Iterable:
@@ -143,24 +152,26 @@ def handle_response_model(
 
 
 def process_response(
-    response,
+    response: T,
     *,
-    response_model: Type[BaseModel],
+    response_model: Type[T_Model],
     stream: bool,
     validation_context: dict = None,
     strict=None,
     mode: Mode = Mode.FUNCTIONS,
-):  # type: ignore
+) -> Union[T_Model, T]:
     """Processes a OpenAI response with the response model, if available.
-    It can use `validation_context` and `strict` to validate the response
-    via the pydantic model
 
     Args:
-        response (ChatCompletion): The response from OpenAI's API
-        response_model (BaseModel): The response model to use for parsing the response
+        response (T): The response from OpenAI's API
+        response_model (Type[T_Model]): The response model to use for parsing the response
         stream (bool): Whether the response is a stream
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
-        strict (bool, optional): Whether to use strict json parsing. Defaults to None.
+        strict (_type_, optional): Whether to use strict json parsing. Defaults to None.
+        mode (Mode, optional): The openai completion mode. Defaults to Mode.FUNCTIONS.
+
+    Returns:
+        Union[T_Model, T]: The parsed response, if a response model is available, otherwise the response as is from the SDK
     """
     if response_model is not None:
         is_model_multitask = issubclass(response_model, MultiTaskBase)
@@ -182,14 +193,14 @@ def process_response(
 
 
 async def process_response_async(
-    response,
+    response: ChatCompletion,
     *,
-    response_model: Type[BaseModel],
-    stream: bool,
+    response_model: Type[T_Model],
+    stream: bool = False,
     validation_context: dict = None,
-    strict=None,
+    strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-):  # type: ignore
+) -> T:
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
     via the pydantic model
@@ -221,15 +232,15 @@ async def process_response_async(
 
 
 async def retry_async(
-    func,
-    response_model,
+    func: Callable[T_ParamSpec, T_Retval],
+    response_model: Type[T],
     validation_context,
     args,
     kwargs,
     max_retries,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-):
+) -> T:
     retries = 0
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     while retries <= max_retries:
@@ -283,12 +294,12 @@ async def retry_async(
 
 
 def retry_sync(
-    func,
-    response_model,
-    validation_context,
+    func: Callable[T_ParamSpec, T_Retval],
+    response_model: Type[T],
+    validation_context: dict,
     args,
     kwargs,
-    max_retries,
+    max_retries: int = 1,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
 ):
