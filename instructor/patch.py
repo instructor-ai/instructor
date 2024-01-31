@@ -8,11 +8,13 @@ from typing import (
     Callable,
     Optional,
     ParamSpec,
+    Protocol,
     Type,
     TypeVar,
     Union,
     get_args,
     get_origin,
+    overload,
 )
 
 from openai import AsyncOpenAI, OpenAI
@@ -22,7 +24,7 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
 )
 from openai.types.completion_usage import CompletionUsage
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from instructor.dsl.multitask import MultiTask, MultiTaskBase
 from instructor.dsl.partial import PartialBase
@@ -32,7 +34,7 @@ from .function_calls import Mode, OpenAISchema, openai_schema
 logger = logging.getLogger("instructor")
 
 
-T_Model = TypeVar("T_Model", bound=OpenAISchema)
+T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
@@ -383,6 +385,37 @@ Parameters:
     validation_context (dict): The validation context to use for validating the response (default: None)
 """
 
+class InstructorChatCompletionCreate(Protocol):
+    def __call__(
+        self,
+        response_model: Type[T_Model] = None,
+        validation_context: dict = None,
+        max_retries: int = 1,
+        *args: T_ParamSpec.args,
+        **kwargs: T_ParamSpec.kwargs,
+    ) -> T_Model:
+        ...
+
+@overload
+def patch(
+    client: OpenAI,
+    mode: Mode = Mode.FUNCTIONS,
+) -> OpenAI:
+    ...
+
+@overload
+def patch(
+    client: AsyncOpenAI,
+    mode: Mode = Mode.FUNCTIONS,
+) -> AsyncOpenAI:
+    ...
+
+@overload
+def patch(
+    create: Callable[T_ParamSpec, T_Retval],
+    mode: Mode = Mode.FUNCTIONS,
+) -> InstructorChatCompletionCreate:
+    ...
 
 def patch(
     client: Union[OpenAI, AsyncOpenAI] = None,
