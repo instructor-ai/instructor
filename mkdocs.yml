@@ -149,6 +149,7 @@ nav:
   - Cookbook:
     - Examples: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
+    - Batch Classification (User Defined): 'examples/batch_classification.md'
     - LLM Self Critique: 'examples/self_critique.md'
     - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
     - Content Moderation: 'examples/moderation.md'
