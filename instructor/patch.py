@@ -450,4 +450,9 @@ def apatch(client: AsyncOpenAI, mode: Mode = Mode.FUNCTIONS):
     - `validation_context` parameter to validate the response using the pydantic model
     - `strict` parameter to use strict json parsing
     """
+    import warnings
+
+    warnings.warn(
+        "apatch is deprecated, use patch instead", DeprecationWarning, stacklevel=2
+    )
     return patch(client, mode=mode)
