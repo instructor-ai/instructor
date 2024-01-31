@@ -8,7 +8,7 @@ import asyncio
 from typing import Any, Callable, List, Optional
 from pydantic import BaseModel, validate_call
 
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 from instructor.function_calls import openai_schema
 
 
@@ -155,6 +155,10 @@ class Instructions:
                     kwargs=kwargs,
                     base_model=return_base_model,
                 )
+                ## ensure that you are using async openai client
+                if isinstance(self.client, OpenAI):
+                    raise ValueError("OpenAI client must be an instance of AsyncOpenAI for async functions.")
+                self.client: AsyncOpenAI
                 return await self.client.chat.completions.create(
                     **openai_kwargs, model=model, response_model=return_base_model
                 )
