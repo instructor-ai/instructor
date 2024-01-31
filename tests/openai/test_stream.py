@@ -72,7 +72,7 @@ async def test_partial_model_async(model, mode, aclient):
     aclient = instructor.patch(aclient, mode=mode)
     model = await aclient.chat.completions.create(
         model=model,
-        response_model=Iterable[UserExtract],
+        response_model=Partial[UserExtract],
         max_retries=2,
         stream=True,
         messages=[
