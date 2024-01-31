@@ -88,7 +88,7 @@ class TagResponse(BaseModel):
     predictions: List[Tag]
 ```
 
-Let's delve deeper into what the `validate_ids` function does. Notice that its purpose is to extract tags from the context and ensure that each ID and name exists in the set of tags. This approach helps minimize hallucinations. If we mistakenly identify either the ID or the tag, an error will be thrown, and the instructor will prompt the language model to retry until the correct item is successfully extracted."""look at what the validate_ids function does. Notice that what it does is pull tags out of the context and verify that every ID and name actually exists in the set of tags. This is a way that allows us to minimize hallucinations since if we incorrectly identify either the ID or the tag, we will throw an error and instructor will make the language model retry until we successfully extract the right item.
+Let's delve deeper into what the `validate_ids` function does. Notice that its purpose is to extract tags from the context and ensure that each ID and name exists in the set of tags. This approach helps minimize hallucinations. If we mistakenly identify either the ID or the tag, an error will be thrown, and the instructor will prompt the language model to retry until the correct item is successfully extracted.
 
 ```python
 @model_validator(mode="after")
