@@ -5,21 +5,21 @@ from pydantic import BaseModel, Field, create_model
 from instructor.function_calls import OpenAISchema, Mode
 
 
-class MultiTaskBase:
+class IterableBase:
     task_type = None  # type: ignore
 
     @classmethod
-    def from_streaming_response(cls, completion, mode: Mode):
+    def from_streaming_response(cls, completion, mode: Mode, **kwargs):
         json_chunks = cls.extract_json(completion, mode)
         yield from cls.tasks_from_chunks(json_chunks)
 
     @classmethod
-    async def from_streaming_response_async(cls, completion, mode: Mode):
+    async def from_streaming_response_async(cls, completion, mode: Mode, **kwargs):
         json_chunks = cls.extract_json_async(completion, mode)
-        return cls.tasks_from_chunks_async(json_chunks)
+        return cls.tasks_from_chunks_async(json_chunks, **kwargs)
 
     @classmethod
-    def tasks_from_chunks(cls, json_chunks):
+    def tasks_from_chunks(cls, json_chunks, **kwargs):
         started = False
         potential_object = ""
         for chunk in json_chunks:
@@ -32,11 +32,11 @@ class MultiTaskBase:
 
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                obj = cls.task_type.model_validate_json(task_json, **kwargs)  # type: ignore
                 yield obj
 
     @classmethod
-    async def tasks_from_chunks_async(cls, json_chunks):
+    async def tasks_from_chunks_async(cls, json_chunks, **kwargs):
         started = False
         potential_object = ""
         async for chunk in json_chunks:
@@ -49,7 +49,7 @@ class MultiTaskBase:
 
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                obj = cls.task_type.model_validate_json(task_json, **kwargs)  # type: ignore
                 yield obj
 
     @staticmethod
@@ -177,7 +177,7 @@ def MultiTask(
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, MultiTaskBase),  # type: ignore
+        __base__=(OpenAISchema, IterableBase),  # type: ignore
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class

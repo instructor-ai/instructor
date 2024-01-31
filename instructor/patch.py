@@ -15,7 +15,7 @@ from openai.types.chat import (
 from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
 
-from instructor.dsl.multitask import MultiTask, MultiTaskBase
+from instructor.dsl.multitask import MultiTask, IterableBase
 from instructor.dsl.partial import PartialBase
 
 from .function_calls import Mode, OpenAISchema, openai_schema
@@ -74,7 +74,7 @@ def handle_response_model(
             response_model = openai_schema(response_model)  # type: ignore
 
         if new_kwargs.get("stream", False) and not issubclass(
-            response_model, (MultiTaskBase, PartialBase)
+            response_model, (IterableBase, PartialBase)
         ):
             raise NotImplementedError(
                 "stream=True is not supported when using response_model parameter for non-iterables"
@@ -162,23 +162,31 @@ def process_response(
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
-    if response_model is not None:
-        is_model_multitask = issubclass(response_model, MultiTaskBase)
-        is_model_partial = issubclass(response_model, PartialBase)
-        model = response_model.from_response(
+    if response_model is None:
+        return response
+
+    if issubclass(response_model, (IterableBase, PartialBase)) and stream:
+        model = response_model.from_streaming_response(
             response,
             validation_context=validation_context,
             strict=strict,
             mode=mode,
-            stream_multitask=stream and is_model_multitask,
-            stream_partial=stream and is_model_partial,
         )
-        if not stream:
-            model._raw_response = response
-            if is_model_multitask:
-                return model.tasks
         return model
-    return response
+
+    model = response_model.from_response(
+        response,
+        validation_context=validation_context,
+        strict=strict,
+        mode=mode,
+    )
+    model._raw_response = response
+
+    if issubclass(response_model, IterableBase):
+        # If the response model is a multitask, return the tasks
+        return model.tasks
+
+    return model
 
 
 async def process_response_async(
@@ -201,23 +209,28 @@ async def process_response_async(
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
-    if response_model is not None:
-        is_model_multitask = issubclass(response_model, MultiTaskBase)
-        is_model_partial = issubclass(response_model, PartialBase)
-        model = await response_model.from_response_async(
+    if response_model is None:
+        return response
+
+    if issubclass(response_model, (IterableBase, PartialBase)) and stream:
+        model = await response_model.from_streaming_response_async(
             response,
             validation_context=validation_context,
             strict=strict,
             mode=mode,
-            stream_multitask=stream and is_model_multitask,
-            stream_partial=stream and is_model_partial,
         )
-        if not stream:
-            model._raw_response = response
-            if is_model_multitask:
-                return model.tasks
         return model
-    return response
+
+    model = await response_model.from_response_async(
+        response,
+        validation_context=validation_context,
+        strict=strict,
+        mode=mode,
+    )
+    model._raw_response = response
+    if issubclass(response_model, IterableBase):
+        return model.tasks
+    return model
 
 
 async def retry_async(
