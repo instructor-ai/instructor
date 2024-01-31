@@ -5,21 +5,21 @@ from pydantic import BaseModel, Field, create_model
 from instructor.function_calls import OpenAISchema, Mode
 
 
-class MultiTaskBase:
+class IterableBase:
     task_type = None  # type: ignore
 
     @classmethod
-    def from_streaming_response(cls, completion, mode: Mode):
+    def from_streaming_response(cls, completion, mode: Mode, **kwargs):
         json_chunks = cls.extract_json(completion, mode)
         yield from cls.tasks_from_chunks(json_chunks)
 
     @classmethod
-    async def from_streaming_response_async(cls, completion, mode: Mode):
+    async def from_streaming_response_async(cls, completion, mode: Mode, **kwargs):
         json_chunks = cls.extract_json_async(completion, mode)
-        return cls.tasks_from_chunks_async(json_chunks)
+        return cls.tasks_from_chunks_async(json_chunks, **kwargs)
 
     @classmethod
-    def tasks_from_chunks(cls, json_chunks):
+    def tasks_from_chunks(cls, json_chunks, **kwargs):
         started = False
         potential_object = ""
         for chunk in json_chunks:
@@ -32,11 +32,11 @@ class MultiTaskBase:
 
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                obj = cls.task_type.model_validate_json(task_json, **kwargs)  # type: ignore
                 yield obj
 
     @classmethod
-    async def tasks_from_chunks_async(cls, json_chunks):
+    async def tasks_from_chunks_async(cls, json_chunks, **kwargs):
         started = False
         potential_object = ""
         async for chunk in json_chunks:
@@ -49,7 +49,7 @@ class MultiTaskBase:
 
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                obj = cls.task_type.model_validate_json(task_json)  # type: ignore
+                obj = cls.task_type.model_validate_json(task_json, **kwargs)  # type: ignore
                 yield obj
 
     @staticmethod
@@ -106,13 +106,13 @@ class MultiTaskBase:
         return None, str
 
 
-def MultiTask(
+def IterableModel(
     subtask_class: Type[BaseModel],
     name: Optional[str] = None,
     description: Optional[str] = None,
 ):
     """
-    Dynamically create a MultiTask OpenAISchema that can be used to segment multiple
+    Dynamically create a IterableModel OpenAISchema that can be used to segment multiple
     tasks given a base class. This creates class that can be used to create a toolkit
     for a specific task, names and descriptions are automatically generated. However
     they can be overridden.
@@ -121,14 +121,14 @@ def MultiTask(
 
     ```python
     from pydantic import BaseModel, Field
-    from instructor import MultiTask
+    from instructor import IterableModel
 
     class User(BaseModel):
         name: str = Field(description="The name of the person")
         age: int = Field(description="The age of the person")
         role: str = Field(description="The role of the person")
 
-    MultiUser = MultiTask(User)
+    MultiUser = IterableModel(User)
     ```
 
     ## Result
@@ -163,7 +163,7 @@ def MultiTask(
     """
     task_name = subtask_class.__name__ if name is None else name
 
-    name = f"Multi{task_name}"
+    name = f"Iterable{task_name}"
 
     list_tasks = (
         List[subtask_class],
@@ -177,7 +177,7 @@ def MultiTask(
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, MultiTaskBase),  # type: ignore
+        __base__=(OpenAISchema, IterableBase),  # type: ignore
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class
