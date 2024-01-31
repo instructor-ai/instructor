@@ -134,8 +134,8 @@ nav:
     - Fields: 'concepts/fields.md'
     - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
-    - List (Streaming): "concepts/lists.md"
-    - Partial (Streaming): "concepts/field_streaming.md"
+    - Stream Iterable: "concepts/lists.md"
+    - Stream Partial: "concepts/partial.md"
     - Raw Response: 'concepts/raw_response.md'
     - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'

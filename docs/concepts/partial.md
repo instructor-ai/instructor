@@ -110,7 +110,7 @@ I also just want to call out in this example that `instructor` also supports asy
 
 ```python
 model = await client.chat.completions.create(
-    model=model,
+    model="gpt-4",
     response_model=Partial[UserExtract],
     max_retries=2,
     stream=True,
