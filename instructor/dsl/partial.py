@@ -53,6 +53,7 @@ class PartialBase:
     @classmethod
     async def model_from_chunks_async(cls, json_chunks, **kwargs):
         potential_object = ""
+        prev_obj = None
         async for chunk in json_chunks:
             potential_object += chunk
 
