@@ -168,8 +168,6 @@ def process_response(
     if issubclass(response_model, (IterableBase, PartialBase)) and stream:
         model = response_model.from_streaming_response(
             response,
-            validation_context=validation_context,
-            strict=strict,
             mode=mode,
         )
         return model
@@ -212,11 +210,12 @@ async def process_response_async(
     if response_model is None:
         return response
 
-    if issubclass(response_model, (IterableBase, PartialBase)) and stream:
+    if (
+        issubclass(response_model, IterableBase)
+        or issubclass(response_model, PartialBase)
+    ) and stream:
         model = await response_model.from_streaming_response_async(
             response,
-            validation_context=validation_context,
-            strict=strict,
             mode=mode,
         )
         return model
