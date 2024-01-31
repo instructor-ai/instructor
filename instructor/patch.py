@@ -6,6 +6,7 @@ from functools import wraps
 from json import JSONDecodeError
 from typing import (
     Callable,
+    Generic,
     Optional,
     ParamSpec,
     Protocol,
@@ -385,7 +386,7 @@ Parameters:
     validation_context (dict): The validation context to use for validating the response (default: None)
 """
 
-class InstructorChatCompletionCreate(Protocol):
+class InstructorChatCompletionCreate(Protocol, Generic[T_ParamSpec, T_Model]):
     def __call__(
         self,
         response_model: Type[T_Model] = None,
@@ -414,7 +415,7 @@ def patch(
 def patch(
     create: Callable[T_ParamSpec, T_Retval],
     mode: Mode = Mode.FUNCTIONS,
-) -> InstructorChatCompletionCreate:
+) -> InstructorChatCompletionCreate[T_ParamSpec, T_Model]:
     ...
 
 def patch(
