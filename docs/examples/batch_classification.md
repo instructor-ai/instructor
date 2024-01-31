@@ -145,11 +145,11 @@ Finally, we'll implement the main function to run the classification using the `
 
 ```python
 tags = [
-    TagWithDescription(id=0, name="personal", description="Personal information"),
-    TagWithDescription(id=1, name="phone", description="Phone number"),
-    TagWithDescription(id=2, name="email", description="Email address"),
-    TagWithDescription(id=3, name="address", description="Address"),
-    TagWithDescription(id=4, name="Other", description="Other information"),
+    TagWithInstructions(id=0, name="personal", instructions="Personal information"),
+    TagWithInstructions(id=1, name="phone", instructions="Phone number"),
+    TagWithInstructions(id=2, name="email", instructions="Email address"),
+    TagWithInstructions(id=3, name="address", instructions="Address"),
+    TagWithInstructions(id=4, name="Other", instructions="Other information"),
 ]
 
 # Texts will be a range of different questions.
