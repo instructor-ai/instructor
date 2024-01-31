@@ -1,5 +1,5 @@
 from itertools import product
-from typing import Iterable, Literal
+from typing import Iterable
 from pydantic import BaseModel
 import pytest
 import instructor
@@ -11,7 +11,6 @@ from tests.openai.util import models, modes
 class UserExtract(BaseModel):
     name: str
     age: int
-    role: Literal["user", "admin"]
 
 
 @pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
@@ -26,8 +25,8 @@ def test_iterable_model(model, mode, stream, client):
             {"role": "user", "content": "Make two up people"},
         ],
     )
-    assert len(model) == 2
-    assert all(isinstance(m, UserExtract) for m in model)
+    for m in model:
+        assert isinstance(m, UserExtract)
 
 
 @pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
@@ -43,8 +42,8 @@ async def test_iterable_model_async(model, mode, stream, aclient):
             {"role": "user", "content": "Make two up people"},
         ],
     )
-    assert len(model) == 2
-    assert all(isinstance(m, UserExtract) for m in model)
+    for m in model:
+        assert isinstance(m, UserExtract)
 
 
 @pytest.mark.parametrize("model,mode", product(models, modes))

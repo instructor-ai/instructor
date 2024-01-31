@@ -15,7 +15,7 @@ from openai.types.chat import (
 from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
 
-from instructor.dsl.iterable import Iterable, IterableBase
+from instructor.dsl.iterable import IterableModel, IterableBase
 from instructor.dsl.partial import PartialBase
 
 from .function_calls import Mode, OpenAISchema, openai_schema
@@ -69,7 +69,7 @@ def handle_response_model(
     if response_model is not None:
         if get_origin(response_model) is Iterable:
             iterable_element_class = get_args(response_model)[0]
-            response_model = Iterable(iterable_element_class)
+            response_model = IterableModel(iterable_element_class)
         if not issubclass(response_model, OpenAISchema):
             response_model = openai_schema(response_model)  # type: ignore
 

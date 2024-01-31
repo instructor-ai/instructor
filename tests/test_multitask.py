@@ -1,5 +1,5 @@
 from instructor import OpenAISchema
-from instructor.dsl import Iterable
+from instructor.dsl import IterableModel
 
 
 def test_multi_task():
@@ -9,7 +9,7 @@ def test_multi_task():
         id: int
         query: str
 
-    multitask = Iterable(Search)
+    multitask = IterableModel(Search)
     assert multitask.openai_schema["name"] == "MultiSearch"
     assert (
         multitask.openai_schema["description"]

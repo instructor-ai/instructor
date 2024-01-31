@@ -106,13 +106,13 @@ class IterableBase:
         return None, str
 
 
-def Iterable(
+def IterableModel(
     subtask_class: Type[BaseModel],
     name: Optional[str] = None,
     description: Optional[str] = None,
 ):
     """
-    Dynamically create a MultiTask OpenAISchema that can be used to segment multiple
+    Dynamically create a IterableModel OpenAISchema that can be used to segment multiple
     tasks given a base class. This creates class that can be used to create a toolkit
     for a specific task, names and descriptions are automatically generated. However
     they can be overridden.
@@ -121,14 +121,14 @@ def Iterable(
 
     ```python
     from pydantic import BaseModel, Field
-    from instructor import MultiTask
+    from instructor import IterableModel
 
     class User(BaseModel):
         name: str = Field(description="The name of the person")
         age: int = Field(description="The age of the person")
         role: str = Field(description="The role of the person")
 
-    MultiUser = MultiTask(User)
+    MultiUser = IterableModel(User)
     ```
 
     ## Result
@@ -163,7 +163,7 @@ def Iterable(
     """
     task_name = subtask_class.__name__ if name is None else name
 
-    name = f"Iterable[{task_name}]"
+    name = f"Iterable{task_name}"
 
     list_tasks = (
         List[subtask_class],
