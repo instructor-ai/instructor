@@ -1,11 +1,3 @@
-# --------------------------------------------------------------------------------
-# The following code is adapted from a comment on GitHub in the pydantic/pydantic repository by silviumarcu.
-# Source: https://github.com/pydantic/pydantic/issues/6381#issuecomment-1831607091
-#
-# This code is used in accordance with the repository's license, and this reference
-# serves as an acknowledgment of the original author's contribution to this project.
-# --------------------------------------------------------------------------------
-
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 from typing import TypeVar, NoReturn, get_args, get_origin, Optional, Generic
@@ -18,8 +10,21 @@ parser = JSONParser()
 
 Model = TypeVar("Model", bound=BaseModel)
 
-
 class PartialBase:
+    @classmethod
+    def from_response(
+        cls,
+        completion,
+        validation_context=None,
+        strict: bool = None,
+        mode: Mode = Mode.TOOLS,
+        stream: bool = False,
+    ):
+        if stream:
+            return cls.from_streaming_response(completion, mode)
+        else:
+            return cls.from_streaming_response_async(completion, mode)
+
     @classmethod
     def from_streaming_response(cls, completion, mode: Mode):
         json_chunks = cls.extract_json(completion, mode)
@@ -110,7 +115,6 @@ class PartialBase:
                         )
             except AttributeError:
                 pass
-
 
 class Partial(Generic[Model]):
     """Generate a new class with all attributes optionals.

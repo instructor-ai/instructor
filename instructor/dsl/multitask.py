@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field, create_model
 
 from instructor.function_calls import OpenAISchema, Mode
 
-
 class MultiTaskBase:
     task_type = None  # type: ignore
 
@@ -17,6 +16,20 @@ class MultiTaskBase:
     async def from_streaming_response_async(cls, completion, mode: Mode):
         json_chunks = cls.extract_json_async(completion, mode)
         return cls.tasks_from_chunks_async(json_chunks)
+
+    @classmethod
+    def from_response(
+        cls,
+        completion,
+        validation_context=None,
+        strict: bool = None,
+        mode: Mode = Mode.TOOLS,
+        stream: bool = False,
+    ):
+        if stream:
+            return cls.from_streaming_response(completion, mode)
+        else:
+            return cls.from_streaming_response_async(completion, mode)
 
     @classmethod
     def tasks_from_chunks(cls, json_chunks):
@@ -119,7 +132,7 @@ def MultiTask(
 
     ## Usage
 
-    ```python
+    \`\`\`python
     from pydantic import BaseModel, Field
     from instructor import MultiTask
 
@@ -129,11 +142,11 @@ def MultiTask(
         role: str = Field(description="The role of the person")
 
     MultiUser = MultiTask(User)
-    ```
+    \`\`\`
 
     ## Result
 
-    ```python
+    \`\`\`python
     class MultiUser(OpenAISchema, MultiTaskBase):
         tasks: List[User] = Field(
             default_factory=list,
@@ -149,7 +162,7 @@ def MultiTask(
             '''
             json_chunks = cls.extract_json(completion)
             yield from cls.tasks_from_chunks(json_chunks)
-    ```
+    \`\`\`
 
     Parameters:
         subtask_class (Type[OpenAISchema]): The base class to use for the MultiTask

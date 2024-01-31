@@ -99,7 +99,8 @@ def handle_response_model(
             # in order to get the response we want in a json format
             message = f"""
                 As a genius expert, your task is to understand the content and provide 
-                the parsed objects in json that match the following json_schema:\n
+                the parsed objects in json that match the following json_schema:
+
                 {response_model.model_json_schema()['properties']}
                 """
             # Check for nested models
@@ -119,10 +120,10 @@ def handle_response_model(
                 new_kwargs["messages"].append(
                     {
                         "role": "assistant",
-                        "content": "Here is the perfectly correctly formatted JSON\n```json",
+                        "content": "Here is the perfectly correctly formatted JSON\n\`\`\`json",
                     },
                 )
-                new_kwargs["stop"] = "```"
+                new_kwargs["stop"] = "\`\`\`"
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":
@@ -151,35 +152,18 @@ def process_response(
     strict=None,
     mode: Mode = Mode.FUNCTIONS,
 ):  # type: ignore
-    """Processes a OpenAI response with the response model, if available.
-    It can use `validation_context` and `strict` to validate the response
-    via the pydantic model
-
-    Args:
-        response (ChatCompletion): The response from OpenAI's API
-        response_model (BaseModel): The response model to use for parsing the response
-        stream (bool): Whether the response is a stream
-        validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
-        strict (bool, optional): Whether to use strict json parsing. Defaults to None.
-    """
     if response_model is not None:
-        is_model_multitask = issubclass(response_model, MultiTaskBase)
-        is_model_partial = issubclass(response_model, PartialBase)
         model = response_model.from_response(
             response,
             validation_context=validation_context,
             strict=strict,
             mode=mode,
-            stream_multitask=stream and is_model_multitask,
-            stream_partial=stream and is_model_partial,
+            stream=stream,
         )
         if not stream:
             model._raw_response = response
-            if is_model_multitask:
-                return model.tasks
         return model
     return response
-
 
 async def process_response_async(
     response,
@@ -190,35 +174,18 @@ async def process_response_async(
     strict=None,
     mode: Mode = Mode.FUNCTIONS,
 ):  # type: ignore
-    """Processes a OpenAI response with the response model, if available.
-    It can use `validation_context` and `strict` to validate the response
-    via the pydantic model
-
-    Args:
-        response (ChatCompletion): The response from OpenAI's API
-        response_model (BaseModel): The response model to use for parsing the response
-        stream (bool): Whether the response is a stream
-        validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
-        strict (bool, optional): Whether to use strict json parsing. Defaults to None.
-    """
     if response_model is not None:
-        is_model_multitask = issubclass(response_model, MultiTaskBase)
-        is_model_partial = issubclass(response_model, PartialBase)
         model = await response_model.from_response_async(
             response,
             validation_context=validation_context,
             strict=strict,
             mode=mode,
-            stream_multitask=stream and is_model_multitask,
-            stream_partial=stream and is_model_partial,
+            stream=stream,
         )
         if not stream:
             model._raw_response = response
-            if is_model_multitask:
-                return model.tasks
         return model
     return response
-
 
 async def retry_async(
     func,
@@ -274,13 +241,12 @@ async def retry_async(
                 kwargs["messages"].append(
                     {
                         "role": "assistant",
-                        "content": "```json",
+                        "content": "\`\`\`json",
                     },
                 )
             retries += 1
             if retries > max_retries:
                 raise e
-
 
 def retry_sync(
     func,
@@ -337,7 +303,7 @@ def retry_sync(
                 kwargs["messages"].append(
                     {
                         "role": "assistant",
-                        "content": "```json",
+                        "content": "\`\`\`json",
                     },
                 )
             retries += 1
@@ -345,13 +311,11 @@ def retry_sync(
                 logger.warning(f"Max retries reached, exception: {e}")
                 raise e
 
-
 def is_async(func: Callable) -> bool:
     """Returns true if the callable is async, accounting for wrapped callables"""
     return inspect.iscoroutinefunction(func) or (
         hasattr(func, "__wrapped__") and inspect.iscoroutinefunction(func.__wrapped__)
     )
-
 
 def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable:
     func_is_async = is_async(func)
@@ -406,7 +370,6 @@ def wrap_chatcompletion(func: Callable, mode: Mode = Mode.FUNCTIONS) -> Callable
     wrapper_function.__doc__ = OVERRIDE_DOCS
     return wrapper_function
 
-
 def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS):
     """
     Patch the `client.chat.completions.create` method
@@ -424,7 +387,6 @@ def patch(client: Union[OpenAI, AsyncOpenAI], mode: Mode = Mode.FUNCTIONS):
         client.chat.completions.create, mode=mode
     )
     return client
-
 
 def apatch(client: AsyncOpenAI, mode: Mode = Mode.FUNCTIONS):
     """
