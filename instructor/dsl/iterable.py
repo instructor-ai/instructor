@@ -106,7 +106,7 @@ class IterableBase:
         return None, str
 
 
-def MultiTask(
+def Iterable(
     subtask_class: Type[BaseModel],
     name: Optional[str] = None,
     description: Optional[str] = None,
@@ -163,7 +163,7 @@ def MultiTask(
     """
     task_name = subtask_class.__name__ if name is None else name
 
-    name = f"Multi{task_name}"
+    name = f"Iterable[{task_name}]"
 
     list_tasks = (
         List[subtask_class],

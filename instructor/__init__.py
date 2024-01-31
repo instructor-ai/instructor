@@ -3,7 +3,7 @@ from .dsl import (
     CitationMixin,
     Maybe,
     Partial,
-    MultiTask,
+    Iterable,
     llm_validator,
     openai_moderation,
 )
@@ -13,7 +13,7 @@ from .patch import apatch, patch
 __all__ = [
     "OpenAISchema",
     "CitationMixin",
-    "MultiTask",
+    "Iterable",
     "Maybe",
     "Partial",
     "openai_schema",
