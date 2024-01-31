@@ -1,10 +1,12 @@
+from typing import Type, TypeVar, Self
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
 from instructor.exceptions import IncompleteOutputException
-
 import enum
 import warnings
+
+T = TypeVar("T")
 
 
 class Mode(enum.Enum):
@@ -118,13 +120,13 @@ class OpenAISchema(BaseModel):
     @classmethod
     def from_response(
         cls,
-        completion,
-        validation_context=None,
+        completion: T,
+        validation_context: dict = None,
         strict: bool = None,
         mode: Mode = Mode.TOOLS,
         stream_multitask: bool = False,
         stream_partial: bool = False,
-    ):
+    ) -> Self:
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -184,12 +186,12 @@ class OpenAISchema(BaseModel):
     async def from_response_async(
         cls,
         completion,
-        validation_context=None,
+        validation_context: dict = None,
         strict: bool = None,
         mode: Mode = Mode.TOOLS,
         stream_multitask: bool = False,
         stream_partial: bool = False,
-    ):
+    ) -> Self:
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -246,7 +248,7 @@ class OpenAISchema(BaseModel):
             raise ValueError(f"Invalid patch mode: {mode}")
 
 
-def openai_schema(cls) -> OpenAISchema:
+def openai_schema(cls: Type[BaseModel]) -> OpenAISchema:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
@@ -255,4 +257,4 @@ def openai_schema(cls) -> OpenAISchema:
             cls.__name__,
             __base__=(cls, OpenAISchema),
         )
-    )  # type: ignore
+    )
