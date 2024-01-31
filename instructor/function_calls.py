@@ -1,7 +1,9 @@
+from typing import Any, Dict, Optional, Type
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
 from instructor.exceptions import IncompleteOutputException
+from openai.resources.chat.completions import ChatCompletion
 
 import enum
 import warnings
@@ -16,7 +18,7 @@ class Mode(enum.Enum):
     MD_JSON: str = "markdown_json_mode"
     JSON_SCHEMA: str = "json_schema_mode"
 
-    def __new__(cls, value):
+    def __new__(cls: "Type[Mode]", value: str) -> "Mode":
         member = object.__new__(cls)
         member._value_ = value
 
@@ -74,7 +76,7 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     @property
-    def openai_schema(cls):
+    def openai_schema(cls) -> Dict[str, Any]:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
 
@@ -118,13 +120,13 @@ class OpenAISchema(BaseModel):
     @classmethod
     def from_response(
         cls,
-        completion,
-        validation_context=None,
-        strict: bool = None,
+        completion: ChatCompletion,
+        validation_context: Optional[Dict[str, Any]]=None,
+        strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
         stream_multitask: bool = False,
         stream_partial: bool = False,
-    ):
+    ) -> "OpenAISchema":
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -183,13 +185,13 @@ class OpenAISchema(BaseModel):
     @classmethod
     async def from_response_async(
         cls,
-        completion,
-        validation_context=None,
-        strict: bool = None,
+        completion: ChatCompletion,
+        validation_context: Optional[Dict[str, Any]]=None,
+        strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
         stream_multitask: bool = False,
         stream_partial: bool = False,
-    ):
+    ) -> "OpenAISchema":
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -246,7 +248,7 @@ class OpenAISchema(BaseModel):
             raise ValueError(f"Invalid patch mode: {mode}")
 
 
-def openai_schema(cls) -> OpenAISchema:
+def openai_schema(cls: Any) -> OpenAISchema:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
