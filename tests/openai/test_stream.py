@@ -42,8 +42,12 @@ async def test_iterable_model_async(model, mode, stream, aclient):
             {"role": "user", "content": "Make two up people"},
         ],
     )
-    for m in model:
-        assert isinstance(m, UserExtract)
+    if stream:
+        async for m in model:
+            assert isinstance(m, UserExtract)
+    else:
+        for m in model:
+            assert isinstance(m, UserExtract)
 
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
@@ -75,5 +79,5 @@ async def test_partial_model_async(model, mode, aclient):
             {"role": "user", "content": "Jason Liu is 12 years old"},
         ],
     )
-    for m in model:
+    async for m in model:
         assert isinstance(m, UserExtract)
