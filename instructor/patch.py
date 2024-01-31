@@ -385,6 +385,7 @@ Parameters:
     validation_context (dict): The validation context to use for validating the response (default: None)
 """
 
+
 class InstructorChatCompletionCreate(Protocol):
     def __call__(
         self,
@@ -396,12 +397,14 @@ class InstructorChatCompletionCreate(Protocol):
     ) -> T_Model:
         ...
 
+
 @overload
 def patch(
     client: OpenAI,
     mode: Mode = Mode.FUNCTIONS,
 ) -> OpenAI:
     ...
+
 
 @overload
 def patch(
@@ -410,12 +413,14 @@ def patch(
 ) -> AsyncOpenAI:
     ...
 
+
 @overload
 def patch(
     create: Callable[T_ParamSpec, T_Retval],
     mode: Mode = Mode.FUNCTIONS,
 ) -> InstructorChatCompletionCreate:
     ...
+
 
 def patch(
     client: Union[OpenAI, AsyncOpenAI] = None,
