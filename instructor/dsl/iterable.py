@@ -110,7 +110,7 @@ def IterableModel(
     subtask_class: Type[BaseModel],
     name: Optional[str] = None,
     description: Optional[str] = None,
-):
+) -> Type[BaseModel]:
     """
     Dynamically create a IterableModel OpenAISchema that can be used to segment multiple
     tasks given a base class. This creates class that can be used to create a toolkit
@@ -187,5 +187,7 @@ def IterableModel(
         if description is None
         else description
     )
-
+    assert issubclass(
+        new_cls, OpenAISchema
+    ), "The new class should be a subclass of OpenAISchema"
     return new_cls

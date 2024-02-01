@@ -10,7 +10,7 @@ from openai.types.chat.chat_completion_message_tool_call import (
 )
 
 import instructor
-from instructor.patch import OVERRIDE_DOCS, dump_message, is_async, wrap_chatcompletion
+from instructor.patch import OVERRIDE_DOCS, dump_message, is_async
 
 
 def test_patch_completes_successfully():
@@ -19,27 +19,6 @@ def test_patch_completes_successfully():
 
 def test_apatch_completes_successfully():
     instructor.apatch(AsyncOpenAI())
-
-
-@pytest.mark.asyncio
-async def test_wrap_chatcompletion_wraps_async_input_function():
-    async def input_function(*args, **kwargs):
-        return "Hello, World!"
-
-    wrapped_function = wrap_chatcompletion(input_function)
-    result = await wrapped_function()
-
-    assert result == "Hello, World!"
-
-
-def test_wrap_chatcompletion_wraps_input_function():
-    def input_function(*args, **kwargs):
-        return "Hello, World!"
-
-    wrapped_function = wrap_chatcompletion(input_function)
-    result = wrapped_function()
-
-    assert result == "Hello, World!"
 
 
 def test_is_async_returns_true_if_function_is_async():
