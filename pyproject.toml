@@ -9,7 +9,7 @@ packages = [{include = "instructor"}]
 repository = "https://github.com/jxnl/instructor"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 openai = "^1.1.0"
 pydantic = "^2.0.2"
 docstring-parser = "^0.15"
