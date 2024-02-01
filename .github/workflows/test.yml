@@ -1,13 +1,6 @@
 name: Test
 
-on:
-  push:
-    branches:
-      - main
-  pull_request_target:
-    branches:
-      - main
-
+on: [push]
 
 jobs:
   release:
