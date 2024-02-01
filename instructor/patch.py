@@ -3,6 +3,7 @@ import json
 import logging
 from collections.abc import Iterable
 from functools import wraps
+from tenacity import Retrying, AsyncRetrying, stop_after_attempt, RetryError
 from json import JSONDecodeError
 from typing import (
     Callable,
@@ -53,7 +54,6 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-        ret["content"] += json.dumps(message.model_dump()["tool_calls"])
     if hasattr(message, "function_call") and message.function_call is not None:
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
@@ -284,60 +284,84 @@ async def retry_async(
     validation_context,
     args,
     kwargs,
-    max_retries,
+    max_retries: int | AsyncRetrying = 1,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
 ) -> T:
-    retries = 0
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
-    while retries <= max_retries:
-        try:
-            response: ChatCompletion = await func(*args, **kwargs)
-            stream = kwargs.get("stream", False)
-            if isinstance(response, ChatCompletion) and response.usage is not None:
-                total_usage.completion_tokens += response.usage.completion_tokens or 0
-                total_usage.prompt_tokens += response.usage.prompt_tokens or 0
-                total_usage.total_tokens += response.usage.total_tokens or 0
-                response.usage = (
-                    total_usage  # Replace each response usage with the total usage
-                )
-            return await process_response_async(
-                response,
-                response_model=response_model,
-                stream=stream,
-                validation_context=validation_context,
-                strict=strict,
-                mode=mode,
-            )
-        except (ValidationError, JSONDecodeError) as e:
-            logger.exception(f"Retrying, exception: {e}")
-            logger.debug(f"Error response: {response}")
-            if mode == Mode.TOOLS:
-                kwargs["messages"].append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
-                        "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure",
-                    }
-                )
-            kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
-            kwargs["messages"].append(
-                {
-                    "role": "user",
-                    "content": f"Recall the function correctly, fix the errors, exceptions found\n{e}",
-                }
-            )
-            if mode == Mode.MD_JSON:
-                kwargs["messages"].append(
-                    {
-                        "role": "assistant",
-                        "content": "```json",
-                    },
-                )
-            retries += 1
-            if retries > max_retries:
-                raise e
+
+    # If max_retries is int, then create a AsyncRetrying object
+    if isinstance(max_retries, int):
+        logger.debug(f"max_retries: {max_retries}")
+        max_retries = AsyncRetrying(
+            stop=stop_after_attempt(max_retries),
+            reraise=True,
+        )
+    if not isinstance(max_retries, AsyncRetrying):
+        raise ValueError(
+            "max_retries must be an `int` or a `tenacity.AsyncRetrying` object"
+        )
+
+    try:
+        async for attempt in max_retries:
+            logger.debug(f"Retrying, attempt: {attempt}")
+            with attempt:
+                try:
+                    response: ChatCompletion = await func(*args, **kwargs)
+                    stream = kwargs.get("stream", False)
+                    if (
+                        isinstance(response, ChatCompletion)
+                        and response.usage is not None
+                    ):
+                        total_usage.completion_tokens += (
+                            response.usage.completion_tokens or 0
+                        )
+                        total_usage.prompt_tokens += response.usage.prompt_tokens or 0
+                        total_usage.total_tokens += response.usage.total_tokens or 0
+                        response.usage = (
+                            total_usage  # Replace each response usage with the total usage
+                        )
+                    return await process_response_async(
+                        response,
+                        response_model=response_model,
+                        stream=stream,
+                        validation_context=validation_context,
+                        strict=strict,
+                        mode=mode,
+                    )
+                except (ValidationError, JSONDecodeError) as e:
+                    logger.debug(f"Error response: {response}")
+                    kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
+                    if mode == Mode.TOOLS:
+                        kwargs["messages"].append(
+                            {
+                                "role": "tool",
+                                "tool_call_id": response.choices[0]
+                                .message.tool_calls[0]
+                                .id,
+                                "name": response.choices[0]
+                                .message.tool_calls[0]
+                                .function.name,
+                                "content": "failure",
+                            }
+                        )
+                    kwargs["messages"].append(
+                        {
+                            "role": "user",
+                            "content": f"Recall the function correctly, fix the errors, exceptions found\n{e}",
+                        }
+                    )
+                    if mode == Mode.MD_JSON:
+                        kwargs["messages"].append(
+                            {
+                                "role": "assistant",
+                                "content": "```json",
+                            },
+                        )
+                    raise e
+    except RetryError as e:
+        logger.exception(f"Failed after retries: {e.last_attempt.exception}")
+        raise e.last_attempt.exception
 
 
 def retry_sync(
@@ -346,62 +370,83 @@ def retry_sync(
     validation_context: dict,
     args,
     kwargs,
-    max_retries: int = 1,
+    max_retries: int | Retrying = 1,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
 ):
-    retries = 0
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
-    while retries <= max_retries:
-        # Excepts ValidationError, and JSONDecodeError
-        try:
-            response = func(*args, **kwargs)
-            stream = kwargs.get("stream", False)
-            if isinstance(response, ChatCompletion) and response.usage is not None:
-                total_usage.completion_tokens += response.usage.completion_tokens or 0
-                total_usage.prompt_tokens += response.usage.prompt_tokens or 0
-                total_usage.total_tokens += response.usage.total_tokens or 0
-                response.usage = (
-                    total_usage  # Replace each response usage with the total usage
-                )
-            return process_response(
-                response,
-                response_model=response_model,
-                stream=stream,
-                validation_context=validation_context,
-                strict=strict,
-                mode=mode,
-            )
-        except (ValidationError, JSONDecodeError) as e:
-            logger.exception(f"Retrying, exception: {e}")
-            logger.debug(f"Error response: {response}")
-            if mode == Mode.TOOLS:
-                kwargs["messages"].append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
-                        "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
-                    }
-                )
-            kwargs["messages"].append(dump_message(response.choices[0].message))
-            kwargs["messages"].append(
-                {
-                    "role": "user",
-                    "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
-                }
-            )
-            if mode == Mode.MD_JSON:
-                kwargs["messages"].append(
-                    {
-                        "role": "assistant",
-                        "content": "```json",
-                    },
-                )
-            retries += 1
-            if retries > max_retries:
-                logger.warning(f"Max retries reached, exception: {e}")
-                raise e
+
+    # If max_retries is int, then create a Retrying object
+    if isinstance(max_retries, int):
+        logger.debug(f"max_retries: {max_retries}")
+        max_retries: Retrying = Retrying(
+            stop=stop_after_attempt(max_retries),
+            reraise=True,
+        )
+    if not isinstance(max_retries, Retrying):
+        raise ValueError("max_retries must be an int or a `tenacityRetrying` object")
+
+    try:
+        for attempt in max_retries:
+            with attempt:
+                try:
+                    response = func(*args, **kwargs)
+                    stream = kwargs.get("stream", False)
+                    if (
+                        isinstance(response, ChatCompletion)
+                        and response.usage is not None
+                    ):
+                        total_usage.completion_tokens += (
+                            response.usage.completion_tokens or 0
+                        )
+                        total_usage.prompt_tokens += response.usage.prompt_tokens or 0
+                        total_usage.total_tokens += response.usage.total_tokens or 0
+                        response.usage = (
+                            total_usage  # Replace each response usage with the total usage
+                        )
+                    return process_response(
+                        response,
+                        response_model=response_model,
+                        stream=stream,
+                        validation_context=validation_context,
+                        strict=strict,
+                        mode=mode,
+                    )
+                except (ValidationError, JSONDecodeError) as e:
+                    logger.debug(f"Error response: {response}")
+                    kwargs["messages"].append(dump_message(response.choices[0].message))
+                    # ! How do we handle this for parallel tools in the future?
+                    if mode == Mode.TOOLS:
+                        kwargs["messages"].append(
+                            {
+                                "role": "tool",
+                                "tool_call_id": response.choices[0]
+                                .message.tool_calls[0]
+                                .id,
+                                "name": response.choices[0]
+                                .message.tool_calls[0]
+                                .function.name,
+                                "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
+                            }
+                        )
+                    else:
+                        kwargs["messages"].append(
+                            {
+                                "role": "user",
+                                "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
+                            }
+                        )
+                    if mode == Mode.MD_JSON:
+                        kwargs["messages"].append(
+                            {
+                                "role": "assistant",
+                                "content": "```json",
+                            },
+                        )
+                    raise e
+    except RetryError as e:
+        logger.exception(f"Failed after retries: {e.last_attempt.exception}")
+        raise e.last_attempt.exception
 
 
 def is_async(func: Callable) -> bool:
