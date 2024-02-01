@@ -3,6 +3,7 @@ import json
 import logging
 from collections.abc import Iterable
 from functools import wraps
+from tenacity import Retrying, AsyncRetrying, stop_after_attempt, RetryError
 from json import JSONDecodeError
 from typing import (
     Callable,
@@ -287,56 +288,81 @@ async def retry_async(
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
 ) -> T:
-    retries = 0
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
-    while retries <= max_retries:
-        try:
-            response: ChatCompletion = await func(*args, **kwargs)
-            stream = kwargs.get("stream", False)
-            if isinstance(response, ChatCompletion) and response.usage is not None:
-                total_usage.completion_tokens += response.usage.completion_tokens or 0
-                total_usage.prompt_tokens += response.usage.prompt_tokens or 0
-                total_usage.total_tokens += response.usage.total_tokens or 0
-                response.usage = (
-                    total_usage  # Replace each response usage with the total usage
-                )
-            return await process_response_async(
-                response,
-                response_model=response_model,
-                stream=stream,
-                validation_context=validation_context,
-                strict=strict,
-                mode=mode,
-            )
-        except (ValidationError, JSONDecodeError) as e:
-            logger.exception(f"Retrying, exception: {e}")
-            logger.debug(f"Error response: {response}")
-            kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
-            if mode == Mode.TOOLS:
-                kwargs["messages"].append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": response.choices[0].message.tool_calls[0].id,
-                        "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure",
-                    }
-                )
-            kwargs["messages"].append(
-                {
-                    "role": "user",
-                    "content": f"Recall the function correctly, fix the errors, exceptions found\n{e}",
-                }
-            )
-            if mode == Mode.MD_JSON:
-                kwargs["messages"].append(
-                    {
-                        "role": "assistant",
-                        "content": "```json",
-                    },
-                )
-            retries += 1
-            if retries > max_retries:
-                raise e
+
+    # If max_retries is int, then create a AsyncRetrying object
+    if isinstance(max_retries, int):
+        logger.debug(f"max_retries: {max_retries}")
+        max_retries = AsyncRetrying(
+            stop=stop_after_attempt(max_retries),
+            reraise=True,
+        )
+    if not isinstance(max_retries, AsyncRetrying):
+        raise ValueError(
+            "max_retries must be an `int` or a `tenacity.AsyncRetrying` object"
+        )
+
+    try:
+        async for attempt in max_retries:
+            logger.debug(f"Retrying, attempt: {attempt}")
+            with attempt:
+                try:
+                    response: ChatCompletion = await func(*args, **kwargs)
+                    stream = kwargs.get("stream", False)
+                    if (
+                        isinstance(response, ChatCompletion)
+                        and response.usage is not None
+                    ):
+                        total_usage.completion_tokens += (
+                            response.usage.completion_tokens or 0
+                        )
+                        total_usage.prompt_tokens += response.usage.prompt_tokens or 0
+                        total_usage.total_tokens += response.usage.total_tokens or 0
+                        response.usage = (
+                            total_usage  # Replace each response usage with the total usage
+                        )
+                    return await process_response_async(
+                        response,
+                        response_model=response_model,
+                        stream=stream,
+                        validation_context=validation_context,
+                        strict=strict,
+                        mode=mode,
+                    )
+                except (ValidationError, JSONDecodeError) as e:
+                    logger.exception(f"Retrying, exception: {e}")
+                    logger.debug(f"Error response: {response}")
+                    kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
+                    if mode == Mode.TOOLS:
+                        kwargs["messages"].append(
+                            {
+                                "role": "tool",
+                                "tool_call_id": response.choices[0]
+                                .message.tool_calls[0]
+                                .id,
+                                "name": response.choices[0]
+                                .message.tool_calls[0]
+                                .function.name,
+                                "content": "failure",
+                            }
+                        )
+                    kwargs["messages"].append(
+                        {
+                            "role": "user",
+                            "content": f"Recall the function correctly, fix the errors, exceptions found\n{e}",
+                        }
+                    )
+                    if mode == Mode.MD_JSON:
+                        kwargs["messages"].append(
+                            {
+                                "role": "assistant",
+                                "content": "```json",
+                            },
+                        )
+                    raise e
+    except RetryError as e:
+        logger.exception(f"Failed after retries: {e.last_attempt.exception}")
+        raise e.last_attempt.exception
 
 
 def retry_sync(
@@ -349,12 +375,9 @@ def retry_sync(
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
 ):
-    retries = 0
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
     # If max_retries is int, then create a Retrying object
-    from tenacity import Retrying, RetryError, stop_after_attempt
-
     if isinstance(max_retries, int):
         logger.debug(f"max_retries: {max_retries}")
         max_retries: Retrying = Retrying(
@@ -366,7 +389,6 @@ def retry_sync(
 
     try:
         for attempt in max_retries:
-            logger.debug(f"Retrying, attempt: {attempt}")
             with attempt:
                 try:
                     response = func(*args, **kwargs)
@@ -395,6 +417,7 @@ def retry_sync(
                     logger.exception(f"Retrying, exception: {e}")
                     logger.debug(f"Error response: {response}")
                     kwargs["messages"].append(dump_message(response.choices[0].message))
+                    # ! How do we handle this for parallel tools in the future?
                     if mode == Mode.TOOLS:
                         kwargs["messages"].append(
                             {
