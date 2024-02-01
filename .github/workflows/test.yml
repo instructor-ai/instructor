@@ -1,11 +1,6 @@
 name: Test
-on:
-  push:
-    branches: 
-      - main
-  pull_request_target:
-    branches:
-      - main
+on: [push, pull_request]
+
 jobs:
   release:
     runs-on: ubuntu-latest
