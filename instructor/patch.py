@@ -284,7 +284,7 @@ async def retry_async(
     validation_context,
     args,
     kwargs,
-    max_retries,
+    max_retries: int | AsyncRetrying = 1,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
 ) -> T:
@@ -370,7 +370,7 @@ def retry_sync(
     validation_context: dict,
     args,
     kwargs,
-    max_retries: int = 1,
+    max_retries: int | Retrying = 1,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
 ):
