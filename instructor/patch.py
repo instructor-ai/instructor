@@ -16,7 +16,7 @@ from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
 
 from instructor.dsl.iterable import IterableModel, IterableBase
-from instructor.dsl.parallel import ParallelBase
+from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
 
 from .function_calls import Mode, OpenAISchema, openai_schema
@@ -61,22 +61,6 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     return ret
 
 
-def handle_parallel_model(typehint: Type[Iterable[Union[T]]]):
-    should_be_iterable = get_origin(typehint)
-    should_be_union = get_origin(get_args(typehint)[0])
-
-    #! Make a better error message to clearly communicate what's going on.
-    assert should_be_iterable is Iterable
-    assert should_be_union is Union
-
-    the_types = get_args(get_args(typehint)[0])
-
-    return [
-        {"type": "function", "function": openai_schema(model).openai_schema}
-        for model in the_types
-    ]
-
-
 def handle_response_model(
     *,
     response_model: Type[BaseModel],
@@ -92,7 +76,9 @@ def handle_response_model(
             ), "stream=True is not supported when using PARALLEL_TOOLS mode"
             new_kwargs["tools"] = handle_parallel_model(response_model)
             new_kwargs["tool_choice"] = "auto"
-            response_model = ParallelBase(*get_args(get_args(response_model)[0]))
+
+            # This is a special case for parallel models
+            response_model = ParallelModel(typehint=response_model)
             return response_model, new_kwargs
 
         # This is for all other single model cases
@@ -214,7 +200,7 @@ def process_response(
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
-    if inspect.isclass(response_model) and issubclass(response_model, IterableBase):
+    if isinstance(response_model, IterableBase):
         #! If the response model is a multitask, return the tasks
         return [task for task in model.tasks]
 
@@ -268,7 +254,7 @@ async def process_response_async(
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
-    if inspect.isclass(response_model) and issubclass(response_model, IterableBase):
+    if isinstance(response_model, IterableBase):
         #! If the response model is a multitask, return the tasks
         return [task for task in model.tasks]
 
@@ -313,7 +299,6 @@ async def retry_async(
         except (ValidationError, JSONDecodeError) as e:
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
-            kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
             if mode == Mode.TOOLS:
                 kwargs["messages"].append(
                     {
@@ -323,6 +308,7 @@ async def retry_async(
                         "content": "failure",
                     }
                 )
+            kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -376,16 +362,16 @@ def retry_sync(
         except (ValidationError, JSONDecodeError) as e:
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
-            kwargs["messages"].append(dump_message(response.choices[0].message))
             if mode == Mode.TOOLS:
                 kwargs["messages"].append(
                     {
                         "role": "tool",
                         "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure",
+                        "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
                     }
                 )
+            kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
                     "role": "user",
