@@ -53,7 +53,6 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-        ret["content"] += json.dumps(message.model_dump()["tool_calls"])
     if hasattr(message, "function_call") and message.function_call is not None:
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
@@ -312,6 +311,7 @@ async def retry_async(
         except (ValidationError, JSONDecodeError) as e:
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
+            kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
             if mode == Mode.TOOLS:
                 kwargs["messages"].append(
                     {
@@ -321,7 +321,6 @@ async def retry_async(
                         "content": "failure",
                     }
                 )
-            kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -357,6 +356,7 @@ def retry_sync(
     from tenacity import Retrying, RetryError, stop_after_attempt
 
     if isinstance(max_retries, int):
+        logger.debug(f"max_retries: {max_retries}")
         max_retries: Retrying = Retrying(
             stop=stop_after_attempt(max_retries),
             reraise=True,
@@ -394,6 +394,7 @@ def retry_sync(
                 except (ValidationError, JSONDecodeError) as e:
                     logger.exception(f"Retrying, exception: {e}")
                     logger.debug(f"Error response: {response}")
+                    kwargs["messages"].append(dump_message(response.choices[0].message))
                     if mode == Mode.TOOLS:
                         kwargs["messages"].append(
                             {
@@ -407,13 +408,13 @@ def retry_sync(
                                 "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
                             }
                         )
-                    kwargs["messages"].append(dump_message(response.choices[0].message))
-                    kwargs["messages"].append(
-                        {
-                            "role": "user",
-                            "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
-                        }
-                    )
+                    else:
+                        kwargs["messages"].append(
+                            {
+                                "role": "user",
+                                "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
+                            }
+                        )
                     if mode == Mode.MD_JSON:
                         kwargs["messages"].append(
                             {
