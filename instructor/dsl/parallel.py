@@ -20,14 +20,9 @@ class ParallelBase:
         #! We expect this from the OpenAISchema class, We should address
         #! this with a protocol or an abstract class... @jxnlco
         assert mode == Mode.PARALLEL_TOOLS, "Mode must be PARALLEL_TOOLS"
-        print(response.choices[0].message)
-        try:
-            for tool_call in response.choices[0].message.tool_calls:
-                name = tool_call.function.name
-                arguments = tool_call.function.arguments
-                yield self.registry[name].model_validate_json(
-                    arguments, context=validation_context, strict=strict
-                )
-        except AttributeError:
-            print("AttributeError")
-            pass
+        for tool_call in response.choices[0].message.tool_calls:
+            name = tool_call.function.name
+            arguments = tool_call.function.arguments
+            yield self.registry[name].model_validate_json(
+                arguments, context=validation_context, strict=strict
+            )
