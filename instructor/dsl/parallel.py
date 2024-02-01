@@ -1,4 +1,6 @@
 from typing import Type, TypeVar, Union, get_origin, get_args
+from types import UnionType
+
 from instructor.function_calls import OpenAISchema, Mode, openai_schema
 from collections.abc import Iterable
 
@@ -30,15 +32,26 @@ class ParallelBase:
             )
 
 
-def handle_parallel_model(typehint: Type[Iterable[Union[T]]]):
+def get_types_array(typehint: Type[Iterable[Union[T]]]):
     should_be_iterable = get_origin(typehint)
-    assert should_be_iterable is Iterable, f"{should_be_iterable} is not Iterable"
-
-    the_types = get_args(typehint)
+    assert should_be_iterable is Iterable
 
     if get_origin(get_args(typehint)[0]) is Union:
+        # works for Iterable[Union[int, str]]
         the_types = get_args(get_args(typehint)[0])
+        return the_types
 
+    if get_origin(get_args(typehint)[0]) is UnionType:
+        # works for Iterable[Union[int, str]]
+        the_types = get_args(get_args(typehint)[0])
+        return the_types
+
+    # works for Iterable[int]
+    return get_args(typehint)
+
+
+def handle_parallel_model(typehint: Type[Iterable[Union[T]]]):
+    the_types = get_types_array(typehint)
     return [
         {"type": "function", "function": openai_schema(model).openai_schema}
         for model in the_types
@@ -46,12 +59,5 @@ def handle_parallel_model(typehint: Type[Iterable[Union[T]]]):
 
 
 def ParallelModel(typehint):
-    should_be_iterable = get_origin(typehint)
-    assert should_be_iterable is Iterable
-
-    the_types = get_args(typehint)
-
-    if get_origin(get_args(typehint)[0]) is Union:
-        the_types = get_args(get_args(typehint)[0])
-
+    the_types = get_types_array(typehint)
     return ParallelBase(*[model for model in the_types])
