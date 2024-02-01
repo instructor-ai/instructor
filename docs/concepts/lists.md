@@ -99,4 +99,20 @@ for user in users:
 >>> name="John" "age"=10
 ```
 
-This streaming is still a prototype, but should work quite well for simple schemas.
+## Asynchronous Streaming
+
+I also just want to call out in this example that `instructor` also supports asynchronous streaming. This is useful when you want to stream a response model and process the results as they come in, but you'll need to use the `async for` syntax to iterate over the results.
+
+```python
+model = await client.chat.completions.create(
+    model="gpt-4",
+    response_model=Iterable[UserExtract],
+    max_retries=2,
+    stream=stream,
+    messages=[
+        {"role": "user", "content": "Make two up people"},
+    ],
+)
+async for m in model:
+    assert isinstance(m, UserExtract)
+```

@@ -103,3 +103,21 @@ for extraction in extraction_stream:
 This will output the following:
 
 ![Partial Streaming Gif](../img/partial.gif)
+
+## Asynchronous Streaming
+
+I also just want to call out in this example that `instructor` also supports asynchronous streaming. This is useful when you want to stream a response model and process the results as they come in, but you'll need to use the `async for` syntax to iterate over the results.
+
+```python
+model = await client.chat.completions.create(
+    model="gpt-4",
+    response_model=Partial[UserExtract],
+    max_retries=2,
+    stream=True,
+    messages=[
+        {"role": "user", "content": "Jason Liu is 12 years old"},
+    ],
+)
+async for m in model:
+    assert isinstance(m, UserExtract)
+```

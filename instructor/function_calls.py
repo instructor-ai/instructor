@@ -124,8 +124,6 @@ class OpenAISchema(BaseModel):
         validation_context: dict = None,
         strict: bool = None,
         mode: Mode = Mode.TOOLS,
-        stream_multitask: bool = False,
-        stream_partial: bool = False,
     ) -> Self:
         """Execute the function from the response of an openai chat completion
 
@@ -140,12 +138,6 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-        if stream_multitask:
-            return cls.from_streaming_response(completion, mode)
-
-        if stream_partial:
-            return cls.from_streaming_response(completion, mode)
-
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
 
@@ -191,7 +183,7 @@ class OpenAISchema(BaseModel):
         mode: Mode = Mode.TOOLS,
         stream_multitask: bool = False,
         stream_partial: bool = False,
-    ) -> Self:
+    ):
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -204,12 +196,6 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-
-        if stream_multitask:
-            return await cls.from_streaming_response_async(completion, mode)
-
-        if stream_partial:
-            return cls.from_streaming_response_async(completion, mode)
 
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()

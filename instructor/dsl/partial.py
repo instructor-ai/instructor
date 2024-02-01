@@ -21,17 +21,17 @@ Model = TypeVar("Model", bound=BaseModel)
 
 class PartialBase:
     @classmethod
-    def from_streaming_response(cls, completion, mode: Mode):
+    def from_streaming_response(cls, completion, mode: Mode, **kwargs):
         json_chunks = cls.extract_json(completion, mode)
-        yield from cls.model_from_chunks(json_chunks)
+        yield from cls.model_from_chunks(json_chunks, **kwargs)
 
     @classmethod
-    async def from_streaming_response_async(cls, completion, mode: Mode):
+    async def from_streaming_response_async(cls, completion, mode: Mode, **kwargs):
         json_chunks = cls.extract_json_async(completion, mode)
-        return cls.model_from_chunks_async(json_chunks)
+        return cls.model_from_chunks_async(json_chunks, **kwargs)
 
     @classmethod
-    def model_from_chunks(cls, json_chunks):
+    def model_from_chunks(cls, json_chunks, **kwargs):
         prev_obj = None
         potential_object = ""
         for chunk in json_chunks:
@@ -42,7 +42,7 @@ class PartialBase:
                 parser.parse(potential_object) if potential_object.strip() else None
             )
             if task_json:
-                obj = cls.model_validate(task_json, strict=None)  # type: ignore
+                obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore
                 if obj != prev_obj:
                     obj.__dict__[
                         "chunk"
@@ -51,8 +51,9 @@ class PartialBase:
                     yield obj
 
     @classmethod
-    async def model_from_chunks_async(cls, json_chunks):
+    async def model_from_chunks_async(cls, json_chunks, **kwargs):
         potential_object = ""
+        prev_obj = None
         async for chunk in json_chunks:
             potential_object += chunk
 
@@ -61,7 +62,7 @@ class PartialBase:
                 parser.parse(potential_object) if potential_object.strip() else None
             )
             if task_json:
-                obj = cls.model_validate(task_json, strict=None)  # type: ignore
+                obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore
                 if obj != prev_obj:
                     obj.__dict__[
                         "chunk"
