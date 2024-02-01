@@ -84,20 +84,22 @@ response = client.chat.completions.create(
         {"role": "user", "content": "Extract `jason is 12`"},
     ],
     max_retries=Retrying(
-        stop=stop_after_attempt(2),
-        wait=wait_fixed(1),
-    ), #(1)!
+        stop=stop_after_attempt(2), #(1)!
+        wait=wait_fixed(1), #(2)!
+    ) # (3)!
 )
 ```
 
-1. Now we defined our own retry logic. We'll stop after 2 attempts and wait 1 second between each attempt.
+1. We stop after 2 attempts
+2. We wait 1 second between each attempt
+3. We can now define our own retry logic
 
 ### asynchronous retries
 
 If you're using asynchronous code, you can use `AsyncRetrying` instead.
 
 ```python
-from tenacity import Retrying, stop_after_attempt, wait_fixed
+from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
 
 response = await client.chat.completions.create(
     model="gpt-4-turbo-preview",
@@ -108,11 +110,9 @@ response = await client.chat.completions.create(
     max_retries=AsyncRetrying(
         stop=stop_after_attempt(2),
         wait=wait_fixed(1),
-    ), #(1)!
+    ),
 )
 ```
-
-1. Now we defined our own retry logic. We'll stop after 2 attempts and wait 1 second between each attempt.
 
 ## Other Features of Tenacity
 
