@@ -1,4 +1,4 @@
-from typing import Type, TypeVar, Self
+from typing import Type, TypeVar
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
@@ -85,7 +85,7 @@ class OpenAISchema(BaseModel):
         validation_context: dict = None,
         strict: bool = None,
         mode: Mode = Mode.TOOLS,
-    ) -> Self:
+    ):
         """Execute the function from the response of an openai chat completion
 
         Parameters:
