@@ -1,8 +1,6 @@
 name: Test
-on:
-  pull_request_target:
-    types:
-      - closed
+on: [push, pull_request]
+
 jobs:
   release:
     runs-on: ubuntu-latest
