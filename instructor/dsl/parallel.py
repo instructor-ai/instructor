@@ -5,7 +5,6 @@ T = TypeVar("T")
 
 
 class ParallelBase:
-
     def __init__(self, *models: Type[OpenAISchema]):
         # Note that for everything else we've created a class, but for parallel base it is an instance
         self.models = models
@@ -32,6 +31,3 @@ class ParallelBase:
         except AttributeError:
             print("AttributeError")
             pass
-
-def ParallelModel(*models: Type[OpenAISchema]):
-    return ParallelBase(*models
