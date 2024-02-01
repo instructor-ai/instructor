@@ -51,9 +51,9 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-        ret["content"] += json.dumps(message.model_dump()["tool_calls"], indent=2)
+        ret["content"] += json.dumps(message.model_dump()["tool_calls"])
     if hasattr(message, "function_call") and message.function_call is not None:
-        ret["content"] += json.dumps(message.model_dump()["function_call"], indent=2)
+        ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
 
 
