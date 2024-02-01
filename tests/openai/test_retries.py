@@ -2,7 +2,6 @@ from typing import Annotated
 from pydantic import AfterValidator, BaseModel, BeforeValidator, Field
 import pytest
 import instructor
-import logging
 from itertools import product
 from tests.openai.util import models, modes
 
@@ -42,7 +41,7 @@ async def test_upper_case_tenacity_async(model, mode, aclient):
     from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
 
     retries = AsyncRetrying(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(2),
         wait=wait_fixed(1),
     )
 
@@ -77,7 +76,7 @@ def test_upper_case_tenacity(model, mode, client):
     from tenacity import Retrying, stop_after_attempt, wait_fixed
 
     retries = Retrying(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(2),
         wait=wait_fixed(1),
     )
 
