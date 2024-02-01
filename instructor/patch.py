@@ -88,7 +88,7 @@ def handle_response_model(
         # This a special case for parallel tools
         if mode == Mode.PARALLEL_TOOLS:
             assert (
-                stream is False
+                new_kwargs.get("stream", False) is False
             ), "stream=True is not supported when using PARALLEL_TOOLS mode"
             new_kwargs["tools"] = handle_parallel_model(response_model)
             new_kwargs["tool_choice"] = "auto"
@@ -194,7 +194,11 @@ def process_response(
     if response_model is None:
         return response
 
-    if issubclass(response_model, (IterableBase, PartialBase)) and stream:
+    if (
+        not mode == Mode.PARALLEL_TOOLS
+        and issubclass(response_model, (IterableBase, PartialBase))
+        and stream
+    ):
         model = response_model.from_streaming_response(
             response,
             mode=mode,
@@ -210,11 +214,11 @@ def process_response(
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
-    if issubclass(response_model, IterableBase):
+    if not mode == Mode.PARALLEL_TOOLS and issubclass(response_model, IterableBase):
         #! If the response model is a multitask, return the tasks
         return [task for task in model.tasks]
 
-    if issubclass(response_model, ParallelBase):
+    if isinstance(response_model, ParallelBase):
         return model
 
     model._raw_response = response
