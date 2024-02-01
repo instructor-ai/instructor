@@ -5,7 +5,6 @@ from collections.abc import Iterable
 from functools import wraps
 from json import JSONDecodeError
 from typing import Callable, Optional, Type, TypeVar, Union, get_args, get_origin
-from httpx import stream
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import (
@@ -15,7 +14,6 @@ from openai.types.chat import (
 )
 from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
-from regex import P
 
 from instructor.dsl.iterable import IterableModel, IterableBase
 from instructor.dsl.parallel import ParallelBase
