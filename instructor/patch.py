@@ -1,3 +1,10 @@
+import sys
+
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
+
 import inspect
 import json
 import logging
