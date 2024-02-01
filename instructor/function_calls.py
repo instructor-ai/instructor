@@ -11,6 +11,7 @@ class Mode(enum.Enum):
     """The mode to use for patching the client"""
 
     FUNCTIONS: str = "function_call"
+    PARALLEL_TOOLS: str = "parallel_tool_call"
     TOOLS: str = "tool_call"
     JSON: str = "json_mode"
     MD_JSON: str = "markdown_json_mode"
@@ -131,68 +132,10 @@ class OpenAISchema(BaseModel):
             validation_context (dict): The validation context to use for validating the response
             strict (bool): Whether to use strict json parsing
             mode (Mode): The openai completion mode
-            stream_multitask (bool): Whether to stream a multitask response
 
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-        if completion.choices[0].finish_reason == "length":
-            raise IncompleteOutputException()
-
-        message = completion.choices[0].message
-
-        if mode == Mode.FUNCTIONS:
-            assert (
-                message.function_call.name == cls.openai_schema["name"]
-            ), "Function name does not match"
-            return cls.model_validate_json(
-                message.function_call.arguments,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode == Mode.TOOLS:
-            assert (
-                len(message.tool_calls) == 1
-            ), "Instructor does not support multiple tool calls, use List[Model] instead."
-            tool_call = message.tool_calls[0]
-            assert (
-                tool_call.function.name == cls.openai_schema["name"]
-            ), "Tool name does not match"
-            return cls.model_validate_json(
-                tool_call.function.arguments,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
-            return cls.model_validate_json(
-                message.content,
-                context=validation_context,
-                strict=strict,
-            )
-        else:
-            raise ValueError(f"Invalid patch mode: {mode}")
-
-    @classmethod
-    async def from_response_async(
-        cls,
-        completion,
-        validation_context=None,
-        strict: bool = None,
-        mode: Mode = Mode.TOOLS,
-    ):
-        """Execute the function from the response of an openai chat completion
-
-        Parameters:
-            completion (openai.ChatCompletion): The response from an openai chat completion
-            validation_context (dict): The validation context to use for validating the response
-            strict (bool): Whether to use strict json parsing
-            mode (Mode): The openai completion mode
-            stream_multitask (bool): Whether to stream a multitask response
-
-        Returns:
-            cls (OpenAISchema): An instance of the class
-        """
-
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
 
