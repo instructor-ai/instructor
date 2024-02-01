@@ -1,4 +1,4 @@
-from typing import Type, TypeVar, Self
+from typing import Type, TypeVar
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
@@ -13,6 +13,7 @@ class Mode(enum.Enum):
     """The mode to use for patching the client"""
 
     FUNCTIONS: str = "function_call"
+    PARALLEL_TOOLS: str = "parallel_tool_call"
     TOOLS: str = "tool_call"
     JSON: str = "json_mode"
     MD_JSON: str = "markdown_json_mode"
@@ -34,46 +35,6 @@ class Mode(enum.Enum):
 
 
 class OpenAISchema(BaseModel):
-    """
-    Augments a Pydantic model with OpenAI's schema for function calling
-
-    This class augments a Pydantic model with OpenAI's schema for function calling. The schema is generated from the model's signature and docstring. The schema can be used to validate the response from OpenAI's API and extract the function call.
-
-    ## Usage
-
-    ```python
-    from instructor import OpenAISchema
-
-    class User(OpenAISchema):
-        name: str
-        age: int
-
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{
-            "content": "Jason is 20 years old",
-            "role": "user"
-        }],
-        functions=[User.openai_schema],
-        function_call={"name": User.openai_schema["name"]},
-    )
-
-    user = User.from_response(completion)
-
-    print(user.model_dump())
-    ```
-    ## Result
-
-    ```
-    {
-        "name": "Jason Liu",
-        "age": 20,
-    }
-    ```
-
-
-    """
-
     @classmethod
     @property
     def openai_schema(cls):
@@ -124,7 +85,7 @@ class OpenAISchema(BaseModel):
         validation_context: dict = None,
         strict: bool = None,
         mode: Mode = Mode.TOOLS,
-    ) -> Self:
+    ):
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -133,70 +94,10 @@ class OpenAISchema(BaseModel):
             validation_context (dict): The validation context to use for validating the response
             strict (bool): Whether to use strict json parsing
             mode (Mode): The openai completion mode
-            stream_multitask (bool): Whether to stream a multitask response
 
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-        if completion.choices[0].finish_reason == "length":
-            raise IncompleteOutputException()
-
-        message = completion.choices[0].message
-
-        if mode == Mode.FUNCTIONS:
-            assert (
-                message.function_call.name == cls.openai_schema["name"]
-            ), "Function name does not match"
-            return cls.model_validate_json(
-                message.function_call.arguments,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode == Mode.TOOLS:
-            assert (
-                len(message.tool_calls) == 1
-            ), "Instructor does not support multiple tool calls, use List[Model] instead."
-            tool_call = message.tool_calls[0]
-            assert (
-                tool_call.function.name == cls.openai_schema["name"]
-            ), "Tool name does not match"
-            return cls.model_validate_json(
-                tool_call.function.arguments,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
-            return cls.model_validate_json(
-                message.content,
-                context=validation_context,
-                strict=strict,
-            )
-        else:
-            raise ValueError(f"Invalid patch mode: {mode}")
-
-    @classmethod
-    async def from_response_async(
-        cls,
-        completion,
-        validation_context: dict = None,
-        strict: bool = None,
-        mode: Mode = Mode.TOOLS,
-        stream_multitask: bool = False,
-        stream_partial: bool = False,
-    ):
-        """Execute the function from the response of an openai chat completion
-
-        Parameters:
-            completion (openai.ChatCompletion): The response from an openai chat completion
-            validation_context (dict): The validation context to use for validating the response
-            strict (bool): Whether to use strict json parsing
-            mode (Mode): The openai completion mode
-            stream_multitask (bool): Whether to stream a multitask response
-
-        Returns:
-            cls (OpenAISchema): An instance of the class
-        """
-
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
 

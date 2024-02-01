@@ -1,14 +1,11 @@
 name: Test
-
 on:
   push:
-    branches:
+    branches: 
       - main
   pull_request_target:
     branches:
       - main
-
-
 jobs:
   release:
     runs-on: ubuntu-latest

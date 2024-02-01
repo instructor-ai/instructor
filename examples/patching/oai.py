@@ -1,4 +1,3 @@
-import os
 import instructor
 
 from openai import OpenAI

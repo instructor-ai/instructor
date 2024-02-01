@@ -27,11 +27,13 @@ from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
 
 from instructor.dsl.iterable import IterableModel, IterableBase
+from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
 logger = logging.getLogger("instructor")
+T = TypeVar("T")
 
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -78,6 +80,19 @@ def handle_response_model(
     """
     new_kwargs = kwargs.copy()
     if response_model is not None:
+        # This a special case for parallel tools
+        if mode == Mode.PARALLEL_TOOLS:
+            assert (
+                new_kwargs.get("stream", False) is False
+            ), "stream=True is not supported when using PARALLEL_TOOLS mode"
+            new_kwargs["tools"] = handle_parallel_model(response_model)
+            new_kwargs["tool_choice"] = "auto"
+
+            # This is a special case for parallel models
+            response_model = ParallelModel(typehint=response_model)
+            return response_model, new_kwargs
+
+        # This is for all other single model cases
         if get_origin(response_model) is Iterable:
             iterable_element_class = get_args(response_model)[0]
             response_model = IterableModel(iterable_element_class)
@@ -178,7 +193,11 @@ def process_response(
     if response_model is None:
         return response
 
-    if issubclass(response_model, (IterableBase, PartialBase)) and stream:
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, (IterableBase, PartialBase))
+        and stream
+    ):
         model = response_model.from_streaming_response(
             response,
             mode=mode,
@@ -191,12 +210,17 @@ def process_response(
         strict=strict,
         mode=mode,
     )
-    model._raw_response = response
 
-    if issubclass(response_model, IterableBase):
-        # If the response model is a multitask, return the tasks
+    # ? This really hints at the fact that we need a better way of
+    # ? attaching usage data and the raw response to the model we return.
+    if isinstance(response_model, IterableBase):
+        #! If the response model is a multitask, return the tasks
         return [task for task in model.tasks]
 
+    if isinstance(response_model, ParallelBase):
+        return model
+
+    model._raw_response = response
     return model
 
 
@@ -223,22 +247,34 @@ async def process_response_async(
     if response_model is None:
         return response
 
-    if issubclass(response_model, (IterableBase, PartialBase)) and stream:
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, (IterableBase, PartialBase))
+        and stream
+    ):
         model = await response_model.from_streaming_response_async(
             response,
             mode=mode,
         )
         return model
 
-    model = await response_model.from_response_async(
+    model = response_model.from_response(
         response,
         validation_context=validation_context,
         strict=strict,
         mode=mode,
     )
+
+    # ? This really hints at the fact that we need a better way of
+    # ? attaching usage data and the raw response to the model we return.
+    if isinstance(response_model, IterableBase):
+        #! If the response model is a multitask, return the tasks
+        return [task for task in model.tasks]
+
+    if isinstance(response_model, ParallelBase):
+        return model
+
     model._raw_response = response
-    if issubclass(response_model, IterableBase):
-        return model.tasks
     return model
 
 
@@ -276,7 +312,6 @@ async def retry_async(
         except (ValidationError, JSONDecodeError) as e:
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
-            kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
             if mode == Mode.TOOLS:
                 kwargs["messages"].append(
                     {
@@ -286,6 +321,7 @@ async def retry_async(
                         "content": "failure",
                     }
                 )
+            kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
             kwargs["messages"].append(
                 {
                     "role": "user",
@@ -339,16 +375,16 @@ def retry_sync(
         except (ValidationError, JSONDecodeError) as e:
             logger.exception(f"Retrying, exception: {e}")
             logger.debug(f"Error response: {response}")
-            kwargs["messages"].append(dump_message(response.choices[0].message))
             if mode == Mode.TOOLS:
                 kwargs["messages"].append(
                     {
                         "role": "tool",
                         "tool_call_id": response.choices[0].message.tool_calls[0].id,
                         "name": response.choices[0].message.tool_calls[0].function.name,
-                        "content": "failure",
+                        "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
                     }
                 )
+            kwargs["messages"].append(dump_message(response.choices[0].message))
             kwargs["messages"].append(
                 {
                     "role": "user",

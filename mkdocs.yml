@@ -134,6 +134,7 @@ nav:
     - Fields: 'concepts/fields.md'
     - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
+    - Parallel Tools: 'concepts/parallel.md'
     - Stream Iterable: "concepts/lists.md"
     - Stream Partial: "concepts/partial.md"
     - Raw Response: 'concepts/raw_response.md'
