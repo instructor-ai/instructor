@@ -4,7 +4,8 @@ import logging
 from collections.abc import Iterable
 from functools import wraps
 from json import JSONDecodeError
-from typing import Callable, Optional, Type, Union, get_args, get_origin
+from typing import Callable, Optional, Type, TypeVar, Union, get_args, get_origin
+from httpx import stream
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import (
@@ -14,13 +15,16 @@ from openai.types.chat import (
 )
 from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
+from regex import P
 
 from instructor.dsl.iterable import IterableModel, IterableBase
+from instructor.dsl.parallel import ParallelBase
 from instructor.dsl.partial import PartialBase
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
 logger = logging.getLogger("instructor")
+T = TypeVar("T")
 
 OVERRIDE_DOCS = """
 Creates a new chat completion for the provided messages and parameters.
@@ -59,6 +63,22 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     return ret
 
 
+def handle_parallel_model(typehint: Type[Iterable[Union[T]]]):
+    should_be_iterable = get_origin(typehint)
+    should_be_union = get_origin(get_args(typehint)[0])
+
+    #! Make a better error message to clearly communicate what's going on.
+    assert should_be_iterable is Iterable
+    assert should_be_union is Union
+
+    the_types = get_args(get_args(typehint)[0])
+
+    return [
+        {"type": "function", "function": openai_schema(model).openai_schema}
+        for model in the_types
+    ]
+
+
 def handle_response_model(
     *,
     response_model: Type[BaseModel],
@@ -67,6 +87,17 @@ def handle_response_model(
 ):
     new_kwargs = kwargs.copy()
     if response_model is not None:
+        # This a special case for parallel tools
+        if mode == Mode.PARALLEL_TOOLS:
+            assert (
+                stream is False
+            ), "stream=True is not supported when using PARALLEL_TOOLS mode"
+            new_kwargs["tools"] = handle_parallel_model(response_model)
+            new_kwargs["tool_choice"] = "auto"
+            response_model = ParallelBase(*get_args(get_args(response_model)[0]))
+            return response_model, new_kwargs
+
+        # This is for all other single model cases
         if get_origin(response_model) is Iterable:
             iterable_element_class = get_args(response_model)[0]
             response_model = IterableModel(iterable_element_class)
@@ -178,12 +209,17 @@ def process_response(
         strict=strict,
         mode=mode,
     )
-    model._raw_response = response
 
+    # ? This really hints at the fact that we need a better way of
+    # ? attaching usage data and the raw response to the model we return.
     if issubclass(response_model, IterableBase):
-        # If the response model is a multitask, return the tasks
+        #! If the response model is a multitask, return the tasks
         return [task for task in model.tasks]
 
+    if issubclass(response_model, ParallelBase):
+        return model
+
+    model._raw_response = response
     return model
 
 
@@ -217,15 +253,23 @@ async def process_response_async(
         )
         return model
 
-    model = await response_model.from_response_async(
+    model = response_model.from_response(
         response,
         validation_context=validation_context,
         strict=strict,
         mode=mode,
     )
-    model._raw_response = response
+
+    # ? This really hints at the fact that we need a better way of
+    # ? attaching usage data and the raw response to the model we return.
     if issubclass(response_model, IterableBase):
-        return model.tasks
+        #! If the response model is a multitask, return the tasks
+        return [task for task in model.tasks]
+
+    if issubclass(response_model, ParallelBase):
+        return model
+
+    model._raw_response = response
     return model
 
 
