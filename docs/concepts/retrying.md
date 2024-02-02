@@ -1,12 +1,12 @@
 # Retrying
 
-One of the benefits of having Pythantic is the ease with which we can define validators. We cover this topic in many articles, like [Reasking Validation](./reask_validation.md) and in our blog post [Good LLM validation is just good validation](../blog/posts/validation-part1.md).
+One of the benefits of having Pydantic is the ease with which we can define validators. We cover this topic in many articles, like [Reasking Validation](./reask_validation.md) and in our blog post [Good LLM validation is just good validation](../blog/posts/validation-part1.md).
 
 This post will mostly describe how to use simple and more complex retry and logic.
 
 ## Example of a Validator
 
-Before we begin, we'll use a simple example of a validator. One that checks that the name is an all cap. While we could obviously prompt that we want the name in all camps, this serves as an example of how we can build an additional logic without changing our prompts.
+Before we begin, we'll use a simple example of a validator. One that checks that the name is in all caps. While we could obviously prompt that we want the name in all caps, this serves as an example of how we can build in additional logic without changing our prompts.
 
 To use simple retry, we just need to set `max_retries`` as an integer. In this example.
 
@@ -58,8 +58,8 @@ response = client.chat.completions.create(
 assert response.name == "JASON" #(2)!
 ```
 
-1. We set the maximum number of retries to 3. Which means that if the model returns an error, we'll reask the model up to 3 times.
-2. We assert that the name is in all caps
+1. We set the maximum number of retries to 3. This means that if the model returns an error, we'll reask the model up to 3 times.
+2. We assert that the name is in all caps.
 
 ```json
 {
@@ -70,7 +70,7 @@ assert response.name == "JASON" #(2)!
 
 ## Advanced: Retry Logic
 
-If you want more control over how we define retries such as back-offs and additional retry logic We can use a library called Tenacity. To learn more, check out the documentation on the [Tenacity](https://tenacity.readthedocs.io/en/latest/) website.
+If you want more control over how we define retries such as back-offs and additional retry logic we can use a library called Tenacity. To learn more, check out the documentation on the [Tenacity](https://tenacity.readthedocs.io/en/latest/) website.
 
 Rather than using the decorator `@retry`, we can use the `Retrying` and `AsyncRetrying` classes to define our own retry logic.
 
@@ -116,7 +116,7 @@ response = await client.chat.completions.create(
 
 ## Other Features of Tenacity
 
-Tenacity features a huge number of different retrying capabilities. Here is a couple of them listed below.
+Tenacity features a huge number of different retrying capabilities. A few of them are listed below.
 
 - `Retrying(stop=stop_after_attempt(2))`: Stop after 2 attempts
 - `Retrying(stop=stop_after_delay(10))`: Stop after 10 seconds
