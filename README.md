@@ -1,6 +1,6 @@
 # Welcome to Instructor - Your Gateway to Structured Outputs with OpenAI
 
-_Structured extraction in Python, powered by OpenAI's function calling API, designed for simplicity, transparency, and control._
+_Pythonic Structured Outputs powered by LLM function calling and tool calling APIs. Designed for simplicity, transparency, and control._
 
 ---
 
