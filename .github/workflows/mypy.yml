@@ -15,6 +15,8 @@ env:
     instructor/cli/files.py
     instructor/cli/usage.py
     instructor/exceptions.py
+    instructor/function_calls.py
+    tests/test_function_calls.py
 
 jobs:
   MyPy:
