@@ -146,7 +146,7 @@ def group_and_sum_by_date_and_snapshot(usage_data: List[Dict[str, Any]]) -> Tabl
     return table
 
 
-@app.command(help="Displays OpenAI API usage data for the past N days.")  # type: ignore
+@app.command(help="Displays OpenAI API usage data for the past N days.")  # type: ignore[misc]
 def list(
     n: int = typer.Option(0, help="Number of days."),
 ) -> None:

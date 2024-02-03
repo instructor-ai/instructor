@@ -9,7 +9,12 @@ env:
   WORKING_DIRECTORY: "."
   MYPY_OUTPUT_FILENAME: "mypy.log"
   CUSTOM_FLAGS: "--python-version=3.9 --color-output --no-pretty --follow-imports=skip"
-  CUSTOM_PACKAGES: "instructor/cli/cli.py instructor/cli/usage.py"
+  CUSTOM_PACKAGES: |
+    instructor/_types/_alias.py
+    instructor/cli/cli.py
+    instructor/cli/files.py
+    instructor/cli/usage.py
+    instructor/exceptions.py
 
 jobs:
   MyPy:
