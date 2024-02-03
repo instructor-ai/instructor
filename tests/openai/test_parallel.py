@@ -1,4 +1,4 @@
-from typing import Iterable, Literal, Union
+from typing import Iterable, Literal
 from pydantic import BaseModel
 
 import pytest

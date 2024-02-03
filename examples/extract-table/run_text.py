@@ -1,7 +1,6 @@
 from openai import OpenAI
 from io import StringIO
 from typing import Annotated, Any, Iterable
-from openai import OpenAI
 from pydantic import (
     BaseModel,
     BeforeValidator,
@@ -10,7 +9,6 @@ from pydantic import (
     WithJsonSchema,
 )
 import pandas as pd
-from tomlkit import table
 import instructor
 
 

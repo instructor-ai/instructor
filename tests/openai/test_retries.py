@@ -1,5 +1,5 @@
 from typing import Annotated
-from pydantic import AfterValidator, BaseModel, BeforeValidator, Field
+from pydantic import AfterValidator, BaseModel, Field
 import pytest
 import instructor
 from itertools import product
