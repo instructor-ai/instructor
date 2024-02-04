@@ -55,7 +55,7 @@ theme:
     # - toc.integrate
   palette:
       - scheme: default
-        primary: indigo
+        primary: black 
         accent: indigo
         toggle:
           icon: material/brightness-7
