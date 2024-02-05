@@ -27,7 +27,7 @@ def test_must_have_hint() -> None:
     with pytest.raises(AssertionError):
 
         @instructions.distil
-        def test_func(x: int) -> SimpleModel:
+        def test_func(x: int):
             return SimpleModel(data=x)
 
 
