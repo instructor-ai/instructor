@@ -20,7 +20,7 @@ class FinetuneFormat(enum.Enum):
     RAW: str = "raw"
 
 
-def get_signature_from_fn(fn: Callable[[Any], Any]) -> str:
+def get_signature_from_fn(fn: Callable[..., Any]) -> str:
     """
     Get the function signature as a string.
 
@@ -46,7 +46,7 @@ def get_signature_from_fn(fn: Callable[[Any], Any]) -> str:
 
 
 @functools.lru_cache()
-def format_function(func: Callable[[Any], Any]) -> str:
+def format_function(func: Callable[..., Any]) -> str:
     """
     Format a function as a string with docstring and body.
     """
@@ -120,7 +120,7 @@ class Instructions:
         model: str = "gpt-3.5-turbo",
         fine_tune_format: Optional[FinetuneFormat] = None,
     ) -> Callable[
-        [Callable[[Any], Any]],
+        [Callable[..., Any]],
         Callable[[Callable[..., T_Retval]], Callable[..., T_Retval]],
     ]:
         """
@@ -149,7 +149,7 @@ class Instructions:
             fine_tune_format = self.finetune_format
 
         def _wrap_distil(
-            fn: Callable[[Any], Any],
+            fn: Callable[..., Any],
         ) -> Callable[[Callable[..., T_Retval]], Callable[..., T_Retval]]:
             msg = f"Return type hint for {fn} must subclass `pydantic.BaseModel'"
             assert is_return_type_base_model_or_instance(fn), msg
@@ -157,8 +157,7 @@ class Instructions:
 
             @functools.wraps(fn)
             def _dispatch(*args: Any, **kwargs: Any) -> Callable[..., T_Retval]:
-                assert name is not None
-
+                name = name if name else fn.__name__
                 openai_kwargs = self.openai_kwargs(
                     name=name,
                     fn=fn,
@@ -179,13 +178,7 @@ class Instructions:
 
                 return resp
 
-            if mode == "dispatch":
-                return _dispatch
-
-            if mode == "distil":
-                return _distil
-
-            raise Exception
+            return _dispatch if mode == "dispatch" else _distil
 
         if len(args) == 1 and callable(args[0]):
             return _wrap_distil(args[0])
