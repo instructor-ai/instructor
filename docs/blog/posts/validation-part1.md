@@ -34,12 +34,13 @@ def validation_function(value):
 
 ```python
 from openai import OpenAI
-import instructor # pip install instructor
+import instructor  # pip install instructor
 from pydantic import BaseModel
 
 # This enables response_model keyword
 # from client.chat.completions.create
-client = instructor.patch(OpenAI()) # (1)!
+client = instructor.patch(OpenAI())  # (1)!
+
 
 class UserDetail(BaseModel):
     name: str
@@ -51,11 +52,11 @@ user: UserDetail = client.chat.completions.create(
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
-    ]
-    max_retries=3 # (2)!
+    ],
+    max_retries=3,  # (2)!
 )
 
-assert user.name == "Jason" # (3)!
+assert user.name == "Jason"  # (3)!
 assert user.age == 25
 ```
 

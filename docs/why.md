@@ -193,8 +193,8 @@ for user in users:
     assert isinstance(user, User)
     print(user)
 
->>> name="Jason" "age"=10
->>> name="John" "age"=10
+#> name="Jason" "age"=10
+#> name="John" "age"=10
 ```
 
 ## Partial Extraction

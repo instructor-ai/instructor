@@ -132,7 +132,6 @@ class UserDetail(BaseModel):
 Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The `response_model` parameter specifies the Pydantic model to use for extraction. It is helpful to annotate the variable with the type of the response model which will help your IDE provide autocomplete and spell check.
 
 ```python
-
 user: UserDetail = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,

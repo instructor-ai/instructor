@@ -212,6 +212,9 @@ This refined guide should offer a cleaner and more organized approach to structu
 In cases where relationships exist between entities, it's vital to define them explicitly in the model. The following example demonstrates how to define relationships between users by incorporating an id and a friends field:
 
 ```python hl_lines="2 5 8"
+from typing import List
+from pydantic import BaseModel, Field
+
 class UserDetail(BaseModel):
     id: int = Field(..., description="Unique identifier for each user.")
     age: int
@@ -234,6 +237,8 @@ class UserRelationships(BaseModel):
 You can reuse the same component for different contexts within a model. In this example, the TimeRange component is used for both work_time and leisure_time.
 
 ```python hl_lines="9 10"
+from pydantic import BaseModel, Field
+
 class TimeRange(BaseModel):
     start_time: int = Field(..., description="The start time in hours.")
     end_time: int = Field(..., description="The end time in hours.")
@@ -254,6 +259,8 @@ class UserDetail(BaseModel):
 Sometimes, a component like TimeRange may require some context or additional logic to be used effectively. Employing a "chain of thought" field within the component can help in understanding or optimizing the time range allocations.
 
 ```python hl_lines="2"
+from pydantic import BaseModel, Field
+
 class TimeRange(BaseModel):
     chain_of_thought: str = Field(
         ..., description="Step by step reasoning to get the correct time range"

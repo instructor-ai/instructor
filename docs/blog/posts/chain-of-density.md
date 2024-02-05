@@ -115,21 +115,21 @@ Firstly, we'll need a data model for the initial summary that we will be generat
 
     ```py
     class GeneratedSummary(BaseModel):
-    """
-    This represents a highly concise summary that includes as many entities as possible from the original source article.
+        """
+        This represents a highly concise summary that includes as many entities as possible from the original source article.
 
-    An Entity is a real-world object that's assigned a name - for example, a person, country a product or a book title.
+        An Entity is a real-world object that's assigned a name - for example, a person, country a product or a book title.
 
-    Guidelines
-    - Make every word count
-    - The new summary should be highly dense and concise yet self-contained, eg., easily understood without the Article.
-    - Make space with fusion, compression, and removal of uninformative phrases like "the article discusses"
-    """
+        Guidelines
+        - Make every word count
+        - The new summary should be highly dense and concise yet self-contained, eg., easily understood without the Article.
+        - Make space with fusion, compression, and removal of uninformative phrases like "the article discusses"
+        """
 
-    summary: str = Field(
-        ...,
-        description="This represents the final summary generated that captures the meaning of the original article which is as concise as possible. ",
-    )
+        summary: str = Field(
+            ...,
+            description="This represents the final summary generated that captures the meaning of the original article which is as concise as possible. ",
+        )
     ```
 
     We eventually transform it into an OpenAI function call as seen below.
@@ -254,21 +254,21 @@ def has_no_absent_entities(cls, absent_entities: List[str]):
     return absent_entities
 
 @field_validator("summary")
-    def min_entity_density(cls, v: str):
-        tokens = nltk.word_tokenize(v)
-        num_tokens = len(tokens)
+def min_entity_density(cls, v: str):
+    tokens = nltk.word_tokenize(v)
+    num_tokens = len(tokens)
 
-        # Extract Entities
-        doc = nlp(v) #(2)!
-        num_entities = len(doc.ents)
+    # Extract Entities
+    doc = nlp(v) #(2)!
+    num_entities = len(doc.ents)
 
-        density = num_entities / num_tokens
-        if density < 0.08: #(3)!
-            raise ValueError(
-                f"The summary of {v} has too few entities. Please regenerate a new summary with more new entities added to it. Remember that new entities can be added at any point of the summary."
-            )
+    density = num_entities / num_tokens
+    if density < 0.08: #(3)!
+        raise ValueError(
+            f"The summary of {v} has too few entities. Please regenerate a new summary with more new entities added to it. Remember that new entities can be added at any point of the summary."
+        )
 
-        return v
+    return v
 ```
 
 1.  Similar to the original paper, we utilize the `NLTK` word tokenizer to count the number of tokens within our generated sentences.
@@ -282,7 +282,7 @@ def has_no_absent_entities(cls, absent_entities: List[str]):
 
 Now that we have our models and the rough flow figured out, let's implement a function to summarize a piece of text using `Chain Of Density` summarization.
 
-```py hl_lines="4 9-24 38-68"
+```python hl_lines="4 9-24 38-68"
 from openai import OpenAI
 import instructor
 

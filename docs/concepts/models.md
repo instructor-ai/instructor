@@ -2,7 +2,8 @@
 
 Defining LLM output schemas in Pydantic is done via `pydantic.BaseModel`. To learn more about models in Pydantic, check out their [documentation](https://docs.pydantic.dev/latest/concepts/models/).
 
-After defining a Pydantic model, we can use it as the `response_model` in your client `create` calls to OpenAI or any other supported model. The job of the `response_model` parameter is to: 
+After defining a Pydantic model, we can use it as the `response_model` in your client `create` calls to OpenAI or any other supported model. The job of the `response_model` parameter is to:
+
 - Define the schema and prompts for the language model
 - Validate the response from the API
 - Return a Pydantic model instance.
@@ -110,9 +111,9 @@ class Pet(BaseModel):
     species: str
 
 
-a = Pet(name='Bones', species='dog')
+pet = Pet(name='Bones', species='dog')
 
-match a:
+match pet:
     # match `species` to 'dog', declare and initialize `dog_name`
     case Pet(species='dog', name=dog_name):
         print(f'{dog_name} is a dog')

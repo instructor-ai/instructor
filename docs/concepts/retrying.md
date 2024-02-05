@@ -30,9 +30,9 @@ Now if we create a user detail with a lowercase name, we'll see an error.
 
 ```python
 UserDetail(name="jason", age=12)
->>> 1 validation error for UserDetail
->>> name
->>>     Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
+#> 1 validation error for UserDetail
+#> name
+#>     Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
 ```
 
 ## Simple: Max Retries

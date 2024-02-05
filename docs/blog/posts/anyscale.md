@@ -70,7 +70,7 @@ resp = client.chat.completions.create(
     response_model=UserDetails,
 )
 print(resp)
-# >>> name='Jason' age=20
+# # > name='Jason' age=20
 ```
 
 You can find more information about Anyscale's output mode support [here](https://docs.endpoints.anyscale.com/).

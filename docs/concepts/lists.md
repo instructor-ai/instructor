@@ -32,9 +32,11 @@ from pydantic import BaseModel
 
 client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.JSON)
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 Users = Iterable[User]
 
@@ -56,8 +58,8 @@ for user in users:
     assert isinstance(user, User)
     print(user)
 
->>> name="Jason" "age"=10
->>> name="John" "age"=10
+#> name="Jason" "age"=10
+#> name="John" "age"=10
 ```
 
 ## Streaming Tasks
@@ -97,8 +99,8 @@ for user in users:
     assert isinstance(user, User)
     print(user)
 
->>> name="Jason" "age"=10
->>> name="John" "age"=10
+#> name="Jason" "age"=10
+#> name="John" "age"=10
 ```
 
 ## Asynchronous Streaming

@@ -42,7 +42,7 @@ Response(message="I want to make them suffer the consequences")
 
 The validator will raise a `ValidationError` if the content violates the policies, like so:
 
-```python
+```plaintext
 ValidationError: 1 validation error for Response
 message
   Value error, `I want to make them suffer the consequences` was flagged for harassment, harassment_threatening, violence, harassment/threatening [type=value_error, input_value='I want to make them suffer the consequences', input_type=str]

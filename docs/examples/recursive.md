@@ -154,7 +154,7 @@ In this example, we call `parse_tree_to_filesystem` with a string representing a
 
 After parsing the string into a `DirectoryTree` object, we call `root.print_paths()` to print the paths of the root node and its children. The output of this example will be:
 
-```python
+```plaintext
 root                               NodeType.FOLDER
 root/folder1                       NodeType.FOLDER
 root/folder1/file1.txt             NodeType.FILE

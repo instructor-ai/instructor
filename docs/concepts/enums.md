@@ -1,7 +1,8 @@
 To prevent data misalignment, we can use Enums for standardized fields. Always include an "Other" option as a fallback so the model can signal uncertainty.
 
 ```python hl_lines="7 12"
-from enum import Enum, auto
+from pydantic import BaseModel, Field
+from enum import Enum
 
 class Role(Enum):
     PRINCIPAL = "PRINCIPAL"
