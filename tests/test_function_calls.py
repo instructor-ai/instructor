@@ -1,3 +1,4 @@
+from typing import Type, TypeVar
 import pytest
 from pydantic import BaseModel
 from openai.resources.chat.completions import ChatCompletion
@@ -7,17 +8,20 @@ import instructor
 from instructor.exceptions import IncompleteOutputException
 
 
-@pytest.fixture
-def test_model():
-    class TestModel(OpenAISchema):
+T = TypeVar("T")
+
+
+@pytest.fixture  # type: ignore[misc]
+def test_model() -> Type[OpenAISchema]:
+    class TestModel(OpenAISchema):  # type: ignore[misc]
         name: str = "TestModel"
         data: str
 
     return TestModel
 
 
-@pytest.fixture
-def mock_completion(request):
+@pytest.fixture  # type: ignore[misc]
+def mock_completion(request: T) -> ChatCompletion:
     finish_reason = "stop"
     data_content = '{\n"data": "complete data"\n}'
 
@@ -48,9 +52,9 @@ def mock_completion(request):
     return completion
 
 
-def test_openai_schema():
+def test_openai_schema() -> None:
     @openai_schema
-    class Dataframe(BaseModel):
+    class Dataframe(BaseModel):  # type: ignore[misc]
         """
         Class representing a dataframe. This class is used to convert
         data into a frame that can be used by pandas.
@@ -59,16 +63,16 @@ def test_openai_schema():
         data: str
         columns: str
 
-        def to_pandas(self):
+        def to_pandas(self) -> None:
             pass
 
     assert hasattr(Dataframe, "openai_schema")
     assert hasattr(Dataframe, "from_response")
     assert hasattr(Dataframe, "to_pandas")
-    assert Dataframe.openai_schema["name"] == "Dataframe"  # type: ignore
+    assert Dataframe.openai_schema["name"] == "Dataframe"
 
 
-def test_openai_schema_raises_error():
+def test_openai_schema_raises_error() -> None:
     with pytest.raises(TypeError, match="must be a subclass of pydantic.BaseModel"):
 
         @openai_schema
@@ -76,8 +80,8 @@ def test_openai_schema_raises_error():
             pass
 
 
-def test_no_docstring():
-    class Dummy(OpenAISchema):
+def test_no_docstring() -> None:
+    class Dummy(OpenAISchema):  # type: ignore[misc]
         attr: str
 
     assert (
@@ -90,25 +94,31 @@ def test_no_docstring():
     "mock_completion",
     [{"finish_reason": "length", "data_content": '{\n"data": "incomplete dat"\n}'}],
     indirect=True,
-)
-def test_incomplete_output_exception(test_model, mock_completion):
+)  # type: ignore[misc]
+def test_incomplete_output_exception(
+    test_model: Type[OpenAISchema], mock_completion: ChatCompletion
+) -> None:
     with pytest.raises(IncompleteOutputException):
         test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
 
 
-def test_complete_output_no_exception(test_model, mock_completion):
+def test_complete_output_no_exception(
+    test_model: Type[OpenAISchema], mock_completion: ChatCompletion
+) -> None:
     test_model_instance = test_model.from_response(
         mock_completion, mode=instructor.Mode.FUNCTIONS
     )
     assert test_model_instance.data == "complete data"
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio  # type: ignore[misc]
 @pytest.mark.parametrize(
     "mock_completion",
     [{"finish_reason": "length", "data_content": '{\n"data": "incomplete dat"\n}'}],
     indirect=True,
-)
-async def test_incomplete_output_exception_raise(test_model, mock_completion):
+)  # type: ignore[misc]
+async def test_incomplete_output_exception_raise(
+    test_model: Type[OpenAISchema], mock_completion: ChatCompletion
+) -> None:
     with pytest.raises(IncompleteOutputException):
         await test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)

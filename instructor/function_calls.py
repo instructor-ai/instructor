@@ -1,4 +1,4 @@
-from typing import Type, TypeVar
+from typing import Any, Dict, Optional, Type, TypeVar
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
@@ -19,7 +19,7 @@ class Mode(enum.Enum):
     MD_JSON: str = "markdown_json_mode"
     JSON_SCHEMA: str = "json_schema_mode"
 
-    def __new__(cls, value):
+    def __new__(cls, value: str) -> "Mode":
         member = object.__new__(cls)
         member._value_ = value
 
@@ -34,10 +34,10 @@ class Mode(enum.Enum):
         return member
 
 
-class OpenAISchema(BaseModel):
-    @classmethod
+class OpenAISchema(BaseModel):  # type: ignore[misc]
+    @classmethod  # type: ignore[misc]
     @property
-    def openai_schema(cls):
+    def openai_schema(cls) -> Dict[str, Any]:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
 
@@ -82,10 +82,10 @@ class OpenAISchema(BaseModel):
     def from_response(
         cls,
         completion: T,
-        validation_context: dict = None,
-        strict: bool = None,
+        validation_context: Optional[Dict[str, Any]] = None,
+        strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
-    ):
+    ) -> Dict[str, Any]:
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -98,6 +98,8 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
+        assert hasattr(completion, "choices")
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
 
@@ -105,7 +107,7 @@ class OpenAISchema(BaseModel):
 
         if mode == Mode.FUNCTIONS:
             assert (
-                message.function_call.name == cls.openai_schema["name"]
+                message.function_call.name == cls.openai_schema["name"]  # type: ignore[index]
             ), "Function name does not match"
             return cls.model_validate_json(
                 message.function_call.arguments,
@@ -118,7 +120,7 @@ class OpenAISchema(BaseModel):
             ), "Instructor does not support multiple tool calls, use List[Model] instead."
             tool_call = message.tool_calls[0]
             assert (
-                tool_call.function.name == cls.openai_schema["name"]
+                tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
             ), "Tool name does not match"
             return cls.model_validate_json(
                 tool_call.function.arguments,
