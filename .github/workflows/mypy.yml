@@ -19,6 +19,7 @@ env:
     instructor/distil.py
     instructor/function_calls.py
     tests/test_function_calls.py
+    tests/test_distil.py
 
 jobs:
   MyPy:
