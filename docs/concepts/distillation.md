@@ -57,16 +57,16 @@ for _ in range(10):
     a = random.randint(100, 999)
     b = random.randint(100, 999)
     print(fn(a, b))
-    #> a=134 b=735 result=98490
-    #> a=165 b=436 result=71940
-    #> a=963 b=497 result=478611
-    #> a=743 b=186 result=138198
-    #> a=806 b=834 result=672204
-    #> a=978 b=671 result=656238
-    #> a=995 b=217 result=215915
-    #> a=915 b=569 result=520635
-    #> a=404 b=747 result=301788
-    #> a=975 b=316 result=308100
+    #> a=180 b=141 result=25380
+    #> a=963 b=262 result=252306
+    #> a=622 b=322 result=200284
+    #> a=897 b=535 result=479895
+    #> a=585 b=273 result=159705
+    #> a=987 b=239 result=235893
+    #> a=914 b=845 result=772330
+    #> a=710 b=452 result=320920
+    #> a=787 b=276 result=217212
+    #> a=956 b=151 result=144356
 ```
 
 ## The Intricacies of Fine-tuning Language Models

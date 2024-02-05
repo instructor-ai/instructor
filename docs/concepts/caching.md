@@ -77,6 +77,7 @@ print(f"Time taken: {time.perf_counter() - start}")
     def say_hello():
         #> Hello!
         print("Hello!")
+        #> Hello!
 
 
     say_hello()

@@ -44,7 +44,7 @@ function_calls = client.chat.completions.create(
 
 for fc in function_calls:
     print(fc)
-    #> location='Toronto' units='imperial'
+    #> location='Toronto' units='metric'
     #> location='Dallas' units='imperial'
     #> query='Super Bowl winner'
 ```
