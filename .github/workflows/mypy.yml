@@ -37,12 +37,15 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip setuptools wheel
           python3 -m pip install -r requirements.txt
+          python3 -m pip install -r requirements-doc.txt
       - name: Run Continuous Integration Action
         run: |
+          set -e -o pipefail
           export CUSTOM_PACKAGES="${{ env.CUSTOM_PACKAGES }}" &&
           export CUSTOM_FLAGS="${{ env.CUSTOM_FLAGS }}" &&
-          curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/continuous-integration/scripts/devops/continuous-integration/type_mypy.sh |
-          bash | tee ${{ env.WORKING_DIRECTORY }}/${{ env.MYPY_OUTPUT_FILENAME }}
+          curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/2fd5de1b8103e955cd5f022ab016b72fa901fa8f/scripts/devops/continuous-integration/type_mypy.sh -o type_mypy.sh
+          chmod +x type_mypy.sh
+          bash type_mypy.sh | tee ${{ env.WORKING_DIRECTORY }}/${{ env.MYPY_OUTPUT_FILENAME }}
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:

@@ -124,7 +124,7 @@ def handle_response_model(
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
             message = f"""
-                As a genius expert, your task is to understand the content and provide 
+                As a genius expert, your task is to understand the content and provide
                 the parsed objects in json that match the following json_schema:\n
                 {response_model.model_json_schema()['properties']}
                 """
@@ -359,7 +359,7 @@ async def retry_async(
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
-        raise e.last_attempt.exception
+        raise e.last_attempt.exception from e
 
 
 def retry_sync(
@@ -442,7 +442,7 @@ def retry_sync(
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
-        raise e.last_attempt.exception
+        raise e.last_attempt.exception from e
 
 
 def is_async(func: Callable) -> bool:
@@ -459,7 +459,7 @@ See: https://platform.openai.com/docs/api-reference/chat-completions/create
 
 Additional Notes:
 
-Using the `response_model` parameter, you can specify a response model to use for parsing the response from OpenAI's API. If its present, the response will be parsed using the response model, otherwise it will be returned as is. 
+Using the `response_model` parameter, you can specify a response model to use for parsing the response from OpenAI's API. If its present, the response will be parsed using the response model, otherwise it will be returned as is.
 
 If `stream=True` is specified, the response will be parsed using the `from_stream_response` method of the response model, if available, otherwise it will be parsed using the `from_response` method.
 

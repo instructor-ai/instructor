@@ -1,4 +1,4 @@
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Any
 
 from pydantic import BaseModel, Field, create_model
 
@@ -9,7 +9,7 @@ class IterableBase:
     task_type = None  # type: ignore
 
     @classmethod
-    def from_streaming_response(cls, completion, mode: Mode, **kwargs):
+    def from_streaming_response(cls, completion, mode: Mode, **kwargs: Any):  # noqa: ARG003
         json_chunks = cls.extract_json(completion, mode)
         yield from cls.tasks_from_chunks(json_chunks)
 
