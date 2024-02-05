@@ -70,7 +70,18 @@ If you want more control over how we define retries such as back-offs and additi
 Rather than using the decorator `@retry`, we can use the `Retrying` and `AsyncRetrying` classes to define our own retry logic.
 
 ```python
+import openai
+import instructor
+from pydantic import BaseModel
 from tenacity import Retrying, stop_after_attempt, wait_fixed
+
+client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
 
 response = client.chat.completions.create(
     model="gpt-4-turbo-preview",
@@ -83,6 +94,13 @@ response = client.chat.completions.create(
         wait=wait_fixed(1),  # (2)!
     ),  # (3)!
 )
+print(response.model_dump_json(indent=2))
+"""
+{
+  "name": "jason",
+  "age": 12
+}
+"""
 ```
 
 1. We stop after 2 attempts
@@ -94,7 +112,18 @@ response = client.chat.completions.create(
 If you're using asynchronous code, you can use `AsyncRetrying` instead.
 
 ```python
-from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
+import openai
+import instructor
+from pydantic import BaseModel
+from tenacity import stop_after_attempt, wait_fixed
+
+client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
 
 response = await client.chat.completions.create(
     model="gpt-4-turbo-preview",
@@ -107,6 +136,8 @@ response = await client.chat.completions.create(
         wait=wait_fixed(1),
     ),
 )
+
+print(response.model_dump_json(indent=2))
 ```
 
 ## Other Features of Tenacity

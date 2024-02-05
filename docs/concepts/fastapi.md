@@ -54,6 +54,7 @@ def endpoint_function(data: UserData) -> UserDetail:
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from typing import Iterable
+from pydantic import BaseModel
 
 app = FastAPI()
 

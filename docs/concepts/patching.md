@@ -15,19 +15,19 @@ There are three methods for structured output:
 ## Function Calling
 
 ```python
-from openai import OpenAI
 import instructor
+from openai import OpenAI
 
-client = instructor.patch(OpenAI())
+client = instructor.patch(OpenAI(), mode=instructor.Mode.FUNCTIONS)
 ```
 
 ## Tool Calling
 
 ```python
 import instructor
-from instructor import Mode
+from openai import OpenAI
 
-client = instructor.patch(OpenAI(), mode=Mode.TOOLS)
+client = instructor.patch(OpenAI(), mode=instructor.Mode.TOOLS)
 ```
 
 ## JSON Mode
@@ -48,10 +48,9 @@ client = instructor.patch(OpenAI(), mode=Mode.JSON)
 
 ```python
 import instructor
-from instructor import Mode
 from openai import OpenAI
 
-client = instructor.patch(OpenAI(), mode=Mode.MD_JSON)
+client = instructor.patch(OpenAI(), mode=instructor.Mode.MD_JSON)
 ```
 
 ### Schema Integration
@@ -61,12 +60,11 @@ In JSON Mode, the schema is part of the system message:
 ```python
 import instructor
 from openai import OpenAI
-from pydantic import BaseModel
 
 client = instructor.patch(OpenAI())
 
 
-class UserExtract(BaseModel):
+class UserExtract(instructor.OpenAISchema):
     name: str
     age: int
 
