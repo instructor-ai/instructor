@@ -47,9 +47,11 @@ import openai
 import instructor
 from pydantic import BaseModel
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
+
 
 client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
 
@@ -61,7 +63,14 @@ response = client.chat.completions.create(
     ],
     max_retries=3,  # (1)!
 )
-print(response.model_dump_json(indent=2)) # (2)!
+print(response.model_dump_json(indent=2))
+"""
+{
+  "name": "jason",
+  "age": 12
+}
+"""
+# (2)!
 ```
 
 1. We set the maximum number of retries to 3. This means that if the model returns an error, we'll reask the model up to 3 times.
