@@ -151,6 +151,7 @@ class SearchQuery(BaseModel):
     def execute(self):
         print(f"Searching for {self.query} of type {self.query_type}")
         #> Searching for cat of type image
+        return "Results for cat"
 
 
 query = client.chat.completions.create(
@@ -160,6 +161,8 @@ query = client.chat.completions.create(
 )
 
 results = query.execute()
+print(results)
+#> Results for cat
 ```
 
 Now we can call `execute` on our model instance after extracting it from a language model. If you want to see more examples of this checkout our post on [RAG is more than embeddings](../blog/posts/rag-and-beyond.md)

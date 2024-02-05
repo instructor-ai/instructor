@@ -169,7 +169,7 @@ model = client.chat.completions.create(
 print(model.model_dump_json(indent=2))
 """
 {
-  "name": "jason",
+  "name": "Jason",
   "age": 25
 }
 """

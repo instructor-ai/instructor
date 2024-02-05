@@ -250,7 +250,13 @@ model = client.chat.completions.create(
     ],
 )
 
-assert model.name == "JASON"
+print(model.model_dump_json(indent=2))
+"""
+{
+  "name": "JASON",
+  "age": 25
+}
+"""
 ```
 
 ## [Evals](https://github.com/jxnl/instructor/tree/main/tests/openai/evals)
