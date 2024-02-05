@@ -32,6 +32,12 @@ coverage = "^7.3.2"
 mypy = "^1.7.1"
 pytest-examples = "^0.0.10"
 
+
+[tool.poetry.group.test-docs.dependencies]
+fastapi = "^0.109.2"
+redis = "^5.0.1"
+diskcache = "^5.6.3"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

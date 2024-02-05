@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev
 
+      - name: Install doc dependencies
+        run: poetry install --with test-docs
+
       - name: Run tests
         run: poetry run pytest tests/openai/docs
         env:
