@@ -2450,6 +2450,2661 @@ for extraction in extraction_stream:
             },
         ],
         'date': '2024-03-15',
+        'location': 'Grand Tech Arena 452',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 500,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '202',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024-',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024-02',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024-02-',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024-02-20',
+    }
+    """
+    #> {'users': [], 'date': None, 'location': None, 'budget': None, 'deadline': None}
+    """
+    {
+        'users': [{'name': None, 'email': None, 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': '', 'email': None, 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John', 'email': None, 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': None, 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': '', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'j', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'joh', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johnd', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johndoe', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johndoe@email', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@'}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@Tech'}
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@TechG'}
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@TechGuru'}
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@TechGuru44'}
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': None, 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': '', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': '', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'j', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janes', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janesmith', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janesmith@email', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janesmith@email.com', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janesmith@email.com', 'twitter': '@'},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@Digital',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalD',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': None, 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': '', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': '', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alex', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj@email', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj@email.com', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj@email.com', 'twitter': '@'},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj@email.com', 'twitter': '@Code'},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster202',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '202',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': '',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena,',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 452',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 500,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '202',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024-',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024-02',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024-02-',
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena, 4521 Innovation Drive',
+        'budget': 50000,
+        'deadline': '2024-02-20',
+    }
+    """
+    #> {'users': [], 'date': None, 'location': None, 'budget': None, 'deadline': None}
+    """
+    {
+        'users': [{'name': None, 'email': None, 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': '', 'email': None, 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John', 'email': None, 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': None, 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': '', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'j', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'joh', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johnd', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johndoe', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johndoe@email', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': None}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [{'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@'}],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@Tech'}
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@TechG'}
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@TechGuru'}
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {'name': 'John Doe', 'email': 'johndoe@email.com', 'twitter': '@TechGuru44'}
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': None, 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': '', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': '', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'j', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janes', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janesmith', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janesmith@email', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janesmith@email.com', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {'name': 'Jane Smith', 'email': 'janesmith@email.com', 'twitter': '@'},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@Digital',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalD',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': None, 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': '', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': None, 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': '', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alex', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj@email', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj@email.com', 'twitter': None},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj@email.com', 'twitter': '@'},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {'name': 'Alex Johnson', 'email': 'alexj@email.com', 'twitter': '@Code'},
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster202',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': None,
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '202',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': None,
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': '',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
+        'location': 'Grand Tech Arena',
+        'budget': None,
+        'deadline': None,
+    }
+    """
+    """
+    {
+        'users': [
+            {
+                'name': 'John Doe',
+                'email': 'johndoe@email.com',
+                'twitter': '@TechGuru44',
+            },
+            {
+                'name': 'Jane Smith',
+                'email': 'janesmith@email.com',
+                'twitter': '@DigitalDiva88',
+            },
+            {
+                'name': 'Alex Johnson',
+                'email': 'alexj@email.com',
+                'twitter': '@CodeMaster2023',
+            },
+        ],
+        'date': '2024-03-15',
         'location': 'Grand Tech Arena,',
         'budget': None,
         'deadline': None,
