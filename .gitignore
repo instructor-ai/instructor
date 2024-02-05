@@ -169,3 +169,4 @@ tutorials/results.jsonl
 tutorials/results.jsonlines
 tutorials/schema.json
 wandb/settings
+math_finetunes.jsonl

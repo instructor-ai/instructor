@@ -24,7 +24,7 @@ Then you should be able to patch using the wrap completion API.
 Since it's just going to use regular prompting and not... Function Calling. You'll need to have a lot more instructions in the system message to ask it to output JSON.
 
 ```python
-from litellm import completion, provider_list
+from litellm import completion
 from pydantic import BaseModel
 
 import instructor

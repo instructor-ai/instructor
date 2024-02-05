@@ -125,7 +125,7 @@ class JSONParser:
         s = s[end + 1 :]
         return json.loads(str_val), s
 
-    def parse_number(self, s):
+    def parse_number(self, s, e):
         i = 0
         while i < len(s) and s[i] in "0123456789.-":
             i += 1

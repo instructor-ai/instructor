@@ -297,7 +297,7 @@ async def retry_async(
             stop=stop_after_attempt(max_retries),
             reraise=True,
         )
-    if not isinstance(max_retries, AsyncRetrying):
+    if not isinstance(max_retries, (AsyncRetrying, Retrying)):
         raise ValueError(
             "max_retries must be an `int` or a `tenacity.AsyncRetrying` object"
         )
@@ -381,8 +381,8 @@ def retry_sync(
             stop=stop_after_attempt(max_retries),
             reraise=True,
         )
-    if not isinstance(max_retries, Retrying):
-        raise ValueError("max_retries must be an int or a `tenacityRetrying` object")
+    if not isinstance(max_retries, (Retrying, AsyncRetrying)):
+        raise ValueError("max_retries must be an int or a `tenacity.Retrying` object")
 
     try:
         for attempt in max_retries:

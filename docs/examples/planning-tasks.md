@@ -72,13 +72,13 @@ class QueryPlan(BaseModel):
 Now, let's demonstrate how to plan and execute a query plan using the defined models and the OpenAI API.
 
 ```python
-import asyncio
 import instructor
 from openai import OpenAI
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.patch(OpenAI())
+
 
 def query_planner(question: str) -> QueryPlan:
     PLANNING_MODEL = "gpt-4-0613"
