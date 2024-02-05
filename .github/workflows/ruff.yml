@@ -34,7 +34,7 @@ jobs:
           set -e -o pipefail
           export CUSTOM_PACKAGES="${{ env.CUSTOM_PACKAGES }}" &&
           export CUSTOM_FLAGS="${{ env.CUSTOM_FLAGS }}" &&
-          curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/main/scripts/devops/continuous-integration/lint_ruff.sh -o lint_ruff.sh
+          curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/2fd5de1b8103e955cd5f022ab016b72fa901fa8f/scripts/devops/continuous-integration/lint_ruff.sh -o lint_ruff.sh
           chmod +x lint_ruff.sh
           bash lint_ruff.sh | tee ${{ env.WORKING_DIRECTORY }}/${{ env.RUFF_OUTPUT_FILENAME }}
       - name: Upload Artifacts
