@@ -69,15 +69,23 @@ We can also generate tasks as the tokens are streamed in by defining an `Iterabl
 Lets look at an example in action with the same class
 
 ```python hl_lines="6 26"
+import instructor
+import openai
 from typing import Iterable
+from pydantic import BaseModel
 
-Users = Iterable[User]
+client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+class User(BaseModel):
+    name: str
+    age: int
+
 
 users = client.chat.completions.create(
     model="gpt-4",
     temperature=0.1,
     stream=True,
-    response_model=Users,
+    response_model=Iterable[User],
     messages=[
         {
             "role": "system",
@@ -96,7 +104,6 @@ users = client.chat.completions.create(
 )
 
 for user in users:
-    assert isinstance(user, User)
     print(user)
 
 #> name="Jason" "age"=10

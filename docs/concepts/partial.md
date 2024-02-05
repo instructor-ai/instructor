@@ -9,6 +9,8 @@ Instructor supports this pattern by making use of `Partial[T]`. This lets us dyn
 Consider what happens whene we define a response model:
 
 ```python
+from pydantic import BaseModel
+
 class User(BaseModel):
     name: str
     age: int

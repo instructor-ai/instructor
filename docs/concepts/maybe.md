@@ -37,7 +37,7 @@ Once we have the model defined, we can create a function that uses the `Maybe` p
 ```python
 import instructor
 from openai import OpenAI
-from pydantic import BaseModel, Field, Optional
+from pydantic import BaseModel, Field
 from typing import Optional
 
 # This enables the `response_model` keyword

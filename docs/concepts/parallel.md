@@ -52,10 +52,4 @@ for fc in function_calls:
 1. Set the mode to `PARALLEL_TOOLS` to enable parallel function calling.
 2. Set the response model to `Iterable[Weather | GoogleSearch]` to indicate that the response will be a list of `Weather` and `GoogleSearch` objects. This is necessary because the response will be a list of objects, and we need to specify the types of the objects in the list.
 
-```python
-Weather(location='toronto', units='imperial')
-Weather(location='dallas', units='imperial')
-GoogleSearch(query='who won the super bowl?')
-```
-
 Noticed that the `response_model` Must be in the form `Iterable[Type1 | Type2 | ...]` or `Iterable[Type1]` where `Type1` and `Type2` are the types of the objects that will be returned in the response.

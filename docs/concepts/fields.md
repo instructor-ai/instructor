@@ -120,11 +120,7 @@ print(User.model_json_schema())
 """
 {
     'properties': {
-        'age': {
-            'description': 'Age of the user',
-            'title': 'Age',
-            'type': 'integer',
-        },
+        'age': {'description': 'Age of the user', 'title': 'Age', 'type': 'integer'},
         'email': {
             'examples': ['marcelo@mail.com'],
             'format': 'email',

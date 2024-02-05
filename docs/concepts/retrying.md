@@ -24,15 +24,11 @@ def uppercase_validator(v):
 class UserDetail(BaseModel):
     name: Annotated[str, AfterValidator(uppercase_validator)]
     age: int
-```
 
-Now if we create a user detail with a lowercase name, we'll see an error.
-
-```python
-UserDetail(name="jason", age=12)
-#> 1 validation error for UserDetail
-#> name
-#>     Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
+try:
+    UserDetail(name="jason", age=12)
+except Exception as e:
+    print(e)
 ```
 
 ## Simple: Max Retries
@@ -40,6 +36,14 @@ UserDetail(name="jason", age=12)
 The simplest way of defining a retry is just defining the maximum number of retries.
 
 ```python
+import openai
+import instructor
+from pydantic import BaseModel
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
 client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
 
 response = client.chat.completions.create(
@@ -50,18 +54,16 @@ response = client.chat.completions.create(
     ],
     max_retries=3,  # (1)!
 )
-assert response.name == "JASON"  # (2)!
-```
-
-1. We set the maximum number of retries to 3. This means that if the model returns an error, we'll reask the model up to 3 times.
-2. We assert that the name is in all caps.
-
-```json
+print(response.model_dump_json(indent=2))
+"""
 {
   "name": "JASON",
   "age": 12
 }
 ```
+
+1. We set the maximum number of retries to 3. This means that if the model returns an error, we'll reask the model up to 3 times.
+2. We assert that the name is in all caps.
 
 ## Advanced: Retry Logic
 

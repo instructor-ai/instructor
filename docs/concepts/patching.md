@@ -83,6 +83,6 @@ response = client.chat.completions.create(
         },
     ],
 )
-user = UserExtract.from_response(response, mode=Mode.JSON)
+user = UserExtract.from_response(response, mode=instructor.Mode.JSON)
 print(user.model_json_schema(indent=2))
 ```

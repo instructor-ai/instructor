@@ -8,7 +8,7 @@ class Role(Enum):
     PRINCIPAL = "PRINCIPAL"
     TEACHER = "TEACHER"
     STUDENT = "STUDENT"
-    OTHER = "OTHER""
+    OTHER = "OTHER"
 
 class UserDetail(BaseModel):
     age: int

@@ -33,6 +33,10 @@ Here all docstrings, types, and field annotations will be used to generate the p
 If we use `Optional` and `default`, they will be considered not required when sent to the language model
 
 ```python
+from pydantic import BaseModel, Field
+from typing import Optional
+
+
 class User(BaseModel):
     name: str = Field(description="The name of the user.")
     age: int = Field(description="The age of the user.")

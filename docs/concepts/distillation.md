@@ -54,19 +54,20 @@ def fn(a: int, b: int) -> Multiply:
 
 # Generate some data
 for _ in range(10):
+    random.seed(42)
     a = random.randint(100, 999)
     b = random.randint(100, 999)
     print(fn(a, b))
-    #> a=373 b=297 result=110781
-    #> a=988 b=392 result=387296
-    #> a=688 b=817 result=562096
-    #> a=804 b=592 result=475968
-    #> a=397 b=386 result=153242
-    #> a=584 b=842 result=491728
-    #> a=887 b=772 result=684764
-    #> a=187 b=648 result=121176
-    #> a=632 b=450 result=284400
-    #> a=947 b=749 result=709303
+    #> a=245 b=898 result=220010
+    #> a=939 b=738 result=692982
+    #> a=502 b=926 result=464852
+    #> a=668 b=983 result=656644
+    #> a=294 b=450 result=132300
+    #> a=665 b=953 result=633745
+    #> a=351 b=864 result=303264
+    #> a=622 b=908 result=564776
+    #> a=455 b=836 result=380380
+    #> a=439 b=480 result=210720
 ```
 
 ## The Intricacies of Fine-tuning Language Models
