@@ -3,6 +3,7 @@
 A common use case of structured extraction is defining a single schema class and then making another schema to create a list to do multiple extraction
 
 ```python
+from typing import List
 from pydantic import BaseModel
 
 
@@ -13,6 +14,30 @@ class User(BaseModel):
 
 class Users(BaseModel):
     users: List[User]
+
+
+print(Users.model_json_schema())
+"""
+{
+    '$defs': {
+        'User': {
+            'properties': {
+                'name': {'title': 'Name', 'type': 'string'},
+                'age': {'title': 'Age', 'type': 'integer'},
+            },
+            'required': ['name', 'age'],
+            'title': 'User',
+            'type': 'object',
+        }
+    },
+    'properties': {
+        'users': {'items': {'$ref': '#/$defs/User'}, 'title': 'Users', 'type': 'array'}
+    },
+    'required': ['users'],
+    'title': 'Users',
+    'type': 'object',
+}
+"""
 ```
 
 Defining a task and creating a list of classes is a common enough pattern that we make this convenient by making use of `Iterable[T]`. This lets us dynamically create a new class that:
@@ -38,12 +63,10 @@ class User(BaseModel):
     age: int
 
 
-Users = Iterable[User]
-
 users = client.chat.completions.create(
     model="gpt-3.5-turbo-1106",
     temperature=0.1,
-    response_model=Users,
+    response_model=Iterable[User],
     stream=False,
     messages=[
         {
@@ -55,8 +78,8 @@ users = client.chat.completions.create(
     ],
 )
 for user in users:
-    assert isinstance(user, User)
     print(user)
+    #> ('tasks', [User(name='Jason', age=10), User(name='John', age=30)])
 
 #> name="Jason" "age"=10
 #> name="John" "age"=10
@@ -75,6 +98,7 @@ from typing import Iterable
 from pydantic import BaseModel
 
 client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
 
 class User(BaseModel):
     name: str
@@ -105,6 +129,8 @@ users = client.chat.completions.create(
 
 for user in users:
     print(user)
+    #> name='Correctly segment it into entitites' age=0
+    #> name='Make sure the JSON is correct' age=0
 
 #> name="Jason" "age"=10
 #> name="John" "age"=10

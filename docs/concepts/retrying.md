@@ -25,10 +25,17 @@ class UserDetail(BaseModel):
     name: Annotated[str, AfterValidator(uppercase_validator)]
     age: int
 
+
 try:
     UserDetail(name="jason", age=12)
 except Exception as e:
     print(e)
+    """
+    1 validation error for UserDetail
+    name
+      Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.6/v/value_error
+    """
 ```
 
 ## Simple: Max Retries

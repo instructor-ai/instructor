@@ -36,12 +36,12 @@ Once we have the model defined, we can create a function that uses the `Maybe` p
 
 ```python
 import instructor
-from openai import OpenAI
+import openai
 from pydantic import BaseModel, Field
 from typing import Optional
 
 # This enables the `response_model` keyword
-client = instructor.patch(OpenAI())
+client = instructor.patch(openai.OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -60,7 +60,7 @@ class MaybeUser(BaseModel):
 
 
 def extract(content: str) -> MaybeUser:
-    return openai.chat.completions.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=MaybeUser,
         messages=[
@@ -71,9 +71,27 @@ def extract(content: str) -> MaybeUser:
 
 user1 = extract("Jason is a 25-year-old scientist")
 print(user1.model_dump_json(indent=2))
+"""
+{
+  "result": {
+    "age": 25,
+    "name": "Jason",
+    "role": "scientist"
+  },
+  "error": false,
+  "message": null
+}
+"""
 
 user2 = extract("Unknown user")
 print(user2.model_dump_json(indent=2))
+"""
+{
+  "result": null,
+  "error": false,
+  "message": "Unknown user"
+}
+"""
 ```
 
 As you can see, when the data is extracted successfully, the `result` field contains the `UserDetail` instance. When an error occurs, the `error` field is set to `True`, and the `message` field contains the error message.

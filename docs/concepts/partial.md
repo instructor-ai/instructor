@@ -11,6 +11,7 @@ Consider what happens whene we define a response model:
 ```python
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
@@ -42,8 +43,6 @@ Let's look at an example of streaming an extraction of conference information, t
 
 ```python
 import instructor
-
-from instructor import Partial
 from openai import OpenAI
 from pydantic import BaseModel
 from typing import List
@@ -82,7 +81,7 @@ class MeetingInfo(BaseModel):
 
 extraction_stream = client.chat.completions.create(
     model="gpt-4",
-    response_model=Partial[MeetingInfo],
+    response_model=instructor.Partial[MeetingInfo],
     messages=[
         {
             "role": "user",
@@ -97,6 +96,7 @@ console = Console()
 
 for extraction in extraction_stream:
     obj = extraction.model_dump()
+    print(obj)
     console.clear()
     console.print(obj)
 ```

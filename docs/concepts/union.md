@@ -7,6 +7,10 @@ While many libraries support multiple function calls, and tool calls support mul
 You can use `Union` types to write _agents_ that can dynamically choose actions - by choosing an output class. For example, in a search and lookup function, the LLM can determine whether to execute another search, lookup or other action.
 
 ```python
+from pydantic import BaseModel
+from typing import Union
+
+
 class Search(BaseModel):
     query: str
 

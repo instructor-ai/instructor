@@ -58,16 +58,16 @@ for _ in range(10):
     a = random.randint(100, 999)
     b = random.randint(100, 999)
     print(fn(a, b))
-    #> a=245 b=898 result=220010
-    #> a=939 b=738 result=692982
-    #> a=502 b=926 result=464852
-    #> a=668 b=983 result=656644
-    #> a=294 b=450 result=132300
-    #> a=665 b=953 result=633745
-    #> a=351 b=864 result=303264
-    #> a=622 b=908 result=564776
-    #> a=455 b=836 result=380380
-    #> a=439 b=480 result=210720
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
 ```
 
 ## The Intricacies of Fine-tuning Language Models
@@ -118,6 +118,14 @@ Once a model is trained you can simply change `mode` to `dispatch` and it will u
 
 ```python
 from instructor import Instructions
+from pydantic import BaseModel
+
+
+class Multiply(BaseModel):
+    a: int
+    b: int
+    result: int
+
 
 instructions = Instructions(
     name="three_digit_multiply",

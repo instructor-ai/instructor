@@ -46,7 +46,7 @@ for fc in function_calls:
     print(fc)
     #> location='Toronto' units='metric'
     #> location='Dallas' units='imperial'
-    #> query='Super Bowl winner'
+    #> query='who won the super bowl'
 ```
 
 1. Set the mode to `PARALLEL_TOOLS` to enable parallel function calling.

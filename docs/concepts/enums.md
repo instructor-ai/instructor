@@ -4,16 +4,20 @@ To prevent data misalignment, we can use Enums for standardized fields. Always i
 from pydantic import BaseModel, Field
 from enum import Enum
 
+
 class Role(Enum):
     PRINCIPAL = "PRINCIPAL"
     TEACHER = "TEACHER"
     STUDENT = "STUDENT"
     OTHER = "OTHER"
 
+
 class UserDetail(BaseModel):
     age: int
     name: str
-    role: Role = Field(description="Correctly assign one of the predefined roles to the user.")
+    role: Role = Field(
+        description="Correctly assign one of the predefined roles to the user."
+    )
 ```
 
 If you're having a hard time with `Enum` and alternative is to use `Literal` instead.

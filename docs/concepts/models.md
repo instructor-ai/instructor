@@ -147,11 +147,15 @@ class SearchQuery(BaseModel):
     query_type: Literal["web", "image", "video"]
 
     def execute(self):
-        # do some logic here
-        return results
+        print(f"Searching for {self.query} of type {self.query_type}")
+        #> Searching for cat of type image
 
 
-query = client.chat.completions.create(..., response_model=SearchQuery)
+query = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": "Search for a picture of a cat"}],
+    response_model=SearchQuery,
+)
 
 results = query.execute()
 ```
