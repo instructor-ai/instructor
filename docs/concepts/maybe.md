@@ -11,10 +11,12 @@ Using Pydantic, we'll first define the `UserDetail` and `MaybeUser` classes.
 ```python
 from pydantic import BaseModel, Field, Optional
 
+
 class UserDetail(BaseModel):
     age: int
     name: str
     role: Optional[str] = Field(default=None)
+
 
 class MaybeUser(BaseModel):
     result: Optional[UserDetail] = Field(default=None)
@@ -32,13 +34,12 @@ Notice that `MaybeUser` has a `result` field that is an optional `UserDetail` in
 Once we have the model defined, we can create a function that uses the `Maybe` pattern to extract the data.
 
 ```python
-import random
 import instructor
 from openai import OpenAI
-from typing import Optional
 
 # This enables the `response_model` keyword
 client = instructor.patch(OpenAI())
+
 
 def extract(content: str) -> MaybeUser:
     return openai.chat.completions.create(
@@ -49,25 +50,18 @@ def extract(content: str) -> MaybeUser:
         ],
     )
 
+
 user1 = extract("Jason is a 25-year-old scientist")
 # output:
 {
-  "result": {
-    "age": 25,
-    "name": "Jason",
-    "role": "scientist"
-  },
-  "error": false,
-  "message": null
+    "result": {"age": 25, "name": "Jason", "role": "scientist"},
+    "error": false,
+    "message": null,
 }
 
 user2 = extract("Unknown user")
 # output:
-{
-  "result": null,
-  "error": true,
-  "message": "User not found"
-}
+{"result": null, "error": true, "message": "User not found"}
 ```
 
 As you can see, when the data is extracted successfully, the `result` field contains the `UserDetail` instance. When an error occurs, the `error` field is set to `True`, and the `message` field contains the error message.
@@ -78,11 +72,11 @@ There are a few ways we can handle the result. Normally, we can just access the 
 
 ```python
 def process_user_detail(maybe_user: MaybeUser):
-  if not maybe_user.error:
-      user = maybe_user.result
-      print(f"User {user.name} is {user.age} years old")
-  else:
-      print(f"Not found: {user1.message}")
+    if not maybe_user.error:
+        user = maybe_user.result
+        print(f"User {user.name} is {user.age} years old")
+    else:
+        print(f"Not found: {user1.message}")
 ```
 
 ### Pattern Matching

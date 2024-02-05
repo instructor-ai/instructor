@@ -12,9 +12,11 @@ from openai import OpenAI
 
 client = instructor.patch(OpenAI())
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
+
 
 @functools.cache
 def extract(data) -> UserDetail:
@@ -23,7 +25,7 @@ def extract(data) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
 ```
 
@@ -91,12 +93,13 @@ print(f"Time taken: {time.perf_counter() - start}")
     import inspect
     import diskcache
 
-    cache = diskcache.Cache('./my_cache_directory') # (1)
+    cache = diskcache.Cache('./my_cache_directory')  # (1)
+
 
     def instructor_cache(func):
         """Cache a function that returns a Pydantic model"""
         return_type = inspect.signature(func).return_annotation
-        if not issubclass(return_type, BaseModel): # (2)
+        if not issubclass(return_type, BaseModel):  # (2)
             raise ValueError("The return type must be a Pydantic model")
 
         @functools.wraps(func)
@@ -139,13 +142,15 @@ cache = diskcache.Cache('./my_cache_directory')
 
 def instructor_cache(func):
     """Cache a function that returns a Pydantic model"""
-    return_type = inspect.signature(func).return_annotation # (4)
-    if not issubclass(return_type, BaseModel): # (1)
+    return_type = inspect.signature(func).return_annotation  # (4)
+    if not issubclass(return_type, BaseModel):  # (1)
         raise ValueError("The return type must be a Pydantic model")
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}" #  (2)
+        key = (
+            f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}"  #  (2)
+        )
         # Check if the result is already cached
         if (cached := cache.get(key)) is not None:
             # Deserialize from JSON based on the return type (3)
@@ -160,9 +165,11 @@ def instructor_cache(func):
 
     return wrapper
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
+
 
 @instructor_cache
 def extract(data) -> UserDetail:
@@ -171,7 +178,7 @@ def extract(data) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
 ```
 
@@ -194,6 +201,7 @@ def extract(data) -> UserDetail:
     import redis
 
     cache = redis.Redis("localhost")
+
 
     def instructor_cache(func):
         """Cache a function that returns a Pydantic model"""
@@ -227,7 +235,6 @@ def extract(data) -> UserDetail:
 import redis
 import functools
 import inspect
-import json
 import instructor
 
 from pydantic import BaseModel
@@ -236,15 +243,16 @@ from openai import OpenAI
 client = instructor.patch(OpenAI())
 cache = redis.Redis("localhost")
 
+
 def instructor_cache(func):
     """Cache a function that returns a Pydantic model"""
     return_type = inspect.signature(func).return_annotation
-    if not issubclass(return_type, BaseModel): # (1)
+    if not issubclass(return_type, BaseModel):  # (1)
         raise ValueError("The return type must be a Pydantic model")
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}" # (2)
+        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}"  # (2)
         # Check if the result is already cached
         if (cached := cache.get(key)) is not None:
             # Deserialize from JSON based on the return type
@@ -264,6 +272,7 @@ class UserDetail(BaseModel):
     name: str
     age: int
 
+
 @instructor_cache
 def extract(data) -> UserDetail:
     # Assuming client.chat.completions.create returns a UserDetail instance
@@ -272,7 +281,7 @@ def extract(data) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
 ```
 

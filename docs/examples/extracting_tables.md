@@ -11,8 +11,9 @@ First, we define a custom type, `MarkdownDataFrame`, to handle pandas DataFrames
 ```python
 from io import StringIO
 from typing import Annotated, Any
-from pydantic import BaseModel, Field, BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
+from pydantic import BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
 import pandas as pd
+
 
 def md_to_df(data: Any) -> Any:
     # Convert markdown to DataFrame
@@ -29,6 +30,7 @@ def md_to_df(data: Any) -> Any:
         )
     return data
 
+
 MarkdownDataFrame = Annotated[
     InstanceOf[pd.DataFrame],
     BeforeValidator(md_to_df),
@@ -38,8 +40,7 @@ MarkdownDataFrame = Annotated[
             "type": "string",
             "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
         }
-
-    )
+    ),
 ]
 ```
 
@@ -65,6 +66,7 @@ from openai import OpenAI
 # Also use MD_JSON mode since the visino model does not support any special structured output mode
 client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
 
+
 def extract_table(url: str) -> Iterable[Table]:
     return client.chat.completions.create(
         model="gpt-4-vision-preview",
@@ -75,7 +77,7 @@ def extract_table(url: str) -> Iterable[Table]:
                 "role": "user",
                 "content": [
                     {"type": "text", "text": "Extract table from image."},
-                    {"type": "image_url", "image_url": {"url": url}}
+                    {"type": "image_url", "image_url": {"url": url}},
                 ],
             }
         ],

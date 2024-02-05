@@ -22,7 +22,7 @@ Before we dig into the nitty-gritty, let's look at how easy it is to use Instruc
 import logging
 import random
 from pydantic import BaseModel
-from instructor import Instructions # pip install instructor
+from instructor import Instructions  # pip install instructor
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -33,13 +33,15 @@ instructions = Instructions(
     # log handler is used to save the data to a file
     # you can imagine saving it to a database or other storage
     # based on your needs!
-    log_handlers=[logging.FileHandler("math_finetunes.jsonl")]
+    log_handlers=[logging.FileHandler("math_finetunes.jsonl")],
 )
+
 
 class Multiply(BaseModel):
     a: int
     b: int
     result: int
+
 
 # Define a function with distillation
 # The decorator will automatically generate a dataset for fine-tuning
@@ -49,11 +51,22 @@ def fn(a: int, b: int) -> Multiply:
     resp = a * b
     return Multiply(a=a, b=b, result=resp)
 
+
 # Generate some data
 for _ in range(10):
     a = random.randint(100, 999)
     b = random.randint(100, 999)
     print(fn(a, b))
+    #> a=958 b=650 result=622700
+    #> a=538 b=495 result=266310
+    #> a=703 b=250 result=175750
+    #> a=803 b=212 result=170236
+    #> a=499 b=199 result=99301
+    #> a=893 b=738 result=659034
+    #> a=414 b=251 result=103914
+    #> a=916 b=776 result=710816
+    #> a=219 b=764 result=167316
+    #> a=764 b=700 result=534800
 ```
 
 ## The Intricacies of Fine-tuning Language Models
@@ -80,17 +93,17 @@ Here's how the logging output would look:
     "messages": [
         {"role": "system", "content": 'Predict the results of this function: ...'},
         {"role": "user", "content": 'Return fn(133, b=539)'},
-        {"role": "assistant",
-            "function_call":
-                {
-                    "name": "Multiply",
-                    "arguments": '{"a":133,"b":539,"result":89509}'
-            }
-        }
+        {
+            "role": "assistant",
+            "function_call": {
+                "name": "Multiply",
+                "arguments": '{"a":133,"b":539,"result":89509}',
+            },
+        },
     ],
     "functions": [
         {"name": "Multiply", "description": "Correctly extracted `Multiply`..."}
-    ]
+    ],
 }
 ```
 
@@ -108,6 +121,7 @@ from instructor import Instructions
 instructions = Instructions(
     name="three_digit_multiply",
 )
+
 
 @instructions.distil(model='gpt-3.5-turbo:finetuned-123', mode="dispatch")
 def fn(a: int, b: int) -> Multiply:

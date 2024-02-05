@@ -23,9 +23,11 @@ from openai import AsyncOpenAI
 client = instructor.patch(AsyncOpenAI())
 app = FastAPI()
 
+
 class UserData(BaseModel):
     # This can be the model for the input data
     query: str
+
 
 class UserDetail(BaseModel):
     name: str
@@ -39,7 +41,7 @@ def endpoint_function(data: UserData) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
-        ]
+        ],
     )
     return user_detail
 ```
@@ -52,6 +54,7 @@ def endpoint_function(data: UserData) -> UserDetail:
 from fastapi.responses import StreamingResponse
 from typing import Iterable
 
+
 # Route to handle SSE events and return users
 @app.post("/extract", response_class=StreamingResponse)
 async def extract(data: UserData):
@@ -61,7 +64,7 @@ async def extract(data: UserData):
         stream=True,
         messages=[
             {"role": "user", "content": data.query},
-        ]
+        ],
     )
 
     async def generate():

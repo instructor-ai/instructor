@@ -12,9 +12,7 @@ To use simple retry, we just need to set `max_retries`` as an integer. In this e
 
 ```python
 from typing import Annotated
-import openai
 from pydantic import AfterValidator, BaseModel
-import instructor
 
 
 def uppercase_validator(v):
@@ -42,10 +40,7 @@ UserDetail(name="jason", age=12)
 The simplest way of defining a retry is just defining the maximum number of retries.
 
 ```python
-client = instructor.patch(
-    openai.OpenAI(),
-    mode=instructor.Mode.TOOLS
-)
+client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
 
 response = client.chat.completions.create(
     model="gpt-4-turbo-preview",
@@ -53,9 +48,9 @@ response = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Extract `jason is 12`"},
     ],
-    max_retries=3, #(1)!
+    max_retries=3,  # (1)!
 )
-assert response.name == "JASON" #(2)!
+assert response.name == "JASON"  # (2)!
 ```
 
 1. We set the maximum number of retries to 3. This means that if the model returns an error, we'll reask the model up to 3 times.
@@ -84,9 +79,9 @@ response = client.chat.completions.create(
         {"role": "user", "content": "Extract `jason is 12`"},
     ],
     max_retries=Retrying(
-        stop=stop_after_attempt(2), #(1)!
-        wait=wait_fixed(1), #(2)!
-    ) # (3)!
+        stop=stop_after_attempt(2),  # (1)!
+        wait=wait_fixed(1),  # (2)!
+    ),  # (3)!
 )
 ```
 

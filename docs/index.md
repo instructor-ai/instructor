@@ -30,16 +30,18 @@ from pydantic import BaseModel
 # from client.chat.completions.create
 client = instructor.patch(OpenAI())
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
+
 
 user = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
-    ]
+    ],
 )
 
 assert isinstance(user, UserDetail)
@@ -58,9 +60,11 @@ from pydantic import BaseModel
 
 aclient = instructor.apatch(AsyncOpenAI())
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
+
 
 model = await aclient.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -83,7 +87,7 @@ assert isinstance(model, UserExtract)
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": "Extract Jason is 25 years old"},
-        ]
+        ],
     )
 
     from openai.types.chat.chat_completion import ChatCompletion

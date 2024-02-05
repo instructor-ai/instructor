@@ -12,21 +12,26 @@ We'll model a meeting transcript as a collection of **`Ticket`** objects, each r
 
 ```python
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List, Optional
+
 
 class PriorityEnum(str, Enum):
     high = "High"
     medium = "Medium"
     low = "Low"
 
+
 class Subtask(BaseModel):
     """Correctly resolved subtask from the given transcript"""
+
     id: int
     name: str
 
+
 class Ticket(BaseModel):
     """Correctly resolved ticket from the given transcript"""
+
     id: int
     name: str
     description: str
@@ -35,10 +40,11 @@ class Ticket(BaseModel):
     subtasks: Optional[List[Subtask]]
     dependencies: Optional[List[int]]
 
+
 class ActionItems(BaseModel):
     """Correctly resolved set of action items from the given transcript"""
-    items: List[Ticket]
 
+    items: List[Ticket]
 ```
 
 ## Extracting Action Items
@@ -52,6 +58,7 @@ from openai import OpenAI
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.patch(OpenAI())
+
 
 def generate(data: str) -> ActionItems:
     return client.chat.completions.create(
@@ -76,7 +83,7 @@ To test the **`generate`** function, we provide it with a sample transcript, and
 
 ```python
 prediction = generate(
-"""
+    """
 Alice: Hey team, we have several critical tasks we need to tackle for the upcoming release. First, we need to work on improving the authentication system. It's a top priority.
 
 Bob: Got it, Alice. I can take the lead on the authentication improvements. Are there any specific areas you want me to focus on?

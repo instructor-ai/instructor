@@ -17,10 +17,13 @@ This approach to "chain of thought" improves data quality but can have modular c
 ```python hl_lines="4 5"
 from pydantic import BaseModel, Field
 
+
 class Role(BaseModel):
-    chain_of_thought: str = Field(...,
-        description="Think step by step to determine the correct title")
+    chain_of_thought: str = Field(
+        ..., description="Think step by step to determine the correct title"
+    )
     title: str
+
 
 class UserDetail(BaseModel):
     age: int
@@ -34,6 +37,7 @@ Use Python's Optional type and set a default value to prevent undesired defaults
 
 ```python hl_lines="6"
 from typing import Optional
+
 
 class UserDetail(BaseModel):
     age: int
@@ -50,6 +54,7 @@ class UserDetail(BaseModel):
     age: int
     name: str
     role: Optional[str] = Field(default=None)
+
 
 class MaybeUser(BaseModel):
     result: Optional[UserDetail] = Field(default=None)
@@ -81,16 +86,20 @@ To prevent data misalignment, use Enums for standardized fields. Always include 
 ```python hl_lines="7 12"
 from enum import Enum, auto
 
+
 class Role(Enum):
     PRINCIPAL = auto()
     TEACHER = auto()
     STUDENT = auto()
     OTHER = auto()
 
+
 class UserDetail(BaseModel):
     age: int
     name: str
-    role: Role = Field(description="Correctly assign one of the predefined roles to the user.")
+    role: Role = Field(
+        description="Correctly assign one of the predefined roles to the user."
+    )
 ```
 
 If you're having a hard time with `Enum` and alternative is to use `Literal`
@@ -113,8 +122,13 @@ class Role(BaseModel):
     """
     Extract the role based on the following rules ...
     """
-    instructions: str = Field(..., description="Restate the instructions and rules to correctly determine the title.")
+
+    instructions: str = Field(
+        ...,
+        description="Restate the instructions and rules to correctly determine the title.",
+    )
     title: str
+
 
 class UserDetail(BaseModel):
     age: int
@@ -129,14 +143,18 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 ```python hl_lines="10"
 from typing import List
 
+
 class Property(BaseModel):
     key: str
     value: str
 
+
 class UserDetail(BaseModel):
     age: int
     name: str
-    properties: List[Property] = Field(..., description="Extract any other properties that might be relevant.")
+    properties: List[Property] = Field(
+        ..., description="Extract any other properties that might be relevant."
+    )
 ```
 
 ## Limiting the Length of Lists
@@ -149,10 +167,14 @@ class Property(BaseModel):
     key: str
     value: str
 
+
 class UserDetail(BaseModel):
     age: int
     name: str
-    properties: List[Property] = Field(..., description="Numbered list of arbitrary extracted properties, should be less than 6")
+    properties: List[Property] = Field(
+        ...,
+        description="Numbered list of arbitrary extracted properties, should be less than 6",
+    )
 ```
 
 **Using Tuples for Simple Types**
@@ -163,7 +185,10 @@ For simple types, tuples can be a more compact alternative to custom classes, es
 class UserDetail(BaseModel):
     age: int
     name: str
-    properties: List[Tuple[int, str]] = Field(..., description="Numbered list of arbitrary extracted properties, should be less than 6")
+    properties: List[Tuple[int, str]] = Field(
+        ...,
+        description="Numbered list of arbitrary extracted properties, should be less than 6",
+    )
 ```
 
 ## Advanced Arbitrary Properties
@@ -176,8 +201,8 @@ class UserDetails(BaseModel):
     Extract information for multiple users.
     Use consistent key names for properties across users.
     """
-    users: List[UserDetail]
 
+    users: List[UserDetail]
 ```
 
 This refined guide should offer a cleaner and more organized approach to structure engineering in Python.
@@ -191,10 +216,17 @@ class UserDetail(BaseModel):
     id: int = Field(..., description="Unique identifier for each user.")
     age: int
     name: str
-    friends: List[int] = Field(..., description="Correct and complete list of friend IDs, representing relationships between users.")
+    friends: List[int] = Field(
+        ...,
+        description="Correct and complete list of friend IDs, representing relationships between users.",
+    )
+
 
 class UserRelationships(BaseModel):
-    users: List[UserDetail] = Field(..., description="Collection of users, correctly capturing the relationships among them.")
+    users: List[UserDetail] = Field(
+        ...,
+        description="Collection of users, correctly capturing the relationships among them.",
+    )
 ```
 
 ## Reusing Components with Different Contexts
@@ -206,19 +238,26 @@ class TimeRange(BaseModel):
     start_time: int = Field(..., description="The start time in hours.")
     end_time: int = Field(..., description="The end time in hours.")
 
+
 class UserDetail(BaseModel):
     id: int = Field(..., description="Unique identifier for each user.")
     age: int
     name: str
-    work_time: TimeRange = Field(..., description="Time range during which the user is working.")
-    leisure_time: TimeRange = Field(..., description="Time range reserved for leisure activities.")
+    work_time: TimeRange = Field(
+        ..., description="Time range during which the user is working."
+    )
+    leisure_time: TimeRange = Field(
+        ..., description="Time range reserved for leisure activities."
+    )
 ```
 
 Sometimes, a component like TimeRange may require some context or additional logic to be used effectively. Employing a "chain of thought" field within the component can help in understanding or optimizing the time range allocations.
 
 ```python hl_lines="2"
 class TimeRange(BaseModel):
-    chain_of_thought: str = Field(..., description="Step by step reasoning to get the correct time range")
+    chain_of_thought: str = Field(
+        ..., description="Step by step reasoning to get the correct time range"
+    )
     start_time: int = Field(..., description="The start time in hours.")
     end_time: int = Field(..., description="The end time in hours.")
 ```

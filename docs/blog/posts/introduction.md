@@ -37,6 +37,7 @@ from openai import OpenAI
 # Enables the response_model
 client = instructor.patch(OpenAI())
 
+
 class UserDetail(pydantic.BaseModel):
     name: str
     age: int
@@ -44,12 +45,13 @@ class UserDetail(pydantic.BaseModel):
     def introduce(self):
         return f"Hello I'm {self.name} and I'm {self.age} years old"
 
+
 user: UserDetail = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
-    ]
+    ],
 )
 ```
 
@@ -60,17 +62,14 @@ Pydantic validators simplify features like re-asking or self-critique. This make
 ```python
 from typing_extensions import Annotated
 from pydantic import BaseModel, BeforeValidator
-from instructor import llm_validator, patch
+from instructor import llm_validator
 
-from openai import OpenAI
 
 class QuestionAnswerNoEvil(BaseModel):
     question: str
     answer: Annotated[
         str,
-        BeforeValidator(
-            llm_validator("don't say objectionable things")
-        ),
+        BeforeValidator(llm_validator("don't say objectionable things")),
     ]
 ```
 
@@ -85,6 +84,7 @@ class UserDetails(BaseModel):
     name: str
     age: int
 
+
 class UserWithAddress(UserDetails):
     address: str
 ```
@@ -98,6 +98,7 @@ class UserDetail(BaseModel):
     name: str
     friends: List[int]
 
+
 class UserRelationships(BaseModel):
     users: List[UserDetail]
 ```
@@ -107,11 +108,13 @@ class UserRelationships(BaseModel):
 ```python
 from enum import Enum, auto
 
+
 class Role(Enum):
     PRINCIPAL = auto()
     TEACHER = auto()
     STUDENT = auto()
     OTHER = auto()
+
 
 class UserDetail(BaseModel):
     age: int
@@ -124,9 +127,11 @@ class UserDetail(BaseModel):
 ```python
 from typing import List
 
+
 class Property(BaseModel):
     key: str
     value: str
+
 
 class UserDetail(BaseModel):
     age: int
@@ -141,6 +146,7 @@ class TimeRange(BaseModel):
     chain_of_thought: str
     start_time: int
     end_time: int
+
 
 class UserDetail(BaseModel):
     id: int

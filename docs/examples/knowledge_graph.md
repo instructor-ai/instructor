@@ -14,16 +14,19 @@ Let's model a knowledge graph with **`Node`** and **`Edge`** objects. **`Node`**
 from pydantic import BaseModel, Field
 from typing import List
 
+
 class Node(BaseModel):
     id: int
     label: str
     color: str
+
 
 class Edge(BaseModel):
     source: int
     target: int
     label: str
     color: str = "black"
+
 
 class KnowledgeGraph(BaseModel):
     nodes: List[Node] = Field(..., default_factory=list)
@@ -41,6 +44,7 @@ import instructor
 # Adds response_model to ChatCompletion
 # Allows the return of Pydantic model rather than raw JSON
 client = instructor.patch(OpenAI())
+
 
 def generate_graph(input) -> KnowledgeGraph:
     return client.chat.completions.create(
@@ -61,6 +65,7 @@ The **`visualize_knowledge_graph`** function uses the Graphviz library to render
 
 ```python
 from graphviz import Digraph
+
 
 def visualize_knowledge_graph(kg: KnowledgeGraph):
     dot = Digraph(comment="Knowledge Graph")
@@ -101,7 +106,7 @@ text_chunks = [
     "Jason knows a lot about quantum mechanics. He is a physicist. He is a professor",
     "Professors are smart.",
     "Sarah knows Jason and is a student of his.",
-    "Sarah is a student at the University of Toronto. and UofT is in Canada"
+    "Sarah is a student at the University of Toronto. and UofT is in Canada",
 ]
 ```
 
@@ -126,10 +131,10 @@ class KnowledgeGraph(BaseModel):
     def draw(self, prefix: str = None):
         dot = Digraph(comment="Knowledge Graph")
 
-        for node in self.nodes: #(1)!
+        for node in self.nodes:  # (1)!
             dot.node(str(node.id), node.label, color=node.color)
 
-        for edge in self.edges: #(2)!
+        for edge in self.edges:  # (2)!
             dot.edge(
                 str(edge.source), str(edge.target), label=edge.label, color=edge.color
             )
@@ -143,7 +148,7 @@ We can modify our `generate_graph` function to now take in a list of strings. At
 
 ```python hl_lines="2 21-25 31-32"
 def generate_graph(input: List[str]) -> KnowledgeGraph:
-    cur_state = KnowledgeGraph() #(1)!
+    cur_state = KnowledgeGraph()  # (1)!
     num_iterations = len(input)
     for i, inp in enumerate(input):
         new_updates = client.chat.completions.create(
@@ -166,16 +171,15 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
                     "role": "user",
                     "content": f"""Here is the current state of the graph:
                     {cur_state.model_dump_json(indent=2)}""",
-                },#(2)!
+                },  # (2)!
             ],
             response_model=KnowledgeGraph,
         )  # type: ignore
 
         # Update the current state
-        cur_state = cur_state.update(new_updates) #(3)!
+        cur_state = cur_state.update(new_updates)  # (3)!
         cur_state.draw(prefix=f"iteration_{i}")
     return cur_state
-
 ```
 
 1.  We first initialise an empty `KnowledgeGraph`. In this state, it has zero nodes and edges

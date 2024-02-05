@@ -14,11 +14,13 @@ When defining a response model, we can use docstrings and field annotations to d
 ```python
 from pydantic import BaseModel, Field
 
+
 class User(BaseModel):
     """
     This is the prompt that will be used to generate the response.
     Any instructions here will be passed to the language model.
     """
+
     name: str = Field(description="The name of the user.")
     age: int = Field(description="The age of the user.")
 ```
@@ -134,6 +136,7 @@ import instructor
 
 client = instructor.patch(OpenAI())
 
+
 class SearchQuery(BaseModel):
     query: str
     query_type: Literal["web", "image", "video"]
@@ -143,9 +146,7 @@ class SearchQuery(BaseModel):
         return results
 
 
-query = client.chat.completions.create(
-        ..., response_model=SearchQuery
-    )
+query = client.chat.completions.create(..., response_model=SearchQuery)
 
 results = query.execute()
 ```

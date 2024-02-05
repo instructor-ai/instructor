@@ -52,7 +52,6 @@ from instructor import Mode
 from openai import OpenAI
 
 client = instructor.patch(OpenAI(), mode=Mode.MD_JSON)
-
 ```
 ### Schema Integration
 

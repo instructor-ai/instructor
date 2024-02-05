@@ -23,6 +23,7 @@ This method validates the sources (`substring_quote`) in the context. It utilize
 from pydantic import Field, BaseModel, model_validator, FieldValidationInfo
 from typing import List
 
+
 class Fact(BaseModel):
     fact: str = Field(...)
     substring_quote: List[str] = Field(...)
@@ -81,15 +82,19 @@ import instructor
 # enables response_model, validation_context keyword
 client = instructor.patch(OpenAI())
 
+
 def ask_ai(question: str, context: str) -> QuestionAnswer:
     return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
         response_model=QuestionAnswer,
         messages=[
-            {"role": "system", "content": "You are a world class algorithm to answer questions with correct and exact citations."},
+            {
+                "role": "system",
+                "content": "You are a world class algorithm to answer questions with correct and exact citations.",
+            },
             {"role": "user", "content": f"{context}"},
-            {"role": "user", "content": f"Question: {question}"}
+            {"role": "user", "content": f"Question: {question}"},
         ],
         validation_context={"text_chunk": context},
     )
@@ -114,21 +119,17 @@ The output would be a `QuestionAnswer` object containing validated facts and the
 
 ```python
 {
-  "question": "where did he go to school?",
-  "answer": [
-    {
-      "statement": "Jason Liu went to an arts highschool.",
-      "substring_phrase": [
-        "arts highschool"
-      ]
-    },
-    {
-      "statement": "Jason Liu studied Computational Mathematics and physics in university.",
-      "substring_phrase": [
-        "university"
-      ]
-    }
-  ]
+    "question": "where did he go to school?",
+    "answer": [
+        {
+            "statement": "Jason Liu went to an arts highschool.",
+            "substring_phrase": ["arts highschool"],
+        },
+        {
+            "statement": "Jason Liu studied Computational Mathematics and physics in university.",
+            "substring_phrase": ["university"],
+        },
+    ],
 }
 ```
 

@@ -478,7 +478,7 @@ instructor jobs create-from-file generated.jsonl
 Once the job is complete, all we need to do is to then change the annotation in the function call to `distil_summarization` in our original file above to start using our new model.
 
 ```py
-@instructions.distil(model='gpt-3.5-turbo:finetuned-123', mode="dispatch") #(1)!
+@instructions.distil(model='gpt-3.5-turbo:finetuned-123', mode="dispatch")  # (1)!
 def distil_summarization(text: str) -> GeneratedSummary:
     summary_chain: List[str] = summarize_article(text)
     return GeneratedSummary(summary=summary_chain[-1])

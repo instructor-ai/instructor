@@ -68,8 +68,8 @@ from datetime import date
 
 class DateRange(BaseModel):
     chain_of_thought: str = Field(
-        description="Reasoning behind the date range.",
-        exclude=True)
+        description="Reasoning behind the date range.", exclude=True
+    )
     start_date: date
     end_date: date
 
@@ -83,7 +83,7 @@ date_range = DateRange(
     end_date=date(2021, 1, 30),
 )
 print(date_range.model_dump_json())
-#> start_date=datetime.date(2021, 1, 1) end_date=datetime.date(2021, 1, 30)
+#> {"start_date":"2021-01-01","end_date":"2021-01-30"}
 ```
 
 ## Customizing JSON Schema
