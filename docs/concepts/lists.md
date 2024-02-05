@@ -5,9 +5,11 @@ A common use case of structured extraction is defining a single schema class and
 ```python
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 class Users(BaseModel):
     users: List[User]

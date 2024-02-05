@@ -14,10 +14,13 @@ import enum
 from typing import List
 from pydantic import Field
 
+
 class NodeType(str, enum.Enum):
     """Enumeration representing the types of nodes in a filesystem."""
+
     FILE = "file"
     FOLDER = "folder"
+
 
 class Node(BaseModel):
     """
@@ -32,6 +35,7 @@ class Node(BaseModel):
     Methods:
         print_paths: Prints the path of the node and its children.
     """
+
     name: str = Field(..., description="Name of the folder")
     children: List["Node"] = Field(
         default_factory=list,
@@ -53,6 +57,7 @@ class Node(BaseModel):
         else:
             print(f"{parent_path}/{self.name}", self.node_type)
 
+
 class DirectoryTree(BaseModel):
     """
     Container class representing a directory tree.
@@ -63,11 +68,13 @@ class DirectoryTree(BaseModel):
     Methods:
         print_paths: Prints the paths of the root node and its children.
     """
+
     root: Node = Field(..., description="Root folder of the directory tree")
 
     def print_paths(self):
         """Prints the paths of the root node and its children."""
         self.root.print_paths()
+
 
 Node.update_forward_refs()
 DirectoryTree.update_forward_refs()
@@ -88,6 +95,7 @@ from openai import OpenAI
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.patch(OpenAI())
+
 
 def parse_tree_to_filesystem(data: str) -> DirectoryTree:
     """
@@ -116,7 +124,6 @@ def parse_tree_to_filesystem(data: str) -> DirectoryTree:
         ],
         max_tokens=1000,
     )
-
 ```
 
 The `parse_tree_to_filesystem` function takes a string `data` representing the directory tree and returns a `DirectoryTree` object representing the filesystem structure. It uses the OpenAI Chat API to complete the prompt and extract the directory tree.

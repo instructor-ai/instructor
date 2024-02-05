@@ -14,21 +14,27 @@ Let's model the problem as breaking down a search request into a list of search 
 import enum
 from pydantic import Field
 
+
 class SearchType(str, enum.Enum):
     """Enumeration representing the types of searches that can be performed."""
+
     VIDEO = "video"
     EMAIL = "email"
+
 
 class Search(BaseModel):
     """
     Class representing a single search query.
     """
+
     title: str = Field(..., description="Title of the request")
     query: str = Field(..., description="Query to search for relevant content")
     type: SearchType = Field(..., description="Type of search")
 
     async def execute(self):
-        print(f"Searching for `{self.title}` with query `{self.query}` using `{self.type}`")
+        print(
+            f"Searching for `{self.title}` with query `{self.query}` using `{self.type}`"
+        )
 ```
 
 Notice that we have added the `execute` method to the `Search` class. This method can be used to route the search query based on the enum type. You can add logic specific to each search type in the `execute` method.
@@ -37,6 +43,7 @@ Next, let's define a class to represent multiple search queries.
 
 ```python
 from typing import List
+
 
 class MultiSearch(BaseModel):
     "Correctly segmented set of search results"
@@ -65,6 +72,7 @@ from openai import OpenAI
 # enables response_model keyword
 client = instructor.patch(OpenAI())
 
+
 def segment(data: str) -> MultiSearch:
     return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
@@ -90,10 +98,14 @@ Let's evaluate an example by segmenting a search query and executing the segment
 ```python
 import asyncio
 
-queries = segment("Please send me the video from last week about the investment case study and also documents about your GDPR policy?")
+queries = segment(
+    "Please send me the video from last week about the investment case study and also documents about your GDPR policy?"
+)
+
 
 async def execute_queries(queries: Multisearch):
     await asyncio.gather(*[q.execute() for q in queries.tasks])
+
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(execute_queries())

@@ -50,7 +50,8 @@ from pydantic import BaseModel
 from openai import AsyncOpenAI
 
 # Enables `response_model` in `create` method
-client = instructor.apatch(AsyncOpenAI()) # (1)!
+client = instructor.apatch(AsyncOpenAI())  # (1)!
+
 
 class Person(BaseModel):
     name: str
@@ -58,7 +59,7 @@ class Person(BaseModel):
 
 
 async def extract_person(text: str) -> Person:
-    return await client.chat.completions.create( # (2)!
+    return await client.chat.completions.create(  # (2)!
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": text},
@@ -74,14 +75,14 @@ Notice that now there are `async` and `await` keywords in the function definitio
 
 ```python
 dataset = [
-        "My name is John and I am 20 years old",
-        "My name is Mary and I am 21 years old",
-        "My name is Bob and I am 22 years old",
-        "My name is Alice and I am 23 years old",
-        "My name is Jane and I am 24 years old",
-        "My name is Joe and I am 25 years old",
-        "My name is Jill and I am 26 years old",
-    ]
+    "My name is John and I am 20 years old",
+    "My name is Mary and I am 21 years old",
+    "My name is Bob and I am 22 years old",
+    "My name is Alice and I am 23 years old",
+    "My name is Jane and I am 24 years old",
+    "My name is Joe and I am 25 years old",
+    "My name is Jill and I am 26 years old",
+]
 ```
 
 ### **`for loop`**: Running tasks sequentially.
@@ -100,7 +101,7 @@ Even though there is an `await` keyword, we still have to wait for each task to 
 ```python hl_lines="3"
 async def gather():
     tasks_get_persons = [extract_person(text) for text in dataset]
-    all_persons = await asyncio.gather(*tasks_get_persons) # (1)!
+    all_persons = await asyncio.gather(*tasks_get_persons)  # (1)!
 ```
 
 1. We use `await` here to wait for all the tasks to finish before assigning the result to `all_persons`. This is because `asyncio.gather` returns a coroutine object, not the result of the coroutine. Alternatively, we can use `asyncio.as_completed` to achieve the same result.
@@ -114,7 +115,7 @@ async def as_completed():
     all_persons = []
     tasks_get_persons = [extract_person(text) for text in dataset]
     for person in asyncio.as_completed(tasks_get_persons):
-        all_persons.append(await person) # (1)!
+        all_persons.append(await person)  # (1)!
 ```
 
 1. We use `await` here to wait for each task to complete before appending it to the list. This is because `as_completed` returns a coroutine object, not the result of the coroutine. Alternatively, we can use `asyncio.gather` to achieve the same result.
@@ -132,9 +133,11 @@ However, these methods aim to complete as many tasks as possible as quickly as p
 ```python hl_lines="4 8 9"
 sem = asyncio.Semaphore(2)
 
+
 async def rate_limited_extract_person(text: str, sem: Semaphore) -> Person:
-    async with sem: # (1)!
+    async with sem:  # (1)!
         return await extract_person(text)
+
 
 async def rate_limited_gather(sem: Semaphore):
     tasks_get_persons = [rate_limited_extract_person(text, sem) for text in dataset]
@@ -148,15 +151,17 @@ async def rate_limited_gather(sem: Semaphore):
 ```python hl_lines="4 9 10"
 sem = asyncio.Semaphore(2)
 
+
 async def rate_limited_extract_person(text: str, sem: Semaphore) -> Person:
-    async with sem: # (1)!
+    async with sem:  # (1)!
         return await extract_person(text)
+
 
 async def rate_limited_as_completed(sem: Semaphore):
     all_persons = []
     tasks_get_persons = [rate_limited_extract_person(text, sem) for text in dataset]
     for person in asyncio.as_completed(tasks_get_persons):
-        all_persons.append(await person) # (2)!
+        all_persons.append(await person)  # (2)!
 ```
 
 1. We use a semaphore to limit the number of concurrent requests to 2. This approach strikes a balance between speed and being considerate to the server we're making requests to.

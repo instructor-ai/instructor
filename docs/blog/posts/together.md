@@ -77,6 +77,12 @@ assert user.name.lower() == "jason"
 assert user.age == 25
 
 print(user.model_dump_json(indent=2))
+"""
+{
+  "name": "jason",
+  "age": 25
+}
+"""
 {
     "name": "Jason",
     "age": 25,

@@ -87,9 +87,7 @@ class AdCopy(BaseModel):
     ad_copy: str = Field(
         description="A long-form advertisement copy for the given product. This will be used in campaigns to promote the product with a persuasive message and a call-to-action with the objective of driving sales.",
     )
-    name: str = Field(
-        description="The name of the product being advertised."
-    )
+    name: str = Field(description="The name of the product being advertised.")
 ```
 
 ## Calling the API
@@ -109,7 +107,7 @@ def read_images(image_urls: List[str]) -> IdentifiedProduct:
     return client_image.chat.completions.create(
         model="gpt-4-vision-preview",
         response_model=IdentifiedProduct,
-        max_tokens=1024, # can be changed
+        max_tokens=1024,  # can be changed
         temperature=0,
         messages=[
             {

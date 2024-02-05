@@ -13,11 +13,13 @@ class Search(BaseModel):
     def execute(self):
         return ...
 
+
 class Lookup(BaseModel):
     key: str
 
     def execute(self):
         return ...
+
 
 class Action(BaseModel):
     action: Union[Search, Lookup]

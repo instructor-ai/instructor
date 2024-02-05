@@ -16,17 +16,20 @@ For single-label classification, we first define an **`enum`** for possible labe
 import enum
 from pydantic import BaseModel
 
+
 class Labels(str, enum.Enum):
     """Enumeration for single-label text classification."""
+
     SPAM = "spam"
     NOT_SPAM = "not_spam"
+
 
 class SinglePrediction(BaseModel):
     """
     Class for a single class label prediction.
     """
-    class_label: Labels
 
+    class_label: Labels
 ```
 
 ### Classifying Text
@@ -40,6 +43,7 @@ import instructor
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.patch(OpenAI())
+
 
 def classify(data: str) -> SinglePrediction:
     """Perform single-label classification on the input text."""
@@ -63,7 +67,6 @@ Let's run an example to see if it correctly identifies a spam message.
 # Test single-label classification
 prediction = classify("Hello there I'm a Nigerian prince and I want to give you money")
 assert prediction.class_label == Labels.SPAM
-
 ```
 
 ## Multi-Label Classification
@@ -79,13 +82,14 @@ class MultiLabels(str, enum.Enum):
     BILLING = "billing"
     GENERAL_QUERY = "general_query"
 
+
 # Define the multi-class prediction model
 class MultiClassPrediction(BaseModel):
     """
     Class for a multi-class label prediction.
     """
-    class_labels: List[MultiLabels]
 
+    class_labels: List[MultiLabels]
 ```
 
 ### Classifying Text
@@ -105,7 +109,6 @@ def multi_classify(data: str) -> MultiClassPrediction:
             },
         ],
     )  # type: ignore
-
 ```
 
 ### Testing and Evaluation

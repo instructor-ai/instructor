@@ -84,13 +84,13 @@ Let's evaluate the example by specifying the program to create and print the res
 
 ```python
 program = develop(
-        """
+    """
         Create a fastapi app with a readme.md file and a main.py file with
         some basic math functions. the datamodels should use pydantic and
         the main.py should use fastapi. the readme.md should have a title
         and a description. The readme should contain some helpful infromation
         and a curl example"""
-    )
+)
 
 for file in program.files:
     print(file.file_name)

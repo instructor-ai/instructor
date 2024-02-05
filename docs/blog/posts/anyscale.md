@@ -50,27 +50,22 @@ class UserDetails(BaseModel):
     name: str
     age: int
 
+
 # enables `response_model` in create call
 client = instructor.patch(
     OpenAI(
         base_url="https://api.endpoints.anyscale.com/v1",
-        api_key="<YOUR_ANYSCALE_API_KEY>"
+        api_key="<YOUR_ANYSCALE_API_KEY>",
     ),
     # This uses Anyscale's json schema output mode
-    mode=instructor.Mode.JSON_SCHEMA
+    mode=instructor.Mode.JSON_SCHEMA,
 )
 
 resp = client.chat.completions.create(
     model="mistralai/Mixtral-8x7B-Instruct-v0.1",
     messages=[
-        {
-            "role": "system",
-            "content": "You are a world class extractor"
-        },
-        {
-            "role": "user",
-            "content": 'Extract the following entities: "Jason is 20"'
-        },
+        {"role": "system", "content": "You are a world class extractor"},
+        {"role": "user", "content": 'Extract the following entities: "Jason is 20"'},
     ],
     response_model=UserDetails,
 )

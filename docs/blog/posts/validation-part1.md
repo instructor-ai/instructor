@@ -85,23 +85,30 @@ We can use the `field_validator` decorator to define a validator for a field in 
 
 ```python
 from pydantic import BaseModel, ValidationError, field_validator
-from pydantic.fields import Field
+
 
 class UserMessage(BaseModel):
     message: str
 
     @field_validator('message')
     def message_cannot_have_blacklisted_words(cls, v: str) -> str:
-        for word in v.split(): # (1)!
-            if word.lower() in {'rob','steal'}:
+        for word in v.split():  # (1)!
+            if word.lower() in {'rob', 'steal'}:
                 raise ValueError(f"`{word}` was found in the message `{v}`")
         return v
+
 
 try:
     UserMessage(message="This is a lovely day")
     UserMessage(message="We should go and rob a bank")
 except ValidationError as e:
     print(e)
+    """
+    1 validation error for UserMessage
+    message
+      Value error, `rob` was found in the message `We should go and rob a bank` [type=value_error, input_value='We should go and rob a bank', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.6/v/value_error
+    """
 ```
 
 1.  We split the sentence into its individual words and iterate through each of the words. We then try to see if any of these
@@ -126,20 +133,28 @@ from typing import Annotated
 from pydantic.functional_validators import AfterValidator
 
 
-def message_cannot_have_blacklisted_words(value:str):
+def message_cannot_have_blacklisted_words(value: str):
     for word in value.split():
-        if word.lower() in {'rob','steal'}:
+        if word.lower() in {'rob', 'steal'}:
             raise ValueError(f"`{word}` was found in the message `{value}`")
     return value
 
+
 class UserMessage(BaseModel):
     message: Annotated[str, AfterValidator(message_cannot_have_blacklisted_words)]
+
 
 try:
     UserMessage(message="This is a lovely day")
     UserMessage(message="We should go and rob a bank")
 except ValidationError as e:
     print(e)
+    """
+    1 validation error for UserMessage
+    message
+      Value error, `rob` was found in the message `We should go and rob a bank` [type=value_error, input_value='We should go and rob a bank', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.6/v/value_error
+    """
 ```
 
 This code snippet achieves the same validation result. If the user message contains any of the words in the blacklist, a `ValueError` is raised and the corresponding error message is displayed.
@@ -167,13 +182,25 @@ from pydantic import BaseModel, ValidationError
 from typing import Annotated
 from pydantic.functional_validators import AfterValidator
 
+
 class UserMessage(BaseModel):
-    message: Annotated[str, AfterValidator(llm_validator("don't say objectionable things"))]
+    message: Annotated[
+        str, AfterValidator(llm_validator("don't say objectionable things"))
+    ]
+
 
 try:
-    UserMessage(message="Violence is always acceptable, as long as we silence the witness")
+    UserMessage(
+        message="Violence is always acceptable, as long as we silence the witness"
+    )
 except ValidationError as e:
     print(e)
+    """
+    1 validation error for UserMessage
+    message
+      Assertion failed, The statement promotes violence, which is objectionable. [type=assertion_error, input_value='Violence is always accep... we silence the witness', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
+    """
 ```
 
 This produces the following error message as seen below
@@ -204,8 +231,13 @@ As we can see, a validator is simply a function that takes in a value and return
 
 ```python
 class Validation(BaseModel):
-    is_valid: bool = Field(..., description="Whether the value is valid based on the rules")
-    error_message: Optional[str] = Field(..., description="The error message if the value is not valid, to be used for re-asking the model")
+    is_valid: bool = Field(
+        ..., description="Whether the value is valid based on the rules"
+    )
+    error_message: Optional[str] = Field(
+        ...,
+        description="The error message if the value is not valid, to be used for re-asking the model",
+    )
 ```
 
 Using this structure, we can implement the same logic as before and utilize `Instructor` to generate the validation.
@@ -216,6 +248,7 @@ from openai import OpenAI
 
 # Enables `response_model` and `max_retries` parameters
 client = instructor.patch(OpenAI())
+
 
 def validator(v):
     statement = "don't say objectionable things"
@@ -232,7 +265,7 @@ def validator(v):
             },
         ],
         # this comes from client = instructor.patch(OpenAI())
-        response_model=Validation, # (1)!
+        response_model=Validation,  # (1)!
     )
     if not resp.is_valid:
         raise ValueError(resp.error_message)
@@ -288,6 +321,7 @@ We can then take advantage of the `model_validator` decorator to perform a valid
 ```python
 from pydantic import BaseModel, model_validator
 
+
 class AIResponse(BaseModel):
     chain_of_thought: str
     answer: str
@@ -304,9 +338,7 @@ Now, when you create a `AIResponse` instance, the `chain_of_thought_makes_sense`
 
 ```python
 try:
-    resp = AIResponse(
-        chain_of_thought="1 + 1 = 2", answer="The meaning of life is 42"
-    )
+    resp = AIResponse(chain_of_thought="1 + 1 = 2", answer="The meaning of life is 42")
 except ValidationError as e:
     print(e)
 ```
@@ -326,7 +358,8 @@ Let's see a more concrete example. Let's say that we've asked our model a questi
 We can pass in additional context to our validation functions using the `model_validate` function in `Pydantic` so that our models have more information to work with when performing validation. This context is a normal python dictionary and can be accessed inside the `info` argument in our validator functions.
 
 ```python
-from pydantic import ValidationInfo,BaseModel,field_validator
+from pydantic import ValidationInfo, BaseModel, field_validator
+
 
 class AnswerWithCitation(BaseModel):
     answer: str
@@ -334,7 +367,7 @@ class AnswerWithCitation(BaseModel):
 
     @field_validator('citation')
     @classmethod
-    def citation_exists(cls, v: str, info: ValidationInfo): # (1)!
+    def citation_exists(cls, v: str, info: ValidationInfo):  # (1)!
         context = info.context
         if context:
             context = context.get('text_chunk')
@@ -351,7 +384,7 @@ We can then take our original example and test it against our new model
 try:
     AnswerWithCitation.model_validate(
         {"answer": "Jason is a cool guy", "citation": "Jason is cool"},
-        context={"text_chunk": "Jason is just a guy"}, # (1)!
+        context={"text_chunk": "Jason is just a guy"},  # (1)!
     )
 except ValidationError as e:
     print(e)
@@ -379,7 +412,8 @@ import instructor
 # Enables `response_model` and `max_retries` parameters
 client = instructor.patch(OpenAI())
 
-def answer_question(question:str, text_chunk: str) -> AnswerWithCitation:
+
+def answer_question(question: str, text_chunk: str) -> AnswerWithCitation:
     return client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -408,6 +442,7 @@ To keep things simple let's assume we have a model that returns a `UserModel` ob
 
 ```python
 from pydantic import BaseModel, field_validator
+
 
 class UserModel(BaseModel):
     name: str

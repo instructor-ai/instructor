@@ -10,7 +10,8 @@ First, Pydantic models are defined to represent the PII data and the overall str
 
 ```python
 from typing import List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
 
 # Define Schemas for PII data
 class Data(BaseModel):
@@ -18,10 +19,12 @@ class Data(BaseModel):
     data_type: str
     pii_value: str
 
+
 class PIIDataExtraction(BaseModel):
     """
     Extracted PII data from a document, all data_types should try to have consistent property names
     """
+
     private_data: List[Data]
 
     def scrub_data(self, content: str) -> str:
@@ -61,7 +64,7 @@ pii_data: PIIDataExtraction = client.chat.completions.create(
             "role": "user",
             "content": EXAMPLE_DOCUMENT,
         },
-    ]
+    ],
 )  # type: ignore
 
 print("Extracted PII Data:")

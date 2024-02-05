@@ -9,8 +9,7 @@ This guide demonstrates how to use `llm_validator` for implementing self-healing
 Import required modules and apply compatibility patches.
 
 ```python
-from typing_extensions import Annotated
-from pydantic import BaseModel, BeforeValidator
+
 ```
 
 ## Defining Models
@@ -80,6 +79,7 @@ class QuestionAnswerNoEvil(BaseModel):
             llm_validator("don't say objectionable things", allow_override=True)
         ),
     ]
+
 
 try:
     qa: QuestionAnswerNoEvil = client.chat.completions.create(

@@ -97,7 +97,6 @@ for extraction in extraction_stream:
     obj = extraction.model_dump()
     console.clear()
     console.print(obj)
-
 ```
 
 This will output the following:

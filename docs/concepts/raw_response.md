@@ -8,9 +8,11 @@ from pydantic import BaseModel
 
 client = instructor.patch(OpenAI())
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
+
 
 user: UserExtract = client.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -21,6 +23,32 @@ user: UserExtract = client.chat.completions.create(
 )
 
 print(user._raw_response)
+"""
+ChatCompletion(
+    id='chatcmpl-8owwph3BaKJddZKqPIOygvQy1CmLu',
+    choices=[
+        Choice(
+            finish_reason='stop',
+            index=0,
+            logprobs=None,
+            message=ChatCompletionMessage(
+                content=None,
+                role='assistant',
+                function_call=FunctionCall(
+                    arguments='{\n  "name": "Jason",\n  "age": 25\n}',
+                    name='UserExtract',
+                ),
+                tool_calls=None,
+            ),
+        )
+    ],
+    created=1707153687,
+    model='gpt-3.5-turbo-0613',
+    object='chat.completion',
+    system_fingerprint=None,
+    usage=CompletionUsage(completion_tokens=16, prompt_tokens=73, total_tokens=89),
+)
+"""
 ```
 
 !!! tip "Accessing tokens usage"
@@ -33,32 +61,27 @@ print(user._raw_response)
 
 ```python
 {
-  "id": "chatcmpl-8bHUPGZc9vAXBraJlebf8ciz4AMuh",
-  "choices": [
-    {
-      "finish_reason": "stop",
-      "index": 0,
-      "message": {
-        "content": null,
-        "role": "assistant",
-        "function_call": {
-          "arguments": "{\n  \"name\": \"Jason\",\n  \"age\": 25\n}",
-          "name": "UserExtract"
-        },
-        "tool_calls": null
-      },
-      "logprobs": null
-    }
-  ],
-  "created": 1703896057,
-  "model": "gpt-3.5-turbo-0613",
-  "object": "chat.completion",
-  "system_fingerprint": null,
-  "usage": {
-    "completion_tokens": 16,
-    "prompt_tokens": 73,
-    "total_tokens": 89
-  }
+    "id": "chatcmpl-8bHUPGZc9vAXBraJlebf8ciz4AMuh",
+    "choices": [
+        {
+            "finish_reason": "stop",
+            "index": 0,
+            "message": {
+                "content": null,
+                "role": "assistant",
+                "function_call": {
+                    "arguments": "{\n  \"name\": \"Jason\",\n  \"age\": 25\n}",
+                    "name": "UserExtract",
+                },
+                "tool_calls": null,
+            },
+            "logprobs": null,
+        }
+    ],
+    "created": 1703896057,
+    "model": "gpt-3.5-turbo-0613",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {"completion_tokens": 16, "prompt_tokens": 73, "total_tokens": 89},
 }
-
 ```

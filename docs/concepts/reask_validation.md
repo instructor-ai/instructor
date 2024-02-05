@@ -21,19 +21,28 @@ from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 from pydantic import AfterValidator
 
+
 def name_must_contain_space(v: str) -> str:
     if " " not in v:
         raise ValueError("Name must contain a space.")
     return v.lower()
 
+
 class UserDetail(BaseModel):
     age: int
     name: Annotated[str, AfterValidator(name_must_contain_space)]
+
 
 try:
     person = UserDetail(age=29, name="Jason")
 except ValidationError as e:
     print(e)
+    """
+    1 validation error for UserDetail
+    name
+      Value error, Name must contain a space. [type=value_error, input_value='Jason', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.6/v/value_error
+    """
 ```
 
 #### Output for Code-Based Validation
@@ -66,8 +75,11 @@ class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
         str,
-        BeforeValidator(llm_validator("don't say objectionable things", openai_client=client))
+        BeforeValidator(
+            llm_validator("don't say objectionable things", openai_client=client)
+        ),
     ]
+
 
 try:
     qa = QuestionAnswer(
@@ -76,6 +88,12 @@ try:
     )
 except ValidationError as e:
     print(e)
+    """
+    1 validation error for QuestionAnswer
+    answer
+      Assertion failed, The statement promotes objectionable behavior. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
+    """
 ```
 
 #### Output for LLM-Based Validation
@@ -106,6 +124,7 @@ from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
 client = instructor.patch(OpenAI())
+
 
 class UserDetails(BaseModel):
     name: str

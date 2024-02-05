@@ -35,11 +35,8 @@ In order to do this we'll do a couple of things:
 If you want to learn more about how to do bad computations, check out our post on AsyncIO [here](../blog/posts/learn-async.md).
 
 ```python
-from typing import List
-from pydantic import BaseModel, ValidationInfo, model_validator
 import openai
 import instructor
-import asyncio
 
 client = instructor.patch(
     openai.AsyncOpenAI(),
@@ -119,20 +116,21 @@ async def tag_single_request(text: str, tags: List[Tag]) -> Tag:
                 "role": "system",
                 "content": "You are a world-class text tagging system.",
             },
-            {
-                "role": "user",
-                "content": f"Describe the following text: `{text}`"},
+            {"role": "user", "content": f"Describe the following text: `{text}`"},
             {
                 "role": "user",
                 "content": f"Here are the allowed tags: {allowed_tags_str}",
             },
         ],
-        response_model=Tag, # Minimizes the hallucination of tags that are not in the allowed tags.
+        response_model=Tag,  # Minimizes the hallucination of tags that are not in the allowed tags.
         validation_context={"tags": tags},
     )
 
+
 async def tag_request(request: TagRequest) -> TagResponse:
-    predictions = await asyncio.gather(*[tag_single_request(text, request.tags) for text in request.texts])
+    predictions = await asyncio.gather(
+        *[tag_single_request(text, request.tags) for text in request.texts]
+    )
     return TagResponse(
         texts=request.texts,
         predictions=predictions,
@@ -209,6 +207,7 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
+
 @app.post("/tag", response_model=TagResponse)
 async def tag(request: TagRequest) -> TagResponse:
     return await tag_request(request)
@@ -228,7 +227,12 @@ There's a couple things we could do to make this system a little bit more robust
 
 ```python
 class TagWithConfidence(Tag):
-    confidence: float = Field(..., ge=0, le=1, description="The confidence of the prediction, 0 is low, 1 is high")
+    confidence: float = Field(
+        ...,
+        ge=0,
+        le=1,
+        description="The confidence of the prediction, 0 is low, 1 is high",
+    )
 ```
 
 2. Use multiclass classification:
@@ -243,9 +247,7 @@ await client.chat.completions.create(
             "role": "system",
             "content": "You are a world-class text tagging system.",
         },
-        {
-            "role": "user",
-            "content": f"Describe the following text: `{text}`"},
+        {"role": "user", "content": f"Describe the following text: `{text}`"},
         {
             "role": "user",
             "content": f"Here are the allowed tags: {allowed_tags_str}",
