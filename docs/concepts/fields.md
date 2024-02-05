@@ -100,12 +100,11 @@ These all work as great opportunities to add more information to the JSON schema
 Here's an example:
 
 ```py
-from pydantic import BaseModel, EmailStr, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr
 
 
 class User(BaseModel):
     age: int = Field(description='Age of the user')
-    email: EmailStr = Field(examples=['marcelo@mail.com'])
     name: str = Field(title='Username')
     password: SecretStr = Field(
         json_schema_extra={
@@ -120,17 +119,7 @@ print(User.model_json_schema())
 """
 {
     'properties': {
-        'age': {
-            'description': 'Age of the user',
-            'title': 'Age',
-            'type': 'integer',
-        },
-        'email': {
-            'examples': ['marcelo@mail.com'],
-            'format': 'email',
-            'title': 'Email',
-            'type': 'string',
-        },
+        'age': {'description': 'Age of the user', 'title': 'Age', 'type': 'integer'},
         'name': {'title': 'Username', 'type': 'string'},
         'password': {
             'description': 'Password of the user',
@@ -141,14 +130,14 @@ print(User.model_json_schema())
             'writeOnly': True,
         },
     },
-    'required': ['age', 'email', 'name', 'password'],
+    'required': ['age', 'name', 'password'],
     'title': 'User',
     'type': 'object',
 }
 """
 ```
 
-## General notes on JSON schema generation
+# General notes on JSON schema generation
 
 - The JSON schema for Optional fields indicates that the value null is allowed.
 - The Decimal type is exposed in JSON schema (and serialized) as a string.

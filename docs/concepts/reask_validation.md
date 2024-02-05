@@ -111,6 +111,7 @@ answer
 Validators are a great tool for ensuring some property of the outputs. When you use the `patch()` method with the `openai` client, you can use the `max_retries` parameter to set the number of times you can reask the model to correct the output.
 
 It is a great layer of defense against bad outputs of two forms:
+
 1. Pydantic Validation Errors (code or llm based)
 2. JSON Decoding Errors (when the model returns a bad response)
 
@@ -118,12 +119,13 @@ It is a great layer of defense against bad outputs of two forms:
 
 Notice that the field validator wants the name in uppercase, but the user input is lowercase. The validator will raise a `ValueError` if the name is not in uppercase.
 
-```python hl_lines="11-16"
+```python hl_lines="12-17"
+import openai
 import instructor
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
-client = instructor.patch(OpenAI())
+client = instructor.patch(openai.OpenAI())
 
 
 class UserDetails(BaseModel):
@@ -142,7 +144,19 @@ class UserDetails(BaseModel):
 
 Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
 
-```python hl_lines="4 10"
+```python
+import instructor
+import openai
+from pydantic import BaseModel
+
+client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+
+class UserDetails(BaseModel):
+    name: str
+    age: int
+
+
 model = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetails,
@@ -152,7 +166,13 @@ model = client.chat.completions.create(
     ],
 )
 
-assert model.name == "JASON"
+print(model.model_dump_json(indent=2))
+"""
+{
+  "name": "jason",
+  "age": 25
+}
+"""
 ```
 
 ### What happens behind the scenes?
@@ -160,9 +180,12 @@ assert model.name == "JASON"
 Behind the scenes, the `instructor.patch()` method adds a `max_retries` parameter to the `openai.ChatCompletion.create()` method. The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
 
 ```python
+from pydantic import ValidationError
+
+
 try:
     ...
-except (ValidationError, JSONDecodeError) as e:
+except ValidationError as e:
     kwargs["messages"].append(response.choices[0].message)
     kwargs["messages"].append(
         {
@@ -175,6 +198,7 @@ except (ValidationError, JSONDecodeError) as e:
 ## Advanced Validation Techniques
 
 The docs are currently incomplete, but we have a few advanced validation techniques that we're working on documenting better such as model level validation, and using a validation context. Check out our example on [verifying citations](../examples/exact_citations.md) which covers:
+
 1. Validate the entire object with all attributes rather than one attribute at a time
 2. Using some 'context' to validate the object: In this case, we use the `context` to check if the citation existed in the original text.
 

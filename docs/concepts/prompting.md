@@ -37,6 +37,7 @@ Use Python's Optional type and set a default value to prevent undesired defaults
 
 ```python hl_lines="6"
 from typing import Optional
+from pydantic import BaseModel, Field
 
 
 class UserDetail(BaseModel):
@@ -50,6 +51,10 @@ class UserDetail(BaseModel):
 You can create a wrapper class to hold either the result of an operation or an error message. This allows you to remain within a function call even if an error occurs, facilitating better error handling without breaking the code flow.
 
 ```python
+from pydantic import BaseModel, Field
+from typing import Optional
+
+
 class UserDetail(BaseModel):
     age: int
     name: str
@@ -73,6 +78,13 @@ You can further simplify this using instructor to create the `Maybe` pattern dyn
 
 ```python
 import instructor
+from pydantic import BaseModel
+
+
+class UserDetail(BaseModel):
+    age: int
+    name: str
+
 
 MaybeUser = instructor.Maybe(UserDetail)
 ```
@@ -85,6 +97,7 @@ To prevent data misalignment, use Enums for standardized fields. Always include 
 
 ```python hl_lines="7 12"
 from enum import Enum, auto
+from pydantic import BaseModel, Field
 
 
 class Role(Enum):
@@ -105,6 +118,10 @@ class UserDetail(BaseModel):
 If you're having a hard time with `Enum` and alternative is to use `Literal`
 
 ```python hl_lines="4"
+from typing import Literal
+from pydantic import BaseModel
+
+
 class UserDetail(BaseModel):
     age: int
     name: str
@@ -118,6 +135,9 @@ If you'd like to improve performance more you can reiterate the requirements in 
 For complex attributes, it helps to reiterate the instructions in the field's description.
 
 ```python hl_lines="5 11"
+from pydantic import BaseModel, Field
+
+
 class Role(BaseModel):
     """
     Extract the role based on the following rules ...
@@ -142,6 +162,7 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 
 ```python hl_lines="10"
 from typing import List
+from pydantic import BaseModel, Field
 
 
 class Property(BaseModel):
@@ -162,6 +183,10 @@ class UserDetail(BaseModel):
 When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage the length. You can use prompting and enumeration to limit the list length, ensuring a manageable set of properties.
 
 ```python hl_lines="2 9"
+from typing import List
+from pydantic import BaseModel, Field
+
+
 class Property(BaseModel):
     index: str = Field(..., description="Monotonically increasing ID")
     key: str
@@ -182,6 +207,10 @@ class UserDetail(BaseModel):
 For simple types, tuples can be a more compact alternative to custom classes, especially when the properties don't require additional descriptions.
 
 ```python hl_lines="4"
+from typing import List, Tuple
+from pydantic import BaseModel, Field
+
+
 class UserDetail(BaseModel):
     age: int
     name: str
@@ -196,6 +225,16 @@ class UserDetail(BaseModel):
 For multiple users, aim to use consistent key names when extracting properties.
 
 ```python
+from typing import List
+from pydantic import BaseModel
+
+
+class UserDetail(BaseModel):
+    id: int
+    age: int
+    name: str
+
+
 class UserDetails(BaseModel):
     """
     Extract information for multiple users.
@@ -212,6 +251,10 @@ This refined guide should offer a cleaner and more organized approach to structu
 In cases where relationships exist between entities, it's vital to define them explicitly in the model. The following example demonstrates how to define relationships between users by incorporating an id and a friends field:
 
 ```python hl_lines="2 5 8"
+from typing import List
+from pydantic import BaseModel, Field
+
+
 class UserDetail(BaseModel):
     id: int = Field(..., description="Unique identifier for each user.")
     age: int
@@ -234,6 +277,9 @@ class UserRelationships(BaseModel):
 You can reuse the same component for different contexts within a model. In this example, the TimeRange component is used for both work_time and leisure_time.
 
 ```python hl_lines="9 10"
+from pydantic import BaseModel, Field
+
+
 class TimeRange(BaseModel):
     start_time: int = Field(..., description="The start time in hours.")
     end_time: int = Field(..., description="The end time in hours.")
@@ -254,6 +300,9 @@ class UserDetail(BaseModel):
 Sometimes, a component like TimeRange may require some context or additional logic to be used effectively. Employing a "chain of thought" field within the component can help in understanding or optimizing the time range allocations.
 
 ```python hl_lines="2"
+from pydantic import BaseModel, Field
+
+
 class TimeRange(BaseModel):
     chain_of_thought: str = Field(
         ..., description="Step by step reasoning to get the correct time range"

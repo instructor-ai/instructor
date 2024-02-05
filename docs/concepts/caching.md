@@ -5,12 +5,13 @@ If you want to learn more about concepts in caching and how to use them in your 
 **When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application where we don't need to persist the cache between sessions.
 
 ```python
+import time
 import functools
+import openai
 import instructor
+from pydantic import BaseModel
 
-from openai import OpenAI
-
-client = instructor.patch(OpenAI())
+client = instructor.patch(openai.OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -27,32 +28,27 @@ def extract(data) -> UserDetail:
             {"role": "user", "content": data},
         ],
     )
+
+
+start = time.perf_counter()  # (1)
+model = extract("Extract jason is 25 years old")
+print(f"Time taken: {time.perf_counter() - start}")
+#> Time taken: 0.6282629589550197
+
+start = time.perf_counter()
+model = extract("Extract jason is 25 years old")  # (2)
+print(f"Time taken: {time.perf_counter() - start}")
+#> Time taken: 1.9171275198459625e-06
 ```
+
+1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
+2. The second time we call `extract`, the result is returned from the cache, and the function is not called.
 
 !!! warning "Changing the Model does not Invalidate the Cache"
 
     Note that changing the model does not invalidate the cache. This is because the cache key is based on the function's name and arguments, not the model. This means that if we change the model, the cache will still return the old result.
 
 Now we can call `extract` multiple times with the same argument, and the result will be cached in memory for faster access.
-
-```python hl_lines="4 8 12"
-import time
-
-start = time.perf_counter() # (1)
-model = extract("Extract jason is 25 years old")
-print(f"Time taken: {time.perf_counter() - start}")
-
-start = time.perf_counter()
-model = extract("Extract jason is 25 years old") # (2)
-print(f"Time taken: {time.perf_counter() - start}")
-
->>> Time taken: 0.9267581660533324
->>> Time taken: 1.2080417945981026e-06 # (3)
-```
-
-1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
-2. The second time we call `extract`, the result is returned from the cache, and the function is not called.
-3. The second call to `extract` is much faster because the result is returned from the cache!
 
 **Benefits**: Easy to implement, provides fast access due to in-memory storage, and requires no additional libraries.
 
@@ -63,20 +59,27 @@ print(f"Time taken: {time.perf_counter() - start}")
     ```python hl_lines="3-5 9"
     def decorator(func):
         def wrapper(*args, **kwargs):
-            print("Do something before") # (1)
+            print("Do something before")  # (1)
+            #> Do something before
             result = func(*args, **kwargs)
-            print("Do something after") # (2)
+            print("Do something after")  # (2)
+            #> Do something after
             return result
+
         return wrapper
+
 
     @decorator
     def say_hello():
+        #> Hello!
         print("Hello!")
+        #> Hello!
+
 
     say_hello()
-    >>> "Do something before"
-    >>> "Hello!"
-    >>> "Do something after"
+    #> "Do something before"
+    #> "Hello!"
+    #> "Do something after"
     ```
 
     1. The code is executed before the function is called

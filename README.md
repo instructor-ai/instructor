@@ -79,10 +79,11 @@ For async clients you must use `apatch` vs. `patch`, as shown:
 
 ```py
 import instructor
-from openai import AsyncOpenAI
+import asyncio
+import openai
 from pydantic import BaseModel
 
-aclient = instructor.apatch(AsyncOpenAI())
+aclient = instructor.apatch(openai.AsyncOpenAI())
 
 
 class UserExtract(BaseModel):
@@ -90,7 +91,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-model = await aclient.chat.completions.create(
+task = aclient.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserExtract,
     messages=[
@@ -98,7 +99,15 @@ model = await aclient.chat.completions.create(
     ],
 )
 
-assert isinstance(model, UserExtract)
+
+response = asyncio.run(task)
+print(response.model_dump_json(indent=2))
+"""
+{
+  "name": "Jason",
+  "age": 25
+}
+"""
 ```
 
 ### Step 1: Patch the client
@@ -132,8 +141,19 @@ class UserDetail(BaseModel):
 Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The `response_model` parameter specifies the Pydantic model to use for extraction. It is helpful to annotate the variable with the type of the response model which will help your IDE provide autocomplete and spell check.
 
 ```python
+import instructor
+import openai
+from pydantic import BaseModel
 
-user: UserDetail = client.chat.completions.create(
+client = instructor.patch(openai.OpenAI())
+
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+
+user = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
@@ -141,8 +161,16 @@ user: UserDetail = client.chat.completions.create(
     ],
 )
 
+assert isinstance(user, UserDetail)
 assert user.name == "Jason"
 assert user.age == 25
+print(user.model_dump_json(indent=2))
+"""
+{
+  "name": "Jason",
+  "age": 25
+}
+"""
 ```
 
 ## Pydantic Validation

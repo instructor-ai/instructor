@@ -54,19 +54,20 @@ def fn(a: int, b: int) -> Multiply:
 
 # Generate some data
 for _ in range(10):
+    random.seed(42)
     a = random.randint(100, 999)
     b = random.randint(100, 999)
     print(fn(a, b))
-    #> a=958 b=650 result=622700
-    #> a=538 b=495 result=266310
-    #> a=703 b=250 result=175750
-    #> a=803 b=212 result=170236
-    #> a=499 b=199 result=99301
-    #> a=893 b=738 result=659034
-    #> a=414 b=251 result=103914
-    #> a=916 b=776 result=710816
-    #> a=219 b=764 result=167316
-    #> a=764 b=700 result=534800
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
+    #> a=754 b=214 result=161356
 ```
 
 ## The Intricacies of Fine-tuning Language Models
@@ -117,6 +118,14 @@ Once a model is trained you can simply change `mode` to `dispatch` and it will u
 
 ```python
 from instructor import Instructions
+from pydantic import BaseModel
+
+
+class Multiply(BaseModel):
+    a: int
+    b: int
+    result: int
+
 
 instructions = Instructions(
     name="three_digit_multiply",

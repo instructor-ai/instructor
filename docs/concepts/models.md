@@ -2,7 +2,8 @@
 
 Defining LLM output schemas in Pydantic is done via `pydantic.BaseModel`. To learn more about models in Pydantic, check out their [documentation](https://docs.pydantic.dev/latest/concepts/models/).
 
-After defining a Pydantic model, we can use it as the `response_model` in your client `create` calls to OpenAI or any other supported model. The job of the `response_model` parameter is to: 
+After defining a Pydantic model, we can use it as the `response_model` in your client `create` calls to OpenAI or any other supported model. The job of the `response_model` parameter is to:
+
 - Define the schema and prompts for the language model
 - Validate the response from the API
 - Return a Pydantic model instance.
@@ -32,6 +33,10 @@ Here all docstrings, types, and field annotations will be used to generate the p
 If we use `Optional` and `default`, they will be considered not required when sent to the language model
 
 ```python
+from pydantic import BaseModel, Field
+from typing import Optional
+
+
 class User(BaseModel):
     name: str = Field(description="The name of the user.")
     age: int = Field(description="The age of the user.")
@@ -77,6 +82,9 @@ print(BarModel.model_fields.keys())
     We can then use this information to create the model.
 
     ```python
+    from pydantic import BaseModel, create_model
+    from typing import List
+
     types = {
         'string': str,
         'integer': int,
@@ -85,42 +93,41 @@ print(BarModel.model_fields.keys())
         'List[str]': List[str],
     }
 
+    # Mocked cursor.fetchall()
+    cursor = [
+        ('name', 'string', 'The name of the user.'),
+        ('age', 'integer', 'The age of the user.'),
+        ('email', 'string', 'The email of the user.'),
+    ]
+
     BarModel = create_model(
         'User',
         **{
             property_name: (types[property_type], description)
-            for property_name, property_type, description in cursor.fetchall()
+            for property_name, property_type, description in cursor
         },
         __base__=BaseModel,
     )
+
+    print(BarModel.model_json_schema())
+    """
+    {
+        'properties': {
+            'name': {'default': 'The name of the user.', 'title': 'Name', 'type': 'string'},
+            'age': {'default': 'The age of the user.', 'title': 'Age', 'type': 'integer'},
+            'email': {
+                'default': 'The email of the user.',
+                'title': 'Email',
+                'type': 'string',
+            },
+        },
+        'title': 'User',
+        'type': 'object',
+    }
+    """
     ```
 
     This would be useful when different users have different descriptions for the same model. We can use the same model but have different prompts for each user.
-
-## Structural Pattern Matching
-
-Pydantic supports structural pattern matching for models, as introduced by [PEP 636](https://peps.python.org/pep-0636/) in Python 3.10.
-
-```python
-from pydantic import BaseModel
-
-
-class Pet(BaseModel):
-    name: str
-    species: str
-
-
-a = Pet(name='Bones', species='dog')
-
-match a:
-    # match `species` to 'dog', declare and initialize `dog_name`
-    case Pet(species='dog', name=dog_name):
-        print(f'{dog_name} is a dog')
-        #> Bones is a dog
-    # default case
-    case _:
-        print('No dog matched')
-```
 
 ## Adding Behavior
 
@@ -142,11 +149,15 @@ class SearchQuery(BaseModel):
     query_type: Literal["web", "image", "video"]
 
     def execute(self):
-        # do some logic here
-        return results
+        print(f"Searching for {self.query} of type {self.query_type}")
+        #> Searching for cat of type image
 
 
-query = client.chat.completions.create(..., response_model=SearchQuery)
+query = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": "Search for a picture of a cat"}],
+    response_model=SearchQuery,
+)
 
 results = query.execute()
 ```

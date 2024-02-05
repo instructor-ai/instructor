@@ -76,16 +76,16 @@ Now we can call `extract` multiple times with the same argument, and the result 
 ```python hl_lines="4 8 12"
 import time
 
-start = time.perf_counter() # (1)
+start = time.perf_counter()  # (1)
 model = extract("Extract jason is 25 years old")
 print(f"Time taken: {time.perf_counter() - start}")
 
 start = time.perf_counter()
-model = extract("Extract jason is 25 years old") # (2)
+model = extract("Extract jason is 25 years old")  # (2)
 print(f"Time taken: {time.perf_counter() - start}")
 
->>> Time taken: 0.9267581660533324
->>> Time taken: 1.2080417945981026e-06 # (3)
+#> Time taken: 0.92
+#> Time taken: 1.20e-06 # (3)
 ```
 
 1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
@@ -101,20 +101,23 @@ print(f"Time taken: {time.perf_counter() - start}")
     ```python hl_lines="3-5 9"
     def decorator(func):
         def wrapper(*args, **kwargs):
-            print("Do something before") # (1)
+            print("Do something before")  # (1)
             result = func(*args, **kwargs)
-            print("Do something after") # (2)
+            print("Do something after")  # (2)
             return result
+
         return wrapper
+
 
     @decorator
     def say_hello():
         print("Hello!")
 
+
     say_hello()
-    >>> "Do something before"
-    >>> "Hello!"
-    >>> "Do something after"
+    #> "Do something before"
+    #> "Hello!"
+    #> "Do something after"
     ```
 
     1. The code is executed before the function is called
