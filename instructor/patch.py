@@ -297,7 +297,7 @@ async def retry_async(
             stop=stop_after_attempt(max_retries),
             reraise=True,
         )
-    if not isinstance(max_retries, AsyncRetrying):
+    if not isinstance(max_retries, (AsyncRetrying, Retrying)):
         raise ValueError(
             "max_retries must be an `int` or a `tenacity.AsyncRetrying` object"
         )
@@ -318,9 +318,7 @@ async def retry_async(
                         )
                         total_usage.prompt_tokens += response.usage.prompt_tokens or 0
                         total_usage.total_tokens += response.usage.total_tokens or 0
-                        response.usage = (
-                            total_usage  # Replace each response usage with the total usage
-                        )
+                        response.usage = total_usage  # Replace each response usage with the total usage
                     return await process_response_async(
                         response,
                         response_model=response_model,
@@ -383,8 +381,8 @@ def retry_sync(
             stop=stop_after_attempt(max_retries),
             reraise=True,
         )
-    if not isinstance(max_retries, Retrying):
-        raise ValueError("max_retries must be an int or a `tenacityRetrying` object")
+    if not isinstance(max_retries, (Retrying, AsyncRetrying)):
+        raise ValueError("max_retries must be an int or a `tenacity.Retrying` object")
 
     try:
         for attempt in max_retries:
@@ -401,9 +399,7 @@ def retry_sync(
                         )
                         total_usage.prompt_tokens += response.usage.prompt_tokens or 0
                         total_usage.total_tokens += response.usage.total_tokens or 0
-                        response.usage = (
-                            total_usage  # Replace each response usage with the total usage
-                        )
+                        response.usage = total_usage  # Replace each response usage with the total usage
                     return process_response(
                         response,
                         response_model=response_model,

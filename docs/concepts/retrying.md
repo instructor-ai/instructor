@@ -61,12 +61,7 @@ response = client.chat.completions.create(
     ],
     max_retries=3,  # (1)!
 )
-print(response.model_dump_json(indent=2))
-"""
-{
-  "name": "JASON",
-  "age": 12
-}
+print(response.model_dump_json(indent=2)) # (2)!
 ```
 
 1. We set the maximum number of retries to 3. This means that if the model returns an error, we'll reask the model up to 3 times.
@@ -124,9 +119,9 @@ If you're using asynchronous code, you can use `AsyncRetrying` instead.
 import openai
 import instructor
 from pydantic import BaseModel
-from tenacity import stop_after_attempt, wait_fixed
+from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
 
-client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.patch(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
 
 
 class UserDetail(BaseModel):
@@ -134,7 +129,7 @@ class UserDetail(BaseModel):
     age: int
 
 
-response = await client.chat.completions.create(
+task = client.chat.completions.create(
     model="gpt-4-turbo-preview",
     response_model=UserDetail,
     messages=[
@@ -146,7 +141,16 @@ response = await client.chat.completions.create(
     ),
 )
 
+import asyncio
+
+response = asyncio.run(task)
 print(response.model_dump_json(indent=2))
+"""
+{
+  "name": "jason",
+  "age": 12
+}
+"""
 ```
 
 ## Other Features of Tenacity

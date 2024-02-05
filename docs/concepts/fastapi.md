@@ -35,7 +35,7 @@ class UserDetail(BaseModel):
 
 
 @app.post("/endpoint", response_model=UserDetail)
-def endpoint_function(data: UserData) -> UserDetail:
+async def endpoint_function(data: UserData) -> UserDetail:
     user_detail = await client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,

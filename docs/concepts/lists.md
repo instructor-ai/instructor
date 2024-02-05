@@ -117,11 +117,7 @@ users = client.chat.completions.create(
         },
         {
             "role": "user",
-            "content": (
-                f"Consider the data below:\n{input}"
-                "Correctly segment it into entitites"
-                "Make sure the JSON is correct"
-            ),
+            "content": (f"Extract `Jason is 10 and John is 10`"),
         },
     ],
     max_tokens=1000,
@@ -129,11 +125,8 @@ users = client.chat.completions.create(
 
 for user in users:
     print(user)
-    #> name='Correctly segment it into entitites' age=0
-    #> name='Make sure the JSON is correct' age=0
-
-#> name="Jason" "age"=10
-#> name="John" "age"=10
+    #> name='Jason' age=10
+    #> name='John' age=10
 ```
 
 ## Asynchronous Streaming
@@ -141,15 +134,36 @@ for user in users:
 I also just want to call out in this example that `instructor` also supports asynchronous streaming. This is useful when you want to stream a response model and process the results as they come in, but you'll need to use the `async for` syntax to iterate over the results.
 
 ```python
-model = await client.chat.completions.create(
-    model="gpt-4",
-    response_model=Iterable[UserExtract],
-    max_retries=2,
-    stream=stream,
-    messages=[
-        {"role": "user", "content": "Make two up people"},
-    ],
-)
-async for m in model:
-    assert isinstance(m, UserExtract)
+import instructor
+import openai
+from typing import Iterable
+from pydantic import BaseModel
+
+client = instructor.patch(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+
+async def print_iterable_results():
+    model = await client.chat.completions.create(
+        model="gpt-4",
+        response_model=Iterable[UserExtract],
+        max_retries=2,
+        stream=True,
+        messages=[
+            {"role": "user", "content": "Make two up people"},
+        ],
+    )
+    async for m in model:
+        print(m)
+        #> name='John Doe' age=30
+        #> name='Jane Doe' age=28
+
+
+import asyncio
+
+asyncio.run(print_iterable_results())
 ```

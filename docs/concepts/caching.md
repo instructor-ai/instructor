@@ -9,6 +9,7 @@ import time
 import functools
 import openai
 import instructor
+from pydantic import BaseModel
 
 client = instructor.patch(openai.OpenAI())
 
@@ -32,18 +33,16 @@ def extract(data) -> UserDetail:
 start = time.perf_counter()  # (1)
 model = extract("Extract jason is 25 years old")
 print(f"Time taken: {time.perf_counter() - start}")
+#> Time taken: 0.4529974169563502
 
 start = time.perf_counter()
 model = extract("Extract jason is 25 years old")  # (2)
 print(f"Time taken: {time.perf_counter() - start}")
-
-#> Time taken: 0.9267581660533324
-#> Time taken: 1.2080417945981026e-06 # (3)
+#> Time taken: 7.080379873514175e-07
 ```
 
 1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
 2. The second time we call `extract`, the result is returned from the cache, and the function is not called.
-3. The second call to `extract` is much faster because the result is returned from the cache!
 
 !!! warning "Changing the Model does not Invalidate the Cache"
 

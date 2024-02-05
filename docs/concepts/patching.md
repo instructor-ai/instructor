@@ -85,5 +85,5 @@ response = client.chat.completions.create(
 )
 user = UserExtract.from_response(response, mode=instructor.Mode.JSON)
 print(user)
-#> name='' age=25
+#> name='Jason' age=25
 ```
