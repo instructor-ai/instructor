@@ -53,6 +53,7 @@ from openai import OpenAI
 
 client = instructor.patch(OpenAI(), mode=Mode.MD_JSON)
 ```
+
 ### Schema Integration
 
 In JSON Mode, the schema is part of the system message:
@@ -60,8 +61,15 @@ In JSON Mode, the schema is part of the system message:
 ```python
 import instructor
 from openai import OpenAI
+from pydantic import BaseModel
 
 client = instructor.patch(OpenAI())
+
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
 
 response = client.chat.completions.create(
     model="gpt-3.5-turbo-1106",
@@ -78,6 +86,5 @@ response = client.chat.completions.create(
     ],
 )
 user = UserExtract.from_response(response, mode=Mode.JSON)
-assert user.name.lower() == "jason"
-assert user.age == 25
+print(user.model_json_schema(indent=2))
 ```

@@ -135,6 +135,9 @@ If you'd like to improve performance more you can reiterate the requirements in 
 For complex attributes, it helps to reiterate the instructions in the field's description.
 
 ```python hl_lines="5 11"
+from pydantic import BaseModel, Field
+
+
 class Role(BaseModel):
     """
     Extract the role based on the following rules ...
@@ -224,6 +227,12 @@ For multiple users, aim to use consistent key names when extracting properties.
 ```python
 from typing import List
 from pydantic import BaseModel
+
+
+class UserDetail(BaseModel):
+    id: int
+    age: int
+    name: str
 
 
 class UserDetails(BaseModel):

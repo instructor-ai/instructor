@@ -25,7 +25,7 @@ user: UserExtract = client.chat.completions.create(
 print(user._raw_response)
 """
 ChatCompletion(
-    id='chatcmpl-8oxPAQg5UutwxySjhkl1dLKFdyLVn',
+    id='chatcmpl-8oxRV9dsLMi55VXvTsS61RGo0s8iU',
     choices=[
         Choice(
             finish_reason='stop',
@@ -35,18 +35,18 @@ ChatCompletion(
                 content=None,
                 role='assistant',
                 function_call=FunctionCall(
-                    arguments='{\n  "name": "Jason",\n  "age": 25\n}',
+                    arguments='{\n  "name": "jason",\n  "age": 25\n}',
                     name='UserExtract',
                 ),
                 tool_calls=None,
             ),
         )
     ],
-    created=1707155444,
+    created=1707155589,
     model='gpt-3.5-turbo-0613',
     object='chat.completion',
     system_fingerprint=None,
-    usage=CompletionUsage(completion_tokens=16, prompt_tokens=73, total_tokens=89),
+    usage=CompletionUsage(completion_tokens=17, prompt_tokens=73, total_tokens=90),
 )
 """
 ```
@@ -56,32 +56,3 @@ ChatCompletion(
     This is the recommended way to access the tokens usage, since it is a pydantic model you can use any of the pydantic model methods on it. For example, you can access the `total_tokens` by doing `user._raw_response.usage.total_tokens`. Note that this also includes the tokens used during any previous unsuccessful attempts.
 
     In the future, we may add additional hooks to the `raw_response` to make it easier to access the tokens usage.
-
-**Output:**
-
-```json
-{
-  "id": "chatcmpl-8bHUPGZc9vAXBraJlebf8ciz4AMuh",
-  "choices": [
-    {
-      "finish_reason": "stop",
-      "index": 0,
-      "message": {
-        "content": null,
-        "role": "assistant",
-        "function_call": {
-          "arguments": "{\n  \"name\": \"Jason\",\n  \"age\": 25\n}",
-          "name": "UserExtract"
-        },
-        "tool_calls": null
-      },
-      "logprobs": null
-    }
-  ],
-  "created": 1703896057,
-  "model": "gpt-3.5-turbo-0613",
-  "object": "chat.completion",
-  "system_fingerprint": null,
-  "usage": { "completion_tokens": 16, "prompt_tokens": 73, "total_tokens": 89 }
-}
-```
