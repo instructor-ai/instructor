@@ -318,9 +318,7 @@ async def retry_async(
                         )
                         total_usage.prompt_tokens += response.usage.prompt_tokens or 0
                         total_usage.total_tokens += response.usage.total_tokens or 0
-                        response.usage = (
-                            total_usage  # Replace each response usage with the total usage
-                        )
+                        response.usage = total_usage  # Replace each response usage with the total usage
                     return await process_response_async(
                         response,
                         response_model=response_model,
@@ -401,9 +399,7 @@ def retry_sync(
                         )
                         total_usage.prompt_tokens += response.usage.prompt_tokens or 0
                         total_usage.total_tokens += response.usage.total_tokens or 0
-                        response.usage = (
-                            total_usage  # Replace each response usage with the total usage
-                        )
+                        response.usage = total_usage  # Replace each response usage with the total usage
                     return process_response(
                         response,
                         response_model=response_model,

@@ -114,7 +114,7 @@ class JSONParser:
                 s = s.strip()
         return acc, s
 
-    def parse_string(self, s, e):
+    def parse_string(self, s, e):  # noqa: ARG002
         end = s.find('"', 1)
         while end != -1 and s[end - 1] == "\\":  # Handle escaped quotes
             end = s.find('"', end + 1)

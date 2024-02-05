@@ -30,7 +30,7 @@ PartialUser = instructor.Partial[User]
 
 
 def benchmark_raw_stream(model="gpt-4"):
-    content = f"""Respond only in JSON that would validate to this schema and include nothing extra. 
+    content = f"""Respond only in JSON that would validate to this schema and include nothing extra.
     Otherwise something bad will happen:\n {User.model_json_schema()}"""
 
     start_time = time.time()
@@ -71,7 +71,7 @@ def benchmark_partial_streaming(model="gpt-4"):
         stream=True,
     )
 
-    for chunk in extraction_stream:
+    for chunk in extraction_stream:  # noqa: B007
         pass
     end_time = time.time() - start_time
 
