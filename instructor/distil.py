@@ -5,7 +5,7 @@ import logging
 import inspect
 import functools
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar
 from pydantic import BaseModel, validate_call
 
 from openai import OpenAI
