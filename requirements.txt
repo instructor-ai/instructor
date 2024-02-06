@@ -8,3 +8,4 @@ pre-commit==3.5.0
 mypy==1.7.1
 typer
 mktestdocs
+pytest-examples
