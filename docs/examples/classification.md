@@ -76,6 +76,9 @@ assert prediction.class_label == Labels.SPAM
 For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.
 
 ```python
+from typing import List
+import enum
+
 # Define Enum class for multiple labels
 class MultiLabels(str, enum.Enum):
     TECH_ISSUE = "tech_issue"

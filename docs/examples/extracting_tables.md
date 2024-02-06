@@ -11,7 +11,8 @@ First, we define a custom type, `MarkdownDataFrame`, to handle pandas DataFrames
 ```python
 from io import StringIO
 from typing import Annotated, Any
-from pydantic import BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
+from pydantic import BaseModel, Field, BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
+from typing import Iterable
 import pandas as pd
 
 

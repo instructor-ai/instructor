@@ -161,7 +161,6 @@ nav:
     - Expanding Search Queries (RAG): 'examples/search.md'
     - Query Planning (RAG): 'examples/planning-tasks.md'
     - Extracting Related Action Items: 'examples/action_items.md'
-    - Multi-File Code Generation: 'examples/gpt-engineer.md'
     - PII Data Sanitization: 'examples/pii.md'
     - Enabling Open Source Models: 'examples/open_source.md'
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'

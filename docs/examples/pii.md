@@ -52,7 +52,7 @@ EXAMPLE_DOCUMENT = """
 # (The content here)
 """
 
-pii_data: PIIDataExtraction = client.chat.completions.create(
+pii_data = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=PIIDataExtraction,
     messages=[
@@ -68,7 +68,7 @@ pii_data: PIIDataExtraction = client.chat.completions.create(
 )  # type: ignore
 
 print("Extracted PII Data:")
-print(pii_data.json(indent=2))
+print(pii_data.model_dump_json())
 ```
 
 ### Output of Extracted PII Data

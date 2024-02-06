@@ -13,6 +13,9 @@ For the `Product` model, we define a class that represents a product extracted f
 Note that it is easy to add [Validators](https://jxnl.github.io/instructor/concepts/reask_validation/) and other Pydantic features to the model to ensure that the data is valid and consistent.
 
 ```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
 class Product(BaseModel):
     """
     Represents a product extracted from an image using AI.

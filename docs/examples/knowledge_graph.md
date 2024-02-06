@@ -80,14 +80,8 @@ def visualize_knowledge_graph(kg: KnowledgeGraph):
 
     # Render the graph
     dot.render("knowledge_graph.gv", view=True)
-```
 
-## Putting It All Together
-
-Execute the code to generate and visualize a knowledge graph for understanding quantum mechanics.
-
-```python
-graph: KnowledgeGraph = generate_graph("Teach me about quantum mechanics")
+graph = generate_graph("Teach me about quantum mechanics")
 visualize_knowledge_graph(graph)
 ```
 

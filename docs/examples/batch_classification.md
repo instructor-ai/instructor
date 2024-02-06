@@ -53,6 +53,9 @@ This is very helpful because once we use something like FastAPI to create endpoi
 4. Schema and Response Model for the language model.
 
 ```python
+from typing import List
+from pydantic import BaseModel, ValidationInfo, model_validator
+
 class Tag(BaseModel):
     id: int
     name: str

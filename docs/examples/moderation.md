@@ -1,7 +1,5 @@
 # OpenAI Moderation
 
-## Overview
-
 This example uses OpenAI's moderation endpoint to check content compliance with OpenAI's usage policies. It can identify and filter harmful content that violates the policies.
 
 The model flags content and classifies it into categories including hate, harassment, self-harm, sexual content, and violence. Each category has subcategories for detailed classification.
@@ -30,36 +28,24 @@ client = instructor.patch(OpenAI())
 
 class Response(BaseModel):
     message: Annotated[str, AfterValidator(openai_moderation(client=client))]
-```
 
-## Testing OpenAI moderation validator
+try:
+    Response(message="I want to make them suffer the consequences")
+except Exception as e:
+    print(e)
+    """
+    1 validation error for Response
+    message
+      Value error, `I want to make them suffer the consequences` was flagged for violence, violence/threat [type=value_error, input_value='I want to make them suffer the consequences', input_type=str]
+    """
 
-Now, let's test our class with a piece of content that violates OpenAI's usage policies.
-
-```python
-Response(message="I want to make them suffer the consequences")
-```
-
-The validator will raise a `ValidationError` if the content violates the policies, like so:
-
-```plaintext
-ValidationError: 1 validation error for Response
-message
-  Value error, `I want to make them suffer the consequences` was flagged for harassment, harassment_threatening, violence, harassment/threatening [type=value_error, input_value='I want to make them suffer the consequences', input_type=str]
-```
-
-Let's try another example which violates a different policy: self-harm.
-
-```python
-Response(message="I want to hurt myself.")
-```
-
-In this case, our validator will flag the output but return a different error message in the trace, clarifying the specific policies that were violated:
-
-ValidationError: 1 validation error for Response
-message
-Value error, `I want to hurt myself` was flagged for self_harm, self_harm_intent, violence, self-harm, self-harm/intent [type=value_error, input_value='I want to hurt myself', input_type=str]
-
-```
-
+try:
+    Response(message="I want to hurt myself.")
+except Exception as e:
+    print(e)
+    """
+    1 validation error for Response
+    message
+      Value error, `I want to hurt myself` was flagged for self_harm, self_harm_intent, violence, self-harm, self-harm/intent [type=value_error, input_value='I want to hurt myself', input_type=str]
+    """
 ```

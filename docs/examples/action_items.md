@@ -39,12 +39,6 @@ class Ticket(BaseModel):
     assignees: List[str]
     subtasks: Optional[List[Subtask]]
     dependencies: Optional[List[int]]
-
-
-class ActionItems(BaseModel):
-    """Correctly resolved set of action items from the given transcript"""
-
-    items: List[Ticket]
 ```
 
 ## Extracting Action Items
@@ -54,16 +48,17 @@ To extract action items from a meeting transcript, we use the **`generate`** fun
 ```python
 import instructor
 from openai import OpenAI
+from typing import Iterable
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.patch(OpenAI())
 
 
-def generate(data: str) -> ActionItems:
+def generate(data: str) -> Iterable[Ticket]:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=ActionItems,
+        model="gpt-4",
+        response_model=Iterable[Ticket],
         messages=[
             {
                 "role": "system",
@@ -74,7 +69,7 @@ def generate(data: str) -> ActionItems:
                 "content": f"Create the action items for the following transcript: {data}",
             },
         ],
-    )  # type: ignore
+    )
 ```
 
 ## Evaluation and Testing
@@ -117,46 +112,44 @@ In order to quickly visualize the data we used code interpreter to create a grap
 ![action items](action_items.png)
 
 ```json
-{
-  "items": [
-    {
-      "id": 1,
-      "name": "Improve Authentication System",
-      "description": "Revamp the front-end and optimize the back-end of the authentication system",
-      "priority": "High",
-      "assignees": ["Bob", "Carol"],
-      "subtasks": [
-        {
-          "id": 2,
-          "name": "Front-end Revamp"
-        },
-        {
-          "id": 3,
-          "name": "Back-end Optimization"
-        }
-      ],
-      "dependencies": []
-    },
-    {
-      "id": 4,
-      "name": "Integrate Authentication System with Billing System",
-      "description": "Integrate the improved authentication system with the new billing system",
-      "priority": "Medium",
-      "assignees": ["Bob"],
-      "subtasks": [],
-      "dependencies": [1]
-    },
-    {
-      "id": 5,
-      "name": "Update User Documentation",
-      "description": "Update the user documentation to reflect the changes in the authentication system",
-      "priority": "Low",
-      "assignees": ["Carol"],
-      "subtasks": [],
-      "dependencies": [2]
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "name": "Improve Authentication System",
+    "description": "Revamp the front-end and optimize the back-end of the authentication system",
+    "priority": "High",
+    "assignees": ["Bob", "Carol"],
+    "subtasks": [
+      {
+        "id": 2,
+        "name": "Front-end Revamp"
+      },
+      {
+        "id": 3,
+        "name": "Back-end Optimization"
+      }
+    ],
+    "dependencies": []
+  },
+  {
+    "id": 4,
+    "name": "Integrate Authentication System with Billing System",
+    "description": "Integrate the improved authentication system with the new billing system",
+    "priority": "Medium",
+    "assignees": ["Bob"],
+    "subtasks": [],
+    "dependencies": [1]
+  },
+  {
+    "id": 5,
+    "name": "Update User Documentation",
+    "description": "Update the user documentation to reflect the changes in the authentication system",
+    "priority": "Low",
+    "assignees": ["Carol"],
+    "subtasks": [],
+    "dependencies": [2]
+  }
+]
 ```
 
 In this example, the **`generate`** function successfully identifies and segments the action items, assigning them priorities, assignees, subtasks, and dependencies as discussed in the meeting.
