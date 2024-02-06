@@ -1,4 +1,8 @@
+> Please use conventional commits to describe your changes. For example, `feat: add new feature` or `fix: fix a bug`. If you are unsure, leave the title as `...` and AI will handle it.
+
 ## Describe your changes
+
+...
 
 ## Issue ticket number and link
 
