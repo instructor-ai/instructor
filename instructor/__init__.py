@@ -8,7 +8,7 @@ from .dsl import (
     openai_moderation,
 )
 from .function_calls import OpenAISchema, openai_schema, Mode
-from .patch import apatch, patch
+from .patch import apatch, patch, handle_parallel_model, handle_response_model
 
 __all__ = [
     "OpenAISchema",
@@ -24,5 +24,6 @@ __all__ = [
     "openai_moderation",
     "FinetuneFormat",
     "Instructions",
-    "unpatch",
+    "handle_parallel_model",
+    "handle_response_model",
 ]
