@@ -120,7 +120,7 @@ print(response.model_dump_json(indent=2))
     print(user._raw_response.model_dump_json(indent=2))
     """
     {
-      "id": "chatcmpl-8p19pXZ5BIqGtaPhVLo184UuQNH3v",
+      "id": "chatcmpl-8pOAKwq8OXZVvOCMw4dv713oKplLF",
       "choices": [
         {
           "finish_reason": "stop",
@@ -137,7 +137,7 @@ print(response.model_dump_json(indent=2))
           }
         }
       ],
-      "created": 1707169869,
+      "created": 1707258312,
       "model": "gpt-3.5-turbo-0613",
       "object": "chat.completion",
       "system_fingerprint": null,

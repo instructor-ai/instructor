@@ -88,7 +88,7 @@ print(user2.model_dump_json(indent=2))
 """
 {
   "result": null,
-  "error": true,
+  "error": false,
   "message": "Unknown user"
 }
 """

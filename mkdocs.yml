@@ -132,6 +132,7 @@ nav:
     - Philosophy: 'concepts/philosophy.md'
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
+    - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
     - Retrying: 'concepts/retrying.md'

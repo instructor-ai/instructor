@@ -216,6 +216,30 @@ async def print_partial_results():
           "age": 12
         }
         """
+        """
+        {
+          "name": "",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": 12
+        }
+        """
 
 
 import asyncio
