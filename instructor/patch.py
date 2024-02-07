@@ -213,8 +213,7 @@ def process_response(
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
-    if isinstance(response_model, IterableBase):
-        #! If the response model is a multitask, return the tasks
+    if isinstance(model, IterableBase):
         return [task for task in model.tasks]
 
     if isinstance(response_model, ParallelBase):
@@ -267,7 +266,7 @@ async def process_response_async(
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
-    if isinstance(response_model, IterableBase):
+    if isinstance(model, IterableBase):
         #! If the response model is a multitask, return the tasks
         return [task for task in model.tasks]
 
