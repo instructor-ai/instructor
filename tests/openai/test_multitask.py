@@ -71,7 +71,7 @@ async def test_multi_user_tools_mode_async(model, mode, aclient):
         )
 
     resp = []
-    async for user in await stream_extract(input="Jason is 20, Sarah is 30"):
+    for user in await stream_extract(input="Jason is 20, Sarah is 30"):
         resp.append(user)
     print(resp)
     assert len(resp) == 2
