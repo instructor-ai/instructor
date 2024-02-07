@@ -3,6 +3,7 @@ import json
 import logging
 from collections.abc import Iterable
 from functools import wraps
+import pandas as pd
 from tenacity import Retrying, AsyncRetrying, stop_after_attempt, RetryError
 from json import JSONDecodeError
 from typing import (
