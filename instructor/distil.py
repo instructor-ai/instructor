@@ -5,11 +5,14 @@ import logging
 import inspect
 import functools
 
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar
 from pydantic import BaseModel, validate_call
 
 from openai import OpenAI
 from instructor.function_calls import openai_schema
+
+
+T_Retval = TypeVar("T_Retval")
 
 
 class FinetuneFormat(enum.Enum):
@@ -17,7 +20,7 @@ class FinetuneFormat(enum.Enum):
     RAW: str = "raw"
 
 
-def get_signature_from_fn(fn: Callable) -> str:
+def get_signature_from_fn(fn: Callable[..., Any]) -> str:
     """
     Get the function signature as a string.
 
@@ -43,7 +46,7 @@ def get_signature_from_fn(fn: Callable) -> str:
 
 
 @functools.lru_cache()
-def format_function(func: Callable) -> str:
+def format_function(func: Callable[..., Any]) -> str:
     """
     Format a function as a string with docstring and body.
     """
@@ -79,14 +82,14 @@ def is_return_type_base_model_or_instance(func: Callable[..., Any]) -> bool:
 class Instructions:
     def __init__(
         self,
-        name: str = None,
-        id: str = None,
-        log_handlers: List[logging.Handler] = None,
+        name: Optional[str] = None,
+        id: Optional[str] = None,
+        log_handlers: Optional[List[logging.Handler]] = None,
         finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
         indent: int = 2,
         include_code_body: bool = False,
-        openai_client: OpenAI = None,
-    ):
+        openai_client: Optional[OpenAI] = None,
+    ) -> None:
         """
         Instructions for distillation and dispatch.
 
@@ -111,12 +114,15 @@ class Instructions:
 
     def distil(
         self,
-        *args,
-        name: str = None,
+        *args: Any,
+        name: Optional[str] = None,
         mode: str = "distil",
         model: str = "gpt-3.5-turbo",
-        fine_tune_format: FinetuneFormat = None,
-    ):
+        fine_tune_format: Optional[FinetuneFormat] = None,
+    ) -> Callable[
+        [Callable[..., Any]],
+        Callable[[Callable[..., T_Retval]], Callable[..., T_Retval]],
+    ]:
         """
         Decorator to track the function call and response, supports distillation and dispatch modes.
 
@@ -142,13 +148,16 @@ class Instructions:
         if fine_tune_format is None:
             fine_tune_format = self.finetune_format
 
-        def _wrap_distil(fn):
+        def _wrap_distil(
+            fn: Callable[..., Any],
+        ) -> Callable[[Callable[..., T_Retval]], Callable[..., T_Retval]]:
             msg = f"Return type hint for {fn} must subclass `pydantic.BaseModel'"
             assert is_return_type_base_model_or_instance(fn), msg
             return_base_model = inspect.signature(fn).return_annotation
 
             @functools.wraps(fn)
-            def _dispatch(*args, **kwargs):
+            def _dispatch(*args: Any, **kwargs: Any) -> Callable[..., T_Retval]:
+                name = name if name else fn.__name__
                 openai_kwargs = self.openai_kwargs(
                     name=name,
                     fn=fn,
@@ -161,7 +170,7 @@ class Instructions:
                 )
 
             @functools.wraps(fn)
-            def _distil(*args, **kwargs):
+            def _distil(*args: Any, **kwargs: Any) -> Callable[..., T_Retval]:
                 resp = fn(*args, **kwargs)
                 self.track(
                     fn, args, kwargs, resp, name=name, finetune_format=fine_tune_format
@@ -169,27 +178,23 @@ class Instructions:
 
                 return resp
 
-            if mode == "dispatch":
-                return _dispatch
-
-            if mode == "distil":
-                return _distil
+            return _dispatch if mode == "dispatch" else _distil
 
         if len(args) == 1 and callable(args[0]):
             return _wrap_distil(args[0])
 
         return _wrap_distil
 
-    @validate_call
+    @validate_call  # type: ignore[misc]
     def track(
         self,
         fn: Callable[..., Any],
-        args: tuple,
-        kwargs: dict,
+        args: Tuple[Any, ...],
+        kwargs: Dict[str, Any],
         resp: BaseModel,
         name: Optional[str] = None,
         finetune_format: FinetuneFormat = FinetuneFormat.MESSAGES,
-    ):
+    ) -> None:
         """
         Track the function call and response in a log file, later used for finetuning.
 
@@ -229,7 +234,14 @@ class Instructions:
             )
             self.logger.info(json.dumps(function_body))
 
-    def openai_kwargs(self, name, fn, args, kwargs, base_model):
+    def openai_kwargs(
+        self,
+        name: str,
+        fn: Callable[..., Any],
+        args: Tuple[Any, ...],
+        kwargs: Dict[str, Any],
+        base_model: Type[BaseModel],
+    ) -> Dict[str, Any]:
         if self.include_code_body:
             func_def = format_function(fn)
         else:
