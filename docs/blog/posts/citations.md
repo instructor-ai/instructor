@@ -27,12 +27,13 @@ In this example, we use the `Statements` class to verify if a given substring qu
 ### Code Example:
 
 ```python
-from typing import List, Optional
+from typing import List
 from openai import OpenAI
-from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
+from pydantic import BaseModel, ValidationInfo, field_validator
 import instructor
 
 client = instructor.patch(OpenAI())
+
 
 class Statements(BaseModel):
     body: str
@@ -44,7 +45,7 @@ class Statements(BaseModel):
         context = info.context.get("text_chunks", None)
 
         for text_chunk in context.values():
-            if v in text_chunk: # (1)
+            if v in text_chunk:  # (1)
                 return v
         raise ValueError("Could not find substring_quote `{v}` in contexts")
 

@@ -1,13 +1,5 @@
 name: Test
-
-on:
-  push:
-    branches:
-      - main
-  pull_request_target:
-    branches:
-      - main
-
+on: [push, pull_request]
 
 jobs:
   release:
@@ -15,7 +7,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.10', '3.11']
 
     steps:
       - uses: actions/checkout@v2

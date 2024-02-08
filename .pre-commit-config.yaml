@@ -14,9 +14,9 @@ repos:
         name: Run Type Check (Mypy)
         entry: >
             bash -c 'set -o pipefail;
-            export CUSTOM_PACKAGES="instructor/cli/cli.py instructor/cli/usage.py" &&
+            export CUSTOM_PACKAGES="instructor/_types/_alias.py instructor/cli/cli.py instructor/cli/files.py instructor/cli/usage.py instructor/exceptions.py" &&
             export CUSTOM_FLAGS="--python-version=3.9 --color-output --no-pretty --follow-imports=skip" &&
-            curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/continuous-integration/scripts/devops/continuous-integration/type_mypy.sh |
+            curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/2fd5de1b8103e955cd5f022ab016b72fa901fa8f/scripts/devops/continuous-integration/type_mypy.sh |
             bash'
         language: system
         types: [python]

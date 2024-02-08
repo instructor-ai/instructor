@@ -1,14 +1,12 @@
 # Instructor
 
-_Structured extraction in Python, powered by llms, designed for simplicity, transparency, and control._
+_Structured outputs powered by llms. Designed for simplicity, transparency, and control._
 
 ---
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/CV8sPM5k5Y)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
-[![GitHub issues](https://img.shields.io/github/issues/jxnl/instructor.svg)](https://github.com/jxnl/instructor/issues)
 
 Dive into the world of Python-based structured extraction, by OpenAI's function calling API and Pydantic, the most widely used data validation library for Python. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and steerable.
 
@@ -32,21 +30,30 @@ from pydantic import BaseModel
 # from client.chat.completions.create
 client = instructor.patch(OpenAI())
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
+
 
 user = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
-    ]
+    ],
 )
 
 assert isinstance(user, UserDetail)
 assert user.name == "Jason"
 assert user.age == 25
+print(user.model_dump_json(indent=2))
+"""
+{
+  "name": "Jason",
+  "age": 25
+}
+"""
 ```
 
 **Using async clients**
@@ -54,17 +61,20 @@ assert user.age == 25
 For async clients you must use `apatch` vs `patch` like so:
 
 ```py
+import asyncio
 import instructor
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 aclient = instructor.apatch(AsyncOpenAI())
 
+
 class UserExtract(BaseModel):
     name: str
     age: int
 
-model = await aclient.chat.completions.create(
+
+task = aclient.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=UserExtract,
     messages=[
@@ -72,25 +82,72 @@ model = await aclient.chat.completions.create(
     ],
 )
 
-assert isinstance(model, UserExtract)
+response = asyncio.run(task)
+print(response.model_dump_json(indent=2))
+"""
+{
+  "name": "Jason",
+  "age": 25
+}
+"""
 ```
 
-!!! note "Accessing the original response"
+!!! note "Accessing the original response and usage tokens"
 
     If you want to access anything like usage or other metadata, the original response is available on the `Model._raw_response` attribute.
 
     ```python
-    user: UserDetail = client.chat.completions.create(
+    import openai
+    import instructor
+    from pydantic import BaseModel
+
+    client = instructor.patch(openai.OpenAI())
+
+
+    class UserDetail(BaseModel):
+        name: str
+        age: int
+
+
+    user = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": "Extract Jason is 25 years old"},
-        ]
+        ],
     )
 
-    from openai.types.chat.chat_completion import ChatCompletion
-
-    assert isinstance(user._raw_response, ChatCompletion)
+    print(user._raw_response.model_dump_json(indent=2))
+    """
+    {
+      "id": "chatcmpl-8pOAKwq8OXZVvOCMw4dv713oKplLF",
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "logprobs": null,
+          "message": {
+            "content": null,
+            "role": "assistant",
+            "function_call": {
+              "arguments": "{\n  \"name\": \"Jason\",\n  \"age\": 25\n}",
+              "name": "UserDetail"
+            },
+            "tool_calls": null
+          }
+        }
+      ],
+      "created": 1707258312,
+      "model": "gpt-3.5-turbo-0613",
+      "object": "chat.completion",
+      "system_fingerprint": null,
+      "usage": {
+        "completion_tokens": 16,
+        "prompt_tokens": 72,
+        "total_tokens": 88
+      }
+    }
+    """
     ```
 
 ## Why use Instructor?

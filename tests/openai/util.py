@@ -1,8 +1,7 @@
 import instructor
 
-models = ["gpt-3.5-turbo-1106", "gpt-4-1106-preview"]
+models = ["gpt-4-turbo-preview"]
 modes = [
-    instructor.Mode.FUNCTIONS,
     instructor.Mode.JSON,
     instructor.Mode.TOOLS,
 ]
