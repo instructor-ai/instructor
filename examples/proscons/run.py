@@ -1,46 +1,48 @@
-import instructor
-import openai
-from pydantic import BaseModel
+from openai import OpenAI
+from pydantic import BaseModel, Field
 from typing import List
 
-client = instructor.patch(openai.Client())
+import instructor
 
 
-class Analysis(BaseModel):
-    pros: List[str]
-    cons: List[str]
+class Character(BaseModel):
+    name: str
+    age: int
+    fact: List[str] = Field(..., description="A list of facts about the character")
 
 
-analysis = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=Analysis,
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a perfect entity extraction system",
-        },
-        {
-            "role": "user",
-            "content": "Give me a pro-con analysis of joining South Park Commons. ",
-        },
-    ],
+# enables `response_model` in create call
+client = instructor.patch(
+    OpenAI(
+        base_url="http://localhost:11434/v1",
+        api_key="ollama",  # required, but unused
+    ),
+    mode=instructor.Mode.JSON,
 )
 
-print(analysis.model_dump_json(indent=2))
-"""{
-  "pros": [
-    "Access to a supportive community of like-minded individuals",
-    "Opportunities for collaboration and networking",
-    "Access to shared resources and knowledge",
-    "Exposure to diverse perspectives and ideas",
-    "Potential for personal and professional growth"
-  ],
-  "cons": [
-    "Membership fees and financial commitment",
-    "Limited autonomy and flexibility",
-    "Possible conflicts or disagreements within the community",
-    "Adherence to community rules and guidelines",
-    "Time commitment for participation in community activities"
+resp = client.chat.completions.create(
+    model="llama2",
+    messages=[
+        {
+            "role": "user",
+            "content": "Tell me about the Harry Potter",
+        }
+    ],
+    response_model=Character,
+)
+print(resp.model_dump_json(indent=2))
+""" 
+{
+  "name": "Harry James Potter",
+  "age": 37,
+  "fact": [
+    "He is the chosen one.",
+    "He has a lightning-shaped scar on his forehead.",
+    "He is the son of James and Lily Potter.",
+    "He attended Hogwarts School of Witchcraft and Wizardry.",
+    "He is a skilled wizard and sorcerer.",
+    "He fought against Lord Voldemort and his followers.",
+    "He has a pet owl named Snowy."
   ]
 }
 """

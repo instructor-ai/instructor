@@ -1,8 +1,21 @@
+---
+draft: False
+date: 2024-02-08
+slug: patching
+tags:
+  - patching
+  - open source
+authors:
+  - jxnl
+---
+
 # Structured Outputs with Ollama
 
 Open-source LLMS are gaining popularity, and the release of Ollama's OpenAI compatibility later it has made it possible to obtain structured outputs using JSON schema.
 
 By the end of this blog post, you will learn how to effectively utilize instructor with ollama. But before we proceed, let's first explore the concept of patching.
+
+<!-- more -->
 
 ## Patching
 
