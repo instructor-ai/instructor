@@ -3,7 +3,7 @@ from types import UnionType
 
 from instructor.function_calls import OpenAISchema, Mode, openai_schema
 from collections.abc import Iterable
-
+from openai.types.chat.chat_completion_message import ChatCompletionMessage
 T = TypeVar("T")
 
 
@@ -20,11 +20,12 @@ class ParallelBase:
         mode: Mode,
         validation_context=None,
         strict: bool = None,
-    ) -> Iterable[Union[T]]:
-        #! We expect this from the OpenAISchema class, We should address
-        #! this with a protocol or an abstract class... @jxnlco
+    ) -> Iterable[Union[T, str]]:
         assert mode == Mode.PARALLEL_TOOLS, "Mode must be PARALLEL_TOOLS"
-        for tool_call in response.choices[0].message.tool_calls:
+        message: ChatCompletionMessage = response.choices[0].message
+        if message.content:
+            yield message.content  # Yield the message content as a string
+        for tool_call in message.tool_calls:
             name = tool_call.function.name
             arguments = tool_call.function.arguments
             yield self.registry[name].model_validate_json(
