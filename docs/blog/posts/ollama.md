@@ -1,7 +1,7 @@
 ---
 draft: False
 date: 2024-02-08
-slug: patching
+slug: ollama
 tags:
   - patching
   - open source
