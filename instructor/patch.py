@@ -8,7 +8,6 @@ from json import JSONDecodeError
 from typing import (
     Any,
     Callable,
-    Coroutine,
     Dict,
     Generator,
     get_args,
@@ -276,7 +275,7 @@ async def process_response_async(
 
 
 async def retry_async(  # type: ignore[return]
-    func: Callable[..., Coroutine[Any, Any, ChatCompletion]],
+    func: Callable[..., ChatCompletion],
     response_model: Union[Type[OpenAISchema], ParallelBase],
     validation_context: Optional[Dict[str, Any]],
     args: Tuple[Any, ...],
@@ -540,7 +539,7 @@ def patch(  # type: ignore[misc]
         max_retries: int = 1,
         *args: Any,
         **kwargs: Any,
-    ) -> Union[BaseModel, List[BaseModel]]:
+    ) -> Union[OpenAISchema, List[OpenAISchema], Dict[str, Any], Generator[Any, None, None]]:
         new_response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
@@ -562,7 +561,7 @@ def patch(  # type: ignore[misc]
         max_retries: int = 1,
         *args: Any,
         **kwargs: Any,
-    ) -> Union[BaseModel, List[BaseModel]]:
+    ) -> Union[OpenAISchema, List[OpenAISchema]]:
         new_response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
