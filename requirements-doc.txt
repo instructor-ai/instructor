@@ -3,6 +3,7 @@ pillow
 cairosvg
 mkdocstrings
 mkdocstrings-python
+mkdocs-jupyter
 openai
 pydantic
 pytest>=7.4.0,<8.0.0

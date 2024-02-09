@@ -119,7 +119,6 @@ markdown_extensions:
           case: lower
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.tilde
 nav:
   - Introduction: 
     - Welcome To Instructor: 'index.md'
@@ -167,6 +166,13 @@ nav:
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
     - Ollama: 'examples/ollama.md'
     - SQLModel Integration: 'examples/sqlmodel.md'
+  - Tutorials:
+    - Introduction: 'tutorials/1-introduction.ipynb'
+    - Tips and Tricks: 'tutorials/2-tips.ipynb'
+    - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
+    - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
+    - Validation: 'tutorials/4-validation.ipynb'
+    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
@@ -177,6 +183,9 @@ nav:
     - "blog/index.md"
   
 plugins:
+  - mkdocs-jupyter:
+      ignore_h1_titles: true
+      execute: false
   - social
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
