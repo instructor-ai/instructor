@@ -18,11 +18,8 @@ from typing import (
     Protocol,
     Tuple,
     Type,
-    TypeVar,
     Union,
-    cast,
 )
-from typing_extensions import ParamSpec
 
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import (
