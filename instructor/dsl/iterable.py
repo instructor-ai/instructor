@@ -1,4 +1,4 @@
-from typing import List, Optional, Type, Any
+from typing import Any, AsyncGenerator, Generator, Iterable, List, Optional, Tuple, Type
 
 from pydantic import BaseModel, Field, create_model
 
@@ -6,20 +6,26 @@ from instructor.function_calls import OpenAISchema, Mode
 
 
 class IterableBase:
-    task_type = None  # type: ignore
+    task_type = None  # type: ignore[var-annotated]
 
     @classmethod
-    def from_streaming_response(cls, completion, mode: Mode, **kwargs: Any):  # noqa: ARG003
+    def from_streaming_response(
+        cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
+    ) -> Generator[BaseModel, None, None]:  # noqa: ARG003
         json_chunks = cls.extract_json(completion, mode)
-        yield from cls.tasks_from_chunks(json_chunks)
+        yield from cls.tasks_from_chunks(json_chunks, **kwargs)
 
     @classmethod
-    async def from_streaming_response_async(cls, completion, mode: Mode, **kwargs):
+    async def from_streaming_response_async(
+        cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
+    ) -> AsyncGenerator[BaseModel, None]:
         json_chunks = cls.extract_json_async(completion, mode)
         return cls.tasks_from_chunks_async(json_chunks, **kwargs)
 
     @classmethod
-    def tasks_from_chunks(cls, json_chunks, **kwargs):
+    def tasks_from_chunks(
+        cls, json_chunks: Iterable[str], **kwargs: Any
+    ) -> Generator[BaseModel, None, None]:
         started = False
         potential_object = ""
         for chunk in json_chunks:
@@ -32,11 +38,14 @@ class IterableBase:
 
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                obj = cls.task_type.model_validate_json(task_json, **kwargs)  # type: ignore
+                assert cls.task_type is not None
+                obj = cls.task_type.model_validate_json(task_json, **kwargs)
                 yield obj
 
     @classmethod
-    async def tasks_from_chunks_async(cls, json_chunks, **kwargs):
+    async def tasks_from_chunks_async(
+        cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
+    ) -> AsyncGenerator[BaseModel, None]:
         started = False
         potential_object = ""
         async for chunk in json_chunks:
@@ -49,11 +58,14 @@ class IterableBase:
 
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                obj = cls.task_type.model_validate_json(task_json, **kwargs)  # type: ignore
+                assert cls.task_type is not None
+                obj = cls.task_type.model_validate_json(task_json, **kwargs)
                 yield obj
 
     @staticmethod
-    def extract_json(completion, mode: Mode):
+    def extract_json(
+        completion: Iterable[Any], mode: Mode
+    ) -> Generator[str, None, None]:
         for chunk in completion:
             try:
                 if chunk.choices:
@@ -74,7 +86,9 @@ class IterableBase:
                 pass
 
     @staticmethod
-    async def extract_json_async(completion, mode: Mode):
+    async def extract_json_async(
+        completion: AsyncGenerator[Any, None], mode: Mode
+    ) -> AsyncGenerator[str, None]:
         async for chunk in completion:
             try:
                 if chunk.choices:
@@ -95,15 +109,15 @@ class IterableBase:
                 pass
 
     @staticmethod
-    def get_object(str, stack):
-        for i, c in enumerate(str):
+    def get_object(s: str, stack: int) -> Tuple[Optional[str], str]:
+        for i, c in enumerate(s):
             if c == "{":
                 stack += 1
             if c == "}":
                 stack -= 1
                 if stack == 0:
-                    return str[: i + 1], str[i + 2 :]
-        return None, str
+                    return s[: i + 1], s[i + 2 :]
+        return None, s
 
 
 def IterableModel(
@@ -166,7 +180,7 @@ def IterableModel(
     name = f"Iterable{task_name}"
 
     list_tasks = (
-        List[subtask_class],
+        List[subtask_class],  # type: ignore[valid-type]
         Field(
             default_factory=list,
             repr=False,
@@ -177,7 +191,7 @@ def IterableModel(
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, IterableBase),  # type: ignore
+        __base__=(OpenAISchema, IterableBase),
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class

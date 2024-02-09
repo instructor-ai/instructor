@@ -1,10 +1,22 @@
-from typing import Type, TypeVar, Union, get_origin, get_args
-from types import UnionType
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+)
+from types import UnionType  # type: ignore[attr-defined]
 
 from instructor.function_calls import OpenAISchema, Mode, openai_schema
 from collections.abc import Iterable
 
-T = TypeVar("T")
+T = TypeVar("T", bound=OpenAISchema)
 
 
 class ParallelBase:
@@ -16,11 +28,11 @@ class ParallelBase:
 
     def from_response(
         self,
-        response,
+        response: Any,
         mode: Mode,
-        validation_context=None,
-        strict: bool = None,
-    ) -> Iterable[Union[T]]:
+        validation_context: Optional[Any] = None,
+        strict: Optional[bool] = None,
+    ) -> Generator[T, None, None]:
         #! We expect this from the OpenAISchema class, We should address
         #! this with a protocol or an abstract class... @jxnlco
         assert mode == Mode.PARALLEL_TOOLS, "Mode must be PARALLEL_TOOLS"
@@ -32,7 +44,7 @@ class ParallelBase:
             )
 
 
-def get_types_array(typehint: Type[Iterable[Union[T]]]):
+def get_types_array(typehint: Type[Iterable[Union[T]]]) -> Tuple[Type[T], ...]:
     should_be_iterable = get_origin(typehint)
     assert should_be_iterable is Iterable
 
@@ -50,7 +62,7 @@ def get_types_array(typehint: Type[Iterable[Union[T]]]):
     return get_args(typehint)
 
 
-def handle_parallel_model(typehint: Type[Iterable[Union[T]]]):
+def handle_parallel_model(typehint: Type[Iterable[Union[T]]]) -> List[Dict[str, Any]]:
     the_types = get_types_array(typehint)
     return [
         {"type": "function", "function": openai_schema(model).openai_schema}
@@ -58,6 +70,6 @@ def handle_parallel_model(typehint: Type[Iterable[Union[T]]]):
     ]
 
 
-def ParallelModel(typehint):
+def ParallelModel(typehint: Type[Iterable[Union[T]]]) -> ParallelBase:
     the_types = get_types_array(typehint)
     return ParallelBase(*[model for model in the_types])
