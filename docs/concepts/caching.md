@@ -5,16 +5,19 @@ If you want to learn more about concepts in caching and how to use them in your 
 **When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application where we don't need to persist the cache between sessions.
 
 ```python
+import time
 import functools
+import openai
 import instructor
+from pydantic import BaseModel
 
-from openai import OpenAI
+client = instructor.patch(openai.OpenAI())
 
-client = instructor.patch(OpenAI())
 
 class UserDetail(BaseModel):
     name: str
     age: int
+
 
 @functools.cache
 def extract(data) -> UserDetail:
@@ -23,34 +26,29 @@ def extract(data) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
+
+
+start = time.perf_counter()  # (1)
+model = extract("Extract jason is 25 years old")
+print(f"Time taken: {time.perf_counter() - start}")
+#> Time taken: 0.41433916706591845
+
+start = time.perf_counter()
+model = extract("Extract jason is 25 years old")  # (2)
+print(f"Time taken: {time.perf_counter() - start}")
+#> Time taken: 1.7080456018447876e-06
 ```
+
+1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
+2. The second time we call `extract`, the result is returned from the cache, and the function is not called.
 
 !!! warning "Changing the Model does not Invalidate the Cache"
 
     Note that changing the model does not invalidate the cache. This is because the cache key is based on the function's name and arguments, not the model. This means that if we change the model, the cache will still return the old result.
 
 Now we can call `extract` multiple times with the same argument, and the result will be cached in memory for faster access.
-
-```python hl_lines="4 8 12"
-import time
-
-start = time.perf_counter() # (1)
-model = extract("Extract jason is 25 years old")
-print(f"Time taken: {time.perf_counter() - start}")
-
-start = time.perf_counter()
-model = extract("Extract jason is 25 years old") # (2)
-print(f"Time taken: {time.perf_counter() - start}")
-
->>> Time taken: 0.9267581660533324
->>> Time taken: 1.2080417945981026e-06 # (3)
-```
-
-1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
-2. The second time we call `extract`, the result is returned from the cache, and the function is not called.
-3. The second call to `extract` is much faster because the result is returned from the cache!
 
 **Benefits**: Easy to implement, provides fast access due to in-memory storage, and requires no additional libraries.
 
@@ -61,20 +59,27 @@ print(f"Time taken: {time.perf_counter() - start}")
     ```python hl_lines="3-5 9"
     def decorator(func):
         def wrapper(*args, **kwargs):
-            print("Do something before") # (1)
+            print("Do something before")  # (1)
+            #> Do something before
             result = func(*args, **kwargs)
-            print("Do something after") # (2)
+            print("Do something after")  # (2)
+            #> Do something after
             return result
+
         return wrapper
+
 
     @decorator
     def say_hello():
+        #> Hello!
         print("Hello!")
+        #> Hello!
+
 
     say_hello()
-    >>> "Do something before"
-    >>> "Hello!"
-    >>> "Do something after"
+    #> "Do something before"
+    #> "Hello!"
+    #> "Do something after"
     ```
 
     1. The code is executed before the function is called
@@ -91,12 +96,13 @@ print(f"Time taken: {time.perf_counter() - start}")
     import inspect
     import diskcache
 
-    cache = diskcache.Cache('./my_cache_directory') # (1)
+    cache = diskcache.Cache('./my_cache_directory')  # (1)
+
 
     def instructor_cache(func):
         """Cache a function that returns a Pydantic model"""
         return_type = inspect.signature(func).return_annotation
-        if not issubclass(return_type, BaseModel): # (2)
+        if not issubclass(return_type, BaseModel):  # (2)
             raise ValueError("The return type must be a Pydantic model")
 
         @functools.wraps(func)
@@ -139,13 +145,15 @@ cache = diskcache.Cache('./my_cache_directory')
 
 def instructor_cache(func):
     """Cache a function that returns a Pydantic model"""
-    return_type = inspect.signature(func).return_annotation # (4)
-    if not issubclass(return_type, BaseModel): # (1)
+    return_type = inspect.signature(func).return_annotation  # (4)
+    if not issubclass(return_type, BaseModel):  # (1)
         raise ValueError("The return type must be a Pydantic model")
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}" #  (2)
+        key = (
+            f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}"  #  (2)
+        )
         # Check if the result is already cached
         if (cached := cache.get(key)) is not None:
             # Deserialize from JSON based on the return type (3)
@@ -160,9 +168,11 @@ def instructor_cache(func):
 
     return wrapper
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
+
 
 @instructor_cache
 def extract(data) -> UserDetail:
@@ -171,7 +181,7 @@ def extract(data) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
 ```
 
@@ -194,6 +204,7 @@ def extract(data) -> UserDetail:
     import redis
 
     cache = redis.Redis("localhost")
+
 
     def instructor_cache(func):
         """Cache a function that returns a Pydantic model"""
@@ -227,7 +238,6 @@ def extract(data) -> UserDetail:
 import redis
 import functools
 import inspect
-import json
 import instructor
 
 from pydantic import BaseModel
@@ -236,15 +246,16 @@ from openai import OpenAI
 client = instructor.patch(OpenAI())
 cache = redis.Redis("localhost")
 
+
 def instructor_cache(func):
     """Cache a function that returns a Pydantic model"""
     return_type = inspect.signature(func).return_annotation
-    if not issubclass(return_type, BaseModel): # (1)
+    if not issubclass(return_type, BaseModel):  # (1)
         raise ValueError("The return type must be a Pydantic model")
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}" # (2)
+        key = f"{func.__name__}-{functools._make_key(args, kwargs, typed=False)}"  # (2)
         # Check if the result is already cached
         if (cached := cache.get(key)) is not None:
             # Deserialize from JSON based on the return type
@@ -264,6 +275,7 @@ class UserDetail(BaseModel):
     name: str
     age: int
 
+
 @instructor_cache
 def extract(data) -> UserDetail:
     # Assuming client.chat.completions.create returns a UserDetail instance
@@ -272,7 +284,7 @@ def extract(data) -> UserDetail:
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
-        ]
+        ],
     )
 ```
 

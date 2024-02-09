@@ -1,11 +1,11 @@
 site_name: Instructor
 site_author: Jason Liu
-site_description: Enhancing OpenAI function calling with Pydantic 
+site_description: A lightweight library for structured outputs with LLMs. 
 repo_name: instructor
 repo_url: https://github.com/jxnl/instructor/
 site_url: https://jxnl.github.io/instructor/
 edit_uri: edit/main/docs/
-copyright: Copyright &copy; 2023 Jason Liu 
+copyright: Copyright &copy; 2024 Jason Liu 
 theme:
   name: material
   icon:
@@ -55,7 +55,7 @@ theme:
     # - toc.integrate
   palette:
       - scheme: default
-        primary: indigo
+        primary: black 
         accent: indigo
         toggle:
           icon: material/brightness-7
@@ -132,10 +132,13 @@ nav:
     - Philosophy: 'concepts/philosophy.md'
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
+    - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
-    - List (Streaming): "concepts/lists.md"
-    - Partial (Streaming): "concepts/field_streaming.md"
+    - Retrying: 'concepts/retrying.md'
+    - Parallel Tools: 'concepts/parallel.md'
+    - Stream Iterable: "concepts/lists.md"
+    - Stream Partial: "concepts/partial.md"
     - Raw Response: 'concepts/raw_response.md'
     - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'
@@ -149,6 +152,7 @@ nav:
   - Cookbook:
     - Examples: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
+    - Batch Classification (User Defined): 'examples/batch_classification.md'
     - LLM Self Critique: 'examples/self_critique.md'
     - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
     - Extracting From Slides with GPT-V: 'examples/extract_slides.md'
@@ -159,10 +163,11 @@ nav:
     - Expanding Search Queries (RAG): 'examples/search.md'
     - Query Planning (RAG): 'examples/planning-tasks.md'
     - Extracting Related Action Items: 'examples/action_items.md'
-    - Multi-File Code Generation: 'examples/gpt-engineer.md'
     - PII Data Sanitization: 'examples/pii.md'
     - Enabling Open Source Models: 'examples/open_source.md'
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
+    - Ollama: 'examples/ollama.md'
+    - SQLModel Integration: 'examples/sqlmodel.md'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"

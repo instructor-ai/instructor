@@ -22,8 +22,7 @@ Let's define the necessary Pydantic models to represent the query plan and the q
 ```python
 import enum
 from typing import List
-
-from pydantic import Field
+from pydantic import Field, BaseModel
 
 
 class QueryType(str, enum.Enum):
@@ -72,13 +71,13 @@ class QueryPlan(BaseModel):
 Now, let's demonstrate how to plan and execute a query plan using the defined models and the OpenAI API.
 
 ```python
-import asyncio
 import instructor
 from openai import OpenAI
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.patch(OpenAI())
+
 
 def query_planner(question: str) -> QueryPlan:
     PLANNING_MODEL = "gpt-4-0613"
@@ -113,7 +112,7 @@ plan.model_dump()
 
 !!! warning "No RAG"
 
-    While we build the query plan in this example, we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrival and calls openai for retrival augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
+    While we build the query plan in this example, we do not propose a method to actually answer the question. You can implement your own answer function that perhaps makes a retrieval and calls openai for retrieval augmented generation. That step would also make use of function calls but goes beyond the scope of this example.
 
 ```python
 {

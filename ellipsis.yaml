@@ -3,7 +3,7 @@ version: 1.1
 pr_review:
   auto_review_enabled: true
   auto_summarize_pr: true
-  confidence_threshold: 0.9
+  confidence_threshold: 0.85
   rules:
     # Control what gets flagged during PR review with custom rules. Here are some to get you started:
     - "Code should be DRY (Dont Repeat Yourself)"
@@ -13,3 +13,4 @@ pr_review:
     - "If library code changes, expect documentation to be updated"
     - "If library code changes, check if tests are updated"
     - "If a new `md` file is created in `docs` make sure its added to mkdocs.yml"
+    - "Assertions should always have an error message that is formatted well. "

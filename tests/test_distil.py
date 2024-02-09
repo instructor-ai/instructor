@@ -1,3 +1,4 @@
+from typing import Any, Dict, Callable, Tuple, cast
 import pytest
 import instructor
 
@@ -18,27 +19,27 @@ instructions = Instructions(
 )
 
 
-class SimpleModel(BaseModel):
+class SimpleModel(BaseModel):  # type: ignore[misc]
     data: int
 
 
-def test_must_have_hint():
+def test_must_have_hint() -> None:
     with pytest.raises(AssertionError):
 
         @instructions.distil
-        def test_func(x: int):
+        def test_func(x: int):  # type: ignore[no-untyped-def]
             return SimpleModel(data=x)
 
 
-def test_must_be_base_model():
+def test_must_be_base_model() -> None:
     with pytest.raises(AssertionError):
 
         @instructions.distil
-        def test_func(x) -> int:
+        def test_func(x: int) -> int:
             return SimpleModel(data=x)
 
 
-def test_is_return_type_base_model_or_instance():
+def test_is_return_type_base_model_or_instance() -> None:
     def valid_function() -> SimpleModel:
         return SimpleModel(data=1)
 
@@ -49,8 +50,8 @@ def test_is_return_type_base_model_or_instance():
     assert not is_return_type_base_model_or_instance(invalid_function)
 
 
-def test_get_signature_from_fn():
-    def test_function(a: int, b: str) -> float:
+def test_get_signature_from_fn() -> None:
+    def test_function(a: int, b: str) -> float:  # type: ignore[empty-body]
         """Sample docstring"""
         pass
 
@@ -60,7 +61,7 @@ def test_get_signature_from_fn():
     assert "Sample docstring" in result
 
 
-def test_format_function():
+def test_format_function() -> None:
     def sample_function(x: int) -> SimpleModel:
         """This is a docstring."""
         return SimpleModel(data=x)
@@ -71,26 +72,28 @@ def test_format_function():
     assert "return SimpleModel(data=x)" in formatted
 
 
-def test_distil_decorator_without_arguments():
+def test_distil_decorator_without_arguments() -> None:
     @instructions.distil
     def test_func(x: int) -> SimpleModel:
         return SimpleModel(data=x)
 
-    result = test_func(42)
+    casted_test_func = cast(Callable[[int], SimpleModel], test_func)
+    result: SimpleModel = casted_test_func(42)
     assert result.data == 42
 
 
-def test_distil_decorator_with_name_argument():
+def test_distil_decorator_with_name_argument() -> None:
     @instructions.distil(name="custom_name")
     def another_test_func(x: int) -> SimpleModel:
         return SimpleModel(data=x)
 
-    result = another_test_func(55)
+    casted_another_test_func = cast(Callable[[int], SimpleModel], another_test_func)
+    result: SimpleModel = casted_another_test_func(55)
     assert result.data == 55
 
 
 # Mock track function for decorator tests
-def mock_track(*args, **kwargs):
+def mock_track(*args: Tuple[Any, ...], **kwargs: Dict[str, Any]) -> None:
     pass
 
 

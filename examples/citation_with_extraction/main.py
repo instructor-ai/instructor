@@ -61,13 +61,13 @@ class Fact(BaseModel):
 
 class QuestionAnswer(OpenAISchema, MultiTaskBase):
     """
-    Class representing a question and its answer as a list of facts each one should have a soruce.
+    Class representing a question and its answer as a list of facts each one should have a source.
     each sentence contains a body and a list of sources."""
 
     question: str = Field(..., description="Question that was asked")
     tasks: List[Fact] = Field(
         ...,
-        description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
+        description="Body of the answer, each fact should be its separate object with a body and a list of sources",
     )
 
 

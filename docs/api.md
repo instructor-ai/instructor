@@ -4,9 +4,11 @@
 
 ::: instructor.dsl.validators
 
-::: instructor.dsl.citation
+::: instructor.dsl.iterable
 
-::: instructor.dsl.multitask
+::: instructor.dsl.partial
+
+::: instructor.dsl.parallel
 
 ::: instructor.dsl.maybe
 

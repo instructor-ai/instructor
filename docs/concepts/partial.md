@@ -9,6 +9,9 @@ Instructor supports this pattern by making use of `Partial[T]`. This lets us dyn
 Consider what happens whene we define a response model:
 
 ```python
+from pydantic import BaseModel
+
+
 class User(BaseModel):
     name: str
     age: int
@@ -40,8 +43,6 @@ Let's look at an example of streaming an extraction of conference information, t
 
 ```python
 import instructor
-
-from instructor import Partial
 from openai import OpenAI
 from pydantic import BaseModel
 from typing import List
@@ -80,7 +81,7 @@ class MeetingInfo(BaseModel):
 
 extraction_stream = client.chat.completions.create(
     model="gpt-4",
-    response_model=Partial[MeetingInfo],
+    response_model=instructor.Partial[MeetingInfo],
     messages=[
         {
             "role": "user",
@@ -98,8 +99,150 @@ for extraction in extraction_stream:
     console.clear()
     console.print(obj)
 
+print(extraction.model_dump_json())
+"""
+{"users":[{"name":"John Doe","email":"johndoe@email.com","twitter":"@TechGuru44"},{"name":"Jane Smith","email":"janesmith@email.com","twitter":"@DigitalDiva88"},{"name":"Alex Johnson","email":"alexj@email.com","twitter":"@CodeMaster2023"}],"date":"2024-03-15","location":"Grand Tech Arena located at 4521 Innovation Drive","budget":50000,"deadline":"2024-02-20"}
+"""
 ```
 
 This will output the following:
 
 ![Partial Streaming Gif](../img/partial.gif)
+
+## Asynchronous Streaming
+
+I also just want to call out in this example that `instructor` also supports asynchronous streaming. This is useful when you want to stream a response model and process the results as they come in, but you'll need to use the `async for` syntax to iterate over the results.
+
+```python
+import instructor
+from openai import AsyncOpenAI
+from pydantic import BaseModel
+
+client = instructor.apatch(AsyncOpenAI())
+
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+
+async def print_partial_results():
+    user = await client.chat.completions.create(
+        model="gpt-4-turbo-preview",
+        response_model=instructor.Partial[UserExtract],
+        max_retries=2,
+        stream=True,
+        messages=[
+            {"role": "user", "content": "Jason Liu is 12 years old"},
+        ],
+    )
+    async for m in user:
+        print(m.model_dump_json(indent=2))
+        """
+        {
+          "name": null,
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": 12
+        }
+        """
+        """
+        {
+          "name": "",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": 12
+        }
+        """
+        """
+        {
+          "name": "",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": 12
+        }
+        """
+        """
+        {
+          "name": "",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": null
+        }
+        """
+        """
+        {
+          "name": "Jason Liu",
+          "age": 12
+        }
+        """
+
+
+import asyncio
+
+asyncio.run(print_partial_results())
+```
