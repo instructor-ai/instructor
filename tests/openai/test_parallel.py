@@ -14,6 +14,23 @@ class GoogleSearch(BaseModel):
     query: str
 
 
+def test_sync_parallel_tools__error(client):
+    client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
+
+    with pytest.raises(TypeError):
+        resp = client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[
+                {"role": "system", "content": "You must always use tools"},
+                {
+                    "role": "user",
+                    "content": "What is the weather in toronto and dallas and who won the super bowl?",
+                },
+            ],
+            response_model=Weather,
+        )
+
+
 def test_sync_parallel_tools_or(client):
     client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = client.chat.completions.create(
