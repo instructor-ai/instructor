@@ -46,7 +46,8 @@ class ParallelBase:
 
 def get_types_array(typehint: Type[Iterable[Union[T]]]) -> Tuple[Type[T], ...]:
     should_be_iterable = get_origin(typehint)
-    assert should_be_iterable is Iterable
+    if should_be_iterable is not Iterable:
+        raise TypeError(f"Model should be with Iterable instead if {typehint}")
 
     if get_origin(get_args(typehint)[0]) is Union:
         # works for Iterable[Union[int, str]]
