@@ -30,6 +30,23 @@ def test_sync_parallel_tools_or(client):
     assert len(list(resp)) == 3
 
 
+def test_sync_parallel_tools_no_call(client):
+    client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
+    resp = client.chat.completions.create(
+        model="gpt-4-turbo-preview",
+        messages=[
+            {"role": "system", "content": "You must NEVER use tools. do NOT use any of the tools"},
+            {
+                "role": "user",
+                "content": "Who won the super bowl?",
+            },
+        ],
+        response_model=Iterable[Weather],
+    )
+    assert len(list(resp)) == 1 ## only the content str is returned
+
+
+
 @pytest.mark.asyncio
 async def test_async_parallel_tools_or(aclient):
     client = instructor.patch(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
@@ -45,6 +62,22 @@ async def test_async_parallel_tools_or(aclient):
         response_model=Iterable[Weather | GoogleSearch],
     )
     assert len(list(resp)) == 3
+
+@pytest.mark.asyncio
+async def test_async_parallel_tools_no_call(aclient):
+    client = instructor.patch(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
+    resp = await client.chat.completions.create(
+        model="gpt-4-turbo-preview",
+        messages=[
+            {"role": "system", "content": "You must NEVER use tools. do NOT use any of the tools"},
+            {
+                "role": "user",
+                "content": "Who won the super bowl?",
+            },
+        ],
+        response_model=Iterable[Weather],
+    )
+    assert len(list(resp)) == 1
 
 
 def test_sync_parallel_tools_one(client):
