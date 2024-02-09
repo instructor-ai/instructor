@@ -85,7 +85,7 @@ def llm_validator(
             ],
             model=model,
             temperature=temperature,
-        )  # type: ignore
+        )
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.
