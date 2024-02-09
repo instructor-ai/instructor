@@ -1,4 +1,16 @@
-from typing import Type, TypeVar, Union, Generator, Any, Tuple, List, Dict, Optional, get_origin, get_args
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+)
 from types import UnionType  # type: ignore[attr-defined]
 
 from instructor.function_calls import OpenAISchema, Mode, openai_schema
@@ -58,6 +70,6 @@ def handle_parallel_model(typehint: Type[Iterable[Union[T]]]) -> List[Dict[str, 
     ]
 
 
-def ParallelModel(typehint:  Type[Iterable[Union[T]]]) -> ParallelBase:
+def ParallelModel(typehint: Type[Iterable[Union[T]]]) -> ParallelBase:
     the_types = get_types_array(typehint)
     return ParallelBase(*[model for model in the_types])
