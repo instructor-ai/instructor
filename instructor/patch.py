@@ -41,13 +41,6 @@ from instructor.dsl.partial import PartialBase
 from .function_calls import Mode, OpenAISchema, openai_schema
 
 logger = logging.getLogger("instructor")
-# T = TypeVar("T")
-
-
-# T_Model = TypeVar("T_Model", bound=BaseModel)
-# T_Retval = TypeVar("T_Retval")
-# T_ParamSpec = ParamSpec("T_ParamSpec")
-# T = TypeVar("T")
 
 
 def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
