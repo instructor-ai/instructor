@@ -166,6 +166,7 @@ nav:
     - Enabling Open Source Models: 'examples/open_source.md'
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
     - Ollama + LiteLLM: 'examples/ollama.md'
+    - SQLModel Integration: 'examples/sqlmodel.md'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"

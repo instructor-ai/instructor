@@ -62,4 +62,4 @@ with Session(engine) as session:
 
 ![Image of hero record in the database](db.png)
 
-And there you have it! You can now use the same models for your database and `Instructor` enabling them work seamlessly! Also checkout the [FastAPI](fastapi.md) guide to see how you can use these models in an API as well. 
+And there you have it! You can now use the same models for your database and `Instructor` enabling them work seamlessly! Also checkout the [FastAPI](../concepts/fastapi.md) guide to see how you can use these models in an API as well. 
