@@ -26,6 +26,7 @@ T = TypeVar("T", bound=OpenAISchema)
 
 class ParallelBase:
     def __init__(self, *models: Type[OpenAISchema]):
+        print("here")
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models
@@ -47,8 +48,6 @@ class ParallelBase:
         message: ChatCompletionMessage = response.choices[0].message
         if message.content:
             yield message.content  # Yield the message content as a string
-        if not message.tool_calls:
-            return
         for tool_call in message.tool_calls:
             name = tool_call.function.name
             tool_id = tool_call.id
