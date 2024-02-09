@@ -15,5 +15,7 @@
 11. [How to enable OpenAI's moderation](moderation.md)
 12. [How to extract tables using GPT-Vision?](extracting_tables.md)
 13. [How to generate advertising copy from image inputs](image_to_ad_copy.md)
+14. [How to use local models from Ollama](ollama.md)
+15. [How to store responses in a database with SQLModel](sqlmodel.md)
 
 Explore more!
