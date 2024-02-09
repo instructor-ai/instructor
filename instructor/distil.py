@@ -266,4 +266,3 @@ class Instructions:
             ],
         }
         return function_body
-    
