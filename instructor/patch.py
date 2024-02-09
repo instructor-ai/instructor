@@ -10,6 +10,7 @@ from typing import (
     Callable,
     Coroutine,
     Dict,
+    Generator,
     get_args,
     get_origin,
     List,
@@ -57,7 +58,7 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
 
 def handle_response_model(
     response_model: Type[BaseModel], mode: Mode = Mode.TOOLS, **kwargs: Any
-) -> Tuple[Union[Type[BaseModel], ParallelBase], Dict[str, Any]]:
+) -> Tuple[Union[Type[OpenAISchema], ParallelBase], Dict[str, Any]]:
     """Prepare the response model type hint, and returns the response_model
     along with the new modified kwargs needed to be able to use the response_model
     parameter with the patch function.
@@ -165,12 +166,12 @@ def handle_response_model(
 def process_response(
     response: ChatCompletion,
     *,
-    response_model: Union[Type[BaseModel], ParallelBase, None],
+    response_model: Union[Type[OpenAISchema], ParallelBase, None],
     stream: bool,
     validation_context: Optional[Dict[str, Any]] = None,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-) -> Union[BaseModel, List[BaseModel]]:
+) -> Union[OpenAISchema, List[OpenAISchema]]:
     """Processes a OpenAI response with the response model, if available.
 
     Args:
@@ -221,12 +222,12 @@ def process_response(
 async def process_response_async(
     response: ChatCompletion,
     *,
-    response_model: Union[Type[BaseModel], ParallelBase, None],
+    response_model: Union[Type[OpenAISchema], ParallelBase, None],
     stream: bool,
     validation_context: Optional[Dict[str, Any]] = None,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-) -> Union[BaseModel, List[BaseModel]]:
+) -> Union[OpenAISchema, List[OpenAISchema], Dict[str, Any], Generator[Any, None, None]]:
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
     via the pydantic model
@@ -274,16 +275,16 @@ async def process_response_async(
     return model
 
 
-async def retry_async(
+async def retry_async(  # type: ignore[return]
     func: Callable[..., Coroutine[Any, Any, ChatCompletion]],
-    response_model: Union[Type[BaseModel], ParallelBase],
+    response_model: Union[Type[OpenAISchema], ParallelBase],
     validation_context: Optional[Dict[str, Any]],
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
     max_retries: int,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-) -> Union[BaseModel, List[BaseModel]]:
+) -> Union[OpenAISchema, List[OpenAISchema], Dict[str, Any], Generator[Any, None, None]]:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
     # If max_retries is int, then create a AsyncRetrying object
@@ -358,19 +359,17 @@ async def retry_async(
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
         raise e.last_attempt.exception from e
 
-    return None
 
-
-def retry_sync(
+def retry_sync(  # type: ignore[return]
     func: Callable[..., ChatCompletion],
-    response_model: Union[Type[BaseModel], ParallelBase],
+    response_model: Union[Type[OpenAISchema], ParallelBase],
     validation_context: Optional[Dict[str, Any]],
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
     max_retries: int,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-) -> Union[BaseModel, List[BaseModel]]:
+) -> Union[OpenAISchema, List[OpenAISchema]]:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
     # If max_retries is int, then create a Retrying object
@@ -442,8 +441,6 @@ def retry_sync(
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
         raise e.last_attempt.exception from e
-
-    return None
 
 
 def is_async(func: Callable[..., Any]) -> bool:
