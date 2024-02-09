@@ -13,7 +13,7 @@ class IterableBase:
         cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
     ) -> Generator[BaseModel, None, None]:  # noqa: ARG003
         json_chunks = cls.extract_json(completion, mode)
-        yield from cls.tasks_from_chunks(json_chunks)
+        yield from cls.tasks_from_chunks(json_chunks, **kwargs)
 
     @classmethod
     async def from_streaming_response_async(

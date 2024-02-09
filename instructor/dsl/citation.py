@@ -78,7 +78,7 @@ class CitationMixin(BaseModel):  # type: ignore[misc]
     def _get_span(
         self, quote: str, context: str, errs: int = 5
     ) -> Generator[Tuple[int, int], None, None]:
-        import regex
+        import regex  # type: ignore[import-untyped]
 
         minor = quote
         major = context
