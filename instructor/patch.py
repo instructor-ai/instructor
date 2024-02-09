@@ -10,17 +10,17 @@ from typing import (
     Callable,
     Coroutine,
     Dict,
+    get_args,
+    get_origin,
     List,
     Optional,
+    overload,
     Protocol,
     Tuple,
     Type,
     TypeVar,
     Union,
     cast,
-    get_args,
-    get_origin,
-    overload,
 )
 from typing_extensions import ParamSpec
 
