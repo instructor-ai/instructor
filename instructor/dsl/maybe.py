@@ -4,7 +4,7 @@ from typing import Type, Optional, TypeVar, Generic
 T = TypeVar("T", bound=BaseModel)
 
 
-class MaybeBase(BaseModel, Generic[T]):
+class MaybeBase(BaseModel, Generic[T]):  # type: ignore[misc]
     """
     Extract a result from a model, if any, otherwise set the error and message fields.
     """
@@ -13,8 +13,8 @@ class MaybeBase(BaseModel, Generic[T]):
     error: bool = Field(default=False)
     message: Optional[str]
 
-    def __bool__(self):
-        return self.result is not None  # type: ignore
+    def __bool__(self) -> bool:
+        return self.result is not None
 
 
 def Maybe(model: Type[T]) -> Type[MaybeBase[T]]:
