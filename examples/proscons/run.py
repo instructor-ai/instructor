@@ -1,31 +1,3 @@
-# Structured Outputs with Ollama
-
-Open-source LLMS are gaining popularity, and the release of Ollama's OpenAI compatibility later it has made it possible to obtain structured outputs using JSON schema.
-
-By the end of this blog post, you will learn how to effectively utilize instructor with ollama. But before we proceed, let's first explore the concept of patching.
-
-## Patching
-
-Instructor's patch enhances a openai api it with the following features:
-
-- `response_model` in `create` calls that returns a pydantic model
-- `max_retries` in `create` calls that retries the call if it fails by using a backoff strategy
-
-!!! note "Learn More"
-
-    To learn more, please refer to the [docs](../../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../../why.md) page.
-
-## Ollama
-
-Start by downloading [Ollama](https://ollama.ai/download), and then pull a model such as Llama 2 or Mistral.
-
-!!! tip "Make sure you update your `ollama` to the latest version!"
-
-```
-ollama pull llama2
-```
-
-```python
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import List
@@ -59,7 +31,7 @@ resp = client.chat.completions.create(
     response_model=Character,
 )
 print(resp.model_dump_json(indent=2))
-"""
+""" 
 {
   "name": "Harry James Potter",
   "age": 37,
@@ -74,4 +46,3 @@ print(resp.model_dump_json(indent=2))
   ]
 }
 """
-```
