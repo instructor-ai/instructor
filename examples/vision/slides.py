@@ -4,11 +4,13 @@ import os
 import sys
 from typing import Dict, List, Optional
 
-import instructor
+import typer
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from rich import print as rprint
+
+import instructor
 
 load_dotenv(find_dotenv())
 
@@ -93,25 +95,24 @@ def run(images: List[str]) -> Competition:
 
     return competitors
 
+import typer
 
-if __name__ == "__main__":
-    # Run logger
+
+def main(image_file: str = typer.Argument(..., help="Path to the image list file")):
+    """
+    Main function to process the image list file and identify competitors.
+    """
     logger.info("Starting app...")
 
-    if len(sys.argv) != 2:
-        print("Usage: python app.py <path_to_image_list_file>")
-        sys.exit(1)
-
-    image_file = sys.argv[1]
-    with open(image_file, "r") as file:
-        logger.info(f"Reading images from file: {image_file}")
-        try:
+    try:
+        with open(image_file, "r") as file:
+            logger.info(f"Reading images from file: {image_file}")
             image_list = file.read().splitlines()
             logger.info(f"{len(image_list)} images read from file: {image_file}")
-        except Exception as e:
-            logger.error(f"Error reading images from file: {image_file}")
-            logger.error(e)
-            sys.exit(1)
+    except Exception as e:
+        logger.error(f"Error reading images from file: {image_file}")
+        logger.error(e)
+        raise typer.Exit(code=1)
 
     competitors = run(image_list)
 
@@ -130,6 +131,9 @@ if __name__ == "__main__":
             f,
             indent=4,
         )
+
+if __name__ == "__main__":
+    typer.run(main)
 
 """ 
 Example output:
