@@ -25,7 +25,6 @@ from typing import (
 from typing_extensions import ParamSpec
 
 from openai import AsyncOpenAI, OpenAI
-from openai.api_resources.abstract.api_resource import APIResource
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
@@ -174,7 +173,7 @@ def process_response(
     validation_context: Optional[Dict[str, Any]] = None,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-) -> Union[BaseModel, APIResource, List[BaseModel], List[APIResource]]:
+) -> Union[BaseModel, List[BaseModel]]:
     """Processes a OpenAI response with the response model, if available.
 
     Args:
@@ -230,7 +229,7 @@ async def process_response_async(
     validation_context: Optional[Dict[str, Any]] = None,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-) -> Union[BaseModel, APIResource, List[BaseModel], List[APIResource]]:
+) -> Union[BaseModel, List[BaseModel]]:
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
     via the pydantic model
@@ -287,7 +286,7 @@ async def retry_async(
     max_retries: int,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-) -> Union[BaseModel, APIResource, List[BaseModel], List[APIResource]]:
+) -> Union[BaseModel, List[BaseModel]]:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
     # If max_retries is int, then create a AsyncRetrying object
@@ -374,7 +373,7 @@ def retry_sync(
     max_retries: int,
     strict: Optional[bool] = None,
     mode: Mode = Mode.FUNCTIONS,
-) -> Union[BaseModel, APIResource, List[BaseModel], List[APIResource]]:
+) -> Union[BaseModel, List[BaseModel]]:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
     # If max_retries is int, then create a Retrying object
@@ -514,8 +513,8 @@ def patch(
 
 
 def patch(  # type: ignore[misc]
-    client: Union[OpenAI, AsyncOpenAI],
-    create: Optional[Callable[..., Any]],
+    client: Union[OpenAI, AsyncOpenAI, None] = None,
+    create: Optional[Callable[..., Any]] = None,
     mode: Mode = Mode.FUNCTIONS,
 ) -> Union[OpenAI, AsyncOpenAI]:
     """
@@ -547,7 +546,7 @@ def patch(  # type: ignore[misc]
         max_retries: int = 1,
         *args: Any,
         **kwargs: Any,
-    ) -> Union[BaseModel, APIResource, List[BaseModel], List[APIResource]]:
+    ) -> Union[BaseModel, List[BaseModel]]:
         new_response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
@@ -569,7 +568,7 @@ def patch(  # type: ignore[misc]
         max_retries: int = 1,
         *args: Any,
         **kwargs: Any,
-    ) -> Union[BaseModel, APIResource, List[BaseModel], List[APIResource]]:
+    ) -> Union[BaseModel, List[BaseModel]]:
         new_response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
