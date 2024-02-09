@@ -339,9 +339,10 @@ async def retry_async(
                                 "name": response.choices[0]
                                 .message.tool_calls[0]
                                 .function.name,
-                                "content": "failure",
+                                "content": "Exceptions found\n{e}\nRecall the function correctly.",
                             }
                         )
+
                     kwargs["messages"].append(
                         {
                             "role": "user",
