@@ -26,6 +26,8 @@ class ParallelBase:
         message: ChatCompletionMessage = response.choices[0].message
         if message.content:
             yield message.content  # Yield the message content as a string
+        if not message.tool_calls:
+            return
         for tool_call in message.tool_calls:
             name = tool_call.function.name
             tool_id = tool_call.id
