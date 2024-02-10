@@ -1,10 +1,8 @@
 import json
 import logging
-import os
 import sys
 from typing import Dict, List, Optional
 
-import typer
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -13,6 +11,8 @@ from rich import print as rprint
 import instructor
 
 load_dotenv(find_dotenv())
+
+IMAGE_FILE = "image-file.txt" # file with all the images to be processed
 
 # Add logger
 logging.basicConfig()
@@ -41,7 +41,7 @@ class Competition(BaseModel):
     """
     Represents competitors extracted from an image using AI.
 
-    This class serves as a structured representation of 
+    This class serves as a structured representation of
     competitors and their qualities.
     """
 
@@ -86,35 +86,24 @@ def read_images(image_urls: List[str]) -> Competition:
 
 
 
-def run(images: List[str]) -> Competition:
-    """
-    Given a list of images, identify the industries and the competitors in the images.
-    """
-
-    competitors: Competition = read_images(images)
-
-    return competitors
-
-import typer
-
-
-def main(image_file: str = typer.Argument(..., help="Path to the image list file")):
+def process_and_identify_competitors():
     """
     Main function to process the image list file and identify competitors.
     """
+
     logger.info("Starting app...")
 
     try:
-        with open(image_file, "r") as file:
-            logger.info(f"Reading images from file: {image_file}")
+        with open(IMAGE_FILE, "r") as file:
+            logger.info(f"Reading images from file: {IMAGE_FILE}")
             image_list = file.read().splitlines()
-            logger.info(f"{len(image_list)} images read from file: {image_file}")
+            logger.info(f"{len(image_list)} images read from file: {IMAGE_FILE}")
     except Exception as e:
-        logger.error(f"Error reading images from file: {image_file}")
+        logger.error(f"Error reading images from file: {IMAGE_FILE}")
         logger.error(e)
-        raise typer.Exit(code=1)
+        sys.exit(1)
 
-    competitors = run(image_list)
+    competitors = read_images(image_list)
 
     rprint(f"[green]{len(competitors.industry_list)} industries identified:[/green]")
     for industry in competitors.industry_list:
@@ -133,9 +122,9 @@ def main(image_file: str = typer.Argument(..., help="Path to the image list file
         )
 
 if __name__ == "__main__":
-    typer.run(main)
+    process_and_identify_competitors()
 
-""" 
+"""
 Example output:
 {
     "competitors": {

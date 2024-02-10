@@ -100,7 +100,7 @@ url = [
     'https://earlygame.vc/wp-content/uploads/2020/06/startup-pitch-deck-5.jpg'
     ]
 model = read_images(url)
-print(model)
+print(model.model_json_dump(indent=2))
 ```
     industry_list=[
 
