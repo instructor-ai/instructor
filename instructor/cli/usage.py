@@ -53,9 +53,14 @@ MODEL_COSTS: Dict[
     ModelNames,
     Union[Dict[str, float], float],
 ] = {
+    "gpt-3.5-turbo-0125": {"prompt": 0.0005 / 1000, "completion": 0.0015 / 1000},
+    "gpt-3.5-turbo-instruct": {"prompt": 0.0015 / 1000, "completion": 0.0020 / 1000},
     "gpt-3.5-turbo": {"prompt": 0.0015 / 1000, "completion": 0.002 / 1000},
     "gpt-3.5-turbo-16k": {"prompt": 0.003 / 1000, "completion": 0.004 / 1000},
-    "gpt-4": {"prompt": 0.03 / 1000, "completion": 0.03 / 1000},
+    "gpt-4-0125-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
+    "gpt-4-1106-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
+    "gpt-4-1106-vision-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
+    "gpt-4": {"prompt": 0.03 / 1000, "completion": 0.06 / 1000},
     "gpt-4-32k": {"prompt": 0.06 / 1000, "completion": 0.12 / 1000},
     "text-embedding-ada-002": 0.0001 / 1000,
     "text-embedding-ada-002-v2": 0.0001 / 1000,
@@ -70,10 +75,20 @@ def get_model_cost(
         return MODEL_COSTS[model]
 
     # Handle prefix-based matching
+    if model.startswith("gpt-3.5-turbo-0125"):
+        return MODEL_COSTS["gpt-3.5-turbo-0125"]
+    if model.startswith("gpt-3.5-turbo-instruct"):
+        return MODEL_COSTS["gpt-3.5-turbo-instruct"]
     if model.startswith("gpt-3.5-turbo-16k"):
         return MODEL_COSTS["gpt-3.5-turbo-16k"]
     elif model.startswith("gpt-3.5-turbo"):
         return MODEL_COSTS["gpt-3.5-turbo"]
+    elif model.startswith("gpt-4-0125-preview"):
+        return MODEL_COSTS["gpt-4-0125-preview"]
+    elif model.startswith("gpt-4-1106-preview"):
+        return MODEL_COSTS["gpt-4-1106-preview"]
+    elif model.startswith("gpt-4-1106-vision-preview"):
+        return MODEL_COSTS["gpt-4-1106-vision-preview"]
     elif model.startswith("gpt-4-32k"):
         return MODEL_COSTS["gpt-4-32k"]
     elif model.startswith("gpt-4"):
