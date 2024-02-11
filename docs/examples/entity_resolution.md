@@ -3,7 +3,8 @@
 In this guide, we demonstrate how to extract and resolve entities from a sample legal contract. Then, we visualize these entities and their dependencies as an entity graph. This approach can be invaluable for legal tech applications, aiding in the understanding of complex documents.
 
 !!! tips "Motivation"
-Legal contracts are full of intricate details and interconnected clauses. Automatically extracting and visualizing these elements can make it easier to understand the document's overall structure and terms.
+
+    Legal contracts are full of intricate details and interconnected clauses. Automatically extracting and visualizing these elements can make it easier to understand the document's overall structure and terms.
 
 ## Defining the Data Structures
 

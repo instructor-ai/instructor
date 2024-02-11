@@ -10,7 +10,7 @@ In this example, we will demonstrate how to leverage the `MultiTask` and `enum.E
 
 The `Search` class is a Pydantic model that defines the structure of the search query. It has three fields: `title`, `query`, and `type`. The `title` field is the title of the request, the `query` field is the query to search for relevant content, and the `type` field is the type of search. The `execute` method is used to execute the search query.
 
-```python hl_line
+```python
 import instructor
 from openai import OpenAI
 from typing import Iterable
