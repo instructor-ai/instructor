@@ -29,15 +29,13 @@ mypy = "^1.7.1"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
-mkdocs-material = "^9.1.18"
+mkdocs-material = {extras = ["imaging"], version = "^9.5.9"}
 mkdocstrings = "^0.22.0"
 mkdocstrings-python = "^1.1.2"
 pytest-examples = "^0.0.10"
 mkdocs-jupyter = "^0.24.6"
 mkdocs-rss-plugin = "^1.12.0"
 mkdocs-minify-plugin = "^0.8.0"
-cairosvg = "^2.7.1"
-pillow = "^10.2.0"
 
 [tool.poetry.group.test-docs.dependencies]
 fastapi = "^0.109.2"
