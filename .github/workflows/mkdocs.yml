@@ -35,7 +35,7 @@ jobs:
       - name: Install Requirements
         run: |
           sudo apt-get update &&
-          sudo apt-get install pngquant &&
+          sudo apt-get install pngquant
 
       - name: Install dependencies
         run: poetry install --with dev,docs 
