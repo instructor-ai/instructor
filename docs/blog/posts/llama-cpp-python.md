@@ -10,7 +10,7 @@ authors:
 
 # Structured Outputs with llama-cpp-python
 
-Open-source LLMS are gaining popularity, and llama-cpp-python has made the `llama-cpp` model available to obtain structured outputs using JSON schema via a mixture of constrained sampling and speculative decoding. They also support a OpenAI compatible client, which can be used to obtain structured output as a in process mechanism to avoid any network dependency.
+Open-source LLMS are gaining popularity, and llama-cpp-python has made the `llama-cpp` model available to obtain structured outputs using JSON schema via a mixture of [constrained sampling](https://llama-cpp-python.readthedocs.io/en/latest/#json-schema-mode) and [speculative decoding](https://llama-cpp-python.readthedocs.io/en/latest/#speculative-decoding). They also support a OpenAI compatible client, which can be used to obtain structured output as a in process mechanism to avoid any network dependency.
 
 <!-- more -->
 
@@ -27,7 +27,7 @@ Instructor's patch enhances an create call it with the following features:
 
 ## llama-cpp-python
 
-Recently llama-cpp-python has made support structured outputs via JSON schema available. This is a time-saving alternative to extensive prompt engineering and can be used to obtain structured outputs.
+Recently llama-cpp-python has made support structured outputs via JSON schema available. This is a time-saving alternative to extensive prompt engineering and can be used to obtain structured outputs. This is also available as a [OpenAI compatible client](https://llama-cpp-python.readthedocs.io/en/latest/#openai-compatible-web-server) but we'll be using the in process mechanism to avoid any network dependency.
 
 In this example we'll cover a more advanced use case of by using `JSON_SCHEMA` mode to stream out partial models. To learn more partial streaming check out [partial streaming](../../concepts/partial.md).
 
@@ -111,7 +111,7 @@ for extraction in extraction_stream:
     console.print(obj)
 ```
 
-1. We use `LlamaPromptLookupDecoding` to obtain structured outputs using JSON schema via a mixture of constrained sampling and speculative decoding.
+1. We use `LlamaPromptLookupDecoding` to obtain structured outputs using JSON schema via a mixture of constrained sampling and speculative decoding. 10 is good for GPU, 2 is good for CPU.
 2. We use `instructor.Mode.JSON_SCHEMA` return a JSON schema response.
 3. We use `instructor.Partial` to stream out partial models.
 4. This is just a simple example of how to stream out partial models and clear the console.
