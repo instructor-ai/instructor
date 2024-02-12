@@ -27,9 +27,9 @@ Instructor's patch enhances an create call it with the following features:
 
 ## llama-cpp-python
 
-Recently llama-cpp-python has made support structured outputs via JSON schema available. This is a time-saving alternative to extensive prompt engineering and can be used to obtain structured outputs.
+Recently llama-cpp-python added support for structured outputs via JSON schema mode. This is a time-saving alternative to extensive prompt engineering and can be used to obtain structured outputs.
 
-In this example we'll cover a more advanced use case of by using `JSON_SCHEMA` mode to stream out partial models. To learn more partial streaming check out [partial streaming](../../concepts/partial.md).
+In this example we'll cover a more advanced use case of JSON_SCHEMA mode to stream out partial models. To learn more [partial streaming](https://github.com/jxnl/instructor/concepts/partial.md) check out partial streaming.
 
 ```python
 import llama_cpp
@@ -111,7 +111,7 @@ for extraction in extraction_stream:
     console.print(obj)
 ```
 
-1. We use `LlamaPromptLookupDecoding` to obtain structured outputs using JSON schema via a mixture of constrained sampling and speculative decoding. 10 is good for GPU, 2 is good for CPU.
+We use LlamaPromptLookupDecoding to speed up structured output generation using speculative decoding. The draft model generates candidate tokens during generation 10 is good for GPU, 2 is good for CPU.
 2. We use `instructor.Mode.JSON_SCHEMA` return a JSON schema response.
 3. We use `instructor.Partial` to stream out partial models.
 4. This is just a simple example of how to stream out partial models and clear the console.
