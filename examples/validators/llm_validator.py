@@ -94,7 +94,7 @@ except Exception as e:
 qa: QuestionAnswerNoEvil = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswerNoEvil,
-    max_retries=1,
+    max_retries=2,
     messages=[
         {
             "role": "system",
@@ -107,10 +107,10 @@ qa: QuestionAnswerNoEvil = client.chat.completions.create(
     ],
 )  # type: ignore
 
-print("After validation with `llm_validator` with `max_retries=1`")
+print("After validation with `llm_validator` with `max_retries=2`")
 print(qa.model_dump_json(indent=2), end="\n\n")
 """
-After validation with `llm_validator` with `max_retries=1`
+After validation with `llm_validator` with `max_retries=2`
 {
   "question": "What is the meaning of life?",
   "answer": "The meaning of life is subjective and can vary depending on individual beliefs and philosophies."
