@@ -27,7 +27,7 @@ try:
     resp = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=Response,
-        max_retries=1,
+        max_retries=2,
         messages=[
             {
                 "role": "user",

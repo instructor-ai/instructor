@@ -104,7 +104,7 @@ By adding the `max_retries` parameter, we can retry the request with corrections
 qa: QuestionAnswerNoEvil = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswerNoEvil,
-    max_retries=1,
+    max_retries=2,
     messages=[
         {
             "role": "system",
