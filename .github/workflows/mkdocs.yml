@@ -38,7 +38,7 @@ jobs:
           sudo apt-get install pngquant &&
 
       - name: Install dependencies
-        run: poetry install --with dev docs 
+        run: poetry install --with dev,docs 
 
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
