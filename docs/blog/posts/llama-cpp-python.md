@@ -47,14 +47,14 @@ llama = llama_cpp.Llama(
     n_gpu_layers=-1,
     chat_format="chatml",
     n_ctx=2048,
-    draft_model=LlamaPromptLookupDecoding(num_pred_tokens=2),
+    draft_model=LlamaPromptLookupDecoding(num_pred_tokens=2), #(1)!
     logits_all=True,
     verbose=False
 )
 
 
 create = instructor.patch(
-    create=llama.create_chat_completion_openai_v1, mode=instructor.Mode.JSON_SCHEMA
+    create=llama.create_chat_completion_openai_v1, mode=instructor.Mode.JSON_SCHEMA #(2)!
 )
 
 
@@ -92,7 +92,7 @@ class MeetingInfo(BaseModel):
 
 
 extraction_stream = create(
-    response_model=instructor.Partial[MeetingInfo],
+    response_model=instructor.Partial[MeetingInfo], #(3)!
     messages=[
         {
             "role": "user",
@@ -107,8 +107,13 @@ console = Console()
 
 for extraction in extraction_stream:
     obj = extraction.model_dump()
-    console.clear()
+    console.clear() #(4)!
     console.print(obj)
 ```
+
+1. We use `LlamaPromptLookupDecoding` to obtain structured outputs using JSON schema via a mixture of constrained sampling and speculative decoding.
+2. We use `instructor.Mode.JSON_SCHEMA` return a JSON schema response.
+3. We use `instructor.Partial` to stream out partial models.
+4. This is just a simple example of how to stream out partial models and clear the console.
 
 ![](../../img/partial.gif)
