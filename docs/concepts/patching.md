@@ -12,15 +12,6 @@ There are three methods for structured output:
 2. **Tool Calling**: Useful in specific scenarios; lacks the reasking feature of OpenAI's tool calling API.
 3. **JSON Mode**: Offers closer adherence to JSON but with more potential validation errors. Suitable for specific non-function calling clients.
 
-## Function Calling
-
-```python
-import instructor
-from openai import OpenAI
-
-client = instructor.patch(OpenAI(), mode=instructor.Mode.FUNCTIONS)
-```
-
 ## Tool Calling
 
 ```python
@@ -28,6 +19,17 @@ import instructor
 from openai import OpenAI
 
 client = instructor.patch(OpenAI(), mode=instructor.Mode.TOOLS)
+```
+
+## Function Calling
+
+Note that function calling is soon to be deprecated in favor of TOOL mode for OpenAI. But will still be supported for other clients.
+
+```python
+import instructor
+from openai import OpenAI
+
+client = instructor.patch(OpenAI(), mode=instructor.Mode.FUNCTIONS)
 ```
 
 ## JSON Mode
