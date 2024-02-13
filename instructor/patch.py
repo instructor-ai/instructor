@@ -159,9 +159,8 @@ def handle_response_model(
                         "content": message,
                     },
                 )
-
-            # if the first message is a system append the schema to the end
-            if new_kwargs["messages"][0]["role"] == "system":
+            # if it is, system append the schema to the end
+            else:
                 new_kwargs["messages"][0]["content"] += f"\n\n{message}"
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
