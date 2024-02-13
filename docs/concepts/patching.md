@@ -14,11 +14,23 @@ There are three methods for structured output:
 
 ## Tool Calling
 
+This is the recommended method for OpenAI clients. It is the most stable as functions is being deprecated soon.
+
 ```python
 import instructor
 from openai import OpenAI
 
 client = instructor.patch(OpenAI(), mode=instructor.Mode.TOOLS)
+```
+
+## Parallel Tool Calling
+
+Parallel tool calling is also an option but you must set `response_model` to be `Iterable[Union[...]]` types since we expect an array of results. Check out [Parallel Tool Calling](./parallel.md) for more information.
+
+```python
+import instructor
+from openai import OpenAI
+client = instructor.patch(OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
 ```
 
 ## Function Calling
@@ -34,15 +46,29 @@ client = instructor.patch(OpenAI(), mode=instructor.Mode.FUNCTIONS)
 
 ## JSON Mode
 
+JSON mode uses OpenAI's JSON fromat for responses. by setting `response_format={"type": "json_object"}` in the `chat.completions.create` method.
+
 ```python
 import instructor
-from instructor import Mode
 from openai import OpenAI
 
-client = instructor.patch(OpenAI(), mode=Mode.JSON)
+client = instructor.patch(OpenAI(), mode=instructor.Mode.JSON)
+```
+
+## JSON Schema Mode
+
+JSON Schema mode uses OpenAI's JSON fromat for responses. by setting `response_format={"type": "json_object", schema:response_model.model_json_schema()}` in the `chat.completions.create` method. This is only available for select clients (e.g. llama-cpp-python, Anyscale, Together)
+
+```python
+import instructor
+from openai import OpenAI
+
+client = instructor.patch(OpenAI(), mode=instructor.Mode.JSON_SCHEMA)
 ```
 
 ## Markdown JSON Mode
+
+This just asks for the response in JSON format, but it is not recommended, and may not be supported in the future, this is just left to support vision models and will not give you the full benefits of instructor.
 
 !!! warning "Experimental"
 
@@ -53,39 +79,4 @@ import instructor
 from openai import OpenAI
 
 client = instructor.patch(OpenAI(), mode=instructor.Mode.MD_JSON)
-```
-
-### Schema Integration
-
-In JSON Mode, the schema is part of the system message:
-
-```python
-import instructor
-from openai import OpenAI
-
-client = instructor.patch(OpenAI())
-
-
-class UserExtract(instructor.OpenAISchema):
-    name: str
-    age: int
-
-
-response = client.chat.completions.create(
-    model="gpt-3.5-turbo-1106",
-    response_format={"type": "json_object"},
-    messages=[
-        {
-            "role": "system",
-            "content": f"Match your response to this json_schema: \n{UserExtract.model_json_schema()['properties']}",
-        },
-        {
-            "role": "user",
-            "content": "Extract jason is 25 years old",
-        },
-    ],
-)
-user = UserExtract.from_response(response, mode=instructor.Mode.JSON)
-print(user)
-#> name='Jason' age=25
 ```
