@@ -24,6 +24,7 @@ The goal of the blog is to capture some content that does not neatly fit within 
 - [Anyscale](posts/anyscale.md)
 - [Together Compute](posts/together.md)
 
-## Talks
+## Media
 
-- [What were the key insights and topics covered at the AI Engineering Summit 2023?](posts/aisummit-2023.md)
+- [Course: Structured Outputs w/ Instructor](https://www.wandb.courses/courses/steering-language-models?x=1)
+- [Keynote: Pydantic is all you need](posts/aisummit-2023.md)
