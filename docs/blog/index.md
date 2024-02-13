@@ -17,6 +17,13 @@ The goal of the blog is to capture some content that does not neatly fit within 
 - [What are the fundamentals of batch processing with async in Python?](posts/learn-async.md)
 - [How can I stream models to improve latency?](posts/generator.md)
 
+## Integrations
+
+- [Ollama](posts/ollama.md)
+- [llama-cpp-python](posts/llama-cpp-python.md)
+- [Anyscale](posts/anyscale.md)
+- [Together Compute](posts/together.md)
+
 ## Talks
 
 - [What were the key insights and topics covered at the AI Engineering Summit 2023?](posts/aisummit-2023.md)
