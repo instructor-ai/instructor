@@ -116,13 +116,13 @@ except Exception as e:
 
 ### Retrying Validation
 
-Allow for retries by setting `max_retries=1`.
+Allow for retries by setting `max_retries=2`.
 
 ```python
 qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     response_model=QuestionAnswerNoEvil,
-    max_retries=1,
+    max_retries=2,
     messages=[
         {
             "role": "system",
@@ -138,7 +138,7 @@ qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
 
 #### Output
 
-After validation with `llm_validator` and `max_retries=1`:
+After validation with `llm_validator` and `max_retries=2`:
 
 ```json
 {
