@@ -174,7 +174,7 @@ def process_response(
     stream: bool,
     validation_context: dict = None,
     strict=None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> Union[T_Model, T]:
     """Processes a OpenAI response with the response model, if available.
 
@@ -229,7 +229,7 @@ async def process_response_async(
     stream: bool = False,
     validation_context: dict = None,
     strict: Optional[bool] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> T:
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
@@ -284,7 +284,7 @@ async def retry_async(
     kwargs,
     max_retries: int | AsyncRetrying = 1,
     strict: Optional[bool] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> T:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
@@ -369,7 +369,7 @@ def retry_sync(
     kwargs,
     max_retries: int | Retrying = 1,
     strict: Optional[bool] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ):
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
@@ -486,7 +486,7 @@ class InstructorChatCompletionCreate(Protocol):
 @overload
 def patch(
     client: OpenAI,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> OpenAI:
     ...
 
@@ -494,7 +494,7 @@ def patch(
 @overload
 def patch(
     client: AsyncOpenAI,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> AsyncOpenAI:
     ...
 
@@ -502,7 +502,7 @@ def patch(
 @overload
 def patch(
     create: Callable[T_ParamSpec, T_Retval],
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> InstructorChatCompletionCreate:
     ...
 
@@ -510,7 +510,7 @@ def patch(
 def patch(
     client: Union[OpenAI, AsyncOpenAI] = None,
     create: Callable[T_ParamSpec, T_Retval] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> Union[OpenAI, AsyncOpenAI]:
     """
     Patch the `client.chat.completions.create` method
@@ -588,7 +588,7 @@ def patch(
         return new_create
 
 
-def apatch(client: AsyncOpenAI, mode: Mode = Mode.FUNCTIONS):
+def apatch(client: AsyncOpenAI, mode: Mode = Mode.TOOLS):
     """
     No longer necessary, use `patch` instead.
 
