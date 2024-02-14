@@ -25,8 +25,10 @@ env:
     instructor/dsl/partialjson.py
     instructor/dsl/validators.py
     instructor/function_calls.py
+    instructor/patch.py
     tests/test_function_calls.py
     tests/test_distil.py
+    tests/test_patch.py
 
 jobs:
   MyPy:
