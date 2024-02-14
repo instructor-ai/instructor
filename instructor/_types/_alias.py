@@ -12,6 +12,9 @@ ModelNames: TypeAlias = Literal[
     "gpt-4-1106-vision-preview",
     "gpt-4",
     "gpt-4-32k",
+    "text-embedding-3-small",
+    "text-embedding-3-large",
+    "ada v2",
     "text-embedding-ada-002",
     "text-embedding-ada-002-v2",
 ]
