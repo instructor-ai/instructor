@@ -4,7 +4,7 @@ In this guide, we'll walk through how to extract action items from meeting trans
 
 !!! tips "Motivation"
 
-Significant amount of time is dedicated to meetings, where action items are generated as the actionable outcomes of these discussions. Automating the extraction of action items can save time and guarantee that no critical tasks are overlooked.
+    Significant amount of time is dedicated to meetings, where action items are generated as the actionable outcomes of these discussions. Automating the extraction of action items can save time and guarantee that no critical tasks are overlooked.
 
 ## Defining the Structures
 
