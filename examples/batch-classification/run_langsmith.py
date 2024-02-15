@@ -73,7 +73,6 @@ async def classify(data: str) -> QuestionClassification:
         )
 
 
-@traceable(name="main")
 async def main(questions: List[str]):
     tasks = [classify(question) for question in questions]
     resps = []
