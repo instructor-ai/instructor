@@ -1,4 +1,3 @@
-import json
 import instructor
 import asyncio
 
@@ -75,21 +74,18 @@ async def classify(data: str) -> QuestionClassification:
 
 
 @traceable(name="main")
-async def main(
-    questions: List[str], *, path_to_jsonl: str = None
-) -> List[QuestionClassification]:
+async def main(questions: List[str]):
     tasks = [classify(question) for question in questions]
+    resps = []
     for task in asyncio.as_completed(tasks):
         question, label = await task
         resp = {
             "question": question,
             "classification": [c.value for c in label.classification],
+            "chain_of_thought": label.chain_of_thought,
         }
-        print(resp)
-        if path_to_jsonl:
-            with open(path_to_jsonl, "a") as f:
-                json_dump = json.dumps(resp)
-                f.write(json_dump + "\n")
+        resps.append(resp)
+    return resps
 
 
 if __name__ == "__main__":
