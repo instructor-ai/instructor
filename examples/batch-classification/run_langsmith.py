@@ -2,12 +2,15 @@ import json
 import instructor
 import asyncio
 
+from langsmith import traceable
+from langsmith.wrappers import wrap_openai
+
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, field_validator
 from typing import List
 from enum import Enum
 
-client = AsyncOpenAI()
+client = wrap_openai(AsyncOpenAI())
 client = instructor.patch(client, mode=instructor.Mode.TOOLS)
 sem = asyncio.Semaphore(5)
 
@@ -54,6 +57,8 @@ class QuestionClassification(BaseModel):
         return v
 
 
+# Modify the classify function
+@traceable(name="classify-question")
 async def classify(data: str) -> QuestionClassification:
     async with sem:  # some simple rate limiting
         return data, await client.chat.completions.create(
@@ -69,6 +74,7 @@ async def classify(data: str) -> QuestionClassification:
         )
 
 
+@traceable(name="main")
 async def main(
     questions: List[str], *, path_to_jsonl: str = None
 ) -> List[QuestionClassification]:
