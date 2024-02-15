@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
