@@ -26,6 +26,7 @@ Parallel tool calling is also an option but you must set `response_model` to be 
 ```python
 import instructor
 from openai import OpenAI
+
 client = instructor.patch(OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
 ```
 
