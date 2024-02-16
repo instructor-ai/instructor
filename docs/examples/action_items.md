@@ -4,7 +4,7 @@ In this guide, we'll walk through how to extract action items from meeting trans
 
 !!! tips "Motivation"
 
-Significant amount of time is dedicated to meetings, where action items are generated as the actionable outcomes of these discussions. Automating the extraction of action items can save time and guarantee that no critical tasks are overlooked.
+    Significant amount of time is dedicated to meetings, where action items are generated as the actionable outcomes of these discussions. Automating the extraction of action items can save time and guarantee that no critical tasks are overlooked.
 
 ## Defining the Structures
 
@@ -12,21 +12,26 @@ We'll model a meeting transcript as a collection of **`Ticket`** objects, each r
 
 ```python
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List, Optional
+
 
 class PriorityEnum(str, Enum):
     high = "High"
     medium = "Medium"
     low = "Low"
 
+
 class Subtask(BaseModel):
     """Correctly resolved subtask from the given transcript"""
+
     id: int
     name: str
 
+
 class Ticket(BaseModel):
     """Correctly resolved ticket from the given transcript"""
+
     id: int
     name: str
     description: str
@@ -34,11 +39,6 @@ class Ticket(BaseModel):
     assignees: List[str]
     subtasks: Optional[List[Subtask]]
     dependencies: Optional[List[int]]
-
-class ActionItems(BaseModel):
-    """Correctly resolved set of action items from the given transcript"""
-    items: List[Ticket]
-
 ```
 
 ## Extracting Action Items
@@ -48,15 +48,17 @@ To extract action items from a meeting transcript, we use the **`generate`** fun
 ```python
 import instructor
 from openai import OpenAI
+from typing import Iterable
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.patch(OpenAI())
 
-def generate(data: str) -> ActionItems:
+
+def generate(data: str) -> Iterable[Ticket]:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=ActionItems,
+        model="gpt-4",
+        response_model=Iterable[Ticket],
         messages=[
             {
                 "role": "system",
@@ -67,7 +69,7 @@ def generate(data: str) -> ActionItems:
                 "content": f"Create the action items for the following transcript: {data}",
             },
         ],
-    )  # type: ignore
+    )
 ```
 
 ## Evaluation and Testing
@@ -76,7 +78,7 @@ To test the **`generate`** function, we provide it with a sample transcript, and
 
 ```python
 prediction = generate(
-"""
+    """
 Alice: Hey team, we have several critical tasks we need to tackle for the upcoming release. First, we need to work on improving the authentication system. It's a top priority.
 
 Bob: Got it, Alice. I can take the lead on the authentication improvements. Are there any specific areas you want me to focus on?
@@ -110,46 +112,44 @@ In order to quickly visualize the data we used code interpreter to create a grap
 ![action items](action_items.png)
 
 ```json
-{
-  "items": [
-    {
-      "id": 1,
-      "name": "Improve Authentication System",
-      "description": "Revamp the front-end and optimize the back-end of the authentication system",
-      "priority": "High",
-      "assignees": ["Bob", "Carol"],
-      "subtasks": [
-        {
-          "id": 2,
-          "name": "Front-end Revamp"
-        },
-        {
-          "id": 3,
-          "name": "Back-end Optimization"
-        }
-      ],
-      "dependencies": []
-    },
-    {
-      "id": 4,
-      "name": "Integrate Authentication System with Billing System",
-      "description": "Integrate the improved authentication system with the new billing system",
-      "priority": "Medium",
-      "assignees": ["Bob"],
-      "subtasks": [],
-      "dependencies": [1]
-    },
-    {
-      "id": 5,
-      "name": "Update User Documentation",
-      "description": "Update the user documentation to reflect the changes in the authentication system",
-      "priority": "Low",
-      "assignees": ["Carol"],
-      "subtasks": [],
-      "dependencies": [2]
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "name": "Improve Authentication System",
+    "description": "Revamp the front-end and optimize the back-end of the authentication system",
+    "priority": "High",
+    "assignees": ["Bob", "Carol"],
+    "subtasks": [
+      {
+        "id": 2,
+        "name": "Front-end Revamp"
+      },
+      {
+        "id": 3,
+        "name": "Back-end Optimization"
+      }
+    ],
+    "dependencies": []
+  },
+  {
+    "id": 4,
+    "name": "Integrate Authentication System with Billing System",
+    "description": "Integrate the improved authentication system with the new billing system",
+    "priority": "Medium",
+    "assignees": ["Bob"],
+    "subtasks": [],
+    "dependencies": [1]
+  },
+  {
+    "id": 5,
+    "name": "Update User Documentation",
+    "description": "Update the user documentation to reflect the changes in the authentication system",
+    "priority": "Low",
+    "assignees": ["Carol"],
+    "subtasks": [],
+    "dependencies": [2]
+  }
+]
 ```
 
 In this example, the **`generate`** function successfully identifies and segments the action items, assigning them priorities, assignees, subtasks, and dependencies as discussed in the meeting.

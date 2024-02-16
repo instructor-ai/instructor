@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field, FieldValidationInfo, model_validator
-from typing import List
+from typing import Generator, List, Tuple
 
 
-class CitationMixin(BaseModel):
+class CitationMixin(BaseModel):  # type: ignore[misc]
     """
     Helpful mixing that can use `validation_context={"context": context}` in `from_response` to find the span of the substring_phrase in the context.
 
@@ -57,7 +57,7 @@ class CitationMixin(BaseModel):
         description="List of unique and specific substrings of the quote that was used to answer the question.",
     )
 
-    @model_validator(mode="after")
+    @model_validator(mode="after")  # type: ignore[misc]
     def validate_sources(self, info: FieldValidationInfo) -> "CitationMixin":
         """
         For each substring_phrase, find the span of the substring_phrase in the context.
@@ -75,8 +75,10 @@ class CitationMixin(BaseModel):
         self.substring_quotes = [text_chunks[span[0] : span[1]] for span in spans]
         return self
 
-    def _get_span(self, quote, context, errs=5):
-        import regex
+    def _get_span(
+        self, quote: str, context: str, errs: int = 5
+    ) -> Generator[Tuple[int, int], None, None]:
+        import regex  # type: ignore[import-untyped]
 
         minor = quote
         major = context
@@ -90,6 +92,6 @@ class CitationMixin(BaseModel):
         if s is not None:
             yield from s.spans()
 
-    def get_spans(self, context):
+    def get_spans(self, context: str) -> Generator[Tuple[int, int], None, None]:
         for quote in self.substring_quotes:
             yield from self._get_span(quote, context)

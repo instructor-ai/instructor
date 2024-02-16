@@ -2,7 +2,7 @@
 
 This post demonstrates how to use GPT-4 Vision API and the Chat API to automatically generate advertising copy from product images. This method can be useful for marketing and advertising teams, as well as for e-commerce platforms.
 
-The full code is available on [GitHub](https://www.github.com/jxnl/instructor/examples/vision/image_to_ad_copy.py).
+The full code is available on [GitHub](https://www.github.com/jxnl/instructor/tree/main/examples/vision/image_to_ad_copy.py).
 
 ## Building the models
 
@@ -13,6 +13,9 @@ For the `Product` model, we define a class that represents a product extracted f
 Note that it is easy to add [Validators](https://jxnl.github.io/instructor/concepts/reask_validation/) and other Pydantic features to the model to ensure that the data is valid and consistent.
 
 ```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
 class Product(BaseModel):
     """
     Represents a product extracted from an image using AI.
@@ -87,9 +90,7 @@ class AdCopy(BaseModel):
     ad_copy: str = Field(
         description="A long-form advertisement copy for the given product. This will be used in campaigns to promote the product with a persuasive message and a call-to-action with the objective of driving sales.",
     )
-    name: str = Field(
-        description="The name of the product being advertised."
-    )
+    name: str = Field(description="The name of the product being advertised.")
 ```
 
 ## Calling the API
@@ -109,7 +110,7 @@ def read_images(image_urls: List[str]) -> IdentifiedProduct:
     return client_image.chat.completions.create(
         model="gpt-4-vision-preview",
         response_model=IdentifiedProduct,
-        max_tokens=1024, # can be changed
+        max_tokens=1024,  # can be changed
         temperature=0,
         messages=[
             {
@@ -161,7 +162,7 @@ def generate_ad_copy(product: Product) -> AdCopy:
 
 ### Putting it all together
 
-Finally, we can put it all together in a single function that takes a list of image URLs and generates advertising copy for the products identified in the images. Please refer to the [full code](https://www.github.com/jxnl/instructor/examples/vision/image_to_ad_copy.py) for the complete implementation.
+Finally, we can put it all together in a single function that takes a list of image URLs and generates advertising copy for the products identified in the images. Please refer to the [full code](https://www.github.com/jxnl/instructor/tree/main/examples/vision/image_to_ad_copy.py) for the complete implementation.
 
 ## Input file
 

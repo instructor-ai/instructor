@@ -3,17 +3,17 @@ from .dsl import (
     CitationMixin,
     Maybe,
     Partial,
-    MultiTask,
+    IterableModel,
     llm_validator,
     openai_moderation,
 )
 from .function_calls import OpenAISchema, openai_schema, Mode
-from .patch import apatch, patch
+from .patch import apatch, patch, handle_parallel_model, handle_response_model
 
 __all__ = [
     "OpenAISchema",
     "CitationMixin",
-    "MultiTask",
+    "IterableModel",
     "Maybe",
     "Partial",
     "openai_schema",
@@ -24,5 +24,6 @@ __all__ = [
     "openai_moderation",
     "FinetuneFormat",
     "Instructions",
-    "unpatch",
+    "handle_parallel_model",
+    "handle_response_model",
 ]

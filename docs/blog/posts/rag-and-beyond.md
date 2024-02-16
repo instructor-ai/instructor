@@ -81,6 +81,7 @@ class DateRange(BaseModel):
     start: datetime.date
     end: datetime.date
 
+
 class MetaphorQuery(BaseModel):
     rewritten_query: str
     published_daterange: DateRange
@@ -105,12 +106,9 @@ query = client.chat.completions.create(
     messages=[
         {
             "role": "system",
-            "content": "You're a query understanding system for the Metafor Systems search engine. Here are some tips: ..."
+            "content": "You're a query understanding system for the Metafor Systems search engine. Here are some tips: ...",
         },
-        {
-            "role": "user",
-            "content": "What are some recent developments in AI?"
-        }
+        {"role": "user", "content": "What are some recent developments in AI?"},
     ],
 )
 ```
@@ -136,7 +134,7 @@ class DateRange(BaseModel):
     end: datetime.date
     chain_of_thought: str = Field(
         None,
-        description="Think step by step to plan what is the best time range to search in"
+        description="Think step by step to plan what is the best time range to search in",
     )
 ```
 
@@ -151,6 +149,7 @@ class ClientSource(enum.Enum):
     GMAIL = "gmail"
     CALENDAR = "calendar"
 
+
 class SearchClient(BaseModel):
     query: str
     keywords: List[str]
@@ -164,6 +163,7 @@ class SearchClient(BaseModel):
             ...
         elif self.source == ClientSource.CALENDAR:
             ...
+
 
 class Retrieval(BaseModel):
     queries: List[SearchClient]
@@ -186,7 +186,7 @@ retrieval = client.chat.completions.create(
     response_model=Retrieval,
     messages=[
         {"role": "system", "content": "You are Jason's personal assistant."},
-        {"role": "user", "content": "What do I have today?"}
+        {"role": "user", "content": "What do I have today?"},
     ],
 )
 ```

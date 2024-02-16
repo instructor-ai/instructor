@@ -3,7 +3,8 @@
 In this guide, we demonstrate how to extract and resolve entities from a sample legal contract. Then, we visualize these entities and their dependencies as an entity graph. This approach can be invaluable for legal tech applications, aiding in the understanding of complex documents.
 
 !!! tips "Motivation"
-Legal contracts are full of intricate details and interconnected clauses. Automatically extracting and visualizing these elements can make it easier to understand the document's overall structure and terms.
+
+    Legal contracts are full of intricate details and interconnected clauses. Automatically extracting and visualizing these elements can make it easier to understand the document's overall structure and terms.
 
 ## Defining the Data Structures
 
@@ -58,6 +59,7 @@ from openai import OpenAI
 # enables response_model keyword
 client = instructor.patch(OpenAI())
 
+
 def ask_ai(content) -> DocumentExtraction:
     return client.chat.completions.create(
         model="gpt-4",
@@ -82,10 +84,15 @@ def ask_ai(content) -> DocumentExtraction:
 ```python
 from graphviz import Digraph
 
+
 def generate_html_label(entity: Entity) -> str:
-    rows = [f"<tr><td>{prop.key}</td><td>{prop.resolved_absolute_value}</td></tr>" for prop in entity.properties]
+    rows = [
+        f"<tr><td>{prop.key}</td><td>{prop.resolved_absolute_value}</td></tr>"
+        for prop in entity.properties
+    ]
     table_rows = "".join(rows)
     return f"<<table border='0' cellborder='1' cellspacing='0'><tr><td colspan='2'><b>{entity.entity_title}</b></td></tr>{table_rows}</table>>"
+
 
 def generate_graph(data: DocumentExtraction):
     dot = Digraph(comment="Entity Graph", node_attr={"shape": "plaintext"})
