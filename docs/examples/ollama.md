@@ -1,6 +1,6 @@
 # Structured Outputs with Ollama
 
-Open-source LLMS are gaining popularity, and the release of Ollama's OpenAI compatibility layer it has made it possible to obtain structured outputs using JSON schema.
+Open-source LLMS are gaining popularity, and with the release of Ollama's OpenAI compatibility layer, it has become possible to obtain structured outputs using JSON schema.
 
 By the end of this blog post, you will learn how to effectively utilize instructor with Ollama. But before we proceed, let's first explore the concept of patching.
 
