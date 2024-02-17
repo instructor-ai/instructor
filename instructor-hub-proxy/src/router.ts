@@ -6,6 +6,11 @@ const router = Router();
 
 // GET collection index
 router.get('/api/:branch/items', async ({ params }) => {
+	console.log({
+		branch: params.branch,
+		event_type: 'COLLECTION_INDEX',
+		timestamp: new Date().toISOString(),
+	});
 	const url = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/mkdocs.yml?raw=true`;
 	const mkdoc_yml = await fetch(url).then((res) => res.text());
 	var mkdocs = YAML.parse(mkdoc_yml);
@@ -29,6 +34,12 @@ router.get('/api/:branch/items', async ({ params }) => {
 
 // GET content
 router.get('/api/:branch/items/:slug/md', async ({ params }) => {
+	console.log({
+		branch: params.branch,
+		slug: params.slug,
+		event_type: 'CONTENT_MARKDOWN',
+		timestamp: new Date().toISOString(),
+	});
 	const raw_content = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/docs/hub/${params.slug}.md?raw=true`;
 	const content = await fetch(raw_content).then((res) => res.text());
 
@@ -41,6 +52,12 @@ router.get('/api/:branch/items/:slug/md', async ({ params }) => {
 
 // GET content python
 router.get('/api/:branch/items/:slug/py', async ({ params }) => {
+	console.log({
+		branch: params.branch,
+		slug: params.slug,
+		event_type: 'CONTENT_PYTHON',
+		timestamp: new Date().toISOString(),
+	});
 	const raw_content = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/docs/hub/${params.slug}.md?raw=true`;
 	const content = await fetch(raw_content).then((res) => res.text());
 
