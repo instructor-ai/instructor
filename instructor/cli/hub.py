@@ -1,4 +1,5 @@
-from typing import Iterable, Annotated, Optional
+from typing import Iterable, Optional
+
 import typer
 import httpx
 import yaml
@@ -13,11 +14,10 @@ app = typer.Typer(
     help="Interact with the instructor hub, a collection of examples and cookbooks for the instructor library.",
     short_help="Interact with the instructor hub",
 )
-client = OpenAI()
 console = Console()
 
 
-class Cookbook(BaseModel):
+class HubPage(BaseModel):
     id: int
     branch: str = "main"
     slug: str
@@ -53,10 +53,6 @@ class Cookbook(BaseModel):
         return resp.content.decode("utf-8")
 
     def get_py(self):
-        """
-        Uses a regex to find all ```python or ```py code blocks in the markdown file
-        concatenates them and returns the code as a string
-        """
         import re
 
         url = self.get_md_url()
@@ -68,27 +64,22 @@ class Cookbook(BaseModel):
         return code
 
 
-def get_root_url(branch="main") -> str:
-    """
-    Returns the raw URL for the mkdocs.yml file
-    """
+def mkdoc_yaml_url(branch="main") -> str:
     return f"https://raw.githubusercontent.com/jxnl/instructor/{branch}/mkdocs.yml?raw=true"
 
 
-def list_hub(branch="main") -> Iterable[Cookbook]:
-    url = get_root_url(branch)
-    resp = httpx.get(url)
-    # Fix for yaml parser
+def list_hub(branch="main") -> Iterable[HubPage]:
+    resp = httpx.get(mkdoc_yaml_url(branch))
     mkdocs_config = resp.content.decode("utf-8").replace("!", "")
     data = yaml.safe_load(mkdocs_config)
 
     # Replace with Hub key
     cookbooks = [obj["Hub"] for obj in data.get("nav", []) if "Hub" in obj][0]
-    for ii, cookbook in enumerate(cookbooks):
+    for id, cookbook in enumerate(cookbooks):
         title, link = list(cookbook.items())[0]
         slug = link.split("/")[-1].replace(".md", "")
         if slug != "index":
-            yield Cookbook(id=ii, branch=branch, slug=slug, title=title)
+            yield HubPage(id=id, branch=branch, slug=slug, title=title)
 
 
 def get_cookbook_by_id(id: int, branch="main"):
@@ -111,14 +102,12 @@ def get_cookbook_by_slug(slug: str, branch="main"):
     short_help="List all available cookbooks",
 )
 def list_cookbooks(
-    branch: Annotated[
-        str,
-        typer.Option(
-            "--branch",
-            "-b",
-            help="Specific branch to fetch the cookbooks from. Defaults to 'main'.",
-        ),
-    ] = "hub",
+    branch: str = typer.Option(
+        "hub",
+        "--branch",
+        "-b",
+        help="Specific branch to fetch the cookbooks from. Defaults to 'main'.",
+    ),
 ):
     table = Table(title="Available Cookbooks")
     table.add_column("hub_id", justify="right", style="cyan", no_wrap=True)
@@ -150,15 +139,6 @@ def pull(
         False, "--page", "-p", help="Paginate the output with a less-like pager"
     ),
 ):
-    """Pull the latest cookbooks from the instructor hub based on id or slug.
-
-    Args:
-        id: The cookbook id. Optional.
-        slug: The cookbook slug. Optional.
-        py: Output to a Python file. Defaults to False.
-        branch: Specific branch to fetch the cookbooks from. Defaults to 'main'.
-        page: Paginate the output with a less-like pager. Defaults to False.
-    """
     cookbook = (
         get_cookbook_by_id(id, branch)
         if id
