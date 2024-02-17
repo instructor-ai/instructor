@@ -118,7 +118,7 @@ def list_cookbooks(
             "-b",
             help="Specific branch to fetch the cookbooks from. Defaults to 'main'.",
         ),
-    ] = "main",
+    ] = "hub",
 ):
     table = Table(title="Available Cookbooks")
     table.add_column("hub_id", justify="right", style="cyan", no_wrap=True)
