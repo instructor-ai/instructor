@@ -27,13 +27,13 @@ class Cookbook(BaseModel):
         """
         Returns the URL for the documentation
         """
-        return f"https://jxnl.github.io/instructor/examples/{self.slug}/"
+        return f"https://jxnl.github.io/instructor/hub/{self.slug}/"
 
     def get_md_url(self):
         """
         Returns the raw URL for the markdown file
         """
-        return f"https://raw.githubusercontent.com/jxnl/instructor/main/docs/examples/{self.slug}.md?raw=true"
+        return f"https://raw.githubusercontent.com/jxnl/instructor/main/docs/hub/{self.slug}.md?raw=true"
 
     def render_doc_link(self):
         """
@@ -83,7 +83,7 @@ def list_hub(branch="main") -> Iterable[Cookbook]:
     data = yaml.safe_load(mkdocs_config)
 
     # Replace with Hub key
-    cookbooks = [obj["Cookbook"] for obj in data.get("nav", []) if "Cookbook" in obj][0]
+    cookbooks = [obj["Hub"] for obj in data.get("nav", []) if "Hub" in obj][0]
     for ii, cookbook in enumerate(cookbooks):
         title, link = list(cookbook.items())[0]
         slug = link.split("/")[-1].replace(".md", "")
@@ -91,9 +91,9 @@ def list_hub(branch="main") -> Iterable[Cookbook]:
             yield Cookbook(id=ii, branch=branch, slug=slug, title=title)
 
 
-def get_cookbook_by_id(ii: int, branch="main"):
+def get_cookbook_by_id(id: int, branch="main"):
     for cookbook in list_hub(branch):
-        if cookbook.id == ii:
+        if cookbook.id == id:
             return cookbook
     return None
 
@@ -144,7 +144,7 @@ def pull(
     slug: Optional[str] = typer.Option(None, "--slug", "-s", help="The cookbook slug"),
     py: bool = typer.Option(False, "--py", help="Output to a Python file"),
     branch: str = typer.Option(
-        "main", help="Specific branch to fetch the cookbooks from."
+        "hub", help="Specific branch to fetch the cookbooks from."
     ),
     page: bool = typer.Option(
         False, "--page", "-p", help="Paginate the output with a less-like pager"
