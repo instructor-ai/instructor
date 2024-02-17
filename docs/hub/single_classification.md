@@ -35,15 +35,13 @@ def classify(data: str) -> ClassificationResponse:
 
 
 if __name__ == "__main__":
-    data = "Hey Jason! You're awesome"
-    prediction = classify(data)
-    assert prediction.label == "NOT_SPAM"
-    print(prediction)
-    #> label='NOT_SPAM'
-
-    data = "I am a nigerian prince and I need your help."
-    prediction = classify(data)
-    assert prediction.label == "SPAM"
-    print(prediction)
-    #> label='SPAM'
+    for text, label in [
+        ("Hey Jason! You're awesome", "NOT_SPAM"),
+        ("I am a nigerian prince and I need your help.", "SPAM"),
+    ]:
+        prediction = classify(text)
+        assert prediction.label == label
+        print(f"Text: {text}, Predicted Label: {prediction.label}")
+        #> Text: Hey Jason! You're awesome, Predicted Label: NOT_SPAM
+        #> Text: I am a nigerian prince and I need your help., Predicted Label: SPAM
 ```

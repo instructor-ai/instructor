@@ -33,7 +33,7 @@ class Cookbook(BaseModel):
         """
         Returns the raw URL for the markdown file
         """
-        return f"https://raw.githubusercontent.com/jxnl/instructor/main/docs/hub/{self.slug}.md?raw=true"
+        return f"https://raw.githubusercontent.com/jxnl/instructor/{self.branch}/docs/hub/{self.slug}.md?raw=true"
 
     def render_doc_link(self):
         """
@@ -47,12 +47,12 @@ class Cookbook(BaseModel):
         """
         return f"{self.slug} {self.render_doc_link()}"
 
-    def get_doc(self):
+    def get_md(self):
         url = self.get_md_url()
         resp = httpx.get(url)
         return resp.content.decode("utf-8")
 
-    def get_python_code(self):
+    def get_py(self):
         """
         Uses a regex to find all ```python or ```py code blocks in the markdown file
         concatenates them and returns the code as a string
@@ -170,7 +170,7 @@ def pull(
         typer.echo("Please provide a valid cookbook id or slug.")
         raise typer.Exit(code=1)
 
-    output = cookbook.get_python_code() if py else Markdown(cookbook.get_doc())
+    output = cookbook.get_py() if py else Markdown(cookbook.get_md())
     if page:
         with console.pager(styles=True):
             console.print(output)
