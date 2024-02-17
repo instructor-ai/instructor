@@ -49,3 +49,8 @@ compatibility_date = "2024-02-08"
 # [[migrations]]
 # tag = "v1"
 # new_classes = ["MyDurableObject"]
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "cli_analytics"
+database_id = "607034d8-267d-42d7-8c0b-462aec83d955"

@@ -4,13 +4,26 @@ import YAML from 'yaml';
 // now let's create a router (note the lack of "new")
 const router = Router();
 
+// Function to track analytics
+async function trackAnalytics(request: any, env: Env, event_type: string, slug: string, branch: string) {
+	const user_agent = request.headers.get('User-Agent') || 'unknown';
+	const request_ip = request.headers.get('CF-Connecting-IP') || 'unknown'; // Cloudflare passes the client IP
+	const request_time = new Date().toISOString();
+
+	// Prepare and execute the insert statement for analytics tracking
+	// @ts-ignore
+	await env.DB.prepare(
+		'INSERT INTO hub_analytics (event_type, user_agent, request_ip, request_time, slug, branch) VALUES (?, ?, ?, ?, ?, ?)'
+	)
+		.bind(event_type, user_agent, request_ip, request_time, slug, branch)
+		.run();
+}
+
 // GET collection index
-router.get('/api/:branch/items', async ({ params }) => {
-	console.log({
-		branch: params.branch,
-		event_type: 'COLLECTION_INDEX',
-		timestamp: new Date().toISOString(),
-	});
+router.get('/api/:branch/items', async (request) => {
+	const { params, env } = request;
+	await trackAnalytics(request, env, 'COLLECTION_INDEX', 'index', params.branch);
+
 	const url = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/mkdocs.yml?raw=true`;
 	const mkdoc_yml = await fetch(url).then((res) => res.text());
 	var mkdocs = YAML.parse(mkdoc_yml);
@@ -33,13 +46,9 @@ router.get('/api/:branch/items', async ({ params }) => {
 });
 
 // GET content
-router.get('/api/:branch/items/:slug/md', async ({ params }) => {
-	console.log({
-		branch: params.branch,
-		slug: params.slug,
-		event_type: 'CONTENT_MARKDOWN',
-		timestamp: new Date().toISOString(),
-	});
+router.get('/api/:branch/items/:slug/md', async (request) => {
+	const { params, env } = request;
+	await trackAnalytics(request, env, 'CONTENT_MARKDOWN', params.slug, params.branch);
 	const raw_content = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/docs/hub/${params.slug}.md?raw=true`;
 	const content = await fetch(raw_content).then((res) => res.text());
 
@@ -51,13 +60,9 @@ router.get('/api/:branch/items/:slug/md', async ({ params }) => {
 });
 
 // GET content python
-router.get('/api/:branch/items/:slug/py', async ({ params }) => {
-	console.log({
-		branch: params.branch,
-		slug: params.slug,
-		event_type: 'CONTENT_PYTHON',
-		timestamp: new Date().toISOString(),
-	});
+router.get('/api/:branch/items/:slug/py', async (request) => {
+	const { params, env } = request;
+	await trackAnalytics(request, env, 'CONTENT_PYTHON', params.slug, params.branch);
 	const raw_content = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/docs/hub/${params.slug}.md?raw=true`;
 	const content = await fetch(raw_content).then((res) => res.text());
 
