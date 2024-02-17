@@ -4,7 +4,6 @@ import typer
 import httpx
 import yaml
 
-from openai import BaseModel, OpenAI
 from rich.console import Console
 from rich.table import Table
 from rich.markdown import Markdown
