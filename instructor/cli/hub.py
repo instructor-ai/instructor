@@ -49,6 +49,7 @@ class HubPage(BaseModel):
 
         code_blocks = re.findall(r"```(python|py)(.*?)```", script_str, re.DOTALL)
         code = "\n".join([code_block for (_, code_block) in code_blocks])
+        return f"# Generated from `instructor hub pull --id {self.id} --py``\n"
         return code
 
 
