@@ -181,7 +181,7 @@ Example output:
                             "Costly"
                         ]
                     },
-                    {
+                        {
                         "name": "Orbitz",
                         "features": [
                             "Transactions Online",
