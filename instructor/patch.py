@@ -172,7 +172,7 @@ def process_response(
     stream: bool,
     validation_context: Optional[Dict[str, Any]] = None,
     strict: Optional[bool] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> Union[OpenAISchema, List[OpenAISchema]]:
     """Processes a OpenAI response with the response model, if available.
 
@@ -182,7 +182,7 @@ def process_response(
         stream (bool): Whether the response is a stream
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (_type_, optional): Whether to use strict json parsing. Defaults to None.
-        mode (Mode, optional): The openai completion mode. Defaults to Mode.FUNCTIONS.
+        mode (Mode, optional): The openai completion mode. Defaults to Mode.TOOLS.
 
     Returns:
         Union[T_Model, T]: The parsed response, if a response model is available, otherwise the response as is from the SDK
@@ -216,7 +216,6 @@ def process_response(
     if isinstance(response_model, ParallelBase):
         return model
 
-    assert hasattr(model, "_raw_response")
     model._raw_response = response
     return model
 
