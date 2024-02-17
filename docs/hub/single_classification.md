@@ -1,6 +1,6 @@
 # Single-Label Classification
 
-This tutorial showcases how to implement text classification tasks—specifically, single-label and multi-label classifications—using the OpenAI API.
+This example demonstrates how to perform single-label classification using the OpenAI API. The example uses the `gpt-3.5-turbo` model to classify text as either `SPAM` or `NOT_SPAM`.
 
 ```python
 from pydantic import BaseModel, Field
