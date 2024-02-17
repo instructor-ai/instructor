@@ -83,6 +83,15 @@ def get_model_cost(
     """Get the cost details for a given model."""
     if model in MODEL_COSTS:
         return MODEL_COSTS[model]
+    
+    if model.startswith("gpt-3.5-turbo-16k"):
+        return MODEL_COSTS["gpt-3.5-turbo-16k"]
+    elif model.startswith("gpt-3.5-turbo"):
+        return MODEL_COSTS["gpt-3.5-turbo"]
+    elif model.startswith("gpt-4-32k"):
+        return MODEL_COSTS["gpt-4-32k"]
+    elif model.startswith("gpt-4"):
+        return MODEL_COSTS["gpt-4"]
     else:
         raise ValueError(f"Cost for model {model} not found")
 
