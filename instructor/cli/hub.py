@@ -23,24 +23,24 @@ class HubPage(BaseModel):
     slug: str
     title: str
 
-    def get_doc_url(self):
+    def get_doc_url(self) -> str:
         return f"https://jxnl.github.io/instructor/hub/{self.slug}/"
 
-    def get_md_url(self):
+    def get_md_url(self) -> str:
         return f"https://raw.githubusercontent.com/jxnl/instructor/{self.branch}/docs/hub/{self.slug}.md?raw=true"
 
-    def render_doc_link(self):
+    def render_doc_link(self) -> str:
         return f"[link={self.get_doc_url()}](doc)[/link]"
 
-    def render_slug(self):
+    def render_slug(self) -> str:
         return f"{self.slug} {self.render_doc_link()}"
 
-    def get_md(self):
+    def get_md(self) -> str:
         url = self.get_md_url()
         resp = httpx.get(url)
         return resp.content.decode("utf-8")
 
-    def get_py(self):
+    def get_py(self) -> str:
         import re
 
         url = self.get_md_url()
@@ -56,7 +56,7 @@ def mkdoc_yaml_url(branch="main") -> str:
     return f"https://raw.githubusercontent.com/jxnl/instructor/{branch}/mkdocs.yml?raw=true"
 
 
-def list_hub(branch="main") -> Iterable[HubPage]:
+def generate_pages(branch="main") -> Iterable[HubPage]:
     resp = httpx.get(mkdoc_yaml_url(branch))
     mkdocs_config = resp.content.decode("utf-8").replace("!", "")
     data = yaml.safe_load(mkdocs_config)
@@ -71,14 +71,14 @@ def list_hub(branch="main") -> Iterable[HubPage]:
 
 
 def get_cookbook_by_id(id: int, branch="main"):
-    for cookbook in list_hub(branch):
+    for cookbook in generate_pages(branch):
         if cookbook.id == id:
             return cookbook
     return None
 
 
 def get_cookbook_by_slug(slug: str, branch="main"):
-    for cookbook in list_hub(branch):
+    for cookbook in generate_pages(branch):
         if cookbook.slug == slug:
             return cookbook
     return None
@@ -102,7 +102,7 @@ def list_cookbooks(
     table.add_column("slug", style="green")
     table.add_column("title", style="white")
 
-    for cookbook in list_hub(branch):
+    for cookbook in generate_pages(branch):
         ii = cookbook.id
         slug = cookbook.render_slug()
         title = cookbook.title
