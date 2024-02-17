@@ -122,8 +122,8 @@ def list_cookbooks(
 ):
     table = Table(title="Available Cookbooks")
     table.add_column("hub_id", justify="right", style="cyan", no_wrap=True)
-    table.add_column("slug", style="magenta")
-    table.add_column("title", style="green")
+    table.add_column("slug", style="green")
+    table.add_column("title", style="white")
 
     for cookbook in list_hub(branch):
         ii = cookbook.id
