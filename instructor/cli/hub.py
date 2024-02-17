@@ -4,6 +4,7 @@ import typer
 import httpx
 import yaml
 
+from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
 from rich.markdown import Markdown
@@ -23,27 +24,15 @@ class HubPage(BaseModel):
     title: str
 
     def get_doc_url(self):
-        """
-        Returns the URL for the documentation
-        """
         return f"https://jxnl.github.io/instructor/hub/{self.slug}/"
 
     def get_md_url(self):
-        """
-        Returns the raw URL for the markdown file
-        """
         return f"https://raw.githubusercontent.com/jxnl/instructor/{self.branch}/docs/hub/{self.slug}.md?raw=true"
 
     def render_doc_link(self):
-        """
-        Rich Render the documentation link
-        """
         return f"[link={self.get_doc_url()}](doc)[/link]"
 
     def render_slug(self):
-        """
-        Rich Render the slug with a clickable link to the documentation
-        """
         return f"{self.slug} {self.render_doc_link()}"
 
     def get_md(self):
