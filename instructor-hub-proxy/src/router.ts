@@ -1,5 +1,6 @@
 import { Router } from 'itty-router';
 import YAML from 'yaml';
+import Fuse from 'fuse.js';
 
 // now let's create a router (note the lack of "new")
 const router = Router();
@@ -42,8 +43,8 @@ router.get('/api/:branch/items', async (request) => {
 
 	const url = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/mkdocs.yml?raw=true`;
 	const mkdoc_yml = await fetch(url).then((res) => res.text());
-	var mkdocs = YAML.parse(mkdoc_yml);
-	const cookbooks = mkdocs.nav
+	const mkdocs = YAML.parse(mkdoc_yml);
+	var cookbooks = mkdocs.nav
 		?.filter((obj: Map<string, string>) => 'Hub' in obj)[0]
 		.Hub.map((obj: any, index: number) => {
 			const [name, path] = Object.entries(obj)[0];
@@ -54,6 +55,16 @@ router.get('/api/:branch/items', async (request) => {
 			return { id: index, name, path, slug, count };
 		})
 		.filter(({ slug }: any) => slug !== 'index');
+
+	// Search for cookbooks
+	const queryStr = query.q;
+	if (queryStr !== undefined && queryStr !== '') {
+		const fuse = new Fuse(cookbooks, {
+			keys: ['name', 'slug'],
+			threshold: 0.3,
+		});
+		cookbooks = fuse.search(queryStr as string).map((obj: any) => obj.item);
+	}
 
 	return new Response(JSON.stringify(cookbooks), {
 		headers: {

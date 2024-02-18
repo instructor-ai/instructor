@@ -14,6 +14,7 @@
     "wrangler": "^3.0.0"
   },
   "dependencies": {
+    "fuse.js": "^7.0.0",
     "yaml": "^2.3.4"
   }
 }
