@@ -168,6 +168,7 @@ nav:
     - Introducing Instructor Hub: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
     - Multiple Classification Model: 'hub/multiple_classification.md'
+    - Batch Asynchronous Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
