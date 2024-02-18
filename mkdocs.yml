@@ -114,7 +114,6 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
       combine_header_slug: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify
   - pymdownx.tasklist:
       custom_checkbox: true
 nav:
@@ -164,6 +163,10 @@ nav:
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
     - Ollama: 'examples/ollama.md'
     - SQLModel Integration: 'examples/sqlmodel.md'
+  - Hub:
+    - Introduction: 'hub/index.md'
+    - Single Classification Model: 'hub/single_classification.md'
+    - Multiple Classification Model: 'hub/multiple_classification.md'
   - Tutorials:
     - Introduction: 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
@@ -235,4 +238,3 @@ extra:
       link: https://twitter.com/jxnlco
     - icon: fontawesome/brands/github
       link: https://github.com/jxnl
-copyright: Copyright &copy; 2023 Jason Liu
