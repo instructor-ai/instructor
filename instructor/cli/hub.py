@@ -21,6 +21,7 @@ class HubPage(BaseModel):
     name: str
     slug: str
     branch: str = "main"
+    count: int = 0
 
     def get_doc_url(self) -> str:
         return f"https://jxnl.github.io/instructor/hub/{self.slug}/"
@@ -96,13 +97,14 @@ def list_cookbooks(
     table.add_column("hub_id", justify="right", style="cyan", no_wrap=True)
     table.add_column("slug", style="green")
     table.add_column("title", style="white")
+    table.add_column("n_downloads", justify="right")
 
     client = HubClient()
     for cookbook in client.get_cookbooks(branch):
         ii = cookbook.id
         slug = cookbook.render_slug()
         title = cookbook.name
-        table.add_row(str(ii), slug, title)
+        table.add_row(str(ii), slug, title, str(cookbook.count))
 
     console.print(table)
 
