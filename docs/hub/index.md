@@ -76,3 +76,17 @@ You can run the code instantly if you `|` it to `python`:
 ```bash
 $ instructor hub pull --id 2 --py | python
 ```
+
+## Call for Contributions
+
+We're looking for a bunch more hub examples, if you have a tutorial or example you'd like to add, please open a pull request in `docs/hub` and we'll review it.
+
+- [ ] Converting the cookbooks to the new format
+- [ ] Validator examples
+- [ ] Data extraction examples
+- [ ] Streaming examples (Iterable and Partial)
+- [ ] Batch Parsing examples
+- [ ] Open Examples, together, anyscale, ollama, llama-cpp, etc
+- [ ] Query Expansion examples
+- [ ] Batch Data Processing examples
+- [ ] Batch Data Processing examples with Cache
