@@ -10,9 +10,11 @@ from pydantic import (
 )
 import instructor
 import pandas as pd
+from langsmith.wrappers import wrap_openai
+from langsmith import traceable
 
 
-client = OpenAI()
+client = wrap_openai(OpenAI())
 client = instructor.patch(client, mode=instructor.function_calls.Mode.MD_JSON)
 
 
@@ -72,6 +74,7 @@ example = MultipleTables(
 )
 
 
+@traceable(name="extract-table")
 def extract(url: str) -> MultipleTables:
     tables = client.chat.completions.create(
         model="gpt-4-vision-preview",
