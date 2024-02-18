@@ -42,12 +42,18 @@ class HubClient:
     ):
         self.base_url = "http://localhost:8787"
 
-    def get_cookbooks(self, branch):
+    def get_cookbooks(self, branch: str, q: Optional[str] = None, sort: bool = False):
         """Get collection index of cookbooks."""
         url = f"{self.base_url}/api/{branch}/items/"
+
+        if q:
+            url += f"?q={q}"
+
         response = httpx.get(url)
         if response.status_code == 200:
-            return [HubPage(**page) for page in response.json()]
+            pages = [HubPage(**page) for page in response.json()]
+            if sort:
+                return sorted(pages, key=lambda x: x.count, reverse=True)
         else:
             raise Exception(f"Failed to fetch cookbooks: {response.status_code}")
 
@@ -86,6 +92,8 @@ class HubClient:
     short_help="List all available cookbooks",
 )
 def list_cookbooks(
+    q: Optional[str] = typer.Option(None, "-q", help="Search for cookbooks by name"),
+    sort: bool = typer.Option(False, "--sort", help="Sort the cookbooks by popularity"),
     branch: str = typer.Option(
         "hub",
         "--branch",
@@ -100,7 +108,7 @@ def list_cookbooks(
     table.add_column("n_downloads", justify="right")
 
     client = HubClient()
-    for cookbook in client.get_cookbooks(branch):
+    for cookbook in client.get_cookbooks(branch, q=q, sort=sort):
         ii = cookbook.id
         slug = cookbook.render_slug()
         title = cookbook.name

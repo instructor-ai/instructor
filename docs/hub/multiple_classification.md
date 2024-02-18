@@ -11,9 +11,11 @@ from pydantic import BaseModel, Field
 # enables response_model keyword
 client = instructor.patch(openai.OpenAI())
 
+LABELS = Literal["ACCOUNT", "BILLING", "GENERAL_QUERY"]
+
 
 class MultiClassPrediction(BaseModel):
-    labels: List[Literal["ACCOUNT", "BILLING", "GENERAL_QUERY"]] = Field(
+    labels: List[LABELS] = Field(
         ...,
         description="Only select the labels that apply to the support ticket.",
     )
@@ -40,6 +42,10 @@ if __name__ == "__main__":
     ticket = "My account is locked and I can't access my billing info."
     prediction = multi_classify(ticket)
     assert {"ACCOUNT", "BILLING"} == {label for label in prediction.labels}
-    print(prediction)
-    #> labels=['ACCOUNT', 'BILLING']
+    print("input:", ticket)
+    #> input: My account is locked and I can't access my billing info.
+    print("labels:", LABELS)
+    #> labels: typing.Literal['ACCOUNT', 'BILLING', 'GENERAL_QUERY']
+    print("prediction:", prediction)
+    #> prediction: labels=['ACCOUNT', 'BILLING']
 ```
