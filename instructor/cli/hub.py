@@ -96,7 +96,7 @@ def list_cookbooks(
     q: Optional[str] = typer.Option(None, "-q", help="Search for cookbooks by name"),
     sort: bool = typer.Option(False, "--sort", help="Sort the cookbooks by popularity"),
     branch: str = typer.Option(
-        "hub",
+        "main",
         "--branch",
         "-b",
         help="Specific branch to fetch the cookbooks from. Defaults to 'main'.",
@@ -129,7 +129,7 @@ def pull(
     py: bool = typer.Option(False, "--py", help="Output to a Python file"),
     file: Optional[str] = typer.Option(None, "--output", help="Output to a file"),
     branch: str = typer.Option(
-        "hub", help="Specific branch to fetch the cookbooks from."
+        "main", help="Specific branch to fetch the cookbooks from."
     ),
     page: bool = typer.Option(
         False, "--page", "-p", help="Paginate the output with a less-like pager"
