@@ -73,10 +73,6 @@ class HubPage(BaseModel):
         return f"{self.slug} {self.render_doc_link()}"
 
 
-def mkdoc_yaml_url(branch="main") -> str:
-    return f"https://raw.githubusercontent.com/jxnl/instructor/{branch}/mkdocs.yml?raw=true"
-
-
 def get_cookbook_by_id(id: int, branch="main"):
     client = HubClient()
     for cookbook in client.get_cookbooks(branch):
