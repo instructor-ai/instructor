@@ -54,6 +54,7 @@ class HubClient:
             pages = [HubPage(**page) for page in response.json()]
             if sort:
                 return sorted(pages, key=lambda x: x.count, reverse=True)
+            return pages
         else:
             raise Exception(f"Failed to fetch cookbooks: {response.status_code}")
 
