@@ -166,7 +166,7 @@ nav:
   - Hub:
     - Introduction: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
-    - Multiple Classification Model: 'hub/multi_classification.md'
+    - Multiple Classification Model: 'hub/multiple_classification.md'
   - Tutorials:
     - Introduction: 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
