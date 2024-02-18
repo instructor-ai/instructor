@@ -114,19 +114,16 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
       combine_header_slug: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify
-        kwds:
-          case: lower
   - pymdownx.tasklist:
       custom_checkbox: true
 nav:
   - Introduction: 
     - Welcome To Instructor: 'index.md'
     - Why use Instructor?: 'why.md'
+    - Prompting Tips: 'concepts/prompting.md'
     - Help with Instructor: 'help.md'
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
-  - Tips: 'concepts/prompting.md'
   - Concepts:
     - Philosophy: 'concepts/philosophy.md'
     - Models: 'concepts/models.md'
@@ -149,11 +146,12 @@ nav:
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
   - Cookbook:
-    - Examples: 'examples/index.md'
+    - Cookbooks: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
     - Batch Classification (User Defined): 'examples/batch_classification.md'
     - LLM Self Critique: 'examples/self_critique.md'
     - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
+    - Extracting From Slides with GPT-V: 'examples/extract_slides.md'
     - Content Moderation: 'examples/moderation.md'
     - Citing Sources (RAG): 'examples/exact_citations.md'
     - Extracting Knowledge Graphs: 'examples/knowledge_graph.md'
@@ -166,8 +164,12 @@ nav:
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
     - Ollama: 'examples/ollama.md'
     - SQLModel Integration: 'examples/sqlmodel.md'
+  - Hub:
+    - Introducing Instructor Hub: 'hub/index.md'
+    - Single Classification Model: 'hub/single_classification.md'
+    - Multiple Classification Model: 'hub/multiple_classification.md'
   - Tutorials:
-    - Introduction: 'tutorials/1-introduction.ipynb'
+    - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
     - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
     - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
@@ -237,4 +239,3 @@ extra:
       link: https://twitter.com/jxnlco
     - icon: fontawesome/brands/github
       link: https://github.com/jxnl
-copyright: Copyright &copy; 2023 Jason Liu

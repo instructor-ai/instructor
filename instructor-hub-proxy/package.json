@@ -1,0 +1,20 @@
+{
+  "name": "instructor-hub-proxy",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240208.0",
+    "itty-router": "^3.0.12",
+    "typescript": "^5.0.4",
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "fuse.js": "^7.0.0",
+    "yaml": "^2.3.4"
+  }
+}

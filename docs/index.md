@@ -8,16 +8,23 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/CV8sPM5k5Y)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
-Dive into the world of Python-based structured extraction, by OpenAI's function calling API and Pydantic, the most widely used data validation library for Python. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and steerable.
+Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
-!!! tip "Support in other languages"
+Check us out in [Typescript](https://instructor-ai.github.io/instructor-js/) and [Elixir](https://github.com/thmsmlr/instructor_ex/).
 
-    Check out ports to other languages below:
+!!! tip "Not limited to the OpenAI API"
 
-    - [Typescript / Javascript](https://instructor-ai.github.io/instructor-js/)
-    - [Elixir](https://github.com/thmsmlr/instructor_ex/)
+    Instructor is not limited to the OpenAI API, we have support for many other backends that via patching. Check out more on [patching](./concepts/patching.md).
 
-    If you want to port Instructor to another language, please reach out to us on [Twitter](https://twitter.com/jxnlco) we'd love to help you get started!
+    1. Wrap OpenAI's SDK
+    2. Wrap the create method
+
+    Including but not limited to:
+
+    - [Together](./blog/posts/together.md)
+    - [Ollama](./blog/posts/ollama.md)
+    - [AnyScale](./blog/posts/anyscale.md)
+    - [llama-cpp-python](./blog/posts/llama-cpp-python.md)
 
 ## Usage
 

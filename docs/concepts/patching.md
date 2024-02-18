@@ -6,11 +6,7 @@ Instructor enhances client functionality with three new keywords for backwards c
 - `max_retries`: Determines retry attempts for failed `chat.completions.create` validations.
 - `validation_context`: Provides extra context to the validation process.
 
-There are three methods for structured output:
-
-1. **Function Calling**: The primary method. Use this for stability and testing.
-2. **Tool Calling**: Useful in specific scenarios; lacks the reasking feature of OpenAI's tool calling API.
-3. **JSON Mode**: Offers closer adherence to JSON but with more potential validation errors. Suitable for specific non-function calling clients.
+The default mode is `instructor.Mode.TOOLS` which is the recommended mode for OpenAI clients. This mode is the most stable and is the most recommended for OpenAI clients. The other modes are for other clients and are not recommended for OpenAI clients.
 
 ## Tool Calling
 
@@ -30,6 +26,7 @@ Parallel tool calling is also an option but you must set `response_model` to be 
 ```python
 import instructor
 from openai import OpenAI
+
 client = instructor.patch(OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
 ```
 

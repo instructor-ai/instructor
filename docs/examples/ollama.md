@@ -1,12 +1,12 @@
 # Structured Outputs with Ollama
 
-Open-source LLMS are gaining popularity, and the release of Ollama's OpenAI compatibility later it has made it possible to obtain structured outputs using JSON schema.
+Open-source LLMS are gaining popularity, and with the release of Ollama's OpenAI compatibility layer, it has become possible to obtain structured outputs using JSON schema.
 
-By the end of this blog post, you will learn how to effectively utilize instructor with ollama. But before we proceed, let's first explore the concept of patching.
+By the end of this blog post, you will learn how to effectively utilize instructor with Ollama. But before we proceed, let's first explore the concept of patching.
 
 ## Patching
 
-Instructor's patch enhances a openai api it with the following features:
+Instructor's patch enhances an openai api with the following features:
 
 - `response_model` in `create` calls that returns a pydantic model
 - `max_retries` in `create` calls that retries the call if it fails by using a backoff strategy
