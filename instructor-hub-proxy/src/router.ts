@@ -21,8 +21,24 @@ async function trackAnalytics(request: any, env: Env, event_type: string, slug: 
 
 // GET collection index
 router.get('/api/:branch/items', async (request) => {
-	const { params, env } = request;
+	const { query, params, env } = request;
 	await trackAnalytics(request, env, 'COLLECTION_INDEX', 'index', params.branch);
+
+	/**
+	 * {
+	 *  success: true,
+	 *  meta: {...},
+	 *  results: [ { slug: 'single_classification', 'n': 2 } ]
+	 * }
+	 */
+	const counts = await env.DB.prepare(
+		`SELECT slug, count(1) as n
+		FROM hub_analytics
+		WHERE branch = ? AND event_type != 'COLLECTION_INDEX'
+		GROUP BY slug`
+	)
+		.bind(params.branch)
+		.all();
 
 	const url = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/mkdocs.yml?raw=true`;
 	const mkdoc_yml = await fetch(url).then((res) => res.text());
@@ -34,7 +50,8 @@ router.get('/api/:branch/items', async (request) => {
 			// Extract slug by getting the substring after the last '/'
 			// @ts-ignore
 			const slug = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
-			return { id: index, name, path, slug };
+			const count = counts.results.find((obj: any) => obj.slug === slug)?.n || 0;
+			return { id: index, name, path, slug, count };
 		})
 		.filter(({ slug }: any) => slug !== 'index');
 
