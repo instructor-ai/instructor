@@ -1,9 +1,7 @@
-from pydoc import cli
-from typing import Iterable, Optional
+from typing import Optional, overload
 
 import typer
 import httpx
-import yaml
 
 from pydantic import BaseModel
 from rich.console import Console
@@ -17,7 +15,24 @@ app = typer.Typer(
 )
 console = Console()
 
-import requests
+
+class HubPage(BaseModel):
+    id: int
+    name: str
+    slug: str
+    branch: str = "main"
+
+    def get_doc_url(self) -> str:
+        return f"https://jxnl.github.io/instructor/hub/{self.slug}/"
+
+    def get_md_url(self) -> str:
+        return f"https://raw.githubusercontent.com/jxnl/instructor/{self.branch}/docs/hub/{self.slug}.md?raw=true"
+
+    def render_doc_link(self) -> str:
+        return f"[link={self.get_doc_url()}](doc)[/link]"
+
+    def render_slug(self) -> str:
+        return f"{self.slug} {self.render_doc_link()}"
 
 
 class HubClient:
@@ -47,46 +62,21 @@ class HubClient:
     def get_content_python(self, branch, slug):
         """Get Python code blocks from content."""
         url = f"{self.base_url}/api/{branch}/items/{slug}/py"
-        response = requests.get(url)
+        response = httpx.get(url)
         if response.status_code == 200:
             return response.text
         else:
             raise Exception(f"Failed to fetch Python content: {response.status_code}")
 
+    def get_cookbook_id(self, id: int, branch: str = "main") -> HubPage:
+        for cookbook in self.get_cookbooks(branch):
+            if cookbook.id == id:
+                return cookbook
 
-class HubPage(BaseModel):
-    id: int
-    branch: str = "main"
-    slug: str
-    name: str
-
-    def get_doc_url(self) -> str:
-        return f"https://jxnl.github.io/instructor/hub/{self.slug}/"
-
-    def get_md_url(self) -> str:
-        return f"https://raw.githubusercontent.com/jxnl/instructor/{self.branch}/docs/hub/{self.slug}.md?raw=true"
-
-    def render_doc_link(self) -> str:
-        return f"[link={self.get_doc_url()}](doc)[/link]"
-
-    def render_slug(self) -> str:
-        return f"{self.slug} {self.render_doc_link()}"
-
-
-def get_cookbook_by_id(id: int, branch="main"):
-    client = HubClient()
-    for cookbook in client.get_cookbooks(branch):
-        if cookbook.id == id:
-            return cookbook
-    return None
-
-
-def get_cookbook_by_slug(slug: str, branch="main"):
-    client = HubClient()
-    for cookbook in client.get_cookbooks(branch):
-        if cookbook.slug == slug:
-            return cookbook
-    return None
+    def get_cookbook_slug(self, slug: str, branch: str = "main") -> HubPage:
+        for cookbook in self.get_cookbooks(branch):
+            if cookbook.slug == slug:
+                return cookbook
 
 
 @app.command(
@@ -135,9 +125,9 @@ def pull(
 ):
     client = HubClient()
     cookbook = (
-        get_cookbook_by_id(id, branch)
+        client.get_cookbook_id(id, branch=branch)
         if id
-        else get_cookbook_by_slug(slug, branch)
+        else client.get_cookbook_slug(slug, branch=branch)
         if slug
         else None
     )
@@ -148,7 +138,7 @@ def pull(
     output = (
         client.get_content_python(branch, cookbook.slug)
         if py
-        else client.get_content_markdown(branch, cookbook.slug)
+        else Markdown(client.get_content_markdown(branch, cookbook.slug))
     )
 
     if page:
