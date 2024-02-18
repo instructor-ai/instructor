@@ -40,7 +40,7 @@ class HubClient:
     def __init__(
         self, base_url: str = "https://instructor-hub-proxy.jason-a3f.workers.dev"
     ):
-        self.base_url = "http://localhost:8787"
+        self.base_url = base_url
 
     def get_cookbooks(self, branch: str, q: Optional[str] = None, sort: bool = False):
         """Get collection index of cookbooks."""

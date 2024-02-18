@@ -2,6 +2,12 @@
 
 Welcome to instructor hub, the goal of this project is to provide a set of tutorials and examples to help you get started, and allow you to pull in the code you need to get started with `instructor`
 
+Make sure you're using the latest version of `instructor` by running:
+
+```bash
+pip install -U instructor
+```
+
 ## Contributing
 
 We welcome contributions to the instructor hub, if you have a tutorial or example you'd like to add, please open a pull request in `docs/hub` and we'll review it.
@@ -19,45 +25,54 @@ Linted correctly and that the examples are working, make sure to include a `if _
 poetry run pytest tests/openai/docs/test_hub.py --update-examples
 ```
 
-## Command Line Interface
+## CLI Usage
 
 Instructor hub comes with a command line interface (CLI) that allows you to view and interact with the tutorials and examples and allows you to pull in the code you need to get started with the API.
 
-### Listing Available Cookbooks
+### List Cookbooks
 
 By running `instructor hub list` you can see all the available tutorials and examples. By clickony (doc) you can see the full tutorial back on this website.
 
 ```bash
-$ instructor hub list
-                         Available Cookbooks
-┏━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ hub_id ┃ slug                        ┃ title                       ┃
-┡━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│      1 │ single_classification (doc) │ Single Classification Model │
-└────────┴─────────────────────────────┴─────────────────────────────┘
+$ instructor hub list --sort
 ```
 
-### Viewing a Tutorial
+| hub_id | slug                          | title                         | n_downloads |
+| ------ | ----------------------------- | ----------------------------- | ----------- |
+| 2      | multiple_classification (doc) | Multiple Classification Model | 24          |
+| 1      | single_classification (doc)   | Single Classification Model   | 2           |
 
-To read a tutorial, you can run `instructor hub show --id <hub_id> --page` to see the full tutorial in the terminal. You can use `j,k` to scroll up and down, and `q` to quit. You can also run it without `--page` to print the tutorial to the terminal.
+### Searching for Cookbooks
+
+You can search for a tutorial by running `instructor hub list -q <QUERY>`. This will return a list of tutorials that match the query.
 
 ```bash
-$ instructor hub show --id 1 --page
+$ instructor hub list -q multi
+```
+
+| hub_id | slug                          | title                         | n_downloads |
+| ------ | ----------------------------- | ----------------------------- | ----------- |
+| 2      | multiple_classification (doc) | Multiple Classification Model | 24          |
+
+### Reading a Cookbook
+
+To read a tutorial, you can run `instructor hub pull --id <hub_id> --page` to see the full tutorial in the terminal. You can use `j,k` to scroll up and down, and `q` to quit. You can also run it without `--page` to print the tutorial to the terminal.
+
+```bash
+$ instructor hub pull --id 2 --page
 ```
 
 ### Pulling in Code
 
-To pull in the code for a tutorial, you can run `instructor hub pull --id <hub_id> --py`. This will print the code to the terminal, then you can `|` pipe it to a file to save it.
+You can pull in the code with `--py --output=<filename>` to save the code to a file, or you cal also run it without `--output` to print the code to the terminal.
 
 ```bash
-$ instructor hub pull --id 1 --py > classification.py
+$ instructor hub pull --id 2 --py --output=run.py
+$ instructor hub pull --id 2 --py > run.py
 ```
 
-## Future Work
+You can run the code instantly if you `|` it to `python`:
 
-This is a experimental in the future we'd like to have some more features like:
-
-- [ ] Options for async/sync code
-- [ ] Options for connecting with langsmith
-- [ ] Standard directory structure for the code
-- [ ] Options for different languages
+```bash
+$ instructor hub pull --id 2 --py | python
+```
