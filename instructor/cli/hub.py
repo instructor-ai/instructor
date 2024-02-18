@@ -40,11 +40,11 @@ class HubClient:
     def __init__(
         self, base_url: str = "https://instructor-hub-proxy.jason-a3f.workers.dev"
     ):
-        self.base_url = base_url
+        self.base_url = "http://localhost:8787"
 
     def get_cookbooks(self, branch):
         """Get collection index of cookbooks."""
-        url = f"{self.base_url}/api/{branch}/items"
+        url = f"{self.base_url}/api/{branch}/items/"
         response = httpx.get(url)
         if response.status_code == 200:
             return [HubPage(**page) for page in response.json()]
@@ -53,7 +53,7 @@ class HubClient:
 
     def get_content_markdown(self, branch, slug):
         """Get markdown content."""
-        url = f"{self.base_url}/api/{branch}/items/{slug}/md"
+        url = f"{self.base_url}/api/{branch}/items/{slug}/md/"
         response = httpx.get(url)
         if response.status_code == 200:
             return response.text
@@ -62,7 +62,7 @@ class HubClient:
 
     def get_content_python(self, branch, slug):
         """Get Python code blocks from content."""
-        url = f"{self.base_url}/api/{branch}/items/{slug}/py"
+        url = f"{self.base_url}/api/{branch}/items/{slug}/py/"
         response = httpx.get(url)
         if response.status_code == 200:
             return response.text
@@ -118,6 +118,7 @@ def pull(
     id: Optional[int] = typer.Option(None, "--id", "-i", help="The cookbook id"),
     slug: Optional[str] = typer.Option(None, "--slug", "-s", help="The cookbook slug"),
     py: bool = typer.Option(False, "--py", help="Output to a Python file"),
+    file: Optional[str] = typer.Option(None, "--output", help="Output to a file"),
     branch: str = typer.Option(
         "hub", help="Specific branch to fetch the cookbooks from."
     ),
@@ -143,8 +144,15 @@ def pull(
         else Markdown(client.get_content_markdown(branch, cookbook.slug))
     )
 
+    if file:
+        with open(file, "w") as f:
+            f.write(output)
+            return
+
     if page:
         with console.pager(styles=True):
             console.print(output)
+    elif py:
+        print(output)
     else:
         console.print(output)
