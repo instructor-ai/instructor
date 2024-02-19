@@ -17,7 +17,7 @@ from pydantic import BaseModel, ValidationError
 
 
 from instructor.function_calls import Mode
-from instructor.response import process_response
+from instructor.response import process_response, process_response_async
 from instructor.utils import dump_message
 
 logger = logging.getLogger("instructor")

@@ -8,7 +8,7 @@ from .dsl import (
     openai_moderation,
 )
 from .function_calls import OpenAISchema, openai_schema, Mode
-from .utils import apatch, patch
+from .patch import apatch, patch
 from .response import handle_response_model, handle_parallel_model
 
 

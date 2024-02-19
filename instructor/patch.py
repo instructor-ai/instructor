@@ -5,6 +5,7 @@ from typing import (
 )
 
 from openai import AsyncOpenAI, OpenAI
+from instructor.client import InstructorAsyncOpenAI, InstructorOpenAI
 
 from .function_calls import Mode
 
