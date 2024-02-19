@@ -17,7 +17,7 @@ async def test_response_simple_types(aclient):
             messages=[
                 {
                     "role": "user",
-                    "content": "Product a Random but correct response given the desired output",
+                    "content": "Produce a Random but correct response given the desired output",
                 },
             ],
         )
@@ -34,7 +34,7 @@ async def test_annotate(aclient):
         messages=[
             {
                 "role": "user",
-                "content": "Product a Random but correct response given the desired output",
+                "content": "Produce a Random but correct response given the desired output",
             },
         ],
     )
@@ -50,7 +50,7 @@ def test_literal(client):
         messages=[
             {
                 "role": "user",
-                "content": "Product a Random but correct response given the desired output",
+                "content": "Produce a Random but correct response given the desired output",
             },
         ],
     )
@@ -66,7 +66,7 @@ def test_union(client):
         messages=[
             {
                 "role": "user",
-                "content": "Product a Random but correct response given the desired output",
+                "content": "Produce a Random but correct response given the desired output",
             },
         ],
     )
@@ -87,7 +87,7 @@ def test_enum(client):
         messages=[
             {
                 "role": "user",
-                "content": "Product a Random but correct response given the desired output",
+                "content": "Produce a Random but correct response given the desired output",
             },
         ],
     )
@@ -103,7 +103,7 @@ def test_bool(client):
         messages=[
             {
                 "role": "user",
-                "content": "Product a Random but correct response given the desired output",
+                "content": "Produce a Random but correct response given the desired output",
             },
         ],
     )
