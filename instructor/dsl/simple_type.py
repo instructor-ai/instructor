@@ -24,7 +24,7 @@ class ModelAdapter(typing.Generic[T]):
         assert is_simple_type(response_model), "Only simple types are supported"
         tmp = create_model(
             "Response",
-            content=(response_model, None),
+            content=(response_model, ...),
             __doc__="Correctly Formated and Extracted Response.",
             __base__=(AdapterBase, OpenAISchema),
         )

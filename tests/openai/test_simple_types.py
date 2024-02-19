@@ -92,3 +92,19 @@ def test_enum(client):
         ],
     )
     assert response in [Options.A, Options.B, Options.C]
+
+
+def test_bool(client):
+    client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        response_model=bool,
+        messages=[
+            {
+                "role": "user",
+                "content": "Product a Random but correct response given the desired output",
+            },
+        ],
+    )
+    assert type(response) == bool
