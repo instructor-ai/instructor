@@ -23,7 +23,7 @@ Instructor's patch enhances an create call it with the following features:
 
 !!! note "Learn More"
 
-    To learn more, please refer to the [docs](../../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../../why.md) page. If you want to check out examples of using Pydantic with Instructor, visit the [examples](../../examples/index.md) page.
+    To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page. If you want to check out examples of using Pydantic with Instructor, visit the [examples](../examples/index.md) page.
 
 ## llama-cpp-python
 
@@ -117,4 +117,4 @@ We use LlamaPromptLookupDecoding to speed up structured output generation using 
 3. We use `instructor.Partial` to stream out partial models.
 4. This is just a simple example of how to stream out partial models and clear the console.
 
-![](../../img/partial.gif)
+![](../img/partial.gif)

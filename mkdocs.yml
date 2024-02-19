@@ -171,6 +171,7 @@ nav:
     - Ollama: 'hub/ollama.md'
     - Llama CPP: 'hub/llama-cpp-python.md'
     - Together: 'hub/together.md'
+    - Anyscale: 'hub/anyscale.md'
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'

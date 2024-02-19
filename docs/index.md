@@ -21,10 +21,10 @@ Check us out in [Typescript](https://instructor-ai.github.io/instructor-js/) and
 
     Including but not limited to:
 
-    - [Together](./blog/posts/together.md)
-    - [Ollama](./blog/posts/ollama.md)
-    - [AnyScale](./blog/posts/anyscale.md)
-    - [llama-cpp-python](./blog/posts/llama-cpp-python.md)
+    - [Together](./hub/together.md)
+    - [Ollama](./hub/ollama.md)
+    - [AnyScale](./hub/anyscale.md)
+    - [llama-cpp-python](./hub/llama-cpp-python.md)
 
 ## Usage
 
