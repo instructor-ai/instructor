@@ -18,10 +18,10 @@ The goal of the blog is to capture some content that does not neatly fit within 
 
 ## Integrations
 
-- [Ollama](hub/ollama.md)
-- [llama-cpp-python](hub/llama-cpp-python.md)
-- [Anyscale](hub/anyscale.md)
-- [Together Compute](hub/together.md)
+- [Ollama](./../hub/ollama.md)
+- [llama-cpp-python](./../hub/llama-cpp-python.md)
+- [Anyscale](./../hub/anyscale.md)
+- [Together Compute](./../hub/together.md)
 
 ## Media
 
