@@ -2,6 +2,13 @@
 
 Its a common misconception that LangChain's [LangSmith](https://www.langchain.com/langsmith) is only compatible with LangChain's models. In reality, LangSmith is a unified DevOps platform for developing, collaborating, testing, deploying, and monitoring LLM applications. In this blog we will explore how LangSmith can be used to enhance the OpenAI client alongside `instructor`.
 
+If you want to try this example using `instructor hub`, you can pull it by running
+
+```bash
+pip install -U langsmith
+instructor hub pull --slug batch_classification_langsmith --py > langsmith_example.py
+```
+
 ## LangSmith
 
 In order to use langsmith, you first need to set your LangSmith API key.
