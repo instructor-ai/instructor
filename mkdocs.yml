@@ -128,6 +128,8 @@ nav:
     - Philosophy: 'concepts/philosophy.md'
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
+    - Types: 'concepts/types.md'
+    - Validators: "concepts/reask_validation.md"
     - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
@@ -138,9 +140,7 @@ nav:
     - Raw Response: 'concepts/raw_response.md'
     - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'
-    - Validators: "concepts/reask_validation.md"
     - Distillation: "concepts/distillation.md"
-    - Types: 'concepts/types.md'
     - Union: 'concepts/union.md'
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'

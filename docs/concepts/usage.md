@@ -23,5 +23,5 @@ user: UserExtract = client.chat.completions.create(
 )
 
 print(user._raw_response.usage)
-#> CompletionUsage(completion_tokens=16, prompt_tokens=73, total_tokens=89)
+#> CompletionUsage(completion_tokens=9, prompt_tokens=82, total_tokens=91)
 ```
