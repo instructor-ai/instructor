@@ -6,7 +6,35 @@ Instructor supports simple types like `str`, `int`, `float`, `bool`, `Union`, `L
 
 To add more descriptions you can also use `typing.Annotated` to include more information about the type.
 
-## Primatives
+## What happens behind the scenes?
+
+We will actually wrap the response model with a `pydantic.BaseModel` of the following form:
+
+```python
+from typing import Annotated
+from pydantic import create_model, Field, BaseModel
+
+typehint = Annotated[bool, Field(description="Sample Description")]
+
+model = create_model("Response", content=(typehint, ...), __base__=BaseModel)
+
+print(model.model_json_schema())
+"""
+{
+    'properties': {
+        'content': {
+            'description': 'Sample Description',
+            'title': 'Content',
+            'type': 'boolean',
+        }
+    },
+    'title': 'Response',
+    'type': 'object',
+}
+"""
+```
+
+## Primitive Types (str, int, float, bool)
 
 ```python
 import instructor
@@ -62,6 +90,8 @@ print(resp)
 
 ## Literal
 
+When doing simple classification Literals go quite well, they support literal of string, int, bool.
+
 ```python
 import instructor
 import openai
@@ -84,7 +114,9 @@ print(resp)
 #> BILLING
 ```
 
-## Literal
+## Enum
+
+Enums are harder to get right without some addition promping but are useful if these are values that are shared across the application.
 
 ```python
 import instructor
@@ -141,6 +173,8 @@ print(resp)
 
 ## Union
 
+Union is a great way to handle multiple types of responses, similar to multiple function calls but not limited to the function calling api, like in JSON_SCHEMA modes.
+
 ```python
 import instructor
 import openai
@@ -179,6 +213,8 @@ print(resp)
 
 ### Pandas DataFrame
 
+This is a more complex example, where we use a custom type to convert markdown to a pandas DataFrame.
+
 ```python
 from io import StringIO
 from typing import Annotated, Any
@@ -205,9 +241,13 @@ def md_to_df(data: Any) -> Any:
 
 
 MarkdownDataFrame = Annotated[
+    # Validates final type
     InstanceOf[pd.DataFrame],
+    # Converts markdown to DataFrame
     BeforeValidator(md_to_df),
+    # Converts DataFrame to markdown on model_dump_json
     PlainSerializer(lambda df: df.to_markdown()),
+    # Adds a description to the type
     WithJsonSchema(
         {
             "type": "string",
@@ -245,6 +285,8 @@ John      40
 ```
 
 ### Lists of Unions
+
+Just like Unions we can use List of Unions to represent multiple types of responses. This will feel similar to the parallel function calls but not limited to the function calling api, like in JSON_SCHEMA modes.
 
 ```python
 import instructor

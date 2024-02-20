@@ -157,8 +157,8 @@ async def print_iterable_results():
     )
     async for m in model:
         print(m)
-        #> name='John' age=30
-        #> name='Emma' age=25
+        #> name='John Smith' age=30
+        #> name='Mary Jane' age=28
 
 
 import asyncio
