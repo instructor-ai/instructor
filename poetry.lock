@@ -1564,6 +1564,24 @@ jsmin = ">=3.0.1"
 mkdocs = ">=1.4.1"
 
 [[package]]
+name = "mkdocs-redirects"
+version = "1.2.1"
+description = "A MkDocs plugin for dynamic page redirects to prevent broken links."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "mkdocs-redirects-1.2.1.tar.gz", hash = "sha256:9420066d70e2a6bb357adf86e67023dcdca1857f97f07c7fe450f8f1fb42f861"},
+]
+
+[package.dependencies]
+mkdocs = ">=1.1.1"
+
+[package.extras]
+dev = ["autoflake", "black", "isort", "pytest", "twine (>=1.13.0)"]
+release = ["twine (>=1.13.0)"]
+test = ["autoflake", "black", "isort", "pytest"]
+
+[[package]]
 name = "mkdocs-rss-plugin"
 version = "1.12.0"
 description = "MkDocs plugin which generates a static RSS feed using git log and page.meta."
@@ -3427,4 +3445,3 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8a8af75e70138f0eb799bbb22def7e4d69e29a3b85b66f7d5b50c1096114cf79"
