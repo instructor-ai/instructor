@@ -15,22 +15,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.3.1
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      
-      - name: Cache Poetry virtualenv
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.1
+          cache: 'poetry'
 
       - name: Install APT packages 
         run: |
