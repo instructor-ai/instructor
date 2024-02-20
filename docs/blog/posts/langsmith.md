@@ -159,3 +159,5 @@ if __name__ == "__main__":
 If you follow what we've done is wrapped the client and proceeded to quickly use asyncio to classify a list of questions. This is a simple example of how you can use LangSmith to enhance the OpenAI client. You can use LangSmith to monitor and observe the client, and use `instructor` to add additional functionality to the client.
 
 To take a look at trace of this run check out this shareable [link](https://smith.langchain.com/public/eaae9f95-3779-4bbb-824d-97aa8a57a4e0/r).
+
+![](./img/langsmith.png)
