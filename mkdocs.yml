@@ -168,6 +168,10 @@ nav:
     - Introducing Instructor Hub: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
     - Multiple Classification Model: 'hub/multiple_classification.md'
+    - Ollama: 'hub/ollama.md'
+    - Llama CPP: 'hub/llama-cpp-python.md'
+    - Together: 'hub/together.md'
+    - Anyscale: 'hub/anyscale.md'
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
@@ -216,6 +220,12 @@ plugins:
         - categories
         - tags 
       enabled: !ENV [CI, false]
+  - redirects:
+      redirect_maps:
+        'blog/posts/ollama.md': 'hub/ollama.md'
+        'blob/posts/llama-cpp-python.md': 'hub/llama-cpp-python.md'
+        'blog/posts/together.md': 'hub/together.md'
+        'blog/posts/anyscale.md': 'hub/anyscale.md'
 extra:
   analytics:
     provider: google
