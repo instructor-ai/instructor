@@ -1,3 +1,10 @@
+If you want to try outs via `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug partial_streaming --py > partial_streaming.py
+```
+
+```python
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
@@ -58,3 +65,4 @@ for extraction in extraction_stream:
     obj = extraction.model_dump()
     console.clear()
     console.print(obj)
+```

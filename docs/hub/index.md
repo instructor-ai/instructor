@@ -86,7 +86,6 @@ We're looking for a bunch more hub examples, if you have a tutorial or example y
 - [ ] Data extraction examples
 - [ ] Streaming examples (Iterable and Partial)
 - [ ] Batch Parsing examples
-- [ ] Open Examples, together, anyscale, ollama, llama-cpp, etc
 - [ ] Query Expansion examples
 - [ ] Batch Data Processing examples
 - [ ] Batch Data Processing examples with Cache

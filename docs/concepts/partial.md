@@ -99,9 +99,31 @@ for extraction in extraction_stream:
     console.clear()
     console.print(obj)
 
-print(extraction.model_dump_json())
+print(extraction.model_dump_json(indent=2))
 """
-{"users":[{"name":"John Doe","email":"johndoe@email.com","twitter":"@TechGuru44"},{"name":"Jane Smith","email":"janesmith@email.com","twitter":"@DigitalDiva88"},{"name":"Alex Johnson","email":"alexj@email.com","twitter":"@CodeMaster2023"}],"date":"2024-03-15","location":"Grand Tech Arena located at 4521 Innovation Drive","budget":50000,"deadline":"2024-02-20"}
+{
+  "users": [
+    {
+      "name": "John Doe",
+      "email": "johndoe@email.com",
+      "twitter": "@TechGuru44"
+    },
+    {
+      "name": "Jane Smith",
+      "email": "janesmith@email.com",
+      "twitter": "@DigitalDiva88"
+    },
+    {
+      "name": "Alex Johnson",
+      "email": "alexj@email.com",
+      "twitter": "@CodeMaster2023"
+    }
+  ],
+  "date": "2024-03-15",
+  "location": "Grand Tech Arena located at 4521 Innovation Drive",
+  "budget": 50000,
+  "deadline": "2024-02-20"
+}
 """
 ```
 
@@ -118,10 +140,10 @@ import instructor
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
-client = instructor.apatch(AsyncOpenAI())
+client = instructor.patch(AsyncOpenAI())
 
 
-class UserExtract(BaseModel):
+class User(BaseModel):
     name: str
     age: int
 
@@ -129,117 +151,19 @@ class UserExtract(BaseModel):
 async def print_partial_results():
     user = await client.chat.completions.create(
         model="gpt-4-turbo-preview",
-        response_model=instructor.Partial[UserExtract],
+        response_model=instructor.Partial[User],
         max_retries=2,
         stream=True,
         messages=[
-            {"role": "user", "content": "Jason Liu is 12 years old"},
+            {"role": "user", "content": "Jason is 12 years old"},
         ],
     )
     async for m in user:
-        print(m.model_dump_json(indent=2))
-        """
-        {
-          "name": null,
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason Liu",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason Liu",
-          "age": 12
-        }
-        """
-        """
-        {
-          "name": "",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason Liu",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason Liu",
-          "age": 12
-        }
-        """
-        """
-        {
-          "name": "",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason Liu",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason Liu",
-          "age": 12
-        }
-        """
-        """
-        {
-          "name": "",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason Liu",
-          "age": null
-        }
-        """
-        """
-        {
-          "name": "Jason Liu",
-          "age": 12
-        }
-        """
+        print(m)
+        #> name=None age=None
+        #> name='' age=None
+        #> name='Jason' age=None
+        #> name='Jason' age=12
 
 
 import asyncio

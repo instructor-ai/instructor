@@ -2,6 +2,15 @@
 
 In this guide, we'll walk through how to extract action items from meeting transcripts using OpenAI's API and Pydantic. This use case is essential for automating project management tasks, such as task assignment and priority setting.
 
+If you want to try outs via `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug action_items --py > action_items.py
+```
+
+For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.
+
+
 !!! tips "Motivation"
 
     Significant amount of time is dedicated to meetings, where action items are generated as the actionable outcomes of these discussions. Automating the extraction of action items can save time and guarantee that no critical tasks are overlooked.
@@ -10,10 +19,21 @@ In this guide, we'll walk through how to extract action items from meeting trans
 
 We'll model a meeting transcript as a collection of **`Ticket`** objects, each representing an action item. Every **`Ticket`** can have multiple **`Subtask`** objects, representing smaller, manageable pieces of the main task.
 
+## Extracting Action Items
+
+To extract action items from a meeting transcript, we use the **`generate`** function. It calls OpenAI's API, processes the text, and returns a set of action items modeled as **`ActionItems`**.
+
+## Evaluation and Testing
+
+To test the **`generate`** function, we provide it with a sample transcript, and then print the JSON representation of the extracted action items.
+
+
 ```python
+import instructor
+from openai import OpenAI
+from typing import Iterable, List, Optional
 from enum import Enum
 from pydantic import BaseModel
-from typing import List, Optional
 
 
 class PriorityEnum(str, Enum):
@@ -39,16 +59,7 @@ class Ticket(BaseModel):
     assignees: List[str]
     subtasks: Optional[List[Subtask]]
     dependencies: Optional[List[int]]
-```
 
-## Extracting Action Items
-
-To extract action items from a meeting transcript, we use the **`generate`** function. It calls OpenAI's API, processes the text, and returns a set of action items modeled as **`ActionItems`**.
-
-```python
-import instructor
-from openai import OpenAI
-from typing import Iterable
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
@@ -70,13 +81,8 @@ def generate(data: str) -> Iterable[Ticket]:
             },
         ],
     )
-```
 
-## Evaluation and Testing
 
-To test the **`generate`** function, we provide it with a sample transcript, and then print the JSON representation of the extracted action items.
-
-```python
 prediction = generate(
     """
 Alice: Hey team, we have several critical tasks we need to tackle for the upcoming release. First, we need to work on improving the authentication system. It's a top priority.
@@ -109,7 +115,7 @@ Alice: Sounds like a plan. Let's get these tasks modeled out and get started."""
 
 In order to quickly visualize the data we used code interpreter to create a graphviz export of the json version of the ActionItems array.
 
-![action items](action_items.png)
+![action items](../img/action_items.png)
 
 ```json
 [
