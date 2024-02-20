@@ -10,6 +10,12 @@ authors:
 
 # Structured Outputs with llama-cpp-python
 
+If you want to try this example using `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug llama-cpp-python --py > llama_cpp_python_example.py
+```
+
 Open-source LLMS are gaining popularity, and llama-cpp-python has made the `llama-cpp` model available to obtain structured outputs using JSON schema via a mixture of [constrained sampling](https://llama-cpp-python.readthedocs.io/en/latest/#json-schema-mode) and [speculative decoding](https://llama-cpp-python.readthedocs.io/en/latest/#speculative-decoding). They also support a [OpenAI compatible client](https://llama-cpp-python.readthedocs.io/en/latest/#openai-compatible-web-server), which can be used to obtain structured output as a in process mechanism to avoid any network dependency.
 
 <!-- more -->
@@ -112,9 +118,6 @@ for extraction in extraction_stream:
     console.print(obj)
 ```
 
-We use LlamaPromptLookupDecoding to speed up structured output generation using speculative decoding. The draft model generates candidate tokens during generation 10 is good for GPU, 2 is good for CPU.
-2. We use `instructor.Mode.JSON_SCHEMA` return a JSON schema response.
-3. We use `instructor.Partial` to stream out partial models.
-4. This is just a simple example of how to stream out partial models and clear the console.
+We use LlamaPromptLookupDecoding to speed up structured output generation using speculative decoding. The draft model generates candidate tokens during generation 10 is good for GPU, 2 is good for CPU. 2. We use `instructor.Mode.JSON_SCHEMA` return a JSON schema response. 3. We use `instructor.Partial` to stream out partial models. 4. This is just a simple example of how to stream out partial models and clear the console.
 
 ![](../img/partial.gif)

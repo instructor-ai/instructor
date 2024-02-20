@@ -1,3 +1,9 @@
+If you want to try outs via `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug multiple_classification --py > multiple_classification.py
+```
+
 For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.
 
 ```python

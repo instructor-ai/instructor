@@ -12,6 +12,12 @@ authors:
 
 # Structured Outputs with Anyscale
 
+If you want to try this example using `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug anyscale --py > anyscale_example.py
+```
+
 Open-source LLMS are gaining popularity, and the release of Anyscale's Mistral model has made it possible to obtain structured outputs using JSON schema at any scale. Instead of relying on a model's default output mode, you can utilize JSON schema to obtain structured outputs. This approach is a time-saving alternative to extensive prompt engineering.
 
 By the end of this blog post, you will learn how to effectively utilize the instructor at any scale. But before we proceed, let's first explore the concept of patching.

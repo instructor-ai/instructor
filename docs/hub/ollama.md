@@ -11,6 +11,12 @@ authors:
 
 # Structured Outputs with Ollama
 
+If you want to try this example using `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug ollama --py > ollama_example.py
+```
+
 Open-source LLMS are gaining popularity, and the release of Ollama's OpenAI compatibility later it has made it possible to obtain structured outputs using JSON schema.
 
 By the end of this blog post, you will learn how to effectively utilize instructor with ollama. But before we proceed, let's first explore the concept of patching.
