@@ -17,8 +17,8 @@ jobs:
         uses: actions/checkout@v2
         
       - name: Install Poetry
-        uses: snok/install-poetry@v1.3.1
-
+        uses: pipx install poetry 
+      
       - name: Setup Python
         uses: actions/setup-python@v4
         with:

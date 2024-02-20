@@ -16,15 +16,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install poetry
+        run: pipx install poetry
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
           cache: 'poetry'
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.1
-
+        
       - name: Install dependencies
         run: poetry install --with dev
 
