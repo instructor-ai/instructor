@@ -30,6 +30,7 @@ from pydantic import BaseModel, ValidationError
 from instructor.dsl.iterable import IterableModel, IterableBase
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
+from instructor.dsl.simple_type import ModelAdapter, AdapterBase, is_simple_type
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
@@ -80,6 +81,12 @@ def handle_response_model(
     """
     new_kwargs = kwargs.copy()
     if response_model is not None:
+        # Handles the case where the response_model is a simple type
+        # Literal, Annotated, Union, str, int, float, bool, Enum
+        # We wrap the response_model in a ModelAdapter that sets 'content' as the response
+        if is_simple_type(response_model):
+            response_model = ModelAdapter[response_model]
+
         # This a special case for parallel tools
         if mode == Mode.PARALLEL_TOOLS:
             assert (
@@ -213,10 +220,16 @@ def process_response(
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
+        logger.debug(f"Returning takes from IterableBase")
         return [task for task in model.tasks]
 
     if isinstance(response_model, ParallelBase):
+        logger.debug(f"Returning model from ParallelBase")
         return model
+
+    if isinstance(model, AdapterBase):
+        logger.debug(f"Returning model from AdapterBase")
+        return model.content
 
     model._raw_response = response
     return model
@@ -266,11 +279,16 @@ async def process_response_async(
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
-        #! If the response model is a multitask, return the tasks
+        logger.debug(f"Returning takes from IterableBase")
         return [task for task in model.tasks]
 
     if isinstance(response_model, ParallelBase):
+        logger.debug(f"Returning model from ParallelBase")
         return model
+
+    if isinstance(model, AdapterBase):
+        logger.debug(f"Returning model from AdapterBase")
+        return model.content
 
     model._raw_response = response
     return model

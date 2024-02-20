@@ -10,6 +10,12 @@ authors:
 
 # Structured Outputs with llama-cpp-python
 
+If you want to try this example using `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug llama-cpp-python --py > llama_cpp_python_example.py
+```
+
 Open-source LLMS are gaining popularity, and llama-cpp-python has made the `llama-cpp` model available to obtain structured outputs using JSON schema via a mixture of [constrained sampling](https://llama-cpp-python.readthedocs.io/en/latest/#json-schema-mode) and [speculative decoding](https://llama-cpp-python.readthedocs.io/en/latest/#speculative-decoding). They also support a [OpenAI compatible client](https://llama-cpp-python.readthedocs.io/en/latest/#openai-compatible-web-server), which can be used to obtain structured output as a in process mechanism to avoid any network dependency.
 
 <!-- more -->
@@ -23,7 +29,7 @@ Instructor's patch enhances an create call it with the following features:
 
 !!! note "Learn More"
 
-    To learn more, please refer to the [docs](../../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../../why.md) page. If you want to check out examples of using Pydantic with Instructor, visit the [examples](../../examples/index.md) page.
+    To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page. If you want to check out examples of using Pydantic with Instructor, visit the [examples](../examples/index.md) page.
 
 ## llama-cpp-python
 
@@ -47,14 +53,15 @@ llama = llama_cpp.Llama(
     n_gpu_layers=-1,
     chat_format="chatml",
     n_ctx=2048,
-    draft_model=LlamaPromptLookupDecoding(num_pred_tokens=2), #(1)!
+    draft_model=LlamaPromptLookupDecoding(num_pred_tokens=2),  # (1)!
     logits_all=True,
-    verbose=False
+    verbose=False,
 )
 
 
 create = instructor.patch(
-    create=llama.create_chat_completion_openai_v1, mode=instructor.Mode.JSON_SCHEMA #(2)!
+    create=llama.create_chat_completion_openai_v1,
+    mode=instructor.Mode.JSON_SCHEMA,  # (2)!
 )
 
 
@@ -92,7 +99,7 @@ class MeetingInfo(BaseModel):
 
 
 extraction_stream = create(
-    response_model=instructor.Partial[MeetingInfo], #(3)!
+    response_model=instructor.Partial[MeetingInfo],  # (3)!
     messages=[
         {
             "role": "user",
@@ -107,13 +114,10 @@ console = Console()
 
 for extraction in extraction_stream:
     obj = extraction.model_dump()
-    console.clear() #(4)!
+    console.clear()  # (4)!
     console.print(obj)
 ```
 
-We use LlamaPromptLookupDecoding to speed up structured output generation using speculative decoding. The draft model generates candidate tokens during generation 10 is good for GPU, 2 is good for CPU.
-2. We use `instructor.Mode.JSON_SCHEMA` return a JSON schema response.
-3. We use `instructor.Partial` to stream out partial models.
-4. This is just a simple example of how to stream out partial models and clear the console.
+We use LlamaPromptLookupDecoding to speed up structured output generation using speculative decoding. The draft model generates candidate tokens during generation 10 is good for GPU, 2 is good for CPU. 2. We use `instructor.Mode.JSON_SCHEMA` return a JSON schema response. 3. We use `instructor.Partial` to stream out partial models. 4. This is just a simple example of how to stream out partial models and clear the console.
 
-![](../../img/partial.gif)
+![](../img/partial.gif)

@@ -12,6 +12,12 @@ authors:
 
 # Structured Outputs with Anyscale
 
+If you want to try this example using `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug anyscale --py > anyscale_example.py
+```
+
 Open-source LLMS are gaining popularity, and the release of Anyscale's Mistral model has made it possible to obtain structured outputs using JSON schema at any scale. Instead of relying on a model's default output mode, you can utilize JSON schema to obtain structured outputs. This approach is a time-saving alternative to extensive prompt engineering.
 
 By the end of this blog post, you will learn how to effectively utilize the instructor at any scale. But before we proceed, let's first explore the concept of patching.
@@ -27,7 +33,7 @@ Instructor's patch enhances a openai api it with the following features:
 
 !!! note "Learn More"
 
-    To learn more, please refer to the [docs](../../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../../why.md) page.
+    To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page.
 
 ## Anyscale
 
@@ -42,7 +48,7 @@ Let's explore one of the models available in Anyscale's extensive collection!
 ```python
 from openai import OpenAI
 from pydantic import BaseModel
-
+import os
 import instructor
 
 
@@ -55,7 +61,7 @@ class UserDetails(BaseModel):
 client = instructor.patch(
     OpenAI(
         base_url="https://api.endpoints.anyscale.com/v1",
-        api_key="<YOUR_ANYSCALE_API_KEY>",
+        api_key=os.environ["ANYSCALE_API_KEY"],
     ),
     # This uses Anyscale's json schema output mode
     mode=instructor.Mode.JSON_SCHEMA,
@@ -70,6 +76,7 @@ resp = client.chat.completions.create(
     response_model=UserDetails,
 )
 print(resp)
+#> name='Jason' age=20
 # # > name='Jason' age=20
 ```
 

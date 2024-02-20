@@ -21,10 +21,10 @@ Check us out in [Typescript](https://instructor-ai.github.io/instructor-js/) and
 
     Including but not limited to:
 
-    - [Together](./blog/posts/together.md)
-    - [Ollama](./blog/posts/ollama.md)
-    - [AnyScale](./blog/posts/anyscale.md)
-    - [llama-cpp-python](./blog/posts/llama-cpp-python.md)
+    - [Together](./hub/together.md)
+    - [Ollama](./hub/ollama.md)
+    - [AnyScale](./hub/anyscale.md)
+    - [llama-cpp-python](./hub/llama-cpp-python.md)
 
 ## Usage
 
@@ -127,7 +127,7 @@ print(response.model_dump_json(indent=2))
     print(user._raw_response.model_dump_json(indent=2))
     """
     {
-      "id": "chatcmpl-8pOAKwq8OXZVvOCMw4dv713oKplLF",
+      "id": "chatcmpl-8u9e2TV3ehCgLsRxNLLeAbzpEmBuZ",
       "choices": [
         {
           "finish_reason": "stop",
@@ -136,22 +136,28 @@ print(response.model_dump_json(indent=2))
           "message": {
             "content": null,
             "role": "assistant",
-            "function_call": {
-              "arguments": "{\n  \"name\": \"Jason\",\n  \"age\": 25\n}",
-              "name": "UserDetail"
-            },
-            "tool_calls": null
+            "function_call": null,
+            "tool_calls": [
+              {
+                "id": "call_3ZuQhfteTLEy7CUokjwnLBHr",
+                "function": {
+                  "arguments": "{\"name\":\"Jason\",\"age\":25}",
+                  "name": "UserDetail"
+                },
+                "type": "function"
+              }
+            ]
           }
         }
       ],
-      "created": 1707258312,
-      "model": "gpt-3.5-turbo-0613",
+      "created": 1708394134,
+      "model": "gpt-3.5-turbo-0125",
       "object": "chat.completion",
-      "system_fingerprint": null,
+      "system_fingerprint": "fp_69829325d0",
       "usage": {
-        "completion_tokens": 16,
-        "prompt_tokens": 72,
-        "total_tokens": 88
+        "completion_tokens": 9,
+        "prompt_tokens": 81,
+        "total_tokens": 90
       }
     }
     """
