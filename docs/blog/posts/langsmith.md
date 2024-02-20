@@ -1,17 +1,63 @@
-import json
+---
+draft: False
+date: 2024-02-18
+tags:
+  - langsmith
+authors:
+  - jxnl
+---
+
+# Seamless Support with Langsmith
+
+Its a common misconception that LangChain's [LangSmith](https://www.langchain.com/langsmith) is only compatible with LangChain's models. In reality, LangSmith is a unified DevOps platform for developing, collaborating, testing, deploying, and monitoring LLM applications. In this blog we will explore how LangSmith can be used to enhance the OpenAI client alongside `instructor`.
+
+<!-- more -->
+
+## LangSmith
+
+In order to use langsmith, you first need to set your LangSmith API key.
+
+```
+export LANGCHAIN_API_KEY=<your-api-key>
+```
+
+Next, you will need to install the LangSmith SDK:
+
+```
+pip install -U langsmith
+pip install -U instructor
+```
+
+If you want to pull this example down from [instructor-hub](../../hub/index.md) you can use the following command:
+
+```bash
+instructor hub pull --slug batch_classification_langsmith --py > batch_classification_langsmith.py
+```
+
+In this example we'll use the `wrap_openai` function to wrap the OpenAI client with LangSmith. This will allow us to use LangSmith's observability and monitoring features with the OpenAI client. Then we'll use `instructor` to patch the client with the `TOOLS` mode. This will allow us to use `instructor` to add additional functionality to the client.
+
+```python
 import instructor
 import asyncio
+
+from langsmith import traceable
+from langsmith.wrappers import wrap_openai
 
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, field_validator
 from typing import List
 from enum import Enum
 
-client = AsyncOpenAI()
+# Wrap the OpenAI client with LangSmith
+client = wrap_openai(AsyncOpenAI())
+
+# Patch the client with instructor
 client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+
+# Rate limit the number of requests
 sem = asyncio.Semaphore(5)
 
-
+# Use an Enum to define the types of questions
 class QuestionType(Enum):
     CONTACT = "CONTACT"
     TIMELINE_QUERY = "TIMELINE_QUERY"
@@ -54,10 +100,18 @@ class QuestionClassification(BaseModel):
         return v
 
 
+@traceable(name="classify-question")
 async def classify(data: str) -> QuestionClassification:
+    """
+    Perform multi-label classification on the input text.
+    Change the prompt to fit your use case.
+
+    Args:
+        data (str): The input text to classify.
+    """
     async with sem:  # some simple rate limiting
         return data, await client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4-turbo-preview",
             response_model=QuestionClassification,
             max_retries=2,
             messages=[
@@ -69,21 +123,18 @@ async def classify(data: str) -> QuestionClassification:
         )
 
 
-async def main(
-    questions: List[str], *, path_to_jsonl: str = None
-) -> List[QuestionClassification]:
+async def main(questions: List[str]):
     tasks = [classify(question) for question in questions]
+
     for task in asyncio.as_completed(tasks):
         question, label = await task
         resp = {
             "question": question,
             "classification": [c.value for c in label.classification],
+            "chain_of_thought": label.chain_of_thought,
         }
-        print(resp)
-        if path_to_jsonl:
-            with open(path_to_jsonl, "a") as f:
-                json_dump = json.dumps(resp)
-                f.write(json_dump + "\n")
+        resps.append(resp)
+    return resps
 
 
 if __name__ == "__main__":
@@ -92,12 +143,19 @@ if __name__ == "__main__":
     questions = [
         "What was that ai app that i saw on the news the other day?",
         "Can you find the trainline booking email?",
-        "What was the book I saw on amazon yesturday?",
-        "Can you speak german?",
-        "Do you have access to the meeting transcripts?",
-        "what are the recent sites I visited?",
         "what did I do on Monday?",
         "Tell me about todays meeting and how it relates to the email on Monday",
     ]
 
-    asyncio.run(main(questions))
+    resp = asyncio.run(main(questions))
+
+    for r in resp:
+        print("q:", r["question"])
+        #> q: what did I do on Monday?
+        print("c:", r["classification"])
+        #> c: ['SUMMARY']
+```
+
+If you follow what we've done is wrapped the client and proceeded to quickly use asyncio to classify a list of questions. This is a simple example of how you can use LangSmith to enhance the OpenAI client. You can use LangSmith to monitor and observe the client, and use `instructor` to add additional functionality to the client.
+
+To take a look at trace of this run check out this shareable [link](https://smith.langchain.com/public/eaae9f95-3779-4bbb-824d-97aa8a57a4e0/r).

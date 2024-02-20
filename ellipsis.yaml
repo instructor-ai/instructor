@@ -14,3 +14,4 @@ pr_review:
     - "If library code changes, check if tests are updated"
     - "If a new `md` file is created in `docs` make sure its added to mkdocs.yml"
     - "Assertions should always have an error message that is formatted well. "
+    - "Make sure hub examples are added to mkdocs.yml"

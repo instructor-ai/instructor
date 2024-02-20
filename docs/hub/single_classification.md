@@ -1,5 +1,11 @@
 # Single-Label Classification
 
+IF you want to try this code with `instructor hub` you can pull it by running
+
+```bash
+instructor hub pull --slug single_classification --py > single_classification.py
+```
+
 This example demonstrates how to perform single-label classification using the OpenAI API. The example uses the `gpt-3.5-turbo` model to classify text as either `SPAM` or `NOT_SPAM`.
 
 ```python
