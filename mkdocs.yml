@@ -168,12 +168,14 @@ nav:
     - Introducing Instructor Hub: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
     - Multiple Classification Model: 'hub/multiple_classification.md'
+    - Extracting Tables using GPT-V: 'hub/tables_from_vision.md'
     - Extract Pandas Dataframes: 'hub/pandas_df.md'
     - Using Ollama: 'hub/ollama.md'
     - Using Llama CPP: 'hub/llama-cpp-python.md'
     - Using Together Compute: 'hub/together.md'
     - Using Anyscale: 'hub/anyscale.md'
     - Batch Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
+
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
