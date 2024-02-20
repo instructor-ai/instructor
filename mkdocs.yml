@@ -168,6 +168,7 @@ nav:
     - Introducing Instructor Hub: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
     - Multiple Classification Model: 'hub/multiple_classification.md'
+    - Extract Pandas Dataframes: 'hub/pandas_df.md'
     - Ollama: 'hub/ollama.md'
     - Llama CPP: 'hub/llama-cpp-python.md'
     - Together: 'hub/together.md'
