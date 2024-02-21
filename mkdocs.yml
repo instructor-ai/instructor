@@ -176,6 +176,7 @@ nav:
     - Batch Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
     - Action Items: 'hub/action_items.md'
     - Partial Streaming: 'hub/partial_streaming.md'
+    - Information Extracting: 'hub/information_extraction.md'
 
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
