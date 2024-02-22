@@ -19,10 +19,10 @@ Instructor is not limited to the OpenAI API, we have support for many other back
 
 Including but not limited to:
 
-- [Together](./blog/posts/together.md)
-- [Ollama](./blog/posts/ollama.md)
-- [AnyScale](./blog/posts/anyscale.md)
-- [llama-cpp-python](./blog/posts/llama-cpp-python.md)
+- [Together](./docs/hub/together.md)
+- [Ollama](./docs/hub/ollama.md)
+- [AnyScale](./docs/hub/anyscale.md)
+- [llama-cpp-python](./docs/hub/llama-cpp-python.md)
 
 ## Get Started in Moments
 
