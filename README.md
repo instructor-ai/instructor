@@ -8,11 +8,11 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/CV8sPM5k5Y)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
-Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
+Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./docs/concepts/reask_validation.md), retries with [Tenacity](./docs/concepts/retrying.md), and streaming [Lists](./docs/concepts/lists.md) and [Partial](./docs/concepts/partial.md) responses.
 
 Check us out in [Typescript](https://instructor-ai.github.io/instructor-js/) and [Elixir](https://github.com/thmsmlr/instructor_ex/).
 
-Instructor is not limited to the OpenAI API, we have support for many other backends that via patching. Check out more on [patching](./concepts/patching.md).
+Instructor is not limited to the OpenAI API, we have support for many other backends that via patching. Check out more on [patching](./docs/concepts/patching.md).
 
 1. Wrap OpenAI's SDK
 2. Wrap the create method
