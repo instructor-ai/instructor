@@ -34,7 +34,7 @@ If you want to pull this example down from [instructor-hub](../../hub/index.md) 
 instructor hub pull --slug batch_classification_langsmith --py > batch_classification_langsmith.py
 ```
 
-In this example we'll use the `wrap_openai` function to wrap the OpenAI client with LangSmith. This will allow us to use LangSmith's observability and monitoring features with the OpenAI client. Then we'll use `instructor` to patch the client with the `TOOLS` mode. This will allow us to use `instructor` to add additional functionality to the client.
+In this example we'll use the `wrap_openai` function to wrap the OpenAI client with LangSmith. This will allow us to use LangSmith's observability and monitoring features with the OpenAI client. Then we'll use `instructor` to patch the client with the `TOOLS` mode. This will allow us to use `instructor` to add additional functionality to the client. We'll use [asyncio](./learn-async.md) to classify a list of questions.
 
 ```python
 import instructor
