@@ -71,6 +71,30 @@ assert user.name == "Jason"
 assert user.age == 25
 ```
 
+## Primitive Types (str, int, float, bool)
+
+```python
+import instructor
+import openai
+
+client = instructor.patch(openai.OpenAI())
+
+# Response model with simple types like str, int, float, bool
+resp = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=bool,
+    messages=[
+        {
+            "role": "user",
+            "content": "Is it true that Paris is the capital of France?",
+        },
+    ],
+)
+assert resp is True, "Paris is the capital of France"
+print(resp)
+#> True
+```
+
 ### Using async clients
 
 For async clients you must use `apatch` vs. `patch`, as shown:
