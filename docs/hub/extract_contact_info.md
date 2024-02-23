@@ -5,7 +5,7 @@ In this guide, we'll walk through how to extract customer lead information using
 If you want to try this out via `instructor hub`, you can pull it by running:
 
 ```bash
-instructor hub pull --slug information_extraction --py > information_extraction.py
+instructor hub pull --slug extract_contact_info --py > extract_contact_info.py
 ```
 
 ## Motivation
@@ -14,7 +14,7 @@ You could potentially integrate this into a chatbot to extract relevant user inf
 
 ## Defining the Structure
 
-We'll model a customer lead as a Lead object, including fields for the name and phone number. We'll use a Pydantic field_validator for data validation and formatting.
+We'll model a customer lead as a Lead object, including attributes for the name and phone number. We'll use a Pydantic PhoneNumber type to validate the phone numbers entered and provide a Field to give the model more information on correctly populating the object.
 
 ## Extracting Lead Information
 
@@ -22,32 +22,19 @@ To extract lead information, we create the `parse_lead_from_message` function wh
 
 ## Evaluating Lead Extraction
 
-To showcase the `parse_lead_from_message` function we can provide sample user messages that may be obtained from a dialogue with a chatbot assistant.
+To showcase the `parse_lead_from_message` function we can provide sample user messages that may be obtained from a dialogue with a chatbot assistant. Also take note of the response model being set as `Iterable[Lead]` this allows for multiple leads being extracted from the same message.
 
 ```python
 import instructor
 from openai import OpenAI
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field
+from pydantic_extra_types.phone_numbers import PhoneNumber
+from typing import Iterable
 
 
 class Lead(BaseModel):
     name: str
-    phone_number: str
-
-    @field_validator("phone_number")
-    @classmethod
-    def validate_phone_number(cls, value):
-        # Remove any non-digit characters from the phone number
-        digits_only = ''.join(filter(str.isdigit, value))
-
-        # Check if the cleaned phone number has exactly 10 digits
-        if len(digits_only) != 10:
-            raise ValueError("Invalid phone number. Please provide exactly 10 digits.")
-
-        # Format the validated phone number as XXX-XXX-XXXX
-        formatted_number = f"{digits_only[:3]}-{digits_only[3:6]}-{digits_only[6:]}"
-
-        return formatted_number
+    phone_number: PhoneNumber = Field(description="Needs to be a phone number with a country code. If none, assume +1")
 
     # Can define some function here to send Lead information to a database using an API
 
@@ -57,8 +44,8 @@ client = instructor.patch(OpenAI())
 
 def parse_lead_from_message(user_message: str):
     return client.chat.completions.create(
-        model="gpt-4",
-        response_model=Lead,
+        model="gpt-4-turbo-preview",
+        response_model=Iterable[Lead],
         messages=[
             {
                 "role": "system",
@@ -74,29 +61,33 @@ def parse_lead_from_message(user_message: str):
 
 if __name__ == "__main__":
     lead = parse_lead_from_message(
-        "Yes, that would be great if someone can reach out my name is Patrick King 9172234587"
+        "Yes, that would be great if someone can reach out my name is Patrick King 9175554587"
     )
-    assert isinstance(lead, Lead)
-    print(lead)
-    #> name='Patrick King' phone_number='917-223-4587'
-    print(lead.model_dump(mode="json"))
-    #> {'name': 'Patrick King', 'phone_number': '917-223-4587'}
-
+    assert all(isinstance(item, Lead) for item in lead)
+    for item in lead:
+        print(item.model_dump_json(indent=2))
     """
-    Invalid phone number example:
-
-    lead2 = parse_lead_from_message(
-        "Yes, that would be great if someone can reach out my name is Patrick King 9172234"
-    )
-    # assert isinstance(lead2, Lead)
-    print(lead2)
-    print(lead2.model_dump(mode="json"))
+    {
+      "name": "Patrick King",
+      "phone_number": "tel:+1-917-555-4587"
+    }
     """
 
+    #Invalid phone number example:
+    try:
+        lead2 = parse_lead_from_message(
+            "Yes, that would be great if someone can reach out my name is Patrick King 9172234"
+        )
+        assert all(isinstance(item, Lead) for item in lead2)
+        for item in lead2:
+            print(item.model_dump_json(indent=2))
+
+    except Exception as e:
+        print("ERROR:", e)
     """
-    Outputs:
-    
-    pydantic_core._pydantic_core.ValidationError: 1 validation error for Lead phone_number Value error, Invalid phone number. Please provide exactly 10 digits. [type=value_error, input_value='9172234', input_type=str] For further information visit https://errors.pydantic.dev/2.6/v/value_error
+    ERROR: 1 validation error for IterableLead
+    tasks.0.phone_number
+        value is not a valid phone number [type=value_error, input_value='+19172234', input_type=str]
     """
 ```
 
