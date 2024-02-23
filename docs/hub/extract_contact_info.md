@@ -34,7 +34,9 @@ from typing import Iterable
 
 class Lead(BaseModel):
     name: str
-    phone_number: PhoneNumber = Field(description="Needs to be a phone number with a country code. If none, assume +1")
+    phone_number: PhoneNumber = Field(
+        description="Needs to be a phone number with a country code. If none, assume +1"
+    )
 
     # Can define some function here to send Lead information to a database using an API
 
@@ -66,14 +68,14 @@ if __name__ == "__main__":
     assert all(isinstance(item, Lead) for item in lead)
     for item in lead:
         print(item.model_dump_json(indent=2))
-    """
-    {
-      "name": "Patrick King",
-      "phone_number": "tel:+1-917-555-4587"
-    }
-    """
+        """
+        {
+          "name": "Patrick King",
+          "phone_number": "tel:+1-917-555-4587"
+        }
+        """
 
-    #Invalid phone number example:
+    # Invalid phone number example:
     try:
         lead2 = parse_lead_from_message(
             "Yes, that would be great if someone can reach out my name is Patrick King 9172234"
@@ -84,11 +86,12 @@ if __name__ == "__main__":
 
     except Exception as e:
         print("ERROR:", e)
-    """
-    ERROR: 1 validation error for IterableLead
-    tasks.0.phone_number
-        value is not a valid phone number [type=value_error, input_value='+19172234', input_type=str]
-    """
+        """
+        ERROR:
+        1 validation error for IterableLead
+        tasks.0.phone_number
+          value is not a valid phone number [type=value_error, input_value='+19172234', input_type=str]
+        """
 ```
 
 In this example, the `parse_lead_from_message` function successfully extracts lead information from a user message, demonstrating how automation can enhance the efficiency of collecting accurate customer details. It also shows how the function successfully catches that the phone number is invalid so functionality can be implemented for the user to get prompted again to give a correct phone number.
