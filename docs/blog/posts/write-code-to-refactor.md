@@ -9,7 +9,7 @@ authors:
   - jxnl
 ---
 
-# Stop shooting yourself in the foot with python
+# Write Code To Refactor
 
 In this article, we'll walk through some common mistakes people tend to make when writing python code. Then, we'll look at how these considerations should be used when working on larger machine learning training jobs and projects. Lastly, we'll conclude with some suggestions that you'll be able to apply to your project today.
 
@@ -180,10 +180,11 @@ def process():
 
 There are two main problems here
 
-- We're introducing a strange side effect that `format_data` doesn't reflect
-- We're mutating state, which makes it difficult to debug issues when our logic gets more complicated
+1. We're introducing a strange side effect that `format_data` doesn't reflect
 
-A better way to write this logic would include splitting up the saving of data and the formatting of data into two separate functions. That way our functions closely reflect the actual actions that are being performed. We'd also try to minimize the mutation of state, as seen below.
+2. We're mutating state, which makes it difficult to debug issues when our logic gets more complicated
+
+A better way to write this logic would include splitting up the saving of data and the formatting of data into two separate functions. That way our functions closely reflect the actual actions that are being performed. We'd also try to minimize the mutation of state so that it's easier to trace errors when they happen
 
 ```python
 def format_data(data):
@@ -288,12 +289,112 @@ Therefore, you'll need to implement some form of checkpoints so that if training
 Generators allow you to get significant performance improvements. Let's take the following two code examples
 
 ```python
-	
+def get_all_keys(data):
+  return [row["key"] for row in data]
+
+def get_all_keys_with_generator(data):
+	for row in data:
+    yield row["key"]
 ```
 
+In the second function, we use a generator to provide access to the data which allows us to load the data on-demand. This helps us to speed-up the execution of our program since now we can load the data on demand. We can see how a generator helps us by running a simple benchmark as seen below
 
+```python
+def benchmark(n_rows: int):
+    data = [{"key": 24} for _ in range(n_rows)]
+    start = time.perf_counter()
+    keys = get_all_keys(data)
+    ttl = sum(keys)
+    end = time.perf_counter()
+
+    generator_start = time.perf_counter()
+    gen_keys = get_all_keys_with_generator(data)
+    gen_ttl = sum(gen_keys)
+    generator_end = time.perf_counter()
+
+    assert gen_ttl == ttl
+
+    return end - start, generator_end - generator_start
+
+
+for sz in [100, 1000, 10000, 100000, 1000000, 10000000, 100000000]:
+    list_implementation, generator_implementation = benchmark(sz)
+    print(
+        f"Size: {sz:<15,.0f} - Generator: {generator_implementation:10,.10f}, List:{list_implementation:10,.10f}. Generator is {round(list_implementation/generator_implementation,3)} times faster"
+    )
+```
+
+We can see the output of the script above in the code block below.
+
+```bash
+Size: 100             - Generator: 0.0000052080, List:0.0000053750. Generator is 1.032 times faster
+Size: 1,000           - Generator: 0.0000434590, List:0.0000320000. Generator is 0.736 times faster
+Size: 10,000          - Generator: 0.0004245410, List:0.0002673750. Generator is 0.63 times faster
+Size: 100,000         - Generator: 0.0035522920, List:0.0024890830. Generator is 0.701 times faster
+Size: 1,000,000       - Generator: 0.0253247080, List:0.0251741250. Generator is 0.994 times faster
+Size: 10,000,000      - Generator: 0.2570783340, List:0.6890833750. Generator is 2.68 times faster
+Size: 100,000,000     - Generator: 27.4372339590, List:48.9081205000. Generator is 1.783 times faster
+```
+
+We can see that the generator starts to shine when we start looking at significantly larger input sizes. In this simple benchmarks, that's starting from our first list with `10,000,000` data points. Additionally, by using a generator, we can work with larger datasets which will not be able to fit entirely into memory, loading a piece or slice of it at a time so that we don't run out of memory.
+
+### Implement logging
+
+Logging doesn't have to be complex. In fact, for most purposes, a simple `.csv` or a `.json` file will work well for most experiments since you'll be able to throw it into GPT-4 to do some simple data exploration once you've obtained the results. I normally just generate a list of results from my training jobs and directly write it to these files using a code snippet like what you're seeing below.
+
+```python
+df = pd.DataFrame(results).sort_values("metric_accuracy", ascending=False)
+df.to_csv(f"output.csv", index=False)
+
+# Save the results to a markdown file, this is useful for viewing the results in a human readable format
+with open(f"./output.md", "w") as f:
+    f.write(df.to_markdown())
+```
+
+If you're looking to do more advanced logging, weights and biases is a useful addition to your toolbox
+
+### Decouple Functions From Implementation
+
+Often times as we're experimenting with different loss functions and modules, it's useful to write more general functions are more flexible. Let's take the example of trying to predict a label given a cosine similarity score. We could this with the function below quite simply.
+
+```python
+from sklearn import LogisticRegression
+from sklearn.metrics import roc_auc_score
+
+def calculate_linear_regression(data):
+  x_train,x_test,y_train,y_test = data
+  model = LogisticRegression.fit(x_train,y_train)
+  predictions = model.predict(x_test)
+  
+  return roc_auc_score(y_test,predictions)
+```
+
+This has two main problems
+
+1. We can't test other models apart from a Linear Regression easily using this specific setup
+2. We can't modify the metric that we want to use to determine the quality of our predictions without writing an additional function
+
+Instead, we should be looking at a more abstract function definition. If we look at what's happening in the test, what we have is not a functiuon that simply calculates a linear regression. Fundamentally, what we have on hand is a function which is taking in some input and then scoring the quality of our predictions from that input.
+
+A better way might be then to rename the function and add in additional parameters such as the `prediction_model` or the `metric` that we might use to evaluate the quality of our fit. 
+
+```python
+from sklearn import LogisticRegression
+from sklearn.metrics import roc_auc_score
+
+def scorer(data,model_type=LogisticRegression,metric=roc_auc_score):
+  x_train,x_test,y_train,y_test = data
+  model = model_type.fit(x_train,y_train)
+  predictions = model.predict(x_test)
+  
+  return metric(y_test,predictions)
+```
+
+By doing so, we've effectively solved our original two issues and made this `scorer` function significantly more flexible than what it used to be. Now, when we want to experiment and see how different models or choice of metric might affect the quality of predictions, all that needs to be done is to modify the parameters of the function.
 
 ## Conclusion
+
+> #TODO: Fix up more of the conclusion
 
 In this article, we've walked through a few actionable tips that you can use in your projects today to help improve the quality of your code base. The key takeaway here though is that you want to make sure that your code is easily understood by other people and that it's easy to refactor the code.
 
