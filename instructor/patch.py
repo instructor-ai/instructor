@@ -30,6 +30,7 @@ from pydantic import BaseModel, ValidationError
 from instructor.dsl.iterable import IterableModel, IterableBase
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
+from instructor.dsl.simple_type import ModelAdapter, AdapterBase, is_simple_type
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
@@ -80,6 +81,12 @@ def handle_response_model(
     """
     new_kwargs = kwargs.copy()
     if response_model is not None:
+        # Handles the case where the response_model is a simple type
+        # Literal, Annotated, Union, str, int, float, bool, Enum
+        # We wrap the response_model in a ModelAdapter that sets 'content' as the response
+        if is_simple_type(response_model):
+            response_model = ModelAdapter[response_model]
+
         # This a special case for parallel tools
         if mode == Mode.PARALLEL_TOOLS:
             assert (
@@ -159,9 +166,8 @@ def handle_response_model(
                         "content": message,
                     },
                 )
-
-            # if the first message is a system append the schema to the end
-            if new_kwargs["messages"][0]["role"] == "system":
+            # if it is, system append the schema to the end
+            else:
                 new_kwargs["messages"][0]["content"] += f"\n\n{message}"
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
@@ -175,7 +181,7 @@ def process_response(
     stream: bool,
     validation_context: dict = None,
     strict=None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> Union[T_Model, T]:
     """Processes a OpenAI response with the response model, if available.
 
@@ -214,10 +220,16 @@ def process_response(
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
+        logger.debug(f"Returning takes from IterableBase")
         return [task for task in model.tasks]
 
     if isinstance(response_model, ParallelBase):
+        logger.debug(f"Returning model from ParallelBase")
         return model
+
+    if isinstance(model, AdapterBase):
+        logger.debug(f"Returning model from AdapterBase")
+        return model.content
 
     model._raw_response = response
     return model
@@ -230,7 +242,7 @@ async def process_response_async(
     stream: bool = False,
     validation_context: dict = None,
     strict: Optional[bool] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> T:
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
@@ -267,11 +279,16 @@ async def process_response_async(
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
-        #! If the response model is a multitask, return the tasks
+        logger.debug(f"Returning takes from IterableBase")
         return [task for task in model.tasks]
 
     if isinstance(response_model, ParallelBase):
+        logger.debug(f"Returning model from ParallelBase")
         return model
+
+    if isinstance(model, AdapterBase):
+        logger.debug(f"Returning model from AdapterBase")
+        return model.content
 
     model._raw_response = response
     return model
@@ -285,7 +302,7 @@ async def retry_async(
     kwargs,
     max_retries: int | AsyncRetrying = 1,
     strict: Optional[bool] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> T:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
@@ -339,9 +356,10 @@ async def retry_async(
                                 "name": response.choices[0]
                                 .message.tool_calls[0]
                                 .function.name,
-                                "content": "failure",
+                                "content": "Exceptions found\n{e}\nRecall the function correctly.",
                             }
                         )
+
                     kwargs["messages"].append(
                         {
                             "role": "user",
@@ -369,7 +387,7 @@ def retry_sync(
     kwargs,
     max_retries: int | Retrying = 1,
     strict: Optional[bool] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ):
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
 
@@ -486,7 +504,7 @@ class InstructorChatCompletionCreate(Protocol):
 @overload
 def patch(
     client: OpenAI,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> OpenAI:
     ...
 
@@ -494,7 +512,7 @@ def patch(
 @overload
 def patch(
     client: AsyncOpenAI,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> AsyncOpenAI:
     ...
 
@@ -502,7 +520,7 @@ def patch(
 @overload
 def patch(
     create: Callable[T_ParamSpec, T_Retval],
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> InstructorChatCompletionCreate:
     ...
 
@@ -510,7 +528,7 @@ def patch(
 def patch(
     client: Union[OpenAI, AsyncOpenAI] = None,
     create: Callable[T_ParamSpec, T_Retval] = None,
-    mode: Mode = Mode.FUNCTIONS,
+    mode: Mode = Mode.TOOLS,
 ) -> Union[OpenAI, AsyncOpenAI]:
     """
     Patch the `client.chat.completions.create` method
@@ -588,7 +606,7 @@ def patch(
         return new_create
 
 
-def apatch(client: AsyncOpenAI, mode: Mode = Mode.FUNCTIONS):
+def apatch(client: AsyncOpenAI, mode: Mode = Mode.TOOLS):
     """
     No longer necessary, use `patch` instead.
 

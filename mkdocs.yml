@@ -114,24 +114,22 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
       combine_header_slug: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify
-        kwds:
-          case: lower
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.tilde
 nav:
   - Introduction: 
     - Welcome To Instructor: 'index.md'
     - Why use Instructor?: 'why.md'
+    - Prompting Tips: 'concepts/prompting.md'
     - Help with Instructor: 'help.md'
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
-  - Tips: 'concepts/prompting.md'
   - Concepts:
     - Philosophy: 'concepts/philosophy.md'
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
+    - Types: 'concepts/types.md'
+    - Validators: "concepts/reask_validation.md"
     - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
     - Patching: 'concepts/patching.md'
@@ -142,31 +140,51 @@ nav:
     - Raw Response: 'concepts/raw_response.md'
     - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'
-    - Validators: "concepts/reask_validation.md"
     - Distillation: "concepts/distillation.md"
-    - Types: 'concepts/types.md'
     - Union: 'concepts/union.md'
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
   - Cookbook:
-    - Examples: 'examples/index.md'
+    - Cookbooks: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
     - Batch Classification (User Defined): 'examples/batch_classification.md'
     - LLM Self Critique: 'examples/self_critique.md'
     - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
+    - Extracting From Slides with GPT-V: 'examples/extract_slides.md'
     - Content Moderation: 'examples/moderation.md'
     - Citing Sources (RAG): 'examples/exact_citations.md'
     - Extracting Knowledge Graphs: 'examples/knowledge_graph.md'
     - Extracting Complex Entities: 'examples/entity_resolution.md'
     - Expanding Search Queries (RAG): 'examples/search.md'
     - Query Planning (RAG): 'examples/planning-tasks.md'
-    - Extracting Related Action Items: 'examples/action_items.md'
     - PII Data Sanitization: 'examples/pii.md'
     - Enabling Open Source Models: 'examples/open_source.md'
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
     - Ollama: 'examples/ollama.md'
     - SQLModel Integration: 'examples/sqlmodel.md'
+  - Hub:
+    - Introducing Instructor Hub: 'hub/index.md'
+    - Single Classification Model: 'hub/single_classification.md'
+    - Multiple Classification Model: 'hub/multiple_classification.md'
+    - Extracting Tables using GPT-V: 'hub/tables_from_vision.md'
+    - Extract Pandas Dataframes: 'hub/pandas_df.md'
+    - Using Ollama: 'hub/ollama.md'
+    - Using Llama CPP: 'hub/llama-cpp-python.md'
+    - Using Together Compute: 'hub/together.md'
+    - Using Anyscale: 'hub/anyscale.md'
+    - Batch Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
+    - Action Items: 'hub/action_items.md'
+    - Partial Streaming: 'hub/partial_streaming.md'
+    - Extract Contact Info: 'hub/extract_contact_info.md'
+
+  - Tutorials:
+    - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
+    - Tips and Tricks: 'tutorials/2-tips.ipynb'
+    - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
+    - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
+    - Validation: 'tutorials/4-validation.ipynb'
+    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
@@ -177,6 +195,9 @@ nav:
     - "blog/index.md"
   
 plugins:
+  - mkdocs-jupyter:
+      ignore_h1_titles: true
+      execute: false
   - social
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
@@ -205,6 +226,13 @@ plugins:
         - categories
         - tags 
       enabled: !ENV [CI, false]
+  - redirects:
+      redirect_maps:
+        'blog/posts/ollama.md': 'hub/ollama.md'
+        'blob/posts/llama-cpp-python.md': 'hub/llama-cpp-python.md'
+        'blog/posts/together.md': 'hub/together.md'
+        'blog/posts/anyscale.md': 'hub/anyscale.md'
+        'examples/action_items.md': 'hub/action_items.md'
 extra:
   analytics:
     provider: google
@@ -228,4 +256,3 @@ extra:
       link: https://twitter.com/jxnlco
     - icon: fontawesome/brands/github
       link: https://github.com/jxnl
-copyright: Copyright &copy; 2023 Jason Liu

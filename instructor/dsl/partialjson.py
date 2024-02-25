@@ -8,12 +8,12 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-
+from typing import Any, Dict, Optional, Tuple
 import json
 
 
 class JSONParser:
-    def __init__(self):
+    def __init__(self) -> None:
         self.parsers = {
             " ": self.parse_space,
             "\r": self.parse_space,
@@ -30,26 +30,26 @@ class JSONParser:
         for c in "0123456789.-":
             self.parsers[c] = self.parse_number
 
-        self.last_parse_reminding = None
+        self.last_parse_reminding: Optional[str] = None
         self.on_extra_token = self.default_on_extra_token
 
-    def default_on_extra_token(self, text, data, reminding):
+    def default_on_extra_token(self, text: str, data: Any, reminding: str) -> None:
         pass
 
-    def parse(self, s):
+    def parse(self, s: str) -> Dict[str, Any]:
         if len(s) >= 1:
             try:
                 return json.loads(s)
             except json.JSONDecodeError as e:
                 data, reminding = self.parse_any(s, e)
                 self.last_parse_reminding = reminding
-                if self.on_extra_token and reminding:
-                    self.on_extra_token(s, data, reminding)
+                if self.on_extra_token is not None and reminding:
+                    self.on_extra_token(s, data, reminding)  # type: ignore[no-untyped-call]
                 return json.loads(json.dumps(data))
         else:
             return json.loads("{}")
 
-    def parse_any(self, s, e):
+    def parse_any(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:
         if not s:
             raise e
         parser = self.parsers.get(s[0])
@@ -57,10 +57,10 @@ class JSONParser:
             raise e
         return parser(s, e)
 
-    def parse_space(self, s, e):
+    def parse_space(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:
         return self.parse_any(s.strip(), e)
 
-    def parse_array(self, s, e):
+    def parse_array(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:
         s = s[1:]  # skip starting '['
         acc = []
         s = s.strip()
@@ -76,9 +76,9 @@ class JSONParser:
                 s = s.strip()
         return acc, s
 
-    def parse_object(self, s, e):
+    def parse_object(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:
         s = s[1:]  # skip starting '{'
-        acc = {}
+        acc: Dict[str, Any] = {}
         s = s.strip()
         while s:
             if s[0] == "}":
@@ -114,7 +114,7 @@ class JSONParser:
                 s = s.strip()
         return acc, s
 
-    def parse_string(self, s, e):  # noqa: ARG002
+    def parse_string(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:  # noqa: ARG002
         end = s.find('"', 1)
         while end != -1 and s[end - 1] == "\\":  # Handle escaped quotes
             end = s.find('"', end + 1)
@@ -125,7 +125,7 @@ class JSONParser:
         s = s[end + 1 :]
         return json.loads(str_val), s
 
-    def parse_number(self, s, e):
+    def parse_number(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:
         i = 0
         while i < len(s) and s[i] in "0123456789.-":
             i += 1
@@ -143,17 +143,17 @@ class JSONParser:
             raise e
         return num, s
 
-    def parse_true(self, s, e):
+    def parse_true(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:
         if s.startswith("true"):
             return True, s[4:]
         raise e
 
-    def parse_false(self, s, e):
+    def parse_false(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:
         if s.startswith("false"):
             return False, s[5:]
         raise e
 
-    def parse_null(self, s, e):
+    def parse_null(self, s: str, e: json.JSONDecodeError) -> Tuple[Any, str]:
         if s.startswith("null"):
             return None, s[4:]
         raise e

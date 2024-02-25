@@ -11,6 +11,12 @@ authors:
 
 # Structured Outputs with Together AI
 
+If you want to try this example using `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug together --py > together_example.py
+```
+
 Open-source LLMS are gaining popularity, and with the release of Together's Function calling models, its been easier than ever to get structured outputs.
 
 By the end of this blog post, you will learn how to effectively utilize instructor with Together AI. But before we proceed, let's first explore the concept of patching.
@@ -31,7 +37,7 @@ Instructor's patch enhances the openai api it with the following features:
 
 !!! note "Learn More"
 
-    To learn more, please refer to the [docs](../../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../../why.md) page.
+    To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page.
 
 ## Together AI
 
