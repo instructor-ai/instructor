@@ -9,11 +9,11 @@ T = TypeVar("T")
 
 class ParallelBase:
     def __init__(self, *models: Type[OpenAISchema]):
-        print("here")
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models
-        self.registry = {model.__name__: model for model in models}
+        names = [model.model_json_schema()["properties"]["tool_name"]["default"] if "tool_name" in model.model_json_schema()["properties"] else model.__name__ for model in models]
+        self.registry = {name: model for name, model in zip(names, models)}
 
     def from_response(
         self,
