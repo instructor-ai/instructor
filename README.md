@@ -1,30 +1,28 @@
-# Welcome to Instructor - Your Gateway to Structured Outputs with OpenAI
+# Instructor
 
-_Pythonic Structured Outputs powered by LLM function calling and tool calling APIs. Designed for simplicity, transparency, and control._
+_Structured outputs powered by llms. Designed for simplicity, transparency, and control._
 
 ---
 
-[Star us on Github!](https://www.github.com/jxnl/instructor)
-
-[![Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
-[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![GitHub stars](https://img.shields.io/github/stars/jxnl/instructor.svg)](https://github.com/jxnl/instructor/stargazers)
-[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](https://jxnl.github.io/instructor)
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
-[![Coverage Status](https://coveralls.io/repos/github/jxnl/instructor/badge.svg?branch=add-coveralls)](https://coveralls.io/github/jxnl/instructor?branch=add-coveralls)
-[![Instructor](https://img.shields.io/badge/instructor-blog-blue)](https://jxnl.github.io/instructor/blog/)
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/CV8sPM5k5Y)
+[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
-Dive into the world of Python-based structured extraction, empowered by OpenAI's cutting-edge function calling API. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and its results insightful.
+Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./docs/concepts/reask_validation.md), retries with [Tenacity](./docs/concepts/retrying.md), and streaming [Lists](./docs/concepts/lists.md) and [Partial](./docs/concepts/partial.md) responses.
 
-## Ports to other languages
+Check us out in [Typescript](https://instructor-ai.github.io/instructor-js/) and [Elixir](https://github.com/thmsmlr/instructor_ex/).
 
-Check out ports to other languages below:
+Instructor is not limited to the OpenAI API, we have support for many other backends that via patching. Check out more on [patching](./docs/concepts/patching.md).
 
-- [Typescript / Javascript](https://www.github.com/jxnl/instructor-js)
-- [Elixir](https://github.com/thmsmlr/instructor_ex/)
+1. Wrap OpenAI's SDK
+2. Wrap the create method
 
-If you want to port Instructor to another language, please reach out to us on [Twitter](https://twitter.com/jxnlco) we'd love to help you get started!
+Including but not limited to:
+
+- [Together](./docs/hub/together.md)
+- [Ollama](./docs/hub/ollama.md)
+- [AnyScale](./docs/hub/anyscale.md)
+- [llama-cpp-python](./docs/hub/llama-cpp-python.md)
 
 ## Get Started in Moments
 
@@ -71,6 +69,30 @@ user = client.chat.completions.create(
 assert isinstance(user, UserDetail)
 assert user.name == "Jason"
 assert user.age == 25
+```
+
+## Primitive Types (str, int, float, bool)
+
+```python
+import instructor
+import openai
+
+client = instructor.patch(openai.OpenAI())
+
+# Response model with simple types like str, int, float, bool
+resp = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=bool,
+    messages=[
+        {
+            "role": "user",
+            "content": "Is it true that Paris is the capital of France?",
+        },
+    ],
+)
+assert resp is True, "Paris is the capital of France"
+print(resp)
+#> True
 ```
 
 ### Using async clients
@@ -202,7 +224,7 @@ except ValidationError as e:
     """
     1 validation error for QuestionAnswer
     answer
-      Assertion failed, The statement promotes objectionable behavior. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+      Assertion failed, The statement promotes objectionable behavior by encouraging evil and stealing, which goes against the rule of not saying objectionable things. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
         For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
     """
 ```

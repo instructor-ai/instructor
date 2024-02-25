@@ -1,3 +1,16 @@
+# Streaming Partial Responses
+
+Field level streaming provides incremental snapshots of the current state of the response model that are immediately useable. This approach is particularly relevant in contexts like rendering UI components.
+
+Instructor supports this pattern by making use of `Partial[T]`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`.
+
+If you want to try outs via `instructor hub`, you can pull it by running
+
+```bash
+instructor hub pull --slug partial_streaming --py > partial_streaming.py
+```
+
+```python
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
@@ -58,3 +71,4 @@ for extraction in extraction_stream:
     obj = extraction.model_dump()
     console.clear()
     console.print(obj)
+```

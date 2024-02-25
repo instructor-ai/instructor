@@ -7,7 +7,7 @@ authors:
   - jxnl
 ---
 
-# Bridging Language Models with Python using Instructor, Pydantic, and OpenAI's Function Calls
+# Generating Structured Output / JSON from LLMs
 
 Language models have seen significant growth. Using them effectively often requires complex frameworks. This post discusses how Instructor simplifies this process using Pydantic.
 

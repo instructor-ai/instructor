@@ -1,4 +1,4 @@
-# Instructor
+# Instructor, Generating Structure from LLMs
 
 _Structured outputs powered by llms. Designed for simplicity, transparency, and control._
 
@@ -8,16 +8,11 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/CV8sPM5k5Y)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
-Dive into the world of Python-based structured extraction, by OpenAI's function calling API and Pydantic, the most widely used data validation library for Python. Instructor stands out for its simplicity, transparency, and user-centric design. Whether you're a seasoned developer or just starting out, you'll find Instructor's approach intuitive and steerable.
+Instructor makes it easy to reliably get structured data like JSON from Large Language Models (LLMs) like GPT-3.5, GPT-4, GPT-4-Vision, including open source models like Mistral/Mixtral from [Together](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
 
-!!! tip "Support in other languages"
+By leveraging various modes like Function Calling, Tool Calling and even constrained sampling modes like JSON mode, JSON Schema; Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
-    Check out ports to other languages below:
-
-    - [Typescript / Javascript](https://instructor-ai.github.io/instructor-js/)
-    - [Elixir](https://github.com/thmsmlr/instructor_ex/)
-
-    If you want to port Instructor to another language, please reach out to us on [Twitter](https://twitter.com/jxnlco) we'd love to help you get started!
+We also provide library in [Typescript](https://instructor-ai.github.io/instructor-js/) and [Elixir](https://github.com/thmsmlr/instructor_ex/).
 
 ## Usage
 
@@ -120,7 +115,7 @@ print(response.model_dump_json(indent=2))
     print(user._raw_response.model_dump_json(indent=2))
     """
     {
-      "id": "chatcmpl-8pOAKwq8OXZVvOCMw4dv713oKplLF",
+      "id": "chatcmpl-8u9e2TV3ehCgLsRxNLLeAbzpEmBuZ",
       "choices": [
         {
           "finish_reason": "stop",
@@ -129,22 +124,28 @@ print(response.model_dump_json(indent=2))
           "message": {
             "content": null,
             "role": "assistant",
-            "function_call": {
-              "arguments": "{\n  \"name\": \"Jason\",\n  \"age\": 25\n}",
-              "name": "UserDetail"
-            },
-            "tool_calls": null
+            "function_call": null,
+            "tool_calls": [
+              {
+                "id": "call_3ZuQhfteTLEy7CUokjwnLBHr",
+                "function": {
+                  "arguments": "{\"name\":\"Jason\",\"age\":25}",
+                  "name": "UserDetail"
+                },
+                "type": "function"
+              }
+            ]
           }
         }
       ],
-      "created": 1707258312,
-      "model": "gpt-3.5-turbo-0613",
+      "created": 1708394134,
+      "model": "gpt-3.5-turbo-0125",
       "object": "chat.completion",
-      "system_fingerprint": null,
+      "system_fingerprint": "fp_69829325d0",
       "usage": {
-        "completion_tokens": 16,
-        "prompt_tokens": 72,
-        "total_tokens": 88
+        "completion_tokens": 9,
+        "prompt_tokens": 81,
+        "total_tokens": 90
       }
     }
     """

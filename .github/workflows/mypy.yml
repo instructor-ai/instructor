@@ -17,6 +17,13 @@ env:
     instructor/cli/usage.py
     instructor/exceptions.py
     instructor/distil.py
+    instructor/dsl/citation.py
+    instructor/dsl/iterable.py
+    instructor/dsl/maybe.py
+    instructor/dsl/parallel.py
+    instructor/dsl/partial.py
+    instructor/dsl/partialjson.py
+    instructor/dsl/validators.py
     instructor/function_calls.py
     tests/test_function_calls.py
     tests/test_distil.py

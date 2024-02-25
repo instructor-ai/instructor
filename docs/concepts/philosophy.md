@@ -4,9 +4,20 @@ The instructor values [simplicity](https://eugeneyan.com/writing/simplicity/) an
 
 > “Simplicity is a great virtue but it requires hard work to achieve it and education to appreciate it. And to make matters worse: complexity sells better.” — Edsger Dijkstra
 
-## The Bridge to Object-Oriented Programming
+### Proof that its simple
 
-`instructor` acts as a bridge converting text-based LLM interactions into a familiar object-oriented format. Its integration with Pydantic provides type hints, runtime validation, and robust IDE support; love and supported by many in the Python ecosystem. By treating LLMs as callable functions returning typed objects, instructor makes [language models backwards compatible with code](https://www.youtube.com/watch?v=yj-wSRJwrrc), making them practical for everyday use while being complex enough for advanced applications.
+1. Most users will only need to learn `response_model` and `patch` to get started.
+2. No new prompting language to learn, no new abstractions to learn.
+
+### Proof that its transparent
+
+1. We write very little prompts, and we don't try to hide the prompts from you.
+2. We'll do better in the future to give you config over the 2 prompts we do write, Reasking and JSON_MODE prompts.
+
+### Proof that its flexible
+
+1. If you build a system with OpenAI dirrectly, it is easy to incrementally adopt instructor.
+2. Add `response_model` and if you want to revert, just remove it.
 
 ## The zen of `instructor`
 

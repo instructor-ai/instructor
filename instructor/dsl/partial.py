@@ -8,7 +8,18 @@
 
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
-from typing import TypeVar, NoReturn, get_args, get_origin, Optional, Generic
+from typing import (
+    Any,
+    AsyncGenerator,
+    Generator,
+    Generic,
+    get_args,
+    get_origin,
+    Iterable,
+    NoReturn,
+    Optional,
+    TypeVar,
+)
 from copy import deepcopy
 
 from instructor.function_calls import Mode
@@ -21,17 +32,23 @@ Model = TypeVar("Model", bound=BaseModel)
 
 class PartialBase:
     @classmethod
-    def from_streaming_response(cls, completion, mode: Mode, **kwargs):
+    def from_streaming_response(
+        cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
+    ) -> Generator[Model, None, None]:
         json_chunks = cls.extract_json(completion, mode)
         yield from cls.model_from_chunks(json_chunks, **kwargs)
 
     @classmethod
-    async def from_streaming_response_async(cls, completion, mode: Mode, **kwargs):
+    async def from_streaming_response_async(
+        cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
+    ) -> AsyncGenerator[Model, None]:
         json_chunks = cls.extract_json_async(completion, mode)
         return cls.model_from_chunks_async(json_chunks, **kwargs)
 
     @classmethod
-    def model_from_chunks(cls, json_chunks, **kwargs):
+    def model_from_chunks(
+        cls, json_chunks: Iterable[Any], **kwargs: Any
+    ) -> Generator[Model, None, None]:
         prev_obj = None
         potential_object = ""
         for chunk in json_chunks:
@@ -42,7 +59,7 @@ class PartialBase:
                 parser.parse(potential_object) if potential_object.strip() else None
             )
             if task_json:
-                obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore
+                obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
                 if obj != prev_obj:
                     obj.__dict__[
                         "chunk"
@@ -51,7 +68,9 @@ class PartialBase:
                     yield obj
 
     @classmethod
-    async def model_from_chunks_async(cls, json_chunks, **kwargs):
+    async def model_from_chunks_async(
+        cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
+    ) -> AsyncGenerator[Model, None]:
         potential_object = ""
         prev_obj = None
         async for chunk in json_chunks:
@@ -62,7 +81,7 @@ class PartialBase:
                 parser.parse(potential_object) if potential_object.strip() else None
             )
             if task_json:
-                obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore
+                obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
                 if obj != prev_obj:
                     obj.__dict__[
                         "chunk"
@@ -71,7 +90,9 @@ class PartialBase:
                     yield obj
 
     @staticmethod
-    def extract_json(completion, mode: Mode):
+    def extract_json(
+        completion: Iterable[Any], mode: Mode
+    ) -> Generator[str, None, None]:
         for chunk in completion:
             try:
                 if chunk.choices:
@@ -92,7 +113,9 @@ class PartialBase:
                 pass
 
     @staticmethod
-    async def extract_json_async(completion, mode: Mode):
+    async def extract_json_async(
+        completion: AsyncGenerator[Any, None], mode: Mode
+    ) -> AsyncGenerator[str, None]:
         async for chunk in completion:
             try:
                 if chunk.choices:
@@ -169,7 +192,7 @@ class Partial(Generic[Model]):
 
                 # Recursively apply Partial to each of the generic arguments
                 modified_args = tuple(
-                    Partial[arg]
+                    Partial[arg]  # type: ignore[valid-type]
                     if isinstance(arg, type) and issubclass(arg, BaseModel)
                     else arg
                     for arg in generic_args

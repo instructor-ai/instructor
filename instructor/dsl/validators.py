@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Callable, Optional
 
 from openai import OpenAI
 from pydantic import Field
@@ -33,7 +33,7 @@ def llm_validator(
     model: str = "gpt-3.5-turbo",
     temperature: float = 0,
     openai_client: OpenAI = None,
-):
+) -> Callable[[str], str]:
     """
     Create a validator that uses the LLM to validate an attribute
 
@@ -70,7 +70,7 @@ def llm_validator(
 
     openai_client = openai_client if openai_client else patch(OpenAI())
 
-    def llm(v):
+    def llm(v: str) -> str:
         resp = openai_client.chat.completions.create(
             response_model=Validator,
             messages=[
@@ -85,7 +85,7 @@ def llm_validator(
             ],
             model=model,
             temperature=temperature,
-        )  # type: ignore
+        )
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.
@@ -99,7 +99,7 @@ def llm_validator(
     return llm
 
 
-def openai_moderation(client: OpenAI = None):
+def openai_moderation(client: Optional[OpenAI] = None) -> Callable[[str], str]:
     """
     Validates a message using OpenAI moderation model.
 

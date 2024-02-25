@@ -79,10 +79,8 @@ users = client.chat.completions.create(
 )
 for user in users:
     print(user)
-    #> ('tasks', [User(name='Jason', age=10), User(name='John', age=30)])
-
-#> name="Jason" "age"=10
-#> name="John" "age"=10
+    #> name='Jason' age=10
+    #> name='John' age=30
 ```
 
 ## Streaming Tasks
@@ -159,8 +157,8 @@ async def print_iterable_results():
     )
     async for m in model:
         print(m)
-        #> name='John Doe' age=32
-        #> name='Jane Smith' age=28
+        #> name='John Smith' age=30
+        #> name='Mary Jane' age=28
 
 
 import asyncio
