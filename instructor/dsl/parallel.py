@@ -26,7 +26,6 @@ T = TypeVar("T", bound=OpenAISchema)
 
 class ParallelBase:
     def __init__(self, *models: Type[OpenAISchema]):
-        print("here")
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models

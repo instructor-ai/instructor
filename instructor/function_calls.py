@@ -4,7 +4,6 @@ from functools import wraps
 from pydantic import BaseModel, create_model
 from openai.types.chat import ChatCompletion
 from typing import Any, Dict, Optional, Type
-from instructor.mode import Mode
 from instructor.utils import extract_json_from_codeblock
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
@@ -16,32 +15,6 @@ import warnings
 T = TypeVar("T")
 
 logger = logging.getLogger("instructor")
-
-
-class Mode(enum.Enum):
-    """The mode to use for patching the client"""
-
-    FUNCTIONS = "function_call"
-    PARALLEL_TOOLS = "parallel_tool_call"
-    TOOLS = "tool_call"
-    MISTRAL_TOOLS = "mistral_tools"
-    JSON = "json_mode"
-    MD_JSON = "markdown_json_mode"
-    JSON_SCHEMA = "json_schema_mode"
-
-    def __new__(cls, value: str) -> "Mode":
-        member = object.__new__(cls)
-        member._value_ = value
-
-        # Deprecation warning for FUNCTIONS
-        if value == "function_call":
-            warnings.warn(
-                "FUNCTIONS is deprecated and will be removed in future versions",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        return member
 
 
 SPECIAL_ARGUMENTS = ["name", "description"]
