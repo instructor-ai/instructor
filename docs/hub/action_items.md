@@ -1,4 +1,4 @@
-# Example: Extracting Action Items from Meeting Transcripts
+# Extracting Action Items from Meeting Transcripts
 
 In this guide, we'll walk through how to extract action items from meeting transcripts using OpenAI's API and Pydantic. This use case is essential for automating project management tasks, such as task assignment and priority setting.
 
@@ -9,7 +9,6 @@ instructor hub pull --slug action_items --py > action_items.py
 ```
 
 For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.
-
 
 !!! tips "Motivation"
 
@@ -26,7 +25,6 @@ To extract action items from a meeting transcript, we use the **`generate`** fun
 ## Evaluation and Testing
 
 To test the **`generate`** function, we provide it with a sample transcript, and then print the JSON representation of the extracted action items.
-
 
 ```python
 import instructor
