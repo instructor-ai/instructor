@@ -41,34 +41,35 @@ The Mistral client employs a different client than OpenAI, making the patching p
 
     If you want to try this out for yourself check out the [Mistral AI](https://mistral.ai/) website. You can get started [here](https://docs.mistral.ai/).
 
-
 ```python
+import instructor
+
 from pydantic import BaseModel
 from mistralai.client import MistralClient
-from instructor.patch import patch
-from instructor.function_calls import Mode
-
-
-class UserDetails(BaseModel):
-    name: str
-    age: int
-
 
 # enables `response_model` in chat call
 client = MistralClient()
-patched_chat = patch(create=client.chat, mode=Mode.MISTRAL_TOOLS)
 
-resp = patched_chat(
-    model="mistral-large-latest",
-    response_model=UserDetails,
-    messages=[
-        {
-            "role": "user",
-            "content": f'Extract the following entities: "Jason is 20"',
-        },
-    ],
+patched_chat = instructor.patch(
+    create=client.chat,
+    mode=instructor.Mode.MISTRAL_TOOLS
 )
-print(resp)
-#> name='Jason' age=20
-```
 
+if __name__ == "__main__":
+    class UserDetails(BaseModel):
+        name: str
+        age: int
+
+    resp = patched_chat(
+        model="mistral-large-latest",
+        response_model=UserDetails,
+        messages=[
+            {
+                "role": "user",
+                "content": f'Extract the following entities: "Jason is 20"',
+            },
+        ],
+    )
+    print(resp)
+    #> name='Jason' age=20
+```
