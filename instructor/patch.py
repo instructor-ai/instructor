@@ -116,17 +116,20 @@ def handle_response_model(
         if mode == Mode.FUNCTIONS:
             new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}  # type: ignore
-        elif mode == Mode.TOOLS:
+        elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
                     "type": "function",
                     "function": response_model.openai_schema,
                 }
             ]
-            new_kwargs["tool_choice"] = {
-                "type": "function",
-                "function": {"name": response_model.openai_schema["name"]},
-            }
+            if mode == Mode.MISTRAL_TOOLS:
+                new_kwargs["tool_choice"] = "any"
+            else:
+                new_kwargs["tool_choice"] = {
+                    "type": "function",
+                    "function": {"name": response_model.openai_schema["name"]},
+                }
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format

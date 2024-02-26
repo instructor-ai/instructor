@@ -15,6 +15,7 @@ class Mode(enum.Enum):
     FUNCTIONS: str = "function_call"
     PARALLEL_TOOLS: str = "parallel_tool_call"
     TOOLS: str = "tool_call"
+    MISTRAL_TOOLS: str = "mistral_tools"
     JSON: str = "json_mode"
     MD_JSON: str = "markdown_json_mode"
     JSON_SCHEMA: str = "json_schema_mode"
@@ -114,7 +115,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
                 context=validation_context,
                 strict=strict,
             )
-        elif mode == Mode.TOOLS:
+        elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             assert (
                 len(message.tool_calls) == 1
             ), "Instructor does not support multiple tool calls, use List[Model] instead."

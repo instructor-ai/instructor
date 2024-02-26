@@ -177,7 +177,7 @@ nav:
     - Action Items: 'hub/action_items.md'
     - Partial Streaming: 'hub/partial_streaming.md'
     - Extract Contact Info: 'hub/extract_contact_info.md'
-
+    - Using Mistral Large: 'hub/mistral.md'
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
