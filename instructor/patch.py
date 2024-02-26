@@ -116,14 +116,14 @@ def handle_response_model(
         if mode == Mode.FUNCTIONS:
             new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}  # type: ignore
-        elif mode == Mode.TOOLS or mode == Mode.MIST_TOOLS:
+        elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
                     "type": "function",
                     "function": response_model.openai_schema,
                 }
             ]
-            if mode == Mode.MIST_TOOLS:
+            if mode == Mode.MISTRAL_TOOLS:
                 new_kwargs["tool_choice"] = "any"
             else:
                 new_kwargs["tool_choice"] = {
