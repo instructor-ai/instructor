@@ -82,29 +82,19 @@ class QuestionAnswer(instructor.OpenAISchema):
 
 
 def ask_ai(question: str, context: str) -> QuestionAnswer:
-    completion = client.chat.completions.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
-        functions=[QuestionAnswer.openai_schema],
-        function_call={"name": QuestionAnswer.openai_schema["name"]},
+        response_model=QuestionAnswer,
         messages=[
             {
                 "role": "system",
-                "content": "You are a world class algorithm to answer questions with correct and exact citations. ",
+                "content": "You are a world class algorithm to answer questions with correct and exact citations.",
             },
-            {"role": "user", "content": "Answer question using the following context"},
             {"role": "user", "content": f"{context}"},
             {"role": "user", "content": f"Question: {question}"},
-            {
-                "role": "user",
-                "content": "Tips: Make sure to cite your sources, and use the exact words from the context.",
-            },
         ],
-    )
-
-    # Creating an Answer object from the completion response
-    return QuestionAnswer.from_response(
-        completion, validation_context={"text_chunk": context}
+        validation_context={"text_chunk": context},
     )
 
 
