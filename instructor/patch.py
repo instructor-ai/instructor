@@ -467,9 +467,11 @@ def retry_sync(
 
 def is_async(func: Callable) -> bool:
     """Returns true if the callable is async, accounting for wrapped callables"""
-    return inspect.iscoroutinefunction(func) or (
-        hasattr(func, "__wrapped__") and inspect.iscoroutinefunction(func.__wrapped__)
-    )
+    is_coroutine = inspect.iscoroutinefunction(func)
+    while hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+        is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
+    return is_coroutine
 
 
 OVERRIDE_DOCS = """
