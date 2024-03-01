@@ -24,7 +24,7 @@ By the end of this blog post, you will learn how to effectively utilize instruct
 !!! note "Other Languages"
 
     This blog post is written in Python, but the concepts are applicable to other languages as well, as we currently have support for [Javascript](
-        https://instructor-ai.github.io/instructor-js) and [Elixir](https://hexdocs.pm/instructor/Instructor.html)
+        https://instructor-ai.github.io/instructor-js), [Elixir](https://hexdocs.pm/instructor/Instructor.html) and [PHP](https://github.com/cognesy/instructor-php/).
 
 <!-- more -->
 
