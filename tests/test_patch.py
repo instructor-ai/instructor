@@ -47,17 +47,6 @@ def test_is_async_returns_true_if_double_wrapped_function_is_async():
     def wrapped_function():
         pass
 
-    assert is_async(wrapped_function) is True
-
-
-def test_is_async_returns_true_if_double_wrapped_function_is_async():
-    async def async_function():
-        pass
-
-    @functools.wraps(async_function)
-    def wrapped_function():
-        pass
-
     @functools.wraps(wrapped_function)
     def double_wrapped_function():
         pass
