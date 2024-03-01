@@ -12,7 +12,7 @@ Instructor makes it easy to reliably get structured data like JSON from Large La
 
 By leveraging various modes like Function Calling, Tool Calling and even constrained sampling modes like JSON mode, JSON Schema; Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
-We also provide library in [Typescript](https://instructor-ai.github.io/instructor-js/) and [Elixir](https://github.com/thmsmlr/instructor_ex/).
+We also provide library in [Typescript](https://instructor-ai.github.io/instructor-js/), [Elixir](https://github.com/thmsmlr/instructor_ex/) and [PHP](https://github.com/cognesy/instructor-php/).
 
 ## Usage
 
