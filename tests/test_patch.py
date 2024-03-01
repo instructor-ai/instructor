@@ -54,23 +54,6 @@ def test_is_async_returns_true_if_double_wrapped_function_is_async():
     async def async_function():
         pass
 
-    # First level of wrapping
-    @functools.wraps(async_function)
-    def wrapped_function():
-        pass
-
-    # Second level of wrapping
-    @functools.wraps(wrapped_function)
-    def double_wrapped_function():
-        pass
-
-    assert is_async(double_wrapped_function) is True
-
-
-def test_is_async_returns_true_if_double_wrapped_function_is_async():
-    async def async_function():
-        pass
-
     @functools.wraps(async_function)
     def wrapped_function():
         pass
@@ -93,7 +76,6 @@ def test_is_async_returns_true_if_triple_wrapped_function_is_async():
     @functools.wraps(wrapped_function)
     def double_wrapped_function():
         pass
-
 
     @functools.wraps(double_wrapped_function)
     def triple_wrapped_function():
