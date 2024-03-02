@@ -1,6 +1,7 @@
 import inspect
 import json
 import logging
+from textwrap import dedent
 from collections.abc import Iterable
 from functools import wraps
 from tenacity import Retrying, AsyncRetrying, stop_after_attempt, RetryError
@@ -133,11 +134,11 @@ def handle_response_model(
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
-            message = f"""
+            message = dedent(f"""
                 As a genius expert, your task is to understand the content and provide
                 the parsed objects in json that match the following json_schema:\n
                 {response_model.model_json_schema()['properties']}
-                """
+                """)
             # Check for nested models
             if "$defs" in response_model.model_json_schema():
                 message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
