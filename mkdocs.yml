@@ -163,6 +163,7 @@ nav:
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
     - Ollama: 'examples/ollama.md'
     - SQLModel Integration: 'examples/sqlmodel.md'
+    - Including Examples in Prompt: 'examples/examples.md'
   - Hub:
     - Introducing Instructor Hub: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
