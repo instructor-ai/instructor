@@ -230,7 +230,7 @@ def process_response(
     """
 
     logger.debug(
-        f"Instructor Pre-Response: {response}",
+        f"Instructor Raw Response: {response}",
     )
 
     if response_model is None:
@@ -295,7 +295,7 @@ async def process_response_async(
     """
 
     logger.debug(
-        f"Instructor Pre-Response: {response}",
+        f"Instructor Raw Response: {response}",
     )
     if response_model is None:
         return response
