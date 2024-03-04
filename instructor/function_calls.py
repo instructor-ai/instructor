@@ -125,7 +125,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             assert (
                 len(message.tool_calls or []) == 1
             ), "Instructor does not support multiple tool calls, use List[Model] instead."
-            tool_call = message.tool_calls[0] # type: ignore
+            tool_call = message.tool_calls[0]  # type: ignore
             assert (
                 tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
             ), "Tool name does not match"
@@ -136,13 +136,13 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             )
         elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
             model_response = cls.model_validate_json(
-                message.content, # type: ignore
+                message.content,  # type: ignore
                 context=validation_context,
                 strict=strict,
             )
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
-        
+
         # TODO: add logging or response handler
         return model_response
 
@@ -156,4 +156,4 @@ def openai_schema(cls: Type[BaseModel]) -> OpenAISchema:
             cls.__name__,
             __base__=(cls, OpenAISchema),
         )
-    ) # type: ignore[all]
+    )  # type: ignore[all]

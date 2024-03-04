@@ -19,7 +19,7 @@ from typing import (
     NoReturn,
     Optional,
     TypeVar,
-    Type
+    Type,
 )
 from copy import deepcopy
 
@@ -199,7 +199,9 @@ class Partial(Generic[T_Model]):
                 )
 
                 # Reconstruct the generic type with modified arguments
-                tmp_field.annotation = Optional[generic_base[modified_args]] if generic_base else None
+                tmp_field.annotation = (
+                    Optional[generic_base[modified_args]] if generic_base else None
+                )
                 tmp_field.default = None
             # If the field is a BaseModel, then recursively convert it's
             # attributes to optionals.
@@ -218,5 +220,5 @@ class Partial(Generic[T_Model]):
             **{
                 field_name: _make_field_optional(field_info)
                 for field_name, field_info in wrapped_class.__fields__.items()
-            } 
-        ) # type: ignore[all]
+            },
+        )  # type: ignore[all]

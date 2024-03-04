@@ -46,14 +46,10 @@ T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
+
 def update_total_usage(response, total_usage):
-    if (
-        isinstance(response, ChatCompletion)
-        and response.usage is not None
-    ):
-        total_usage.completion_tokens += (
-            response.usage.completion_tokens or 0
-        )
+    if isinstance(response, ChatCompletion) and response.usage is not None:
+        total_usage.completion_tokens += response.usage.completion_tokens or 0
         total_usage.prompt_tokens += response.usage.prompt_tokens or 0
         total_usage.total_tokens += response.usage.total_tokens or 0
         response.usage = total_usage  # Replace each response usage with the total usage
@@ -71,7 +67,11 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     }
     if hasattr(message, "tool_calls") and message.tool_calls is not None:
         ret["tool_calls"] = message.model_dump()["tool_calls"]
-    if hasattr(message, "function_call") and message.function_call is not None and ret["content"]:
+    if (
+        hasattr(message, "function_call")
+        and message.function_call is not None
+        and ret["content"]
+    ):
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
 
@@ -281,7 +281,7 @@ async def process_response_async(
     validation_context: Optional[dict] = None,
     strict: Optional[bool] = None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model | ChatCompletion: 
+) -> T_Model | ChatCompletion:
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
     via the pydantic model
@@ -365,7 +365,7 @@ async def retry_async(
             logger.debug(f"Retrying, attempt: {attempt}")
             with attempt:
                 try:
-                    response: ChatCompletion = await func(*args, **kwargs) # type: ignore
+                    response: ChatCompletion = await func(*args, **kwargs)  # type: ignore
                     stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
                     return await process_response_async(
@@ -375,7 +375,7 @@ async def retry_async(
                         validation_context=validation_context,
                         strict=strict,
                         mode=mode,
-                    ) # type: ignore[all]
+                    )  # type: ignore[all]
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}", e)
                     kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
