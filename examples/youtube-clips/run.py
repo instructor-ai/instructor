@@ -9,10 +9,10 @@ client = instructor.patch(openai.OpenAI())
 
 def extract_video_id(url: str) -> str | None:
     import re
+
     match = re.search(r"v=([a-zA-Z0-9_-]+)", url)
     if match:
         return match.group(1)
-
 
 
 class TranscriptSegment(BaseModel):
@@ -95,7 +95,6 @@ if __name__ == "__main__":
     console = Console()
     url = Prompt.ask("Enter a YouTube URL")
 
-    
     with console.status("[bold green]Processing YouTube URL...") as status:
         video_id = extract_video_id(url)
 
