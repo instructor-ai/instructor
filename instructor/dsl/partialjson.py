@@ -139,7 +139,7 @@ class JSONParser:
                 if "." in num_str or "e" in num_str or "E" in num_str
                 else int(num_str)
             )
-        except ValueError as e:
+        except json.JSONDecodeError as e:
             raise e
         return num, s
 
