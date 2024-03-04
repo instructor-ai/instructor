@@ -19,7 +19,6 @@ from typing import (
     NoReturn,
     Optional,
     TypeVar,
-    Type,
 )
 from copy import deepcopy
 
