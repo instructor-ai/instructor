@@ -7,7 +7,7 @@ If you're interested in trying this example using `instructor hub`, you can pull
 
 ```bash
 pip install youtube_transcript_api instructor rich 
-instructor hub pull youtube-clips > youtube_clips.py
+instructor hub pull --slug youtube-clips --py > youtube_clips.py
 ```
 
 ![youtube clip streaming](./img/youtube.gif)
