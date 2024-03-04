@@ -191,7 +191,7 @@ def IterableModel(
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, IterableBase),
+        __base__=(OpenAISchema, IterableBase),  # type: ignore
     )
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class

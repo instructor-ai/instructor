@@ -32,7 +32,7 @@ def llm_validator(
     allow_override: bool = False,
     model: str = "gpt-3.5-turbo",
     temperature: float = 0,
-    openai_client: OpenAI = None,
+    openai_client: Optional[OpenAI] = None,
 ) -> Callable[[str], str]:
     """
     Create a validator that uses the LLM to validate an attribute
@@ -85,7 +85,7 @@ def llm_validator(
             ],
             model=model,
             temperature=temperature,
-        )
+        )  # type: ignore[all]
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.
