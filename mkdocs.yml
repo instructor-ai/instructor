@@ -140,6 +140,7 @@ nav:
     - Raw Response: 'concepts/raw_response.md'
     - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'
+    - Logging: 'concepts/logging.md'
     - Distillation: "concepts/distillation.md"
     - Union: 'concepts/union.md'
     - Alias: 'concepts/alias.md'
