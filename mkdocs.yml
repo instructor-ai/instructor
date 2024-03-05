@@ -183,7 +183,7 @@ nav:
     - Using Mistral Large: 'hub/mistral.md'
     - Knowledge Graphs: 'hub/knowledge_graph.md'
     - Extract Youtube Clips: "hub/youtube_clips.md"
-    - Langchain Integration: 'examples/langchain.md'
+    - Langchain Integration: 'hub/langchain.md'
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
