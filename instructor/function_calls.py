@@ -19,6 +19,7 @@ class Mode(enum.Enum):
     JSON: str = "json_mode"
     MD_JSON: str = "markdown_json_mode"
     JSON_SCHEMA: str = "json_schema_mode"
+    ANTHROPIC_TOOLS: str = "anthropic_tools"
 
     def __new__(cls, value: str) -> "Mode":
         member = object.__new__(cls)

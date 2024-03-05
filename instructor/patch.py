@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from functools import wraps
 from tenacity import Retrying, AsyncRetrying, stop_after_attempt, RetryError
 from json import JSONDecodeError
+import xml.etree.ElementTree as ET
 from typing import (
     Callable,
     Optional,
@@ -26,6 +27,7 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
 )
 from openai.types.completion_usage import CompletionUsage
+from anthropic.types.message import Message
 from pydantic import BaseModel, ValidationError
 
 from instructor.dsl.iterable import IterableModel, IterableBase
@@ -173,10 +175,27 @@ def handle_response_model(
             # if it is, system append the schema to the end
             else:
                 new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+        elif mode == Mode.ANTHROPIC_TOOLS:            
+            tool_descriptions = model_to_xml(response_model)
+            system_prompt = f"""In this environment you have access to a set of tools you can use to answer the user's question.
+
+                                You may call them like this:
+                                <function_calls>
+                                <invoke>
+                                <tool_name>$TOOL_NAME</tool_name>
+                                <parameters>
+                                <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME>
+                                ...
+                                </parameters>
+                                </invoke>
+                                </function_calls>
+
+                                Here are the tools available:\n{tool_descriptions}""" 
+            # todo: check for system message already existing here
+            new_kwargs["system"] = system_prompt
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
     return response_model, new_kwargs
-
 
 def process_response(
     response: T,
@@ -411,6 +430,8 @@ def retry_sync(
                 try:
                     response = func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
+                    if isinstance(response, Message): # todo: implement more advanced response handling
+                        return xml_to_model(response_model, extract_xml(response.content[0].text))
                     if (
                         isinstance(response, ChatCompletion)
                         and response.usage is not None
@@ -465,7 +486,6 @@ def retry_sync(
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
         raise e.last_attempt.exception from e
 
-
 def is_async(func: Callable) -> bool:
     """Returns true if the callable is async, accounting for wrapped callables"""
     is_coroutine = inspect.iscoroutinefunction(func)
@@ -474,6 +494,47 @@ def is_async(func: Callable) -> bool:
         is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
     return is_coroutine
 
+# todo: make function better (edge cases, robustness, etc.)
+def model_to_xml(model: BaseModel) -> str:
+    """Takes a Pydantic model and returns its details in XML format."""
+    root = ET.Element("tool_description")
+    tool_name = ET.SubElement(root, "tool_name")
+    tool_name.text = model.__name__
+    description = ET.SubElement(root, "description")
+    description.text = ("This is the function that must be used to construct the response.")
+    parameters = ET.SubElement(root, "parameters")
+    
+    for field_name, field_type in model.__annotations__.items():
+        parameter = ET.SubElement(parameters, "parameter")
+        
+        name = ET.SubElement(parameter, "name")
+        name.text = field_name
+        
+        type_element = ET.SubElement(parameter, "type")
+        type_element.text = field_type.__name__
+        
+        param_description = ET.SubElement(parameter, "description")
+        param_description.text = f"The {field_name} of the {model.__name__} model"
+    
+    return ET.tostring(root, encoding="unicode")
+
+# todo: make function better (edge cases, robustness, etc.)
+# todo: super primitive parsing, make better
+def extract_xml(content: str) -> str:
+    start_index = content.find('<')
+    end_index = content.rfind('>') + 1
+    return content[start_index:end_index]
+
+# todo: make function better (edge cases, robustness, etc.)
+def xml_to_model(model, xml_string):
+    root = ET.fromstring(xml_string)
+    parameters = {}
+    for param in root.find('.//parameters'):
+        # todo: this assumes all values are strings, fix
+        field_type = model.__annotations__.get(param.tag)
+        if field_type:
+            parameters[param.tag] = field_type(param.text)
+    return model(**parameters)
 
 OVERRIDE_DOCS = """
 Creates a new chat completion for the provided messages and parameters.
