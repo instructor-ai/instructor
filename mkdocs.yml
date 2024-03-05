@@ -175,6 +175,7 @@ nav:
     - Using Llama CPP: 'hub/llama-cpp-python.md'
     - Using Together Compute: 'hub/together.md'
     - Using Anyscale: 'hub/anyscale.md'
+    - Using Groq: 'hub/groq.md'
     - Batch Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
     - Action Items: 'hub/action_items.md'
     - Partial Streaming: 'hub/partial_streaming.md'
