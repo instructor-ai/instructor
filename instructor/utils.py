@@ -1,5 +1,4 @@
 import json
-import re
 from typing import Generator, Iterable, AsyncGenerator
 
 from openai.types.chat import (
