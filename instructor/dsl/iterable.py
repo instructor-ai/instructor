@@ -119,13 +119,14 @@ class IterableBase:
 
     @staticmethod
     def get_object(s: str, stack: int) -> Tuple[Optional[str], str]:
+        start_index = s.find("{")
         for i, c in enumerate(s):
             if c == "{":
                 stack += 1
             if c == "}":
                 stack -= 1
                 if stack == 0:
-                    return s[: i + 1], s[i + 2 :]
+                    return s[start_index: i + 1], s[i + 2 :]
         return None, s
 
 
