@@ -22,11 +22,12 @@ def test_extract_json_from_codeblock_no_end():
 
     ```json
     {
-        "key": "value"
-    }    
+        "key": "value",
+        "another_key": [{"key": {"key": "value"}}]
+    }  
     """
     result = extract_json_from_codeblock(example)
-    assert json.loads(result) == {"key": "value"}
+    assert json.loads(result) == {"key": "value", "another_key": [{"key": {"key": "value"}}]}
 
 
 def test_extract_json_from_codeblock_no_start():
@@ -34,11 +35,12 @@ def test_extract_json_from_codeblock_no_start():
     Here is a response
 
     {
-        "key": "value"
-    }    
+        "key": "value",
+        "another_key": [{"key": {"key": "value"}}]
+    }
     """
     result = extract_json_from_codeblock(example)
-    assert json.loads(result) == {"key": "value"}
+    assert json.loads(result) == {"key": "value", "another_key": [{"key": {"key": "value"}}]}
 
 
 def test_stream_json():
