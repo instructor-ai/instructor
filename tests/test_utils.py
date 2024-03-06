@@ -47,7 +47,7 @@ def test_stream_json():
     ```json
     {
         "key": "value",
-        "another_key": {"key": "value"}
+        "another_key": [{"key": {"key": "value"}}]
     }
     ```
 
@@ -68,4 +68,4 @@ def test_stream_json():
     result = json.loads(
         "".join(list(extract_json_from_stream(batch_strings(text, n=3))))
     )
-    assert result == {"key": "value", "another_key": {"key": "value"}}
+    assert result == {"key": "value", "another_key": [{"key": {"key": "value"}}]}
