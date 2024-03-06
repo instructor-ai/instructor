@@ -12,7 +12,7 @@ from openai.types.chat import (
 def extract_json_from_codeblock(content: str) -> str:
     first_paren = content.find("{")
     last_paren = content.rfind("}")
-    return content[first_paren:last_paren + 1]
+    return content[first_paren : last_paren + 1]
 
 
 def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None]:

@@ -1,6 +1,10 @@
 import json
 import pytest
-from instructor.utils import extract_json_from_codeblock, extract_json_from_stream, extract_json_from_stream_async
+from instructor.utils import (
+    extract_json_from_codeblock,
+    extract_json_from_stream,
+    extract_json_from_stream_async,
+)
 
 
 def test_extract_json_from_codeblock():
@@ -28,7 +32,10 @@ def test_extract_json_from_codeblock_no_end():
     }  
     """
     result = extract_json_from_codeblock(example)
-    assert json.loads(result) == {"key": "value", "another_key": [{"key": {"key": "value"}}]}
+    assert json.loads(result) == {
+        "key": "value",
+        "another_key": [{"key": {"key": "value"}}],
+    }
 
 
 def test_extract_json_from_codeblock_no_start():
@@ -41,7 +48,10 @@ def test_extract_json_from_codeblock_no_start():
     }
     """
     result = extract_json_from_codeblock(example)
-    assert json.loads(result) == {"key": "value", "another_key": [{"key": {"key": "value"}}, {"key": "value"}]}
+    assert json.loads(result) == {
+        "key": "value",
+        "another_key": [{"key": {"key": "value"}}, {"key": "value"}],
+    }
 
 
 def test_stream_json():
@@ -74,6 +84,7 @@ def test_stream_json():
     )
     assert result == {"key": "value", "another_key": [{"key": {"key": "value"}}]}
 
+
 @pytest.mark.asyncio
 async def test_stream_json_async():
     text = """here is the json for you! 
@@ -101,8 +112,16 @@ async def test_stream_json_async():
             yield batch
 
     result = json.loads(
-        "".join([chunk async for chunk in extract_json_from_stream_async(batch_strings_async(text, n=3))])
+        "".join(
+            [
+                chunk
+                async for chunk in extract_json_from_stream_async(
+                    batch_strings_async(text, n=3)
+                )
+            ]
+        )
     )
-    assert result == {"key": "value", "another_key": [{"key": {"key": "value"}}, {"key": "value"}]}
-    
-
+    assert result == {
+        "key": "value",
+        "another_key": [{"key": {"key": "value"}}, {"key": "value"}],
+    }
