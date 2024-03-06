@@ -1,6 +1,5 @@
 # type: ignore[all]
 import inspect
-import json
 import logging
 from textwrap import dedent
 from collections.abc import Iterable
@@ -24,8 +23,6 @@ from typing import (
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import (
     ChatCompletion,
-    ChatCompletionMessage,
-    ChatCompletionMessageParam,
 )
 from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
@@ -34,6 +31,7 @@ from instructor.dsl.iterable import IterableModel, IterableBase
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import ModelAdapter, AdapterBase, is_simple_type
+from instructor.utils import dump_message, update_total_usage
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
@@ -45,35 +43,6 @@ T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
-
-
-def update_total_usage(response, total_usage):
-    if isinstance(response, ChatCompletion) and response.usage is not None:
-        total_usage.completion_tokens += response.usage.completion_tokens or 0
-        total_usage.prompt_tokens += response.usage.prompt_tokens or 0
-        total_usage.total_tokens += response.usage.total_tokens or 0
-        response.usage = total_usage  # Replace each response usage with the total usage
-    return response
-
-
-def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
-    """Dumps a message to a dict, to be returned to the OpenAI API.
-    Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
-    if it isn't used.
-    """
-    ret: ChatCompletionMessageParam = {
-        "role": message.role,
-        "content": message.content or "",
-    }
-    if hasattr(message, "tool_calls") and message.tool_calls is not None:
-        ret["tool_calls"] = message.model_dump()["tool_calls"]
-    if (
-        hasattr(message, "function_call")
-        and message.function_call is not None
-        and ret["content"]
-    ):
-        ret["content"] += json.dumps(message.model_dump()["function_call"])
-    return ret
 
 
 def handle_response_model(
@@ -153,12 +122,12 @@ def handle_response_model(
                 f"""
                 As a genius expert, your task is to understand the content and provide
                 the parsed objects in json that match the following json_schema:\n
-                {response_model.model_json_schema()['properties']}
+
+                {response_model.model_json_schema()}
+
+                Make sure to return an instance of the JSON, not the schema itself
                 """
             )
-            # Check for nested models
-            if "$defs" in response_model.model_json_schema():
-                message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
 
             if mode == Mode.JSON:
                 new_kwargs["response_format"] = {"type": "json_object"}
@@ -172,11 +141,10 @@ def handle_response_model(
             elif mode == Mode.MD_JSON:
                 new_kwargs["messages"].append(
                     {
-                        "role": "assistant",
-                        "content": "Here is the perfectly correctly formatted JSON\n```json",
+                        "role": "user",
+                        "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
                     },
                 )
-                new_kwargs["stop"] = "```"
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":
@@ -402,8 +370,8 @@ async def retry_async(
                     if mode == Mode.MD_JSON:
                         kwargs["messages"].append(
                             {
-                                "role": "assistant",
-                                "content": "```json",
+                                "role": "user",
+                                "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
                             },
                         )
                     raise e
@@ -472,13 +440,6 @@ def retry_sync(
                                 "role": "user",
                                 "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
                             }
-                        )
-                    if mode == Mode.MD_JSON:
-                        kwargs["messages"].append(
-                            {
-                                "role": "assistant",
-                                "content": "```json",
-                            },
                         )
                     raise e
     except RetryError as e:

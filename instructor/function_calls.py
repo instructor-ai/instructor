@@ -7,6 +7,7 @@ import enum
 import warnings
 import logging
 from openai.types.chat import ChatCompletion
+from instructor.utils import extract_json_from_codeblock
 
 T = TypeVar("T")
 
@@ -135,6 +136,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
                 strict=strict,
             )
         elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
+            if mode == Mode.MD_JSON:
+                message.content = extract_json_from_codeblock(message.content or "")
+
             model_response = cls.model_validate_json(
                 message.content,  # type: ignore
                 context=validation_context,

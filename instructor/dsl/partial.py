@@ -24,6 +24,7 @@ from copy import deepcopy
 
 from instructor.function_calls import Mode
 from instructor.dsl.partialjson import JSONParser
+from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
 parser = JSONParser()
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -35,6 +36,10 @@ class PartialBase(Generic[T_Model]):
         cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
     ) -> Generator[T_Model, None, None]:
         json_chunks = cls.extract_json(completion, mode)
+
+        if mode == Mode.MD_JSON:
+            json_chunks = extract_json_from_stream(json_chunks)
+
         yield from cls.model_from_chunks(json_chunks, **kwargs)
 
     @classmethod
@@ -42,6 +47,10 @@ class PartialBase(Generic[T_Model]):
         cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
     ) -> AsyncGenerator[T_Model, None]:
         json_chunks = cls.extract_json_async(completion, mode)
+
+        if mode == Mode.MD_JSON:
+            json_chunks = extract_json_from_stream_async(json_chunks)
+
         return cls.model_from_chunks_async(json_chunks, **kwargs)
 
     @classmethod

@@ -3,6 +3,7 @@ from typing import Any, AsyncGenerator, Generator, Iterable, List, Optional, Tup
 from pydantic import BaseModel, Field, create_model
 
 from instructor.function_calls import OpenAISchema, Mode
+from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
 
 class IterableBase:
@@ -13,6 +14,10 @@ class IterableBase:
         cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
     ) -> Generator[BaseModel, None, None]:  # noqa: ARG003
         json_chunks = cls.extract_json(completion, mode)
+
+        if mode == Mode.MD_JSON:
+            json_chunks = extract_json_from_stream(json_chunks)
+
         yield from cls.tasks_from_chunks(json_chunks, **kwargs)
 
     @classmethod
@@ -20,6 +25,10 @@ class IterableBase:
         cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
     ) -> AsyncGenerator[BaseModel, None]:
         json_chunks = cls.extract_json_async(completion, mode)
+
+        if mode == Mode.MD_JSON:
+            json_chunks = extract_json_from_stream_async(json_chunks)
+
         return cls.tasks_from_chunks_async(json_chunks, **kwargs)
 
     @classmethod
