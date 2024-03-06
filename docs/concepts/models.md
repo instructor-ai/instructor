@@ -150,7 +150,7 @@ class SearchQuery(BaseModel):
 
     def execute(self):
         print(f"Searching for {self.query} of type {self.query_type}")
-        #> Searching for cat pictures of type image
+        #> Searching for cat of type image
         return "Results for cat"
 
 

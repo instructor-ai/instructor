@@ -91,7 +91,7 @@ except ValidationError as e:
     """
     1 validation error for QuestionAnswer
     answer
-      Assertion failed, The statement promotes objectionable behavior by encouraging evil and theft. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+      Assertion failed, The statement promotes objectionable behavior by encouraging evil and stealing, which goes against the rule of not saying objectionable things. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
         For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
     """
 ```

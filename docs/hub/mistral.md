@@ -50,12 +50,10 @@ from mistralai.client import MistralClient
 # enables `response_model` in chat call
 client = MistralClient()
 
-patched_chat = instructor.patch(
-    create=client.chat,
-    mode=instructor.Mode.MISTRAL_TOOLS
-)
+patched_chat = instructor.patch(create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS)
 
 if __name__ == "__main__":
+
     class UserDetails(BaseModel):
         name: str
         age: int
