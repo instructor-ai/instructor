@@ -44,9 +44,9 @@ function_calls = client.chat.completions.create(
 
 for fc in function_calls:
     print(fc)
-    #> location='Toronto' units='imperial'
+    #> location='Toronto' units='metric'
     #> location='Dallas' units='imperial'
-    #> query='who won the super bowl'
+    #> query='super bowl winner'
 ```
 
 1. Set the mode to `PARALLEL_TOOLS` to enable parallel function calling.

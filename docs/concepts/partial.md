@@ -119,10 +119,10 @@ print(extraction.model_dump_json(indent=2))
       "twitter": "@CodeMaster2023"
     }
   ],
-  "date": "2024-03-15",
+  "date": "March 15th, 2024",
   "location": "Grand Tech Arena located at 4521 Innovation Drive",
   "budget": 50000,
-  "deadline": "2024-02-20"
+  "deadline": "February 20th"
 }
 """
 ```

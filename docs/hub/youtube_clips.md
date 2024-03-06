@@ -15,7 +15,7 @@ instructor hub pull --slug youtube-clips --py > youtube_clips.py
 ```python
 from youtube_transcript_api import YouTubeTranscriptApi
 from pydantic import BaseModel, Field
-from typing import List, Dict, Generator, Iterable
+from typing import List, Generator, Iterable
 import instructor
 import openai
 
@@ -24,10 +24,10 @@ client = instructor.patch(openai.OpenAI())
 
 def extract_video_id(url: str) -> str | None:
     import re
+
     match = re.search(r"v=([a-zA-Z0-9_-]+)", url)
     if match:
         return match.group(1)
-
 
 
 class TranscriptSegment(BaseModel):
@@ -51,9 +51,7 @@ def get_transcript_with_timing(
 
 
 class YoutubeClip(BaseModel):
-    title: str = Field(
-        description="Specific and informative title for the clip."
-    )
+    title: str = Field(description="Specific and informative title for the clip.")
     description: str = Field(
         description="A detailed description of the clip, including notable quotes or phrases."
     )
@@ -98,7 +96,6 @@ if __name__ == "__main__":
     console = Console()
     url = Prompt.ask("Enter a YouTube URL")
 
-    
     with console.status("[bold green]Processing YouTube URL...") as status:
         video_id = extract_video_id(url)
 
