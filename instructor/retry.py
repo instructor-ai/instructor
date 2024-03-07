@@ -1,3 +1,4 @@
+# type: ignore[all]
 import logging
 
 from openai.types.chat import ChatCompletion
@@ -38,7 +39,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.MD_JSON:
         yield {
             "role": "user",
-            "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
+            "content": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
         }
     else:
         yield {
