@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 import inspect
 import logging
-from typing import Generator, Optional, Type, Union, get_args, get_origin, TypeVar, ParamSpec
+from typing import Generator, Optional, Type, Tuple, get_args, get_origin, TypeVar, ParamSpec, Any, Dict
 
 from instructor.mode import Mode
 
@@ -98,7 +98,7 @@ def process_response(
     validation_context: Optional[dict] = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model | Generator[T_Model, None, None]:
+) -> T_Model | Generator[T_Model, None, None] | ChatCompletion:
     """Processes a OpenAI response with the response model, if available.
 
     Args:
@@ -159,7 +159,7 @@ def process_response(
 
 def handle_response_model(
     response_model: T, mode: Mode = Mode.TOOLS, **kwargs
-) -> Union[Type[OpenAISchema], dict]:
+) -> Tuple[Type[OpenAISchema], Dict[str, Any]]:
     """Prepare the response model type hint, and returns the response_model
     along with the new modified kwargs needed to be able to use the response_model
     parameter with the patch function.
