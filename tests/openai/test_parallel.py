@@ -51,9 +51,8 @@ def test_sync_no_tool_calls(client):
     assert len(response_list) == 1
 
 @pytest.mark.asyncio
-
-async def test_async_no_tool_calls(client):
-    client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
+async def test_async_no_tool_calls(aclient):
+    client = instructor.patch(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = await client.chat.completions.create(
         model="gpt-4-turbo-preview",
         messages=[
