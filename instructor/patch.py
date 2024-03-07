@@ -1,12 +1,14 @@
+# type: ignore[all]
 import inspect
-import json
 import logging
+from textwrap import dedent
 from collections.abc import Iterable
 from functools import wraps
 from tenacity import Retrying, AsyncRetrying, stop_after_attempt, RetryError
 from json import JSONDecodeError
 from typing import (
     Callable,
+    Generator,
     Optional,
     ParamSpec,
     Protocol,
@@ -21,8 +23,6 @@ from typing import (
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import (
     ChatCompletion,
-    ChatCompletionMessage,
-    ChatCompletionMessageParam,
 )
 from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel, ValidationError
@@ -31,6 +31,7 @@ from instructor.dsl.iterable import IterableModel, IterableBase
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import ModelAdapter, AdapterBase, is_simple_type
+from instructor.utils import dump_message, update_total_usage
 
 from .function_calls import Mode, OpenAISchema, openai_schema
 
@@ -42,22 +43,6 @@ T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
-
-
-def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
-    """Dumps a message to a dict, to be returned to the OpenAI API.
-    Workaround for an issue with the OpenAI API, where the `tool_calls` field isn't allowed to be present in requests
-    if it isn't used.
-    """
-    ret: ChatCompletionMessageParam = {
-        "role": message.role,
-        "content": message.content or "",
-    }
-    if hasattr(message, "tool_calls") and message.tool_calls is not None:
-        ret["tool_calls"] = message.model_dump()["tool_calls"]
-    if hasattr(message, "function_call") and message.function_call is not None:
-        ret["content"] += json.dumps(message.model_dump()["function_call"])
-    return ret
 
 
 def handle_response_model(
@@ -116,28 +101,33 @@ def handle_response_model(
         if mode == Mode.FUNCTIONS:
             new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}  # type: ignore
-        elif mode == Mode.TOOLS:
+        elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
                     "type": "function",
                     "function": response_model.openai_schema,
                 }
             ]
-            new_kwargs["tool_choice"] = {
-                "type": "function",
-                "function": {"name": response_model.openai_schema["name"]},
-            }
+            if mode == Mode.MISTRAL_TOOLS:
+                new_kwargs["tool_choice"] = "any"
+            else:
+                new_kwargs["tool_choice"] = {
+                    "type": "function",
+                    "function": {"name": response_model.openai_schema["name"]},
+                }
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
-            message = f"""
+            message = dedent(
+                f"""
                 As a genius expert, your task is to understand the content and provide
                 the parsed objects in json that match the following json_schema:\n
-                {response_model.model_json_schema()['properties']}
+
+                {response_model.model_json_schema()}
+
+                Make sure to return an instance of the JSON, not the schema itself
                 """
-            # Check for nested models
-            if "$defs" in response_model.model_json_schema():
-                message += f"\nHere are some more definitions to adhere too:\n{response_model.model_json_schema()['$defs']}"
+            )
 
             if mode == Mode.JSON:
                 new_kwargs["response_format"] = {"type": "json_object"}
@@ -151,11 +141,10 @@ def handle_response_model(
             elif mode == Mode.MD_JSON:
                 new_kwargs["messages"].append(
                     {
-                        "role": "assistant",
-                        "content": "Here is the perfectly correctly formatted JSON\n```json",
+                        "role": "user",
+                        "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
                     },
                 )
-                new_kwargs["stop"] = "```"
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":
@@ -171,18 +160,29 @@ def handle_response_model(
                 new_kwargs["messages"][0]["content"] += f"\n\n{message}"
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
+
+    logger.debug(
+        f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
+        extra={
+            "mode": mode.value,
+            "response_model": response_model.__name__
+            if response_model is not None
+            else None,
+            "new_kwargs": new_kwargs,
+        },
+    )
     return response_model, new_kwargs
 
 
 def process_response(
-    response: T,
+    response: T_Model,
     *,
-    response_model: Type[T_Model],
+    response_model: Type[OpenAISchema | BaseModel],
     stream: bool,
-    validation_context: dict = None,
+    validation_context: Optional[dict] = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
-) -> Union[T_Model, T]:
+) -> T_Model | Generator[T_Model, None, None]:
     """Processes a OpenAI response with the response model, if available.
 
     Args:
@@ -196,7 +196,13 @@ def process_response(
     Returns:
         Union[T_Model, T]: The parsed response, if a response model is available, otherwise the response as is from the SDK
     """
+
+    logger.debug(
+        f"Instructor Raw Response: {response}",
+    )
+
     if response_model is None:
+        logger.debug("No response model, returning response as is")
         return response
 
     if (
@@ -238,12 +244,12 @@ def process_response(
 async def process_response_async(
     response: ChatCompletion,
     *,
-    response_model: Type[T_Model],
+    response_model: Type[T_Model | OpenAISchema | BaseModel],
     stream: bool = False,
-    validation_context: dict = None,
+    validation_context: Optional[dict] = None,
     strict: Optional[bool] = None,
     mode: Mode = Mode.TOOLS,
-) -> T:
+) -> T_Model | ChatCompletion:
     """Processes a OpenAI response with the response model, if available.
     It can use `validation_context` and `strict` to validate the response
     via the pydantic model
@@ -255,6 +261,10 @@ async def process_response_async(
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
+
+    logger.debug(
+        f"Instructor Raw Response: {response}",
+    )
     if response_model is None:
         return response
 
@@ -323,18 +333,9 @@ async def retry_async(
             logger.debug(f"Retrying, attempt: {attempt}")
             with attempt:
                 try:
-                    response: ChatCompletion = await func(*args, **kwargs)
+                    response: ChatCompletion = await func(*args, **kwargs)  # type: ignore
                     stream = kwargs.get("stream", False)
-                    if (
-                        isinstance(response, ChatCompletion)
-                        and response.usage is not None
-                    ):
-                        total_usage.completion_tokens += (
-                            response.usage.completion_tokens or 0
-                        )
-                        total_usage.prompt_tokens += response.usage.prompt_tokens or 0
-                        total_usage.total_tokens += response.usage.total_tokens or 0
-                        response.usage = total_usage  # Replace each response usage with the total usage
+                    response = update_total_usage(response, total_usage)
                     return await process_response_async(
                         response,
                         response_model=response_model,
@@ -342,9 +343,9 @@ async def retry_async(
                         validation_context=validation_context,
                         strict=strict,
                         mode=mode,
-                    )
+                    )  # type: ignore[all]
                 except (ValidationError, JSONDecodeError) as e:
-                    logger.debug(f"Error response: {response}")
+                    logger.debug(f"Error response: {response}", e)
                     kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
                     if mode == Mode.TOOLS:
                         kwargs["messages"].append(
@@ -369,8 +370,8 @@ async def retry_async(
                     if mode == Mode.MD_JSON:
                         kwargs["messages"].append(
                             {
-                                "role": "assistant",
-                                "content": "```json",
+                                "role": "user",
+                                "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
                             },
                         )
                     raise e
@@ -407,16 +408,7 @@ def retry_sync(
                 try:
                     response = func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
-                    if (
-                        isinstance(response, ChatCompletion)
-                        and response.usage is not None
-                    ):
-                        total_usage.completion_tokens += (
-                            response.usage.completion_tokens or 0
-                        )
-                        total_usage.prompt_tokens += response.usage.prompt_tokens or 0
-                        total_usage.total_tokens += response.usage.total_tokens or 0
-                        response.usage = total_usage  # Replace each response usage with the total usage
+                    response = update_total_usage(response, total_usage)
                     return process_response(
                         response,
                         response_model=response_model,
@@ -449,13 +441,6 @@ def retry_sync(
                                 "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
                             }
                         )
-                    if mode == Mode.MD_JSON:
-                        kwargs["messages"].append(
-                            {
-                                "role": "assistant",
-                                "content": "```json",
-                            },
-                        )
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
@@ -464,9 +449,11 @@ def retry_sync(
 
 def is_async(func: Callable) -> bool:
     """Returns true if the callable is async, accounting for wrapped callables"""
-    return inspect.iscoroutinefunction(func) or (
-        hasattr(func, "__wrapped__") and inspect.iscoroutinefunction(func.__wrapped__)
-    )
+    is_coroutine = inspect.iscoroutinefunction(func)
+    while hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+        is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
+    return is_coroutine
 
 
 OVERRIDE_DOCS = """

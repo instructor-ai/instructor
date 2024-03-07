@@ -22,7 +22,7 @@ user = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ],
-)
+)  # type: ignore
 
 """ 
 DEBUG:httpx:load_ssl_context verify=True cert=None trust_env=True http2=False

@@ -33,12 +33,12 @@ def extract(data) -> UserDetail:
 start = time.perf_counter()  # (1)
 model = extract("Extract jason is 25 years old")
 print(f"Time taken: {time.perf_counter() - start}")
-#> Time taken: 0.8392175831831992
+#> Time taken: 0.7583793329977198
 
 start = time.perf_counter()
 model = extract("Extract jason is 25 years old")  # (2)
 print(f"Time taken: {time.perf_counter() - start}")
-#> Time taken: 8.33999365568161e-07
+#> Time taken: 4.3330073822289705e-06
 ```
 
 1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
