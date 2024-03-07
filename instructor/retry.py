@@ -27,7 +27,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     yield dump_message(response.choices[0].message)
 
     if mode == Mode.TOOLS:
-        for tool_call in response.choices[0].message.tool_calls: # type: ignore
+        for tool_call in response.choices[0].message.tool_calls:  # type: ignore
             yield {
                 "role": "tool",
                 "tool_call_id": tool_call.id,
@@ -35,7 +35,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
                 "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
             }
 
-
+    # TODO: Give users more control on configuration
     if mode == Mode.MD_JSON:
         yield {
             "role": "user",
@@ -46,6 +46,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             "role": "user",
             "content": f"Recall the function correctly, fix the errors, exceptions found\n{exception}",
         }
+
 
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],

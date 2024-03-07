@@ -12,6 +12,7 @@ from openai.types.chat import (
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
+
 def extract_json_from_codeblock(content: str) -> str:
     first_paren = content.find("{")
     last_paren = content.rfind("}")
@@ -58,7 +59,7 @@ async def extract_json_from_stream_async(
                 yield char
 
 
-def update_total_usage(response: T_Model , total_usage) -> T_Model | ChatCompletion:
+def update_total_usage(response: T_Model, total_usage) -> T_Model | ChatCompletion:
     if isinstance(response, ChatCompletion) and response.usage is not None:
         total_usage.completion_tokens += response.usage.completion_tokens or 0
         total_usage.prompt_tokens += response.usage.prompt_tokens or 0

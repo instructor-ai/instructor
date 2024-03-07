@@ -26,6 +26,7 @@ T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 
+
 class InstructorChatCompletionCreate(Protocol):
     def __call__(
         self,

@@ -14,7 +14,18 @@ from pydantic import BaseModel
 
 import inspect
 import logging
-from typing import Generator, Optional, Type, Tuple, get_args, get_origin, TypeVar, ParamSpec, Any, Dict
+from typing import (
+    Generator,
+    Optional,
+    Type,
+    Tuple,
+    get_args,
+    get_origin,
+    TypeVar,
+    ParamSpec,
+    Any,
+    Dict,
+)
 
 from instructor.mode import Mode
 
