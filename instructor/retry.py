@@ -21,6 +21,31 @@ T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
+
+def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
+    yield dump_message(response.choices[0].message)
+
+    if mode == Mode.TOOLS:
+        for tool_call in response.choices[0].message.tool_calls: # type: ignore
+            yield {
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "name": tool_call.function.name,
+                "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+            }
+
+
+    if mode == Mode.MD_JSON:
+        yield {
+            "role": "user",
+            "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
+        }
+    else:
+        yield {
+            "role": "user",
+            "content": f"Recall the function correctly, fix the errors, exceptions found\n{exception}",
+        }
+
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
     response_model: Type[T_Model],
@@ -60,28 +85,7 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
-                    kwargs["messages"].append(dump_message(response.choices[0].message))
-                    # ! How do we handle this for parallel tools in the future?
-                    if mode == Mode.TOOLS:
-                        kwargs["messages"].append(
-                            {
-                                "role": "tool",
-                                "tool_call_id": response.choices[0]
-                                .message.tool_calls[0]
-                                .id,
-                                "name": response.choices[0]
-                                .message.tool_calls[0]
-                                .function.name,
-                                "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
-                            }
-                        )
-                    else:
-                        kwargs["messages"].append(
-                            {
-                                "role": "user",
-                                "content": f"Recall the function correctly, fix the errors and exceptions found\n{e}",
-                            }
-                        )
+                    kwargs["messages"].extend(reask_messages(response, mode, e))
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
@@ -130,34 +134,7 @@ async def retry_async(
                     )  # type: ignore[all]
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}", e)
-                    kwargs["messages"].append(dump_message(response.choices[0].message))  # type: ignore
-                    if mode == Mode.TOOLS:
-                        kwargs["messages"].append(
-                            {
-                                "role": "tool",
-                                "tool_call_id": response.choices[0]
-                                .message.tool_calls[0]
-                                .id,
-                                "name": response.choices[0]
-                                .message.tool_calls[0]
-                                .function.name,
-                                "content": "Exceptions found\n{e}\nRecall the function correctly.",
-                            }
-                        )
-
-                    kwargs["messages"].append(
-                        {
-                            "role": "user",
-                            "content": f"Recall the function correctly, fix the errors, exceptions found\n{e}",
-                        }
-                    )
-                    if mode == Mode.MD_JSON:
-                        kwargs["messages"].append(
-                            {
-                                "role": "user",
-                                "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
-                            },
-                        )
+                    kwargs["messages"].extend(reask_messages(response, mode, e))
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
