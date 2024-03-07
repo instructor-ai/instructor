@@ -12,7 +12,7 @@ from typing import (
     get_origin,
 )
 from types import UnionType  # type: ignore[attr-defined]
-
+from pydantic import BaseModel
 from instructor.function_calls import OpenAISchema, Mode, openai_schema
 from collections.abc import Iterable
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
@@ -51,7 +51,7 @@ class ParallelBase:
             )
 
 
-def get_types_array(typehint: Type[Iterable[Union[T]]]) -> Tuple[Type[T], ...]:
+def get_types_array(typehint: Type[Iterable[T]]) -> Tuple[Type[T], ...]:
     should_be_iterable = get_origin(typehint)
     if should_be_iterable is not Iterable:
         raise TypeError(f"Model should be with Iterable instead if {typehint}")
@@ -70,7 +70,7 @@ def get_types_array(typehint: Type[Iterable[Union[T]]]) -> Tuple[Type[T], ...]:
     return get_args(typehint)
 
 
-def handle_parallel_model(typehint: Type[Iterable[Union[T]]]) -> List[Dict[str, Any]]:
+def handle_parallel_model(typehint: Type[Iterable[T]]) -> List[Dict[str, Any]]:
     the_types = get_types_array(typehint)
     return [
         {"type": "function", "function": openai_schema(model).openai_schema}
@@ -78,6 +78,6 @@ def handle_parallel_model(typehint: Type[Iterable[Union[T]]]) -> List[Dict[str, 
     ]
 
 
-def ParallelModel(typehint: Type[Iterable[Union[T]]]) -> ParallelBase:
+def ParallelModel(typehint: Type[Iterable[T]]) -> ParallelBase:
     the_types = get_types_array(typehint)
     return ParallelBase(*[model for model in the_types])

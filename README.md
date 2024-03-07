@@ -10,7 +10,7 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 
 Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./docs/concepts/reask_validation.md), retries with [Tenacity](./docs/concepts/retrying.md), and streaming [Lists](./docs/concepts/lists.md) and [Partial](./docs/concepts/partial.md) responses.
 
-Check us out in [Typescript](https://instructor-ai.github.io/instructor-js/) and [Elixir](https://github.com/thmsmlr/instructor_ex/).
+Check us out in [Typescript](https://instructor-ai.github.io/instructor-js/), [Elixir](https://github.com/thmsmlr/instructor_ex/) and [PHP](https://github.com/cognesy/instructor-php/).
 
 Instructor is not limited to the OpenAI API, we have support for many other backends that via patching. Check out more on [patching](./docs/concepts/patching.md).
 

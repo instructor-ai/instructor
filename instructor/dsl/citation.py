@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, FieldValidationInfo, model_validator
+from pydantic import BaseModel, Field, model_validator, ValidationInfo
 from typing import Generator, List, Tuple
 
 
@@ -58,7 +58,7 @@ class CitationMixin(BaseModel):  # type: ignore[misc]
     )
 
     @model_validator(mode="after")  # type: ignore[misc]
-    def validate_sources(self, info: FieldValidationInfo) -> "CitationMixin":
+    def validate_sources(self, info: ValidationInfo) -> "CitationMixin":
         """
         For each substring_phrase, find the span of the substring_phrase in the context.
         If the span is not found, remove the substring_phrase from the list.
