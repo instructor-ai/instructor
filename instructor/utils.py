@@ -1,5 +1,6 @@
+import inspect
 import json
-from typing import Generator, Iterable, AsyncGenerator
+from typing import Callable, Generator, Iterable, AsyncGenerator
 
 from openai.types.chat import (
     ChatCompletion,
@@ -81,3 +82,12 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     ):
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
+
+
+def is_async(func: Callable) -> bool:
+    """Returns true if the callable is async, accounting for wrapped callables"""
+    is_coroutine = inspect.iscoroutinefunction(func)
+    while hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+        is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
+    return is_coroutine

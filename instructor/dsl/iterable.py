@@ -2,7 +2,8 @@ from typing import Any, AsyncGenerator, Generator, Iterable, List, Optional, Tup
 
 from pydantic import BaseModel, Field, create_model
 
-from instructor.function_calls import OpenAISchema, Mode
+from instructor.function_calls import OpenAISchema
+from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
 

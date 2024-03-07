@@ -1,3 +1,5 @@
+from .mode import Mode
+from .process_response import handle_response_model
 from .distil import FinetuneFormat, Instructions
 from .dsl import (
     CitationMixin,
@@ -7,8 +9,9 @@ from .dsl import (
     llm_validator,
     openai_moderation,
 )
-from .function_calls import OpenAISchema, openai_schema, Mode
-from .patch import apatch, patch, handle_parallel_model, handle_response_model
+from .function_calls import OpenAISchema, openai_schema
+from .patch import apatch, patch
+from .process_response import handle_parallel_model
 
 __all__ = [
     "OpenAISchema",
