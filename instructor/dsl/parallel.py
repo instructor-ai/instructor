@@ -12,7 +12,6 @@ from typing import (
     get_origin,
 )
 from types import UnionType  # type: ignore[attr-defined]
-from pydantic import BaseModel
 from instructor.function_calls import OpenAISchema, Mode, openai_schema
 from collections.abc import Iterable
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
