@@ -13,8 +13,10 @@ from typing import (
 )
 from types import UnionType  # type: ignore[attr-defined]
 from pydantic import BaseModel
-from instructor.function_calls import OpenAISchema, Mode, openai_schema
+from instructor.function_calls import OpenAISchema, openai_schema
 from collections.abc import Iterable
+
+from instructor.mode import Mode
 
 T = TypeVar("T", bound=OpenAISchema)
 
