@@ -31,6 +31,44 @@ def test_sync_parallel_tools__error(client):
         )
 
 
+
+def test_sync_no_tool_calls(client):
+    client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
+    resp = client.chat.completions.create(
+        model="gpt-4-turbo-preview",
+        messages=[
+            {"role": "system", "content": "You NEVER USE tools. Just give an answer"},
+            {
+                "role": "user",
+                "content": "Who won the super bowl?",
+            },
+        ],
+        response_model=Iterable[Weather],
+    )
+    response_list = list(resp)
+ 
+    assert isinstance(response_list[0], str)
+    assert len(response_list) == 1
+
+@pytest.mark.asyncio
+
+async def test_async_no_tool_calls(client):
+    client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
+    resp = await client.chat.completions.create(
+        model="gpt-4-turbo-preview",
+        messages=[
+            {"role": "system", "content": "You NEVER USE tools. Just give an answer"},
+            {
+                "role": "user",
+                "content": "Who won the super bowl?",
+            },
+        ],
+        response_model=Iterable[Weather],
+    )
+    response_list = list(resp)
+    assert isinstance(response_list[0], str)
+    assert len(response_list) == 1
+
 def test_sync_parallel_tools_or(client):
     client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = client.chat.completions.create(
