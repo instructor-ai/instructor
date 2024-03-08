@@ -13,7 +13,7 @@ app.add_typer(hub.app, name="hub", help="Interact with the instructor hub")
 
 
 @app.command()
-def docs(query: str = typer.Argument(None, help="Search the documentation")):
+def docs(query: str = typer.Argument(None, help="Search the documentation")) -> None:
     """
     Open the instructor documentation website.
     """
