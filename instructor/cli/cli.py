@@ -1,3 +1,5 @@
+# type: ignore[all]
+
 import typer
 import instructor.cli.jobs as jobs
 import instructor.cli.files as files
