@@ -122,10 +122,10 @@ nav:
     - Why use Instructor?: 'why.md'
     - Prompting Tips: 'concepts/prompting.md'
     - Help with Instructor: 'help.md'
+    - Philosophy: 'concepts/philosophy.md'
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
   - Concepts:
-    - Philosophy: 'concepts/philosophy.md'
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
     - Types: 'concepts/types.md'
