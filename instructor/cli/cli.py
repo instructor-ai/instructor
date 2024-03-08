@@ -12,11 +12,11 @@ app.add_typer(usage.app, name="usage", help="Check OpenAI API usage data")
 app.add_typer(hub.app, name="hub", help="Interact with the instructor hub")
 
 
-@app.command()
+@app.command(
+    name="docs",
+    help="Open the instructor documentation website"
+)
 def docs(query: str = typer.Argument(None, help="Search the documentation")) -> None:
-    """
-    Open the instructor documentation website.
-    """
     if query:
         typer.launch(f"https://jxnl.github.io/instructor/?q={query}")
     else:
