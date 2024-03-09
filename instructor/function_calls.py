@@ -3,52 +3,17 @@ from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
 from instructor.exceptions import IncompleteOutputException
-<<<<<<< HEAD
-import enum
-import warnings
-import importlib
-
-from .anthropic_utils import json_to_xml, xml_to_model, extract_xml
-
-T = TypeVar("T")
-
-
-class Mode(enum.Enum):
-    """The mode to use for patching the client"""
-
-    FUNCTIONS: str = "function_call"
-    PARALLEL_TOOLS: str = "parallel_tool_call"
-    TOOLS: str = "tool_call"
-    MISTRAL_TOOLS: str = "mistral_tools"
-    JSON: str = "json_mode"
-    MD_JSON: str = "markdown_json_mode"
-    JSON_SCHEMA: str = "json_schema_mode"
-    ANTHROPIC_TOOLS: str = "anthropic_tools"
-
-    def __new__(cls, value: str) -> "Mode":
-        member = object.__new__(cls)
-        member._value_ = value
-
-        # Deprecation warning for FUNCTIONS
-        if value == "function_call":
-            warnings.warn(
-                "FUNCTIONS is deprecated and will be removed in future versions",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        return member
-=======
 from openai.types.chat import ChatCompletion
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_codeblock
 import logging
+import importlib
+
+from .anthropic_utils import json_to_xml, extract_xml, xml_to_model
 
 T = TypeVar("T")
 
 logger = logging.getLogger("instructor")
->>>>>>> main
-
 
 class OpenAISchema(BaseModel):  # type: ignore[misc]
     @classmethod  # type: ignore[misc]
