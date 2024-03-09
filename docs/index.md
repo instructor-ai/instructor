@@ -29,6 +29,8 @@ If you ever get stuck, you can always run `instructor docs` to open the document
 instructor docs [QUERY]
 ```
 
+You can also check out our [cookbooks](./examples/index.md) and [concepts](./concepts/models.md) to learn more about how to use Instructor.
+
 ## Usage
 
 ```py
