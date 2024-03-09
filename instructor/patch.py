@@ -6,7 +6,6 @@ from collections.abc import Iterable
 from functools import wraps
 from tenacity import Retrying, AsyncRetrying, stop_after_attempt, RetryError
 from json import JSONDecodeError
-import importlib
 from typing import (
     Callable,
     Optional,
@@ -35,7 +34,6 @@ from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import ModelAdapter, AdapterBase, is_simple_type
 
 from .function_calls import Mode, OpenAISchema, openai_schema
-from .anthropic_utils import json_to_xml, extract_xml, xml_to_model
 
 logger = logging.getLogger("instructor")
 T = TypeVar("T")
@@ -175,8 +173,8 @@ def handle_response_model(
             # if it is, system append the schema to the end
             else:
                 new_kwargs["messages"][0]["content"] += f"\n\n{message}"
-        elif mode == Mode.ANTHROPIC_TOOLS:            
-            tool_descriptions = json_to_xml(response_model.schema_json())
+        elif mode == Mode.ANTHROPIC_TOOLS:
+            tool_descriptions = response_model.anthropic_schema
             system_prompt = f"""In this environment you have access to a set of tools you can use to answer the user's question.
 
                                 You may call them like this:
@@ -191,8 +189,10 @@ def handle_response_model(
                                 </function_calls>
 
                                 Here are the tools available:\n{tool_descriptions}""" 
-            # todo: check for system message already existing here
-            new_kwargs["system"] = system_prompt
+            if "system" in new_kwargs:
+                new_kwargs["system"] = f"{system_prompt}\n{new_kwargs['system']}"
+            else:
+                new_kwargs["system"] = system_prompt
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
     return response_model, new_kwargs
@@ -430,8 +430,6 @@ def retry_sync(
                 try:
                     response = func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
-                    if isinstance(response, getattr(importlib.import_module("anthropic.types.message"), "Message")): # todo: implement more advanced response handling
-                        return xml_to_model(response_model, extract_xml(response.content[0].text))
                     if (
                         isinstance(response, ChatCompletion)
                         and response.usage is not None

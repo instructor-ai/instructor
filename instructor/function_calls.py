@@ -5,6 +5,9 @@ from pydantic import BaseModel, create_model
 from instructor.exceptions import IncompleteOutputException
 import enum
 import warnings
+import importlib
+
+from .anthropic_utils import json_to_xml, xml_to_model, extract_xml
 
 T = TypeVar("T")
 
@@ -79,6 +82,11 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             "description": schema["description"],
             "parameters": parameters,
         }
+    
+    @classmethod
+    @property
+    def anthropic_schema(cls) -> str:
+        return json_to_xml(cls.schema_json())
 
     @classmethod
     def from_response(
@@ -100,6 +108,11 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         Returns:
             cls (OpenAISchema): An instance of the class
         """
+        if mode == Mode.ANTHROPIC_TOOLS:
+            assert isinstance(completion, getattr(importlib.import_module("anthropic.types.message"), "Message"))
+            assert hasattr(completion, "content")
+            return xml_to_model(cls, extract_xml(completion.content[0].text))
+
         assert hasattr(completion, "choices")
 
         if completion.choices[0].finish_reason == "length":
