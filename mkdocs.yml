@@ -120,11 +120,31 @@ nav:
   - Introduction: 
     - Welcome To Instructor: 'index.md'
     - Why use Instructor?: 'why.md'
-    - Prompting Tips: 'concepts/prompting.md'
     - Help with Instructor: 'help.md'
-    - Philosophy: 'concepts/philosophy.md'
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
+    - Philosophy: 'concepts/philosophy.md'
+  - Cookbook:
+    - Cookbooks: 'examples/index.md'
+    - Text Classification: 'examples/classification.md'
+    - Batch Classification (User Defined): 'examples/batch_classification.md'
+    - LLM Self Critique: 'examples/self_critique.md'
+    - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
+    - Extracting From Slides with GPT-V: 'examples/extract_slides.md'
+    - Content Moderation: 'examples/moderation.md'
+    - Citing Sources (RAG): 'examples/exact_citations.md'
+    - Extracting Knowledge Graphs: 'examples/knowledge_graph.md'
+    - Extracting Complex Entities: 'examples/entity_resolution.md'
+    - Expanding Search Queries (RAG): 'examples/search.md'
+    - Query Planning (RAG): 'examples/planning-tasks.md'
+    - PII Data Sanitization: 'examples/pii.md'
+    - Enabling Open Source Models: 'examples/open_source.md'
+    - Image to Ad Copy: 'examples/image_to_ad_copy.md'
+    - Ollama: 'examples/ollama.md'
+    - SQLModel Integration: 'examples/sqlmodel.md'
+    - Including Examples in Prompt: 'examples/examples.md'
+  - Blog:
+    - "blog/index.md"
   - Concepts:
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
@@ -146,25 +166,6 @@ nav:
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
-  - Cookbook:
-    - Cookbooks: 'examples/index.md'
-    - Text Classification: 'examples/classification.md'
-    - Batch Classification (User Defined): 'examples/batch_classification.md'
-    - LLM Self Critique: 'examples/self_critique.md'
-    - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
-    - Extracting From Slides with GPT-V: 'examples/extract_slides.md'
-    - Content Moderation: 'examples/moderation.md'
-    - Citing Sources (RAG): 'examples/exact_citations.md'
-    - Extracting Knowledge Graphs: 'examples/knowledge_graph.md'
-    - Extracting Complex Entities: 'examples/entity_resolution.md'
-    - Expanding Search Queries (RAG): 'examples/search.md'
-    - Query Planning (RAG): 'examples/planning-tasks.md'
-    - PII Data Sanitization: 'examples/pii.md'
-    - Enabling Open Source Models: 'examples/open_source.md'
-    - Image to Ad Copy: 'examples/image_to_ad_copy.md'
-    - Ollama: 'examples/ollama.md'
-    - SQLModel Integration: 'examples/sqlmodel.md'
-    - Including Examples in Prompt: 'examples/examples.md'
   - Hub:
     - Introducing Instructor Hub: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
@@ -183,21 +184,17 @@ nav:
     - Using Mistral Large: 'hub/mistral.md'
     - Knowledge Graphs: 'hub/knowledge_graph.md'
     - Extract Youtube Clips: "hub/youtube_clips.md"
+    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
+  - CLI Reference:
+      - "CLI Reference": "cli/index.md"
+      - "Finetuning GPT-3.5": "cli/finetune.md"
+      - "Usage Tracking": "cli/usage.md"
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
     - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
     - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
     - Validation: 'tutorials/4-validation.ipynb'
-    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
-  - CLI Reference:
-      - "CLI Reference": "cli/index.md"
-      - "Finetuning GPT-3.5": "cli/finetune.md"
-      - "Usage Tracking": "cli/usage.md"
-  - API Reference:
-      - 'Core Library': 'api.md'
-  - Blog:
-    - "blog/index.md"
   
 plugins:
   - mkdocs-jupyter:
