@@ -3,6 +3,7 @@ from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
 from instructor.exceptions import IncompleteOutputException
+<<<<<<< HEAD
 import enum
 import warnings
 import importlib
@@ -37,6 +38,16 @@ class Mode(enum.Enum):
             )
 
         return member
+=======
+from openai.types.chat import ChatCompletion
+from instructor.mode import Mode
+from instructor.utils import extract_json_from_codeblock
+import logging
+
+T = TypeVar("T")
+
+logger = logging.getLogger("instructor")
+>>>>>>> main
 
 
 class OpenAISchema(BaseModel):  # type: ignore[misc]
@@ -91,11 +102,11 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     @classmethod
     def from_response(
         cls,
-        completion: T,
+        completion: ChatCompletion,
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
-    ) -> Dict[str, Any]:
+    ) -> BaseModel:
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -116,40 +127,48 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         assert hasattr(completion, "choices")
 
         if completion.choices[0].finish_reason == "length":
+            logger.error("Incomplete output detected, should increase max_tokens")
             raise IncompleteOutputException()
 
+        # If Anthropic, this should be different
         message = completion.choices[0].message
 
         if mode == Mode.FUNCTIONS:
             assert (
                 message.function_call.name == cls.openai_schema["name"]  # type: ignore[index]
             ), "Function name does not match"
-            return cls.model_validate_json(
-                message.function_call.arguments,
+            model_response = cls.model_validate_json(
+                message.function_call.arguments,  # type: ignore[attr-defined]
                 context=validation_context,
                 strict=strict,
             )
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             assert (
-                len(message.tool_calls) == 1
+                len(message.tool_calls or []) == 1
             ), "Instructor does not support multiple tool calls, use List[Model] instead."
-            tool_call = message.tool_calls[0]
+            tool_call = message.tool_calls[0]  # type: ignore
             assert (
                 tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
             ), "Tool name does not match"
-            return cls.model_validate_json(
+            model_response = cls.model_validate_json(
                 tool_call.function.arguments,
                 context=validation_context,
                 strict=strict,
             )
         elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
-            return cls.model_validate_json(
-                message.content,
+            if mode == Mode.MD_JSON:
+                message.content = extract_json_from_codeblock(message.content or "")
+
+            model_response = cls.model_validate_json(
+                message.content,  # type: ignore
                 context=validation_context,
                 strict=strict,
             )
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
+
+        # TODO: add logging or response handler
+        return model_response
 
 
 def openai_schema(cls: Type[BaseModel]) -> OpenAISchema:
@@ -161,4 +180,4 @@ def openai_schema(cls: Type[BaseModel]) -> OpenAISchema:
             cls.__name__,
             __base__=(cls, OpenAISchema),
         )
-    )
+    )  # type: ignore[all]

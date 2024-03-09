@@ -20,7 +20,7 @@ The `Fact` class encapsulates a single statement or fact. It contains two fields
 This method validates the sources (`substring_quote`) in the context. It utilizes regex to find the span of each substring quote in the given context. If the span is not found, the quote is removed from the list.
 
 ```python hl_lines="6 8-13"
-from pydantic import Field, BaseModel, model_validator, FieldValidationInfo
+from pydantic import Field, BaseModel, model_validator, ValidationInfo
 from typing import List
 
 
@@ -29,7 +29,7 @@ class Fact(BaseModel):
     substring_quote: List[str] = Field(...)
 
     @model_validator(mode="after")
-    def validate_sources(self, info: FieldValidationInfo) -> "Fact":
+    def validate_sources(self, info: ValidationInfo) -> "Fact":
         text_chunks = info.context.get("text_chunk", None)
         spans = list(self.get_spans(text_chunks))
         self.substring_quote = [text_chunks[span[0] : span[1]] for span in spans]

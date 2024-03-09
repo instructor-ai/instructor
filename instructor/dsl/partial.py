@@ -22,33 +22,41 @@ from typing import (
 )
 from copy import deepcopy
 
-from instructor.function_calls import Mode
+from instructor.mode import Mode
 from instructor.dsl.partialjson import JSONParser
+from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
 parser = JSONParser()
+T_Model = TypeVar("T_Model", bound=BaseModel)
 
-Model = TypeVar("Model", bound=BaseModel)
 
-
-class PartialBase:
+class PartialBase(Generic[T_Model]):
     @classmethod
     def from_streaming_response(
         cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
-    ) -> Generator[Model, None, None]:
+    ) -> Generator[T_Model, None, None]:
         json_chunks = cls.extract_json(completion, mode)
+
+        if mode == Mode.MD_JSON:
+            json_chunks = extract_json_from_stream(json_chunks)
+
         yield from cls.model_from_chunks(json_chunks, **kwargs)
 
     @classmethod
     async def from_streaming_response_async(
         cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
-    ) -> AsyncGenerator[Model, None]:
+    ) -> AsyncGenerator[T_Model, None]:
         json_chunks = cls.extract_json_async(completion, mode)
+
+        if mode == Mode.MD_JSON:
+            json_chunks = extract_json_from_stream_async(json_chunks)
+
         return cls.model_from_chunks_async(json_chunks, **kwargs)
 
     @classmethod
     def model_from_chunks(
         cls, json_chunks: Iterable[Any], **kwargs: Any
-    ) -> Generator[Model, None, None]:
+    ) -> Generator[T_Model, None, None]:
         prev_obj = None
         potential_object = ""
         for chunk in json_chunks:
@@ -70,7 +78,7 @@ class PartialBase:
     @classmethod
     async def model_from_chunks_async(
         cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
-    ) -> AsyncGenerator[Model, None]:
+    ) -> AsyncGenerator[T_Model, None]:
         potential_object = ""
         prev_obj = None
         async for chunk in json_chunks:
@@ -136,7 +144,7 @@ class PartialBase:
                 pass
 
 
-class Partial(Generic[Model]):
+class Partial(Generic[T_Model]):
     """Generate a new class with all attributes optionals.
 
     Notes:
@@ -151,7 +159,7 @@ class Partial(Generic[Model]):
         cls,
         *args: object,  # noqa :ARG003
         **kwargs: object,  # noqa :ARG003
-    ) -> "Partial[Model]":
+    ) -> "Partial[T_Model]":
         """Cannot instantiate.
 
         Raises:
@@ -173,8 +181,8 @@ class Partial(Generic[Model]):
 
     def __class_getitem__(  # type: ignore[override]
         cls,
-        wrapped_class: type[Model],
-    ) -> type[Model]:
+        wrapped_class: type[T_Model],
+    ) -> type[T_Model]:
         """Convert model to a partial model with all fields being optionals."""
 
         def _make_field_optional(
@@ -199,7 +207,9 @@ class Partial(Generic[Model]):
                 )
 
                 # Reconstruct the generic type with modified arguments
-                tmp_field.annotation = Optional[generic_base[modified_args]]
+                tmp_field.annotation = (
+                    Optional[generic_base[modified_args]] if generic_base else None
+                )
                 tmp_field.default = None
             # If the field is a BaseModel, then recursively convert it's
             # attributes to optionals.
@@ -211,12 +221,12 @@ class Partial(Generic[Model]):
                 tmp_field.default = None
             return tmp_field.annotation, tmp_field
 
-        return create_model(  # type: ignore[no-any-return, call-overload]
-            f"Partial{wrapped_class.__name__}",
+        return create_model(
+            __model_name=f"Partial{wrapped_class.__name__}",
             __base__=(wrapped_class, PartialBase),
             __module__=wrapped_class.__module__,
             **{
                 field_name: _make_field_optional(field_info)
-                for field_name, field_info in wrapped_class.model_fields.items()
+                for field_name, field_info in wrapped_class.__fields__.items()
             },
-        )
+        )  # type: ignore[all]

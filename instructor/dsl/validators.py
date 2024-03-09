@@ -3,8 +3,8 @@ from typing import Callable, Optional
 from openai import OpenAI
 from pydantic import Field
 
+import instructor
 from instructor.function_calls import OpenAISchema
-from instructor.patch import patch
 
 
 class Validator(OpenAISchema):
@@ -32,7 +32,7 @@ def llm_validator(
     allow_override: bool = False,
     model: str = "gpt-3.5-turbo",
     temperature: float = 0,
-    openai_client: OpenAI = None,
+    openai_client: Optional[OpenAI] = None,
 ) -> Callable[[str], str]:
     """
     Create a validator that uses the LLM to validate an attribute
@@ -68,7 +68,7 @@ def llm_validator(
         openai_client (OpenAI): The OpenAI client to use (default: None)
     """
 
-    openai_client = openai_client if openai_client else patch(OpenAI())
+    openai_client = openai_client if openai_client else instructor.patch(OpenAI())
 
     def llm(v: str) -> str:
         resp = openai_client.chat.completions.create(
@@ -85,7 +85,7 @@ def llm_validator(
             ],
             model=model,
             temperature=temperature,
-        )
+        )  # type: ignore[all]
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.

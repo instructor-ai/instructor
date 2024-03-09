@@ -26,7 +26,15 @@ Including but not limited to:
 
 ## Get Started in Moments
 
-Installing Instructor is a breeze. Simply run `pip install instructor` in your terminal and you're on your way to a smoother data handling experience!
+```
+pip install -U instructor
+```
+
+If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
+
+```
+instructor docs [QUERY]
+```
 
 ## How Instructor Enhances Your Workflow
 

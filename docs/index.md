@@ -12,7 +12,24 @@ Instructor makes it easy to reliably get structured data like JSON from Large La
 
 By leveraging various modes like Function Calling, Tool Calling and even constrained sampling modes like JSON mode, JSON Schema; Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
-We also provide library in [Typescript](https://instructor-ai.github.io/instructor-js/), [Elixir](https://github.com/thmsmlr/instructor_ex/) and [PHP](https://github.com/cognesy/instructor-php/).
+
+We also provide a library in [Typescript](https://instructor-ai.github.io/instructor-js/), [Elixir](https://github.com/thmsmlr/instructor_ex/) and [PHP](https://github.com/cognesy/instructor-php/).
+
+---
+
+## Getting Started
+
+```
+pip install -U instructor
+```
+
+If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
+
+```
+instructor docs [QUERY]
+```
+
+You can also check out our [cookbooks](./examples/index.md) and [concepts](./concepts/models.md) to learn more about how to use Instructor.
 
 ## Usage
 
@@ -115,7 +132,7 @@ print(response.model_dump_json(indent=2))
     print(user._raw_response.model_dump_json(indent=2))
     """
     {
-      "id": "chatcmpl-8u9e2TV3ehCgLsRxNLLeAbzpEmBuZ",
+      "id": "chatcmpl-8zplvRbNM8iKSVa3Ld9NmVICeXZZ9",
       "choices": [
         {
           "finish_reason": "stop",
@@ -127,7 +144,7 @@ print(response.model_dump_json(indent=2))
             "function_call": null,
             "tool_calls": [
               {
-                "id": "call_3ZuQhfteTLEy7CUokjwnLBHr",
+                "id": "call_V5FRMSXrHFFTTqTjpwA76h7t",
                 "function": {
                   "arguments": "{\"name\":\"Jason\",\"age\":25}",
                   "name": "UserDetail"
@@ -138,10 +155,10 @@ print(response.model_dump_json(indent=2))
           }
         }
       ],
-      "created": 1708394134,
+      "created": 1709747711,
       "model": "gpt-3.5-turbo-0125",
       "object": "chat.completion",
-      "system_fingerprint": "fp_69829325d0",
+      "system_fingerprint": "fp_2b778c6b35",
       "usage": {
         "completion_tokens": 9,
         "prompt_tokens": 81,

@@ -12,12 +12,13 @@ import instructor
 
 load_dotenv(find_dotenv())
 
-IMAGE_FILE = "image-file.txt" # file with all the images to be processed
+IMAGE_FILE = "image-file.txt"  # file with all the images to be processed
 
 # Add logger
 logging.basicConfig()
 logger = logging.getLogger("app")
 logger.setLevel("INFO")
+
 
 class Competitor(BaseModel):
     name: str
@@ -30,12 +31,11 @@ class Industry(BaseModel):
     Represents competitors from a specific industry extracted from an image using AI.
     """
 
-    name: str = Field(
-        description="The name of the industry"
-    )
+    name: str = Field(description="The name of the industry")
     competitor_list: List[Competitor] = Field(
         description="A list of competitors for this industry"
     )
+
 
 class Competition(BaseModel):
     """
@@ -49,10 +49,10 @@ class Competition(BaseModel):
         description="A list of industries and their competitors"
     )
 
+
 # Define clients
-client_image = instructor.patch(
-    OpenAI(), mode=instructor.Mode.MD_JSON
-)
+client_image = instructor.patch(OpenAI(), mode=instructor.Mode.MD_JSON)
+
 
 # Define functions
 def read_images(image_urls: List[str]) -> Competition:
@@ -83,7 +83,6 @@ def read_images(image_urls: List[str]) -> Competition:
             }
         ],
     )
-
 
 
 def process_and_identify_competitors():
@@ -120,6 +119,7 @@ def process_and_identify_competitors():
             f,
             indent=4,
         )
+
 
 if __name__ == "__main__":
     process_and_identify_competitors()
