@@ -220,21 +220,6 @@ plugins:
       post_date_format: yyyy/MM/dd
       post_url_format: "{date}/{slug}"
       authors_file: "{blog}/.authors.yml"
-  - rss:
-      match_path: blog/posts/.* 
-      date_from_meta:
-        as_creation: date
-      categories:
-        - categories
-        - tags 
-      enabled: !ENV [CI, false]
-  - redirects:
-      redirect_maps:
-        'blog/posts/ollama.md': 'hub/ollama.md'
-        'blob/posts/llama-cpp-python.md': 'hub/llama-cpp-python.md'
-        'blog/posts/together.md': 'hub/together.md'
-        'blog/posts/anyscale.md': 'hub/anyscale.md'
-        'examples/action_items.md': 'hub/action_items.md'
 extra:
   analytics:
     provider: google
