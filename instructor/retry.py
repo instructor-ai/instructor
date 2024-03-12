@@ -1,5 +1,6 @@
 # type: ignore[all]
 import logging
+import importlib
 
 from openai.types.chat import ChatCompletion
 from instructor.mode import Mode
@@ -75,7 +76,10 @@ def retry_sync(
             with attempt:
                 try:
                     response = func(*args, **kwargs)
-                    stream = kwargs.get("stream", False)
+                    if mode == Mode.ANTHROPIC_TOOLS: # There is no "stream=" in the client if Anthropic
+                        stream = isinstance(response, getattr(importlib.import_module("anthropic.lib.streaming._messages"), "MessageStreamManager"))
+                    else:
+                        stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
                     return process_response(
                         response,
@@ -124,7 +128,7 @@ async def retry_async(
             with attempt:
                 try:
                     response: ChatCompletion = await func(*args, **kwargs)  # type: ignore
-                    stream = kwargs.get("stream", False)
+                    stream = kwargs.get("stream", False) # TODO: need to set stream differently if anthropic
                     response = update_total_usage(response, total_usage)
                     return await process_response_async(
                         response,

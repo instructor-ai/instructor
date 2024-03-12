@@ -21,6 +21,7 @@ from typing import (
     TypeVar,
 )
 from copy import deepcopy
+import re
 
 from instructor.mode import Mode
 from instructor.dsl.partialjson import JSONParser
@@ -35,12 +36,16 @@ class PartialBase(Generic[T_Model]):
     def from_streaming_response(
         cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
     ) -> Generator[T_Model, None, None]:
-        json_chunks = cls.extract_json(completion, mode)
+        if mode == Mode.ANTHROPIC_TOOLS:
+            xml_chunks = cls.extract_xml(completion)
+            yield from cls.model_from_xml_chunks(xml_chunks, **kwargs)
+        else:
+            json_chunks = cls.extract_json(completion, mode)
 
-        if mode == Mode.MD_JSON:
-            json_chunks = extract_json_from_stream(json_chunks)
+            if mode == Mode.MD_JSON:
+                json_chunks = extract_json_from_stream(json_chunks)
 
-        yield from cls.model_from_chunks(json_chunks, **kwargs)
+            yield from cls.model_from_chunks(json_chunks, **kwargs)
 
     @classmethod
     async def from_streaming_response_async(
@@ -52,6 +57,48 @@ class PartialBase(Generic[T_Model]):
             json_chunks = extract_json_from_stream_async(json_chunks)
 
         return cls.model_from_chunks_async(json_chunks, **kwargs)
+    
+    @classmethod
+    def model_from_xml_chunks(cls, xml_chunks: Iterable[Any], **kwargs: Any) -> Generator[str, None, None]:
+        # note: only considers one function call
+        # TODO: support nested xml
+        # TODO: test edge cases
+        accumulator = ""
+        parameters_start_tag_regex = r"(<parameters>)"
+        tag_regex = r"(<[^/][^>]*?>.*?</[^>]*?>)"  # Matches a complete tag including its content
+        parameters_end_tag_regex = r"(</parameters>)"
+
+        inside_parameters = False
+        parameters_content = ""
+
+        for chunk in xml_chunks:
+            accumulator += chunk
+
+            if not inside_parameters:
+                start_match = re.search(parameters_start_tag_regex, accumulator, re.DOTALL)
+                if start_match:
+                    inside_parameters = True
+                    parameters_content = start_match.group(1)  # Start accumulating with <parameters>
+                    accumulator = accumulator[start_match.end():]
+
+            while inside_parameters:
+                tag_match = re.search(tag_regex, accumulator, re.DOTALL)
+                end_match = re.search(parameters_end_tag_regex, accumulator, re.DOTALL)
+
+                if tag_match and (not end_match or tag_match.start() < end_match.start()):
+                    # Found a tag inside the parameters block
+                    parameters_content += tag_match.group(1)
+                    accumulator = accumulator[tag_match.end():]
+                    
+                    xml_string = "<function_calls><invoke><tool_name></tool_name>" + parameters_content + "</parameters></invoke></function_calls>"
+                    from ..anthropic_utils import xml_to_model
+                    yield xml_to_model(cls, xml_string)
+
+                elif end_match: # Found the end of the parameters block
+                    break
+
+                else: # No more complete tags in the current chunk
+                    break
 
     @classmethod
     def model_from_chunks(
@@ -96,6 +143,14 @@ class PartialBase(Generic[T_Model]):
                     ] = chunk  # Provide the raw chunk for debugging and benchmarking
                     prev_obj = obj
                     yield obj
+
+    @staticmethod
+    def extract_xml(
+        completion: Iterable[Any] # not sure that this is an iterable
+    ) -> Generator[str, None, None]:
+        with completion as stream:
+            for text in stream.text_stream:
+                yield text
 
     @staticmethod
     def extract_json(

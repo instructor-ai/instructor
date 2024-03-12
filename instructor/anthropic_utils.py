@@ -63,3 +63,17 @@ def xml_to_model(model: Type[T], xml_string: str) -> T:
     parsed_xml = xmltodict.parse(xml_string)
     model_dict = parsed_xml['function_calls']['invoke']['parameters']
     return model(**model_dict)
+
+class AnthropicContextManager:
+    def __init__(self, create_func, *args, **kwargs):
+        self.create_func = create_func
+        self.args = args
+        self.kwargs = kwargs
+
+    def __enter__(self):
+        self.result = self.create_func(*self.args, **self.kwargs)
+        return self.result
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if hasattr(self.result, 'close'):
+            self.result.close()
