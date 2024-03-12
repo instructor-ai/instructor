@@ -3,6 +3,7 @@ pillow
 cairosvg
 mkdocstrings
 mkdocstrings-python
+mkdocstrings-redirects
 mkdocs-jupyter
 openai
 pydantic
