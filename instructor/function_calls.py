@@ -15,6 +15,7 @@ T = TypeVar("T")
 
 logger = logging.getLogger("instructor")
 
+
 class OpenAISchema(BaseModel):  # type: ignore[misc]
     @classmethod  # type: ignore[misc]
     @property
@@ -58,11 +59,11 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             "description": schema["description"],
             "parameters": parameters,
         }
-    
+
     @classmethod
     @property
     def anthropic_schema(cls) -> str:
-        return json_to_xml(cls.schema_json())
+        return json_to_xml(cls)
 
     @classmethod
     def from_response(
@@ -85,9 +86,15 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             cls (OpenAISchema): An instance of the class
         """
         if mode == Mode.ANTHROPIC_TOOLS:
-            assert isinstance(completion, getattr(importlib.import_module("anthropic.types.message"), "Message"))
+            try:
+                assert isinstance(
+                    completion,
+                    getattr(importlib.import_module("anthropic.types.message"), "Message"),
+                )
+            except ImportError:
+                raise ImportError("Please 'pip install anthropic' package to proceed.")
             assert hasattr(completion, "content")
-            return xml_to_model(cls, extract_xml(completion.content[0].text))
+            return xml_to_model(cls, extract_xml(completion.content[0].text)) # type:ignore
 
         assert hasattr(completion, "choices")
 
