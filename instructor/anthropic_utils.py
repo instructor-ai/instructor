@@ -52,7 +52,7 @@ def _add_params(
             )  # Might be better to fail here if there is no type since pydantic models require types
 
         param_description = ET.SubElement(parameter, "description")
-        param_description.text = f"The {field_name} of the {model_dict['title']} model"
+        param_description.text = details.get("description", "")
 
         if (
             isinstance(details, dict) and "$ref" in details
