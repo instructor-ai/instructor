@@ -1,13 +1,12 @@
-from typing import List
-from rich.table import Table
-from rich.console import Console
-
+import time
 from datetime import datetime
-from openai import OpenAI
+from typing import List
 
 import openai
 import typer
-import time
+from openai import OpenAI
+from rich.console import Console
+from rich.table import Table
 
 client = OpenAI()
 app = typer.Typer()
@@ -37,11 +36,11 @@ def generate_file_table(files: List[openai.types.FileObject]) -> Table:
     return table
 
 
-def get_files(limit: int = 5) -> List[openai.types.FileObject]:
-    files = client.files.list(limit=limit)
+def get_files() -> List[openai.types.FileObject]:
+    files = client.files.list()
     files = files.data
     files = sorted(files, key=lambda x: x.created_at, reverse=True)
-    return files[:limit]
+    return files
 
 
 def get_file_status(file_id: str) -> str:
@@ -115,8 +114,6 @@ def status(
 @app.command(
     help="List the files on OpenAI's servers",
 )  # type: ignore[misc]
-def list(
-    limit: int = typer.Option(5, help="Limit the number of files to list"),
-) -> None:
-    files = get_files(limit=limit)
+def list() -> None:
+    files = get_files()
     console.log(generate_file_table(files))
