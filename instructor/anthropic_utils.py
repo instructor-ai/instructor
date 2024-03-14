@@ -42,15 +42,22 @@ def _add_params(
         name = ET.SubElement(parameter, "name")
         name.text = field_name
         type_element = ET.SubElement(parameter, "type")
-        
-        if details.get("type") == "array":
-            type_element.text = f"List[{details['title']}]"
-            list_found = True
+                
+        # Get type
+        if "anyOf" in details: # Case where there can be multiple types
+            field_type = ' or '.join([d['type'] for d in details["anyOf"]])
         else:
-            type_element.text = details.get(
+            field_type = details.get(
                 "type", "unknown"
             )  # Might be better to fail here if there is no type since pydantic models require types
 
+        # Adjust type if array
+        if field_type == "array":
+            type_element.text = f"List[{details['title']}]"
+            list_found = True
+        else:
+            type_element.text = field_type
+        
         param_description = ET.SubElement(parameter, "description")
         param_description.text = details.get("description", "")
 
