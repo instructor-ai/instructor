@@ -19,6 +19,18 @@ This is a letter from the author [Jason Liu](https://twitter.com/jxnlco) of Inst
 
     - **Battle tested** &mdash; Pydantic is downloaded over 70M times/month and is used by all FAANG companies and 20 of the 25 largest companies on NASDAQ. If you're trying to do something with Pydantic, someone else has probably already done it.
 
+## No New standards 
+
+Instructor is built on top of Pydantic and OpenAI, which will be familiar to many developers already. But, since many llm providers support the OpenAI API spec, you can use many closed source and open source providers like Anyscale, Together, Groq, Ollama, and Llama-cpp-python.
+
+All we do is augment the `create` such that
+
+```python
+def create(response_model=Type[T]) -> T:
+```
+
+Check out how we connect with [open source](./blog/posts/open_source.md)
+
 ## Pydantic over Raw Schema
 
 I find many prompt building tools to be overly complex and difficult to use, they might be simple to get started with a trivial examples but once you need more control, you have to wish they were simpler. Instructor does the least amount of work to get the job done.
