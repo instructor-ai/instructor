@@ -30,7 +30,7 @@ class Search(BaseModel):
         )
 
 
-def segment(data: str) -> MultiSearch:
+def segment(data: str) -> Search:
     return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=Iterable[Search],
