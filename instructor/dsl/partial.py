@@ -27,6 +27,8 @@ from instructor.mode import Mode
 from instructor.dsl.partialjson import JSONParser
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
+from ..anthropic_utils import xml_to_model
+
 parser = JSONParser()
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
@@ -61,15 +63,20 @@ class PartialBase(Generic[T_Model]):
     @classmethod
     def model_from_xml_chunks(cls, xml_chunks: Iterable[Any], **kwargs: Any) -> Generator[str, None, None]:
         # note: only considers one function call
-        # TODO: support nested xml
-        # TODO: test edge cases
+        # TODO: support self-closing tags
+        # TODO: support nested structures
         accumulator = ""
+        parameters_content = ""
+        current_opening_tag = ""
+        current_opening_tag_content = ""
+        
         parameters_start_tag_regex = r"(<parameters>)"
-        tag_regex = r"(<[^/][^>]*?>.*?</[^>]*?>)"  # Matches a complete tag including its content
         parameters_end_tag_regex = r"(</parameters>)"
+        opening_tag_regex = r'<([a-zA-Z0-9]+)>'
+        closing_tag_regex = r'</([a-zA-Z0-9]+)>'
 
         inside_parameters = False
-        parameters_content = ""
+        accumulating = False
 
         for chunk in xml_chunks:
             accumulator += chunk
@@ -78,24 +85,33 @@ class PartialBase(Generic[T_Model]):
                 start_match = re.search(parameters_start_tag_regex, accumulator, re.DOTALL)
                 if start_match:
                     inside_parameters = True
-                    parameters_content = start_match.group(1)  # Start accumulating with <parameters>
+                    parameters_content = ""
                     accumulator = accumulator[start_match.end():]
 
             while inside_parameters:
-                tag_match = re.search(tag_regex, accumulator, re.DOTALL)
+                opening_tag = re.search(opening_tag_regex, accumulator, re.DOTALL)
+                closing_tag = re.search(closing_tag_regex, accumulator, re.DOTALL)
                 end_match = re.search(parameters_end_tag_regex, accumulator, re.DOTALL)
-
-                if tag_match and (not end_match or tag_match.start() < end_match.start()):
-                    # Found a tag inside the parameters block
-                    parameters_content += tag_match.group(1)
-                    accumulator = accumulator[tag_match.end():]
-                    
-                    xml_string = "<function_calls><invoke><tool_name></tool_name>" + parameters_content + "</parameters></invoke></function_calls>"
-                    from ..anthropic_utils import xml_to_model
-                    yield xml_to_model(cls, xml_string)
-
-                elif end_match: # Found the end of the parameters block
+                
+                if end_match:
                     break
+
+                if opening_tag and not accumulating:
+                    current_opening_tag = opening_tag.group(1)
+                    accumulating = True
+                    accumulator = accumulator[opening_tag.end():]
+                
+                if closing_tag:
+                    current_opening_tag_content += accumulator
+                    accumulator = accumulator[closing_tag.end():]
+                    if closing_tag.group(1) == current_opening_tag:
+                        parameters_content += f"<{closing_tag.group(1)}>{current_opening_tag_content}"
+                        current_opening_tag_content = ""
+                        accumulating = False
+                        try:
+                            yield xml_to_model(cls, "<function_calls><invoke><tool_name></tool_name><parameters>" + parameters_content + "</parameters></invoke></function_calls>")
+                        except:
+                            continue
 
                 else: # No more complete tags in the current chunk
                     break

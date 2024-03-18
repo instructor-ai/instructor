@@ -25,7 +25,7 @@ def json_to_xml(model: Type[BaseModel]) -> str:
     list_type_found = _add_params(parameters, model_dict, references)
     
     if list_type_found: # Need to append to system prompt for List type handling
-        return ET.tostring(root, encoding="unicode") + "\nFor any List[] types, include multiple <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME> tags for each item in the list."
+        return ET.tostring(root, encoding="unicode") + "\nFor any List[] types, include multiple <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME> tags for each item in the list. XML tags should only contain the name of the parameter."
     else:
         return ET.tostring(root, encoding="unicode")
 
@@ -52,7 +52,7 @@ def _add_params(
             )  # Might be better to fail here if there is no type since pydantic models require types
 
         # Adjust type if array
-        if field_type == "array":
+        if "array" in field_type or "List" in field_type :
             type_element.text = f"List[{details['title']}]"
             list_found = True
         else:
@@ -70,15 +70,23 @@ def _add_params(
                 _resolve_reference(references, details["$ref"]),
                 references,
             )
-        elif details.get("type") == "array": # Handling for List[] type
+        elif field_type == "array": # Handling for List[] type
             nested_params = ET.SubElement(parameter, "parameters")
             list_found |= _add_params(
                 nested_params,
                 _resolve_reference(references, details["items"]["$ref"]),
                 references,
             )
+        elif "array" in field_type: # Handling for optional List[] type
+            nested_params = ET.SubElement(parameter, "parameters")
+            list_found |= _add_params(
+                nested_params,
+                _resolve_reference(references, details["anyOf"][0]["items"]["$ref"]), # CHANGE
+                references,
+            )
     
     return list_found
+
 
 def _resolve_reference(references: Dict[str, Any], reference: str) -> Dict[str, Any]:
     parts = reference.split("/")[2:]  # Remove "#" and "$defs"
@@ -94,12 +102,12 @@ def extract_xml(content: str) -> str: # Currently assumes 1 function call only
     return "".join(matches)
 
 
-# todo: make function better (edge cases, robustness, etc.)
 def xml_to_model(model: Type[T], xml_string: str) -> T:
     """Converts XML in Anthropic's schema to an instance of the provided class."""
     parsed_xml = xmltodict.parse(xml_string)
     model_dict = parsed_xml["function_calls"]["invoke"]["parameters"]
-    return model(**model_dict)
+    return model(**model_dict) # This sometimes fails if Anthropic's response hallucinates from the schema
+
 
 class AnthropicContextManager:
     def __init__(self, create_func, *args, **kwargs):
