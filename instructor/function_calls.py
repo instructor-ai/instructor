@@ -34,7 +34,7 @@ class Mode(enum.Enum):
         return member
 
 
-SPECIAL_ARGUMENTS = ["tool_name", "tool_description"]
+SPECIAL_ARGUMENTS = ["name", "description"]
 
 class OpenAISchema(BaseModel):  # type: ignore[misc]
     @classmethod  # type: ignore[misc]
@@ -82,8 +82,8 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
                 )
 
         return {
-            "name": special_args.get("tool_name", schema["title"] or cls.__name__),
-            "description": special_args.get("tool_description", schema["description"]),
+            "name": special_args.get("name", schema["title"] or cls.__name__),
+            "description": special_args.get("description", schema["description"]),
             "parameters": parameters,
         }
 
