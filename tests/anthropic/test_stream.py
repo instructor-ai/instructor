@@ -96,3 +96,5 @@ def test_partial_nested_model():
     with stream as model:
         for m in model:
             assert isinstance(m, User)
+            if m.address:
+                assert isinstance(m.address, Address)

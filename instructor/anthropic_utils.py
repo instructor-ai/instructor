@@ -45,7 +45,13 @@ def _add_params(
                 
         # Get type
         if "anyOf" in details: # Case where there can be multiple types
-            field_type = ' or '.join([d['type'] for d in details["anyOf"]])
+            # supports:
+                # case 1: List type (example json: {'anyOf': [{'items': {'$ref': '#/$defs/PartialUser'}, 'type': 'array'}, {'type': 'null'}], 'default': None, 'title': 'Users'})
+                # case 2: nested model (example json: {'anyOf': [{'$ref': '#/$defs/PartialDate'}, {'type': 'null'}], 'default': {}})
+            field_type = ' or '.join([
+                d["type"] if "type" in d else (d["$ref"] if "$ref" in d else "unknown")
+                for d in details["anyOf"]
+            ])
         else:
             field_type = details.get(
                 "type", "unknown"
