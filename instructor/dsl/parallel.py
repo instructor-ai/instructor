@@ -12,9 +12,15 @@ from typing import (
     get_origin,
 )
 from types import UnionType  # type: ignore[attr-defined]
+from pydantic import BaseModel
 from instructor.function_calls import OpenAISchema, Mode, openai_schema
 from collections.abc import Iterable
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
+
+from instructor.mode import Mode
+## load env variables
+from dotenv import load_dotenv
+load_dotenv()
 
 T = TypeVar("T", bound=OpenAISchema)
 
@@ -32,7 +38,7 @@ class ParallelBase:
         mode: Mode,
         validation_context: Optional[Any] = None,
         strict: Optional[bool] = None,
-    ) -> Generator[Union[T, str], None, None]:
+    ) -> Generator[BaseModel, None, None]:
         #! We expect this from the OpenAISchema class, We should address
         #! this with a protocol or an abstract class... @jxnlco
         assert mode == Mode.PARALLEL_TOOLS, "Mode must be PARALLEL_TOOLS"

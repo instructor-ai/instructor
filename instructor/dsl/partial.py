@@ -22,7 +22,7 @@ from typing import (
 )
 from copy import deepcopy
 
-from instructor.function_calls import Mode
+from instructor.mode import Mode
 from instructor.dsl.partialjson import JSONParser
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 

@@ -26,7 +26,15 @@ Including but not limited to:
 
 ## Get Started in Moments
 
-Installing Instructor is a breeze. Simply run `pip install instructor` in your terminal and you're on your way to a smoother data handling experience!
+```
+pip install -U instructor
+```
+
+If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
+
+```
+instructor docs [QUERY]
+```
 
 ## How Instructor Enhances Your Workflow
 
@@ -279,6 +287,44 @@ print(model.model_dump_json(indent=2))
   "age": 25
 }
 """
+```
+
+## Using Anthropic Models
+
+Install dependencies with
+
+```shell
+poetry install -E anthropic
+```
+
+Usage:
+
+```python
+import instructor
+from anthropic import Anthropic
+
+class User(BaseModel):
+    name: str
+    age: int
+
+create = instructor.patch(create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS)
+
+resp = create(
+    model="claude-3-opus-20240229",
+    max_tokens=1024,
+    max_retries=0,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
 ```
 
 ## [Evals](https://github.com/jxnl/instructor/tree/main/tests/openai/evals)

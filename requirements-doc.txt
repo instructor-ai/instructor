@@ -4,6 +4,7 @@ cairosvg
 mkdocstrings
 mkdocstrings-python
 mkdocs-jupyter
+mkdocs-redirects
 openai
 pydantic
 pytest>=7.4.0,<8.0.0

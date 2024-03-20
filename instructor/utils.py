@@ -1,11 +1,16 @@
+import inspect
 import json
-from typing import Generator, Iterable, AsyncGenerator
+from typing import Callable, Generator, Iterable, AsyncGenerator, TypeVar
+
+from pydantic import BaseModel
 
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
+
+T_Model = TypeVar("T_Model", bound=BaseModel)
 
 
 def extract_json_from_codeblock(content: str) -> str:
@@ -54,7 +59,7 @@ async def extract_json_from_stream_async(
                 yield char
 
 
-def update_total_usage(response, total_usage):
+def update_total_usage(response: T_Model, total_usage) -> T_Model | ChatCompletion:
     if isinstance(response, ChatCompletion) and response.usage is not None:
         total_usage.completion_tokens += response.usage.completion_tokens or 0
         total_usage.prompt_tokens += response.usage.prompt_tokens or 0
@@ -81,3 +86,12 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     ):
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
+
+
+def is_async(func: Callable) -> bool:
+    """Returns true if the callable is async, accounting for wrapped callables"""
+    is_coroutine = inspect.iscoroutinefunction(func)
+    while hasattr(func, "__wrapped__"):
+        func = func.__wrapped__
+        is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
+    return is_coroutine

@@ -3,8 +3,8 @@ from typing import Callable, Optional
 from openai import OpenAI
 from pydantic import Field
 
+import instructor
 from instructor.function_calls import OpenAISchema
-from instructor.patch import patch
 
 
 class Validator(OpenAISchema):
@@ -68,7 +68,7 @@ def llm_validator(
         openai_client (OpenAI): The OpenAI client to use (default: None)
     """
 
-    openai_client = openai_client if openai_client else patch(OpenAI())
+    openai_client = openai_client if openai_client else instructor.patch(OpenAI())
 
     def llm(v: str) -> str:
         resp = openai_client.chat.completions.create(
