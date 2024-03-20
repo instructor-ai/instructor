@@ -21,16 +21,19 @@ def json_to_xml(model: Type[BaseModel]) -> str:
     parameters = ET.SubElement(root, "parameters")
     references = model_dict.get("$defs", {})
     list_type_found = _add_params(parameters, model_dict, references)
-    
-    if list_type_found: # Need to append to system prompt for List type handling
-        return ET.tostring(root, encoding="unicode") + "\nFor any List[] types, include multiple <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME> tags for each item in the list. XML tags should only contain the name of the parameter."
+
+    if list_type_found:  # Need to append to system prompt for List type handling
+        return (
+            ET.tostring(root, encoding="unicode")
+            + "\nFor any List[] types, include multiple <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME> tags for each item in the list. XML tags should only contain the name of the parameter."
+        )
     else:
         return ET.tostring(root, encoding="unicode")
 
 
 def _add_params(
     root: ET.Element, model_dict: Dict[str, Any], references: Dict[str, Any]
-) -> bool: # Return value indiciates if we ever came across a param with type List
+) -> bool:  # Return value indiciates if we ever came across a param with type List
     # TODO: handling of nested params with the same name
     properties = model_dict.get("properties", {})
     list_found = False
@@ -40,28 +43,32 @@ def _add_params(
         name = ET.SubElement(parameter, "name")
         name.text = field_name
         type_element = ET.SubElement(parameter, "type")
-                
+
         # Get type
-        if "anyOf" in details: # Case where there can be multiple types
+        if "anyOf" in details:  # Case where there can be multiple types
             # supports:
-                # case 1: List type (example json: {'anyOf': [{'items': {'$ref': '#/$defs/PartialUser'}, 'type': 'array'}, {'type': 'null'}], 'default': None, 'title': 'Users'})
-                # case 2: nested model (example json: {'anyOf': [{'$ref': '#/$defs/PartialDate'}, {'type': 'null'}], 'default': {}})
-            field_type = ' or '.join([
-                d["type"] if "type" in d else (d["$ref"] if "$ref" in d else "unknown")
-                for d in details["anyOf"]
-            ])
+            # case 1: List type (example json: {'anyOf': [{'items': {'$ref': '#/$defs/PartialUser'}, 'type': 'array'}, {'type': 'null'}], 'default': None, 'title': 'Users'})
+            # case 2: nested model (example json: {'anyOf': [{'$ref': '#/$defs/PartialDate'}, {'type': 'null'}], 'default': {}})
+            field_type = " or ".join(
+                [
+                    d["type"]
+                    if "type" in d
+                    else (d["$ref"] if "$ref" in d else "unknown")
+                    for d in details["anyOf"]
+                ]
+            )
         else:
             field_type = details.get(
                 "type", "unknown"
             )  # Might be better to fail here if there is no type since pydantic models require types
 
         # Adjust type if array
-        if "array" in field_type or "List" in field_type :
+        if "array" in field_type or "List" in field_type:
             type_element.text = f"List[{details['title']}]"
             list_found = True
         else:
             type_element.text = field_type
-        
+
         param_description = ET.SubElement(parameter, "description")
         param_description.text = details.get("description", "")
 
@@ -74,21 +81,23 @@ def _add_params(
                 _resolve_reference(references, details["$ref"]),
                 references,
             )
-        elif field_type == "array": # Handling for List[] type
+        elif field_type == "array":  # Handling for List[] type
             nested_params = ET.SubElement(parameter, "parameters")
             list_found |= _add_params(
                 nested_params,
                 _resolve_reference(references, details["items"]["$ref"]),
                 references,
             )
-        elif "array" in field_type: # Handling for optional List[] type
+        elif "array" in field_type:  # Handling for optional List[] type
             nested_params = ET.SubElement(parameter, "parameters")
             list_found |= _add_params(
                 nested_params,
-                _resolve_reference(references, details["anyOf"][0]["items"]["$ref"]), # CHANGE
+                _resolve_reference(
+                    references, details["anyOf"][0]["items"]["$ref"]
+                ),  # CHANGE
                 references,
             )
-    
+
     return list_found
 
 
@@ -99,7 +108,7 @@ def _resolve_reference(references: Dict[str, Any], reference: str) -> Dict[str, 
     return references
 
 
-def extract_xml(content: str) -> str: # Currently assumes 1 function call only
+def extract_xml(content: str) -> str:  # Currently assumes 1 function call only
     """Extracts XML content in Anthropic's schema from a string."""
     pattern = r"<function_calls>.*?</function_calls>"
     matches = re.findall(pattern, content, re.DOTALL)
@@ -110,4 +119,6 @@ def xml_to_model(model: Type[T], xml_string: str) -> T:
     """Converts XML in Anthropic's schema to an instance of the provided class."""
     parsed_xml = xmltodict.parse(xml_string)
     model_dict = parsed_xml["function_calls"]["invoke"]["parameters"]
-    return model(**model_dict) # This sometimes fails if Anthropic's response hallucinates from the schema
+    return model(
+        **model_dict
+    )  # This sometimes fails if Anthropic's response hallucinates from the schema

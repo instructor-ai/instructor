@@ -89,12 +89,14 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             try:
                 assert isinstance(
                     completion,
-                    getattr(importlib.import_module("anthropic.types.message"), "Message"),
+                    getattr(
+                        importlib.import_module("anthropic.types.message"), "Message"
+                    ),
                 )
             except ImportError:
                 raise ImportError("Please 'pip install anthropic' package to proceed.")
             assert hasattr(completion, "content")
-            return xml_to_model(cls, extract_xml(completion.content[0].text)) # type:ignore
+            return xml_to_model(cls, extract_xml(completion.content[0].text))  # type:ignore
 
         assert hasattr(completion, "choices")
 
