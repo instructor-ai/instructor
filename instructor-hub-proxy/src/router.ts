@@ -41,7 +41,7 @@ router.get('/api/:branch/items', async (request) => {
 		.bind(params.branch)
 		.all();
 
-	const url = `https://raw.githubusercontent.com/instructor-ai/instructor/${params.branch}/mkdocs.yml?raw=true`;
+	const url = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/mkdocs.yml?raw=true`;
 	const mkdoc_yml = await fetch(url).then((res) => res.text());
 	const mkdocs = YAML.parse(mkdoc_yml);
 	var cookbooks = mkdocs.nav
@@ -77,7 +77,7 @@ router.get('/api/:branch/items', async (request) => {
 router.get('/api/:branch/items/:slug/md', async (request) => {
 	const { params, env } = request;
 	await trackAnalytics(request, env, 'CONTENT_MARKDOWN', params.slug, params.branch);
-	const raw_content = `https://raw.githubusercontent.com/instructor-ai/instructor/${params.branch}/docs/hub/${params.slug}.md?raw=true`;
+	const raw_content = `https://raw.githubusercontent.com/jxnl/instructor/${params.branch}/docs/hub/${params.slug}.md?raw=true`;
 	const content = await fetch(raw_content).then((res) => res.text());
 
 	return new Response(content, {

@@ -24,10 +24,10 @@ class HubPage(BaseModel):
     count: int = 0
 
     def get_doc_url(self) -> str:
-        return f"https://python.useinstructor.com/hub/{self.slug}/"
+        return f"https://jxnl.github.io/instructor/hub/{self.slug}/"
 
     def get_md_url(self) -> str:
-        return f"https://raw.githubusercontent.com/instructor-ai/instructor/{self.branch}/docs/hub/{self.slug}.md?raw=true"
+        return f"https://raw.githubusercontent.com/jxnl/instructor/{self.branch}/docs/hub/{self.slug}.md?raw=true"
 
     def render_doc_link(self) -> str:
         return f"[link={self.get_doc_url()}](doc)[/link]"
