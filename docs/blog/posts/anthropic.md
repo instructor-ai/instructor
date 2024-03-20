@@ -11,6 +11,10 @@ A special shoutout to [Shreya](https://twitter.com/shreyaw_) for her contributio
 
 For those eager to experiment, simply patch the client with `ANTHROPIC_TOOLS`, which will enable you to leverage the `anthropic` client for making requests.
 
+```
+pip install instructor[anthropic]
+```
+
 ```python
 from pydantic import BaseModel
 from typing import List
