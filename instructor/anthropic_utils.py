@@ -10,8 +10,6 @@ T = TypeVar("T", bound=BaseModel)
 def json_to_xml(model: Type[BaseModel]) -> str:
     """Takes a Pydantic model and returns XML format for Anthropic function calling."""
     model_dict = model.model_json_schema()
-    
-    #TODO: model_dict structure is different for Partial classes during streaming, need to adjust for this for better prompting + List types
 
     root = ET.Element("tool_description")
     tool_name = ET.SubElement(root, "tool_name")
@@ -33,7 +31,7 @@ def json_to_xml(model: Type[BaseModel]) -> str:
 def _add_params(
     root: ET.Element, model_dict: Dict[str, Any], references: Dict[str, Any]
 ) -> bool: # Return value indiciates if we ever came across a param with type List
-    # TODO: check handling of nested params with the same name
+    # TODO: handling of nested params with the same name
     properties = model_dict.get("properties", {})
     list_found = False
 
@@ -113,18 +111,3 @@ def xml_to_model(model: Type[T], xml_string: str) -> T:
     parsed_xml = xmltodict.parse(xml_string)
     model_dict = parsed_xml["function_calls"]["invoke"]["parameters"]
     return model(**model_dict) # This sometimes fails if Anthropic's response hallucinates from the schema
-
-
-class AnthropicContextManager:
-    def __init__(self, create_func, *args, **kwargs):
-        self.create_func = create_func
-        self.args = args
-        self.kwargs = kwargs
-
-    def __enter__(self):
-        self.result = self.create_func(*self.args, **self.kwargs)
-        return self.result
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if hasattr(self.result, 'close'):
-            self.result.close()
