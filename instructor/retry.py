@@ -26,6 +26,7 @@ T = TypeVar("T")
 def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     yield dump_message(response.choices[0].message)
 
+    # TODO: Give users more control on configuration
     if mode == Mode.TOOLS:
         for tool_call in response.choices[0].message.tool_calls:  # type: ignore
             yield {
@@ -34,9 +35,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
                 "name": tool_call.function.name,
                 "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
             }
-
-    # TODO: Give users more control on configuration
-    if mode == Mode.MD_JSON:
+    elif mode == Mode.MD_JSON:
         yield {
             "role": "user",
             "content": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
