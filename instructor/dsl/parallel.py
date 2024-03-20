@@ -13,7 +13,7 @@ from typing import (
 )
 from types import UnionType  # type: ignore[attr-defined]
 from pydantic import BaseModel
-from instructor.function_calls import OpenAISchema, openai_schema
+from instructor.function_calls import OpenAISchema, Mode, openai_schema
 from collections.abc import Iterable
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
@@ -29,7 +29,7 @@ class ParallelBase:
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models
-        names = [model.model_json_schema()["properties"]["tool_name"]["default"] if "tool_name" in model.model_json_schema()["properties"] else model.__name__ for model in models]
+        names = [model.model_json_schema()["properties"]["name"]["default"] if "name" in model.model_json_schema()["properties"] else model.__name__ for model in models]
         self.registry = {name: model for name, model in zip(names, models)}
 
     def from_response(

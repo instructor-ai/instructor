@@ -8,15 +8,42 @@ from instructor.mode import Mode
 from instructor.utils import extract_json_from_codeblock
 import logging
 import importlib
+import warnings
 
 from .anthropic_utils import json_to_xml, extract_xml, xml_to_model
-
+import enum
 T = TypeVar("T")
 
 logger = logging.getLogger("instructor")
 
 
-SPECIAL_ARGUMENTS = ["tool_name", "tool_description"]
+class Mode(enum.Enum):
+    """The mode to use for patching the client"""
+
+    FUNCTIONS = "function_call"
+    PARALLEL_TOOLS = "parallel_tool_call"
+    TOOLS = "tool_call"
+    MISTRAL_TOOLS = "mistral_tools"
+    JSON = "json_mode"
+    MD_JSON = "markdown_json_mode"
+    JSON_SCHEMA = "json_schema_mode"
+
+    def __new__(cls, value: str) -> "Mode":
+        member = object.__new__(cls)
+        member._value_ = value
+
+        # Deprecation warning for FUNCTIONS
+        if value == "function_call":
+            warnings.warn(
+                "FUNCTIONS is deprecated and will be removed in future versions",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        return member
+
+
+SPECIAL_ARGUMENTS = ["name", "description"]
 
 class OpenAISchema(BaseModel):  # type: ignore[misc]
     @classmethod  # type: ignore[misc]
@@ -64,8 +91,8 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
                 )
 
         return {
-            "name": special_args.get("tool_name", schema["title"] or cls.__name__),
-            "description": special_args.get("tool_description", schema["description"]),
+            "name": special_args.get("name", schema["title"] or cls.__name__),
+            "description": special_args.get("description", schema["description"]),
             "parameters": parameters,
         }
 
