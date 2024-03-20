@@ -6,7 +6,7 @@ authors = ["Jason Liu <jason@jxnl.co>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "instructor"}]
-repository = "https://github.com/jxnl/instructor"
+repository = "https://github.com/instructor-ai/instructor"
 
 [tool.poetry.dependencies]
 python = "^3.10"

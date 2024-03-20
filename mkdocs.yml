@@ -2,7 +2,7 @@ site_name: Instructor
 site_author: Jason Liu
 site_description: A lightweight library for structured outputs with LLMs. 
 repo_name: instructor
-repo_url: https://github.com/jxnl/instructor/
+repo_url: https://github.com/instructor-ai/instructor/
 site_url: https://python.useinstructor.com/ 
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2024 Jason Liu 
