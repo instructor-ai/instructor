@@ -1,6 +1,5 @@
 # type: ignore[all]
 import logging
-import importlib
 
 from openai.types.chat import ChatCompletion
 from instructor.mode import Mode
