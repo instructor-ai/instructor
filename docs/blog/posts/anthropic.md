@@ -15,6 +15,10 @@ For those eager to experiment, simply patch the client with `ANTHROPIC_TOOLS`, w
 pip install instructor[anthropic]
 ```
 
+!!! warning "Missing Features"
+
+    Just want to acknowledge that we know that we are missing partial streaming and some better re-asking support for XML. We are working on it and will have it soon.
+
 ```python
 from pydantic import BaseModel
 from typing import List
