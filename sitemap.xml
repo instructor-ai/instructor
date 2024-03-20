@@ -2,467 +2,472 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://python.useinstructor.com/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/api/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/contributing/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/help/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/installation/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/why/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/11/02/ai-engineer-keynote-pydantic-is-all-you-need/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://python.useinstructor.com/blog/2024/03/20/announcing-anthropic-support/</loc>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2024/03/05/zero-cost-abstractions/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/11/26/python-caching/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/11/05/chain-of-density/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/11/18/validate-citations/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2024/02/14/weights-and-biases-course/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/10/17/enhancing-python-functions-with-instructor-a-guide-to-fine-tuning-and-distillation/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2024/03/08/simple-synthetic-data-generation/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/11/26/python-generators-and-llm-streaming/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/09/11/generating-structured-output--json-from-llms/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2024/02/18/seamless-support-with-langsmith/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/11/13/learn-async/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2024/03/07/open-source-local-structured-output-pydantic-json-openai/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/09/17/rag-is-more-than-just-embedding-search/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/2023/10/23/good-llm-validation-is-just-good-validation/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/cli/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/cli/finetune/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/cli/usage/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/alias/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/caching/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/distillation/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/enums/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/fastapi/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/fields/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/lists/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/logging/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/maybe/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/models/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/parallel/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/partial/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/patching/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/philosophy/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/prompting/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/raw_response/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/reask_validation/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/retrying/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/typeadapter/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/types/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/union/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/concepts/usage/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/batch_classification/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/classification/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/entity_resolution/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/exact_citations/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/examples/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/extract_slides/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/extracting_tables/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/image_to_ad_copy/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/knowledge_graph/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/moderation/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/ollama/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/open_source/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/pii/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/planning-tasks/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/search/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/self_critique/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/examples/sqlmodel/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/action_items/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/anyscale/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/batch_classification_langsmith/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/extract_contact_info/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/groq/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/knowledge_graph/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/llama-cpp-python/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/mistral/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/multiple_classification/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/ollama/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/pandas_df/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/partial_streaming/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/single_classification/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/tables_from_vision/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/together/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/hub/youtube_clips/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/tutorials/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/tutorials/1-introduction/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/tutorials/2-tips/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/tutorials/3-0-applications-rag/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/tutorials/3-1-validation-rag/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/tutorials/4-validation/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/tutorials/5-knowledge-graphs/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/tutorials/6-chain-of-density/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/archive/2024/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/archive/2023/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://python.useinstructor.com/blog/page/2/</loc>
-         <lastmod>2024-03-15</lastmod>
+         <lastmod>2024-03-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
