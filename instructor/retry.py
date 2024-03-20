@@ -25,6 +25,7 @@ T = TypeVar("T")
 
 def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.ANTHROPIC_TOOLS:
+        # TODO: we need to include the original response
         yield {
             "role": "user",
             "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
