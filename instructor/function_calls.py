@@ -93,8 +93,8 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
                         importlib.import_module("anthropic.types.message"), "Message"
                     ),
                 )
-            except ImportError:
-                raise ImportError("Please 'pip install anthropic' package to proceed.")
+            except ImportError as err:
+                raise ImportError("Please 'pip install anthropic' package to proceed.") from err
             assert hasattr(completion, "content")
             return xml_to_model(cls, extract_xml(completion.content[0].text))  # type:ignore
 
