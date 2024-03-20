@@ -1,6 +1,5 @@
 # type: ignore[all]
 import logging
-import importlib
 
 from openai.types.chat import ChatCompletion
 from instructor.mode import Mode
@@ -25,15 +24,8 @@ T = TypeVar("T")
 
 
 def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
-
-    if mode == Mode.ANTHROPIC_TOOLS:
-        yield {
-            "role": "user",
-            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-        }
-        return
-
     yield dump_message(response.choices[0].message)
+
     if mode == Mode.TOOLS:
         for tool_call in response.choices[0].message.tool_calls:  # type: ignore
             yield {
@@ -83,10 +75,7 @@ def retry_sync(
             with attempt:
                 try:
                     response = func(*args, **kwargs)
-                    if mode == Mode.ANTHROPIC_TOOLS: # There is no "stream=" in the client if Anthropic
-                        stream = isinstance(response, getattr(importlib.import_module("anthropic.lib.streaming._messages"), "MessageStreamManager"))
-                    else:
-                        stream = kwargs.get("stream", False)
+                    stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
                     return process_response(
                         response,
@@ -135,7 +124,7 @@ async def retry_async(
             with attempt:
                 try:
                     response: ChatCompletion = await func(*args, **kwargs)  # type: ignore
-                    stream = kwargs.get("stream", False) # TODO: need to set stream differently if anthropic
+                    stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
                     return await process_response_async(
                         response,

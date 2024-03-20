@@ -289,6 +289,44 @@ print(model.model_dump_json(indent=2))
 """
 ```
 
+## Using Anthropic Models
+
+Install dependencies with
+
+```shell
+poetry install -E anthropic
+```
+
+Usage:
+
+```python
+import instructor
+from anthropic import Anthropic
+
+class User(BaseModel):
+    name: str
+    age: int
+
+create = instructor.patch(create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS)
+
+resp = create(
+    model="claude-3-opus-20240229",
+    max_tokens=1024,
+    max_retries=0,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
 ## [Evals](https://github.com/jxnl/instructor/tree/main/tests/openai/evals)
 
 We invite you to contribute to evals in `pytest` as a way to monitor the quality of the OpenAI models and the `instructor` library. To get started check out the [jxnl/instructor/tests/evals](https://github.com/jxnl/instructor/tree/main/tests/openai/evals) and contribute your own evals in the form of pytest tests. These evals will be run once a week and the results will be posted.
