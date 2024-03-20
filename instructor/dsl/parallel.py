@@ -18,6 +18,9 @@ from collections.abc import Iterable
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from instructor.mode import Mode
+## load env variables
+from dotenv import load_dotenv
+load_dotenv()
 
 T = TypeVar("T", bound=OpenAISchema)
 
