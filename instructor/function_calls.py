@@ -89,9 +89,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             try:
                 assert isinstance(
                     completion,
-                    getattr(
-                        importlib.import_module("anthropic.types.message"), "Message"
-                    ),
+                    importlib.import_module("anthropic.types.message").Message,
                 )
             except ImportError as err:
                 raise ImportError("Please 'pip install anthropic' package to proceed.") from err
