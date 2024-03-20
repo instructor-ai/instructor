@@ -14,7 +14,7 @@ def test_simple():
         age: int
 
     resp = create(
-        model="claude-3-opus-20240229",
+        model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
         messages=[
@@ -42,7 +42,7 @@ def test_nested_type():
         address: Address
 
     resp = create(
-        model="claude-3-opus-20240229",
+        model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
         messages=[
@@ -74,7 +74,7 @@ def test_nested_list():
         properties: List[Properties]
 
     resp = create(
-        model="claude-3-opus-20240229",
+        model="claude-3-opus-20240229", # Fails with claude-3-haiku-20240307
         max_tokens=1024,
         max_retries=0,
         messages=[

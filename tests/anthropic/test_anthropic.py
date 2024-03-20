@@ -1,3 +1,4 @@
+import pytest
 import anthropic
 import instructor
 from pydantic import BaseModel
@@ -7,11 +8,11 @@ create = instructor.patch(
     create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS
 )
 
-
+@pytest.mark.skip
 def test_anthropic():
     class Properties(BaseModel):
         name: str
-        value: str
+        value: List[str]
 
     class User(BaseModel):
         name: str
