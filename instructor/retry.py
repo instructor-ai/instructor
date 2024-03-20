@@ -1,5 +1,6 @@
 # type: ignore[all]
 import logging
+import importlib
 
 from openai.types.chat import ChatCompletion
 from instructor.mode import Mode
@@ -24,8 +25,15 @@ T = TypeVar("T")
 
 
 def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
-    yield dump_message(response.choices[0].message)
 
+    if mode == Mode.ANTHROPIC_TOOLS:
+        yield {
+            "role": "user",
+            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+        }
+        return
+
+    yield dump_message(response.choices[0].message)
     if mode == Mode.TOOLS:
         for tool_call in response.choices[0].message.tool_calls:  # type: ignore
             yield {
