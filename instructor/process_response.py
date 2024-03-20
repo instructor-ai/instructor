@@ -298,7 +298,7 @@ def handle_response_model(
                 </function_calls>
 
                 Here are the tools available:\n{tool_descriptions}
-                """ 
+                """
             )
             if "system" in new_kwargs:
                 new_kwargs["system"] = f"{system_prompt}\n{new_kwargs['system']}"

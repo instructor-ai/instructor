@@ -21,4 +21,3 @@ def docs(query: str = typer.Argument(None, help="Search the documentation")) -> 
         typer.launch(f"https://jxnl.github.io/instructor/?q={query}")
     else:
         typer.launch("https://jxnl.github.io/instructor")
-

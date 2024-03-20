@@ -8,14 +8,17 @@ anthropic_client = instructor.patch(
     create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS
 )
 
+
 class Properties(BaseModel):
     key: str
     value: str
+
 
 class User(BaseModel):
     name: str
     age: int
     properties: List[Properties]
+
 
 user_response = anthropic_client(
     model="claude-3-haiku-20240307",
