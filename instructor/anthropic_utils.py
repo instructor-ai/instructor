@@ -1,8 +1,16 @@
+# type: ignore
 import re
-import xmltodict
 from pydantic import BaseModel
-import xml.etree.ElementTree as ET
 from typing import Type, Any, Dict, TypeVar
+
+
+try:
+    import xmltodict
+    import xml.etree.ElementTree as ET
+except ImportError:
+    import warnings
+    warnings.warn("xmltodict module not found. Please install it to proceed. `pip install xmltodict`", ImportWarning)
+
 
 T = TypeVar("T", bound=BaseModel)
 
