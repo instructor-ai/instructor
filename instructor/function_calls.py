@@ -61,7 +61,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     @classmethod
     @property
     def anthropic_schema(cls) -> str:
-        from instructor.anthropic_utils import json_to_xml, extract_xml, xml_to_model
+        from instructor.anthropic_utils import json_to_xml
         return json_to_xml(cls)
 
     @classmethod
