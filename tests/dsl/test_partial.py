@@ -63,3 +63,6 @@ def test_partial():
         "title": "PartialSamplePartial",
         "type": "object",
     }, "Partial model JSON schema has changed"
+
+    for model in partial.model_from_chunks(['{"b": {"b": 1}}']):
+        assert model.model_dump() == {"a": None, "b": {"b": 1}}

@@ -176,6 +176,7 @@ class PartialBase(Generic[T_Model]):
     ) -> Generator[T_Model, None, None]:
         prev_obj = None
         potential_object = ""
+        partial_model = cls.get_partial_model()
         for chunk in json_chunks:
             potential_object += chunk
 
@@ -184,7 +185,7 @@ class PartialBase(Generic[T_Model]):
                 parser.parse(potential_object) if potential_object.strip() else None
             )
             if task_json:
-                obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
+                obj = partial_model.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
                 if obj != prev_obj:
                     obj.__dict__["chunk"] = (
                         chunk  # Provide the raw chunk for debugging and benchmarking
@@ -198,6 +199,7 @@ class PartialBase(Generic[T_Model]):
     ) -> AsyncGenerator[T_Model, None]:
         potential_object = ""
         prev_obj = None
+        partial_model = cls.get_partial_model()
         async for chunk in json_chunks:
             potential_object += chunk
 
@@ -206,7 +208,7 @@ class PartialBase(Generic[T_Model]):
                 parser.parse(potential_object) if potential_object.strip() else None
             )
             if task_json:
-                obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
+                obj = partial_model.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
                 if obj != prev_obj:
                     obj.__dict__["chunk"] = (
                         chunk  # Provide the raw chunk for debugging and benchmarking
