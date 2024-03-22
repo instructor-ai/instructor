@@ -125,7 +125,7 @@ files = [
 name = "anthropic"
 version = "0.18.1"
 description = "The official Python library for the anthropic API"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "anthropic-0.18.1-py3-none-any.whl", hash = "sha256:b85aee64f619ce1b1964ba733a09adc4053e7bc4e6d4186001229ec191099dcf"},
@@ -826,7 +826,7 @@ devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benc
 name = "filelock"
 version = "3.13.1"
 description = "A platform independent file lock."
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "filelock-3.13.1-py3-none-any.whl", hash = "sha256:57dbda9b35157b05fb3e58ee91448612eb674172fab98ee235ccb0b5bee19a1c"},
@@ -928,7 +928,7 @@ files = [
 name = "fsspec"
 version = "2024.3.1"
 description = "File-system specification"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "fsspec-2024.3.1-py3-none-any.whl", hash = "sha256:918d18d41bf73f0e2b261824baeb1b124bcf771767e3a26425cd7dec3332f512"},
@@ -1091,7 +1091,7 @@ socks = ["socksio (==1.*)"]
 name = "huggingface-hub"
 version = "0.21.4"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
-optional = false
+optional = true
 python-versions = ">=3.8.0"
 files = [
     {file = "huggingface_hub-0.21.4-py3-none-any.whl", hash = "sha256:df37c2c37fc6c82163cdd8a67ede261687d80d1e262526d6c0ce73b6b3630a7b"},
@@ -3268,7 +3268,7 @@ test = ["flake8", "isort", "pytest"]
 name = "tokenizers"
 version = "0.15.2"
 description = ""
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "tokenizers-0.15.2-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:52f6130c9cbf70544287575a985bf44ae1bda2da7e8c24e97716080593638012"},
@@ -3595,7 +3595,7 @@ files = [
 name = "xmltodict"
 version = "0.13.0"
 description = "Makes working with XML feel like you are working with JSON"
-optional = false
+optional = true
 python-versions = ">=3.4"
 files = [
     {file = "xmltodict-0.13.0-py2.py3-none-any.whl", hash = "sha256:aa89e8fd76320154a40d19a0df04a4695fb9dc5ba977cbb68ab3e4eb225e7852"},
@@ -3705,7 +3705,10 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
+[extras]
+anthropic = ["anthropic", "xmltodict"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "5780411ed7df9fcd0c67d664cd4898ba4be9fb7ee7a74538e8e5937a72359142"
+content-hash = "35fcdd72be242b352d6d5790f4f37d4593c3047a33ed77bca9575b08e2c485a9"
