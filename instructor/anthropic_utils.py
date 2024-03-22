@@ -86,6 +86,7 @@ def _add_params(
             reference = _resolve_reference(references, details["$ref"])
 
             if 'enum' in reference:
+                type_element.text = reference['type']
                 enum_values = reference['enum']
                 values =  ET.SubElement(parameter, "values")
                 for value in enum_values:
