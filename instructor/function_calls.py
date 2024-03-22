@@ -1,4 +1,5 @@
 from typing import Any, Dict, Optional, Type, TypeVar
+from xml.dom.minidom import parseString
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
@@ -61,8 +62,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     @classmethod
     @property
     def anthropic_schema(cls) -> str:
-        from instructor.anthropic_utils import json_to_xml, extract_xml, xml_to_model
-        return json_to_xml(cls)
+        from instructor.anthropic_utils import json_to_xml
+        return "\n".join(line.lstrip() for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:])
+
 
     @classmethod
     def from_response(
