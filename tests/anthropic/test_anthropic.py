@@ -1,12 +1,14 @@
-import pytest
-import anthropic
-import instructor
-from pydantic import BaseModel
+from enum import Enum
 from typing import List
 
-create = instructor.patch(
-    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS
-)
+import anthropic
+import pytest
+from pydantic import BaseModel
+
+import instructor
+
+create = instructor.patch(create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS)
+
 
 @pytest.mark.skip
 def test_anthropic():
@@ -33,3 +35,31 @@ def test_anthropic():
     )  # type: ignore
 
     assert isinstance(resp, User)
+
+
+@pytest.mark.skip
+def test_anthropic_enum():
+    class ProgrammingLanguage(Enum):
+        PYTHON = "python"
+        JAVASCRIPT = "javascript"
+        TYPESCRIPT = "typescript"
+        UNKNOWN = "unknown"
+        OTHER = "other"
+
+    class SimpleEnum(BaseModel):
+        language: ProgrammingLanguage
+
+    resp = create(
+        model="claude-3-haiku-20240307",
+        max_tokens=1024,
+        max_retries=0,
+        messages=[
+            {
+                "role": "user",
+                "content": "What is your favorite programming language?",
+            }
+        ],
+        response_model=SimpleEnum,
+    )  # type: ignore
+
+    assert isinstance(resp, SimpleEnum)
