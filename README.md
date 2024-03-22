@@ -1,226 +1,70 @@
-# Instructor
+# 🎓 Instructor: Your Friendly Guide to Structured LLM Outputs
 
-_Structured outputs powered by llms. Designed for simplicity, transparency, and control._
-
----
+Instructor is a Python library that makes it a breeze to work with structured outputs from large language models (LLMs). Built on top of Pydantic, it provides a simple, transparent, and user-friendly API to manage validation, retries, and streaming responses. Get ready to supercharge your LLM workflows!
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/CV8sPM5k5Y)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
-Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./docs/concepts/reask_validation.md), retries with [Tenacity](./docs/concepts/retrying.md), and streaming [Lists](./docs/concepts/lists.md) and [Partial](./docs/concepts/partial.md) responses.
 
-Check us out in [Typescript](https://instructor-ai.github.io/instructor-js/), [Elixir](https://github.com/thmsmlr/instructor_ex/) and [PHP](https://github.com/cognesy/instructor-php/).
+## 🌟 Key Features
 
-Instructor is not limited to the OpenAI API, we have support for many other backends that via patching. Check out more on [patching](./docs/concepts/patching.md).
+- 🎭 **Response Models**: Specify Pydantic models to define the structure of your LLM outputs
+- 🔄 **Retry Management**: Easily configure the number of retry attempts for your requests
+- ✅ **Validation**: Ensure LLM responses conform to your expectations with Pydantic validation
+- 🌊 **Streaming Support**: Work with Lists and Partial responses effortlessly
+- 🔌 **Flexible Backends**: Seamlessly integrate with various LLM providers beyond OpenAI
 
-1. Wrap OpenAI's SDK
-2. Wrap the create method
+## 🚀 Get Started in Minutes
 
-Including but not limited to:
+Install Instructor with a single command:
 
-- [Together](./docs/hub/together.md)
-- [Ollama](./docs/hub/ollama.md)
-- [AnyScale](./docs/hub/anyscale.md)
-- [llama-cpp-python](./docs/hub/llama-cpp-python.md)
-
-## Get Started in Moments
-
-```
+```bash
 pip install -U instructor
 ```
 
-If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
-
-```
-instructor docs [QUERY]
-```
-
-## How Instructor Enhances Your Workflow
-
-Our `instructor.patch` for the `OpenAI` class introduces three key enhancements:
-
-- **Response Mode:** Specify a Pydantic model to streamline data extraction.
-- **Max Retries:** Set your desired number of retry attempts for requests.
-- **Validation Context:** Provide a context object for enhanced validator access. A Glimpse into Instructor's Capabilities.
-
-### Using Validators
-
-To learn more about validators, checkout our blog post [Good LLM validation is just good validation](https://jxnl.github.io/instructor/blog/2023/10/23/good-llm-validation-is-just-good-validation/)
-
-## Usage
-
-With Instructor, your code becomes more efficient and readable. Here’s a quick peek:
-
-```py hl_lines="5 13"
-import instructor
-from openai import OpenAI
-from pydantic import BaseModel
-
-# Enables `response_model`
-client = instructor.patch(OpenAI())
-
-
-class UserDetail(BaseModel):
-    name: str
-    age: int
-
-
-user = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=UserDetail,
-    messages=[
-        {"role": "user", "content": "Extract Jason is 25 years old"},
-    ],
-)
-
-assert isinstance(user, UserDetail)
-assert user.name == "Jason"
-assert user.age == 25
-```
-
-## Primitive Types (str, int, float, bool)
+Now, let's see Instructor in action with a simple example:
 
 ```python
-import instructor
-import openai
-
-client = instructor.patch(openai.OpenAI())
-
-# Response model with simple types like str, int, float, bool
-resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=bool,
-    messages=[
-        {
-            "role": "user",
-            "content": "Is it true that Paris is the capital of France?",
-        },
-    ],
-)
-assert resp is True, "Paris is the capital of France"
-print(resp)
-#> True
-```
-
-### Using async clients
-
-For async clients you must use `apatch` vs. `patch`, as shown:
-
-```py
-import instructor
-import asyncio
-import openai
 from pydantic import BaseModel
-
-aclient = instructor.apatch(openai.AsyncOpenAI())
-
-
-class UserExtract(BaseModel):
-    name: str
-    age: int
-
-
-task = aclient.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=UserExtract,
-    messages=[
-        {"role": "user", "content": "Extract jason is 25 years old"},
-    ],
-)
-
-
-response = asyncio.run(task)
-print(response.model_dump_json(indent=2))
-"""
-{
-  "name": "Jason",
-  "age": 25
-}
-"""
-```
-
-### Step 1: Patch the client
-
-First, import the required libraries and apply the `patch` function to the OpenAI module. This exposes new functionality with the `response_model` parameter.
-
-```python
-import instructor
+from instructor import patch
 from openai import OpenAI
 
-# This enables response_model keyword
-# from client.chat.completions.create
-client = instructor.patch(OpenAI())
-```
-
-### Step 2: Define the Pydantic Model
-
-Create a Pydantic model to define the structure of the data you want to extract. This model will map directly to the information in the prompt.
-
-```python
-from pydantic import BaseModel
-
-
-class UserDetail(BaseModel):
-    name: str
-    age: int
-```
-
-### Step 3: Extract
-
-Use the `client.chat.completions.create` method to send a prompt and extract the data into the Pydantic object. The `response_model` parameter specifies the Pydantic model to use for extraction. It is helpful to annotate the variable with the type of the response model which will help your IDE provide autocomplete and spell check.
-
-```python
-import instructor
-import openai
-from pydantic import BaseModel
-
-client = instructor.patch(openai.OpenAI())
-
-
-class UserDetail(BaseModel):
+# Define your desired output structure
+class UserInfo(BaseModel):
     name: str
     age: int
 
+# Patch the OpenAI client
+client = patch(OpenAI())
 
-user = client.chat.completions.create(
+# Extract structured data from natural language
+user_info = client.chat.completions.create(
     model="gpt-3.5-turbo",
-    response_model=UserDetail,
+    response_model=UserInfo, 
     messages=[
-        {"role": "user", "content": "Extract Jason is 25 years old"},
-    ],
+        {"role": "user", "content": "John Doe is 30 years old."}
+    ]
 )
 
-assert isinstance(user, UserDetail)
-assert user.name == "Jason"
-assert user.age == 25
-print(user.model_dump_json(indent=2))
-"""
-{
-  "name": "Jason",
-  "age": 25
-}
-"""
+print(user_info.name)  # "John Doe"
+print(user_info.age)   # 30
 ```
 
-## Pydantic Validation
+## 🎯 Validation Made Easy
 
-Validation can also be plugged into the same Pydantic model.
+Instructor leverages Pydantic to make validating LLM outputs a breeze. Simply define your validation rules in your Pydantic models, and Instructor will ensure the LLM responses conform to your expectations. No more manual checking or parsing!
 
-In this example, if the answer attribute contains content that violates the rule "Do not say objectionable things", Pydantic will raise a validation error.
-
-```python hl_lines="9 15"
-from pydantic import BaseModel, ValidationError, BeforeValidator
+```python
+from pydantic import BaseModel, ValidationError, BeforeValidator 
 from typing_extensions import Annotated
 from instructor import llm_validator
-
 
 class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
-        str, BeforeValidator(llm_validator("don't say objectionable things"))
+        str, BeforeValidator(llm_validator("Don't say objectionable things"))
     ]
-
 
 try:
     qa = QuestionAnswer(
@@ -229,65 +73,32 @@ try:
     )
 except ValidationError as e:
     print(e)
-    """
-    1 validation error for QuestionAnswer
-    answer
-      Assertion failed, The statement promotes objectionable behavior by encouraging evil and stealing, which goes against the rule of not saying objectionable things. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
-    """
 ```
 
-It is important to note here that the **error message is generated by the LLM**, not the code. Thus, it is helpful for re-asking the model.
+## 📖 Learn More
 
-```plaintext
-1 validation error for QuestionAnswer
-answer
-   Assertion failed, The statement is objectionable. (type=assertion_error)
-```
+Dive deeper into Instructor's concepts and features:
 
-## Re-ask on validation error
+- [Validation Context](./docs/concepts/reask_validation.md)
+- [Retrying](./docs/concepts/retrying.md) 
+- [Lists](./docs/concepts/lists.md)
+- [Partial Responses](./docs/concepts/partial.md)
+- [Patching](./docs/concepts/patching.md)
 
-Here, the `UserDetails` model is passed as the `response_model`, and `max_retries` is set to 2.
+## 🤝 Join the Community
 
-```python
-import instructor
-
-from openai import OpenAI
-from pydantic import BaseModel, field_validator
-
-# Apply the patch to the OpenAI client
-client = instructor.patch(OpenAI())
+Have questions? Want to share your Instructor projects? Join our vibrant community on [Discord](https://discord.gg/CV8sPM5k5Y)! We're here to help you get the most out of Instructor and celebrate your successes.
 
 
-class UserDetails(BaseModel):
-    name: str
-    age: int
+## 🎉 Start Building
 
-    @field_validator("name")
-    @classmethod
-    def validate_name(cls, v):
-        if v.upper() != v:
-            raise ValueError("Name must be in uppercase.")
-        return v
+Instructor is your friendly companion on the exciting journey of working with LLMs. Install it now and unlock the full potential of structured outputs in your projects. Happy building! 🚀
 
+---
 
-model = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=UserDetails,
-    max_retries=2,
-    messages=[
-        {"role": "user", "content": "Extract jason is 25 years old"},
-    ],
-)
+We can't wait to see the amazing things you create with Instructor. If you have any questions, ideas, or just want to say hello, don't hesitate to reach out on [Twitter](https://twitter.com/jxnlco) or [Discord](https://discord.gg/CV8sPM5k5Y). Let's build the future together! 🌟
 
-print(model.model_dump_json(indent=2))
-"""
-{
-  "name": "JASON",
-  "age": 25
-}
-"""
-```
+---
 
 ## Using Anthropic Models
 
