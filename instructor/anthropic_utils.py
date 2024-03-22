@@ -91,7 +91,6 @@ def _add_params(
                 for value in enum_values:
                     value_element = ET.SubElement(values, "value")
                     value_element.text = value
-                print('done')
                 continue
 
             nested_params = ET.SubElement(parameter, "parameters")
