@@ -38,34 +38,6 @@ def test_anthropic():
 
 
 @pytest.mark.skip
-def test_anthropic():
-    class ProgrammingLanguage(Enum):
-        PYTHON = "python"
-        JAVASCRIPT = "javascript"
-        TYPESCRIPT = "typescript"
-        UNKNOWN = "unknown"
-        OTHER = "other"
-
-    class SimpleEnum(BaseModel):
-        language: ProgrammingLanguage
-
-    resp = create(
-        model="claude-3-haiku-20240307",
-        max_tokens=1024,
-        max_retries=0,
-        messages=[
-            {
-                "role": "user",
-                "content": "What is your favorite programming language?",
-            }
-        ],
-        response_model=SimpleEnum,
-    )  # type: ignore
-
-    assert isinstance(resp, SimpleEnum)
-
-
-@pytest.mark.skip
 def test_anthropic_enum():
     class ProgrammingLanguage(Enum):
         PYTHON = "python"
