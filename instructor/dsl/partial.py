@@ -21,6 +21,7 @@ from typing import (
     TypeVar,
 )
 from copy import deepcopy
+from functools import lru_cache
 
 from instructor.mode import Mode
 from instructor.dsl.partialjson import JSONParser
@@ -30,7 +31,123 @@ parser = JSONParser()
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
 
+def _make_field_optional(
+    field: FieldInfo,
+) -> tuple[object, FieldInfo]:
+    tmp_field = deepcopy(field)
+
+    annotation = field.annotation
+
+    # Handle generics (like List, Dict, etc.)
+    if get_origin(annotation) is not None:
+        # Get the generic base (like List, Dict) and its arguments (like User in List[User])
+        generic_base = get_origin(annotation)
+        generic_args = get_args(annotation)
+
+        # Recursively apply Partial to each of the generic arguments
+        modified_args = tuple(
+            (
+                _Partial[arg]  # type: ignore[valid-type]
+                if isinstance(arg, type) and issubclass(arg, BaseModel)
+                else arg
+            )
+            for arg in generic_args
+        )
+
+        # Reconstruct the generic type with modified arguments
+        tmp_field.annotation = (
+            Optional[generic_base[modified_args]] if generic_base else None
+        )
+        tmp_field.default = None
+    # If the field is a BaseModel, then recursively convert it's
+    # attributes to optionals.
+    elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        tmp_field.annotation = Optional[_Partial[annotation]]  # type: ignore[assignment, valid-type]
+        tmp_field.default = {}
+    else:
+        tmp_field.annotation = Optional[field.annotation]  # type: ignore[assignment]
+        tmp_field.default = None
+    return tmp_field.annotation, tmp_field
+
+
+class _Partial(Generic[T_Model]):
+    """Generate a new class with all attributes optionals.
+
+    Notes:
+        This will wrap a class inheriting form BaseModel and will recursively
+        convert all its attributes and its children's attributes to optionals.
+
+    Example:
+        _Partial[SomeModel]
+    """
+
+    def __new__(
+        cls,
+        *args: object,  # noqa :ARG003
+        **kwargs: object,  # noqa :ARG003
+    ) -> "Partial[T_Model]":
+        """Cannot instantiate.
+
+        Raises:
+            TypeError: Direct instantiation not allowed.
+        """
+        raise TypeError("Cannot instantiate abstract Partial class.")
+
+    def __init_subclass__(
+        cls,
+        *args: object,
+        **kwargs: object,
+    ) -> NoReturn:
+        """Cannot subclass.
+
+        Raises:
+           TypeError: Subclassing not allowed.
+        """
+        raise TypeError("Cannot subclass {}.Partial".format(cls.__module__))
+
+    def __class_getitem__(  # type: ignore[override]
+        cls,
+        wrapped_class: type[T_Model],
+    ) -> type[T_Model]:
+        """Convert model to a partial model with all fields being optionals."""
+        return create_model(
+            __model_name=(
+                wrapped_class.__name__
+                if wrapped_class.__name__.startswith("Partial")
+                else f"Partial{wrapped_class.__name__}"
+            ),
+            __base__=(wrapped_class, PartialBase),
+            __module__=wrapped_class.__module__,
+            **{
+                field_name: _make_field_optional(field_info)
+                for field_name, field_info in wrapped_class.model_fields.items()
+            },
+        )  # type: ignore[all]
+
+
 class PartialBase(Generic[T_Model]):
+    @classmethod
+    @lru_cache(maxsize=None)
+    def get_partial_model(cls) -> type[T_Model]:
+        """Return a partial model we can use to validate partial results."""
+        assert issubclass(
+            cls, BaseModel
+        ), f"{cls.__name__} must be a subclass of BaseModel"
+
+        return create_model(
+            __model_name=(
+                cls.__name__
+                if cls.__name__.startswith("Partial")
+                else f"Partial{cls.__name__}"
+            ),
+            __base__=cls,
+            __module__=cls.__module__,
+            **{
+                field_name: _make_field_optional(field_info)
+                for field_name, field_info in cls.model_fields.items()
+            },
+        )  # type: ignore[all]
+
     @classmethod
     def from_streaming_response(
         cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
@@ -69,9 +186,9 @@ class PartialBase(Generic[T_Model]):
             if task_json:
                 obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
                 if obj != prev_obj:
-                    obj.__dict__[
-                        "chunk"
-                    ] = chunk  # Provide the raw chunk for debugging and benchmarking
+                    obj.__dict__["chunk"] = (
+                        chunk  # Provide the raw chunk for debugging and benchmarking
+                    )
                     prev_obj = obj
                     yield obj
 
@@ -91,9 +208,9 @@ class PartialBase(Generic[T_Model]):
             if task_json:
                 obj = cls.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
                 if obj != prev_obj:
-                    obj.__dict__[
-                        "chunk"
-                    ] = chunk  # Provide the raw chunk for debugging and benchmarking
+                    obj.__dict__["chunk"] = (
+                        chunk  # Provide the raw chunk for debugging and benchmarking
+                    )
                     prev_obj = obj
                     yield obj
 
@@ -145,11 +262,10 @@ class PartialBase(Generic[T_Model]):
 
 
 class Partial(Generic[T_Model]):
-    """Generate a new class with all attributes optionals.
+    """Generate a new class which has PartialBase as a base class.
 
     Notes:
-        This will wrap a class inheriting form BaseModel and will recursively
-        convert all its attributes and its children's attributes to optionals.
+        This will enable partial validation of the model while streaming.
 
     Example:
         Partial[SomeModel]
@@ -183,11 +299,17 @@ class Partial(Generic[T_Model]):
         cls,
         wrapped_class: type[T_Model],
     ) -> type[T_Model]:
-        """Convert model to a partial model with all fields being optionals."""
+        """Convert model to one that inherits from PartialBase.
 
-        def _make_field_optional(
-            field: FieldInfo,
-        ) -> tuple[object, FieldInfo]:
+        We don't make the fields optional at this point, we just wrap them with `Partial` so the names of the nested models will be
+        `Partial{ModelName}`. We want the output of `model_json_schema()` to
+        reflect the name change, but everything else should be the same as the
+        original model. During validation, we'll generate a true partial model
+        to support partially defined fields.
+
+        """
+
+        def _wrap_models(field: FieldInfo) -> tuple[object, FieldInfo]:
             tmp_field = deepcopy(field)
 
             annotation = field.annotation
@@ -200,25 +322,22 @@ class Partial(Generic[T_Model]):
 
                 # Recursively apply Partial to each of the generic arguments
                 modified_args = tuple(
-                    Partial[arg]  # type: ignore[valid-type]
-                    if isinstance(arg, type) and issubclass(arg, BaseModel)
-                    else arg
+                    (
+                        Partial[arg]  # type: ignore[valid-type]
+                        if isinstance(arg, type) and issubclass(arg, BaseModel)
+                        else arg
+                    )
                     for arg in generic_args
                 )
 
                 # Reconstruct the generic type with modified arguments
                 tmp_field.annotation = (
-                    Optional[generic_base[modified_args]] if generic_base else None
+                    generic_base[modified_args] if generic_base else None
                 )
-                tmp_field.default = None
             # If the field is a BaseModel, then recursively convert it's
             # attributes to optionals.
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
-                tmp_field.annotation = Optional[Partial[annotation]]  # type: ignore[assignment, valid-type]
-                tmp_field.default = {}
-            else:
-                tmp_field.annotation = Optional[field.annotation]  # type: ignore[assignment]
-                tmp_field.default = None
+                tmp_field.annotation = Partial[annotation]  # type: ignore[assignment, valid-type]
             return tmp_field.annotation, tmp_field
 
         return create_model(
@@ -226,7 +345,7 @@ class Partial(Generic[T_Model]):
             __base__=(wrapped_class, PartialBase),
             __module__=wrapped_class.__module__,
             **{
-                field_name: _make_field_optional(field_info)
-                for field_name, field_info in wrapped_class.__fields__.items()
+                field_name: _wrap_models(field_info)
+                for field_name, field_info in wrapped_class.model_fields.items()
             },
         )  # type: ignore[all]
