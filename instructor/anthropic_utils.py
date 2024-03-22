@@ -83,10 +83,21 @@ def _add_params(
         if (
             isinstance(details, dict) and "$ref" in details
         ):  # Checking if there are nested params
+            reference = _resolve_reference(references, details["$ref"])
+
+            if 'enum' in reference:
+                type_element.text = reference['type']
+                enum_values = reference['enum']
+                values =  ET.SubElement(parameter, "values")
+                for value in enum_values:
+                    value_element = ET.SubElement(values, "value")
+                    value_element.text = value
+                continue
+
             nested_params = ET.SubElement(parameter, "parameters")
             list_found |= _add_params(
                 nested_params,
-                _resolve_reference(references, details["$ref"]),
+                reference,
                 references,
             )
         elif field_type == "array":  # Handling for List[] type
