@@ -69,6 +69,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:]
         )
 
+
     @classmethod
     def from_response(
         cls,

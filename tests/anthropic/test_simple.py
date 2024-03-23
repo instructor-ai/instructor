@@ -63,6 +63,31 @@ def test_nested_type():
     assert resp.address.street_name == "First Avenue"
 
 
+def test_list():
+    class User(BaseModel):
+        name: str
+        age: int
+        family: List[str]
+    
+    resp = create(
+        model="claude-3-opus-20240229", # Fails with claude-3-haiku-20240307
+        max_tokens=1024,
+        max_retries=0,
+        messages=[
+            {
+                "role": "user",
+                "content": "Create a user for a model with a name, age, and family members.",
+            }
+        ],
+        response_model=User,
+    )
+    
+    assert isinstance(resp, User)
+    assert isinstance(resp.family, List)
+    for member in resp.family:
+        assert isinstance(member, str)
+
+        
 def test_nested_list():
     class Properties(BaseModel):
         key: str
