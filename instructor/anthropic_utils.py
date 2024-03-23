@@ -9,7 +9,11 @@ try:
     import xml.etree.ElementTree as ET
 except ImportError:
     import warnings
-    warnings.warn("xmltodict and xml.etree.ElementTree modules not found. Please install them to proceed. `pip install xmltodict`", ImportWarning)
+    
+    warnings.warn(
+        "xmltodict and xml.etree.ElementTree modules not found. Please install them to proceed. `pip install xmltodict`",
+        ImportWarning,
+    )
 
 
 T = TypeVar("T", bound=BaseModel)
@@ -85,10 +89,10 @@ def _add_params(
         ):  # Checking if there are nested params
             reference = _resolve_reference(references, details["$ref"])
 
-            if 'enum' in reference:
-                type_element.text = reference['type']
-                enum_values = reference['enum']
-                values =  ET.SubElement(parameter, "values")
+            if "enum" in reference:
+                type_element.text = reference["type"]
+                enum_values = reference["enum"]
+                values = ET.SubElement(parameter, "values")
                 for value in enum_values:
                     value_element = ET.SubElement(values, "value")
                     value_element.text = value

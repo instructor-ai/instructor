@@ -63,8 +63,11 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     @property
     def anthropic_schema(cls) -> str:
         from instructor.anthropic_utils import json_to_xml
-        return "\n".join(line.lstrip() for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:])
 
+        return "\n".join(
+            line.lstrip()
+            for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:]
+        )
 
     @classmethod
     def from_response(
@@ -90,7 +93,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             try:
                 from instructor.anthropic_utils import extract_xml, xml_to_model
             except ImportError as err:
-                raise ImportError("Please 'pip install anthropic' package to proceed.") from err
+                raise ImportError(
+                    "Please 'pip install anthropic' package to proceed."
+                ) from err
             assert hasattr(completion, "content")
             return xml_to_model(cls, extract_xml(completion.content[0].text))  # type:ignore
 
