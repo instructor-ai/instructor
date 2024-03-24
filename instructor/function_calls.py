@@ -64,10 +64,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     def anthropic_schema(cls) -> str:
         from instructor.anthropic_utils import json_to_xml
 
-        return "\n".join(
-            line.lstrip()
-            for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:]
-        )
+        return json_to_xml(cls)
 
 
     @classmethod
