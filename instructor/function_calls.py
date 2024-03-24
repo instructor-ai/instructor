@@ -1,5 +1,4 @@
 from typing import Any, Dict, Optional, Type, TypeVar
-from xml.dom.minidom import parseString
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
