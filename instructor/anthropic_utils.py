@@ -9,7 +9,12 @@ try:
     import xml.etree.ElementTree as ET
 except ImportError:
     import warnings
-    warnings.warn("xmltodict and xml.etree.ElementTree modules not found. Please install them to proceed. `pip install xmltodict`", ImportWarning)
+
+    warnings.warn(
+        "xmltodict and xml.etree.ElementTree modules not found. Please install them to proceed. `pip install xmltodict`",
+        ImportWarning,
+        stacklevel=2,
+    )
 
 
 T = TypeVar("T", bound=BaseModel)
@@ -45,6 +50,7 @@ def _add_params(
     # TODO: handling of nested params with the same name
     properties = model_dict.get("properties", {})
     list_found = False
+    nested_list_found = False
 
     for field_name, details in properties.items():
         parameter = ET.SubElement(root, "parameter")
@@ -69,10 +75,18 @@ def _add_params(
             field_type = details.get(
                 "type", "unknown"
             )  # Might be better to fail here if there is no type since pydantic models require types
+        
+        if "array" in field_type and "items" not in details:
+            raise ValueError("Invalid array item.")
 
-        # Adjust type if array
-        if "array" in field_type or "List" in field_type:
+        # Check for nested List
+        if "array" in field_type and "$ref" in details["items"]:
             type_element.text = f"List[{details['title']}]"
+            list_found = True
+            nested_list_found = True     
+        # Check for non-nested List
+        elif "array" in field_type and "type" in details["items"]:
+            type_element.text = f"List[{details['items']['type']}]"
             list_found = True
         else:
             type_element.text = field_type
@@ -85,10 +99,10 @@ def _add_params(
         ):  # Checking if there are nested params
             reference = _resolve_reference(references, details["$ref"])
 
-            if 'enum' in reference:
-                type_element.text = reference['type']
-                enum_values = reference['enum']
-                values =  ET.SubElement(parameter, "values")
+            if "enum" in reference:
+                type_element.text = reference["type"]
+                enum_values = reference["enum"]
+                values = ET.SubElement(parameter, "values")
                 for value in enum_values:
                     value_element = ET.SubElement(values, "value")
                     value_element.text = value
@@ -100,20 +114,11 @@ def _add_params(
                 reference,
                 references,
             )
-        elif field_type == "array":  # Handling for List[] type
+        elif field_type == "array" and nested_list_found:  # Handling for List[] type
             nested_params = ET.SubElement(parameter, "parameters")
             list_found |= _add_params(
                 nested_params,
                 _resolve_reference(references, details["items"]["$ref"]),
-                references,
-            )
-        elif "array" in field_type:  # Handling for optional List[] type
-            nested_params = ET.SubElement(parameter, "parameters")
-            list_found |= _add_params(
-                nested_params,
-                _resolve_reference(
-                    references, details["anyOf"][0]["items"]["$ref"]
-                ),  # CHANGE
                 references,
             )
 

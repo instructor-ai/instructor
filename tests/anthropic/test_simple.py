@@ -1,4 +1,3 @@
-import pytest
 import anthropic
 import instructor
 from pydantic import BaseModel
@@ -8,7 +7,7 @@ create = instructor.patch(
     create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS
 )
 
-@pytest.mark.skip
+
 def test_simple():
     class User(BaseModel):
         name: str
@@ -31,7 +30,7 @@ def test_simple():
     assert resp.name == "John"
     assert resp.age == 18
 
-@pytest.mark.skip
+
 def test_nested_type():
     class Address(BaseModel):
         house_number: int
@@ -63,7 +62,32 @@ def test_nested_type():
     assert resp.address.house_number == 123
     assert resp.address.street_name == "First Avenue"
 
-@pytest.mark.skip
+
+def test_list():
+    class User(BaseModel):
+        name: str
+        age: int
+        family: List[str]
+    
+    resp = create(
+        model="claude-3-opus-20240229", # Fails with claude-3-haiku-20240307
+        max_tokens=1024,
+        max_retries=0,
+        messages=[
+            {
+                "role": "user",
+                "content": "Create a user for a model with a name, age, and family members.",
+            }
+        ],
+        response_model=User,
+    )
+    
+    assert isinstance(resp, User)
+    assert isinstance(resp.family, List)
+    for member in resp.family:
+        assert isinstance(member, str)
+
+        
 def test_nested_list():
     class Properties(BaseModel):
         key: str
@@ -75,7 +99,7 @@ def test_nested_list():
         properties: List[Properties]
 
     resp = create(
-        model="claude-3-opus-20240229", # Fails with claude-3-haiku-20240307
+        model="claude-3-opus-20240229",  # Fails with claude-3-haiku-20240307
         max_tokens=1024,
         max_retries=0,
         messages=[

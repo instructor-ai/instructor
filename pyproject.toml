@@ -33,6 +33,10 @@ pytest-asyncio = "^0.21.1"
 coverage = "^7.3.2"
 mypy = "^1.7.1"
 
+[tool.poetry.group.anthropic.dependencies]
+anthropic = "^0.18.1"
+xmltodict = "^0.13.0"
+
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
 mkdocs-material = {extras = ["imaging"], version = "^9.5.9"}

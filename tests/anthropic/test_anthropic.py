@@ -7,7 +7,9 @@ from pydantic import BaseModel
 
 import instructor
 
-create = instructor.patch(create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS)
+create = instructor.patch(
+    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS
+)
 
 
 @pytest.mark.skip
