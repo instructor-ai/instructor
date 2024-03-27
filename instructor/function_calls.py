@@ -1,14 +1,16 @@
+import logging
+from functools import wraps
 from typing import Any, Dict, Optional, Type, TypeVar
 from xml.dom.minidom import parseString
+
 from docstring_parser import parse
-from functools import wraps
-from pydantic import BaseModel, create_model
 from openai.types.chat import ChatCompletion
+from pydantic import BaseModel, create_model
+
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_codeblock
-import logging
-
+from instructor.utils import extract_json_from_codeblock
 
 T = TypeVar("T")
 
@@ -63,11 +65,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     @property
     def anthropic_schema(cls) -> str:
         from instructor.anthropic_utils import json_to_xml
-
-        return "\n".join(
-            line.lstrip()
-            for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:]
-        )
+        return json_to_xml(cls)
 
 
     @classmethod
@@ -92,7 +90,8 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         """
         if mode == Mode.ANTHROPIC_TOOLS:
             try:
-                from instructor.anthropic_utils import extract_xml, xml_to_model
+                from instructor.anthropic_utils import (extract_xml,
+                                                        xml_to_model)
             except ImportError as err:
                 raise ImportError(
                     "Please 'pip install anthropic' package to proceed."
