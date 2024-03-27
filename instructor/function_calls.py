@@ -1,14 +1,16 @@
+import logging
+from functools import wraps
 from typing import Any, Dict, Optional, Type, TypeVar
 from xml.dom.minidom import parseString
+
 from docstring_parser import parse
-from functools import wraps
-from pydantic import BaseModel, create_model
 from openai.types.chat import ChatCompletion
+from pydantic import BaseModel, create_model
+
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_codeblock
-import logging
-
+from instructor.utils import extract_json_from_codeblock
 
 T = TypeVar("T")
 
@@ -30,27 +32,20 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         """
         schema = cls.model_json_schema()
         docstring = parse(cls.__doc__ or "")
-        parameters = {
-            k: v for k, v in schema.items() if k not in ("title", "description")
-        }
+        parameters = {k: v for k, v in schema.items() if k not in ("title", "description")}
         for param in docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (
-                description := param.description
-            ):
+            if (name := param.arg_name) in parameters["properties"] and (description := param.description):
                 if "description" not in parameters["properties"][name]:
                     parameters["properties"][name]["description"] = description
 
-        parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() if "default" not in v
-        )
+        parameters["required"] = sorted(k for k, v in parameters["properties"].items() if "default" not in v)
 
         if "description" not in schema:
             if docstring.short_description:
                 schema["description"] = docstring.short_description
             else:
                 schema["description"] = (
-                    f"Correctly extracted `{cls.__name__}` with all "
-                    f"the required parameters with correct types"
+                    f"Correctly extracted `{cls.__name__}` with all " f"the required parameters with correct types"
                 )
 
         return {
@@ -64,11 +59,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     def anthropic_schema(cls) -> str:
         from instructor.anthropic_utils import json_to_xml
 
-        return "\n".join(
-            line.lstrip()
-            for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:]
-        )
-
+        return json_to_xml(cls)
 
     @classmethod
     def from_response(
@@ -94,9 +85,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             try:
                 from instructor.anthropic_utils import extract_xml, xml_to_model
             except ImportError as err:
-                raise ImportError(
-                    "Please 'pip install anthropic' package to proceed."
-                ) from err
+                raise ImportError("Please 'pip install anthropic' package to proceed.") from err
             assert hasattr(completion, "content")
             return xml_to_model(cls, extract_xml(completion.content[0].text))  # type:ignore
 
