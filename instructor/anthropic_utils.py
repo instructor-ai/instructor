@@ -146,3 +146,91 @@ def xml_to_model(model: Type[T], xml_string: str) -> T:
     return model(
         **model_dict
     )  # This sometimes fails if Anthropic's response hallucinates from the schema
+
+
+def build_xml_from_schema(schema: Dict[str, Any], parent: ET = None, root_name: str ="tool_description", defs: Dict[str, Any]=None):
+    if parent is None:
+        root = ET.Element(root_name)
+        tool_name = ET.SubElement(root, "tool_name")
+        tool_name.text = schema.get("title", "")
+        if "description" in schema:
+            description = ET.SubElement(root, "description")
+            description.text = schema["description"]
+    else:
+        root = parent
+
+    if defs is None:
+        defs = schema.get("$defs", {})
+
+    if "properties" in schema:
+        properties = ET.SubElement(root, "properties")
+        for key, value in schema["properties"].items():
+            property_elem = ET.SubElement(properties, "property")
+            name = ET.SubElement(property_elem, "name")
+            name.text = key
+            type_elem = ET.SubElement(property_elem, "type")
+            type_elem.text = value.get("type", "object")
+
+            # Recursively handle nested objects
+            if "$ref" in value:
+                ref = _resolve_reference(defs, value["$ref"])
+                if "enum" in ref:
+                    type_elem.text = ref["type"]
+                    values = ET.SubElement(property_elem, "values")
+                    for enum_value in ref["enum"]:
+                        value_elem = ET.SubElement(values, "value")
+                        value_elem.text = enum_value
+            elif "enum" in value:
+                type_elem.text = value["type"]
+                values = ET.SubElement(property_elem, "values")
+                for enum_value in value["enum"]:
+                    value_elem = ET.SubElement(values, "value")
+                    value_elem.text = enum_value
+            elif value.get("type") == "object":
+                build_xml_from_schema(value, property_elem, defs=defs)
+            elif value.get("type") == "array":
+                type_elem.text = "List"
+                if "items" in value:
+                    items = value["items"]
+                    if items.get("type") == "object":
+                        # Handle object items in the list
+                        item_properties = ET.SubElement(property_elem, "items")
+                        build_xml_from_schema(items, item_properties, defs=defs)
+                    elif items.get("type") == "array":
+                        # Handle nested arrays
+                        type_elem.text += f"[{items.get('title', '')}]"
+                        if "items" in items:
+                            item_properties = ET.SubElement(property_elem, "items")
+                            build_xml_from_schema(items["items"], item_properties, defs=defs)
+                    elif "$ref" in items:
+                        # Handle references to nested models in the list
+                        ref_path = items["$ref"].split("/")
+                        ref_name = ref_path[-1]
+                        if ref_name in defs:
+                            item_properties = ET.SubElement(property_elem, "items")
+                            build_xml_from_schema(defs[ref_name], item_properties, defs=defs)
+                    else:
+                        # Handle simple types in the list
+                        type_elem.text += f"[{items.get('type', '')}]"
+            # Handle references to nested models
+            elif "$ref" in value:
+                ref_path = value["$ref"].split("/")
+                ref_name = ref_path[-1]
+                if ref_name in defs:
+                    build_xml_from_schema(defs[ref_name], property_elem, defs=defs)
+            # Handle allOf and anyOf within properties
+            elif "allOf" in value or "anyOf" in value:
+                for construct in ["allOf", "anyOf"]:
+                    if construct in value:
+                        for sub_schema in value[construct]:
+                            if "$ref" in sub_schema:
+                                ref_path = sub_schema["$ref"].split("/")
+                                ref_name = ref_path[-1]
+                                if ref_name in defs:
+                                    build_xml_from_schema(defs[ref_name], property_elem, defs=defs)
+                            else:
+                                build_xml_from_schema(sub_schema, property_elem, defs=defs)
+            else:
+                raise ValueError(f"Unsupported schema")
+
+    return ET.tostring(root, encoding="utf-8").decode("utf-8")
