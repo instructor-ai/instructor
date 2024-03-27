@@ -3,7 +3,6 @@ from typing import List
 from unittest.mock import patch
 
 import anthropic
-import pytest
 from pydantic import BaseModel
 
 import instructor
