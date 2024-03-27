@@ -39,7 +39,7 @@ jobs:
         run: poetry run pytest tests/anthropic/test_anthropic.py
 
       - name: Run tests
-        run: poetry run pytest tests/ -k "not openai"
+        run: poetry run pytest tests/ -k "not openai" --ignore=tests/anthropic
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
