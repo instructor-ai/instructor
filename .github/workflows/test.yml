@@ -36,7 +36,7 @@ jobs:
         run: poetry install --with dev,anthropic
 
       - name: Run Anthropic Tests
-        run: poetry run pytest tests/anthropic
+        run: poetry run pytest tests/anthropic/test_anthropic.py
 
       - name: Run tests
         run: poetry run pytest tests/ -k "not openai"
