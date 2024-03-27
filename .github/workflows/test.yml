@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev,anthropic
 
+      - name: Run Anthropic Tests
+        run: poetry run pytest tests/ -k "anthropic"
+
       - name: Run tests
         run: poetry run pytest tests/ -k "not openai"
         env:
