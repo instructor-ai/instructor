@@ -38,6 +38,17 @@ class InstructorChatCompletionCreate(Protocol):
     ) -> T_Model: ...
 
 
+class AsyncInstructorChatCompletionCreate(Protocol):
+    async def __call__(
+        self,
+        response_model: Type[T_Model] = None,
+        validation_context: dict = None,
+        max_retries: int = 1,
+        *args: T_ParamSpec.args,
+        **kwargs: T_ParamSpec.kwargs,
+    ) -> T_Model: ...
+
+
 @overload
 def patch(
     client: OpenAI,
