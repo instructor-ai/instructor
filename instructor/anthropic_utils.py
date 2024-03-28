@@ -75,7 +75,7 @@ def _add_params(
             field_type = details.get(
                 "type", "unknown"
             )  # Might be better to fail here if there is no type since pydantic models require types
-        
+
         if "array" in field_type and "items" not in details:
             raise ValueError("Invalid array item.")
 
@@ -83,7 +83,7 @@ def _add_params(
         if "array" in field_type and "$ref" in details["items"]:
             type_element.text = f"List[{details['title']}]"
             list_found = True
-            nested_list_found = True     
+            nested_list_found = True
         # Check for non-nested List
         elif "array" in field_type and "type" in details["items"]:
             type_element.text = f"List[{details['items']['type']}]"
