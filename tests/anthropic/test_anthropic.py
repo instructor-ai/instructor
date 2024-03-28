@@ -50,21 +50,20 @@ def test_anthropic_enum():
     class SimpleEnum(BaseModel):
         language: ProgrammingLanguage
 
-    with patch("anthropic.resources.messages.Messages.create") as mock_create:
-        create = instructor.patch(create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS)
-        resp = create(
-            model="claude-3-haiku-20240307",
-            max_tokens=1024,
-            max_retries=0,
-            temperature=0,
-            messages=[
-                {
-                    "role": "user",
-                    "content": "What is your favorite programming language?",
-                }
-            ],
-            response_model=SimpleEnum,
-        )  # type: ignore
+    create = instructor.patch(create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS)
+    resp = create(
+        model="claude-3-haiku-20240307",
+        max_tokens=1024,
+        max_retries=0,
+        temperature=0,
+        messages=[
+            {
+                "role": "user",
+                "content": "What is your favorite programming language?",
+            }
+        ],
+        response_model=SimpleEnum,
+    )  # type: ignore
 
     assert isinstance(resp, SimpleEnum)
 
