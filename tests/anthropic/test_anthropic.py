@@ -1,7 +1,6 @@
 import os
 from enum import Enum
 from typing import List
-from unittest.mock import patch
 
 import anthropic
 import pytest
@@ -9,7 +8,10 @@ from pydantic import BaseModel
 
 import instructor
 
-create = instructor.patch(create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS)
+create = instructor.patch(
+    create=anthropic.Anthropic().messages.create,
+    mode=instructor.Mode.ANTHROPIC_TOOLS,
+)
 
 
 def test_anthropic():
