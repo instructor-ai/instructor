@@ -1,6 +1,7 @@
 # type: ignore[all]
 from functools import wraps
 from typing import (
+    Awaitable,
     Callable,
     ParamSpec,
     Protocol,
@@ -61,6 +62,13 @@ def patch(
     client: AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
 ) -> AsyncOpenAI: ...
+
+
+@overload
+def patch(
+    create: Callable[T_ParamSpec, Awaitable[T_Retval]],
+    mode: Mode = Mode.TOOLS,
+) -> AsyncInstructorChatCompletionCreate: ...
 
 
 @overload
