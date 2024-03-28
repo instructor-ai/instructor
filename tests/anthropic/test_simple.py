@@ -68,9 +68,9 @@ def test_list():
         name: str
         age: int
         family: List[str]
-    
+
     resp = create(
-        model="claude-3-opus-20240229", # Fails with claude-3-haiku-20240307
+        model="claude-3-opus-20240229",  # Fails with claude-3-haiku-20240307
         max_tokens=1024,
         max_retries=0,
         messages=[
@@ -81,13 +81,13 @@ def test_list():
         ],
         response_model=User,
     )
-    
+
     assert isinstance(resp, User)
     assert isinstance(resp.family, List)
     for member in resp.family:
         assert isinstance(member, str)
 
-        
+
 def test_nested_list():
     class Properties(BaseModel):
         key: str

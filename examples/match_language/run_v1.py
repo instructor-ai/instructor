@@ -50,6 +50,7 @@ client = patch(AsyncOpenAI())
 class GeneratedSummary(BaseModel):
     summary: str
 
+
 async def summarize_text(text: str):
     response = await client.chat.completions.create(
         model="gpt-3.5-turbo",
