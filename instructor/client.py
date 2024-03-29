@@ -3,6 +3,7 @@ import openai
 import instructor
 import anthropic
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
+from anthropic.types import Message
 from typing import (
     Type,
     TypeVar,
@@ -76,7 +77,6 @@ class Instructor:
         messages: List[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict | None = None,
-        is_async: bool = True,
         *args,
         **kwargs,
     ) -> T:
@@ -144,7 +144,7 @@ class Instructor:
         validation_context: dict | None = None,
         *args,
         **kwargs,
-    ) -> Tuple[T, ChatCompletion]:
+    ) -> Tuple[T, ChatCompletion | Message]:
         kwargs = self.handle_kwargs(kwargs)
         model = self.create_fn(
             messages=messages,
@@ -306,3 +306,20 @@ def from_openai(
             mode=mode,
             **kwargs,
         )
+
+
+def from_anthropic(
+    client: anthropic.Anthropic,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    **kwargs,
+) -> Instructor:
+    assert mode in {
+        instructor.Mode.ANTHROPIC_JSON,
+        instructor.Mode.ANTHROPIC_TOOLS,
+    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
+    return Instructor(
+        client=client,
+        create=instructor.patch(create=client.messages.create, mode=mode),
+        mode=mode,
+        **kwargs,
+    )

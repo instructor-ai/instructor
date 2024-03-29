@@ -1,5 +1,6 @@
 import openai
 import instructor
+import anthropic
 from pydantic import BaseModel
 import pytest
 
@@ -143,3 +144,40 @@ async def test_async_client_chat_completions_create_with_response():
     assert user.name == "Jason"
     assert user.age == 10
     assert isinstance(response, ChatCompletion)
+
+
+def test_client_from_anthropic_with_response():
+    client = anthropic.Anthropic()
+    instructor_client = instructor.from_anthropic(
+        client,
+        mode=instructor.Mode.ANTHROPIC_JSON,
+        max_tokens=1000,
+        model="claude-3-haiku-20240307",
+    )
+
+    user, response = instructor_client.messages.create_with_response(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10
+    assert isinstance(response, anthropic.types.Message)
+
+
+def test_client_anthropic_response():
+    client = anthropic.Anthropic()
+    instructor_client = instructor.from_anthropic(
+        client,
+        mode=instructor.Mode.ANTHROPIC_JSON,
+        max_tokens=1000,
+        model="claude-3-haiku-20240307",
+    )
+
+    user = instructor_client.messages.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10

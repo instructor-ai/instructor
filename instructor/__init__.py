@@ -12,11 +12,12 @@ from .dsl import (
 from .function_calls import OpenAISchema, openai_schema
 from .patch import apatch, patch
 from .process_response import handle_parallel_model
-from .client import Instructor, from_openai
+from .client import Instructor, from_openai, from_anthropic
 
 __all__ = [
     "Instructor",
     "from_openai",
+    "from_anthropic",
     "OpenAISchema",
     "CitationMixin",
     "IterableModel",
