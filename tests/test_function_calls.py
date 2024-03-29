@@ -117,8 +117,8 @@ def test_complete_output_no_exception(
     [{"finish_reason": "length", "data_content": '{\n"data": "incomplete dat"\n}'}],
     indirect=True,
 )  # type: ignore[misc]
-async def test_incomplete_output_exception_raise(
+def test_incomplete_output_exception_raise(
     test_model: Type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
     with pytest.raises(IncompleteOutputException):
-        await test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
+        test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
