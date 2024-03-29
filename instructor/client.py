@@ -1,4 +1,3 @@
-from typing import Any, Self
 import openai
 import instructor
 import anthropic
@@ -15,11 +14,21 @@ from typing import (
     overload,
     Union,
     AsyncGenerator,
+    Any,
+    Self,
 )
 from pydantic import BaseModel
+from enum import Enum
 
 
 T = TypeVar("T", bound=BaseModel)
+
+
+class Provider(Enum):
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    ANYSCALE = "anyscale"
+    TOGETHER = "together"
 
 
 class Instructor:
@@ -32,32 +41,14 @@ class Instructor:
         client: openai.OpenAI | anthropic.Anthropic,
         create: Callable,
         mode: instructor.Mode = instructor.Mode.TOOLS,
+        provider: Provider = Provider.OPENAI,
         **kwargs,
     ):
         self.client = client
         self.create_fn = create
         self.mode = mode
         self.kwargs = kwargs
-
-    @classmethod
-    def from_anthropic(
-        cls,
-        client: anthropic.Anthropic,
-        mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
-        **kwargs,
-    ):
-        assert mode in {
-            instructor.Mode.ANTHROPIC_JSON,
-            instructor.Mode.ANTHROPIC_TOOLS,
-        }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
-
-        # TODO: Instructor x Anthropic doesn't support streaming due to a huge change in the API
-        return cls(
-            client=client,
-            create=instructor.patch(create=client.messages.create, mode=mode),
-            mode=mode,
-            **kwargs,
-        )
+        self.provider = provider
 
     @property
     def chat(self) -> Self:
@@ -100,6 +91,9 @@ class Instructor:
         *args,
         **kwargs,
     ) -> Generator[T, None, None]:
+
+        assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
+
         kwargs["stream"] = True
 
         kwargs = self.handle_kwargs(kwargs)
@@ -123,6 +117,8 @@ class Instructor:
         *args,
         **kwargs,
     ) -> Iterable[T]:
+        assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
+
         kwargs["stream"] = True
         kwargs = self.handle_kwargs(kwargs)
 
@@ -209,6 +205,8 @@ class AsyncInstructor(Instructor):
         *args,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
+        assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
+
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
         async for item in await self.create_fn(
@@ -230,6 +228,8 @@ class AsyncInstructor(Instructor):
         *args,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
+        assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
+
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
         async for item in await self.create_fn(

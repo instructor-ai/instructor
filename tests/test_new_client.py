@@ -106,7 +106,6 @@ async def test_async_client_chat_completions_create_partial():
     client = openai.AsyncOpenAI()
     instructor_client = instructor.from_openai(client, model="gpt-3.5-turbo")
 
-    users = []
     async for user in instructor_client.chat.completions.create_partial(
         response_model=User,
         messages=[{"role": "user", "content": "Jason is 10"}],
@@ -120,7 +119,6 @@ async def test_async_client_chat_completions_create_iterable():
     client = openai.AsyncOpenAI()
     instructor_client = instructor.from_openai(client, model="gpt-3.5-turbo")
 
-    users = []
     async for user in instructor_client.chat.completions.create_iterable(
         response_model=User,
         messages=[{"role": "user", "content": "Alice is 25, Bob is 30"}],
@@ -150,7 +148,6 @@ def test_client_from_anthropic_with_response():
     client = anthropic.Anthropic()
     instructor_client = instructor.from_anthropic(
         client,
-        mode=instructor.Mode.ANTHROPIC_JSON,
         max_tokens=1000,
         model="claude-3-haiku-20240307",
     )
@@ -169,7 +166,6 @@ def test_client_anthropic_response():
     client = anthropic.Anthropic()
     instructor_client = instructor.from_anthropic(
         client,
-        mode=instructor.Mode.ANTHROPIC_JSON,
         max_tokens=1000,
         model="claude-3-haiku-20240307",
     )
