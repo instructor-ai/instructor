@@ -91,7 +91,6 @@ class Instructor:
         validation_context: dict | None = None,
         **kwargs,
     ) -> Generator[T, None, None]:
-
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
 
         kwargs["stream"] = True
@@ -321,7 +320,6 @@ def from_litellm(
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-
     is_async = inspect.isawaitable(completion)
 
     if not is_async:
@@ -361,7 +359,6 @@ def from_anthropic(
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-
     assert mode in {
         instructor.Mode.ANTHROPIC_JSON,
         instructor.Mode.ANTHROPIC_TOOLS,
