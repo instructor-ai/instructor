@@ -5,7 +5,7 @@ from typing import List
 import pytest
 
 import instructor
-from tests.openai.util import models, modes
+from .util import models, modes
 
 
 class Item(BaseModel):

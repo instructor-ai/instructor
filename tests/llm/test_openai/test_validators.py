@@ -7,7 +7,7 @@ from typing_extensions import Annotated
 from pydantic import BaseModel, AfterValidator, BeforeValidator, ValidationError
 
 from instructor.dsl.validators import llm_validator
-from tests.openai.util import models, modes
+from .util import models, modes
 
 
 def test_patch_completes_successfully(client):

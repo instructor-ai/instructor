@@ -4,7 +4,7 @@ from openai.types.chat import ChatCompletion
 import pytest
 import instructor
 
-from tests.openai.util import models, modes
+from .util import models, modes
 
 
 class UserExtract(BaseModel):
