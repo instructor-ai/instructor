@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from instructor import patch
 from openai import AsyncOpenAI
 from langdetect import detect

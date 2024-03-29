@@ -3,7 +3,7 @@ from pydantic import AfterValidator, BaseModel, Field
 import pytest
 import instructor
 from itertools import product
-from tests.openai.util import models, modes
+from .util import models, modes
 
 
 def uppercase_validator(v):

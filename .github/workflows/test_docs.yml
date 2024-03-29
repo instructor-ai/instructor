@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.11']
+        python-version: ["3.11"]
 
     steps:
       - uses: actions/checkout@v2
@@ -22,8 +22,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
-      
+          cache: "poetry"
+
       - name: Cache Poetry virtualenv
         uses: actions/cache@v2
         with:
@@ -33,9 +33,9 @@ jobs:
             ${{ runner.os }}-poetry-
 
       - name: Install dependencies
-        run: poetry install --with dev,docs,test-docs
+        run: poetry install --with dev,docs,test-docs,anthropic
 
       - name: Run tests
-        run: poetry run pytest tests/openai/docs
+        run: poetry run pytest tests/llm/test_openai/docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
