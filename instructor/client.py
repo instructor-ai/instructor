@@ -68,7 +68,6 @@ class Instructor:
         messages: List[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict | None = None,
-        *args,
         **kwargs,
     ) -> T:
         kwargs = self.handle_kwargs(kwargs)
@@ -78,7 +77,6 @@ class Instructor:
             messages=messages,
             max_retries=max_retries,
             validation_context=validation_context,
-            *args,
             **kwargs,
         )
 
@@ -88,7 +86,6 @@ class Instructor:
         messages: List[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict | None = None,
-        *args,
         **kwargs,
     ) -> Generator[T, None, None]:
 
@@ -104,7 +101,6 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
-            *args,
             **kwargs,
         )
 
@@ -114,7 +110,6 @@ class Instructor:
         response_model: Type[T],
         max_retries: int = 3,
         validation_context: dict | None = None,
-        *args,
         **kwargs,
     ) -> Iterable[T]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
@@ -128,7 +123,6 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
-            *args,
             **kwargs,
         )
 
@@ -138,7 +132,6 @@ class Instructor:
         response_model: Type[T],
         max_retries: int = 3,
         validation_context: dict | None = None,
-        *args,
         **kwargs,
     ) -> Tuple[T, ChatCompletion | Message]:
         kwargs = self.handle_kwargs(kwargs)
@@ -147,7 +140,6 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
-            *args,
             **kwargs,
         )
         return model, model._raw_response
@@ -183,7 +175,6 @@ class AsyncInstructor(Instructor):
         response_model: Type[T],
         validation_context: dict | None = None,
         max_retries: int = 3,
-        *args,
         **kwargs,
     ) -> T:
         kwargs = self.handle_kwargs(kwargs)
@@ -192,7 +183,6 @@ class AsyncInstructor(Instructor):
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
-            *args,
             **kwargs,
         )
 
@@ -202,7 +192,6 @@ class AsyncInstructor(Instructor):
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
         max_retries: int = 3,
-        *args,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
@@ -214,7 +203,6 @@ class AsyncInstructor(Instructor):
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
-            *args,
             **kwargs,
         ):
             yield item
@@ -225,7 +213,6 @@ class AsyncInstructor(Instructor):
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
         max_retries: int = 3,
-        *args,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
@@ -237,7 +224,6 @@ class AsyncInstructor(Instructor):
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
-            *args,
             **kwargs,
         ):
             yield item
@@ -248,7 +234,6 @@ class AsyncInstructor(Instructor):
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
         max_retries: int = 3,
-        *args,
         **kwargs,
     ) -> Tuple[T, dict]:
         kwargs = self.handle_kwargs(kwargs)
@@ -257,7 +242,6 @@ class AsyncInstructor(Instructor):
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
-            *args,
             **kwargs,
         )
         return response, response._raw_response
