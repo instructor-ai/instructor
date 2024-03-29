@@ -155,14 +155,14 @@ class Instructor:
 
 
 class AsyncInstructor(Instructor):
-    client: openai.AsyncOpenAI | None
+    client: openai.AsyncOpenAI | anthropic.AsyncAnthropic | None
     create_fn: Any
     mode: instructor.Mode
     default_model: str | None = None
 
     def __init__(
         self,
-        client: openai.AsyncOpenAI | None,
+        client: openai.AsyncOpenAI | anthropic.AsyncAnthropic | None,
         create: Callable,
         mode: instructor.Mode,
         **kwargs,
@@ -278,6 +278,10 @@ def from_openai(
         instructor.Mode.FUNCTIONS,
     }, "Mode be one of {instructor.Mode.TOOLS, instructor.Mode.MD_JSON, instructor.Mode.JSON, instructor.Mode.FUNCTIONS}"
 
+    assert isinstance(
+        client, (openai.OpenAI, openai.AsyncOpenAI)
+    ), "Client must be an instance of openai.OpenAI or openai.AsyncOpenAI"
+
     if isinstance(client, openai.OpenAI):
         return Instructor(
             client=client,
@@ -336,18 +340,49 @@ def from_litellm(
         )
 
 
+@overload
 def from_anthropic(
     client: anthropic.Anthropic,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
-) -> Instructor:
+) -> Instructor: ...
+
+
+@overload
+def from_anthropic(
+    client: anthropic.AsyncAnthropic,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
+    **kwargs,
+) -> Instructor: ...
+
+
+def from_anthropic(
+    client: anthropic.Anthropic | anthropic.AsyncAnthropic,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    **kwargs,
+) -> Instructor | AsyncInstructor:
+
     assert mode in {
         instructor.Mode.ANTHROPIC_JSON,
         instructor.Mode.ANTHROPIC_TOOLS,
     }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
-    return Instructor(
-        client=client,
-        create=instructor.patch(create=client.messages.create, mode=mode),
-        mode=mode,
-        **kwargs,
-    )
+
+    assert isinstance(
+        client, (anthropic.Anthropic, anthropic.AsyncAnthropic)
+    ), "Client must be an instance of anthropic.Anthropic or anthropic.AsyncAnthropic"
+
+    if isinstance(client, anthropic.Anthropic):
+        return Instructor(
+            client=client,
+            create=instructor.patch(create=client.messages.create),
+            mode=mode,
+            **kwargs,
+        )
+
+    else:
+        return AsyncInstructor(
+            client=client,
+            create=instructor.patch(create=client.messages.create),
+            mode=mode,
+            **kwargs,
+        )
