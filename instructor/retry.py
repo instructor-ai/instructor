@@ -79,6 +79,10 @@ def retry_sync(
     try:
         for attempt in max_retries:
             with attempt:
+                if validation_context is None: 
+                    validation_context = {}
+                validation_context["retry_attempt_number"] = retry_state.attempt_number
+                validation_context["max_attempt_number"] = retry_state.retry_object.stop.max_attempt_number
                 try:
                     response = func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
@@ -127,6 +131,10 @@ async def retry_async(
     try:
         async for attempt in max_retries:
             logger.debug(f"Retrying, attempt: {attempt}")
+            if validation_context is None: 
+                validation_context = {}
+            validation_context["retry_attempt_number"] = retry_state.attempt_number
+            validation_context["max_attempt_number"] = retry_state.retry_object.stop.max_attempt_number
             with attempt:
                 try:
                     response: ChatCompletion = await func(*args, **kwargs)  # type: ignore
