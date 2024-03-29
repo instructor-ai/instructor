@@ -1,4 +1,5 @@
 import openai
+import inspect
 import instructor
 import anthropic
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
@@ -13,6 +14,7 @@ from typing import (
     List,
     overload,
     Union,
+    Awaitable,
     AsyncGenerator,
     Any,
 )
@@ -32,13 +34,14 @@ class Provider(Enum):
 
 
 class Instructor:
+    client: openai.OpenAI | anthropic.Anthropic | None
     create_fn: Any
     mode: instructor.Mode
     default_model: str | None = None
 
     def __init__(
         self,
-        client: openai.OpenAI | anthropic.Anthropic,
+        client: openai.OpenAI | anthropic.Anthropic | None,
         create: Callable,
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
@@ -152,14 +155,14 @@ class Instructor:
 
 
 class AsyncInstructor(Instructor):
-    client: openai.AsyncOpenAI
+    client: openai.AsyncOpenAI | None
     create_fn: Any
     mode: instructor.Mode
     default_model: str | None = None
 
     def __init__(
         self,
-        client: openai.AsyncOpenAI,
+        client: openai.AsyncOpenAI | None,
         create: Callable,
         mode: instructor.Mode,
         **kwargs,
@@ -287,6 +290,47 @@ def from_openai(
         return AsyncInstructor(
             client=client,
             create=instructor.patch(create=client.chat.completions.create),
+            mode=mode,
+            **kwargs,
+        )
+
+
+@overload
+def from_litellm(
+    completion: Callable,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    **kwargs,
+) -> Instructor: ...
+
+
+@overload
+def from_litellm(
+    completion: Awaitable,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    **kwargs,
+) -> AsyncInstructor:
+    pass
+
+
+def from_litellm(
+    completion: Callable | Awaitable,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    **kwargs,
+) -> Instructor | AsyncInstructor:
+
+    is_async = inspect.isawaitable(completion)
+
+    if not is_async:
+        return Instructor(
+            client=None,
+            create=instructor.patch(create=completion),
+            mode=mode,
+            **kwargs,
+        )
+    else:
+        return AsyncInstructor(
+            client=None,
+            create=instructor.patch(create=completion),
             mode=mode,
             **kwargs,
         )
