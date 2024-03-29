@@ -92,7 +92,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             cls (OpenAISchema): An instance of the class
         """
         if mode == Mode.ANTHROPIC_TOOLS:
-            return cls.parse_anthropic_tools(completion, validation_context, strict)
+            return cls.parse_anthropic_tools(completion)
 
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
@@ -115,8 +115,6 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     def parse_anthropic_tools(
         cls: Type[BaseModel],
         completion: ChatCompletion,
-        validation_context: Optional[Dict[str, Any]] = None,
-        strict: Optional[bool] = None,
     ) -> BaseModel:
         try:
             from instructor.anthropic_utils import extract_xml, xml_to_model
