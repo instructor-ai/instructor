@@ -99,7 +99,13 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             assert hasattr(completion, "content")
             return xml_to_model(cls, extract_xml(completion.content[0].text))  # type:ignore
 
-        assert hasattr(completion, "choices")
+        if mode == Mode.ANTHROPIC_JSON:
+            assert hasattr(completion, "content")
+            text = completion.content[0].text  # type: ignore
+            extra_text = extract_json_from_codeblock(text)
+            return cls.model_validate_json(extra_text)
+
+        assert hasattr(completion, "choices"), "No choices in completion"
 
         if completion.choices[0].finish_reason == "length":
             logger.error("Incomplete output detected, should increase max_tokens")

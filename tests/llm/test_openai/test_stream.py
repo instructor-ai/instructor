@@ -5,7 +5,7 @@ import pytest
 import instructor
 from instructor.dsl.partial import Partial
 
-from tests.openai.util import models, modes
+from .util import models, modes
 
 
 class UserExtract(BaseModel):

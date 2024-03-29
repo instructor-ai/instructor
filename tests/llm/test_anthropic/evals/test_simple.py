@@ -1,10 +1,11 @@
 import anthropic
 import instructor
 from pydantic import BaseModel
-from typing import List
+from typing import List, Literal
+from enum import Enum
 
 create = instructor.patch(
-    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS
+    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_JSON
 )
 
 
@@ -63,14 +64,14 @@ def test_nested_type():
     assert resp.address.street_name == "First Avenue"
 
 
-def test_list():
+def test_list_str():
     class User(BaseModel):
         name: str
         age: int
         family: List[str]
 
     resp = create(
-        model="claude-3-opus-20240229",  # Fails with claude-3-haiku-20240307
+        model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
         messages=[
@@ -88,6 +89,54 @@ def test_list():
         assert isinstance(member, str)
 
 
+def test_enum():
+    class Role(str, Enum):
+        ADMIN = "admin"
+        USER = "user"
+
+    class User(BaseModel):
+        name: str
+        role: Role
+
+    resp = create(
+        model="claude-3-haiku-20240307",
+        max_tokens=1024,
+        max_retries=0,
+        messages=[
+            {
+                "role": "user",
+                "content": "Create a user for a model with a name and role of admin.",
+            }
+        ],
+        response_model=User,
+    )  # type: ignore
+
+    assert isinstance(resp, User)
+    assert resp.role == Role.ADMIN
+
+
+def test_literal():
+    class User(BaseModel):
+        name: str
+        role: Literal["admin", "user"]
+
+    resp = create(
+        model="claude-3-haiku-20240307",
+        max_tokens=1024,
+        max_retries=0,
+        messages=[
+            {
+                "role": "user",
+                "content": "Create a admin user for a model with a name and role.",
+            }
+        ],
+        response_model=User,
+    )  # type: ignore
+
+    assert isinstance(resp, User)
+    assert resp.role == "admin"
+
+
 def test_nested_list():
     class Properties(BaseModel):
         key: str
@@ -99,7 +148,7 @@ def test_nested_list():
         properties: List[Properties]
 
     resp = create(
-        model="claude-3-opus-20240229",  # Fails with claude-3-haiku-20240307
+        model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
         messages=[
@@ -114,3 +163,26 @@ def test_nested_list():
     assert isinstance(resp, User)
     for property in resp.properties:
         assert isinstance(property, Properties)
+
+
+def test_system_messages_allcaps():
+    class User(BaseModel):
+        name: str
+        age: int
+
+    resp = create(
+        model="claude-3-haiku-20240307",
+        max_tokens=1024,
+        max_retries=0,
+        messages=[
+            {"role": "system", "content": "EVERYTHING MUST BE IN ALL CAPS"},
+            {
+                "role": "user",
+                "content": "Create a user for a model with a name and age.",
+            },
+        ],
+        response_model=User,
+    )  # type: ignore
+
+    assert isinstance(resp, User)
+    assert resp.name.isupper()

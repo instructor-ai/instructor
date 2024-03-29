@@ -11,7 +11,7 @@ from instructor.function_calls import OpenAISchema, openai_schema
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 
-
+import json
 import inspect
 import logging
 from typing import (
@@ -245,7 +245,7 @@ def handle_response_model(
                 As a genius expert, your task is to understand the content and provide
                 the parsed objects in json that match the following json_schema:\n
 
-                {response_model.model_json_schema()}
+                {json.dumps(response_model.model_json_schema(), indent=2)}
 
                 Make sure to return an instance of the JSON, not the schema itself
                 """
@@ -305,6 +305,34 @@ def handle_response_model(
                 new_kwargs["system"] = f"{system_prompt}\n{new_kwargs['system']}"
             else:
                 new_kwargs["system"] = system_prompt
+        elif mode == Mode.ANTHROPIC_JSON:
+            # anthropic wants system message to be a string so we first extract out any system message
+            openai_system_messages = [
+                message["content"]
+                for message in new_kwargs.get("messages", [])
+                if message["role"] == "system"
+            ]
+
+            new_kwargs["system"] = (
+                new_kwargs.get("system", "")
+                + "\n\n"
+                + "\n\n".join(openai_system_messages)
+            )
+
+            new_kwargs["system"] += f"""
+            You must only response in JSON format that adheres to the following schema:
+            
+            <JSON_SCHEMA>
+            {json.dumps(response_model.model_json_schema(), indent=2)}
+            </JSON_SCHEMA>
+            """
+            new_kwargs["system"] = dedent(new_kwargs["system"])
+
+            new_kwargs["messages"] = [
+                message
+                for message in new_kwargs.get("messages", [])
+                if message["role"] != "system"
+            ]
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 
