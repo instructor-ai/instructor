@@ -97,7 +97,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
 
-        if completion.choices[0].finish_reason != "length":
+        if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
 
         if mode == Mode.FUNCTIONS:
@@ -190,7 +190,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         message = extract_json_from_codeblock(message)
 
         return cls.model_validate_json(
-            message.content,  # type: ignore
+            message,
             context=validation_context,
             strict=strict,
         )
