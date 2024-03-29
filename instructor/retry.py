@@ -81,6 +81,8 @@ def retry_sync(
             with attempt:
                 if validation_context is None: 
                     validation_context = {}
+
+                retry_state = attempt.retry_state
                 validation_context["retry_attempt_number"] = retry_state.attempt_number
                 validation_context["max_attempt_number"] = retry_state.retry_object.stop.max_attempt_number
                 try:
@@ -133,6 +135,8 @@ async def retry_async(
             logger.debug(f"Retrying, attempt: {attempt}")
             if validation_context is None: 
                 validation_context = {}
+
+            retry_state = attempt.retry_state
             validation_context["retry_attempt_number"] = retry_state.attempt_number
             validation_context["max_attempt_number"] = retry_state.retry_object.stop.max_attempt_number
             with attempt:
