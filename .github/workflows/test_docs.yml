@@ -36,6 +36,6 @@ jobs:
         run: poetry install --with dev,docs,test-docs,anthropic
 
       - name: Run tests
-        run: poetry run pytest tests/openai/docs
+        run: poetry run pytest tests/llm/test_openai/docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
