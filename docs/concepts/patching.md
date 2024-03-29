@@ -87,13 +87,14 @@ import instructor
 from anthropic import Anthropic
 
 create = instructor.patch(
-    create=anthropic.Anthropic().messages.create,
-    mode=instructor.Mode.ANTHROPIC_JSON
+    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_JSON
 )
+
 
 class User(BaseModel):
     name: str
     age: int
+
 
 resp = create(
     model="claude-3-haiku-20240307",
