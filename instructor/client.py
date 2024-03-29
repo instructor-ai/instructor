@@ -15,8 +15,8 @@ from typing import (
     Union,
     AsyncGenerator,
     Any,
-    Self,
 )
+from typing_extensions import Self
 from pydantic import BaseModel
 from enum import Enum
 
