@@ -20,28 +20,28 @@ We also provide a library in [Typescript](https://instructor-ai.github.io/instru
 
 ## Getting Started
 
-```
+\\`\\`\\`
 pip install -U instructor
-```
+\\`\\`\\`
 
 If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
 
-```
+\\`\\`\\`
 instructor docs [QUERY]
-```
+\\`\\`\\`
 
 You can also check out our [cookbooks](./examples/index.md) and [concepts](./concepts/models.md) to learn more about how to use Instructor.
 
 ## Usage
 
-```py
+\\`\\`\\`py
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
 # This enables response_model keyword
 # from client.chat.completions.create
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -67,13 +67,13 @@ print(user.model_dump_json(indent=2))
   "age": 25
 }
 """
-```
+\\`\\`\\`
 
 **Using async clients**
 
 For async clients you must use `apatch` vs `patch` like so:
 
-```py
+\\`\\`\\`py
 import asyncio
 import instructor
 from openai import AsyncOpenAI
@@ -103,18 +103,18 @@ print(response.model_dump_json(indent=2))
   "age": 25
 }
 """
-```
+\\`\\`\\`
 
 !!! note "Accessing the original response and usage tokens"
 
     If you want to access anything like usage or other metadata, the original response is available on the `Model._raw_response` attribute.
 
-    ```python
+    \\\`python
     import openai
     import instructor
     from pydantic import BaseModel
 
-    client = instructor.patch(openai.OpenAI())
+    client = instructor.from_openai(openai.OpenAI())
 
 
     class UserDetail(BaseModel):
@@ -167,7 +167,7 @@ print(response.model_dump_json(indent=2))
       }
     }
     """
-    ```
+    \\\`
 
 ## Why use Instructor?
 

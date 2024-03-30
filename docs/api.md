@@ -1,6 +1,6 @@
 # API Reference
 
-::: instructor.patch
+::: instructor.from_openai
 
 ::: instructor.dsl.validators
 
