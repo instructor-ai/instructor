@@ -163,7 +163,7 @@ class AsyncInstructor(Instructor):
         self,
         client: openai.AsyncOpenAI | anthropic.AsyncAnthropic | None,
         create: Callable,
-        mode: instructor.Mode,
+        mode: instructor.Mode = instructor.Mode.TOOLS,
         **kwargs,
     ):
         self.client = client
