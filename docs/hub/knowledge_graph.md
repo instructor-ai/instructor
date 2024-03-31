@@ -54,7 +54,7 @@ def generate_graph(input_text: str) -> KnowledgeGraph:
 if __name__ == "__main__":
     input_text = "Jason is Sarah's friend and he is a doctor"
     graph = generate_graph(input_text)
-    print(graph.json(indent=2))
+    print(graph.model_dump_json(indent=2))
     """
     {
         "nodes": [
