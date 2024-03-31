@@ -14,7 +14,7 @@ perplexity_base_url = os.environ.get("PERPLEXITY_BASE_URL")
 assert perplexity_base_url, "PERPLEXITY_BASE_URL is not set in environment variables"
 
 # Initialize OpenAI client
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(api_key=perplexity_api_key, base_url=perplexity_base_url),
     mode=Mode.JSON,
 )

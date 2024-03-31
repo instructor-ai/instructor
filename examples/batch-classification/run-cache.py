@@ -6,8 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List
 from enum import Enum
 
-client = AsyncOpenAI()
-client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(AsyncOpenAI(), mode=instructor.Mode.TOOLS)
 sem = asyncio.Semaphore(5)
 
 
@@ -54,7 +53,7 @@ class QuestionClassification(BaseModel):
 
 
 # Modify the classify function
-async def classify(data: str) -> QuestionClassification:
+async def classify(data: str):
     async with sem:  # some simple rate limiting
         return data, await client.chat.completions.create(
             model="gpt-4",

@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 logging.basicConfig(level=logging.INFO)
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 instructions = instructor.Instructions(
     name="Chain Of Density",

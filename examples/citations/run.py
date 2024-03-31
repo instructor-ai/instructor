@@ -11,7 +11,7 @@ from pydantic import (
 
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 """ 
 Example 1) Simple Substring check that compares a citation to a text chunk

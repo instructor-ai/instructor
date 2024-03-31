@@ -6,7 +6,7 @@ from openai import OpenAI
 from rich.console import Console
 
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class ActionItem(BaseModel):

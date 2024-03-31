@@ -19,7 +19,7 @@ from pydantic import Field, BaseModel
 
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class TaskResult(BaseModel):

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from mistralai.client import MistralClient
-from instructor.patch import patch
+from instructor.from_openai import patch
 from instructor.function_calls import Mode
 
 

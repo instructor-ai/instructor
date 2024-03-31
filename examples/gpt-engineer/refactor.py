@@ -5,7 +5,7 @@ from pydantic import Field, parse_file_as
 from instructor import OpenAISchema
 from generate import Program
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class Diff(OpenAISchema):

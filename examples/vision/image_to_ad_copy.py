@@ -99,10 +99,10 @@ class AdCopy(BaseModel):
 
 
 # Define clients
-client_image = instructor.patch(
+client_image = instructor.from_openai(
     OpenAI(api_key=os.getenv("OPENAI_API_KEY")), mode=instructor.Mode.MD_JSON
 )
-client_copy = instructor.patch(
+client_copy = instructor.from_openai(
     OpenAI(api_key=os.getenv("OPENAI_API_KEY")), mode=instructor.Mode.FUNCTIONS
 )
 

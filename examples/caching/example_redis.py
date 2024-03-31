@@ -6,7 +6,7 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 cache = redis.Redis("localhost")
 
 

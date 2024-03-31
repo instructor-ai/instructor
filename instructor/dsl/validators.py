@@ -32,7 +32,7 @@ def llm_validator(
     allow_override: bool = False,
     model: str = "gpt-3.5-turbo",
     temperature: float = 0,
-    openai_client: Optional[OpenAI] = None,
+    client: Optional[instructor.Instructor] = None,
 ) -> Callable[[str], str]:
     """
     Create a validator that uses the LLM to validate an attribute
@@ -68,10 +68,10 @@ def llm_validator(
         openai_client (OpenAI): The OpenAI client to use (default: None)
     """
 
-    openai_client = openai_client if openai_client else instructor.patch(OpenAI())
+    client = client if client else instructor.from_openai(OpenAI())
 
     def llm(v: str) -> str:
-        resp = openai_client.chat.completions.create(
+        resp = client.chat.completions.create(
             response_model=Validator,
             messages=[
                 {
@@ -99,7 +99,7 @@ def llm_validator(
     return llm
 
 
-def openai_moderation(client: Optional[OpenAI] = None) -> Callable[[str], str]:
+def openai_moderation(client: OpenAI) -> Callable[[str], str]:
     """
     Validates a message using OpenAI moderation model.
 
@@ -125,8 +125,6 @@ def openai_moderation(client: Optional[OpenAI] = None) -> Callable[[str], str]:
 
     client (OpenAI): The OpenAI client to use, must be sync (default: None)
     """
-
-    client = client or OpenAI()
 
     def validate_message_with_openai_mod(v: str) -> str:
         response = client.moderations.create(input=v)

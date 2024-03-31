@@ -13,7 +13,7 @@ import logging
 from openai import OpenAI
 from instructor.dsl.multitask import MultiTaskBase
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 logger = logging.getLogger(__name__)
 
 # FastAPI app

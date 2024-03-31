@@ -5,7 +5,7 @@ from typing import List
 from openai import OpenAI
 from pydantic import Field, BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class SearchType(str, enum.Enum):

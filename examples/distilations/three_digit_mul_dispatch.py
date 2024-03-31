@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from instructor import Instructions
 import instructor
 
-instructor.patch()
+instructor.from_openai()
 
 logging.basicConfig(level=logging.INFO)
 

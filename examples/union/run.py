@@ -45,7 +45,7 @@ class TakeAction(BaseModel):
 
 try:
     # Enables `response_model`
-    client = instructor.patch(OpenAI())
+    client = instructor.from_openai(OpenAI())
     action = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=TakeAction,

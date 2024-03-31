@@ -5,7 +5,7 @@ from typing import Any, List
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class SQLTemplateType(str, enum.Enum):

@@ -8,7 +8,7 @@ from pydantic import BaseModel
 # Set logging to DEBUG
 logging.basicConfig(level=logging.DEBUG)
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class UserDetail(BaseModel):

@@ -51,7 +51,7 @@ class Competition(BaseModel):
 
 
 # Define clients
-client_image = instructor.patch(OpenAI(), mode=instructor.Mode.MD_JSON)
+client_image = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 
 
 # Define functions
