@@ -6,7 +6,7 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class UserExtract(BaseModel):

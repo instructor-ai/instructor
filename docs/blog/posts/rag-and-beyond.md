@@ -98,7 +98,7 @@ import instructor
 from openai import OpenAI
 
 # Enables response_model in the openai client
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 query = client.chat.completions.create(
     model="gpt-4",
@@ -179,7 +179,7 @@ import instructor
 from openai import OpenAI
 
 # Enables response_model in the openai client
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 retrieval = client.chat.completions.create(
     model="gpt-4",

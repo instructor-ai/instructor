@@ -34,7 +34,7 @@ class KnowledgeGraph(BaseModel):
 
 
 # Patch the OpenAI client to add response_model support
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def generate_graph(input_text: str) -> KnowledgeGraph:
@@ -48,7 +48,7 @@ def generate_graph(input_text: str) -> KnowledgeGraph:
             }
         ],
         response_model=KnowledgeGraph,
-    )  # type: ignore
+    )
 
 
 if __name__ == "__main__":
@@ -89,4 +89,5 @@ if __name__ == "__main__":
             }
         ]
     }
+"""
 ```

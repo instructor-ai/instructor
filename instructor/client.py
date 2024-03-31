@@ -270,12 +270,20 @@ def from_openai(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-    assert mode in {
-        instructor.Mode.TOOLS,
-        instructor.Mode.MD_JSON,
-        instructor.Mode.JSON,
-        instructor.Mode.FUNCTIONS,
-    }, "Mode be one of {instructor.Mode.TOOLS, instructor.Mode.MD_JSON, instructor.Mode.JSON, instructor.Mode.FUNCTIONS}"
+
+    if "anyscale" in str(client.base_url) or "together" in str(client.base_url):
+        assert mode in {
+            instructor.Mode.TOOLS,
+            instructor.Mode.JSON,
+            instructor.Mode.JSON_SCHEMA,
+        }
+    else:
+        assert mode in {
+            instructor.Mode.TOOLS,
+            instructor.Mode.MD_JSON,
+            instructor.Mode.JSON,
+            instructor.Mode.FUNCTIONS,
+        }, "Mode be one of {instructor.Mode.TOOLS, instructor.Mode.MD_JSON, instructor.Mode.JSON, instructor.Mode.FUNCTIONS}"
 
     assert isinstance(
         client, (openai.OpenAI, openai.AsyncOpenAI)
@@ -301,7 +309,7 @@ def from_openai(
 @overload
 def from_litellm(
     completion: Callable,
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> Instructor: ...
 
@@ -309,7 +317,7 @@ def from_litellm(
 @overload
 def from_litellm(
     completion: Awaitable,
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> AsyncInstructor:
     pass
@@ -317,7 +325,7 @@ def from_litellm(
 
 def from_litellm(
     completion: Callable | Awaitable,
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
     is_async = inspect.isawaitable(completion)
@@ -349,7 +357,7 @@ def from_anthropic(
 @overload
 def from_anthropic(
     client: anthropic.AsyncAnthropic,
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> Instructor: ...
 
@@ -371,7 +379,7 @@ def from_anthropic(
     if isinstance(client, anthropic.Anthropic):
         return Instructor(
             client=client,
-            create=instructor.patch(create=client.messages.create),
+            create=instructor.patch(create=client.messages.create, mode=mode),
             mode=mode,
             **kwargs,
         )
@@ -379,7 +387,7 @@ def from_anthropic(
     else:
         return AsyncInstructor(
             client=client,
-            create=instructor.patch(create=client.messages.create),
+            create=instructor.patch(create=client.messages.create, mode=mode),
             mode=mode,
             **kwargs,
         )

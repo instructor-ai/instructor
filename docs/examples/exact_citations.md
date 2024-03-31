@@ -80,7 +80,7 @@ import instructor
 
 # Apply the patch to the OpenAI client
 # enables response_model, validation_context keyword
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def ask_ai(question: str, context: str) -> QuestionAnswer:

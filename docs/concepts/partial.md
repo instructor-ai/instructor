@@ -48,7 +48,7 @@ from pydantic import BaseModel
 from typing import List
 from rich.console import Console
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 text_block = """
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -140,7 +140,7 @@ import instructor
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(AsyncOpenAI())
+client = instructor.from_openai(AsyncOpenAI())
 
 
 class User(BaseModel):

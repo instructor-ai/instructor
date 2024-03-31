@@ -41,7 +41,7 @@ from pydantic import BaseModel
 
 # This enables response_model keyword
 # from client.chat.completions.create
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -114,7 +114,7 @@ print(response.model_dump_json(indent=2))
     import instructor
     from pydantic import BaseModel
 
-    client = instructor.patch(openai.OpenAI())
+    client = instructor.from_openai(openai.OpenAI())
 
 
     class UserDetail(BaseModel):

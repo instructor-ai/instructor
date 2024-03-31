@@ -11,7 +11,7 @@ import openai
 import instructor
 from pydantic import BaseModel
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -139,7 +139,7 @@ import diskcache
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 cache = diskcache.Cache('./my_cache_directory')
 
 
@@ -243,7 +243,7 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 cache = redis.Redis("localhost")
 
 

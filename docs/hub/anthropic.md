@@ -1,23 +1,10 @@
----
-draft: False
-date: 2024-03-20
-authors:
-  - jxnl
----
+# Anthropic 
 
-# Announcing Anthropic Support
-
-A special shoutout to [Shreya](https://twitter.com/shreyaw_) for her contributions to the anthropic support. As of now, all features are operational with the exception of streaming support.
-
-For those eager to experiment, simply patch the client with `ANTHROPIC_JSON`, which will enable you to leverage the `anthropic` client for making requests.
+Now that we have a [Anthropic](https://www.anthropic.com/) client, we can use it with the `instructor` client to make requests.
 
 ```
-pip install instructor[anthropic]
+pip install anthropic
 ```
-
-!!! warning "Missing Features"
-
-    Just want to acknowledge that we know that we are missing partial streaming and some better re-asking support for XML. We are working on it and will have it soon.
 
 ```python
 from pydantic import BaseModel
@@ -26,21 +13,24 @@ import anthropic
 import instructor
 
 # Patching the Anthropics client with the instructor for enhanced capabilities
-anthropic_client = instructor.from_openai(
-    create=anthropic.Anthropic().messages.create,
-    mode=instructor.Mode.ANTHROPIC_JSON
+client = instructor.from_anthropic(
+    anthropic.Anthropic(),
 )
+
 
 class Properties(BaseModel):
     name: str
     value: str
+
 
 class User(BaseModel):
     name: str
     age: int
     properties: List[Properties]
 
-user_response = anthropic_client(
+
+# client.messages.create will also work due to the instructor client
+user_response = client.chat.completions.create(
     model="claude-3-haiku-20240307",
     max_tokens=1024,
     max_retries=0,
@@ -65,6 +55,7 @@ print(user_response.model_dump_json(indent=2))
         }
     ]
 }
+"""
 ```
 
 We're encountering challenges with deeply nested types and eagerly invite the community to test, provide feedback, and suggest necessary improvements as we enhance the anthropic client's support.

@@ -68,7 +68,7 @@ from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
 
 # Apply the patch to the OpenAI client
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class QuestionAnswer(BaseModel):
@@ -125,7 +125,7 @@ import instructor
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class UserDetails(BaseModel):
@@ -149,7 +149,7 @@ import instructor
 import openai
 from pydantic import BaseModel
 
-client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
 
 
 class UserDetails(BaseModel):
@@ -177,7 +177,7 @@ print(model.model_dump_json(indent=2))
 
 ### What happens behind the scenes?
 
-Behind the scenes, the `instructor.patch()` method adds a `max_retries` parameter to the `openai.ChatCompletion.create()` method. The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
+Behind the scenes, the `instructor.from_openai()` method adds a `max_retries` parameter to the `openai.ChatCompletion.create()` method. The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
 
 ```python
 from pydantic import ValidationError
