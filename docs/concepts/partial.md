@@ -2,7 +2,7 @@
 
 Field level streaming provides incremental snapshots of the current state of the response model that are immediately useable. This approach is particularly relevant in contexts like rendering UI components.
 
-Instructor supports this pattern by making use of `Partial[T]`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`.
+Instructor supports this pattern by making use of `create_partial`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`.
 
 ## Understanding Partial Responses
 
@@ -26,7 +26,7 @@ If we streamed json out from OpenAI, we would only be able to parse when the obj
 {"name": "John", "age": 25} # Completed
 ```
 
-When specifying a `Partial[T]` and setting `stream=True`, the response from `instructor` becomes a `Generator[T]`. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction!
+When specifying a `create_partial` and setting `stream=True`, the response from `instructor` becomes a `Generator[T]`. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction!
 
 ```
 {"name": "Jo                 => User(name="Jo", age=None)
@@ -37,7 +37,7 @@ When specifying a `Partial[T]` and setting `stream=True`, the response from `ins
 
 !!! warning "Limited Validator Support"
 
-    Fewer validators are supported by `Partial` response models as streamed fields will natural raise validation error, as we do not have a strong opinoin on how to handle them.
+    Due to the streaming nature of the response model, we do not support validators since they would not be able to be applied to the streaming response.
 
 Let's look at an example of streaming an extraction of conference information, that would be used to stream in an react component.
 
@@ -79,9 +79,9 @@ class MeetingInfo(BaseModel):
     deadline: str
 
 
-extraction_stream = client.chat.completions.create(
+extraction_stream = client.chat.completions.create_partial(
     model="gpt-4",
-    response_model=instructor.Partial[MeetingInfo],
+    response_model=MeetingInfo,
     messages=[
         {
             "role": "user",
@@ -120,7 +120,7 @@ print(extraction.model_dump_json(indent=2))
     }
   ],
   "date": "2024-03-15",
-  "location": "Grand Tech Arena, 4521 Innovation Drive",
+  "location": "Grand Tech Arena located at 4521 Innovation Drive",
   "budget": 50000,
   "deadline": "2024-02-20"
 }
@@ -149,9 +149,9 @@ class User(BaseModel):
 
 
 async def print_partial_results():
-    user = await client.chat.completions.create(
+    user = client.chat.completions.create_partial(
         model="gpt-4-turbo-preview",
-        response_model=instructor.Partial[User],
+        response_model=User,
         max_retries=2,
         stream=True,
         messages=[
@@ -161,8 +161,8 @@ async def print_partial_results():
     async for m in user:
         print(m)
         #> name=None age=None
-        #> name=None age=12
-        #> name='' age=12
+        #> name='' age=None
+        #> name='Jason' age=None
         #> name='Jason' age=12
 
 

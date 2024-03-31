@@ -30,10 +30,12 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
+
 # Define your desired output structure
 class UserInfo(BaseModel):
     name: str
     age: int
+
 
 # Patch the OpenAI client
 client = instructor.from_openai(OpenAI())
@@ -41,14 +43,14 @@ client = instructor.from_openai(OpenAI())
 # Extract structured data from natural language
 user_info = client.chat.completions.create(
     model="gpt-3.5-turbo",
-    response_model=UserInfo, 
-    messages=[
-        {"role": "user", "content": "John Doe is 30 years old."}
-    ]
+    response_model=UserInfo,
+    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
 )
 
 print(user_info.name)  # "John Doe"
-print(user_info.age)   # 30
+#> John Doe
+print(user_info.age)  # 30
+#> 30
 ```
 
 ## 🎯 Validation Made Easy
@@ -56,15 +58,17 @@ print(user_info.age)   # 30
 Instructor leverages Pydantic to make validating LLM outputs a breeze. Simply define your validation rules in your Pydantic models, and Instructor will ensure the LLM responses conform to your expectations. No more manual checking or parsing!
 
 ```python
-from pydantic import BaseModel, ValidationError, BeforeValidator 
+from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
 from instructor import llm_validator
+
 
 class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
         str, BeforeValidator(llm_validator("Don't say objectionable things"))
     ]
+
 
 try:
     qa = QuestionAnswer(
@@ -73,6 +77,12 @@ try:
     )
 except ValidationError as e:
     print(e)
+    """
+    1 validation error for QuestionAnswer
+    answer
+      Assertion failed, The statement promotes objectionable behavior. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
+    """
 ```
 
 ## 📖 Learn More
@@ -105,14 +115,18 @@ We can't wait to see the amazing things you create with Instructor. If you have 
 ```python
 import instructor
 from anthropic import Anthropic
+from pydantic import BaseModel
+
 
 class User(BaseModel):
     name: str
     age: int
 
-create = instructor.from_anthropic(Anthropic())
 
-resp = create(
+client = instructor.from_anthropic(Anthropic())
+
+# note that client.chat.completions.create will also work
+resp = client.messages.create(
     model="claude-3-opus-20240229",
     max_tokens=1024,
     messages=[
@@ -134,10 +148,13 @@ assert resp.age == 25
 ```python
 import instructor
 from litellm import completion
+from pydantic import BaseModel
+
 
 class User(BaseModel):
     name: str
     age: int
+
 
 client = instructor.from_litellm(completion)
 

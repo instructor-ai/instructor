@@ -28,7 +28,9 @@ class GoogleSearch(BaseModel):
     query: str
 
 
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)  # (1)!
+client = instructor.from_openai(
+    openai.OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS
+)  # (1)!
 
 function_calls = client.chat.completions.create(
     model="gpt-4-turbo-preview",

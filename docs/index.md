@@ -133,7 +133,7 @@ print(response.model_dump_json(indent=2))
     print(user._raw_response.model_dump_json(indent=2))
     """
     {
-      "id": "chatcmpl-97whNVWUbRXd44lZd9gG8sS0xKDXF",
+      "id": "chatcmpl-98yr88pa5eX4E4wNmP6IPIavRBEWV",
       "choices": [
         {
           "finish_reason": "stop",
@@ -145,7 +145,7 @@ print(response.model_dump_json(indent=2))
             "function_call": null,
             "tool_calls": [
               {
-                "id": "call_CsCj1hzAMZ3mik8rvRfMienA",
+                "id": "call_GiiytihA5bmoFrXTFNN1gqxf",
                 "function": {
                   "arguments": "{\"name\":\"Jason\",\"age\":25}",
                   "name": "UserDetail"
@@ -156,7 +156,7 @@ print(response.model_dump_json(indent=2))
           }
         }
       ],
-      "created": 1711680961,
+      "created": 1711927582,
       "model": "gpt-3.5-turbo-0125",
       "object": "chat.completion",
       "system_fingerprint": "fp_3bc1b5746c",

@@ -23,7 +23,7 @@ from pydantic import BaseModel
 from enum import Enum
 
 
-T = TypeVar("T", bound=BaseModel)
+T = TypeVar("T", bound=(BaseModel | Iterable | instructor.Partial))
 
 
 class Provider(Enum):
@@ -38,6 +38,7 @@ class Instructor:
     create_fn: Any
     mode: instructor.Mode
     default_model: str | None = None
+    provider: Provider
 
     def __init__(
         self,
@@ -65,6 +66,7 @@ class Instructor:
     def messages(self) -> Self:
         return self
 
+    # TODO: we should overload a case where response_model is None
     def create(
         self,
         response_model: Type[T],
@@ -128,7 +130,7 @@ class Instructor:
             **kwargs,
         )
 
-    def create_with_response(
+    def create_with_completion(
         self,
         messages: List[ChatCompletionMessageParam],
         response_model: Type[T],
@@ -158,18 +160,21 @@ class AsyncInstructor(Instructor):
     create_fn: Any
     mode: instructor.Mode
     default_model: str | None = None
+    provider: Provider
 
     def __init__(
         self,
         client: openai.AsyncOpenAI | anthropic.AsyncAnthropic | None,
         create: Callable,
         mode: instructor.Mode = instructor.Mode.TOOLS,
+        provider: Provider = Provider.OPENAI,
         **kwargs,
     ):
         self.client = client
         self.create_fn = create
         self.mode = mode
         self.kwargs = kwargs
+        self.provider = provider
 
     async def create(
         self,
@@ -230,7 +235,7 @@ class AsyncInstructor(Instructor):
         ):
             yield item
 
-    async def create_with_response(
+    async def create_with_completion(
         self,
         response_model: Type[T],
         messages: List[ChatCompletionMessageParam],
@@ -270,7 +275,6 @@ def from_openai(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-
     if "anyscale" in str(client.base_url) or "together" in str(client.base_url):
         assert mode in {
             instructor.Mode.TOOLS,
@@ -278,12 +282,16 @@ def from_openai(
             instructor.Mode.JSON_SCHEMA,
         }
     else:
-        assert mode in {
-            instructor.Mode.TOOLS,
-            instructor.Mode.MD_JSON,
-            instructor.Mode.JSON,
-            instructor.Mode.FUNCTIONS,
-        }, "Mode be one of {instructor.Mode.TOOLS, instructor.Mode.MD_JSON, instructor.Mode.JSON, instructor.Mode.FUNCTIONS}"
+        assert (
+            mode
+            in {
+                instructor.Mode.TOOLS,
+                instructor.Mode.MD_JSON,
+                instructor.Mode.JSON,
+                instructor.Mode.FUNCTIONS,
+                instructor.Mode.PARALLEL_TOOLS,
+            }
+        ), "Mode be one of {instructor.Mode.TOOLS, instructor.Mode.MD_JSON, instructor.Mode.JSON, instructor.Mode.FUNCTIONS}"
 
     assert isinstance(
         client, (openai.OpenAI, openai.AsyncOpenAI)
@@ -292,16 +300,18 @@ def from_openai(
     if isinstance(client, openai.OpenAI):
         return Instructor(
             client=client,
-            create=instructor.patch(create=client.chat.completions.create),
+            create=instructor.patch(create=client.chat.completions.create, mode=mode),
             mode=mode,
+            provider=Provider.OPENAI,
             **kwargs,
         )
 
     if isinstance(client, openai.AsyncOpenAI):
         return AsyncInstructor(
             client=client,
-            create=instructor.patch(create=client.chat.completions.create),
+            create=instructor.patch(create=client.chat.completions.create, mode=mode),
             mode=mode,
+            provider=Provider.OPENAI,
             **kwargs,
         )
 
@@ -333,14 +343,14 @@ def from_litellm(
     if not is_async:
         return Instructor(
             client=None,
-            create=instructor.patch(create=completion),
+            create=instructor.patch(create=completion, mode=mode),
             mode=mode,
             **kwargs,
         )
     else:
         return AsyncInstructor(
             client=None,
-            create=instructor.patch(create=completion),
+            create=instructor.patch(create=completion, mode=mode),
             mode=mode,
             **kwargs,
         )
@@ -367,10 +377,13 @@ def from_anthropic(
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-    assert mode in {
-        instructor.Mode.ANTHROPIC_JSON,
-        instructor.Mode.ANTHROPIC_TOOLS,
-    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
+    assert (
+        mode
+        in {
+            instructor.Mode.ANTHROPIC_JSON,
+            instructor.Mode.ANTHROPIC_TOOLS,
+        }
+    ), "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
 
     assert isinstance(
         client, (anthropic.Anthropic, anthropic.AsyncAnthropic)
@@ -380,6 +393,7 @@ def from_anthropic(
         return Instructor(
             client=client,
             create=instructor.patch(create=client.messages.create, mode=mode),
+            provider=Provider.ANTHROPIC,
             mode=mode,
             **kwargs,
         )
@@ -388,6 +402,7 @@ def from_anthropic(
         return AsyncInstructor(
             client=client,
             create=instructor.patch(create=client.messages.create, mode=mode),
+            provider=Provider.ANTHROPIC,
             mode=mode,
             **kwargs,
         )
