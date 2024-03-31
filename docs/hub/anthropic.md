@@ -46,14 +46,22 @@ user_response = client.chat.completions.create(
 print(user_response.model_dump_json(indent=2))
 """
 {
-    "name": "John",
-    "age": 25,
-    "properties": [
-        {
-            "key": "favorite_color",
-            "value": "blue"
-        }
-    ]
+  "name": "John Doe",
+  "age": 35,
+  "properties": [
+    {
+      "name": "Email",
+      "value": "john.doe@example.com"
+    },
+    {
+      "name": "Phone",
+      "value": "555-1234567"
+    },
+    {
+      "name": "Address",
+      "value": "123 Main St, Anytown USA"
+    }
+  ]
 }
 """
 ```
