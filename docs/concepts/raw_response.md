@@ -25,7 +25,7 @@ user: UserExtract = client.chat.completions.create(
 print(user._raw_response)
 """
 ChatCompletion(
-    id='chatcmpl-8zpltT9vXJdO5OE3AfDsOhAUr911A',
+    id='chatcmpl-97whMjk6Nyh2s2Nacd4Yi1r5a4RvV',
     choices=[
         Choice(
             finish_reason='stop',
@@ -37,7 +37,7 @@ ChatCompletion(
                 function_call=None,
                 tool_calls=[
                     ChatCompletionMessageToolCall(
-                        id='call_vXI3foz7jqlzFILU9pwuYJZB',
+                        id='call_kjS8AZWNS5yElb0ZxmkjTHY0',
                         function=Function(
                             arguments='{"name":"Jason","age":25}', name='UserExtract'
                         ),
@@ -47,10 +47,10 @@ ChatCompletion(
             ),
         )
     ],
-    created=1709747709,
+    created=1711680960,
     model='gpt-3.5-turbo-0125',
     object='chat.completion',
-    system_fingerprint='fp_2b778c6b35',
+    system_fingerprint='fp_3bc1b5746c',
     usage=CompletionUsage(completion_tokens=9, prompt_tokens=82, total_tokens=91),
 )
 """

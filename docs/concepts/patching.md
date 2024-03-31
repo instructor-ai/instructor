@@ -77,3 +77,34 @@ from openai import OpenAI
 
 client = instructor.patch(OpenAI(), mode=instructor.Mode.MD_JSON)
 ```
+
+## Anthropic JSON Mode
+
+Anthropic JSON mode uses Anthropic's JSON format for responses by setting the `mode` parameter to `instructor.Mode.ANTHROPIC_JSON` when patching the client.
+
+```python
+import instructor
+from anthropic import Anthropic
+
+create = instructor.patch(
+    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_JSON
+)
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+resp = create(
+    model="claude-3-haiku-20240307",
+    max_tokens=1024,
+    messages=[
+        {
+            "role": "user",
+            "content": "Create a user",
+        }
+    ],
+    response_model=User,
+)
+```

@@ -3,7 +3,7 @@ from itertools import product
 from pydantic import BaseModel
 import instructor
 from instructor.function_calls import Mode
-from tests.openai.util import models, modes
+from ..util import models, modes
 
 
 class UserDetails(BaseModel):

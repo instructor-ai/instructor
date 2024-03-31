@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import pytest
 
 import instructor
-from tests.openai.util import models, modes
+from .util import models, modes
 
 
 class User(BaseModel):

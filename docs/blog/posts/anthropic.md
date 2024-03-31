@@ -9,7 +9,7 @@ authors:
 
 A special shoutout to [Shreya](https://twitter.com/shreyaw_) for her contributions to the anthropic support. As of now, all features are operational with the exception of streaming support.
 
-For those eager to experiment, simply patch the client with `ANTHROPIC_TOOLS`, which will enable you to leverage the `anthropic` client for making requests.
+For those eager to experiment, simply patch the client with `ANTHROPIC_JSON`, which will enable you to leverage the `anthropic` client for making requests.
 
 ```
 pip install instructor[anthropic]
@@ -28,7 +28,7 @@ import instructor
 # Patching the Anthropics client with the instructor for enhanced capabilities
 anthropic_client = instructor.patch(
     create=anthropic.Anthropic().messages.create,
-    mode=instructor.Mode.ANTHROPIC_TOOLS
+    mode=instructor.Mode.ANTHROPIC_JSON
 )
 
 class Properties(BaseModel):

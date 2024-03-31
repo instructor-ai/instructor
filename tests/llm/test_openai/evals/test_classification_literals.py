@@ -7,7 +7,7 @@ import instructor
 from pydantic import BaseModel
 
 from instructor.function_calls import Mode
-from tests.openai.util import models, modes
+from ..util import models, modes
 
 
 class SinglePrediction(BaseModel):
