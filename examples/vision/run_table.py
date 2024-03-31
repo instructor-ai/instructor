@@ -1,5 +1,5 @@
 from io import StringIO
-from typing import Annotated, Any, Iterable
+from typing import Annotated, Any
 from openai import OpenAI
 from pydantic import (
     BaseModel,

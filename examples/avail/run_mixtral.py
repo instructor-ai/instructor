@@ -1,6 +1,6 @@
 import os
 from pydantic import BaseModel, Field
-from typing import Iterable, List, Literal
+from typing import List, Literal
 from datetime import datetime, timedelta
 
 from openai import OpenAI
