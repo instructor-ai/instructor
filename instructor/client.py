@@ -2,6 +2,7 @@ import openai
 import inspect
 import instructor
 import anthropic
+from utils import Provider, get_provider
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 from anthropic.types import Message
 from typing import (
@@ -20,17 +21,9 @@ from typing import (
 )
 from typing_extensions import Self
 from pydantic import BaseModel
-from enum import Enum
 
 
 T = TypeVar("T", bound=(BaseModel | Iterable | instructor.Partial))
-
-
-class Provider(Enum):
-    OPENAI = "openai"
-    ANTHROPIC = "anthropic"
-    ANYSCALE = "anyscale"
-    TOGETHER = "together"
 
 
 class Instructor:
@@ -206,7 +199,7 @@ class AsyncInstructor(Instructor):
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
         async for item in await self.create_fn(
-            response_model=instructor.Partial[response_model],
+            response_model=instructor.Partial[response_model],  # type: ignore
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
@@ -275,34 +268,36 @@ def from_openai(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-    if "anyscale" in str(client.base_url) or "together" in str(client.base_url):
+    provider = get_provider(str(client.base_url))
+
+    assert isinstance(
+        client, (openai.OpenAI, openai.AsyncOpenAI)
+    ), "Client must be an instance of openai.OpenAI or openai.AsyncOpenAI"
+
+    if provider in {Provider.ANYSCALE, Provider.TOGETHER}:
         assert mode in {
             instructor.Mode.TOOLS,
             instructor.Mode.JSON,
             instructor.Mode.JSON_SCHEMA,
         }
-    else:
-        assert (
-            mode
-            in {
-                instructor.Mode.TOOLS,
-                instructor.Mode.MD_JSON,
-                instructor.Mode.JSON,
-                instructor.Mode.FUNCTIONS,
-                instructor.Mode.PARALLEL_TOOLS,
-            }
-        ), "Mode be one of {instructor.Mode.TOOLS, instructor.Mode.MD_JSON, instructor.Mode.JSON, instructor.Mode.FUNCTIONS}"
-
-    assert isinstance(
-        client, (openai.OpenAI, openai.AsyncOpenAI)
-    ), "Client must be an instance of openai.OpenAI or openai.AsyncOpenAI"
+    if provider in {Provider.GROQ}:
+        assert mode in {
+            instructor.Mode.MD_JSON,
+        }
+    if provider in {Provider.OPENAI}:
+        assert mode in {
+            instructor.Mode.TOOLS,
+            instructor.Mode.JSON,
+            instructor.Mode.FUNCTIONS,
+            instructor.Mode.PARALLEL_TOOLS,
+        }
 
     if isinstance(client, openai.OpenAI):
         return Instructor(
             client=client,
             create=instructor.patch(create=client.chat.completions.create, mode=mode),
             mode=mode,
-            provider=Provider.OPENAI,
+            provider=provider,
             **kwargs,
         )
 
@@ -311,7 +306,7 @@ def from_openai(
             client=client,
             create=instructor.patch(create=client.chat.completions.create, mode=mode),
             mode=mode,
-            provider=Provider.OPENAI,
+            provider=provider,
             **kwargs,
         )
 
