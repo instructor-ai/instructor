@@ -57,37 +57,37 @@ if __name__ == "__main__":
     print(graph.model_dump_json(indent=2))
     """
     {
-        "nodes": [
-            {
-                "id": 1,
-                "label": "Jason",
-                "color": "blue"
-            },
-            {
-                "id": 2,
-                "label": "Sarah",
-                "color": "red"
-            },
-            {
-                "id": 3,
-                "label": "Doctor",
-                "color": "green"
-            }
-        ],
-        "edges": [
-            {
-                "source": 1,
-                "target": 2,
-                "label": "Friend",
-                "color": "black"
-            },
-            {
-                "source": 1,
-                "target": 3,
-                "label": "Profession",
-                "color": "black"
-            }
-        ]
+      "nodes": [
+        {
+          "id": 1,
+          "label": "Jason",
+          "color": "blue"
+        },
+        {
+          "id": 2,
+          "label": "Sarah",
+          "color": "blue"
+        },
+        {
+          "id": 3,
+          "label": "Doctor",
+          "color": "blue"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "friend",
+          "color": "black"
+        },
+        {
+          "source": 1,
+          "target": 3,
+          "label": "is a",
+          "color": "black"
+        }
+      ]
     }
-"""
+    """
 ```

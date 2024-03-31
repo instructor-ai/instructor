@@ -50,16 +50,16 @@ print(user_response.model_dump_json(indent=2))
   "age": 35,
   "properties": [
     {
-      "name": "Email",
-      "value": "john.doe@example.com"
+      "name": "Address",
+      "value": "123 Main St, Anytown USA"
     },
     {
       "name": "Phone",
-      "value": "555-1234567"
+      "value": "555-1234"
     },
     {
-      "name": "Address",
-      "value": "123 Main St, Anytown USA"
+      "name": "Email",
+      "value": "john.doe@example.com"
     }
   ]
 }
