@@ -18,7 +18,7 @@ But as a result, we've been a bit stuck on getting typing to work well while giv
 
 ## Growth
 
-Over the past 10 months, we've enjoyed healthy growth with over 4000+ github stars and more importantly 120k monthly downloads, 10k unique monthly visitors, 90k page views per month, and 100+ contributors.
+Over the past 10 months, we've enjoyed healthy growth with over 4000+ github stars and 100+ contributors, and more importantly, 120k monthly downloads, and 20k unique monthly visitors with 500k requests per month to our docs
 
 ![downloads](./img/downloads.png)
 
