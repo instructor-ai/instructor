@@ -16,7 +16,16 @@ By leveraging various modes like Function Calling, Tool Calling and even constra
 
 We also provide a library in [Typescript](https://instructor-ai.github.io/instructor-js/), [Elixir](https://github.com/thmsmlr/instructor_ex/) and [PHP](https://github.com/cognesy/instructor-php/).
 
----
+## Why use Instructor?
+
+The question of using Instructor is fundamentally a question of why to use Pydantic.
+
+1. **Powered by type hints** — Instructor is powered by Pydantic, which is powered by type hints. Schema validation, prompting is controlled by type annotations; less to learn, less code to write, and integrates with your IDE.
+
+2. **Customizable** — Pydantic is highly customizable. You can define your own validators, custom error messages, and more.
+
+3. **Ecosystem** Pydantic is the most widely used data validation library for Python with over 100M downloads a month. It's used by FastAPI, Typer, and many other popular libraries.
+
 
 ## Getting Started
 
@@ -32,158 +41,271 @@ instructor docs [QUERY]
 
 You can also check out our [cookbooks](./examples/index.md) and [concepts](./concepts/models.md) to learn more about how to use Instructor.
 
-## Usage
+Now, let's see Instructor in action with a simple example:
 
-```py
+### Using OpenAI
+
+```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
+from openai import OpenAI
 
-# This enables response_model keyword
-# from client.chat.completions.create
+
+# Define your desired output structure
+class UserInfo(BaseModel):
+    name: str
+    age: int
+
+
+# Patch the OpenAI client
 client = instructor.from_openai(OpenAI())
 
-
-class UserDetail(BaseModel):
-    name: str
-    age: int
-
-
-user = client.chat.completions.create(
+# Extract structured data from natural language
+user_info = client.chat.completions.create(
     model="gpt-3.5-turbo",
-    response_model=UserDetail,
-    messages=[
-        {"role": "user", "content": "Extract Jason is 25 years old"},
-    ],
+    response_model=UserInfo,
+    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
 )
 
-assert isinstance(user, UserDetail)
-assert user.name == "Jason"
-assert user.age == 25
-print(user.model_dump_json(indent=2))
-"""
-{
-  "name": "Jason",
-  "age": 25
-}
-"""
+print(user_info.name)
+#> John Doe
+print(user_info.age)
+#> 30
 ```
 
-**Using async clients**
+### Using Anthropic
 
-For async clients you must use `apatch` vs `patch` like so:
-
-```py
-import asyncio
+```python
 import instructor
-from openai import AsyncOpenAI
+from anthropic import Anthropic
 from pydantic import BaseModel
 
-aclient = instructor.apatch(AsyncOpenAI())
 
-
-class UserExtract(BaseModel):
+class User(BaseModel):
     name: str
     age: int
 
 
-task = aclient.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=UserExtract,
+client = instructor.from_anthropic(Anthropic())
+
+# note that client.chat.completions.create will also work
+resp = client.messages.create(
+    model="claude-3-opus-20240229",
+    max_tokens=1024,
     messages=[
-        {"role": "user", "content": "Extract jason is 25 years old"},
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
     ],
+    response_model=User,
 )
 
-response = asyncio.run(task)
-print(response.model_dump_json(indent=2))
-"""
-{
-  "name": "Jason",
-  "age": 25
-}
-"""
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
 ```
 
-!!! note "Accessing the original response and usage tokens"
+### Using Litellm
 
-    If you want to access anything like usage or other metadata, the original response is available on the `Model._raw_response` attribute.
-
-    ```python
-    import openai
-    import instructor
-    from pydantic import BaseModel
-
-    client = instructor.from_openai(openai.OpenAI())
+```python
+import instructor
+from litellm import completion
+from pydantic import BaseModel
 
 
-    class UserDetail(BaseModel):
-        name: str
-        age: int
+class User(BaseModel):
+    name: str
+    age: int
 
 
-    user = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserDetail,
-        messages=[
-            {"role": "user", "content": "Extract Jason is 25 years old"},
-        ],
-    )
+client = instructor.from_litellm(completion)
 
-    print(user._raw_response.model_dump_json(indent=2))
-    """
-    {
-      "id": "chatcmpl-98za8mCZ3BM2bdr056wsCSDG1VzRY",
-      "choices": [
+resp = client.chat.completions.create(
+    model="claude-3-opus-20240229",
+    max_tokens=1024,
+    messages=[
         {
-          "finish_reason": "stop",
-          "index": 0,
-          "logprobs": null,
-          "message": {
-            "content": null,
-            "role": "assistant",
-            "function_call": null,
-            "tool_calls": [
-              {
-                "id": "call_O7SofzNOAxOiVufWf54RRWYz",
-                "function": {
-                  "arguments": "{\"name\":\"Jason\",\"age\":25}",
-                  "name": "UserDetail"
-                },
-                "type": "function"
-              }
-            ]
-          }
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
         }
-      ],
-      "created": 1711930372,
-      "model": "gpt-3.5-turbo-0125",
-      "object": "chat.completion",
-      "system_fingerprint": "fp_b28b39ffa8",
-      "usage": {
-        "completion_tokens": 9,
-        "prompt_tokens": 81,
-        "total_tokens": 90
-      }
-    }
-    """
-    ```
+    ],
+    response_model=User,
+)
 
-## Why use Instructor?
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
 
-The question of using Instructor is fundamentally a question of why to use Pydantic.
+## Correct Typing
 
-1. **Powered by type hints** — Instructor is powered by Pydantic, which is powered by type hints. Schema validation, prompting is controlled by type annotations; less to learn, less code to write, and integrates with your IDE.
+This was the dream of instructor but due to the patching of openai, it wasnt possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
 
-2. **Powered by OpenAI** — Instructor is powered by OpenAI's function calling API. This means you can use the same API for both prompting and extraction.
+### Calling `create`
 
-3. **Customizable** — Pydantic is highly customizable. You can define your own validators, custom error messages, and more.
+```python
+import openai
+import instructor
+from pydantic import BaseModel
 
-4. **Ecosystem** Pydantic is the most widely used data validation library for Python. It's used by FastAPI, Typer, and many other popular libraries.
+class User(BaseModel):
+    name: str
+    age: int
 
-5. **Battle Tested** — Pydantic is downloaded over 100M times per month, and supported by a large community of contributors.
+client = instructor.from_openai(openai.OpenAI())
 
-6. **Easy Integration with CLI** - We offer a variety of CLI tools like `instructor jobs`, `instructor files` and `instructor usage` to track your OpenAI usage, fine-tuning jobs and more, just check out our [CLI Documentation](cli/index.md) to find out more.
+user = client.chat.completions.create(
+    model="gpt-4-turbo-preview",
+    messages=[
+        {"role": "user", "content": "Create a user"},
+    ],
+    response_model=User,
+)
+```
+
+Now if you use a IDE, you can see the type is correctly infered.
+
+![type](./blog/posts/img/type.png)
+
+### Handling async: `await create`
+
+This will also work correctly with asynchronous clients. 
+
+```python
+import openai
+import instructor
+from pydantic import BaseModel
+
+
+client = instructor.from_openai(openai.AsyncOpenAI())
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+async def extract():
+    return await client.chat.completions.create(
+        model="gpt-4-turbo-preview",
+        messages=[
+            {"role": "user", "content": "Create a user"},
+        ],
+        response_model=User,
+    )
+```
+
+Notice that simply because we return the `create` method, the `extract()` function will return the correct user type.
+
+![async](./blog/posts/img/async_type.png)
+
+### Returning the original completion: `create_with_completion`
+
+You can also return the original completion object
+
+```python
+import openai
+import instructor
+from pydantic import BaseModel
+
+
+client = instructor.from_openai(openai.OpenAI())
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+user, completion = client.chat.completions.create_with_completion(
+    model="gpt-4-turbo-preview",
+    messages=[
+        {"role": "user", "content": "Create a user"},
+    ],
+    response_model=User,
+)
+```
+
+![with_completion](./blog/posts/img/with_completion.png)
+
+
+### Streaming Partial Objects: `create_partial`
+
+In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but to simply the type inference, we've added `create_iterable` and `create_partial` methods as well!
+
+```python
+import openai
+import instructor
+from pydantic import BaseModel
+
+
+client = instructor.from_openai(openai.OpenAI())
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+user_stream = client.chat.completions.create_partial(
+    model="gpt-4-turbo-preview",
+    messages=[
+        {"role": "user", "content": "Create a user"},
+    ],
+    response_model=User,
+)
+
+for user in user_stream:
+    print(user)
+    # name=None age=None
+    # name='' age=None
+    # name='John' age=None
+    # name='John Doe' age=None
+    # name='John Doe' age=30
+```
+
+Notice now that the type infered is `Generator[User, None]`
+
+![generator](./blog/posts/img/generator.png)
+
+### Streaming Iterables: `create_iterable`
+
+We get an iterable of objects when we want to extract multiple objects.
+
+```python
+import openai
+import instructor
+from pydantic import BaseModel
+
+
+client = instructor.from_openai(openai.OpenAI())
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+users = client.chat.completions.create_iterable(
+    model="gpt-4-turbo-preview",
+    messages=[
+        {"role": "user", "content": "Create 2 users"},
+    ],
+    response_model=User,
+)
+
+for user in users:
+    print(user)
+    # User(name='John Doe', age=30)
+    # User(name='Jane Smith', age=25)
+```
+
+![iterable](./blog/posts/img/iterable.png)
+
+## Validation
+
+You can also use Pydantic to validate your outputs and get the llm to retry on failure. Check out our docs on [retrying](./concepts/retrying.md) and [validation context](./concepts/reask_validation.md).
 
 ## More Examples
 
