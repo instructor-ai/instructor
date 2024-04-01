@@ -3,8 +3,8 @@ from typing import Callable, Optional
 from openai import OpenAI
 from pydantic import Field
 
-from instructor.client import Instructor
 from instructor.function_calls import OpenAISchema
+from instructor.client import Instructor
 
 
 class Validator(OpenAISchema):
@@ -29,7 +29,7 @@ class Validator(OpenAISchema):
 
 def llm_validator(
     statement: str,
-    client: OpenAI,
+    client: Instructor,
     allow_override: bool = False,
     model: str = "gpt-3.5-turbo",
     temperature: float = 0,
