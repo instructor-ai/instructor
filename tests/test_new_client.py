@@ -37,7 +37,7 @@ def test_client_messages_create():
 def test_client_chat_completions_create_with_response():
     client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
 
-    user, completion = client.chat.completions.create_with_response(
+    user, completion = client.chat.completions.create_with_completion(
         response_model=User,
         messages=[{"role": "user", "content": "Jason is 10"}],
         temperature=0,
@@ -132,7 +132,7 @@ async def test_async_client_chat_completions_create_with_response():
     client = openai.AsyncOpenAI()
     instructor_client = instructor.from_openai(client, model="gpt-3.5-turbo")
 
-    user, response = await instructor_client.chat.completions.create_with_response(
+    user, response = await instructor_client.chat.completions.create_with_completion(
         response_model=User,
         messages=[{"role": "user", "content": "Jason is 10"}],
         temperature=0,
@@ -145,14 +145,13 @@ async def test_async_client_chat_completions_create_with_response():
 
 
 def test_client_from_anthropic_with_response():
-    client = anthropic.Anthropic()
-    instructor_client = instructor.from_anthropic(
-        client,
+    client = instructor.from_anthropic(
+        anthropic.Anthropic(),
         max_tokens=1000,
         model="claude-3-haiku-20240307",
     )
 
-    user, response = instructor_client.messages.create_with_response(
+    user, response = client.messages.create_with_completion(
         response_model=User,
         messages=[{"role": "user", "content": "Jason is 10"}],
         temperature=0,
