@@ -6,8 +6,8 @@ import diskcache
 from openai import OpenAI, AsyncOpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
-aclient = instructor.patch(AsyncOpenAI())
+client = instructor.from_openai(OpenAI())
+aclient = instructor.from_openai(AsyncOpenAI())
 
 
 class UserDetail(BaseModel):

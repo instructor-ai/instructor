@@ -19,7 +19,7 @@ from typing import List, Generator, Iterable
 import instructor
 import openai
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 def extract_video_id(url: str) -> str | None:

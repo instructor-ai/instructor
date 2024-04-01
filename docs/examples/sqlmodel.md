@@ -31,7 +31,7 @@ class Hero(SQLModel, instructor.OpenAISchema, table=True):
 The `create_hero` function will query `OpenAI` for a `Hero` record
 
 ```python
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 def create_hero() -> Hero:
     return client.chat.completions.create(

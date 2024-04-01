@@ -3,7 +3,7 @@ import instructor
 from typing import Iterable
 from pydantic import BaseModel, ConfigDict
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class SyntheticQA(BaseModel):

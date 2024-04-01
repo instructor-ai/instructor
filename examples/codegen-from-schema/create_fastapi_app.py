@@ -20,7 +20,7 @@ from models import {{title}}
 import openai
 import instructor
 
-instructor.patch()
+instructor.from_openai()
 
 app = FastAPI()
 

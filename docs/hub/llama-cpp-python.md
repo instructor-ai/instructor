@@ -59,7 +59,7 @@ llama = llama_cpp.Llama(
 )
 
 
-create = instructor.patch(
+create = instructor.from_openai(
     create=llama.create_chat_completion_openai_v1,
     mode=instructor.Mode.JSON_SCHEMA,  # (2)!
 )

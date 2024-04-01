@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 LABELS = Literal["ACCOUNT", "BILLING", "GENERAL_QUERY"]
 

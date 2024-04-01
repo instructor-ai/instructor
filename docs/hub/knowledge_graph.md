@@ -34,7 +34,7 @@ class KnowledgeGraph(BaseModel):
 
 
 # Patch the OpenAI client to add response_model support
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def generate_graph(input_text: str) -> KnowledgeGraph:
@@ -48,45 +48,46 @@ def generate_graph(input_text: str) -> KnowledgeGraph:
             }
         ],
         response_model=KnowledgeGraph,
-    )  # type: ignore
+    )
 
 
 if __name__ == "__main__":
     input_text = "Jason is Sarah's friend and he is a doctor"
     graph = generate_graph(input_text)
-    print(graph.json(indent=2))
+    print(graph.model_dump_json(indent=2))
     """
     {
-        "nodes": [
-            {
-                "id": 1,
-                "label": "Jason",
-                "color": "blue"
-            },
-            {
-                "id": 2,
-                "label": "Sarah",
-                "color": "red"
-            },
-            {
-                "id": 3,
-                "label": "Doctor",
-                "color": "green"
-            }
-        ],
-        "edges": [
-            {
-                "source": 1,
-                "target": 2,
-                "label": "Friend",
-                "color": "black"
-            },
-            {
-                "source": 1,
-                "target": 3,
-                "label": "Profession",
-                "color": "black"
-            }
-        ]
+      "nodes": [
+        {
+          "id": 1,
+          "label": "Jason",
+          "color": "blue"
+        },
+        {
+          "id": 2,
+          "label": "Sarah",
+          "color": "blue"
+        },
+        {
+          "id": 3,
+          "label": "Doctor",
+          "color": "blue"
+        }
+      ],
+      "edges": [
+        {
+          "source": 1,
+          "target": 2,
+          "label": "friend",
+          "color": "black"
+        },
+        {
+          "source": 1,
+          "target": 3,
+          "label": "is a",
+          "color": "black"
+        }
+      ]
     }
+    """
 ```

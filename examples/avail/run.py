@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from openai import OpenAI
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class DateRange(BaseModel):

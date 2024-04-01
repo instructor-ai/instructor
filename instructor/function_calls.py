@@ -200,7 +200,7 @@ def openai_schema(cls: Type[BaseModel]) -> OpenAISchema:
 
     return wraps(cls, updated=())(
         create_model(
-            cls.__name__,
+            cls.__name__ if hasattr(cls, "__name__") else str(cls),
             __base__=(cls, OpenAISchema),
         )
     )  # type: ignore[all]

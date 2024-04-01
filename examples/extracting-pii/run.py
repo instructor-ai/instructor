@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import instructor
 from openai import OpenAI
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class Data(BaseModel):

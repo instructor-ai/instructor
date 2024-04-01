@@ -3,7 +3,7 @@ from openai import OpenAI
 from pydantic import BaseModel
 import functools
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class UserDetail(BaseModel):

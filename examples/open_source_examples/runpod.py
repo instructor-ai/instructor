@@ -14,7 +14,7 @@ runpod_base_url = os.environ.get("RUNPOD_BASE_URL")
 assert runpod_base_url, "RUNPOD_BASE_URL is not set in environment variables"
 
 # Initialize OpenAI client
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(api_key=runpod_api_key, base_url=runpod_base_url),
     mode=Mode.JSON,
 )

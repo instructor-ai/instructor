@@ -11,7 +11,7 @@ import openai
 import instructor
 from pydantic import BaseModel
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -33,12 +33,12 @@ def extract(data) -> UserDetail:
 start = time.perf_counter()  # (1)
 model = extract("Extract jason is 25 years old")
 print(f"Time taken: {time.perf_counter() - start}")
-#> Time taken: 0.7583793329977198
+#> Time taken: 0.417595750070177
 
 start = time.perf_counter()
 model = extract("Extract jason is 25 years old")  # (2)
 print(f"Time taken: {time.perf_counter() - start}")
-#> Time taken: 4.3330073822289705e-06
+#> Time taken: 1.374981366097927e-06
 ```
 
 1. Using `time.perf_counter()` to measure the time taken to run the function is better than using `time.time()` because it's more accurate and less susceptible to system clock changes.
@@ -139,7 +139,7 @@ import diskcache
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 cache = diskcache.Cache('./my_cache_directory')
 
 
@@ -243,7 +243,7 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 cache = redis.Redis("localhost")
 
 

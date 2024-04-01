@@ -4,9 +4,7 @@ import anthropic
 import instructor
 
 # Patching the Anthropics client with the instructor for enhanced capabilities
-anthropic_client = instructor.patch(
-    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_TOOLS
-)
+client = instructor.from_anthropic(anthropic.Anthropic())
 
 
 class Properties(BaseModel):
@@ -20,7 +18,7 @@ class User(BaseModel):
     properties: List[Properties]
 
 
-user_response = anthropic_client(
+user = client.messages.create(
     model="claude-3-haiku-20240307",
     max_tokens=1024,
     max_retries=0,
@@ -31,6 +29,6 @@ user_response = anthropic_client(
         }
     ],
     response_model=User,
-)  # type: ignore
+)
 
-print(user_response.model_dump_json(indent=2))
+print(user.model_dump_json(indent=2))

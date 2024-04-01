@@ -1,7 +1,4 @@
-import instructor
 from pydantic import BaseModel, ValidationError, field_validator
-
-instructor.patch()
 
 
 class UserDetail(BaseModel):

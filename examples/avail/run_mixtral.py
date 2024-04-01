@@ -1,19 +1,19 @@
 import os
 from pydantic import BaseModel, Field
-from typing import Iterable, List, Literal
+from typing import List, Literal
 from datetime import datetime, timedelta
 
 from openai import OpenAI
 import instructor
 
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(
         base_url="https://api.endpoints.anyscale.com/v1",
         api_key=os.environ["ANYSCALE_API_KEY"],
     ),
     mode=instructor.Mode.JSON_SCHEMA,
+    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
 )
-model = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
 
 class DateRange(BaseModel):
@@ -67,9 +67,8 @@ def prepare_dates(n=7) -> str:
     return acc.strip()
 
 
-def parse_availability(text: str) -> Iterable[AvailabilityResponse]:
-    return client.chat.completions.create(
-        model=model,
+def parse_availability(text: str):
+    return client.chat.completions.create_iterable(
         max_tokens=10000,
         messages=[
             {
@@ -85,7 +84,7 @@ def parse_availability(text: str) -> Iterable[AvailabilityResponse]:
                 "content": f"To help you understand the dates, here are the next 7 days: {prepare_dates()}",
             },
         ],
-        response_model=Iterable[AvailabilityResponse],
+        response_model=AvailabilityResponse,
         max_retries=3,
     )
 

@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 class Search(BaseModel):
     query: str = Field(..., description="Query to search for relevant content")

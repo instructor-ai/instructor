@@ -23,7 +23,7 @@ import instructor
 import pandas as pd
 
 
-client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 
 
 def md_to_df(data: Any) -> Any:

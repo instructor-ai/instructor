@@ -3,7 +3,7 @@ from pydantic import BaseModel, ValidationError, ValidationInfo, AfterValidator
 from openai import OpenAI
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def citation_exists(v: str, info: ValidationInfo):

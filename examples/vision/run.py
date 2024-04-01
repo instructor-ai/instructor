@@ -3,7 +3,7 @@ from openai import OpenAI
 from pydantic import BaseModel
 import base64
 
-client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 
 
 class Circle(BaseModel):

@@ -5,7 +5,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class PriorityEnum(str, Enum):
@@ -49,7 +49,7 @@ class ActionItems(BaseModel):
     items: List[Ticket]
 
 
-def generate(data: str) -> ActionItems:
+def generate(data: str):
     return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=ActionItems,
@@ -63,7 +63,7 @@ def generate(data: str) -> ActionItems:
                 "content": f"Create the action items for the following transcript: {data}",
             },
         ],
-    )  # type: ignore
+    )
 
 
 prediction = generate(

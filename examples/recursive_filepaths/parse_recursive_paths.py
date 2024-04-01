@@ -6,7 +6,7 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class NodeType(str, enum.Enum):

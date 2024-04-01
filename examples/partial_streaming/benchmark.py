@@ -7,7 +7,7 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI(), mode=instructor.Mode.MD_JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 
 
 def num_tokens_from_string(string: str, model_name: str) -> int:

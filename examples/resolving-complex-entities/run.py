@@ -9,7 +9,7 @@ client = OpenAI()
 
 # Patch openai to use instructor
 # allows for response_model
-instructor.patch()
+instructor.from_openai()
 
 
 class Property(BaseModel):

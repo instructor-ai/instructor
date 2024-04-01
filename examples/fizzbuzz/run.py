@@ -2,7 +2,7 @@ from typing import List
 from openai import OpenAI
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def fizzbuzz_gpt(n) -> List[int | str]:

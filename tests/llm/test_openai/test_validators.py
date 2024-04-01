@@ -22,7 +22,7 @@ def test_patch_completes_successfully(client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_runmodel_validator_error(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     class QuestionAnswerNoEvil(BaseModel):
         question: str
@@ -30,7 +30,7 @@ def test_runmodel_validator_error(model, mode, client):
             str,
             BeforeValidator(
                 llm_validator(
-                    "don't say objectionable things", model=model, openai_client=client
+                    "don't say objectionable things", model=model, client=client
                 )
             ),
         ]
@@ -43,13 +43,18 @@ def test_runmodel_validator_error(model, mode, client):
 
 
 @pytest.mark.parametrize("model", models)
-def test_runmodel_validator_default_openai_client(model):
+def test_runmodel_validator_default_openai_client(model, client):
+
+    client = instructor.from_openai(client)
+
     class QuestionAnswerNoEvil(BaseModel):
         question: str
         answer: Annotated[
             str,
             BeforeValidator(
-                llm_validator("don't say objectionable things", model=model)
+                llm_validator(
+                    "don't say objectionable things", model=model, client=client
+                )
             ),
         ]
 

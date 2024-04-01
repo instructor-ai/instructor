@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 # By default, the patch function will patch the ChatCompletion.create and ChatCompletion.acreate methods. to support response_model parameter
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(),
     mode=instructor.Mode.TOOLS,
 )

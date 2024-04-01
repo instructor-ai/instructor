@@ -24,7 +24,7 @@ if __name__ == "__main__":
     class Query(BaseModel):
         query: List[Union[Weather, GoogleSearch]]
 
-    client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
+    client = instructor.from_openai(client, mode=instructor.Mode.PARALLEL_TOOLS)
 
     start = time.perf_counter()
     resp = client.chat.completions.create(

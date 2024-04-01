@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import instructor
 
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class User(BaseModel):

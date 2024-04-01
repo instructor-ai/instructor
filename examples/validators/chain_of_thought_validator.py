@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, model_validator
 from typing import Optional
 
 # Enables `response_model` and `max_retries` parameters
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class Validation(BaseModel):
@@ -33,7 +33,7 @@ def validator(values):
                 "content": f"Verify that `{answer}` follows the chain of thought: {chain_of_thought}",
             },
         ],
-        # this comes from instructor.patch()
+        # this comes from instructor.from_openai()
         response_model=Validation,
     )
     if not resp.is_valid:

@@ -340,9 +340,11 @@ def handle_response_model(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
         extra={
             "mode": mode.value,
-            "response_model": response_model.__name__
-            if response_model is not None
-            else None,
+            "response_model": (
+                response_model.__name__
+                if response_model is not None and hasattr(response_model, "__name__")
+                else str(response_model)
+            ),
             "new_kwargs": new_kwargs,
         },
     )

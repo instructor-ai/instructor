@@ -10,7 +10,7 @@ client = openai.OpenAI(
 
 
 # By default, the patch function will patch the ChatCompletion.create and ChatCompletion.acreate methods. to support response_model parameter
-client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
 
 
 # Now, we can use the response_model parameter using only a base model

@@ -55,7 +55,7 @@ from openai import OpenAI
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.JSON)
 
 
 class User(BaseModel):
@@ -95,7 +95,7 @@ import openai
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
 
 
 class User(BaseModel):
@@ -137,7 +137,7 @@ import openai
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.patch(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
 
 
 class UserExtract(BaseModel):
@@ -157,7 +157,7 @@ async def print_iterable_results():
     )
     async for m in model:
         print(m)
-        #> name='John Doe' age=30
+        #> name='John Doe' age=32
         #> name='Jane Doe' age=28
 
 

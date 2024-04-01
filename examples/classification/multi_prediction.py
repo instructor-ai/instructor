@@ -5,7 +5,7 @@ from typing import List
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 # Define new Enum class for multiple labels
