@@ -4,7 +4,7 @@ from openai import OpenAI
 
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def no_competitors(v: str) -> str:

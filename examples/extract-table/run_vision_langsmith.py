@@ -15,7 +15,7 @@ from langsmith import traceable
 
 
 client = wrap_openai(OpenAI())
-client = instructor.patch(client, mode=instructor.function_calls.Mode.MD_JSON)
+client = instructor.from_openai(client, mode=instructor.function_calls.Mode.MD_JSON)
 
 
 def md_to_df(data: Any) -> Any:

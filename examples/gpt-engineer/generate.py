@@ -5,7 +5,7 @@ from typing import List
 from pydantic import Field
 from instructor import OpenAISchema
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class File(OpenAISchema):

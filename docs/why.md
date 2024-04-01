@@ -128,7 +128,7 @@ The minimum viable api just adds `response_model` to the client, if you dont thi
     from pydantic import BaseModel
 
     # Patch the OpenAI client with Instructor
-    client = instructor.patch(OpenAI())
+    client = instructor.from_openai(OpenAI())
 
     class UserDetail(BaseModel):
         name: str
@@ -198,7 +198,7 @@ from pydantic import BaseModel
 from typing import List
 from rich.console import Console
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 text_block = "..."
 
@@ -300,7 +300,7 @@ from openai import OpenAI
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class UserDetails(BaseModel):

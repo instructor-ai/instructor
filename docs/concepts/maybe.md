@@ -41,7 +41,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 # This enables the `response_model` keyword
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -89,7 +89,7 @@ print(user2.model_dump_json(indent=2))
 {
   "result": null,
   "error": false,
-  "message": "Unknown user"
+  "message": null
 }
 """
 ```

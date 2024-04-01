@@ -32,7 +32,7 @@ from openai import OpenAI
 from pydantic import BaseModel, ValidationInfo, field_validator
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class Statements(BaseModel):

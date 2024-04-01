@@ -10,7 +10,7 @@ from typing import List
 from enum import Enum
 
 client = wrap_openai(AsyncOpenAI())
-client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
 sem = asyncio.Semaphore(5)
 
 
@@ -58,7 +58,7 @@ class QuestionClassification(BaseModel):
 
 # Modify the classify function
 @traceable(name="classify-question")
-async def classify(data: str) -> QuestionClassification:
+async def classify(data: str):
     async with sem:  # some simple rate limiting
         return data, await client.chat.completions.create(
             model="gpt-4",

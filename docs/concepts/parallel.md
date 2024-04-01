@@ -28,7 +28,9 @@ class GoogleSearch(BaseModel):
     query: str
 
 
-client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)  # (1)!
+client = instructor.from_openai(
+    openai.OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS
+)  # (1)!
 
 function_calls = client.chat.completions.create(
     model="gpt-4-turbo-preview",
@@ -46,7 +48,7 @@ for fc in function_calls:
     print(fc)
     #> location='Toronto' units='metric'
     #> location='Dallas' units='imperial'
-    #> query='super bowl winner'
+    #> query='Super Bowl winner'
 ```
 
 1. Set the mode to `PARALLEL_TOOLS` to enable parallel function calling.

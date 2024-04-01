@@ -12,6 +12,31 @@ from openai.types.chat import (
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
+from enum import Enum
+
+
+class Provider(Enum):
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    ANYSCALE = "anyscale"
+    TOGETHER = "together"
+    GROQ = "groq"
+    UNKNOWN = "unknown"
+
+
+def get_provider(base_url: str) -> Provider:
+    if "anyscale" in str(base_url):
+        return Provider.ANYSCALE
+    elif "together" in str(base_url):
+        return Provider.TOGETHER
+    elif "anthropic" in str(base_url):
+        return Provider.ANTHROPIC
+    elif "groq" in str(base_url):
+        return Provider.GROQ
+    elif "openai" in str(base_url):
+        return Provider.OPENAI
+    return Provider.UNKNOWN
+
 
 def extract_json_from_codeblock(content: str) -> str:
     first_paren = content.find("{")

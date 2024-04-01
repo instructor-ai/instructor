@@ -53,7 +53,7 @@ class UserDetail(BaseModel):
     age: int
 
 
-client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
 
 response = client.chat.completions.create(
     model="gpt-4-turbo-preview",
@@ -88,7 +88,7 @@ import instructor
 from pydantic import BaseModel
 from tenacity import Retrying, stop_after_attempt, wait_fixed
 
-client = instructor.patch(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
 
 
 class UserDetail(BaseModel):
@@ -130,7 +130,7 @@ import instructor
 from pydantic import BaseModel
 from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
 
-client = instructor.patch(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
 
 
 class UserDetail(BaseModel):

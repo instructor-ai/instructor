@@ -38,7 +38,7 @@ If you want to learn more about how to do bad computations, check out our post o
 import openai
 import instructor
 
-client = instructor.patch(
+client = instructor.from_openai(
     openai.AsyncOpenAI(),
 )
 ```

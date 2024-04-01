@@ -29,8 +29,10 @@ class ParallelBase:
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models
-        names = [model.model_json_schema()["properties"]["name"]["default"] if "name" in model.model_json_schema()["properties"] else model.__name__ for model in models]
-        self.registry = {name: model for name, model in zip(names, models)}
+        self.registry = {
+            model.__name__ if hasattr(model, "__name__") else str(model): model
+            for model in models
+        }
 
     def from_response(
         self,

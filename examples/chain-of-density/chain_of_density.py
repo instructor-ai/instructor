@@ -5,7 +5,7 @@ import nltk
 from openai import OpenAI
 import spacy
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 nlp = spacy.load("en_core_web_sm")
 
 

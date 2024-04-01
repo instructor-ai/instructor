@@ -42,7 +42,7 @@ import instructor
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def classify(data: str) -> SinglePrediction:

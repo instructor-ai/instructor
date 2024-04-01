@@ -52,7 +52,7 @@ from enum import Enum
 client = wrap_openai(AsyncOpenAI())
 
 # Patch the client with instructor
-client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
 
 # Rate limit the number of requests
 sem = asyncio.Semaphore(5)

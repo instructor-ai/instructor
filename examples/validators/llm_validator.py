@@ -6,7 +6,7 @@ from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
 
 # Apply the patch to the OpenAI client
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class QuestionAnswer(BaseModel):

@@ -41,7 +41,7 @@ class Lead(BaseModel):
     # Can define some function here to send Lead information to a database using an API
 
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def parse_lead_from_message(user_message: str):
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         ERROR:
         1 validation error for IterableLead
         tasks.0.phone_number
-          value is not a valid phone number [type=value_error, input_value='+19172234', input_type=str]
+          value is not a valid phone number [type=value_error, input_value='+191772234', input_type=str]
         """
 ```
 

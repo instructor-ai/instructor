@@ -1,5 +1,5 @@
 from io import StringIO
-from typing import Annotated, Any, Iterable
+from typing import Annotated, Any
 from openai import OpenAI
 from pydantic import (
     BaseModel,
@@ -12,7 +12,7 @@ import pandas as pd
 import instructor
 
 
-client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 
 
 def to_markdown(df: pd.DataFrame) -> str:
@@ -30,7 +30,7 @@ def md_to_df(data: Any) -> Any:
             .dropna(axis=1, how="all")
             .iloc[1:]
             .map(lambda x: x.strip())
-        )
+        )  # type: ignore
     return data
 
 
@@ -55,10 +55,10 @@ class Table(BaseModel):
     dataframe: MarkdownDataFrame
 
 
-def extract_table(url: str) -> Iterable[Table]:
-    return client.chat.completions.create(
+def extract_table(url: str):
+    return client.chat.completions.create_iterable(
         model="gpt-4-vision-preview",
-        response_model=Iterable[Table],
+        response_model=Table,
         max_tokens=1800,
         messages=[
             {

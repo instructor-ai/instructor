@@ -4,7 +4,7 @@ import openai
 import instructor
 import asyncio
 
-client = instructor.patch(
+client = instructor.from_openai(
     openai.AsyncOpenAI(),
 )
 

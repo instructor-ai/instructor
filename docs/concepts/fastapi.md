@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from openai import AsyncOpenAI
 
 # Enables response_model
-client = instructor.patch(AsyncOpenAI())
+client = instructor.from_openai(AsyncOpenAI())
 app = FastAPI()
 
 

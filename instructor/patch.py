@@ -8,6 +8,7 @@ from typing import (
     TypeVar,
     Union,
     overload,
+    Awaitable,
 )
 
 from openai import AsyncOpenAI, OpenAI
@@ -38,6 +39,17 @@ class InstructorChatCompletionCreate(Protocol):
     ) -> T_Model: ...
 
 
+class AsyncInstructorChatCompletionCreate(Protocol):
+    async def __call__(
+        self,
+        response_model: Type[T_Model] = None,
+        validation_context: dict = None,
+        max_retries: int = 1,
+        *args: T_ParamSpec.args,
+        **kwargs: T_ParamSpec.kwargs,
+    ) -> T_Model: ...
+
+
 @overload
 def patch(
     client: OpenAI,
@@ -55,6 +67,13 @@ def patch(
 @overload
 def patch(
     create: Callable[T_ParamSpec, T_Retval],
+    mode: Mode = Mode.TOOLS,
+) -> InstructorChatCompletionCreate: ...
+
+
+@overload
+def patch(
+    create: Awaitable[T_Retval],
     mode: Mode = Mode.TOOLS,
 ) -> InstructorChatCompletionCreate: ...
 

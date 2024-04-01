@@ -12,7 +12,7 @@ import pandas as pd
 import instructor
 
 
-client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
 
 
 def md_to_df(data: Any) -> Any:
@@ -51,7 +51,7 @@ class Table(BaseModel):
     dataframe: MarkdownDataFrame
 
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 tables = client.chat.completions.create(

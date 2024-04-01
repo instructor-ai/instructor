@@ -141,7 +141,7 @@ from openai import OpenAI
 
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class SearchQuery(BaseModel):

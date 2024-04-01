@@ -25,7 +25,7 @@ class UserDetail(BaseModel):
 
 
 # Patch the OpenAI client to enable the response_model functionality
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
@@ -67,7 +67,7 @@ class UserDetail(BaseModel):
 
 
 # Patch the OpenAI client to enable the response_model functionality
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
@@ -122,7 +122,7 @@ class UserDetail(BaseModel):
 
 
 # Patch the OpenAI client to enable the response_model functionality
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
@@ -168,7 +168,7 @@ class UserDetail(BaseModel):
 
 
 # Patch the OpenAI client to enable the response_model functionality
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:

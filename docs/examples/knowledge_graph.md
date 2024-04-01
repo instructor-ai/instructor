@@ -43,7 +43,7 @@ import instructor
 
 # Adds response_model to ChatCompletion
 # Allows the return of Pydantic model rather than raw JSON
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def generate_graph(input) -> KnowledgeGraph:

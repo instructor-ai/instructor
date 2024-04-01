@@ -16,7 +16,7 @@ This is the recommended method for OpenAI clients. It is the most stable as func
 import instructor
 from openai import OpenAI
 
-client = instructor.patch(OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
 ```
 
 ## Parallel Tool Calling
@@ -27,7 +27,7 @@ Parallel tool calling is also an option but you must set `response_model` to be 
 import instructor
 from openai import OpenAI
 
-client = instructor.patch(OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
 ```
 
 ## Function Calling
@@ -38,7 +38,7 @@ Note that function calling is soon to be deprecated in favor of TOOL mode for Op
 import instructor
 from openai import OpenAI
 
-client = instructor.patch(OpenAI(), mode=instructor.Mode.FUNCTIONS)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.FUNCTIONS)
 ```
 
 ## JSON Mode
@@ -49,18 +49,7 @@ JSON mode uses OpenAI's JSON fromat for responses. by setting `response_format={
 import instructor
 from openai import OpenAI
 
-client = instructor.patch(OpenAI(), mode=instructor.Mode.JSON)
-```
-
-## JSON Schema Mode
-
-JSON Schema mode uses OpenAI's JSON fromat for responses. by setting `response_format={"type": "json_object", schema:response_model.model_json_schema()}` in the `chat.completions.create` method. This is only available for select clients (e.g. llama-cpp-python, Anyscale, Together)
-
-```python
-import instructor
-from openai import OpenAI
-
-client = instructor.patch(OpenAI(), mode=instructor.Mode.JSON_SCHEMA)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.JSON)
 ```
 
 ## Markdown JSON Mode
@@ -75,36 +64,5 @@ This just asks for the response in JSON format, but it is not recommended, and m
 import instructor
 from openai import OpenAI
 
-client = instructor.patch(OpenAI(), mode=instructor.Mode.MD_JSON)
-```
-
-## Anthropic JSON Mode
-
-Anthropic JSON mode uses Anthropic's JSON format for responses by setting the `mode` parameter to `instructor.Mode.ANTHROPIC_JSON` when patching the client.
-
-```python
-import instructor
-from anthropic import Anthropic
-
-create = instructor.patch(
-    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_JSON
-)
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-resp = create(
-    model="claude-3-haiku-20240307",
-    max_tokens=1024,
-    messages=[
-        {
-            "role": "user",
-            "content": "Create a user",
-        }
-    ],
-    response_model=User,
-)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 ```

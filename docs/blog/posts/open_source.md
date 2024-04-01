@@ -55,7 +55,7 @@ class UserDetail(BaseModel):
 
 
 # enables `response_model` in create call
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(
         base_url="http://localhost:11434/v1",
         api_key="ollama",  # required, but unused
@@ -104,7 +104,7 @@ llama = llama_cpp.Llama(
 )
 
 
-create = instructor.patch(
+create = instructor.from_openai(
     create=llama.create_chat_completion_openai_v1,
     mode=instructor.Mode.JSON_SCHEMA, 
 )
@@ -151,7 +151,7 @@ class UserDetails(BaseModel):
 
 
 # enables `response_model` in create call
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(
         base_url="https://api.endpoints.anyscale.com/v1",
         api_key=os.environ["ANYSCALE_API_KEY"],
@@ -191,7 +191,7 @@ client = qrog.Groq(
 )
 
 # By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods to support the response_model parameter
-client = instructor.patch(client, mode=instructor.Mode.MD_JSON)
+client = instructor.from_openai(client, mode=instructor.Mode.MD_JSON)
 
 
 # Now, we can use the response_model parameter using only a base model
@@ -234,7 +234,7 @@ client = openai.OpenAI(
     api_key=os.environ["TOGETHER_API_KEY"],
 )
 
-client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
 
 class UserExtract(BaseModel):
     name: str
@@ -267,7 +267,7 @@ from mistralai.client import MistralClient
 
 client = MistralClient()
 
-patched_chat = instructor.patch(create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS)
+patched_chat = instructor.from_openai(create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS)
 
 class UserDetails(BaseModel):
     name: str

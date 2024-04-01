@@ -27,7 +27,7 @@ class User(BaseModel):
     name: str 
     age: int
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 user = client.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -70,7 +70,7 @@ Unlike other libraries that abstract away the `messages=[...]` parameter, Instru
 
 ## Low Abstraction
 
-What makes Instructor so powerful is how seamlessly it integrates with existing OpenAI SDK code. To use it, you literally just call instructor.patch() on your OpenAI client instance, then use response_model going forward. There's no complicated refactoring or new abstractions to wrap your head around.
+What makes Instructor so powerful is how seamlessly it integrates with existing OpenAI SDK code. To use it, you literally just call instructor.from_openai() on your OpenAI client instance, then use response_model going forward. There's no complicated refactoring or new abstractions to wrap your head around.
 
 This incremental, zero-overhead adoption path makes Instructor perfect for sprinkling structured LLM outputs into an existing OpenAI-based application. You can start extracting data models from simple prompts, then incrementally expand to more complex hierarchical models, streaming outputs, and custom validations.
 
