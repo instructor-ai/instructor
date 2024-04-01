@@ -62,11 +62,17 @@ from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
 from instructor import llm_validator
 
+import instructor
+import openai
+
+client = instructor.from_openai(openai.OpenAI())
+
 
 class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
-        str, BeforeValidator(llm_validator("Don't say objectionable things"))
+        str,
+        BeforeValidator(llm_validator("Don't say objectionable things", client=client)),
     ]
 
 
@@ -80,7 +86,7 @@ except ValidationError as e:
     """
     1 validation error for QuestionAnswer
     answer
-      Assertion failed, The statement promotes objectionable behavior. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+      Assertion failed, The statement promotes evil behavior, which is objectionable. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
         For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
     """
 ```

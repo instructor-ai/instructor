@@ -161,8 +161,8 @@ async def print_partial_results():
     async for m in user:
         print(m)
         #> name=None age=None
-        #> name='' age=None
-        #> name='Jason' age=None
+        #> name=None age=12
+        #> name='' age=12
         #> name='Jason' age=12
 
 

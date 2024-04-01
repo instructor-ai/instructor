@@ -291,6 +291,7 @@ def from_openai(
             instructor.Mode.JSON,
             instructor.Mode.FUNCTIONS,
             instructor.Mode.PARALLEL_TOOLS,
+            instructor.Mode.MD_JSON,
         }
 
     if isinstance(client, openai.OpenAI):

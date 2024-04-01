@@ -61,11 +61,11 @@ LLM-based validation can also be plugged into the same Pydantic model. Here, if 
 
 ```python hl_lines="9 15"
 import instructor
-
 from openai import OpenAI
 from instructor import llm_validator
 from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
+
 
 # Apply the patch to the OpenAI client
 client = instructor.from_openai(OpenAI())
@@ -75,9 +75,7 @@ class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
         str,
-        BeforeValidator(
-            llm_validator("don't say objectionable things", openai_client=client)
-        ),
+        BeforeValidator(llm_validator("don't say objectionable things", client=client)),
     ]
 
 
@@ -91,7 +89,7 @@ except ValidationError as e:
     """
     1 validation error for QuestionAnswer
     answer
-      Assertion failed, The statement promotes objectionable behavior by encouraging evil and stealing, which goes against the rule of not saying objectionable things. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+      Assertion failed, The statement promotes objectionable behavior by encouraging evil and theft. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
         For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
     """
 ```
