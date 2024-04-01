@@ -3,7 +3,7 @@ from typing import Callable, Optional
 from openai import OpenAI
 from pydantic import Field
 
-import instructor
+from instructor.client import Instructor
 from instructor.function_calls import OpenAISchema
 
 
@@ -29,10 +29,10 @@ class Validator(OpenAISchema):
 
 def llm_validator(
     statement: str,
+    client: OpenAI,
     allow_override: bool = False,
     model: str = "gpt-3.5-turbo",
     temperature: float = 0,
-    client: Optional[instructor.Instructor] = None,
 ) -> Callable[[str], str]:
     """
     Create a validator that uses the LLM to validate an attribute
@@ -56,7 +56,7 @@ def llm_validator(
     ```
     1 validation error for User
     name
-      The name is valid but not all lowercase (type=value_error.llm_validator)
+        The name is valid but not all lowercase (type=value_error.llm_validator)
     ```
 
     Note that there, the error message is written by the LLM, and the error type is `value_error.llm_validator`.
@@ -67,8 +67,6 @@ def llm_validator(
         temperature (float): The temperature to use for the LLM (default: 0)
         openai_client (OpenAI): The OpenAI client to use (default: None)
     """
-
-    client = client if client else instructor.from_openai(OpenAI())
 
     def llm(v: str) -> str:
         resp = client.chat.completions.create(

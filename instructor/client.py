@@ -2,7 +2,7 @@ import openai
 import inspect
 import instructor
 import anthropic
-from utils import Provider, get_provider
+from .utils import Provider, get_provider
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 from anthropic.types import Message
 from typing import (
@@ -21,9 +21,10 @@ from typing import (
 )
 from typing_extensions import Self
 from pydantic import BaseModel
+from instructor.dsl.partial import Partial
 
 
-T = TypeVar("T", bound=(BaseModel | Iterable | instructor.Partial))
+T = TypeVar("T", bound=(BaseModel | Iterable | Partial))
 
 
 class Instructor:
@@ -372,13 +373,10 @@ def from_anthropic(
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-    assert (
-        mode
-        in {
-            instructor.Mode.ANTHROPIC_JSON,
-            instructor.Mode.ANTHROPIC_TOOLS,
-        }
-    ), "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
+    assert mode in {
+        instructor.Mode.ANTHROPIC_JSON,
+        instructor.Mode.ANTHROPIC_TOOLS,
+    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
 
     assert isinstance(
         client, (anthropic.Anthropic, anthropic.AsyncAnthropic)
