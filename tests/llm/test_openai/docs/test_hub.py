@@ -10,6 +10,7 @@ def test_format_blog(example: CodeExample, eval_example: EvalExample):
         "llama_cpp",
         "groq",
         "youtube",
+        "contact",
         "langsmith",
     ]  # sources that are not supported in testing
     if any(source in example.source for source in excluded_sources):
