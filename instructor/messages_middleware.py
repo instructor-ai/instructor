@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 
 class MessageMiddleware(BaseModel, ABC):
-
     @abstractmethod
     def __call__(
         self, messages: List[ChatCompletionMessageParam]
@@ -14,7 +13,6 @@ class MessageMiddleware(BaseModel, ABC):
 
 
 class AsyncMessageMiddleware(MessageMiddleware):
-
     @abstractmethod
     async def __call__(
         self, messages: List[ChatCompletionMessageParam]
@@ -23,7 +21,6 @@ class AsyncMessageMiddleware(MessageMiddleware):
 
 
 def messages_middleware(func: Callable) -> MessageMiddleware:
-
     class _Middleware(MessageMiddleware):
         def __call__(
             self, messages: List[ChatCompletionMessageParam]

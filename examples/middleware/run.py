@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 
 class PrintLastUserMessage(instructor.MessageMiddleware):
-
     log: bool = False
 
     def __call__(

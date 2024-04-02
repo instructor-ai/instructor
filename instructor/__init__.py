@@ -23,6 +23,7 @@ __all__ = [
     "Instructor",
     "MessageMiddleware",
     "AsyncMessageMiddleware",
+    "messages_middleware",
     "from_openai",
     "from_anthropic",
     "from_litellm",
