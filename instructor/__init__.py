@@ -13,9 +13,16 @@ from .function_calls import OpenAISchema, openai_schema
 from .patch import apatch, patch
 from .process_response import handle_parallel_model
 from .client import Instructor, from_openai, from_anthropic, from_litellm
+from .messages_middleware import (
+    MessageMiddleware,
+    AsyncMessageMiddleware,
+    messages_middleware,
+)
 
 __all__ = [
     "Instructor",
+    "MessageMiddleware",
+    "AsyncMessageMiddleware",
     "from_openai",
     "from_anthropic",
     "from_litellm",

@@ -22,7 +22,7 @@ from typing import (
 from typing_extensions import Self
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
-
+from instructor.messages_middleware import MessageMiddleware
 
 T = TypeVar("T", bound=(BaseModel | Iterable | Partial))
 
@@ -47,6 +47,7 @@ class Instructor:
         self.mode = mode
         self.kwargs = kwargs
         self.provider = provider
+        self.message_middleware = []
 
     @property
     def chat(self) -> Self:
@@ -60,6 +61,10 @@ class Instructor:
     def messages(self) -> Self:
         return self
 
+    def with_middleware(self, middleware: MessageMiddleware | Callable) -> Self:
+        self.message_middleware.append(middleware)
+        return self
+
     # TODO: we should overload a case where response_model is None
     def create(
         self,
@@ -69,9 +74,7 @@ class Instructor:
         validation_context: dict | None = None,
         **kwargs,
     ) -> T:
-        kwargs = self.handle_kwargs(kwargs)
-
-        return self.create_fn(
+        return self._create(
             response_model=response_model,
             messages=messages,
             max_retries=max_retries,
@@ -90,13 +93,9 @@ class Instructor:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
 
         kwargs["stream"] = True
-
-        kwargs = self.handle_kwargs(kwargs)
-
-        response_model = instructor.Partial[response_model]  # type: ignore
-        return self.create_fn(
+        return self._create(
             messages=messages,
-            response_model=response_model,
+            response_model=instructor.Partial[response_model],  # type: ignore
             max_retries=max_retries,
             validation_context=validation_context,
             **kwargs,
@@ -113,12 +112,9 @@ class Instructor:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
 
         kwargs["stream"] = True
-        kwargs = self.handle_kwargs(kwargs)
-
-        response_model = Iterable[response_model]  # type: ignore
-        return self.create_fn(
+        return self._create(
             messages=messages,
-            response_model=response_model,
+            response_model=Iterable[response_model],
             max_retries=max_retries,
             validation_context=validation_context,
             **kwargs,
@@ -132,8 +128,7 @@ class Instructor:
         validation_context: dict | None = None,
         **kwargs,
     ) -> Tuple[T, ChatCompletion | Message]:
-        kwargs = self.handle_kwargs(kwargs)
-        model = self.create_fn(
+        model = self._create(
             messages=messages,
             response_model=response_model,
             max_retries=max_retries,
@@ -147,6 +142,27 @@ class Instructor:
             if key not in kwargs:
                 kwargs[key] = value
         return kwargs
+
+    def _create(
+        self,
+        messages: List[ChatCompletionMessageParam],
+        response_model: Type[T],
+        max_retries: int = 3,
+        validation_context: dict | None = None,
+        **kwargs,
+    ) -> T:
+        for middleware in self.message_middleware:
+            messages = middleware(messages)
+
+        kwargs = self.handle_kwargs(kwargs)
+
+        return self.create_fn(
+            messages=messages,
+            response_model=response_model,
+            max_retries=max_retries,
+            validation_context=validation_context,
+            **kwargs,
+        )
 
 
 class AsyncInstructor(Instructor):
