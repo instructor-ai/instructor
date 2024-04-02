@@ -30,6 +30,16 @@ def dumb_rag(messages):
     ]
 
 
+try:
+
+    @instructor.messages_middleware
+    def dumb_rag(x):
+        return x
+
+except ValueError as e:
+    print("Correctly caught exception", e)
+
+
 class User(BaseModel):
     age: int
     name: str
