@@ -1,0 +1,5 @@
+instructor
+openai 
+scikit-learn 
+rich 
+lancedb
