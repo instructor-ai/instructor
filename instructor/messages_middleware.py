@@ -21,10 +21,15 @@ class AsyncMessageMiddleware(MessageMiddleware):
 
 
 def messages_middleware(func: Callable) -> MessageMiddleware:
+    import inspect
+
+    if "messages" not in inspect.signature(func).parameters:
+        raise ValueError("`messages` must be a parameter of the middleware function")
+
     class _Middleware(MessageMiddleware):
         def __call__(
             self, messages: List[ChatCompletionMessageParam]
         ) -> List[ChatCompletionMessageParam]:
-            return func(messages)
+            return func(messages=messages)
 
     return _Middleware()
