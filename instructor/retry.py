@@ -27,8 +27,17 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.ANTHROPIC_TOOLS:
         # TODO: we need to include the original response
         yield {
-            "role": "user",
-            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+            "role": "assistant",
+            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors",
+        }
+        return
+    if mode == Mode.ANTHROPIC_JSON:
+        from anthropic.types import Message
+
+        assert isinstance(response, Message)
+        yield {
+            "role": "assistant",
+            "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.content[0].text}""",
         }
         return
 
