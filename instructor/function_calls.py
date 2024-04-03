@@ -136,7 +136,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
 
         assert isinstance(completion, Message)
 
-        text = completion.content[0].text  # type: ignore
+        text = completion.content[0].text
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict

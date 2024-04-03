@@ -120,3 +120,15 @@ def is_async(func: Callable) -> bool:
         func = func.__wrapped__
         is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
     return is_coroutine
+
+
+def merge_consecutive_messages(messages: list[dict]) -> list[dict]:
+    # merge all consecutive user messages into a single message
+    new_messages = []
+    for message in messages:
+        if len(new_messages) > 0 and message["role"] == new_messages[-1]["role"]:
+            new_messages[-1]["content"] += f"\n\n{message['content']}"
+        else:
+            new_messages.append(message)
+
+    return new_messages

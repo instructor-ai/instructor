@@ -33,7 +33,7 @@ def test_simple():
     )  # type: ignore
 
     assert isinstance(resp, User)
-    assert resp.name == "John"
+    assert resp.name == "JOHN"  # due to validation
     assert resp.age == 18
 
 

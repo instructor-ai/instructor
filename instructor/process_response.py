@@ -7,7 +7,7 @@ from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
-
+from instructor.utils import merge_consecutive_messages
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 
@@ -333,6 +333,11 @@ def handle_response_model(
                 for message in new_kwargs.get("messages", [])
                 if message["role"] != "system"
             ]
+
+            # the messages array must be alternating roles of user and assistant, we must merge
+            # consecutive user messages into a single message
+            new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
+
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 
