@@ -128,12 +128,15 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     @classmethod
     def parse_anthropic_json(
         cls: Type[BaseModel],
-        completion: ChatCompletion,
+        completion,
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        assert hasattr(completion, "content")
-        text = completion.content[0].text  # type: ignore
+        from anthropic.types import Message
+
+        assert isinstance(completion, Message)
+
+        text = completion.content[0].text
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict

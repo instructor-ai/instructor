@@ -1,11 +1,11 @@
 import anthropic
 import instructor
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List, Literal
 from enum import Enum
 
-create = instructor.patch(
-    create=anthropic.Anthropic().messages.create, mode=instructor.Mode.ANTHROPIC_JSON
+client = instructor.from_anthropic(
+    anthropic.Anthropic(), mode=instructor.Mode.ANTHROPIC_JSON
 )
 
 
@@ -14,10 +14,15 @@ def test_simple():
         name: str
         age: int
 
-    resp = create(
+        @field_validator("name")
+        def name_is_uppercase(cls, v: str):
+            assert v.isupper(), "Name must be uppercase"
+            return v
+
+    resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
-        max_retries=0,
+        max_retries=2,
         messages=[
             {
                 "role": "user",
@@ -28,7 +33,7 @@ def test_simple():
     )  # type: ignore
 
     assert isinstance(resp, User)
-    assert resp.name == "John"
+    assert resp.name == "JOHN"  # due to validation
     assert resp.age == 18
 
 
@@ -42,7 +47,7 @@ def test_nested_type():
         age: int
         address: Address
 
-    resp = create(
+    resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
@@ -70,7 +75,7 @@ def test_list_str():
         age: int
         family: List[str]
 
-    resp = create(
+    resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
@@ -98,7 +103,7 @@ def test_enum():
         name: str
         role: Role
 
-    resp = create(
+    resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
@@ -120,10 +125,10 @@ def test_literal():
         name: str
         role: Literal["admin", "user"]
 
-    resp = create(
+    resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
-        max_retries=0,
+        max_retries=2,
         messages=[
             {
                 "role": "user",
@@ -147,7 +152,7 @@ def test_nested_list():
         age: int
         properties: List[Properties]
 
-    resp = create(
+    resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
@@ -170,7 +175,7 @@ def test_system_messages_allcaps():
         name: str
         age: int
 
-    resp = create(
+    resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,

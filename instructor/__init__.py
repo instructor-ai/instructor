@@ -1,3 +1,5 @@
+import importlib
+
 from .mode import Mode
 from .process_response import handle_response_model
 from .distil import FinetuneFormat, Instructions
@@ -44,18 +46,13 @@ __all__ = [
     "handle_response_model",
 ]
 
-try:
-    import anthropic
+
+if importlib.util.find_spec("anthropic") is not None:
     from .client_anthropic import from_anthropic
 
-    __all__.append("from_anthropic")
-except ImportError:
-    pass
+    __all__ += ["from_anthropic"]
 
-try:
-    import groq
+if importlib.util.find_spec("groq") is not None:
     from .client_groq import from_groq
 
-    __all__.append("from_groq")
-except ImportError:
-    pass
+    __all__ += ["from_groq"]

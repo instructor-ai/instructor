@@ -4,7 +4,11 @@ import logging
 from openai.types.chat import ChatCompletion
 from instructor.mode import Mode
 from instructor.process_response import process_response, process_response_async
-from instructor.utils import dump_message, update_total_usage
+from instructor.utils import (
+    dump_message,
+    update_total_usage,
+    merge_consecutive_messages,
+)
 
 from openai.types.completion_usage import CompletionUsage
 from pydantic import ValidationError
@@ -27,8 +31,17 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.ANTHROPIC_TOOLS:
         # TODO: we need to include the original response
         yield {
+            "role": "assistant",
+            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors",
+        }
+        return
+    if mode == Mode.ANTHROPIC_JSON:
+        from anthropic.types import Message
+
+        assert isinstance(response, Message)
+        yield {
             "role": "user",
-            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+            "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.content[0].text}""",
         }
         return
 
@@ -94,6 +107,7 @@ def retry_sync(
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
                     kwargs["messages"].extend(reask_messages(response, mode, e))
+                    kwargs["messages"] = merge_consecutive_messages(kwargs["messages"])
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
