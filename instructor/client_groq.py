@@ -14,14 +14,14 @@ def from_groq(
 
 @overload
 def from_groq(
-    client: groq.Groq,
+    client: groq.AsyncGroq,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> instructor.Instructor: ...
 
 
 def from_groq(
-    client: groq.Groq,
+    client: groq.Groq | groq.AsyncGroq,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> instructor.Instructor:
@@ -30,7 +30,9 @@ def from_groq(
         instructor.Mode.TOOLS,
     }, "Mode be one of {instructor.Mode.JSON, instructor.Mode.TOOLS}"
 
-    assert isinstance(client, (groq.Groq)), "Client must be an instance of groq.GROQ"
+    assert isinstance(
+        client, (groq.Groq, groq.AsyncGroq)
+    ), "Client must be an instance of groq.GROQ"
 
     if isinstance(client, groq.Groq):
         return instructor.Instructor(
@@ -44,7 +46,7 @@ def from_groq(
     else:
         return instructor.Instructor(
             client=client,
-            create=instructor.patch(create=client.messages.create, mode=mode),
+            create=instructor.patch(create=client.chat.completions.create, mode=mode),
             provider=instructor.Provider.GROQ,
             mode=mode,
             **kwargs,
