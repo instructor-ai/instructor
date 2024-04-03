@@ -5,10 +5,11 @@ from groq import Groq
 import instructor
 
 client = Groq(
-    api_key=os.environ.get('GROQ_API_KEY'),
+    api_key=os.environ.get("GROQ_API_KEY"),
 )
 
 client = instructor.from_groq(client, mode=instructor.Mode.JSON)
+
 
 class UserExtract(BaseModel):
     name: str

@@ -402,12 +402,6 @@ def from_anthropic(
             **kwargs,
         )
 
-@overload
-def from_groq(
-    client: groq.Groq,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
-    **kwargs,
-) -> Instructor: ...
 
 @overload
 def from_groq(
@@ -415,6 +409,15 @@ def from_groq(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> Instructor: ...
+
+
+@overload
+def from_groq(
+    client: groq.Groq,
+    mode: instructor.Mode = instructor.Mode.TOOLS,
+    **kwargs,
+) -> Instructor: ...
+
 
 def from_groq(
     client: groq.Groq,
@@ -426,9 +429,7 @@ def from_groq(
         instructor.Mode.TOOLS,
     }, "Mode be one of {instructor.Mode.JSON, instructor.Mode.TOOLS}"
 
-    assert isinstance(
-        client, (groq.Groq)
-    ), "Client must be an instance of groq.GROQ"
+    assert isinstance(client, (groq.Groq)), "Client must be an instance of groq.GROQ"
 
     if isinstance(client, groq.Groq):
         return Instructor(
@@ -447,4 +448,3 @@ def from_groq(
             mode=mode,
             **kwargs,
         )
-
