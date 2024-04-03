@@ -1,8 +1,6 @@
 import openai
 import inspect
 import instructor
-import anthropic
-import groq
 from .utils import Provider, get_provider
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 from anthropic.types import Message
@@ -29,7 +27,7 @@ T = TypeVar("T", bound=(BaseModel | Iterable | Partial))
 
 
 class Instructor:
-    client: openai.OpenAI | anthropic.Anthropic | None
+    client: Any | None
     create_fn: Any
     mode: instructor.Mode
     default_model: str | None = None
@@ -37,7 +35,7 @@ class Instructor:
 
     def __init__(
         self,
-        client: openai.OpenAI | anthropic.Anthropic | None,
+        client: Any | None,
         create: Callable,
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
@@ -151,7 +149,7 @@ class Instructor:
 
 
 class AsyncInstructor(Instructor):
-    client: openai.AsyncOpenAI | anthropic.AsyncAnthropic | None
+    client: Any | None
     create_fn: Any
     mode: instructor.Mode
     default_model: str | None = None
@@ -159,7 +157,7 @@ class AsyncInstructor(Instructor):
 
     def __init__(
         self,
-        client: openai.AsyncOpenAI | anthropic.AsyncAnthropic | None,
+        client: Any | None,
         create: Callable,
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
@@ -282,10 +280,7 @@ def from_openai(
             instructor.Mode.JSON,
             instructor.Mode.JSON_SCHEMA,
         }
-    if provider in {Provider.GROQ}:
-        assert mode in {
-            instructor.Mode.MD_JSON,
-        }
+
     if provider in {Provider.OPENAI}:
         assert mode in {
             instructor.Mode.TOOLS,
@@ -349,102 +344,6 @@ def from_litellm(
         return AsyncInstructor(
             client=None,
             create=instructor.patch(create=completion, mode=mode),
-            mode=mode,
-            **kwargs,
-        )
-
-
-@overload
-def from_anthropic(
-    client: anthropic.Anthropic,
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
-    **kwargs,
-) -> Instructor: ...
-
-
-@overload
-def from_anthropic(
-    client: anthropic.AsyncAnthropic,
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
-    **kwargs,
-) -> Instructor: ...
-
-
-def from_anthropic(
-    client: anthropic.Anthropic | anthropic.AsyncAnthropic,
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
-    **kwargs,
-) -> Instructor | AsyncInstructor:
-    assert mode in {
-        instructor.Mode.ANTHROPIC_JSON,
-        instructor.Mode.ANTHROPIC_TOOLS,
-    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
-
-    assert isinstance(
-        client, (anthropic.Anthropic, anthropic.AsyncAnthropic)
-    ), "Client must be an instance of anthropic.Anthropic or anthropic.AsyncAnthropic"
-
-    if isinstance(client, anthropic.Anthropic):
-        return Instructor(
-            client=client,
-            create=instructor.patch(create=client.messages.create, mode=mode),
-            provider=Provider.ANTHROPIC,
-            mode=mode,
-            **kwargs,
-        )
-
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=instructor.patch(create=client.messages.create, mode=mode),
-            provider=Provider.ANTHROPIC,
-            mode=mode,
-            **kwargs,
-        )
-
-
-@overload
-def from_groq(
-    client: groq.Groq,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
-    **kwargs,
-) -> Instructor: ...
-
-
-@overload
-def from_groq(
-    client: groq.Groq,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
-    **kwargs,
-) -> Instructor: ...
-
-
-def from_groq(
-    client: groq.Groq,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
-    **kwargs,
-) -> Instructor:
-    assert mode in {
-        instructor.Mode.JSON,
-        instructor.Mode.TOOLS,
-    }, "Mode be one of {instructor.Mode.JSON, instructor.Mode.TOOLS}"
-
-    assert isinstance(client, (groq.Groq)), "Client must be an instance of groq.GROQ"
-
-    if isinstance(client, groq.Groq):
-        return Instructor(
-            client=client,
-            create=instructor.patch(create=client.chat.completions.create, mode=mode),
-            provider=Provider.GROQ,
-            mode=mode,
-            **kwargs,
-        )
-
-    else:
-        return AsyncInstructor(
-            client=client,
-            create=instructor.patch(create=client.messages.create, mode=mode),
-            provider=Provider.GROQ,
             mode=mode,
             **kwargs,
         )
