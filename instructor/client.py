@@ -3,7 +3,6 @@ import inspect
 import instructor
 from .utils import Provider, get_provider
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
-from anthropic.types import Message
 from typing import (
     Type,
     TypeVar,
@@ -130,7 +129,7 @@ class Instructor:
         max_retries: int = 3,
         validation_context: dict | None = None,
         **kwargs,
-    ) -> Tuple[T, ChatCompletion | Message]:
+    ) -> Tuple[T, ChatCompletion | Any]:
         kwargs = self.handle_kwargs(kwargs)
         model = self.create_fn(
             messages=messages,
