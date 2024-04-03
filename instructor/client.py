@@ -2,6 +2,7 @@ import openai
 import inspect
 import instructor
 import anthropic
+import groq
 from .utils import Provider, get_provider
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 from anthropic.types import Message
@@ -397,6 +398,53 @@ def from_anthropic(
             client=client,
             create=instructor.patch(create=client.messages.create, mode=mode),
             provider=Provider.ANTHROPIC,
+            mode=mode,
+            **kwargs,
+        )
+
+
+@overload
+def from_groq(
+    client: groq.Groq,
+    mode: instructor.Mode = instructor.Mode.TOOLS,
+    **kwargs,
+) -> Instructor: ...
+
+
+@overload
+def from_groq(
+    client: groq.Groq,
+    mode: instructor.Mode = instructor.Mode.TOOLS,
+    **kwargs,
+) -> Instructor: ...
+
+
+def from_groq(
+    client: groq.Groq,
+    mode: instructor.Mode = instructor.Mode.TOOLS,
+    **kwargs,
+) -> Instructor:
+    assert mode in {
+        instructor.Mode.JSON,
+        instructor.Mode.TOOLS,
+    }, "Mode be one of {instructor.Mode.JSON, instructor.Mode.TOOLS}"
+
+    assert isinstance(client, (groq.Groq)), "Client must be an instance of groq.GROQ"
+
+    if isinstance(client, groq.Groq):
+        return Instructor(
+            client=client,
+            create=instructor.patch(create=client.chat.completions.create, mode=mode),
+            provider=Provider.GROQ,
+            mode=mode,
+            **kwargs,
+        )
+
+    else:
+        return AsyncInstructor(
+            client=client,
+            create=instructor.patch(create=client.messages.create, mode=mode),
+            provider=Provider.GROQ,
             mode=mode,
             **kwargs,
         )
