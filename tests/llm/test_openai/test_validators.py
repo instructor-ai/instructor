@@ -44,7 +44,6 @@ def test_runmodel_validator_error(model, mode, client):
 
 @pytest.mark.parametrize("model", models)
 def test_runmodel_validator_default_openai_client(model, client):
-
     client = instructor.from_openai(client)
 
     class QuestionAnswerNoEvil(BaseModel):

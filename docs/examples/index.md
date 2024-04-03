@@ -17,5 +17,6 @@
 13. [How to generate advertising copy from image inputs](image_to_ad_copy.md)
 14. [How to use local models from Ollama](ollama.md)
 15. [How to store responses in a database with SQLModel](sqlmodel.md)
+16. [How to use groqcloud api](groq.md)
 
 Explore more!
