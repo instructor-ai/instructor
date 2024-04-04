@@ -25,10 +25,13 @@ def from_anthropic(
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert mode in {
-        instructor.Mode.ANTHROPIC_JSON,
-        instructor.Mode.ANTHROPIC_TOOLS,
-    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
+    assert (
+        mode
+        in {
+            instructor.Mode.ANTHROPIC_JSON,
+            instructor.Mode.ANTHROPIC_TOOLS,
+        }
+    ), "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
 
     assert isinstance(
         client, (anthropic.Anthropic, anthropic.AsyncAnthropic)

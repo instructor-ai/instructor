@@ -1,5 +1,4 @@
 from typing import Any, Dict, Optional, Type, TypeVar
-from xml.dom.minidom import parseString
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
@@ -18,7 +17,6 @@ logger = logging.getLogger("instructor")
 
 
 class OpenAISchema(BaseModel):  # type: ignore[misc]
-
     @classmethod
     def model_schema(cls) -> Dict[str, Any]:
         schema = cls.model_json_schema()
@@ -123,12 +121,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-
         tool_call = [c.input for c in completion.content if c.type == "tool_use"][0]
 
-        return cls.model_validate(
-            tool_call, context=validation_context, strict=strict
-        )  # type:ignore
+        return cls.model_validate(tool_call, context=validation_context, strict=strict)  # type:ignore
 
     @classmethod
     def parse_anthropic_json(
