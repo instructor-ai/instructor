@@ -66,3 +66,9 @@ def test_partial():
 
     for model in partial.model_from_chunks(['{"b": {"b": 1}}']):
         assert model.model_dump() == {"a": None, "b": {"b": 1}}
+
+
+def test_partial_empty_string():
+    partial = Partial[SamplePartial]
+    for model in partial.model_from_chunks([""]):
+        assert model.model_dump() == {"a": None, "b": {}}
