@@ -6,6 +6,7 @@
 # serves as an acknowledgment of the original author's contribution to this project.
 # --------------------------------------------------------------------------------
 
+import pydantic_core
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 from typing import (
@@ -24,10 +25,8 @@ from copy import deepcopy
 from functools import lru_cache
 
 from instructor.mode import Mode
-from instructor.dsl.partialjson import JSONParser
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
-parser = JSONParser()
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
 
@@ -129,18 +128,9 @@ class PartialBase(Generic[T_Model]):
         for chunk in json_chunks:
             potential_object += chunk
 
-            # Avoid parsing incomplete json when its just whitespace otherwise parser throws an exception
-            task_json = (
-                parser.parse(potential_object) if potential_object.strip() else None
-            )
-            if task_json:
-                obj = partial_model.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
-                if obj != prev_obj:
-                    obj.__dict__["chunk"] = (
-                        chunk  # Provide the raw chunk for debugging and benchmarking
-                    )
-                    prev_obj = obj
-                    yield obj
+            obj = pydantic_core.from_json(potential_object, allow_partial=True)
+            obj = partial_model.model_validate(obj, strict=None, **kwargs)  # type: ignore[attr-defined]
+            yield obj
 
     @classmethod
     async def model_from_chunks_async(
@@ -151,19 +141,9 @@ class PartialBase(Generic[T_Model]):
         partial_model = cls.get_partial_model()
         async for chunk in json_chunks:
             potential_object += chunk
-
-            # Avoid parsing incomplete json when its just whitespace otherwise parser throws an exception
-            task_json = (
-                parser.parse(potential_object) if potential_object.strip() else None
-            )
-            if task_json:
-                obj = partial_model.model_validate(task_json, strict=None, **kwargs)  # type: ignore[attr-defined]
-                if obj != prev_obj:
-                    obj.__dict__["chunk"] = (
-                        chunk  # Provide the raw chunk for debugging and benchmarking
-                    )
-                    prev_obj = obj
-                    yield obj
+            obj = pydantic_core.from_json(potential_object, allow_partial=True)
+            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            yield obj
 
     @staticmethod
     def extract_json(
