@@ -18,18 +18,9 @@ logger = logging.getLogger("instructor")
 
 
 class OpenAISchema(BaseModel):  # type: ignore[misc]
-    @classmethod  # type: ignore[misc]
-    @property
-    def openai_schema(cls) -> Dict[str, Any]:
-        """
-        Return the schema in the format of OpenAI's schema as jsonschema
 
-        Note:
-            Its important to add a docstring to describe how to best use this class, it will be included in the description attribute and be part of the prompt.
-
-        Returns:
-            model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
-        """
+    @classmethod
+    def model_schema(cls) -> Dict[str, Any]:
         schema = cls.model_json_schema()
         docstring = parse(cls.__doc__ or "")
         parameters = {
@@ -54,22 +45,36 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
                     f"Correctly extracted `{cls.__name__}` with all "
                     f"the required parameters with correct types"
                 )
+        return schema
 
+    @classmethod  # type: ignore[misc]
+    @property
+    def openai_schema(cls) -> Dict[str, Any]:
+        """
+        Return the schema in the format of OpenAI's schema as jsonschema
+
+        Note:
+            Its important to add a docstring to describe how to best use this class, it will be included in the description attribute and be part of the prompt.
+
+        Returns:
+            model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
+        """
+        schema = cls.model_schema()
         return {
             "name": schema["title"],
             "description": schema["description"],
-            "parameters": parameters,
+            "parameters": schema["properties"],
         }
 
     @classmethod
     @property
-    def anthropic_schema(cls) -> str:
-        from instructor.anthropic_utils import json_to_xml
-
-        return "\n".join(
-            line.lstrip()
-            for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:]
-        )
+    def anthropic_schema(cls) -> Dict[str, Any]:
+        schema = cls.model_schema()
+        return {
+            "name": schema["title"],
+            "description": schema["description"],
+            "input_schema": cls.model_json_schema(),
+        }
 
     @classmethod
     def from_response(
@@ -92,7 +97,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             cls (OpenAISchema): An instance of the class
         """
         if mode == Mode.ANTHROPIC_TOOLS:
-            return cls.parse_anthropic_tools(completion)
+            return cls.parse_anthropic_tools(completion, validation_context, strict)
 
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
@@ -115,15 +120,15 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     def parse_anthropic_tools(
         cls: Type[BaseModel],
         completion: ChatCompletion,
+        validation_context: Optional[Dict[str, Any]] = None,
+        strict: Optional[bool] = None,
     ) -> BaseModel:
-        try:
-            from instructor.anthropic_utils import extract_xml, xml_to_model
-        except ImportError as err:
-            raise ImportError(
-                "Please 'pip install anthropic xmltodict' package to proceed."
-            ) from err
-        assert hasattr(completion, "content")
-        return xml_to_model(cls, extract_xml(completion.content[0].text))  # type:ignore
+
+        tool_call = [c.input for c in completion.content if c.type == "tool_use"][0]
+
+        return cls.model_validate(
+            tool_call, context=validation_context, strict=strict
+        )  # type:ignore
 
     @classmethod
     def parse_anthropic_json(
