@@ -17,8 +17,18 @@ logger = logging.getLogger("instructor")
 
 
 class OpenAISchema(BaseModel):  # type: ignore[misc]
-    @classmethod
-    def model_schema(cls) -> Dict[str, Any]:
+    @classmethod  # type: ignore[misc]
+    @property
+    def openai_schema(cls) -> Dict[str, Any]:
+        """
+        Return the schema in the format of OpenAI's schema as jsonschema
+
+        Note:
+            Its important to add a docstring to describe how to best use this class, it will be included in the description attribute and be part of the prompt.
+
+        Returns:
+            model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
+        """
         schema = cls.model_json_schema()
         docstring = parse(cls.__doc__ or "")
         parameters = {
@@ -43,34 +53,19 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
                     f"Correctly extracted `{cls.__name__}` with all "
                     f"the required parameters with correct types"
                 )
-        return schema
 
-    @classmethod  # type: ignore[misc]
-    @property
-    def openai_schema(cls) -> Dict[str, Any]:
-        """
-        Return the schema in the format of OpenAI's schema as jsonschema
-
-        Note:
-            Its important to add a docstring to describe how to best use this class, it will be included in the description attribute and be part of the prompt.
-
-        Returns:
-            model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
-        """
-        schema = cls.model_schema()
         return {
             "name": schema["title"],
             "description": schema["description"],
-            "parameters": schema["properties"],
+            "parameters": parameters,
         }
 
     @classmethod
     @property
     def anthropic_schema(cls) -> Dict[str, Any]:
-        schema = cls.model_schema()
         return {
-            "name": schema["title"],
-            "description": schema["description"],
+            "name": cls.openai_schema["name"],
+            "description": cls.openai_schema["description"],
             "input_schema": cls.model_json_schema(),
         }
 

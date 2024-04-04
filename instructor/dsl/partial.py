@@ -128,7 +128,7 @@ class PartialBase(Generic[T_Model]):
         for chunk in json_chunks:
             potential_object += chunk
 
-            obj = pydantic_core.from_json(potential_object, allow_partial=True)
+            obj = pydantic_core.from_json(potential_object or "{}", allow_partial=True)
             obj = partial_model.model_validate(obj, strict=None, **kwargs)  # type: ignore[attr-defined]
             yield obj
 
@@ -141,7 +141,7 @@ class PartialBase(Generic[T_Model]):
         partial_model = cls.get_partial_model()
         async for chunk in json_chunks:
             potential_object += chunk
-            obj = pydantic_core.from_json(potential_object, allow_partial=True)
+            obj = pydantic_core.from_json(potential_object or "{}", allow_partial=True)
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
