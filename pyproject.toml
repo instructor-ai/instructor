@@ -71,11 +71,6 @@ anthropic = "^0.23.1"
 xmltodict = "^0.13.0"
 groq = "^0.4.2"
 
-[tool.poetry.extras]
-anthropic = ["anthropic", "xmltodict"]
-groq = ["groq"]
-test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq"]
-
 
 [build-system]
 requires = ["poetry-core"]
