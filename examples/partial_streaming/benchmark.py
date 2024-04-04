@@ -26,9 +26,6 @@ class User(BaseModel):
     age: int
 
 
-PartialUser = instructor.Partial[User]
-
-
 def benchmark_raw_stream(model="gpt-4"):
     content = f"""Respond only in JSON that would validate to this schema and include nothing extra.
     Otherwise something bad will happen:\n {User.model_json_schema()}"""
@@ -59,9 +56,9 @@ def benchmark_raw_stream(model="gpt-4"):
 
 def benchmark_partial_streaming(model="gpt-4"):
     start_time = time.time()
-    extraction_stream = client.chat.completions.create(
+    extraction_stream = client.chat.completions.create_partial(
         model=model,
-        response_model=PartialUser,
+        response_model=User,
         messages=[
             {
                 "role": "user",
