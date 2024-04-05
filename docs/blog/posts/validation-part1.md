@@ -63,14 +63,14 @@ assert user.age == 25
 1.  To simplify your work with OpenAI models and streamline the extraction of Pydantic objects from prompts, we
     offer a patching mechanism for the `ChatCompletion` class.
 
-2.  Invalid responses that fail to be validated succesfully will trigger up to as many reattempts as you define.
+2.  Invalid responses that fail to be validated successfully will trigger up to as many reattempts as you define.
 
 3.  As long as you pass in a `response_model` parameter to the `ChatCompletion` api call, the returned object will always
     be a validated `Pydantic` object.
 
 In this post, we'll explore how to evolve from static, rule-based validation methods to dynamic, machine learning-driven ones. You'll learn to use `Pydantic` and `Instructor` to leverage language models and dive into advanced topics like content moderation, validating chain of thought reasoning, and contextual validation.
 
-Let's examine how these approaches with a example. Imagine that you run a software company who wants to ensure you never serve hateful and racist content. This isn't an easy job since the language around these topics change very quickly and frequently.
+Let's examine how these approaches with an example. Imagine that you run a software company that wants to ensure you never serve hateful and racist content. This isn't an easy job since the language around these topics change very quickly and frequently.
 
 ## Software 1.0: Introduction to Validations in Pydantic
 
@@ -289,7 +289,7 @@ class UserMessage(BaseModel):
 
 A popular way of prompting large language models nowadays is known as chain of thought. This involves getting a model to generate reasons and explanations for an answer to a prompt.
 
-We can utilise `Pydantic` and `Instructor` to perform a validation to check of the reasoning is reasonable, given both the answer and the chain of thought. To do this we can't build a field validator since we need to access multiple fields in the model. Instead we can use a model validator.
+We can utilise `Pydantic` and `Instructor` to perform a validation to check if the reasoning is reasonable, given both the answer and the chain of thought. To do this we can't build a field validator since we need to access multiple fields in the model. Instead we can use a model validator.
 
 ```python
 def validate_chain_of_thought(values):
@@ -430,7 +430,7 @@ def answer_question(question: str, text_chunk: str) -> AnswerWithCitation:
 
 ## Error Handling and Re-Asking
 
-Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. The by running `client = instructor.from_openai(OpenAI())` not only do we add `response_model` and `validation_context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
+Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. Then by running `client = instructor.from_openai(OpenAI())` not only do we add `response_model` and `validation_context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
 
 This approach provides a layer of defense against two types of bad outputs:
 
@@ -477,6 +477,6 @@ In this example, even though there is no code explicitly transforming the name t
 
 ## Conclusion
 
-From the simplicity of Pydantic and Instructor to the dynamic validation capabilities of LLMs, the landscape of validation is changing but without needing to introduce new contepts. It's clear that the future of validation is not just about preventing bad data but about allowing llms to understand the data and correcting it.
+From the simplicity of Pydantic and Instructor to the dynamic validation capabilities of LLMs, the landscape of validation is changing but without needing to introduce new concepts. It's clear that the future of validation is not just about preventing bad data but about allowing llms to understand the data and correcting it.
 
 If you enjoy the content or want to try out `Instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!
