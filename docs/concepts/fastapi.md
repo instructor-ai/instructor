@@ -81,7 +81,7 @@ async def extract(data: UserData):
     )
 
     async def generate():
-        for user in users:
+        async for user in users:
             resp_json = user.model_dump_json()
             yield f"data: {resp_json}"
         yield "data: [DONE]"
