@@ -129,9 +129,11 @@ import openai
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 client = instructor.from_openai(openai.OpenAI())
 
@@ -238,6 +240,17 @@ user_stream = client.chat.completions.create_partial(
 
 for user in user_stream:
     print(user)
+    #> name=None age=None
+    #> name=None age=None
+    #> name=None age=None
+    #> name=None age=None
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name='John Doe' age=25
     # name=None age=None
     # name='' age=None
     # name='John' age=None
@@ -277,6 +290,8 @@ users = client.chat.completions.create_iterable(
 
 for user in users:
     print(user)
+    #> name='John' age=30
+    #> name='Jane' age=25
     # User(name='John Doe', age=30)
     # User(name='Jane Smith', age=25)
 ```

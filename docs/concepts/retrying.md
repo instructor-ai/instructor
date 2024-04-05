@@ -34,7 +34,7 @@ except Exception as e:
     1 validation error for UserDetail
     name
       Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.6/v/value_error
+        For further information visit https://errors.pydantic.dev/2.7/v/value_error
     """
 ```
 
@@ -207,6 +207,10 @@ resp = client.messages.create(
     max_retries=tenacity.Retrying(
         stop=tenacity.stop_after_attempt(3),
         before=lambda _: print("before:", _),
+"""
+before:
+<RetryCallState 4746154832: attempt #1; slept for 0.0; last result: none yet>
+"""
         after=lambda _: print("after:", _),
     ),
     messages=[
@@ -222,6 +226,7 @@ assert isinstance(resp, User)
 assert resp.name == "JOHN"  # due to validation
 assert resp.age == 18
 print(resp)
+#> name='JOHN' age=18
 
 """
 before: <RetryCallState 4421908816: attempt #1; slept for 0.0; last result: none yet>

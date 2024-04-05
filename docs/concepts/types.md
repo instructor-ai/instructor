@@ -28,6 +28,7 @@ print(model.model_json_schema())
             'type': 'boolean',
         }
     },
+    'required': ['content'],
     'title': 'Response',
     'type': 'object',
 }
