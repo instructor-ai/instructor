@@ -1,5 +1,4 @@
 from typing import Any, Dict, Optional, Type, TypeVar
-from xml.dom.minidom import parseString
 from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
@@ -63,13 +62,12 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
 
     @classmethod
     @property
-    def anthropic_schema(cls) -> str:
-        from instructor.anthropic_utils import json_to_xml
-
-        return "\n".join(
-            line.lstrip()
-            for line in parseString(json_to_xml(cls)).toprettyxml().splitlines()[1:]
-        )
+    def anthropic_schema(cls) -> Dict[str, Any]:
+        return {
+            "name": cls.openai_schema["name"],
+            "description": cls.openai_schema["description"],
+            "input_schema": cls.model_json_schema(),
+        }
 
     @classmethod
     def from_response(
@@ -92,7 +90,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             cls (OpenAISchema): An instance of the class
         """
         if mode == Mode.ANTHROPIC_TOOLS:
-            return cls.parse_anthropic_tools(completion)
+            return cls.parse_anthropic_tools(completion, validation_context, strict)
 
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
@@ -115,15 +113,12 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     def parse_anthropic_tools(
         cls: Type[BaseModel],
         completion: ChatCompletion,
+        validation_context: Optional[Dict[str, Any]] = None,
+        strict: Optional[bool] = None,
     ) -> BaseModel:
-        try:
-            from instructor.anthropic_utils import extract_xml, xml_to_model
-        except ImportError as err:
-            raise ImportError(
-                "Please 'pip install anthropic xmltodict' package to proceed."
-            ) from err
-        assert hasattr(completion, "content")
-        return xml_to_model(cls, extract_xml(completion.content[0].text))  # type:ignore
+        tool_call = [c.input for c in completion.content if c.type == "tool_use"][0]
+
+        return cls.model_validate(tool_call, context=validation_context, strict=strict)  # type:ignore
 
     @classmethod
     def parse_anthropic_json(
