@@ -282,29 +282,16 @@ def handle_response_model(
                 new_kwargs["messages"][0]["content"] += f"\n\n{message}"
         elif mode == Mode.ANTHROPIC_TOOLS:
             tool_descriptions = response_model.anthropic_schema
-            system_prompt = (
-                dedent(
-                    f"""In this environment you have access to a set of tools you can use to answer the user's question.
-                You may call them like this:
-                <function_calls>
-                <invoke>
-                <tool_name>$TOOL_NAME</tool_name>
-                <parameters>
-                <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME>
-                ...
-                </parameters>
-                </invoke>
-                </function_calls>
+            new_kwargs["tools"] = [tool_descriptions]
 
-                Here are the tools available:"""
-                )
-                + tool_descriptions
-            )
+            system_messages = [
+                m["content"] for m in new_kwargs["messages"] if m["role"] == "system"
+            ]
+            new_kwargs["system"] = "\n\n".join(system_messages)
+            new_kwargs["messages"] = [
+                m for m in new_kwargs["messages"] if m["role"] != "system"
+            ]
 
-            if "system" in new_kwargs:
-                new_kwargs["system"] = f"{system_prompt}\n{new_kwargs['system']}"
-            else:
-                new_kwargs["system"] = system_prompt
         elif mode == Mode.ANTHROPIC_JSON:
             # anthropic wants system message to be a string so we first extract out any system message
             openai_system_messages = [
