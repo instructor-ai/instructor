@@ -94,14 +94,13 @@ class Instructor:
         validation_context: dict | None = None,
         **kwargs,
     ) -> T | List[T]:
-        kwargs = self.handle_kwargs(kwargs)
+        kwargs = self.handle_kwargs(kwargs, n=n)
 
         return self.create_fn(
             response_model=response_model,
             messages=messages,
             max_retries=max_retries,
             validation_context=validation_context,
-            n=n,
             **kwargs,
         )
 
@@ -168,10 +167,12 @@ class Instructor:
         )
         return model, model._raw_response
 
-    def handle_kwargs(self, kwargs: dict):
+    def handle_kwargs(self, kwargs: dict, n: Optional[int] = None):
         for key, value in self.kwargs.items():
             if key not in kwargs:
                 kwargs[key] = value
+        if self.provider != Provider.ANTHROPIC:
+            kwargs["n"] = n
         return kwargs
 
 
@@ -227,13 +228,12 @@ class AsyncInstructor(Instructor):
         validation_context: dict | None = None,
         **kwargs,
     ) -> Coroutine[Any, Any, T | List[T]]:
-        kwargs = self.handle_kwargs(kwargs)
+        kwargs = self.handle_kwargs(kwargs, n=n)
         return await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
-            n=n,
             **kwargs,
         )
 

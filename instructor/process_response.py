@@ -153,6 +153,8 @@ def process_response(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
+        for task in model.tasks:
+            task._raw_response = response
         return [task for task in model.tasks]
 
     if isinstance(response_model, ParallelBase):
@@ -163,7 +165,8 @@ def process_response(
         logger.debug(f"Returning model from AdapterBase")
         return model.content
 
-    model._raw_response = response
+    if isinstance(model, BaseModel):
+        model._raw_response = response
     return model
 
 
@@ -306,7 +309,9 @@ def handle_response_model(
                 + "\n\n".join(openai_system_messages)
             )
 
-            new_kwargs["system"] += f"""
+            new_kwargs[
+                "system"
+            ] += f"""
             You must only response in JSON format that adheres to the following schema:
             
             <JSON_SCHEMA>

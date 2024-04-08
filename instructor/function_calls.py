@@ -76,7 +76,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
-    ) -> BaseModel:
+    ) -> BaseModel | List[BaseModel]:
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -116,6 +116,10 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
+        from anthropic.types import Message
+
+        assert isinstance(completion, Message)
+
         tool_call = [c.input for c in completion.content if c.type == "tool_use"][0]
 
         return cls.model_validate(
@@ -145,16 +149,20 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         completion: ChatCompletion,
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
-        message = completion.choices[0].message
-        assert (
-            message.function_call.name == cls.openai_schema["name"]  # type: ignore[index]
-        ), "Function name does not match"
-        return cls.model_validate_json(
-            message.function_call.arguments,  # type: ignore[attr-defined]
-            context=validation_context,
-            strict=strict,
-        )
+    ) -> BaseModel | List[BaseModel]:
+        models = []
+        for choice in completion.choices:
+            message = choice.message
+            assert (
+                message.function_call.name == cls.openai_schema["name"]  # type: ignore[index]
+            ), "Function name does not match"
+            model = cls.model_validate_json(
+                message.function_call.arguments,  # type: ignore[attr-defined]
+                context=validation_context,
+                strict=strict,
+            )
+            models.append(model)
+        return models if len(models) > 1 else models[0]
 
     @classmethod
     def parse_tools(
@@ -162,28 +170,32 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         completion: ChatCompletion,
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
-        message = completion.choices[0].message
-        assert (
-            len(message.tool_calls or []) == 1
-        ), "Instructor does not support multiple tool calls, use List[Model] instead."
-        tool_call = message.tool_calls[0]  # type: ignore
-        assert (
-            tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
-        ), "Tool name does not match"
-        return cls.model_validate_json(
-            tool_call.function.arguments,
-            context=validation_context,
-            strict=strict,
-        )
+    ) -> BaseModel | List[BaseModel]:
+        models = []
+        for choice in completion.choices:
+            message = choice.message
+            assert (
+                len(message.tool_calls or []) == 1
+            ), "Instructor does not support multiple tool calls per message, use List[Model] instead."
+            tool_call = message.tool_calls[0]  # type: ignore
+            assert (
+                tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
+            ), "Tool name does not match"
+            model = cls.model_validate_json(
+                tool_call.function.arguments,
+                context=validation_context,
+                strict=strict,
+            )
+            models.append(model)
+        return models if len(models) > 1 else models[0]
 
     @classmethod
     def parse_json(
-        cls: Type[T],
+        cls: Type[BaseModel],
         completion: ChatCompletion,
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> T | List[T]:
+    ) -> BaseModel | List[BaseModel]:
         models = []
         for choice in completion.choices:
             message = choice.message.content or ""

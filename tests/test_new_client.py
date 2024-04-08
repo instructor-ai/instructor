@@ -50,6 +50,18 @@ def test_client_chat_completions_create_with_response():
     assert isinstance(completion, ChatCompletion)
 
 
+def test_client_chat_completions_create_many():
+    client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
+
+    user = client.chat.completions.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+        n=2,
+    )
+    assert len(user) == 2
+
+
 def test_client_chat_completions_create():
     client = instructor.from_openai(openai.OpenAI(), model="gpt-3.5-turbo")
 
