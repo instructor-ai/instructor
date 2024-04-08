@@ -3,7 +3,7 @@ from docstring_parser import parse
 from functools import wraps
 from pydantic import BaseModel, create_model
 from openai.types.chat import ChatCompletion
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type, List
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_codeblock
 from instructor.exceptions import IncompleteOutputException
@@ -11,7 +11,7 @@ from instructor.mode import Mode
 import logging
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 
 logger = logging.getLogger("instructor")
 
@@ -179,19 +179,22 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
 
     @classmethod
     def parse_json(
-        cls: Type[BaseModel],
+        cls: Type[T],
         completion: ChatCompletion,
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
-        message = completion.choices[0].message.content or ""
-        message = extract_json_from_codeblock(message)
-
-        return cls.model_validate_json(
-            message,
-            context=validation_context,
-            strict=strict,
-        )
+    ) -> T | List[T]:
+        models = []
+        for choice in completion.choices:
+            message = choice.message.content or ""
+            message = extract_json_from_codeblock(message)
+            model = cls.model_validate_json(
+                message,
+                context=validation_context,
+                strict=strict,
+            )
+            models.append(model)
+        return models if len(models) > 1 else models[0]
 
 
 def openai_schema(cls: Type[BaseModel]) -> OpenAISchema:
