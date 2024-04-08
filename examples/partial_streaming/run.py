@@ -1,8 +1,6 @@
 # Part of this code is adapted from the following examples from OpenAI Cookbook:
 # https://cookbook.openai.com/examples/how_to_stream_completions
 # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-import time
-import tiktoken
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel

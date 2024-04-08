@@ -5,7 +5,7 @@ from typing import List, Literal
 from enum import Enum
 
 client = instructor.from_anthropic(
-    anthropic.Anthropic(), mode=instructor.Mode.ANTHROPIC_JSON
+    anthropic.Anthropic(), mode=instructor.Mode.ANTHROPIC_TOOLS
 )
 
 

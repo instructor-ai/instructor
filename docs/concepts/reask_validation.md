@@ -41,7 +41,7 @@ except ValidationError as e:
     1 validation error for UserDetail
     name
       Value error, Name must contain a space. [type=value_error, input_value='Jason', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.6/v/value_error
+        For further information visit https://errors.pydantic.dev/2.7/v/value_error
     """
 ```
 
@@ -89,8 +89,8 @@ except ValidationError as e:
     """
     1 validation error for QuestionAnswer
     answer
-      Assertion failed, The statement promotes objectionable behavior by encouraging evil and theft. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.6/v/assertion_error
+      Assertion failed, The statement promotes objectionable behavior by encouraging evil actions like stealing, which goes against the rule of not saying objectionable things. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.7/v/assertion_error
     """
 ```
 
