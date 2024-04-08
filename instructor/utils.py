@@ -126,9 +126,18 @@ def merge_consecutive_messages(messages: list[dict]) -> list[dict]:
     # merge all consecutive user messages into a single message
     new_messages = []
     for message in messages:
+        new_content = message["content"]
+        if isinstance(new_content, str):
+            new_content = [{"type": "text", "text": new_content}]
+
         if len(new_messages) > 0 and message["role"] == new_messages[-1]["role"]:
-            new_messages[-1]["content"] += f"\n\n{message['content']}"
+            new_messages[-1]["content"].extend(new_content)
         else:
-            new_messages.append(message)
+            new_messages.append(
+                {
+                    "role": message["role"],
+                    "content": new_content,
+                }
+            )
 
     return new_messages
