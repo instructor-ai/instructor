@@ -15,8 +15,12 @@ from typing import (
     Union,
     Awaitable,
     AsyncGenerator,
+    Optional,
+    Literal,
+    Coroutine,
     Any,
 )
+from tenacity import Retrying, AsyncRetrying
 from typing_extensions import Self
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
@@ -58,15 +62,38 @@ class Instructor:
     def messages(self) -> Self:
         return self
 
+    @overload
+    def create(
+        self,
+        response_model: Type[T],
+        messages: List[ChatCompletionMessageParam],
+        n: Optional[Literal[1]] = None,
+        max_retries: int | Retrying = 3,
+        validation_context: dict | None = None,
+        **kwargs,
+    ) -> T: ...
+
+    @overload
+    def create(
+        self,
+        response_model: Type[T],
+        messages: List[ChatCompletionMessageParam],
+        n: int,
+        max_retries: int | Retrying = 3,
+        validation_context: dict | None = None,
+        **kwargs,
+    ) -> List[T]: ...
+
     # TODO: we should overload a case where response_model is None
     def create(
         self,
         response_model: Type[T],
         messages: List[ChatCompletionMessageParam],
-        max_retries: int = 3,
+        n: Optional[int] = None,
+        max_retries: int | Retrying = 3,
         validation_context: dict | None = None,
         **kwargs,
-    ) -> T:
+    ) -> T | List[T]:
         kwargs = self.handle_kwargs(kwargs)
 
         return self.create_fn(
@@ -74,6 +101,7 @@ class Instructor:
             messages=messages,
             max_retries=max_retries,
             validation_context=validation_context,
+            n=n,
             **kwargs,
         )
 
@@ -168,20 +196,44 @@ class AsyncInstructor(Instructor):
         self.kwargs = kwargs
         self.provider = provider
 
+    @overload
     async def create(
         self,
-        messages: List[ChatCompletionMessageParam],
         response_model: Type[T],
+        messages: List[ChatCompletionMessageParam],
+        n: Literal[1] = 1,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict | None = None,
-        max_retries: int = 3,
         **kwargs,
-    ) -> T:
+    ) -> Coroutine[Any, Any, T]: ...
+
+    @overload
+    async def create(
+        self,
+        response_model: Type[T],
+        messages: List[ChatCompletionMessageParam],
+        n: int,
+        max_retries: int | AsyncRetrying = 3,
+        validation_context: dict | None = None,
+        **kwargs,
+    ) -> Coroutine[Any, Any, List[T]]: ...
+
+    async def create(
+        self,
+        response_model: Type[T],
+        messages: List[ChatCompletionMessageParam],
+        n: Optional[int] = 1,
+        max_retries: int | AsyncRetrying = 3,
+        validation_context: dict | None = None,
+        **kwargs,
+    ) -> Coroutine[Any, Any, T | List[T]]:
         kwargs = self.handle_kwargs(kwargs)
         return await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
+            n=n,
             **kwargs,
         )
 
@@ -190,7 +242,6 @@ class AsyncInstructor(Instructor):
         response_model: Type[T],
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
-        max_retries: int = 3,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
@@ -200,7 +251,6 @@ class AsyncInstructor(Instructor):
         async for item in await self.create_fn(
             response_model=instructor.Partial[response_model],  # type: ignore
             validation_context=validation_context,
-            max_retries=max_retries,
             messages=messages,
             **kwargs,
         ):
@@ -211,7 +261,6 @@ class AsyncInstructor(Instructor):
         response_model: Type[T],
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
-        max_retries: int = 3,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
@@ -221,7 +270,6 @@ class AsyncInstructor(Instructor):
         async for item in await self.create_fn(
             response_model=Iterable[response_model],
             validation_context=validation_context,
-            max_retries=max_retries,
             messages=messages,
             **kwargs,
         ):
@@ -232,7 +280,7 @@ class AsyncInstructor(Instructor):
         response_model: Type[T],
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
-        max_retries: int = 3,
+        max_retries: int | AsyncRetrying = 3,
         **kwargs,
     ) -> Tuple[T, dict]:
         kwargs = self.handle_kwargs(kwargs)

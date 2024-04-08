@@ -118,7 +118,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     ) -> BaseModel:
         tool_call = [c.input for c in completion.content if c.type == "tool_use"][0]
 
-        return cls.model_validate(tool_call, context=validation_context, strict=strict)  # type:ignore
+        return cls.model_validate(
+            tool_call, context=validation_context, strict=strict
+        )  # type:ignore
 
     @classmethod
     def parse_anthropic_json(
