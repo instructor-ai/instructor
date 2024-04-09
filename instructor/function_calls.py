@@ -9,6 +9,7 @@ from instructor.utils import extract_json_from_codeblock
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 import logging
+import json
 
 
 T = TypeVar("T")
@@ -95,6 +96,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
 
+        if mode == Mode.COHERE_TOOLS:
+            return cls.parse_cohere_tools(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
 
@@ -135,6 +139,22 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict
+        )
+
+    @classmethod
+    def parse_cohere_tools(
+        cls: Type[BaseModel],
+        completion,
+        validation_context: Optional[Dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        text = completion.text
+        json_text = extract_json_from_codeblock(text)
+        function_dict = json.loads(json_text)
+        params = function_dict['parameters'] if 'parameters' in function_dict else function_dict
+        arg_name = cls.__name__.lower()
+        return cls.model_validate_json(
+            json.dumps(params[arg_name]), context=validation_context, strict=strict
         )
 
     @classmethod

@@ -30,11 +30,13 @@ litellm = { version = "^1.0.0", optional = true }
 anthropic = { version = "^0.23.1", optional = true }
 xmltodict = { version = "^0.13.0", optional = true }
 groq = { version = "^0.4.2", optional = true }
+cohere = { version = "^5.1.8", optional = true }
 
 [tool.poetry.extras]
 anthropic = ["anthropic", "xmltodict"]
 groq = ["groq"]
-test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq"]
+cohere = ["cohere"]
+test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere"]
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"
@@ -61,7 +63,7 @@ anthropic = "^0.23.1"
 
 [tool.poetry.group.test-docs.dependencies]
 fastapi = "^0.109.2"
-redis = "^5.0.1" 
+redis = "^5.0.1"
 diskcache = "^5.6.3"
 pandas = "^2.2.0"
 tabulate = "^0.9.0"
@@ -71,7 +73,7 @@ anthropic = "^0.23.1"
 xmltodict = "^0.13.0"
 groq = "^0.4.2"
 phonenumbers = "^8.13.33"
-
+cohere = "^5.1.8"
 
 [build-system]
 requires = ["poetry-core"]

@@ -21,6 +21,7 @@ class Provider(Enum):
     ANYSCALE = "anyscale"
     TOGETHER = "together"
     GROQ = "groq"
+    COHERE = "cohere"
     UNKNOWN = "unknown"
 
 
@@ -35,6 +36,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.GROQ
     elif "openai" in str(base_url):
         return Provider.OPENAI
+    elif "cohere" in str(base_url):
+        return Provider.COHERE
     return Provider.UNKNOWN
 
 
@@ -42,6 +45,14 @@ def extract_json_from_codeblock(content: str) -> str:
     first_paren = content.find("{")
     last_paren = content.rfind("}")
     return content[first_paren : last_paren + 1]
+
+
+def extract_python_from_codeblock(content: str) -> str:
+    first_paren = content.find("```python")
+    last_paren = content.rfind("```")
+    if first_paren == -1 or last_paren == -1:
+        return content
+    return content[first_paren + 9 : last_paren]
 
 
 def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None]:

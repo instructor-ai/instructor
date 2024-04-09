@@ -308,7 +308,7 @@ def handle_response_model(
 
             new_kwargs["system"] += f"""
             You must only response in JSON format that adheres to the following schema:
-            
+
             <JSON_SCHEMA>
             {json.dumps(response_model.model_json_schema(), indent=2)}
             </JSON_SCHEMA>
@@ -325,6 +325,8 @@ def handle_response_model(
             # consecutive user messages into a single message
             new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
 
+        elif mode == Mode.COHERE_TOOLS:
+            new_kwargs["response_model"] = response_model
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 

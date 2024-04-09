@@ -1,3 +1,4 @@
+import cohere
 import openai
 import instructor
 import anthropic
@@ -167,6 +168,23 @@ def test_client_anthropic_response():
         client,
         max_tokens=1000,
         model="claude-3-haiku-20240307",
+    )
+
+    user = instructor_client.messages.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10
+
+
+def test_client_cohere_response():
+    client = cohere.Client()
+    instructor_client = instructor.from_cohere(
+        client,
+        max_tokens=1000,
+        model="command-r-plus",
     )
 
     user = instructor_client.messages.create(
