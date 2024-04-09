@@ -9,7 +9,6 @@ from instructor.utils import extract_json_from_codeblock
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 import logging
-import json
 
 
 T = TypeVar("T")

@@ -2,9 +2,6 @@ import cohere
 import instructor
 
 from typing import overload
-from typing import Type
-from pydantic import BaseModel
-from .utils import extract_python_from_codeblock
 
 
 @overload

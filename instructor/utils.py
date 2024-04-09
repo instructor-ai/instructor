@@ -47,14 +47,6 @@ def extract_json_from_codeblock(content: str) -> str:
     return content[first_paren : last_paren + 1]
 
 
-def extract_python_from_codeblock(content: str) -> str:
-    first_paren = content.find("```python")
-    last_paren = content.rfind("```")
-    if first_paren == -1 or last_paren == -1:
-        return content
-    return content[first_paren + 9 : last_paren]
-
-
 def extract_json_from_stream(chunks: Iterable[str]) -> Generator[str, None, None]:
     capturing = False
     brace_count = 0
