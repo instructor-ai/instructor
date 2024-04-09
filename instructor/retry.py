@@ -32,7 +32,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
         # TODO: we need to include the original response
         yield {
             "role": "user",
-            "content": f"Validation Errors found:\n{exception}\nReca ll the function correctly, fix the errors from\n{response.content}",
+            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors from\n{response.content}",
         }
         return
     if mode == Mode.ANTHROPIC_JSON:
