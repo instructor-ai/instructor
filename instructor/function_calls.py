@@ -149,12 +149,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         strict: Optional[bool] = None,
     ) -> BaseModel:
         text = completion.text
-        json_text = extract_json_from_codeblock(text)
-        function_dict = json.loads(json_text)
-        params = function_dict['parameters'] if 'parameters' in function_dict else function_dict
-        arg_name = cls.__name__.lower()
+        extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
-            json.dumps(params[arg_name]), context=validation_context, strict=strict
+            extra_text, context=validation_context, strict=strict
         )
 
     @classmethod
