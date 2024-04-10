@@ -18,11 +18,14 @@ from collections.abc import Iterable
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from instructor.mode import Mode
+
 ## load env variables
 from dotenv import load_dotenv
+
 load_dotenv()
 
 T = TypeVar("T", bound=OpenAISchema)
+
 
 class ParallelBase:
     def __init__(self, *models: Type[OpenAISchema]):
@@ -47,7 +50,9 @@ class ParallelBase:
         message: ChatCompletionMessage = response.choices[0].message
         if message.content:
             yield message.content  # Yield the message content as a string
-        for tool_call in message.tool_calls:
+        for tool_call in (
+            message.tool_calls or []
+        ):  # Ensure message.tool_calls is iterable
             name = tool_call.function.name
             tool_id = tool_call.id
             arguments = tool_call.function.arguments
