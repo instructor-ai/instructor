@@ -29,10 +29,35 @@ T = TypeVar("T")
 
 def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.ANTHROPIC_TOOLS:
-        # TODO: we need to include the original response
+        # The original response
+        assistant_content = []
+        tool_use_id = None
+        for content in response.content:
+            assistant_content.append(content.model_dump())
+            # Assuming exception from single tool invocation
+            if (
+                content.type == "tool_use"
+                and isinstance(exception, ValidationError)
+                and content.name == exception.title
+            ):
+                tool_use_id = content.id
+
+        assert tool_use_id is not None, "Tool use ID not found in the response"
+        yield {
+            "role": "assistant",
+            "content": assistant_content,
+        }
         yield {
             "role": "user",
-            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors from\n{response.content}",
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": tool_use_id,
+                    "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+                    "is_error": True,
+                }
+            ],
+
         }
         return
     if mode == Mode.ANTHROPIC_JSON:
@@ -107,7 +132,10 @@ def retry_sync(
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
                     kwargs["messages"].extend(reask_messages(response, mode, e))
-                    kwargs["messages"] = merge_consecutive_messages(kwargs["messages"])
+                    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
+                        kwargs["messages"] = merge_consecutive_messages(
+                            kwargs["messages"]
+                        )
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
@@ -157,6 +185,10 @@ async def retry_async(
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}", e)
                     kwargs["messages"].extend(reask_messages(response, mode, e))
+                    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
+                        kwargs["messages"] = merge_consecutive_messages(
+                            kwargs["messages"]
+                        )
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")

@@ -6,7 +6,7 @@ from typing import overload
 
 @overload
 def from_anthropic(
-    client: anthropic.Anthropic,
+    client: anthropic.Anthropic | anthropic.AnthropicBedrock,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor: ...
@@ -14,35 +14,43 @@ def from_anthropic(
 
 @overload
 def from_anthropic(
-    client: anthropic.AsyncAnthropic,
+    client: anthropic.AsyncAnthropic | anthropic.AsyncAnthropicBedrock,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor: ...
 
 
 def from_anthropic(
-    client: anthropic.Anthropic | anthropic.AsyncAnthropic,
+    client: (
+        anthropic.Anthropic
+        | anthropic.AsyncAnthropic
+        | anthropic.AnthropicBedrock
+        | anthropic.AsyncAnthropicBedrock
+    ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert (
-        mode
-        in {
-            instructor.Mode.ANTHROPIC_JSON,
-            instructor.Mode.ANTHROPIC_TOOLS,
-        }
-    ), "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
+    assert mode in {
+        instructor.Mode.ANTHROPIC_JSON,
+        instructor.Mode.ANTHROPIC_TOOLS,
+    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
 
     assert isinstance(
-        client, (anthropic.Anthropic, anthropic.AsyncAnthropic)
-    ), "Client must be an instance of anthropic.Anthropic or anthropic.AsyncAnthropic"
+        client,
+        (
+            anthropic.Anthropic,
+            anthropic.AsyncAnthropic,
+            anthropic.AnthropicBedrock,
+            anthropic.AsyncAnthropicBedrock,
+        ),
+    ), "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock}"
 
     if mode == instructor.Mode.ANTHROPIC_TOOLS:
         create = client.beta.tools.messages.create
     else:
         create = client.messages.create
 
-    if isinstance(client, anthropic.Anthropic):
+    if isinstance(client, (anthropic.Anthropic, anthropic.AnthropicBedrock)):
         return instructor.Instructor(
             client=client,
             create=instructor.patch(create=create, mode=mode),
