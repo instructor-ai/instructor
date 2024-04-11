@@ -1,4 +1,5 @@
 import cohere
+import os
 import openai
 import instructor
 import anthropic
@@ -180,6 +181,73 @@ def test_client_anthropic_response():
     assert user.age == 10
 
 
+@pytest.mark.skip(reason="Skip for now")
+def test_client_anthropic_bedrock_response():
+    client = anthropic.AnthropicBedrock(
+        aws_access_key=os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
+        aws_region=os.getenv("AWS_REGION_NAME"),
+    )
+
+    instructor_client = instructor.from_anthropic(
+        client,
+        max_tokens=1000,
+        model="anthropic.claude-3-haiku-20240307-v1:0",
+    )
+
+    user = instructor_client.messages.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10
+
+
+@pytest.mark.asyncio
+async def test_async_client_anthropic_response():
+    client = anthropic.AsyncAnthropic()
+    instructor_client = instructor.from_anthropic(
+        client,
+        max_tokens=1000,
+        model="claude-3-haiku-20240307",
+    )
+
+    user = await instructor_client.messages.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10
+
+
+@pytest.mark.skip(reason="Skip for now")
+@pytest.mark.asyncio
+async def test_async_client_anthropic_bedrock_response():
+    client = anthropic.AsyncAnthropicBedrock(
+        aws_access_key=os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
+        aws_region=os.getenv("AWS_REGION_NAME"),
+    )
+
+    instructor_client = instructor.from_anthropic(
+        client,
+        max_tokens=1000,
+        model="anthropic.claude-3-haiku-20240307-v1:0",
+    )
+
+    user = await instructor_client.messages.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10
+
+
 @pytest.mark.skip(reason="Skipping if Cohere API is not available")
 def test_client_cohere_response():
     client = cohere.Client()
@@ -196,6 +264,7 @@ def test_client_cohere_response():
     )
     assert user.name == "Jason"
     assert user.age == 10
+
 
 
 @pytest.mark.skip(reason="Skipping if Cohere API is not available")
