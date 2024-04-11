@@ -37,12 +37,9 @@ def from_cohere(
     mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
     **kwargs,
 ):
-    assert (
-        mode
-        in {
-            instructor.Mode.COHERE_TOOLS,
-        }
-    ), "Mode be one of {instructor.Mode.COHERE_TOOLS}"
+    assert mode in {
+        instructor.Mode.COHERE_TOOLS,
+    }, "Mode be one of {instructor.Mode.COHERE_TOOLS}"
 
     assert isinstance(
         client, (cohere.Client, cohere.AsyncClient)
