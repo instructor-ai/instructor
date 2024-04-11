@@ -143,6 +143,7 @@ nav:
     - Ollama: 'examples/ollama.md'
     - SQLModel Integration: 'examples/sqlmodel.md'
     - Including Examples in Prompt: 'examples/examples.md'
+    - Document Segmentation: 'examples/document_segmentation.md'
   - Blog:
     - "blog/index.md"
   - Concepts:
