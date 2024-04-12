@@ -14,6 +14,7 @@ class Mode(enum.Enum):
     JSON_SCHEMA = "json_schema_mode"
     ANTHROPIC_TOOLS = "anthropic_tools"
     ANTHROPIC_JSON = "anthropic_json"
+    COHERE_TOOLS = "cohere_tools"
 
     def __new__(cls, value: str) -> "Mode":
         member = object.__new__(cls)

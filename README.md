@@ -86,6 +86,46 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+### Using Cohere Models
+
+Make sure to install `cohere` and set your system environment variable with `export CO_API_KEY=<YOUR_COHERE_API_KEY>`.
+
+```
+pip install cohere
+```
+
+```python
+import instructor
+import cohere
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_cohere(cohere.Client())
+
+# note that client.chat.completions.create will also work
+resp = client.chat.completions.create(
+    model="command-r-plus",
+    max_tokens=1024,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
+
 ### Using Litellm
 
 ```python
@@ -152,7 +192,7 @@ Now if you use a IDE, you can see the type is correctly infered.
 
 ### Handling async: `await create`
 
-This will also work correctly with asynchronous clients. 
+This will also work correctly with asynchronous clients.
 
 ```python
 import openai

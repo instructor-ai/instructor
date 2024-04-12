@@ -69,6 +69,12 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.content[0].text}""",
         }
         return
+    if mode == Mode.COHERE_TOOLS:
+        yield {
+            "role": "user",
+            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+        }
+        return
 
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration
