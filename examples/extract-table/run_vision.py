@@ -1,6 +1,6 @@
 from openai import OpenAI
 from io import StringIO
-from typing import Annotated, Any, List, Generator
+from typing import Annotated, Any, List
 from pydantic import (
     BaseModel,
     BeforeValidator,

@@ -21,6 +21,7 @@ class Provider(Enum):
     ANYSCALE = "anyscale"
     TOGETHER = "together"
     GROQ = "groq"
+    COHERE = "cohere"
     UNKNOWN = "unknown"
 
 
@@ -35,6 +36,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.GROQ
     elif "openai" in str(base_url):
         return Provider.OPENAI
+    elif "cohere" in str(base_url):
+        return Provider.COHERE
     return Provider.UNKNOWN
 
 

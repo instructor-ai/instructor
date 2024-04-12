@@ -6,7 +6,7 @@ from typing import overload
 
 @overload
 def from_anthropic(
-    client: anthropic.Anthropic | anthropic.AnthropicBedrock,
+    client: anthropic.Anthropic | anthropic.AnthropicBedrock | anthropic.AnthropicVertex,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor: ...
@@ -14,7 +14,7 @@ def from_anthropic(
 
 @overload
 def from_anthropic(
-    client: anthropic.AsyncAnthropic | anthropic.AsyncAnthropicBedrock,
+    client: anthropic.AsyncAnthropic | anthropic.AsyncAnthropicBedrock | anthropic.AsyncAnthropicVertex,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor: ...
@@ -26,6 +26,7 @@ def from_anthropic(
         | anthropic.AsyncAnthropic
         | anthropic.AnthropicBedrock
         | anthropic.AsyncAnthropicBedrock
+        | anthropic.AsyncAnthropicVertex
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
@@ -41,16 +42,18 @@ def from_anthropic(
             anthropic.Anthropic,
             anthropic.AsyncAnthropic,
             anthropic.AnthropicBedrock,
+            anthropic.AnthropicVertex,
             anthropic.AsyncAnthropicBedrock,
+            anthropic.AsyncAnthropicVertex,
         ),
-    ), "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock}"
+    ), "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
 
     if mode == instructor.Mode.ANTHROPIC_TOOLS:
         create = client.beta.tools.messages.create
     else:
         create = client.messages.create
 
-    if isinstance(client, (anthropic.Anthropic, anthropic.AnthropicBedrock)):
+    if isinstance(client, (anthropic.Anthropic, anthropic.AnthropicBedrock, anthropic.AnthropicVertex)):
         return instructor.Instructor(
             client=client,
             create=instructor.patch(create=create, mode=mode),

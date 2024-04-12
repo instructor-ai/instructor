@@ -56,3 +56,8 @@ if importlib.util.find_spec("groq") is not None:
     from .client_groq import from_groq
 
     __all__ += ["from_groq"]
+
+if importlib.util.find_spec("cohere") is not None:
+    from .client_cohere import from_cohere
+
+    __all__ += ["from_cohere"]
