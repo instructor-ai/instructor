@@ -308,7 +308,7 @@ def handle_response_model(
 
             new_kwargs["system"] += f"""
             You must only response in JSON format that adheres to the following schema:
-            
+
             <JSON_SCHEMA>
             {json.dumps(response_model.model_json_schema(), indent=2)}
             </JSON_SCHEMA>
@@ -325,6 +325,29 @@ def handle_response_model(
             # consecutive user messages into a single message
             new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
 
+        elif mode == Mode.COHERE_TOOLS:
+            instruction = f"""\
+Extract a valid {response_model.__name__} object based on the chat history and the json schema below.
+{response_model.model_json_schema()}
+The JSON schema was obtained by running:
+```python
+schema = {response_model.__name__}.model_json_schema()
+```
+
+The output must be a valid JSON object that `{response_model.__name__}.model_validate_json()` can successfully parse.
+"""
+            messages = new_kwargs.pop("messages", [])
+            chat_history = []
+            for message in messages:
+                # format in Cohere's ChatMessage format
+                chat_history.append(
+                    {
+                        "role": message["role"],
+                        "message": message["content"],
+                    }
+                )
+            new_kwargs["message"] = instruction
+            new_kwargs["chat_history"] = chat_history
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 

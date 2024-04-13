@@ -21,9 +21,13 @@ from pydantic import (
 )
 import instructor
 import pandas as pd
+from rich.console import Console
 
-
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
+console = Console()
+client = instructor.from_openai(
+    client=OpenAI(),
+    mode=instructor.Mode.TOOLS,
+)
 
 
 def md_to_df(data: Any) -> Any:
@@ -37,7 +41,7 @@ def md_to_df(data: Any) -> Any:
             .dropna(axis=1, how="all")
             .iloc[1:]
             .map(lambda x: x.strip())
-        )
+        )  # type: ignore
     return data
 
 
@@ -49,7 +53,7 @@ MarkdownDataFrame = Annotated[
         {
             "type": "string",
             "description": """
-                The markdown representation of the table,
+                The markdown representation of the table, 
                 each one should be tidy, do not try to join tables
                 that should be seperate""",
         }
@@ -83,8 +87,8 @@ example = MultipleTables(
 
 
 def extract(url: str) -> MultipleTables:
-    tables = client.chat.completions.create(
-        model="gpt-4-vision-preview",
+    return client.chat.completions.create(
+        model="gpt-4-turbo",
         max_tokens=4000,
         response_model=MultipleTables,
         messages=[
@@ -92,21 +96,18 @@ def extract(url: str) -> MultipleTables:
                 "role": "user",
                 "content": [
                     {
-                        "type": "text",
-                        "text": f"Describe this data accurately as a table in markdown format. {example.model_dump_json(indent=2)}",
-                    },
-                    {
                         "type": "image_url",
                         "image_url": {"url": url},
                     },
                     {
                         "type": "text",
                         "text": """
-                            First take a moment to reason about the best set of headers for the tables.
-                            Write a good h1 for the image above. Then follow up with a short description of the what the data is about.
-                            Then for each table you identified, write a h2 tag that is a descriptive title of the table.
-                            Then follow up with a short description of the what the data is about.
-                            Lastly, produce the markdown table for each table you identified.
+                            First, analyze the image to determine the most appropriate headers for the tables.
+                            Generate a descriptive h1 for the overall image, followed by a brief summary of the data it contains. 
+                            For each identified table, create an informative h2 title and a concise description of its contents.
+                            Finally, output the markdown representation of each table.
+
+
                             Make sure to escape the markdown table properly, and make sure to include the caption and the dataframe.
                             including escaping all the newlines and quotes. Only return a markdown table in dataframe, nothing else.
                         """,
@@ -115,45 +116,14 @@ def extract(url: str) -> MultipleTables:
             }
         ],
     )
-    return tables
 
 
-if __name__ == "__main__":
-    urls = [
-        "https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png/m/2880x0",
-    ]
-    for url in urls:
-        tables = extract(url)
-        for table in tables.tables:
-            print(table.caption)
-            #> Top 10 Grossing Android Apps
-            """
-                        App Name                    Category
-             Rank
-            1                           Google One       Productivity
-            2                              Disney+      Entertainment
-            3        TikTok - Videos, Music & LIVE      Entertainment
-            4                     Candy Crush Saga              Games
-            5       Tinder: Dating, Chat & Friends  Social networking
-            6                          Coin Master              Games
-            7                               Roblox              Games
-            8       Bumble - Dating & Make Friends             Dating
-            9                          Royal Match              Games
-            10         Spotify: Music and Podcasts      Music & Audio
-            """
-            print(table.dataframe)
-            """
-                        App Name                    Category
-             Rank
-            1       Tinder: Dating, Chat & Friends  Social networking
-            2                              Disney+      Entertainment
-            3       YouTube: Watch, Listen, Stream      Entertainment
-            4         Audible: Audio Entertainment      Entertainment
-            5                     Candy Crush Saga              Games
-            6        TikTok - Videos, Music & LIVE      Entertainment
-            7       Bumble - Dating & Make Friends             Dating
-            8                               Roblox              Games
-            9          LinkedIn: Job Search & News           Business
-            10         Duolingo - Language Lessons          Education
-            """
+urls = [
+    "https://a.storyblok.com/f/47007/2400x1260/f816b031cb/uk-ireland-in-three-charts_chart_a.png/m/2880x0",
+    "https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png/m/2880x0",
+]
+
+for url in urls:
+    for table in extract(url).tables:
+        console.print(table.caption, "\n", table.dataframe)
 ```

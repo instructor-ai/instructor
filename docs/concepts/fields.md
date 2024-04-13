@@ -86,6 +86,24 @@ print(date_range.model_dump_json())
 #> {"start_date":"2021-01-01","end_date":"2021-01-30"}
 ```
 
+## Omitting fields from schema sent to the language model
+
+In some cases, you may wish to have the language model ignore certain fields in your model. You can do this by using Pydantic's `SkipJsonSchema` annotation. This omits a field from the JSON schema emitted by Pydantic (which `instructor` uses for constructing its prompts and tool definitions). For example:
+
+```py
+from pydantic import BaseModel
+from pydantic.json_schema import SkipJsonSchema
+
+class Response(BaseModel):
+    question: str
+    answer: str
+    private_field: SkipJsonSchema[str | None] = None
+
+assert "private_field" not in Response.model_json_schema()["properties"]
+```
+
+Note that because the language model will never return a value for `private_field`, you'll need a default value (this can be a generator via a declared Pydantic `Field`). 
+
 ## Customizing JSON Schema
 
 There are some fields that are exclusively used to customise the generated JSON Schema:

@@ -90,7 +90,7 @@ if __name__ == "__main__":
         ERROR:
         1 validation error for IterableLead
         tasks.0.phone_number
-          value is not a valid phone number [type=value_error, input_value='+191772234', input_type=str]
+          value is not a valid phone number [type=value_error, input_value='+19172234', input_type=str]
         """
 ```
 

@@ -137,8 +137,20 @@ def test_merge_consecutive_messages():
     ]
     result = merge_consecutive_messages(messages)
     assert result == [
-        {"role": "user", "content": "Hello\n\nHow are you"},
-        {"role": "assistant", "content": "Hello\n\nI am good"},
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Hello"},
+                {"type": "text", "text": "How are you"},
+            ],
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {"type": "text", "text": "Hello"},
+                {"type": "text", "text": "I am good"},
+            ],
+        },
     ]
 
 
@@ -155,6 +167,6 @@ def test_merge_consecutive_messages_single():
     ]
     result = merge_consecutive_messages(messages)
     assert result == [
-        {"role": "user", "content": "Hello"},
-        {"role": "assistant", "content": "Hello"},
+        {"role": "user", "content": [{"type": "text", "text": "Hello"}]},
+        {"role": "assistant", "content": [{"type": "text", "text": "Hello"}]},
     ]

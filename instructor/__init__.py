@@ -61,3 +61,8 @@ if importlib.util.find_spec("mistralai") is not None:
     from .client_mistral import from_mistral
 
     __all__ += ["from_mistral"]
+    
+if importlib.util.find_spec("cohere") is not None:
+    from .client_cohere import from_cohere
+
+    __all__ += ["from_cohere"]
