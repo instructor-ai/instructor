@@ -1,9 +1,9 @@
 import openai
 import instructor
 import anthropic
+import mistralai.client as mistralaicli
 from pydantic import BaseModel
 import pytest
-
 
 class User(BaseModel):
     name: str
@@ -167,6 +167,39 @@ def test_client_anthropic_response():
         client,
         max_tokens=1000,
         model="claude-3-haiku-20240307",
+    )
+
+    user = instructor_client.messages.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10
+
+
+def test_client_from_mistral_with_response():
+    client = instructor.from_mistral(
+        mistralaicli.MistralClient(),
+        max_tokens=1000,
+        model="mistral-large-latest",
+    )
+
+    user, response = client.messages.create_with_completion(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10
+
+
+def test_client_mistral_response():
+    client = mistralaicli.MistralClient()
+    instructor_client = instructor.from_mistral(
+        client,
+        max_tokens=1000,
+        model="mistral-large-latest",
     )
 
     user = instructor_client.messages.create(
