@@ -13,7 +13,7 @@ Some pip packages need to be installed to use the example:
 ```
 pip install instructor mistralai pydantic
 ```
-You need to export the groq API key:
+You need to export the mistral API key:
 ```
 export MISTRAL_API_KEY=<your-api-key>
 ```
