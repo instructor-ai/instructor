@@ -59,7 +59,6 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
                     "is_error": True,
                 }
             ],
-
         }
         return
     if mode == Mode.ANTHROPIC_JSON:
