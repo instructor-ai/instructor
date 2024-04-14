@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import anthropic
 import instructor
 
@@ -6,7 +8,9 @@ from typing import overload
 
 @overload
 def from_anthropic(
-    client: anthropic.Anthropic | anthropic.AnthropicBedrock | anthropic.AnthropicVertex,
+    client: anthropic.Anthropic
+    | anthropic.AnthropicBedrock
+    | anthropic.AnthropicVertex,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor: ...
@@ -14,7 +18,9 @@ def from_anthropic(
 
 @overload
 def from_anthropic(
-    client: anthropic.AsyncAnthropic | anthropic.AsyncAnthropicBedrock | anthropic.AsyncAnthropicVertex,
+    client: anthropic.AsyncAnthropic
+    | anthropic.AsyncAnthropicBedrock
+    | anthropic.AsyncAnthropicVertex,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor: ...
@@ -31,10 +37,13 @@ def from_anthropic(
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert mode in {
-        instructor.Mode.ANTHROPIC_JSON,
-        instructor.Mode.ANTHROPIC_TOOLS,
-    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
+    assert (
+        mode
+        in {
+            instructor.Mode.ANTHROPIC_JSON,
+            instructor.Mode.ANTHROPIC_TOOLS,
+        }
+    ), "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
 
     assert isinstance(
         client,
@@ -53,7 +62,10 @@ def from_anthropic(
     else:
         create = client.messages.create
 
-    if isinstance(client, (anthropic.Anthropic, anthropic.AnthropicBedrock, anthropic.AnthropicVertex)):
+    if isinstance(
+        client,
+        (anthropic.Anthropic, anthropic.AnthropicBedrock, anthropic.AnthropicVertex),
+    ):
         return instructor.Instructor(
             client=client,
             create=instructor.patch(create=create, mode=mode),

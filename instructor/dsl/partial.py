@@ -6,6 +6,8 @@
 # serves as an acknowledgment of the original author's contribution to this project.
 # --------------------------------------------------------------------------------
 
+from __future__ import annotations
+
 import pydantic_core
 from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo

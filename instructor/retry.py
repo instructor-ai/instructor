@@ -1,4 +1,6 @@
 # type: ignore[all]
+from __future__ import annotations
+
 import logging
 
 from openai.types.chat import ChatCompletion
@@ -17,7 +19,8 @@ from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
 
 from json import JSONDecodeError
 from pydantic import BaseModel
-from typing import Callable, Optional, Type, TypeVar, ParamSpec
+from typing import Callable, Optional, Type, TypeVar
+from typing_extensions import ParamSpec
 
 logger = logging.getLogger("instructor")
 
@@ -57,7 +60,6 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
                     "is_error": True,
                 }
             ],
-
         }
         return
     if mode == Mode.ANTHROPIC_JSON:

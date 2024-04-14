@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import openai
 import inspect
 import instructor
@@ -22,7 +24,7 @@ from pydantic import BaseModel
 from instructor.dsl.partial import Partial
 
 
-T = TypeVar("T", bound=(BaseModel | Iterable | Partial))
+T = TypeVar("T", bound=Union[BaseModel, Iterable, Partial])
 
 
 class Instructor:
