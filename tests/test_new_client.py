@@ -264,6 +264,7 @@ def test_client_cohere_response():
     assert user.name == "Jason"
     assert user.age == 10
 
+
 @pytest.mark.skip(reason="Skipping if Cohere API is not available")
 def test_client_cohere_response_with_nested_classes():
     client = cohere.Client()

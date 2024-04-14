@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import json
 from typing import Callable, Generator, Iterable, AsyncGenerator, TypeVar

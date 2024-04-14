@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import cohere
 import instructor
 from functools import wraps
 from typing import (
-    ParamSpec,
     Type,
     TypeVar,
     overload,
 )
+from typing_extensions import ParamSpec
 from pydantic import BaseModel
 from instructor.process_response import handle_response_model
 from instructor.retry import retry_async

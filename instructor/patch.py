@@ -2,7 +2,6 @@
 from functools import wraps
 from typing import (
     Callable,
-    ParamSpec,
     Protocol,
     Type,
     TypeVar,
@@ -10,6 +9,7 @@ from typing import (
     overload,
     Awaitable,
 )
+from typing_extensions import ParamSpec
 
 from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel

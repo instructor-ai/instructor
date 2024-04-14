@@ -1,5 +1,7 @@
 # type: ignore[all]
 
+from __future__ import annotations
+
 from collections.abc import Iterable
 from textwrap import dedent
 from instructor.dsl.iterable import IterableBase, IterableModel
@@ -22,10 +24,10 @@ from typing import (
     get_args,
     get_origin,
     TypeVar,
-    ParamSpec,
     Any,
     Dict,
 )
+from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
 
