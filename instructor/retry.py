@@ -19,7 +19,8 @@ from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
 
 from json import JSONDecodeError
 from pydantic import BaseModel
-from typing import Callable, Optional, Type, TypeVar, ParamSpec
+from typing import Callable, Optional, Type, TypeVar
+from typing_extensions import ParamSpec
 
 logger = logging.getLogger("instructor")
 

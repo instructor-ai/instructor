@@ -24,10 +24,10 @@ from typing import (
     get_args,
     get_origin,
     TypeVar,
-    ParamSpec,
     Any,
     Dict,
 )
+from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
 
