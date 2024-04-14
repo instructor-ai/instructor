@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import cohere
 import instructor
 from functools import wraps

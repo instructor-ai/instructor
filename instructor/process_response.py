@@ -1,5 +1,7 @@
 # type: ignore[all]
 
+from __future__ import annotations
+
 from collections.abc import Iterable
 from textwrap import dedent
 from instructor.dsl.iterable import IterableBase, IterableModel

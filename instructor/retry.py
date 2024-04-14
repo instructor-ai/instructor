@@ -1,4 +1,6 @@
 # type: ignore[all]
+from __future__ import annotations
+
 import logging
 
 from openai.types.chat import ChatCompletion
