@@ -24,7 +24,7 @@ from pydantic import BaseModel
 from instructor.dsl.partial import Partial
 
 
-T = TypeVar("T", bound=(BaseModel | Iterable | Partial))
+T = TypeVar("T", bound=Union[BaseModel, Iterable, Partial])
 
 
 class Instructor:
