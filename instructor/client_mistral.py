@@ -1,13 +1,10 @@
+# Future imports to ensure compatibility with Python 3.9
+from __future__ import annotations
+
 import mistralai.client
 import mistralai.async_client as mistralaiasynccli
 import instructor
-from typing import Type, ParamSpec
 from pydantic import BaseModel
-
-
-T_Model = ParamSpec("T_Model", bound=BaseModel)
-T_ParamSpec = ParamSpec("T_ParamSpec")
-
 from typing import overload
 
 
@@ -21,10 +18,10 @@ def from_mistral(
 
 @overload
 def from_mistral(
-    client: mistralai.client.MistralClient,
+    client: mistralaiasynccli.MistralAsyncClient,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     **kwargs,
-) -> instructor.Instructor: ...
+) -> instructor.AsyncInstructor: ...
 
 
 def from_mistral(
