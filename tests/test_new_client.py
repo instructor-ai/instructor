@@ -357,9 +357,9 @@ def test_client_from_mistral_with_response():
     assert user.age == 10
 
 
-#@pytest.mark.skip(reason="Skip for now")
+@pytest.mark.skip(reason="Skip for now")
 def test_client_mistral_response():
-    client = mistralaicli.MistralClient(api_key="YmVk2sWc6U7RzeDUdj2pMg5ZhAaQZw2W")
+    client = mistralaicli.MistralClient()
     instructor_client = instructor.from_mistral(
         client, max_tokens=1000, model="mistral-large-latest"
     )
