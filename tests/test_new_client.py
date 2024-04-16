@@ -8,6 +8,7 @@ import pytest
 from pydantic import BaseModel, Field
 from typing import List
 
+
 class User(BaseModel):
     name: str
     age: int
@@ -204,6 +205,7 @@ def test_client_anthropic_bedrock_response():
     assert user.name == "Jason"
     assert user.age == 10
 
+
 @pytest.mark.asyncio
 async def test_async_client_anthropic_response():
     client = anthropic.AsyncAnthropic()
@@ -337,6 +339,7 @@ async def test_client_cohere_async():
     assert group.members[2].name == "George Harrison"
     assert group.members[3].name == "Ringo Starr"
 
+
 @pytest.mark.skip(reason="Skip for now")
 def test_client_from_mistral_with_response():
     client = instructor.from_mistral(
@@ -353,13 +356,13 @@ def test_client_from_mistral_with_response():
     assert user.name == "Jason"
     assert user.age == 10
 
-@pytest.mark.skip(reason="Skip for now")
+
+#@pytest.mark.skip(reason="Skip for now")
 def test_client_mistral_response():
-    client = mistralaicli.MistralClient()
+    client = mistralaicli.MistralClient(api_key="YmVk2sWc6U7RzeDUdj2pMg5ZhAaQZw2W")
     instructor_client = instructor.from_mistral(
-        client,
-        max_tokens=1000,
-        model="mistral-large-latest")
+        client, max_tokens=1000, model="mistral-large-latest"
+    )
 
     user = instructor_client.messages.create(
         response_model=User,

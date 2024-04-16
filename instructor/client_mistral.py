@@ -4,7 +4,6 @@ from __future__ import annotations
 import mistralai.client
 import mistralai.async_client as mistralaiasynccli
 import instructor
-from pydantic import BaseModel
 from typing import overload
 
 
@@ -29,12 +28,9 @@ def from_mistral(
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     **kwargs,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert (
-        mode
-        in {
-            instructor.Mode.MISTRAL_TOOLS,
-        }
-    ), "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
+    assert mode in {
+        instructor.Mode.MISTRAL_TOOLS,
+    }, "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
 
     assert isinstance(
         client, (mistralai.client.MistralClient, mistralaiasynccli.MistralAsyncClient)

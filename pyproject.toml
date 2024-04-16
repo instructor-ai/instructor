@@ -37,8 +37,8 @@ mistralai = { version = "^0.1.8", optional = true}
 anthropic = ["anthropic", "xmltodict"]
 groq = ["groq"]
 cohere = ["cohere"]
-mistralai = ["mistralai"]
 test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere", "mistralai"]
+mistralai = ["mistralai"]
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"

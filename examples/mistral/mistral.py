@@ -12,7 +12,12 @@ class UserDetails(BaseModel):
 
 # enables `response_model` in chat call
 client = MistralClient(api_key=os.environ.get("MISTRAL_API_KEY"))
-instructor_client = from_mistral(client=client, model="mistral-large-latest", mode=Mode.MISTRAL_TOOLS, max_tokens=1000)
+instructor_client = from_mistral(
+    client=client,
+    model="mistral-large-latest",
+    mode=Mode.MISTRAL_TOOLS,
+    max_tokens=1000,
+)
 
 resp = instructor_client.messages.create(
     response_model=UserDetails,
