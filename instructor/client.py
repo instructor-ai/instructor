@@ -33,6 +33,7 @@ class Instructor:
     mode: instructor.Mode
     default_model: str | None = None
     provider: Provider
+    base_url: str | None
 
     def __init__(
         self,
@@ -40,13 +41,17 @@ class Instructor:
         create: Callable,
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
+        base_url: str = None,
         **kwargs,
     ):
+        if base_url is None:
+            raise ValueError('base_url is required')
         self.client = client
         self.create_fn = create
         self.mode = mode
         self.kwargs = kwargs
         self.provider = provider
+        self.base_url = base_url
 
     @property
     def chat(self) -> Self:
@@ -162,13 +167,17 @@ class AsyncInstructor(Instructor):
         create: Callable,
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
+        base_url: str = None,
         **kwargs,
     ):
+        if base_url is None:
+            raise ValueError('base_url is required')
         self.client = client
         self.create_fn = create
         self.mode = mode
         self.kwargs = kwargs
         self.provider = provider
+        self.base_url = base_url
 
     async def create(
         self,
@@ -297,6 +306,7 @@ def from_openai(
             create=instructor.patch(create=client.chat.completions.create, mode=mode),
             mode=mode,
             provider=provider,
+            base_url=client.base_url,
             **kwargs,
         )
 
@@ -306,6 +316,7 @@ def from_openai(
             create=instructor.patch(create=client.chat.completions.create, mode=mode),
             mode=mode,
             provider=provider,
+            base_url=client.base_url,
             **kwargs,
         )
 
