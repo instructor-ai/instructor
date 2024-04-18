@@ -556,18 +556,19 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "cohere"
-version = "5.3.0"
+version = "5.3.2"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "cohere-5.3.0-py3-none-any.whl", hash = "sha256:9fe117cab7a0101e954f8f425eab1fc7b7c1eb2ce0da338eb6c4ce8737255616"},
-    {file = "cohere-5.3.0.tar.gz", hash = "sha256:9f28910bd7eb897a8cde3abd66bbdee6051846909a431d2398089157ccb40c3c"},
+    {file = "cohere-5.3.2-py3-none-any.whl", hash = "sha256:98fe701966f2f39a51f86d3827339576491ecfda080ed6e9710109c3245a5c73"},
+    {file = "cohere-5.3.2.tar.gz", hash = "sha256:337905bd7bd7f3958ab4db3029d3d2abc43f789c957b0deff0d603d8fabc4838"},
 ]
 
 [package.dependencies]
 fastavro = ">=1.9.4,<2.0.0"
 httpx = ">=0.21.2"
+httpx-sse = ">=0.4.0,<0.5.0"
 pydantic = ">=1.9.2"
 requests = ">=2.0.0,<3.0.0"
 tokenizers = ">=0.15.2,<0.16.0"
@@ -772,13 +773,13 @@ files = [
 
 [[package]]
 name = "docstring-parser"
-version = "0.15"
+version = "0.16"
 description = "Parse Python docstrings in reST, Google and Numpydoc format"
 optional = false
 python-versions = ">=3.6,<4.0"
 files = [
-    {file = "docstring_parser-0.15-py3-none-any.whl", hash = "sha256:d1679b86250d269d06a99670924d6bce45adc00b08069dae8c47d98e89b667a9"},
-    {file = "docstring_parser-0.15.tar.gz", hash = "sha256:48ddc093e8b1865899956fcc03b03e66bb7240c310fac5af81814580c55bf682"},
+    {file = "docstring_parser-0.16-py3-none-any.whl", hash = "sha256:bf0a1387354d3691d102edef7ec124f219ef639982d096e26e3b60aeffa90637"},
+    {file = "docstring_parser-0.16.tar.gz", hash = "sha256:538beabd0af1e2db0146b6bd3caa526c35a34d61af9fd2887f3a8a27a739aa6e"},
 ]
 
 [[package]]
@@ -1076,13 +1077,13 @@ test = ["coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mock", "mypy", "pre-commit",
 
 [[package]]
 name = "griffe"
-version = "0.42.2"
+version = "0.43.0"
 description = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "griffe-0.42.2-py3-none-any.whl", hash = "sha256:bf9a09d7e9dcc3aca6a2c7ab4f63368c19e882f58c816fbd159bea613daddde3"},
-    {file = "griffe-0.42.2.tar.gz", hash = "sha256:d5547b7a1a0786f84042379a5da8bd97c11d0464d4de3d7510328ebce5fda772"},
+    {file = "griffe-0.43.0-py3-none-any.whl", hash = "sha256:5966a0d0d6b9189945765903703fb9fb8f7818640facd255c2a0867662137619"},
+    {file = "griffe-0.43.0.tar.gz", hash = "sha256:b8c0a938db1d74840c6a76da5b3d8754ea680c6f43efab33958e28b95d3031d3"},
 ]
 
 [package.dependencies]
@@ -1172,6 +1173,17 @@ brotli = ["brotli", "brotlicffi"]
 cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<14)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
+
+[[package]]
+name = "httpx-sse"
+version = "0.4.0"
+description = "Consume Server-Sent Event (SSE) messages with HTTPX."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "httpx-sse-0.4.0.tar.gz", hash = "sha256:1e81a3a3070ce322add1d3529ed42eb5f70817f45ed6ec915ab753f961139721"},
+    {file = "httpx_sse-0.4.0-py3-none-any.whl", hash = "sha256:f329af6eae57eaa2bdfd962b42524764af68075ea87370a2de920af5341e318f"},
+]
 
 [[package]]
 name = "huggingface-hub"
@@ -1484,13 +1496,13 @@ test-ui = ["calysto-bash"]
 
 [[package]]
 name = "litellm"
-version = "1.35.8"
+version = "1.35.12"
 description = "Library to easily interface with LLM API providers"
 optional = false
 python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
 files = [
-    {file = "litellm-1.35.8-py3-none-any.whl", hash = "sha256:0b328b37b6c40e5ece82f701bcb92e4d1d76ffb070e03f6c3abfbc6030bf07b8"},
-    {file = "litellm-1.35.8.tar.gz", hash = "sha256:0a8c031a01c19f2cfd9d873ff89bebc120917ec88f5656c1464a64d38e7c782d"},
+    {file = "litellm-1.35.12-py3-none-any.whl", hash = "sha256:df985e2ad0caa4c8b4b39ceaf41a716ed36fe5eaeed525c2528154bb957b4f14"},
+    {file = "litellm-1.35.12.tar.gz", hash = "sha256:c080a1a68d0f38952d32be536981ee2b9230a50cdc08cda867b583ece1963ef5"},
 ]
 
 [package.dependencies]
@@ -2202,13 +2214,13 @@ files = [
 
 [[package]]
 name = "openai"
-version = "1.20.0"
+version = "1.22.0"
 description = "The official Python library for the openai API"
 optional = false
 python-versions = ">=3.7.1"
 files = [
-    {file = "openai-1.20.0-py3-none-any.whl", hash = "sha256:9fcc75256b2425393800e358cd520b02b5ab1a8731921e45aa7ae6aec3ee8187"},
-    {file = "openai-1.20.0.tar.gz", hash = "sha256:d7c0e824b7da3c043731943965c737595cf9631c913b7a1464c502fdf492b9a9"},
+    {file = "openai-1.22.0-py3-none-any.whl", hash = "sha256:8f1d73c992f3558636661ba6681cdad75db30b5266ba19d938b1b5e0633f4bf7"},
+    {file = "openai-1.22.0.tar.gz", hash = "sha256:6e6f287a41f98fc36f65a0237845525cfdeb4db8d3e3f6f26efd0a00c7c345c1"},
 ]
 
 [package.dependencies]
@@ -4059,4 +4071,4 @@ test-docs = ["anthropic", "cohere", "diskcache", "fastapi", "groq", "litellm", "
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "91792527b790b8418beeda2a259e592a872f80e556c42b53a0d57add3d5fd73f"
+content-hash = "0ab69706fd81f305881525bcfa24e262c1ba139043766f7f1a697f102da15e91"

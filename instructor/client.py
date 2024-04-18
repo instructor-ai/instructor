@@ -280,6 +280,7 @@ def from_openai(
             instructor.Mode.TOOLS,
             instructor.Mode.JSON,
             instructor.Mode.JSON_SCHEMA,
+            instructor.Mode.MD_JSON,
         }
 
     if provider in {Provider.OPENAI}:
