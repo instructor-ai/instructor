@@ -337,3 +337,38 @@ async def test_client_cohere_async():
     assert group.members[1].name == "Paul McCartney"
     assert group.members[2].name == "George Harrison"
     assert group.members[3].name == "Ringo Starr"
+
+
+@pytest.mark.skip(reason="Skip for now")
+def test_client_from_mistral_with_response():
+    import mistralai.client as mistralaicli
+    client = instructor.from_mistral(
+        mistralaicli.MistralClient(),
+        max_tokens=1000,
+        model="mistral-large-latest",
+    )
+
+    user, response = client.messages.create_with_completion(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10
+
+
+@pytest.mark.skip(reason="Skip for now")
+def test_client_mistral_response():
+    import mistralai.client as mistralaicli
+    client = mistralaicli.MistralClient()
+    instructor_client = instructor.from_mistral(
+        client, max_tokens=1000, model="mistral-large-latest"
+    )
+
+    user = instructor_client.messages.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10

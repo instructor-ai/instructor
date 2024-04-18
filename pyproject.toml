@@ -31,12 +31,14 @@ anthropic = { version = "^0.23.1", optional = true }
 xmltodict = { version = "^0.13.0", optional = true }
 groq = { version = "^0.4.2", optional = true }
 cohere = { version = "^5.1.8", optional = true }
+mistralai = { version = "^0.1.8", optional = true }
 
 [tool.poetry.extras]
 anthropic = ["anthropic", "xmltodict"]
 groq = ["groq"]
 cohere = ["cohere"]
-test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere"]
+test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere", "mistralai"]
+mistralai = ["mistralai"]
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"
@@ -74,6 +76,7 @@ xmltodict = "^0.13.0"
 groq = "^0.4.2"
 phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
+mistralai = "^0.1.8"
 
 [build-system]
 requires = ["poetry-core"]
