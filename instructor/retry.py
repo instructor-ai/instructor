@@ -30,6 +30,14 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
 
+class InstructorRetryException(Exception):
+    def __init__(self, last_attempt, last_completion: ChatCompletion, n_retries: int):
+        self.last_attempt = last_attempt
+        self.last_completion = last_completion
+        self.n_retries = n_retries
+        super().__init__("Retry exception occurred")
+
+
 def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.ANTHROPIC_TOOLS:
         # The original response
@@ -144,10 +152,15 @@ def retry_sync(
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]
                         )
-                    raise e
+                    raise InstructorRetryException(
+                        last_completion=response,
+                    )
     except RetryError as e:
-        logger.exception(f"Failed after retries: {e.last_attempt.exception}")
-        raise e.last_attempt.exception from e
+        raise InstructorRetryException(
+            last_attempt=e.last_attempt,
+            last_completion=response,
+            n_retries=e.attempt_number,
+        )
 
 
 async def retry_async(
@@ -161,7 +174,6 @@ async def retry_async(
     mode: Mode = Mode.TOOLS,
 ) -> T:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
-
     # If max_retries is int, then create a AsyncRetrying object
     if isinstance(max_retries, int):
         logger.debug(f"max_retries: {max_retries}")
@@ -176,6 +188,7 @@ async def retry_async(
 
     try:
         async for attempt in max_retries:
+            n_retries += 1
             logger.debug(f"Retrying, attempt: {attempt}")
             with attempt:
                 try:
@@ -200,4 +213,8 @@ async def retry_async(
                     raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
-        raise e.last_attempt.exception from e
+        raise InstructorRetryException(
+            last_attempt=e.last_attempt,
+            last_completion=response,
+            n_retries=e.attempt_number,
+        )

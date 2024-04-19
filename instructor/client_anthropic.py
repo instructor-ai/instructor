@@ -13,7 +13,8 @@ def from_anthropic(
     | anthropic.AnthropicVertex,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
-) -> instructor.Instructor: ...
+) -> instructor.Instructor:
+    ...
 
 
 @overload
@@ -23,7 +24,8 @@ def from_anthropic(
     | anthropic.AsyncAnthropicVertex,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs,
-) -> instructor.Instructor: ...
+) -> instructor.Instructor:
+    ...
 
 
 def from_anthropic(

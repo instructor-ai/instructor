@@ -316,7 +316,8 @@ def from_litellm(
     completion: Callable,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
-) -> Instructor: ...
+) -> Instructor:
+    ...
 
 
 @overload
