@@ -94,10 +94,12 @@ In some cases, you may wish to have the language model ignore certain fields in 
 from pydantic import BaseModel
 from pydantic.json_schema import SkipJsonSchema
 
+
 class Response(BaseModel):
     question: str
     answer: str
     private_field: SkipJsonSchema[str | None] = None
+
 
 assert "private_field" not in Response.model_json_schema()["properties"]
 ```
