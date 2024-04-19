@@ -31,11 +31,20 @@ T = TypeVar("T")
 
 
 class InstructorRetryException(Exception):
-    def __init__(self, last_attempt, last_completion: ChatCompletion, n_retries: int):
-        self.last_attempt = last_attempt
+    def __init__(
+        self,
+        *args,
+        last_completion,
+        messages: list,
+        n_attempts: int,
+        total_usage,
+        **kwargs,
+    ):
         self.last_completion = last_completion
-        self.n_retries = n_retries
-        super().__init__("Retry exception occurred")
+        self.messages = messages
+        self.n_attempts = n_attempts
+        self.total_usage = total_usage
+        super().__init__(*args, **kwargs)
 
 
 def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
@@ -153,14 +162,20 @@ def retry_sync(
                             kwargs["messages"]
                         )
                     raise InstructorRetryException(
+                        e,
                         last_completion=response,
-                    )
+                        n_attempts=attempt.retry_state.attempt_number,
+                        messages=kwargs["messages"],
+                        total_usage=total_usage,
+                    ) from e
     except RetryError as e:
         raise InstructorRetryException(
-            last_attempt=e.last_attempt,
+            e,
             last_completion=response,
-            n_retries=e.attempt_number,
-        )
+            n_attempts=attempt.retry_state.attempt_number,
+            messages=kwargs["messages"],
+            total_usage=total_usage,
+        ) from e
 
 
 async def retry_async(
@@ -210,11 +225,19 @@ async def retry_async(
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]
                         )
-                    raise e
+                    raise InstructorRetryException(
+                        e,
+                        last_completion=response,
+                        n_attempts=e.attempt_number,
+                        messages=kwargs["messages"],
+                        total_usage=total_usage,
+                    ) from e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
         raise InstructorRetryException(
-            last_attempt=e.last_attempt,
+            e,
             last_completion=response,
-            n_retries=e.attempt_number,
-        )
+            n_attempts=e.attempt_number,
+            messages=kwargs["messages"],
+            total_usage=total_usage,
+        ) from e

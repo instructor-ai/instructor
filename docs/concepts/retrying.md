@@ -78,7 +78,7 @@ print(response.model_dump_json(indent=2))
 
 ## Catching Retry Exceptions
 
-If you want to catch the retry exceptions, you can do so and access the `last_completion`, `n_attempts` and `attempt` attributes.
+If you want to catch the retry exceptions, you can do so and access the `last_completion`, `n_attempts` and `messages` attributes.
 
 ```python
 from openai import OpenAI
