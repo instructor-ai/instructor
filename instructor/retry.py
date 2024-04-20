@@ -203,7 +203,6 @@ async def retry_async(
 
     try:
         async for attempt in max_retries:
-            n_retries += 1
             logger.debug(f"Retrying, attempt: {attempt}")
             with attempt:
                 try:
