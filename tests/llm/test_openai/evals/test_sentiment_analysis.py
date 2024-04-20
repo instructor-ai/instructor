@@ -18,9 +18,18 @@ class SentimentAnalysis(BaseModel):
 
 
 test_data = [
-    ("I absolutely love this product! It has exceeded all my expectations.", Sentiment.POSITIVE),
-    ("The service was terrible. I will never use this company again.", Sentiment.NEGATIVE),
-    ("The movie was okay. It had some good moments but overall it was average.", Sentiment.NEUTRAL),
+    (
+        "I absolutely love this product! It has exceeded all my expectations.",
+        Sentiment.POSITIVE,
+    ),
+    (
+        "The service was terrible. I will never use this company again.",
+        Sentiment.NEGATIVE,
+    ),
+    (
+        "The movie was okay. It had some good moments but overall it was average.",
+        Sentiment.NEUTRAL,
+    ),
 ]
 
 
