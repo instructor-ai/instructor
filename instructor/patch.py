@@ -116,6 +116,7 @@ def patch(
         response_model: Type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
+        strict: bool = True,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -129,6 +130,7 @@ def patch(
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
+            strict=strict,
             mode=mode,
         )  # type: ignore
         return response
@@ -138,6 +140,7 @@ def patch(
         response_model: Type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
+        strict: bool = True,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -150,6 +153,7 @@ def patch(
             validation_context=validation_context,
             max_retries=max_retries,
             args=args,
+            strict=strict,
             kwargs=new_kwargs,
             mode=mode,
         )
