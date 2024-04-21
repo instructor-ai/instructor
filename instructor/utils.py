@@ -27,6 +27,7 @@ class Provider(Enum):
     GROQ = "groq"
     MISTRAL = "mistral"
     COHERE = "cohere"
+    WATSONX = "watsonx"
     UNKNOWN = "unknown"
 
 
@@ -45,6 +46,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.MISTRAL
     elif "cohere" in str(base_url):
         return Provider.COHERE
+    elif "cloud.ibm.com" in str(base_url):
+        return Provider.WATSONX
     return Provider.UNKNOWN
 
 

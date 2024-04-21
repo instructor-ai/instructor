@@ -1496,13 +1496,13 @@ test-ui = ["calysto-bash"]
 
 [[package]]
 name = "litellm"
-version = "1.35.12"
+version = "1.35.18"
 description = "Library to easily interface with LLM API providers"
 optional = false
 python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
 files = [
-    {file = "litellm-1.35.12-py3-none-any.whl", hash = "sha256:df985e2ad0caa4c8b4b39ceaf41a716ed36fe5eaeed525c2528154bb957b4f14"},
-    {file = "litellm-1.35.12.tar.gz", hash = "sha256:c080a1a68d0f38952d32be536981ee2b9230a50cdc08cda867b583ece1963ef5"},
+    {file = "litellm-1.35.18-py3-none-any.whl", hash = "sha256:be261b3956e49f98b93dd72711cd4483523f378c387ac0a9d94e9f1a8118b28c"},
+    {file = "litellm-1.35.18.tar.gz", hash = "sha256:8f0609f50ce673d145aa80a312847ab6c7851f7634ffd405fcfeb6016ac38559"},
 ]
 
 [package.dependencies]
