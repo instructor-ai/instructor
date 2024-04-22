@@ -4,8 +4,9 @@ import inspect
 import json
 from typing import Callable, Generator, Iterable, AsyncGenerator, TypeVar
 
+from anthropic.types import Usage as AnthropicUsage
 from pydantic import BaseModel
-
+from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
@@ -93,11 +94,16 @@ async def extract_json_from_stream_async(
 
 
 def update_total_usage(response: T_Model, total_usage) -> T_Model | ChatCompletion:
-    if isinstance(response, ChatCompletion) and response.usage is not None:
-        total_usage.completion_tokens += response.usage.completion_tokens or 0
-        total_usage.prompt_tokens += response.usage.prompt_tokens or 0
-        total_usage.total_tokens += response.usage.total_tokens or 0
+    response_usage = getattr(response, "usage", None)
+    if isinstance(response_usage, OpenAIUsage):
+        total_usage.completion_tokens += response_usage.completion_tokens or 0
+        total_usage.prompt_tokens += response_usage.prompt_tokens or 0
+        total_usage.total_tokens += response_usage.total_tokens or 0
         response.usage = total_usage  # Replace each response usage with the total usage
+    elif isinstance(response_usage, AnthropicUsage):
+        total_usage.input_tokens += response_usage.input_tokens or 0
+        total_usage.output_tokens += response_usage.output_tokens or 0
+        response.usage = total_usage
     return response
 
 
