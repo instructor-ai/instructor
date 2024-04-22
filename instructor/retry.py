@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 
+from anthropic.types import Usage as AnthropicUsage
 from openai.types.chat import ChatCompletion
 from instructor.mode import Mode
 from instructor.process_response import process_response, process_response_async
@@ -62,22 +63,27 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             ):
                 tool_use_id = content.id
 
-        assert tool_use_id is not None, "Tool use ID not found in the response"
         yield {
             "role": "assistant",
             "content": assistant_content,
         }
-        yield {
-            "role": "user",
-            "content": [
-                {
-                    "type": "tool_result",
-                    "tool_use_id": tool_use_id,
-                    "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-                    "is_error": True,
-                }
-            ],
-        }
+        if tool_use_id is not None:
+            yield {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": tool_use_id,
+                        "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+                        "is_error": True,
+                    }
+                ],
+            }
+        else:
+            yield {
+                "role": "user",
+                "content": f"Validation Error due to no tool invocation:\n{exception}\nRecall the function correctly, fix the errors",
+            }
         return
     if mode == Mode.ANTHROPIC_JSON:
         from anthropic.types import Message
@@ -128,6 +134,8 @@ def retry_sync(
     mode: Mode = Mode.TOOLS,
 ) -> T_Model:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
+    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
+        total_usage = AnthropicUsage(input_tokens=0, output_tokens=0)
 
     # If max_retries is int, then create a Retrying object
     if isinstance(max_retries, int):
@@ -189,6 +197,9 @@ async def retry_async(
     mode: Mode = Mode.TOOLS,
 ) -> T:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
+    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
+        total_usage = AnthropicUsage(input_tokens=0, output_tokens=0)
+
     # If max_retries is int, then create a AsyncRetrying object
     if isinstance(max_retries, int):
         logger.debug(f"max_retries: {max_retries}")
