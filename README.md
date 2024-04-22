@@ -11,9 +11,9 @@ Instructor is a Python library that makes it a breeze to work with structured ou
 
 - **Response Models**: Specify Pydantic models to define the structure of your LLM outputs
 - **Retry Management**: Easily configure the number of retry attempts for your requests
-   **Validation**: Ensure LLM responses conform to your expectations with Pydantic validation
+- **Validation**: Ensure LLM responses conform to your expectations with Pydantic validation
 - **Streaming Support**: Work with Lists and Partial responses effortlessly
-   **Flexible Backends**: Seamlessly integrate with various LLM providers beyond OpenAI
+- **Flexible Backends**: Seamlessly integrate with various LLM providers beyond OpenAI
 
 ## Get Started in Minutes
 
