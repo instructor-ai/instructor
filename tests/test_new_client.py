@@ -372,3 +372,15 @@ def test_client_mistral_response():
     )
     assert user.name == "Jason"
     assert user.age == 10
+
+
+def test_client_reka_response():
+    client = instructor.from_reka(api_key=os.getenv("REKA_API_KEY"))
+
+    user = client.chat.completions.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Jason is 10"}],
+        temperature=0,
+    )
+    assert user.name == "Jason"
+    assert user.age == 10

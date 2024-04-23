@@ -25,6 +25,7 @@ class Provider(Enum):
     GROQ = "groq"
     MISTRAL = "mistral"
     COHERE = "cohere"
+    REKA = "reka"
     UNKNOWN = "unknown"
 
 
@@ -43,6 +44,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.MISTRAL
     elif "cohere" in str(base_url):
         return Provider.COHERE
+    elif "reka" in str(base_url):
+        return Provider.REKA
     return Provider.UNKNOWN
 
 

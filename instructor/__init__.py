@@ -66,3 +66,8 @@ if importlib.util.find_spec("cohere") is not None:
     from .client_cohere import from_cohere
 
     __all__ += ["from_cohere"]
+
+if importlib.util.find_spec("reka") is not None:
+    from .client_reka import from_reka
+
+    __all__ += ["from_reka"]

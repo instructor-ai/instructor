@@ -88,6 +88,7 @@ class Instructor:
         **kwargs,
     ) -> Generator[T, None, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
+        assert self.provider != Provider.REKA, "Reka doesn't support partial"
 
         kwargs["stream"] = True
 
@@ -111,6 +112,7 @@ class Instructor:
         **kwargs,
     ) -> Iterable[T]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
+        assert self.provider != Provider.REKA, "Reka doesn't support iterable"
 
         kwargs["stream"] = True
         kwargs = self.handle_kwargs(kwargs)
