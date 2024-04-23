@@ -1,3 +1,4 @@
+import logging
 from __future__ import annotations
 
 import inspect
@@ -12,6 +13,7 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
 )
 
+logger = logging.getLogger("instructor")
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
 from enum import Enum
@@ -99,6 +101,7 @@ def update_total_usage(response: T_Model, total_usage) -> T_Model | ChatCompleti
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
         total_usage.total_tokens += response_usage.total_tokens or 0
         response.usage = total_usage  # Replace each response usage with the total usage
+        return response
 
     # Anthropic usage
     try:
@@ -108,9 +111,11 @@ def update_total_usage(response: T_Model, total_usage) -> T_Model | ChatCompleti
             total_usage.input_tokens += response_usage.input_tokens or 0
             total_usage.output_tokens += response_usage.output_tokens or 0
             response.usage = total_usage
+            return response
     except ImportError:
         pass
 
+    logger.debug("No compatible response.usage found, token usage not updated.")
     return response
 
 
