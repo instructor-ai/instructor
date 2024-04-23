@@ -4,7 +4,6 @@ import inspect
 import json
 from typing import Callable, Generator, Iterable, AsyncGenerator, TypeVar
 
-from anthropic.types import Usage as AnthropicUsage
 from pydantic import BaseModel
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
@@ -100,10 +99,18 @@ def update_total_usage(response: T_Model, total_usage) -> T_Model | ChatCompleti
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
         total_usage.total_tokens += response_usage.total_tokens or 0
         response.usage = total_usage  # Replace each response usage with the total usage
-    elif isinstance(response_usage, AnthropicUsage):
-        total_usage.input_tokens += response_usage.input_tokens or 0
-        total_usage.output_tokens += response_usage.output_tokens or 0
-        response.usage = total_usage
+
+    # Anthropic usage
+    try:
+        from anthropic.types import Usage as AnthropicUsage
+
+        if isinstance(response_usage, AnthropicUsage):
+            total_usage.input_tokens += response_usage.input_tokens or 0
+            total_usage.output_tokens += response_usage.output_tokens or 0
+            response.usage = total_usage
+    except ImportError:
+        pass
+
     return response
 
 

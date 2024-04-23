@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import logging
 
-from anthropic.types import Usage as AnthropicUsage
 from openai.types.chat import ChatCompletion
 from instructor.mode import Mode
 from instructor.process_response import process_response, process_response_async
@@ -135,6 +134,8 @@ def retry_sync(
 ) -> T_Model:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
+        from anthropic.types import Usage as AnthropicUsage
+
         total_usage = AnthropicUsage(input_tokens=0, output_tokens=0)
 
     # If max_retries is int, then create a Retrying object
@@ -198,6 +199,8 @@ async def retry_async(
 ) -> T:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
+        from anthropic.types import Usage as AnthropicUsage
+
         total_usage = AnthropicUsage(input_tokens=0, output_tokens=0)
 
     # If max_retries is int, then create a AsyncRetrying object
