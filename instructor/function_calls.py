@@ -4,7 +4,7 @@ from typing import Annotated, Any, Dict, Optional, Type, TypeVar
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from pydantic import BaseModel, Field, create_model, validate_call
+from pydantic import BaseModel, Field, TypeAdapter, create_model
 
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
@@ -120,13 +120,11 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     ) -> BaseModel:
         tool_calls = [c.input for c in completion.content if c.type == "tool_use"]
 
-        @validate_call
-        def check_tool_call(
-            tool_calls: Annotated[list, Field(min_length=1, max_length=1)],
-        ):  # raise ValidationError if tool_calls is not of length 1
-            return tool_calls[0]
+        tool_calls_validator = TypeAdapter(
+            Annotated[list, Field(min_length=1, max_length=1)]
+        )
+        tool_call = tool_calls_validator.validate_python(tool_calls)[0]
 
-        tool_call = check_tool_call(tool_calls)
         return cls.model_validate(tool_call, context=validation_context, strict=strict)  # type:ignore
 
     @classmethod
