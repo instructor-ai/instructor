@@ -1,15 +1,14 @@
-from typing import Any, Dict, Optional, Type, TypeVar
-from docstring_parser import parse
+import logging
 from functools import wraps
-from pydantic import BaseModel, create_model
+from typing import Annotated, Any, Dict, Optional, Type, TypeVar
+
+from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from typing import Any, Dict, Optional, Type
-from instructor.mode import Mode
-from instructor.utils import extract_json_from_codeblock
+from pydantic import BaseModel, Field, TypeAdapter, create_model
+
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
-import logging
-
+from instructor.utils import extract_json_from_codeblock
 
 T = TypeVar("T")
 
@@ -119,7 +118,12 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        tool_call = [c.input for c in completion.content if c.type == "tool_use"][0]
+        tool_calls = [c.input for c in completion.content if c.type == "tool_use"]
+
+        tool_calls_validator = TypeAdapter(
+            Annotated[list, Field(min_length=1, max_length=1)]
+        )
+        tool_call = tool_calls_validator.validate_python(tool_calls)[0]
 
         return cls.model_validate(tool_call, context=validation_context, strict=strict)  # type:ignore
 
