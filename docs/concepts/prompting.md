@@ -115,7 +115,7 @@ class UserDetail(BaseModel):
     )
 ```
 
-If you're having a hard time with `Enum` and alternative is to use `Literal`
+If you're having a hard time with `Enum` an alternative is to use `Literal`
 
 ```python hl_lines="4"
 from typing import Literal
