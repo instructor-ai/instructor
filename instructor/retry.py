@@ -241,7 +241,7 @@ async def retry_async(
                     raise InstructorRetryException(
                         e,
                         last_completion=response,
-                        n_attempts=e.attempt_number,
+                        n_attempts=attempt.retry_state.attempt_number,
                         messages=kwargs["messages"],
                         total_usage=total_usage,
                     ) from e
@@ -250,7 +250,7 @@ async def retry_async(
         raise InstructorRetryException(
             e,
             last_completion=response,
-            n_attempts=e.attempt_number,
+            n_attempts=attempt.retry_state.attempt_number,
             messages=kwargs["messages"],
             total_usage=total_usage,
         ) from e

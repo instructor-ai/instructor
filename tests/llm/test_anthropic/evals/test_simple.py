@@ -1,9 +1,12 @@
+from enum import Enum
+from typing import List, Literal
+
 import anthropic
+import pytest
+from pydantic import BaseModel, field_validator
+
 import instructor
 from instructor.retry import InstructorRetryException
-from pydantic import BaseModel, field_validator
-from typing import List, Literal
-from enum import Enum
 
 client = instructor.from_anthropic(
     anthropic.Anthropic(), mode=instructor.Mode.ANTHROPIC_TOOLS
@@ -204,6 +207,32 @@ def test_retry_error():
 
     try:
         client.messages.create(
+            model="claude-3-haiku-20240307",
+            max_tokens=1024,
+            max_retries=2,
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Extract John is 18 years old",
+                },
+            ],
+            response_model=User,
+        )
+    except InstructorRetryException as e:
+        assert e.total_usage.input_tokens > 0 and e.total_usage.output_tokens > 0
+
+
+@pytest.mark.asyncio
+async def test_async_retry_error():
+    class User(BaseModel):
+        name: str
+
+        @field_validator("name")
+        def validate_name(cls, _):
+            raise ValueError("Never succeed")
+
+    try:
+        await client.messages.create(
             model="claude-3-haiku-20240307",
             max_tokens=1024,
             max_retries=2,
