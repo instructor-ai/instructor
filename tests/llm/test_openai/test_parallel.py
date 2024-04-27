@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Literal
+from typing import Iterable, Literal, Union
 from pydantic import BaseModel
 
 import pytest
@@ -34,7 +34,7 @@ def test_sync_parallel_tools__error(client):
 
 
 def test_sync_parallel_tools_or(client):
-    client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
+    client = instructor.from_openai(client, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = client.chat.completions.create(
         model="gpt-4-turbo-preview",
         messages=[
@@ -44,14 +44,14 @@ def test_sync_parallel_tools_or(client):
                 "content": "What is the weather in toronto and dallas and who won the super bowl?",
             },
         ],
-        response_model=Iterable[Weather | GoogleSearch],
+        response_model=Iterable[Union[Weather, GoogleSearch]],
     )
     assert len(list(resp)) == 3
 
 
 @pytest.mark.asyncio
 async def test_async_parallel_tools_or(aclient):
-    client = instructor.patch(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
+    client = instructor.from_openai(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = await client.chat.completions.create(
         model="gpt-4-turbo-preview",
         messages=[
@@ -61,7 +61,7 @@ async def test_async_parallel_tools_or(aclient):
                 "content": "What is the weather in toronto and dallas and who won the super bowl?",
             },
         ],
-        response_model=Iterable[Weather | GoogleSearch],
+        response_model=Iterable[Union[Weather, GoogleSearch]],
     )
     assert len(list(resp)) == 3
 
