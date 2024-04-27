@@ -49,6 +49,7 @@ resp = client.chat.completions.create(
             "content": task,
         }
     ],
+    project_id=os.environ["WATSONX_PROJECT_ID"],
     response_model=Company,
 )
 
