@@ -1,3 +1,16 @@
+# Structured Outputs with IBM watsonx.ai
+
+You can use watsonx foundation models for inference using [LiteLLM](https://docs.litellm.ai/docs/providers/watsonx).
+
+## watsonx.ai
+
+You will need an API key and the project ID for your watsonx.ai.
+
+More information at <https://www.ibm.com/products/watsonx-ai>.
+
+## Example
+
+```python
 import os
 
 import litellm
@@ -42,3 +55,4 @@ resp = client.chat.completions.create(
 assert isinstance(resp, Company)
 assert resp.name == "IBM"
 assert resp.year_founded == 1911
+```

@@ -66,8 +66,3 @@ if importlib.util.find_spec("cohere") is not None:
     from .client_cohere import from_cohere
 
     __all__ += ["from_cohere"]
-
-if importlib.util.find_spec("ibm_watsonx_ai") is not None:
-    from .client_watsonx import from_watsonx
-
-    __all__ += ["from_watsonx"]
