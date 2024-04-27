@@ -269,7 +269,10 @@ def from_openai(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-    provider = get_provider(str(client.base_url))
+    if hasattr(client, "base_url"):
+        provider = get_provider(str(client.base_url))
+    else:
+        provider = Provider.OPENAI
 
     assert isinstance(
         client, (openai.OpenAI, openai.AsyncOpenAI)
@@ -316,8 +319,7 @@ def from_litellm(
     completion: Callable,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
-) -> Instructor:
-    ...
+) -> Instructor: ...
 
 
 @overload
