@@ -7,11 +7,12 @@ from pydantic import BaseModel, Field
 import instructor
 from instructor import Mode
 
-litellm.drop_params = True  # since watsonx.ai doesn't support `json_mode`
+litellm.drop_params = True  # watsonx.ai doesn't support `json_mode`
 
 os.environ["WATSONX_URL"] = "https://us-south.ml.cloud.ibm.com"
 os.environ["WATSONX_APIKEY"] = ""
 os.environ["WATSONX_PROJECT_ID"] = ""
+# Additional options: https://docs.litellm.ai/docs/providers/watsonx
 
 
 class Company(BaseModel):
@@ -43,3 +44,9 @@ resp = client.chat.completions.create(
 assert isinstance(resp, Company)
 assert resp.name == "IBM"
 assert resp.year_founded == 1911
+
+print(f"""\
+Company
+    Name:         {resp.name}
+    Year founded: {resp.year_founded}
+""")
