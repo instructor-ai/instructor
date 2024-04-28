@@ -1496,13 +1496,13 @@ test-ui = ["calysto-bash"]
 
 [[package]]
 name = "litellm"
-version = "1.35.30"
+version = "1.35.31"
 description = "Library to easily interface with LLM API providers"
 optional = false
 python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
 files = [
-    {file = "litellm-1.35.30-py3-none-any.whl", hash = "sha256:a2f0a800504cac90ce7c4d511656acf1d502fb8a32e0c0f83c573ae34dcb8ee1"},
-    {file = "litellm-1.35.30.tar.gz", hash = "sha256:b9c422a7d69c0946453a0562fbaceb756db7c60fcdefb0574aed82b82925c90c"},
+    {file = "litellm-1.35.31-py3-none-any.whl", hash = "sha256:bf8b437201bbcde50f8508f8712dd7ac7f323a1cdc2628aba0d35a4c312a801d"},
+    {file = "litellm-1.35.31.tar.gz", hash = "sha256:8691fddef3c14733dfef2f34c11daf47a317790a258c5315eabe7d1eafbfeb24"},
 ]
 
 [package.dependencies]
@@ -2806,13 +2806,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pymdown-extensions"
-version = "10.8"
+version = "10.8.1"
 description = "Extension pack for Python Markdown."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pymdown_extensions-10.8-py3-none-any.whl", hash = "sha256:3539003ff0d5e219ba979d2dc961d18fcad5ac259e66c764482e8347b4c0503c"},
-    {file = "pymdown_extensions-10.8.tar.gz", hash = "sha256:91ca336caf414e1e5e0626feca86e145de9f85a3921a7bcbd32890b51738c428"},
+    {file = "pymdown_extensions-10.8.1-py3-none-any.whl", hash = "sha256:f938326115884f48c6059c67377c46cf631c733ef3629b6eed1349989d1b30cb"},
+    {file = "pymdown_extensions-10.8.1.tar.gz", hash = "sha256:3ab1db5c9e21728dabf75192d71471f8e50f216627e9a1fa9535ecb0231b9940"},
 ]
 
 [package.dependencies]
@@ -4072,10 +4072,11 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 anthropic = ["anthropic", "xmltodict"]
 cohere = ["cohere"]
 groq = ["groq"]
+litellm = ["litellm"]
 mistralai = ["mistralai"]
 test-docs = ["anthropic", "cohere", "diskcache", "fastapi", "groq", "litellm", "mistralai", "pandas", "pydantic_extra_types", "redis", "tabulate"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "dc1db56a92bc5fc3a67d408f44562f7d894b2df8ed27b1924ee6ea230099f452"
+content-hash = "99883bd91bc071ee7044b8cf5927c5bd65865e724dcd315d142875ddc8080c0a"
