@@ -39,12 +39,6 @@ class Company(BaseModel):
     year_founded: int = Field(description="year the company was founded")
 
 
-task = """\
-Given the following text, create a Company object:
-
-IBM was founded in 1911 as the Computing-Tabulating-Recording Company (CTR), a holding company of manufacturers of record-keeping and measuring systems.
-"""
-
 client = instructor.from_litellm(completion, mode=Mode.JSON)
 
 resp = client.chat.completions.create(
@@ -53,20 +47,22 @@ resp = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": task,
+            "content": """\
+Given the following text, create a Company object:
+
+IBM was founded in 1911 as the Computing-Tabulating-Recording Company (CTR), a holding company of manufacturers of record-keeping and measuring systems.
+""",
         }
     ],
     project_id=os.environ["WATSONX_PROJECT_ID"],
     response_model=Company,
 )
 
-assert isinstance(resp, Company)
-assert resp.name == "IBM"
-assert resp.year_founded == 1911
-
-print(f"""\
-Company
-    Name:         {resp.name}
-    Year founded: {resp.year_founded}
-""")
+print(resp.model_dump_json(indent=2))
+"""
+{
+  "name": "IBM",
+  "year_founded": 1911
+}
+"""
 ```
