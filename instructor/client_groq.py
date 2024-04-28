@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import overload
 
 import groq
@@ -9,7 +11,8 @@ def from_groq(
     client: groq.Groq,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
-) -> instructor.Instructor: ...
+) -> instructor.Instructor:
+    ...
 
 
 @overload
@@ -17,7 +20,8 @@ def from_groq(
     client: groq.AsyncGroq,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
-) -> instructor.Instructor: ...
+) -> instructor.Instructor:
+    ...
 
 
 def from_groq(

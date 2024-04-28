@@ -11,7 +11,6 @@ from typing import (
     get_args,
     get_origin,
 )
-from types import UnionType  # type: ignore[attr-defined]
 from pydantic import BaseModel
 from instructor.function_calls import OpenAISchema, openai_schema
 from collections.abc import Iterable
@@ -59,7 +58,7 @@ def get_types_array(typehint: Type[Iterable[T]]) -> Tuple[Type[T], ...]:
         the_types = get_args(get_args(typehint)[0])
         return the_types
 
-    if get_origin(get_args(typehint)[0]) is UnionType:
+    if get_origin(get_args(typehint)[0]) is Union:
         # works for Iterable[Union[int, str]]
         the_types = get_args(get_args(typehint)[0])
         return the_types

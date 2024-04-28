@@ -2,7 +2,6 @@
 from functools import wraps
 from typing import (
     Callable,
-    ParamSpec,
     Protocol,
     Type,
     TypeVar,
@@ -10,6 +9,7 @@ from typing import (
     overload,
     Awaitable,
 )
+from typing_extensions import ParamSpec
 
 from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
@@ -36,7 +36,8 @@ class InstructorChatCompletionCreate(Protocol):
         max_retries: int = 1,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model: ...
+    ) -> T_Model:
+        ...
 
 
 class AsyncInstructorChatCompletionCreate(Protocol):
@@ -47,35 +48,40 @@ class AsyncInstructorChatCompletionCreate(Protocol):
         max_retries: int = 1,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model: ...
+    ) -> T_Model:
+        ...
 
 
 @overload
 def patch(
     client: OpenAI,
     mode: Mode = Mode.TOOLS,
-) -> OpenAI: ...
+) -> OpenAI:
+    ...
 
 
 @overload
 def patch(
     client: AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
-) -> AsyncOpenAI: ...
+) -> AsyncOpenAI:
+    ...
 
 
 @overload
 def patch(
     create: Callable[T_ParamSpec, T_Retval],
     mode: Mode = Mode.TOOLS,
-) -> InstructorChatCompletionCreate: ...
+) -> InstructorChatCompletionCreate:
+    ...
 
 
 @overload
 def patch(
     create: Awaitable[T_Retval],
     mode: Mode = Mode.TOOLS,
-) -> InstructorChatCompletionCreate: ...
+) -> InstructorChatCompletionCreate:
+    ...
 
 
 def patch(
@@ -110,6 +116,7 @@ def patch(
         response_model: Type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
+        strict: bool = True,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -123,6 +130,7 @@ def patch(
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
+            strict=strict,
             mode=mode,
         )  # type: ignore
         return response
@@ -132,6 +140,7 @@ def patch(
         response_model: Type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
+        strict: bool = True,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -144,6 +153,7 @@ def patch(
             validation_context=validation_context,
             max_retries=max_retries,
             args=args,
+            strict=strict,
             kwargs=new_kwargs,
             mode=mode,
         )

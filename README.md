@@ -11,9 +11,9 @@ Instructor is a Python library that makes it a breeze to work with structured ou
 
 - **Response Models**: Specify Pydantic models to define the structure of your LLM outputs
 - **Retry Management**: Easily configure the number of retry attempts for your requests
-   **Validation**: Ensure LLM responses conform to your expectations with Pydantic validation
+- **Validation**: Ensure LLM responses conform to your expectations with Pydantic validation
 - **Streaming Support**: Work with Lists and Partial responses effortlessly
-   **Flexible Backends**: Seamlessly integrate with various LLM providers beyond OpenAI
+- **Flexible Backends**: Seamlessly integrate with various LLM providers beyond OpenAI
 
 ## Get Started in Minutes
 
@@ -86,6 +86,46 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+### Using Cohere Models
+
+Make sure to install `cohere` and set your system environment variable with `export CO_API_KEY=<YOUR_COHERE_API_KEY>`.
+
+```
+pip install cohere
+```
+
+```python
+import instructor
+import cohere
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_cohere(cohere.Client())
+
+# note that client.chat.completions.create will also work
+resp = client.chat.completions.create(
+    model="command-r-plus",
+    max_tokens=1024,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
+
 ### Using Litellm
 
 ```python
@@ -118,7 +158,7 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
-## Type are infered correctly
+## Type are inferred correctly
 
 This was the dream of instructor but due to the patching of openai, it wasnt possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
 
@@ -146,13 +186,13 @@ user = client.chat.completions.create(
 )
 ```
 
-Now if you use a IDE, you can see the type is correctly infered.
+Now if you use a IDE, you can see the type is correctly inferred.
 
 ![type](./docs/blog/posts/img/type.png)
 
 ### Handling async: `await create`
 
-This will also work correctly with asynchronous clients. 
+This will also work correctly with asynchronous clients.
 
 ```python
 import openai
@@ -258,7 +298,7 @@ for user in user_stream:
     # name='John Doe' age=30
 ```
 
-Notice now that the type infered is `Generator[User, None]`
+Notice now that the type inferred is `Generator[User, None]`
 
 ![generator](./docs/blog/posts/img/generator.png)
 

@@ -1,15 +1,12 @@
-from typing import Any, Dict, Optional, Type, TypeVar
-from docstring_parser import parse
+import logging
 from functools import wraps
-from pydantic import BaseModel, create_model
+from typing import Annotated, Any, Dict, Optional, Type, TypeVar, List
+from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from typing import Any, Dict, Optional, Type, List
-from instructor.mode import Mode
-from instructor.utils import extract_json_from_codeblock
+from pydantic import BaseModel, Field, TypeAdapter, create_model
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
-import logging
-
+from instructor.utils import extract_json_from_codeblock
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -95,6 +92,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
 
+        if mode == Mode.COHERE_TOOLS:
+            return cls.parse_cohere_tools(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
 
@@ -116,11 +116,12 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         validation_context: Optional[Dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        from anthropic.types import Message
+        tool_calls = [c.input for c in completion.content if c.type == "tool_use"]
 
-        assert isinstance(completion, Message)
-
-        tool_call = [c.input for c in completion.content if c.type == "tool_use"][0]
+        tool_calls_validator = TypeAdapter(
+            Annotated[list, Field(min_length=1, max_length=1)]
+        )
+        tool_call = tool_calls_validator.validate_python(tool_calls)[0]
 
         return cls.model_validate(
             tool_call, context=validation_context, strict=strict
@@ -138,6 +139,19 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         assert isinstance(completion, Message)
 
         text = completion.content[0].text
+        extra_text = extract_json_from_codeblock(text)
+        return cls.model_validate_json(
+            extra_text, context=validation_context, strict=strict
+        )
+
+    @classmethod
+    def parse_cohere_tools(
+        cls: Type[BaseModel],
+        completion,
+        validation_context: Optional[Dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        text = completion.text
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict

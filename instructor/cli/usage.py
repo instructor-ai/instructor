@@ -114,11 +114,11 @@ def calculate_cost(
 
 def group_and_sum_by_date_and_snapshot(usage_data: List[Dict[str, Any]]) -> Table:
     """Group and sum the usage data by date and snapshot, including costs."""
-    summary: DefaultDict[str, DefaultDict[str, Dict[str, Union[int, float]]]] = (
-        defaultdict(
-            lambda: defaultdict(
-                lambda: {"total_requests": 0, "total_tokens": 0, "total_cost": 0.0}
-            )
+    summary: DefaultDict[
+        str, DefaultDict[str, Dict[str, Union[int, float]]]
+    ] = defaultdict(
+        lambda: defaultdict(
+            lambda: {"total_requests": 0, "total_tokens": 0, "total_cost": 0.0}
         )
     )
 

@@ -23,6 +23,9 @@ Dil modelleri son yıllarda daha da gelişti, akıcı ve doğal metinler üretme
 ---
 
 Mô hình ngôn ngữ đã trở nên tinh vi hơn trong những năm gần đây, cho phép tạo ra các văn bản trôi chảy và tự nhiên, đồng thời thể hiện hiệu suất xuất sắc trong các nhiệm vụ khác nhau như dịch máy, trả lời câu hỏi và tạo văn bản sáng tạo. Các mô hình này được huấn luyện trên các tập dữ liệu văn bản khổng lồ và có thể nắm bắt cấu trúc và sắc thái của ngôn ngữ tự nhiên. Những cải tiến trong mô hình ngôn ngữ có thể mang lại cuộc cách mạng trong giao tiếp giữa máy tính và con người, và người ta kỳ vọng sẽ có những tiến bộ hơn nữa trong tương lai.
+
+---
+
 Les modèles de langage sont devenus de plus en plus sophistiqués ces dernières années, permettant de générer des textes fluides et naturels, et de performer dans une variété de tâches telles que la traduction automatique, la réponse aux questions et la génération de texte créatif. Entraînés sur d'immenses ensembles de données textuelles, ces modèles sont capables de capturer la structure et les nuances du langage naturel, ouvrant la voie à une révolution dans la communication entre les ordinateurs et les humains.
 
 ---
@@ -91,6 +94,7 @@ if __name__ == "__main__":
     Source: sw, Summary: sw, Match: True, Detected: to
     Source: tr, Summary: tr, Match: True, Detected: tr
     Source: vi, Summary: vi, Match: True, Detected: vi
+    Source: fr, Summary: fr, Match: True, Detected: fr
     Source: zh-cn, Summary: zh-cn, Match: True, Detected: zh
     Source: de, Summary: de, Match: True, Detected: de
     Source: hi, Summary: hi, Match: True, Detected: hi

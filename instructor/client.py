@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import openai
 import inspect
 import instructor
@@ -26,7 +28,7 @@ from pydantic import BaseModel
 from instructor.dsl.partial import Partial
 
 
-T = TypeVar("T", bound=(BaseModel | Iterable | Partial))
+T = TypeVar("T", bound=Union[BaseModel, Iterable, Partial])
 
 
 class Instructor:
@@ -92,6 +94,7 @@ class Instructor:
         n: Optional[int] = None,
         max_retries: int | Retrying = 3,
         validation_context: dict | None = None,
+        strict: bool = True,
         **kwargs,
     ) -> T | List[T]:
         kwargs = self.handle_kwargs(kwargs, n=n)
@@ -101,6 +104,7 @@ class Instructor:
             messages=messages,
             max_retries=max_retries,
             validation_context=validation_context,
+            strict=strict,
             **kwargs,
         )
 
@@ -110,6 +114,7 @@ class Instructor:
         messages: List[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict | None = None,
+        strict: bool = True,
         **kwargs,
     ) -> Generator[T, None, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
@@ -124,6 +129,7 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
+            strict=strict,
             **kwargs,
         )
 
@@ -133,6 +139,7 @@ class Instructor:
         response_model: Type[T],
         max_retries: int = 3,
         validation_context: dict | None = None,
+        strict: bool = True,
         **kwargs,
     ) -> Iterable[T]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
@@ -146,6 +153,7 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
+            strict=strict,
             **kwargs,
         )
 
@@ -155,6 +163,7 @@ class Instructor:
         response_model: Type[T],
         max_retries: int = 3,
         validation_context: dict | None = None,
+        strict: bool = True,
         **kwargs,
     ) -> Tuple[T, ChatCompletion | Any]:
         kwargs = self.handle_kwargs(kwargs)
@@ -163,6 +172,7 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
+            strict=strict,
             **kwargs,
         )
         return model, model._raw_response
@@ -216,6 +226,7 @@ class AsyncInstructor(Instructor):
         n: int,
         max_retries: int | AsyncRetrying = 3,
         validation_context: dict | None = None,
+        strict: bool = True,
         **kwargs,
     ) -> Coroutine[Any, Any, List[T]]: ...
 
@@ -234,6 +245,7 @@ class AsyncInstructor(Instructor):
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
+            strict=strict,
             **kwargs,
         )
 
@@ -242,6 +254,8 @@ class AsyncInstructor(Instructor):
         response_model: Type[T],
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
+        max_retries: int = 3,
+        strict: bool = True,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
@@ -252,6 +266,7 @@ class AsyncInstructor(Instructor):
             response_model=instructor.Partial[response_model],  # type: ignore
             validation_context=validation_context,
             messages=messages,
+            strict=strict,
             **kwargs,
         ):
             yield item
@@ -261,6 +276,7 @@ class AsyncInstructor(Instructor):
         response_model: Type[T],
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
+        strict: bool = True,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
@@ -271,6 +287,7 @@ class AsyncInstructor(Instructor):
             response_model=Iterable[response_model],
             validation_context=validation_context,
             messages=messages,
+            strict=strict,
             **kwargs,
         ):
             yield item
@@ -281,6 +298,7 @@ class AsyncInstructor(Instructor):
         messages: List[ChatCompletionMessageParam],
         validation_context: dict | None = None,
         max_retries: int | AsyncRetrying = 3,
+        strict: bool = True,
         **kwargs,
     ) -> Tuple[T, dict]:
         kwargs = self.handle_kwargs(kwargs)
@@ -289,6 +307,7 @@ class AsyncInstructor(Instructor):
             validation_context=validation_context,
             max_retries=max_retries,
             messages=messages,
+            strict=strict,
             **kwargs,
         )
         return response, response._raw_response
@@ -315,7 +334,10 @@ def from_openai(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs,
 ) -> Instructor | AsyncInstructor:
-    provider = get_provider(str(client.base_url))
+    if hasattr(client, "base_url"):
+        provider = get_provider(str(client.base_url))
+    else:
+        provider = Provider.OPENAI
 
     assert isinstance(
         client, (openai.OpenAI, openai.AsyncOpenAI)
@@ -326,6 +348,7 @@ def from_openai(
             instructor.Mode.TOOLS,
             instructor.Mode.JSON,
             instructor.Mode.JSON_SCHEMA,
+            instructor.Mode.MD_JSON,
         }
 
     if provider in {Provider.OPENAI}:

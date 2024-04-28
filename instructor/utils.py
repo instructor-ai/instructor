@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import inspect
 import json
+import logging
 from typing import Callable, Generator, Iterable, AsyncGenerator, TypeVar
 
 from pydantic import BaseModel
-
+from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
 
+logger = logging.getLogger("instructor")
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
 from enum import Enum
@@ -21,6 +25,8 @@ class Provider(Enum):
     ANYSCALE = "anyscale"
     TOGETHER = "together"
     GROQ = "groq"
+    MISTRAL = "mistral"
+    COHERE = "cohere"
     UNKNOWN = "unknown"
 
 
@@ -35,6 +41,10 @@ def get_provider(base_url: str) -> Provider:
         return Provider.GROQ
     elif "openai" in str(base_url):
         return Provider.OPENAI
+    elif "mistral" in str(base_url):
+        return Provider.MISTRAL
+    elif "cohere" in str(base_url):
+        return Provider.COHERE
     return Provider.UNKNOWN
 
 
@@ -85,11 +95,27 @@ async def extract_json_from_stream_async(
 
 
 def update_total_usage(response: T_Model, total_usage) -> T_Model | ChatCompletion:
-    if isinstance(response, ChatCompletion) and response.usage is not None:
-        total_usage.completion_tokens += response.usage.completion_tokens or 0
-        total_usage.prompt_tokens += response.usage.prompt_tokens or 0
-        total_usage.total_tokens += response.usage.total_tokens or 0
+    response_usage = getattr(response, "usage", None)
+    if isinstance(response_usage, OpenAIUsage):
+        total_usage.completion_tokens += response_usage.completion_tokens or 0
+        total_usage.prompt_tokens += response_usage.prompt_tokens or 0
+        total_usage.total_tokens += response_usage.total_tokens or 0
         response.usage = total_usage  # Replace each response usage with the total usage
+        return response
+
+    # Anthropic usage
+    try:
+        from anthropic.types import Usage as AnthropicUsage
+
+        if isinstance(response_usage, AnthropicUsage):
+            total_usage.input_tokens += response_usage.input_tokens or 0
+            total_usage.output_tokens += response_usage.output_tokens or 0
+            response.usage = total_usage
+            return response
+    except ImportError:
+        pass
+
+    logger.debug("No compatible response.usage found, token usage not updated.")
     return response
 
 
@@ -126,9 +152,18 @@ def merge_consecutive_messages(messages: list[dict]) -> list[dict]:
     # merge all consecutive user messages into a single message
     new_messages = []
     for message in messages:
+        new_content = message["content"]
+        if isinstance(new_content, str):
+            new_content = [{"type": "text", "text": new_content}]
+
         if len(new_messages) > 0 and message["role"] == new_messages[-1]["role"]:
-            new_messages[-1]["content"] += f"\n\n{message['content']}"
+            new_messages[-1]["content"].extend(new_content)
         else:
-            new_messages.append(message)
+            new_messages.append(
+                {
+                    "role": message["role"],
+                    "content": new_content,
+                }
+            )
 
     return new_messages
