@@ -10,7 +10,7 @@ from instructor import Mode
 litellm.drop_params = True  # watsonx.ai doesn't support `json_mode`
 
 os.environ["WATSONX_URL"] = "https://us-south.ml.cloud.ibm.com"
-os.environ["WATSONX_APIKEY"] = ""
+os.environ["WATSONX_API_KEY"] = ""
 os.environ["WATSONX_PROJECT_ID"] = ""
 # Additional options: https://docs.litellm.ai/docs/providers/watsonx
 

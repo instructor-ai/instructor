@@ -1,12 +1,18 @@
 # Structured Outputs with IBM watsonx.ai
 
-You can use watsonx foundation models for inference using [LiteLLM](https://docs.litellm.ai/docs/providers/watsonx).
+You can use IBM watsonx.ai for inference using [LiteLLM](https://docs.litellm.ai/docs/providers/watsonx).
 
-## watsonx.ai
+## Prerequisites
 
-You will need an API key and the project ID for your watsonx.ai.
+- IBM Cloud Account
+- API Key from IBM Cloud IAM: https://cloud.ibm.com/iam/apikeys
+- Project ID (from xatsonx.ai instance URL: https://dataplatform.cloud.ibm.com/projects/<WATSONX_PROJECT_ID>/)
 
-More information at <https://www.ibm.com/products/watsonx-ai>.
+## Install
+
+```bash
+poetry install instructor --with litellm
+```
 
 ## Example
 
@@ -23,7 +29,7 @@ from instructor import Mode
 litellm.drop_params = True  # watsonx.ai doesn't support `json_mode`
 
 os.environ["WATSONX_URL"] = "https://us-south.ml.cloud.ibm.com"
-os.environ["WATSONX_APIKEY"] = ""
+os.environ["WATSONX_API_KEY"] = ""
 os.environ["WATSONX_PROJECT_ID"] = ""
 # Additional options: https://docs.litellm.ai/docs/providers/watsonx
 
