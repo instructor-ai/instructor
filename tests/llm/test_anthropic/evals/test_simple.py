@@ -20,7 +20,7 @@ def test_simple():
 
         @field_validator("name")
         def name_is_uppercase(cls, v: str):
-            assert v.isupper(), "Name must be uppercase"
+            assert v.isupper(), "Name must be uppercase, please fix"
             return v
 
     resp = client.messages.create(
