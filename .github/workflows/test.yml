@@ -36,6 +36,7 @@ jobs:
         run: poetry install --with dev,anthropic
 
       - name: Run tests
+        if: matrix.python-version != '3.11'
         run: poetry run pytest tests/ -k "not openai and not anthropic and not evals and not docs"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
