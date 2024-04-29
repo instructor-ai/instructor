@@ -89,7 +89,6 @@ exclude = [
     "**/__pycache__",
     "src/experimental",
     "src/typestubs",
-    "**/migrations/**",
     "**/tests/**",
 ]
 pythonVersion = "3.9"

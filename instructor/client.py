@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from instructor.dsl.partial import Partial
 
 
-T = TypeVar("T", bound=Union[BaseModel, Iterable[Any], Partial[Any]])
+T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
 
 
 class Instructor:
@@ -66,8 +66,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[T]:
-        ...
+    ) -> Awaitable[T]: ...
 
     @overload
     def create(
@@ -78,8 +77,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> T:
-        ...
+    ) -> T: ...
 
     # TODO: we should overload a case where response_model is None
     def create(
@@ -111,8 +109,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]:
-        ...
+    ) -> AsyncGenerator[T, None]: ...
 
     @overload
     def create_partial(
@@ -123,8 +120,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Generator[T, None, None]:
-        ...
+    ) -> Generator[T, None, None]: ...
 
     def create_partial(
         self,
@@ -160,8 +156,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]:
-        ...
+    ) -> AsyncGenerator[T, None]: ...
 
     @overload
     def create_iterable(
@@ -172,8 +167,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Generator[T, None, None]:
-        ...
+    ) -> Generator[T, None, None]: ...
 
     def create_iterable(
         self,
@@ -208,8 +202,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[tuple[T, Any]]:
-        ...
+    ) -> Awaitable[tuple[T, Any]]: ...
 
     @overload
     def create_with_completion(
@@ -220,8 +213,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> tuple[T, Any]:
-        ...
+    ) -> tuple[T, Any]: ...
 
     def create_with_completion(
         self,
@@ -430,8 +422,7 @@ def from_litellm(
     completion: Callable[..., Any],
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
-) -> Instructor:
-    ...
+) -> Instructor: ...
 
 
 @overload
