@@ -2034,17 +2034,6 @@ files = [
 ]
 
 [[package]]
-name = "mypy-extensions"
-version = "1.0.0"
-description = "Type system extensions for programs checked with the mypy type checker."
-optional = false
-python-versions = ">=3.5"
-files = [
-    {file = "mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d"},
-    {file = "mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782"},
-]
-
-[[package]]
 name = "nbclient"
 version = "0.10.0"
 description = "A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor."
@@ -3402,6 +3391,7 @@ python-versions = ">=3.8"
 files = [
     {file = "setuptools-69.5.1-py3-none-any.whl", hash = "sha256:c636ac361bc47580504644275c9ad802c50415c7522212252c033bd15f301f32"},
     {file = "setuptools-69.5.1.tar.gz", hash = "sha256:6c1fccdac05a97e598fb0ae3bbed5904ccb317337a51139dcd51453611bbb987"},
+
 ]
 
 [package.extras]
@@ -4059,10 +4049,10 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 anthropic = ["anthropic", "xmltodict"]
 cohere = ["cohere"]
 groq = ["groq"]
+litellm = ["litellm"]
 mistralai = ["mistralai"]
 test-docs = ["anthropic", "cohere", "diskcache", "fastapi", "groq", "litellm", "mistralai", "pandas", "pydantic_extra_types", "redis", "tabulate"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "e94ef5dc03a329d1ae84e9b6b7b477f40b04e82fb093d2bee19f99ceb5f0fafd"
