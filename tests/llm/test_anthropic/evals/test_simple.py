@@ -167,7 +167,7 @@ def test_nested_list():
             }
         ],
         response_model=User,
-    )  # type: ignore
+    )
 
     assert isinstance(resp, User)
     for property in resp.properties:
@@ -191,7 +191,7 @@ def test_system_messages_allcaps():
             },
         ],
         response_model=User,
-    )  # type: ignore
+    )
 
     assert isinstance(resp, User)
     assert resp.name.isupper()
@@ -224,6 +224,8 @@ def test_retry_error():
 
 @pytest.mark.asyncio
 async def test_async_retry_error():
+    client = instructor.from_anthropic(anthropic.AsyncAnthropic())
+
     class User(BaseModel):
         name: str
 

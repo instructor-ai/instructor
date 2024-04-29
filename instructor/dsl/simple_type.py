@@ -1,3 +1,4 @@
+from __future__ import annotations
 from inspect import isclass
 import typing
 from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
@@ -31,7 +32,9 @@ class ModelAdapter(typing.Generic[T]):
         return tmp
 
 
-def is_simple_type(response_model: type[BaseModel]) -> bool:
+def is_simple_type(
+    response_model: type[BaseModel] | str | int | float | bool,
+) -> bool:
     # ! we're getting mixes between classes and instances due to how we handle some
     # ! response model types, we should fix this in later PRs
     if isclass(response_model) and issubclass(response_model, BaseModel):

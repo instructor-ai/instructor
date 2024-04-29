@@ -1,3 +1,4 @@
+from typing import List
 from instructor.dsl import is_simple_type, Partial
 from pydantic import BaseModel
 
@@ -61,6 +62,6 @@ def test_iterable_not_simple():
 
 
 def test_list_is_simple():
-    new_type = list[int]
+    new_type = List[int]
 
     assert is_simple_type(new_type), "Failed for type: " + str(new_type)

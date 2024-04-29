@@ -35,8 +35,7 @@ class InstructorChatCompletionCreate(Protocol):
         max_retries: int = 1,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model:
-        ...
+    ) -> T_Model: ...
 
 
 class AsyncInstructorChatCompletionCreate(Protocol):
@@ -47,40 +46,35 @@ class AsyncInstructorChatCompletionCreate(Protocol):
         max_retries: int = 1,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model:
-        ...
+    ) -> T_Model: ...
 
 
 @overload
 def patch(
     client: OpenAI,
     mode: Mode = Mode.TOOLS,
-) -> OpenAI:
-    ...
+) -> OpenAI: ...
 
 
 @overload
 def patch(
     client: AsyncOpenAI,
     mode: Mode = Mode.TOOLS,
-) -> AsyncOpenAI:
-    ...
+) -> AsyncOpenAI: ...
 
 
 @overload
 def patch(
     create: Callable[T_ParamSpec, T_Retval],
     mode: Mode = Mode.TOOLS,
-) -> InstructorChatCompletionCreate:
-    ...
+) -> InstructorChatCompletionCreate: ...
 
 
 @overload
 def patch(
     create: Awaitable[T_Retval],
     mode: Mode = Mode.TOOLS,
-) -> InstructorChatCompletionCreate:
-    ...
+) -> InstructorChatCompletionCreate: ...
 
 
 def patch(

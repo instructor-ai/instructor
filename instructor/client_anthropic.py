@@ -8,24 +8,24 @@ from typing import overload, Any
 
 @overload
 def from_anthropic(
-    client: anthropic.Anthropic
-    | anthropic.AnthropicBedrock
-    | anthropic.AnthropicVertex,
+    client: (
+        anthropic.Anthropic | anthropic.AnthropicBedrock | anthropic.AnthropicVertex
+    ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs: Any,
-) -> instructor.Instructor:
-    ...
+) -> instructor.Instructor: ...
 
 
 @overload
 def from_anthropic(
-    client: anthropic.AsyncAnthropic
-    | anthropic.AsyncAnthropicBedrock
-    | anthropic.AsyncAnthropicVertex,
+    client: (
+        anthropic.AsyncAnthropic
+        | anthropic.AsyncAnthropicBedrock
+        | anthropic.AsyncAnthropicVertex
+    ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
     **kwargs: Any,
-) -> instructor.Instructor:
-    ...
+) -> instructor.AsyncInstructor: ...
 
 
 def from_anthropic(
