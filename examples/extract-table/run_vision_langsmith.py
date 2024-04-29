@@ -1,6 +1,6 @@
 from openai import OpenAI
 from io import StringIO
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 from pydantic import (
     BaseModel,
     BeforeValidator,
@@ -55,7 +55,7 @@ class Table(BaseModel):
 
 
 class MultipleTables(BaseModel):
-    tables: List[Table]
+    tables: list[Table]
 
 
 example = MultipleTables(

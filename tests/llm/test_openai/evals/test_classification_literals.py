@@ -1,5 +1,5 @@
 from itertools import product
-from typing import List, Literal
+from typing import Literal
 
 import pytest
 import instructor
@@ -50,7 +50,7 @@ async def test_classification(model, data, mode, aclient):
 
 # Adjust the prediction model to accommodate a list of labels
 class MultiClassPrediction(BaseModel):
-    predicted_labels: List[Literal["billing", "general_query", "hardware"]]
+    predicted_labels: list[Literal["billing", "general_query", "hardware"]]
 
 
 data = [

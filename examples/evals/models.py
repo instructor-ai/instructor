@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -16,9 +16,9 @@ class Search(BaseModel):
     source_type: SourceType
     results_limit: Optional[int] = Field(10)
     is_priority: Optional[bool] = None
-    tags: Optional[List[str]] = None
+    tags: Optional[list[str]] = None
 
 
 class MultiSearch(BaseModel):
-    queries: List[Search]
+    queries: list[Search]
     user_id: Optional[str]

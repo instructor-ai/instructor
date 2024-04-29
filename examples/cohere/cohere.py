@@ -1,7 +1,6 @@
 import cohere
 import instructor
 from pydantic import BaseModel, Field
-from typing import List
 
 
 # Patching the Cohere client with the instructor for enhanced capabilities
@@ -19,7 +18,7 @@ class Person(BaseModel):
 
 class Group(BaseModel):
     group_name: str = Field(description="name of the group")
-    members: List[Person] = Field(description="list of members in the group")
+    members: list[Person] = Field(description="list of members in the group")
 
 
 task = """\

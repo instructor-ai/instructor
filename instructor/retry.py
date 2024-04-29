@@ -19,7 +19,7 @@ from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
 
 from json import JSONDecodeError
 from pydantic import BaseModel
-from typing import Callable, Optional, Type, TypeVar
+from typing import Callable, Optional, TypeVar, Any
 from typing_extensions import ParamSpec
 
 logger = logging.getLogger("instructor")
@@ -103,7 +103,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration
     if mode == Mode.TOOLS:
-        for tool_call in response.choices[0].message.tool_calls:  # type: ignore
+        for tool_call in response.choices[0].message.tool_calls:
             yield {
                 "role": "tool",
                 "tool_call_id": tool_call.id,
@@ -124,7 +124,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
 
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
-    response_model: Type[T_Model],
+    response_model: type[T_Model],
     validation_context: dict,
     args,
     kwargs,
@@ -189,10 +189,10 @@ def retry_sync(
 
 async def retry_async(
     func: Callable[T_ParamSpec, T_Retval],
-    response_model: Type[T],
-    validation_context,
-    args,
-    kwargs,
+    response_model: Optional[type[T]],
+    validation_context: Optional[dict[str, Any]],
+    args: Any,
+    kwargs: Any,
     max_retries: int | AsyncRetrying = 1,
     strict: Optional[bool] = None,
     mode: Mode = Mode.TOOLS,
@@ -220,7 +220,7 @@ async def retry_async(
             logger.debug(f"Retrying, attempt: {attempt}")
             with attempt:
                 try:
-                    response: ChatCompletion = await func(*args, **kwargs)  # type: ignore
+                    response: ChatCompletion = await func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
                     return await process_response_async(
@@ -230,7 +230,7 @@ async def retry_async(
                         validation_context=validation_context,
                         strict=strict,
                         mode=mode,
-                    )  # type: ignore[all]
+                    )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}", e)
                     kwargs["messages"].extend(reask_messages(response, mode, e))

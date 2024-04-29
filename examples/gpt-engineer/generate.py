@@ -1,7 +1,6 @@
 import instructor
 
 from openai import OpenAI
-from typing import List
 from pydantic import Field
 from instructor import OpenAISchema
 
@@ -28,7 +27,7 @@ class Program(OpenAISchema):
     Set of files that represent a complete and correct program
     """
 
-    files: List[File] = Field(..., description="List of files")
+    files: list[File] = Field(..., description="List of files")
 
 
 def develop(data: str) -> Program:

@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import BaseModel, ValidationInfo, model_validator
 import openai
 import instructor
@@ -17,7 +16,7 @@ class Tag(BaseModel):
     def validate_ids(self, info: ValidationInfo):
         context = info.context
         if context:
-            tags: List[Tag] = context.get("tags")
+            tags: list[Tag] = context.get("tags")
             assert self.id in {
                 tag.id for tag in tags
             }, f"Tag ID {self.id} not found in context"
@@ -32,16 +31,16 @@ class TagWithInstructions(Tag):
 
 
 class TagRequest(BaseModel):
-    texts: List[str]
-    tags: List[TagWithInstructions]
+    texts: list[str]
+    tags: list[TagWithInstructions]
 
 
 class TagResponse(BaseModel):
-    texts: List[str]
-    predictions: List[Tag]
+    texts: list[str]
+    predictions: list[Tag]
 
 
-async def tag_single_request(text: str, tags: List[Tag]) -> Tag:
+async def tag_single_request(text: str, tags: list[Tag]) -> Tag:
     allowed_tags = [(tag.id, tag.name) for tag in tags]
     allowed_tags_str = ", ".join([f"`{tag}`" for tag in allowed_tags])
     return await client.chat.completions.create(

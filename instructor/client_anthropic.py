@@ -3,7 +3,7 @@ from __future__ import annotations
 import anthropic
 import instructor
 
-from typing import overload
+from typing import overload, Any
 
 
 @overload
@@ -12,7 +12,7 @@ def from_anthropic(
     | anthropic.AnthropicBedrock
     | anthropic.AnthropicVertex,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.Instructor:
     ...
 
@@ -23,7 +23,7 @@ def from_anthropic(
     | anthropic.AsyncAnthropicBedrock
     | anthropic.AsyncAnthropicVertex,
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.Instructor:
     ...
 
@@ -35,9 +35,10 @@ def from_anthropic(
         | anthropic.AnthropicBedrock
         | anthropic.AsyncAnthropicBedrock
         | anthropic.AsyncAnthropicVertex
+        | anthropic.AnthropicVertex
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
     assert (
         mode
@@ -60,7 +61,7 @@ def from_anthropic(
     ), "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
 
     if mode == instructor.Mode.ANTHROPIC_TOOLS:
-        create = client.beta.tools.messages.create
+        create = client.beta.tools.messages.create  # type: ignore - unknown in stubs
     else:
         create = client.messages.create
 

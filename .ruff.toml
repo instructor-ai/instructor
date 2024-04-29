@@ -39,6 +39,8 @@ select = [
   "E722",
   # unused arguments
   "ARG",
+  # Enforce modern type-syntax
+  "UP006",
 ]
 ignore = [
   # mutable defaults

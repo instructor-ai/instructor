@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import BaseModel
 
 import instructor
@@ -18,7 +17,7 @@ class PIIDataExtraction(BaseModel):
     Extracted PII data from a document, all data_types should try to have consistent property names
     """
 
-    private_data: List[Data]
+    private_data: list[Data]
 
     def scrub_data(self, content):
         """

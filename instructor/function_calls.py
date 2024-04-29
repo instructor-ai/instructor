@@ -1,11 +1,10 @@
 import logging
 from functools import wraps
-from typing import Annotated, Any, Dict, Optional, Type, TypeVar
+from typing import Annotated, Any, Optional, TypeVar, cast
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from pydantic import BaseModel, Field, TypeAdapter, create_model
-
+from pydantic import BaseModel, Field, TypeAdapter, create_model  # type: ignore - remove once Pydantic is updated
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_codeblock
@@ -15,10 +14,10 @@ T = TypeVar("T")
 logger = logging.getLogger("instructor")
 
 
-class OpenAISchema(BaseModel):  # type: ignore[misc]
-    @classmethod  # type: ignore[misc]
+class OpenAISchema(BaseModel):
+    @classmethod
     @property
-    def openai_schema(cls) -> Dict[str, Any]:
+    def openai_schema(cls) -> dict[str, Any]:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
 
@@ -61,7 +60,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
 
     @classmethod
     @property
-    def anthropic_schema(cls) -> Dict[str, Any]:
+    def anthropic_schema(cls) -> dict[str, Any]:
         return {
             "name": cls.openai_schema["name"],
             "description": cls.openai_schema["description"],
@@ -72,7 +71,7 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
     def from_response(
         cls,
         completion: ChatCompletion,
-        validation_context: Optional[Dict[str, Any]] = None,
+        validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
     ) -> BaseModel:
@@ -113,25 +112,25 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
 
     @classmethod
     def parse_anthropic_tools(
-        cls: Type[BaseModel],
+        cls: type[BaseModel],
         completion: ChatCompletion,
-        validation_context: Optional[Dict[str, Any]] = None,
+        validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        tool_calls = [c.input for c in completion.content if c.type == "tool_use"]
+        tool_calls = [c.input for c in completion.content if c.type == "tool_use"]  # type: ignore - TODO update with anthropic specific types
 
         tool_calls_validator = TypeAdapter(
-            Annotated[list, Field(min_length=1, max_length=1)]
+            Annotated[list[Any], Field(min_length=1, max_length=1)]
         )
         tool_call = tool_calls_validator.validate_python(tool_calls)[0]
 
-        return cls.model_validate(tool_call, context=validation_context, strict=strict)  # type:ignore
+        return cls.model_validate(tool_call, context=validation_context, strict=strict)
 
     @classmethod
     def parse_anthropic_json(
-        cls: Type[BaseModel],
-        completion,
-        validation_context: Optional[Dict[str, Any]] = None,
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
         from anthropic.types import Message
@@ -146,12 +145,12 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
 
     @classmethod
     def parse_cohere_tools(
-        cls: Type[BaseModel],
-        completion,
-        validation_context: Optional[Dict[str, Any]] = None,
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        text = completion.text
+        text = cast(str, completion.text)  # type: ignore - TODO update with cohere specific types
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict
@@ -159,9 +158,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
 
     @classmethod
     def parse_functions(
-        cls: Type[BaseModel],
+        cls: type[BaseModel],
         completion: ChatCompletion,
-        validation_context: Optional[Dict[str, Any]] = None,
+        validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
         message = completion.choices[0].message
@@ -176,9 +175,9 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
 
     @classmethod
     def parse_tools(
-        cls: Type[BaseModel],
+        cls: type[BaseModel],
         completion: ChatCompletion,
-        validation_context: Optional[Dict[str, Any]] = None,
+        validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
         message = completion.choices[0].message
@@ -190,16 +189,16 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
         ), "Tool name does not match"
         return cls.model_validate_json(
-            tool_call.function.arguments,
+            tool_call.function.arguments,  # type: ignore
             context=validation_context,
             strict=strict,
         )
 
     @classmethod
     def parse_json(
-        cls: Type[BaseModel],
+        cls: type[BaseModel],
         completion: ChatCompletion,
-        validation_context: Optional[Dict[str, Any]] = None,
+        validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
         message = completion.choices[0].message.content or ""
@@ -212,13 +211,14 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         )
 
 
-def openai_schema(cls: Type[BaseModel]) -> OpenAISchema:
+def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
-    return wraps(cls, updated=())(
+    shema = wraps(cls, updated=())(
         create_model(
             cls.__name__ if hasattr(cls, "__name__") else str(cls),
             __base__=(cls, OpenAISchema),
         )
-    )  # type: ignore[all]
+    )
+    return cast(OpenAISchema, shema)

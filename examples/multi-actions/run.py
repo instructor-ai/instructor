@@ -1,7 +1,7 @@
 import instructor
 import enum
 
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
@@ -35,7 +35,7 @@ class TaskAction(BaseModel):
     method: Action = Field(
         description="Method of creating, for closing a task the task, to close a task only a id is required"
     )
-    waiting_on: Optional[List[int]] = Field(
+    waiting_on: Optional[list[int]] = Field(
         None, description="IDs of tasks that this task is waiting on"
     )
     name: Optional[str] = Field(None, description="Name of the task")
@@ -50,7 +50,7 @@ class TaskAction(BaseModel):
 
 class Response(BaseModel):
     text: str = Field(description="The text of the response")
-    task_action: Optional[List[TaskAction]] = Field(
+    task_action: Optional[list[TaskAction]] = Field(
         description="The action to take on the task"
     )
 

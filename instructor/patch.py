@@ -3,7 +3,6 @@ from functools import wraps
 from typing import (
     Callable,
     Protocol,
-    Type,
     TypeVar,
     Union,
     overload,
@@ -31,7 +30,7 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 class InstructorChatCompletionCreate(Protocol):
     def __call__(
         self,
-        response_model: Type[T_Model] = None,
+        response_model: type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
         *args: T_ParamSpec.args,
@@ -43,7 +42,7 @@ class InstructorChatCompletionCreate(Protocol):
 class AsyncInstructorChatCompletionCreate(Protocol):
     async def __call__(
         self,
-        response_model: Type[T_Model] = None,
+        response_model: type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
         *args: T_ParamSpec.args,
@@ -113,7 +112,7 @@ def patch(
 
     @wraps(func)
     async def new_create_async(
-        response_model: Type[T_Model] = None,
+        response_model: type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
         strict: bool = True,
@@ -132,12 +131,12 @@ def patch(
             kwargs=new_kwargs,
             strict=strict,
             mode=mode,
-        )  # type: ignore
+        )
         return response
 
     @wraps(func)
     def new_create_sync(
-        response_model: Type[T_Model] = None,
+        response_model: type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
         strict: bool = True,
@@ -168,7 +167,7 @@ def patch(
         return new_create
 
 
-def apatch(client: AsyncOpenAI, mode: Mode = Mode.TOOLS):
+def apatch(client: AsyncOpenAI, mode: Mode = Mode.TOOLS) -> AsyncOpenAI:
     """
     No longer necessary, use `patch` instead.
 

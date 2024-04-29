@@ -1,7 +1,7 @@
 import instructor
 
 from pydantic import BaseModel, Field
-from typing import Iterable, List, Optional
+from typing import Iterable, Optional
 from openai import OpenAI
 from rich.console import Console
 
@@ -21,7 +21,7 @@ class ActionItem(BaseModel):
 
 
 class ActionItemResponse(BaseModel):
-    action_items: Optional[List[ActionItem]] = Field(
+    action_items: Optional[list[ActionItem]] = Field(
         ..., title="The list of action items"
     )
 
@@ -109,7 +109,7 @@ def text_to_speech(chunk):
     subprocess.run(["say", chunk], check=True)
 
 
-def process_transcript(transcript: List[str]):
+def process_transcript(transcript: list[str]):
     state = ActionItemResponse(action_items=[])
     for chunk in transcript:
         console.print(f"update: {chunk}")

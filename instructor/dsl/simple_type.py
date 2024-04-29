@@ -1,6 +1,6 @@
 from inspect import isclass
 import typing
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
 from enum import Enum
 
 
@@ -20,7 +20,7 @@ class ModelAdapter(typing.Generic[T]):
     Accepts a response model and returns a BaseModel with the response model as the content.
     """
 
-    def __class_getitem__(cls, response_model) -> typing.Type[BaseModel]:
+    def __class_getitem__(cls, response_model: type[BaseModel]) -> type[BaseModel]:
         assert is_simple_type(response_model), "Only simple types are supported"
         tmp = create_model(
             "Response",
@@ -31,7 +31,7 @@ class ModelAdapter(typing.Generic[T]):
         return tmp
 
 
-def is_simple_type(response_model) -> bool:
+def is_simple_type(response_model: type[BaseModel]) -> bool:
     # ! we're getting mixes between classes and instances due to how we handle some
     # ! response model types, we should fix this in later PRs
     if isclass(response_model) and issubclass(response_model, BaseModel):

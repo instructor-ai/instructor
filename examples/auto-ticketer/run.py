@@ -1,7 +1,7 @@
 import instructor
 from openai import OpenAI
 
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -32,11 +32,11 @@ class Ticket(BaseModel):
     name: str = Field(..., description="Title of the task")
     description: str = Field(..., description="Detailed description of the task")
     priority: PriorityEnum = Field(..., description="Priority level")
-    assignees: List[str] = Field(..., description="List of users assigned to the task")
-    subtasks: Optional[List[Subtask]] = Field(
+    assignees: list[str] = Field(..., description="List of users assigned to the task")
+    subtasks: Optional[list[Subtask]] = Field(
         None, description="List of subtasks associated with the main task"
     )
-    dependencies: Optional[List[int]] = Field(
+    dependencies: Optional[list[int]] = Field(
         None, description="List of ticket IDs that this ticket depends on"
     )
 
@@ -46,7 +46,7 @@ class ActionItems(BaseModel):
     Correctly resolved set of action items from the given transcript
     """
 
-    items: List[Ticket]
+    items: list[Ticket]
 
 
 def generate(data: str):

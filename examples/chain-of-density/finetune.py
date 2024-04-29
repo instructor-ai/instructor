@@ -1,4 +1,3 @@
-from typing import List
 from openai import OpenAI
 from chain_of_density import summarize_article
 import csv
@@ -41,7 +40,7 @@ class GeneratedSummary(BaseModel):
 
 @instructions.distil
 def distil_summarization(text: str) -> GeneratedSummary:
-    summary_chain: List[str] = summarize_article(text)
+    summary_chain: list[str] = summarize_article(text)
     return GeneratedSummary(summary=summary_chain[-1])
 
 

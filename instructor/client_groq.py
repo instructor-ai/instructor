@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import overload
+from typing import overload, Any
 
 import groq
 import instructor
@@ -10,7 +10,7 @@ import instructor
 def from_groq(
     client: groq.Groq,
     mode: instructor.Mode = instructor.Mode.TOOLS,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.Instructor:
     ...
 
@@ -19,7 +19,7 @@ def from_groq(
 def from_groq(
     client: groq.AsyncGroq,
     mode: instructor.Mode = instructor.Mode.TOOLS,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.Instructor:
     ...
 
@@ -27,7 +27,7 @@ def from_groq(
 def from_groq(
     client: groq.Groq | groq.AsyncGroq,
     mode: instructor.Mode = instructor.Mode.TOOLS,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.Instructor:
     assert mode in {
         instructor.Mode.JSON,

@@ -11,7 +11,7 @@ Added by Jan Philipp Harries / @jpdus
 """
 
 import asyncio
-from typing import List, Generator
+from typing import Generator
 
 from openai import OpenAI
 
@@ -28,7 +28,7 @@ class TaskResult(BaseModel):
 
 
 class TaskResults(BaseModel):
-    results: List[TaskResult]
+    results: list[TaskResult]
 
 
 class Task(BaseModel):
@@ -42,7 +42,7 @@ class Task(BaseModel):
         description="""Contains the task in text form. If there are multiple tasks,
         this task can only be executed when all dependant subtasks have been answered.""",
     )
-    subtasks: List[int] = Field(
+    subtasks: list[int] = Field(
         default_factory=list,
         description="""List of the IDs of subtasks that need to be answered before
         we can answer the main question. Use a subtask when anything may be unknown
@@ -66,12 +66,12 @@ class TaskPlan(BaseModel):
     Make sure every task is in the tree, and every task is done only once.
     """
 
-    task_graph: List[Task] = Field(
+    task_graph: list[Task] = Field(
         ...,
         description="List of tasks and subtasks that need to be done to complete the main task. Consists of the main task and its dependencies.",
     )
 
-    def _get_execution_order(self) -> List[int]:
+    def _get_execution_order(self) -> list[int]:
         """
         Returns the order in which the tasks should be executed using topological sort.
         Inspired by https://gitlab.com/ericvsmith/toposort/-/blob/master/src/toposort.py

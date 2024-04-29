@@ -48,7 +48,7 @@ instructor = "instructor.cli.cli:app"
 pytest = "^7.4.0"
 pytest-asyncio = "^0.21.1"
 coverage = "^7.3.2"
-mypy = "^1.7.1"
+pyright = "^1.1.360"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
@@ -85,3 +85,19 @@ litellm = "^1.35.31"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+include = ["instructor"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs",
+    "**/tests/**",
+]
+pythonVersion = "3.9"
+typeCheckingMode = "strict"
+# Allow "redundant" runtime type-checking.
+reportUnnecessaryIsInstance = "none"
+reportUnnecessaryTypeIgnoreComment = "error"
+reportDeprecated = "warning"
