@@ -37,7 +37,7 @@ data = [
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 def test_classification(model, data, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
         pytest.skip(
@@ -88,7 +88,7 @@ data = [
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 def test_multi_classify(model, data, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     if (mode, model) in {
         (Mode.JSON, "gpt-3.5-turbo"),
