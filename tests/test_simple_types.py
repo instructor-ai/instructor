@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 from instructor.dsl import is_simple_type, Partial
 from pydantic import BaseModel
