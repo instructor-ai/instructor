@@ -26,7 +26,7 @@ diskcache = { version = "^5.6.3", optional = true }
 pandas = { version = "^2.2.0", optional = true }
 tabulate = { version = "^0.9.0", optional = true }
 pydantic_extra_types = { version = "^2.6.0", optional = true }
-litellm = { version = "^1.0.0", optional = true }
+litellm = { version = "^1.35.31", optional = true }
 anthropic = { version = "^0.23.1", optional = true }
 xmltodict = { version = "^0.13.0", optional = true }
 groq = { version = "^0.4.2", optional = true }
@@ -39,6 +39,7 @@ groq = ["groq"]
 cohere = ["cohere"]
 test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere", "mistralai"]
 mistralai = ["mistralai"]
+litellm = ["litellm"]
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"
@@ -70,13 +71,16 @@ diskcache = "^5.6.3"
 pandas = "^2.2.0"
 tabulate = "^0.9.0"
 pydantic_extra_types = "^2.6.0"
-litellm = "^1.0.0"
+litellm = "^1.35.31"
 anthropic = "^0.23.1"
 xmltodict = "^0.13.0"
 groq = "^0.4.2"
 phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
 mistralai = "^0.1.8"
+
+[tool.poetry.group.litellm.dependencies]
+litellm = "^1.35.31"
 
 [build-system]
 requires = ["poetry-core"]
