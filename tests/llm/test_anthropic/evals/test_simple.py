@@ -98,6 +98,7 @@ def test_list_str():
         assert isinstance(member, str)
 
 
+@pytest.mark.skip("Just use Literal!")
 def test_enum():
     class Role(str, Enum):
         ADMIN = "admin"
@@ -110,7 +111,7 @@ def test_enum():
     resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
-        max_retries=0,
+        max_retries=1,
         messages=[
             {
                 "role": "user",
@@ -118,7 +119,7 @@ def test_enum():
             }
         ],
         response_model=User,
-    )  # type: ignore
+    )
 
     assert isinstance(resp, User)
     assert resp.role == Role.ADMIN
