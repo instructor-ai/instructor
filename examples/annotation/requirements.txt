@@ -1,0 +1,5 @@
+openai==1.23.6
+instructor==1.2.3
+pydantic==2.7.0
+typer==0.12.3
+streamlit==1.33.0
