@@ -290,9 +290,13 @@ def from_openai(
     else:
         provider = Provider.OPENAI
 
-    assert isinstance(
-        client, (openai.OpenAI, openai.AsyncOpenAI)
-    ), "Client must be an instance of openai.OpenAI or openai.AsyncOpenAI"
+    if not isinstance(client, (openai.OpenAI, openai.AsyncOpenAI)):
+        import warnings
+
+        warnings.warn(
+            "Client should be an instance of openai.OpenAI or openai.AsyncOpenAI. "
+            "Unexpected behavior may occur with other client types."
+        )
 
     if provider in {Provider.ANYSCALE, Provider.TOGETHER}:
         assert mode in {
