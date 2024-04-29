@@ -2,7 +2,7 @@ from openai import OpenAI
 import instructor
 
 from graphviz import Digraph
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -29,8 +29,8 @@ class Edge(BaseModel):
 
 
 class KnowledgeGraph(BaseModel):
-    nodes: Optional[List[Node]] = Field(..., default_factory=list)
-    edges: Optional[List[Edge]] = Field(..., default_factory=list)
+    nodes: Optional[list[Node]] = Field(..., default_factory=list)
+    edges: Optional[list[Edge]] = Field(..., default_factory=list)
 
     def update(self, other: "KnowledgeGraph") -> "KnowledgeGraph":
         """Updates the current graph with the other graph, deduplicating nodes and edges."""
@@ -54,7 +54,7 @@ class KnowledgeGraph(BaseModel):
         dot.render(prefix, format="png", view=True)
 
 
-def generate_graph(input: List[str]) -> KnowledgeGraph:
+def generate_graph(input: list[str]) -> KnowledgeGraph:
     cur_state = KnowledgeGraph()
     num_iterations = len(input)
     for i, inp in enumerate(input):

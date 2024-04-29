@@ -1,13 +1,12 @@
 import os
 from pydantic import BaseModel, Field
-from typing import List
 from groq import Groq
 import instructor
 
 
 class Character(BaseModel):
     name: str
-    fact: List[str] = Field(..., description="A list of facts about the subject")
+    fact: list[str] = Field(..., description="A list of facts about the subject")
 
 
 client = Groq(

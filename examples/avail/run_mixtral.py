@@ -1,6 +1,6 @@
 import os
 from pydantic import BaseModel, Field
-from typing import List, Literal
+from typing import Literal
 from datetime import datetime, timedelta
 
 from openai import OpenAI
@@ -25,7 +25,7 @@ class DateRange(BaseModel):
         default=None,
         description="If the date range repeats, and how often, this way we can generalize the date range to the future., if its special, then we can assume it is a one time event.",
     )
-    days_of_week: List[
+    days_of_week: list[
         Literal[
             "monday",
             "tuesday",
@@ -49,7 +49,7 @@ class DateRange(BaseModel):
 
 
 class AvailabilityResponse(BaseModel):
-    availability: List[DateRange]
+    availability: list[DateRange]
 
 
 def prepare_dates(n=7) -> str:

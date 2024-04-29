@@ -1,11 +1,7 @@
 from typing import (
     Any,
-    Dict,
     Generator,
-    List,
     Optional,
-    Tuple,
-    Type,
     TypeVar,
     Union,
     get_args,
@@ -21,7 +17,7 @@ T = TypeVar("T", bound=OpenAISchema)
 
 
 class ParallelBase:
-    def __init__(self, *models: Type[OpenAISchema]):
+    def __init__(self, *models: type[OpenAISchema]):
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models
@@ -48,7 +44,7 @@ class ParallelBase:
             )
 
 
-def get_types_array(typehint: Type[Iterable[T]]) -> Tuple[Type[T], ...]:
+def get_types_array(typehint: type[Iterable[T]]) -> tuple[type[T], ...]:
     should_be_iterable = get_origin(typehint)
     if should_be_iterable is not Iterable:
         raise TypeError(f"Model should be with Iterable instead if {typehint}")
@@ -67,7 +63,7 @@ def get_types_array(typehint: Type[Iterable[T]]) -> Tuple[Type[T], ...]:
     return get_args(typehint)
 
 
-def handle_parallel_model(typehint: Type[Iterable[T]]) -> List[Dict[str, Any]]:
+def handle_parallel_model(typehint: type[Iterable[T]]) -> list[dict[str, Any]]:
     the_types = get_types_array(typehint)
     return [
         {"type": "function", "function": openai_schema(model).openai_schema}
@@ -75,6 +71,6 @@ def handle_parallel_model(typehint: Type[Iterable[T]]) -> List[Dict[str, Any]]:
     ]
 
 
-def ParallelModel(typehint: Type[Iterable[T]]) -> ParallelBase:
+def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
     the_types = get_types_array(typehint)
     return ParallelBase(*[model for model in the_types])

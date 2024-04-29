@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import List
 import instructor
 import nltk
 from openai import OpenAI
@@ -38,12 +37,12 @@ class RewrittenSummary(BaseModel):
         ...,
         description="This is a new, denser summary of identical length which covers every entity and detail from the previous summary plus the Missing Entities. It should have the same length ( ~ 80 words ) as the previous summary and should be easily understood without the Article",
     )
-    absent: List[str] = Field(
+    absent: list[str] = Field(
         ...,
         default_factory=list,
         description="this is a list of Entities found absent from the new summary that were present in the previous summary",
     )
-    missing: List[str] = Field(
+    missing: list[str] = Field(
         default_factory=list,
         description="This is a list of 1-3 informative Entities from the Article that are missing from the new summary which should be included in the next generated summary.",
     )
@@ -77,7 +76,7 @@ class RewrittenSummary(BaseModel):
         return v
 
     @field_validator("missing")
-    def has_missing_entities(cls, missing_entities: List[str]):
+    def has_missing_entities(cls, missing_entities: list[str]):
         if len(missing_entities) == 0:
             raise ValueError(
                 "You must identify 1-3 informative Entities from the Article which are missing from the previously generated summary to be used in a new summary"
@@ -85,7 +84,7 @@ class RewrittenSummary(BaseModel):
         return missing_entities
 
     @field_validator("absent")
-    def has_no_absent_entities(cls, absent_entities: List[str]):
+    def has_no_absent_entities(cls, absent_entities: list[str]):
         absent_entity_string = ",".join(absent_entities)
         if len(absent_entities) > 0:
             print(f"Detected absent entities of {absent_entity_string}")

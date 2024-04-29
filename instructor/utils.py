@@ -3,9 +3,10 @@ from __future__ import annotations
 import inspect
 import json
 import logging
-from typing import Callable, Generator, Iterable, AsyncGenerator, TypeVar
-
-from pydantic import BaseModel
+from typing import Callable, Generator, Iterable, AsyncGenerator, Protocol, TypeVar
+from openai.types.completion_usage import CompletionUsage
+from anthropic.types import Usage as AnthropicUsage
+from typing import Any
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
@@ -14,9 +15,13 @@ from openai.types.chat import (
 )
 
 logger = logging.getLogger("instructor")
-T_Model = TypeVar("T_Model", bound=BaseModel)
+T_Model = TypeVar("T_Model", bound="Response")
 
 from enum import Enum
+
+
+class Response(Protocol):
+    usage: OpenAIUsage | AnthropicUsage
 
 
 class Provider(Enum):
@@ -94,20 +99,27 @@ async def extract_json_from_stream_async(
                 yield char
 
 
-def update_total_usage(response: T_Model, total_usage) -> T_Model | ChatCompletion:
+def update_total_usage(
+    response: T_Model,
+    total_usage: CompletionUsage | AnthropicUsage,
+) -> T_Model | ChatCompletion:
     response_usage = getattr(response, "usage", None)
-    if isinstance(response_usage, OpenAIUsage):
+    if isinstance(response_usage, OpenAIUsage) and isinstance(
+        total_usage, CompletionUsage
+    ):
         total_usage.completion_tokens += response_usage.completion_tokens or 0
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
         total_usage.total_tokens += response_usage.total_tokens or 0
         response.usage = total_usage  # Replace each response usage with the total usage
         return response
 
-    # Anthropic usage
+    # Anthropic usage.
     try:
         from anthropic.types import Usage as AnthropicUsage
 
-        if isinstance(response_usage, AnthropicUsage):
+        if isinstance(response_usage, AnthropicUsage) and isinstance(
+            total_usage, AnthropicUsage
+        ):
             total_usage.input_tokens += response_usage.input_tokens or 0
             total_usage.output_tokens += response_usage.output_tokens or 0
             response.usage = total_usage
@@ -139,18 +151,18 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
     return ret
 
 
-def is_async(func: Callable) -> bool:
+def is_async(func: Callable[..., Any]) -> bool:
     """Returns true if the callable is async, accounting for wrapped callables"""
     is_coroutine = inspect.iscoroutinefunction(func)
     while hasattr(func, "__wrapped__"):
-        func = func.__wrapped__
+        func = func.__wrapped__  # type: ignore - dynamic
         is_coroutine = is_coroutine or inspect.iscoroutinefunction(func)
     return is_coroutine
 
 
-def merge_consecutive_messages(messages: list[dict]) -> list[dict]:
+def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     # merge all consecutive user messages into a single message
-    new_messages = []
+    new_messages: list[dict[str, Any]] = []
     for message in messages:
         new_content = message["content"]
         if isinstance(new_content, str):

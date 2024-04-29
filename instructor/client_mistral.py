@@ -4,29 +4,31 @@ from __future__ import annotations
 import mistralai.client
 import mistralai.async_client as mistralaiasynccli
 import instructor
-from typing import overload
+from typing import overload, Any
 
 
 @overload
 def from_mistral(
     client: mistralai.client.MistralClient,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
-    **kwargs,
-) -> instructor.Instructor: ...
+    **kwargs: Any,
+) -> instructor.Instructor:
+    ...
 
 
 @overload
 def from_mistral(
     client: mistralaiasynccli.MistralAsyncClient,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
-    **kwargs,
-) -> instructor.AsyncInstructor: ...
+    **kwargs: Any,
+) -> instructor.AsyncInstructor:
+    ...
 
 
 def from_mistral(
     client: mistralai.client.MistralClient | mistralaiasynccli.MistralAsyncClient,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
     assert mode in {
         instructor.Mode.MISTRAL_TOOLS,
@@ -37,7 +39,6 @@ def from_mistral(
     ), "Client must be an instance of mistralai.client.MistralClient or mistralai.async_cli.MistralAsyncClient"
 
     if isinstance(client, mistralai.client.MistralClient):
-
         return instructor.Instructor(
             client=client,
             create=instructor.patch(create=client.chat, mode=mode),
@@ -47,7 +48,6 @@ def from_mistral(
         )
 
     else:
-
         return instructor.AsyncInstructor(
             client=client,
             create=instructor.patch(create=client.chat, mode=mode),

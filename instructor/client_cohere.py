@@ -4,10 +4,10 @@ import cohere
 import instructor
 from functools import wraps
 from typing import (
-    Type,
     TypeVar,
     overload,
 )
+from typing import Any, Optional
 from typing_extensions import ParamSpec
 from pydantic import BaseModel
 from instructor.process_response import handle_response_model
@@ -22,7 +22,7 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 def from_cohere(
     client: cohere.Client,
     mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.Instructor:
     ...
 
@@ -31,7 +31,7 @@ def from_cohere(
 def from_cohere(
     client: cohere.AsyncClient,
     mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
-    **kwargs,
+    **kwargs: Any,
 ) -> instructor.AsyncInstructor:
     ...
 
@@ -39,7 +39,7 @@ def from_cohere(
 def from_cohere(
     client: cohere.Client | cohere.AsyncClient,
     mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
-    **kwargs,
+    **kwargs: Any,
 ):
     assert mode in {
         instructor.Mode.COHERE_TOOLS,
@@ -60,24 +60,26 @@ def from_cohere(
 
     @wraps(client.chat)
     async def new_create_async(
-        response_model: Type[T_Model] = None,
-        validation_context: dict = None,
+        response_model: Optional[type[T_Model]] = None,
+        validation_context: Optional[dict[str, Any]] = None,
         max_retries: int = 1,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
-        response_model, new_kwargs = handle_response_model(
-            response_model=response_model, mode=mode, **kwargs
+        prepared_response_model, new_kwargs = handle_response_model(
+            response_model=response_model,
+            mode=mode,
+            **kwargs,
         )
         response = await retry_async(
             func=client.chat,
-            response_model=response_model,
+            response_model=prepared_response_model,
             validation_context=validation_context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
             mode=mode,
-        )  # type: ignore
+        )
         return response
 
     return instructor.AsyncInstructor(

@@ -1,4 +1,4 @@
-from typing import Type, TypeVar
+from typing import TypeVar
 import pytest
 from pydantic import BaseModel
 from openai.resources.chat.completions import ChatCompletion
@@ -12,7 +12,7 @@ T = TypeVar("T")
 
 
 @pytest.fixture  # type: ignore[misc]
-def test_model() -> Type[OpenAISchema]:
+def test_model() -> type[OpenAISchema]:
     class TestModel(OpenAISchema):  # type: ignore[misc]
         name: str = "TestModel"
         data: str
@@ -96,14 +96,14 @@ def test_no_docstring() -> None:
     indirect=True,
 )  # type: ignore[misc]
 def test_incomplete_output_exception(
-    test_model: Type[OpenAISchema], mock_completion: ChatCompletion
+    test_model: type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
     with pytest.raises(IncompleteOutputException):
         test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
 
 
 def test_complete_output_no_exception(
-    test_model: Type[OpenAISchema], mock_completion: ChatCompletion
+    test_model: type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
     test_model_instance = test_model.from_response(
         mock_completion, mode=instructor.Mode.FUNCTIONS
@@ -118,7 +118,7 @@ def test_complete_output_no_exception(
     indirect=True,
 )  # type: ignore[misc]
 def test_incomplete_output_exception_raise(
-    test_model: Type[OpenAISchema], mock_completion: ChatCompletion
+    test_model: type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
     with pytest.raises(IncompleteOutputException):
         test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)

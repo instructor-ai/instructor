@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal
+from typing import Literal
 
 import anthropic
 import pytest
@@ -77,7 +77,7 @@ def test_list_str():
     class User(BaseModel):
         name: str
         age: int
-        family: List[str]
+        family: list[str]
 
     resp = client.messages.create(
         model="claude-3-haiku-20240307",
@@ -93,7 +93,7 @@ def test_list_str():
     )
 
     assert isinstance(resp, User)
-    assert isinstance(resp.family, List)
+    assert isinstance(resp.family, list)
     for member in resp.family:
         assert isinstance(member, str)
 
@@ -154,7 +154,7 @@ def test_nested_list():
     class User(BaseModel):
         name: str
         age: int
-        properties: List[Properties]
+        properties: list[Properties]
 
     resp = client.messages.create(
         model="claude-3-haiku-20240307",

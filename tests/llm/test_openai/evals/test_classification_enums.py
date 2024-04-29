@@ -1,6 +1,5 @@
 import enum
 from itertools import product
-from typing import List
 
 import pytest
 import instructor
@@ -68,7 +67,7 @@ class MultiLabels(str, enum.Enum):
 
 # Adjust the prediction model to accommodate a list of labels
 class MultiClassPrediction(BaseModel):
-    predicted_labels: List[MultiLabels]
+    predicted_labels: list[MultiLabels]
 
 
 data = [
