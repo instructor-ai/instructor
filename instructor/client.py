@@ -381,8 +381,8 @@ def from_openai(
         import warnings
 
         warnings.warn(
-            "Client should be an instance of openai.OpenAI or openai.AsyncOpenAI. "
-            "Unexpected behavior may occur with other client types."
+            "Client should be an instance of openai.OpenAI or openai.AsyncOpenAI. Unexpected behavior may occur with other client types.",
+            stacklevel=2,
         )
 
     if provider in {Provider.ANYSCALE, Provider.TOGETHER}:
