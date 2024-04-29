@@ -199,7 +199,7 @@ def IterableModel(
         ),
     )
 
-    base_models = cast(tuple[type[BaseModel], ...], (BaseModel, IterableBase))
+    base_models = cast(tuple[type[BaseModel], ...], (OpenAISchema, IterableBase))
     new_cls = create_model(
         name,
         tasks=list_tasks,
