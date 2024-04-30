@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from enum import Enum
-from typing import Any, Dict, Union
+from typing import Any, Union
 import numpy as np
 import json
 from pydantic import ValidationError
@@ -62,7 +62,7 @@ class StreamingAccumulatorManager:
         else:
             self.accumulator[path].update(index, data)
 
-    def summarize(self) -> Dict[str, Dict]:
+    def summarize(self) -> dict[str, dict]:
         return {k: v.summarize(key_name=k) for k, v in self.accumulator.items()}
 
 
@@ -105,7 +105,7 @@ class StreamingAccumulator:
             self.str_sum_length += str_len
             self.str_squared_sum_length += str_len**2
 
-    def summarize(self, key_name=None) -> Dict[str, Union[int, float, dict]]:
+    def summarize(self, key_name=None) -> dict[str, Union[int, float, dict]]:
         if key_name is None:
             key_name = ""
         n = sum(self.counter.values())

@@ -1,6 +1,6 @@
 from youtube_transcript_api import YouTubeTranscriptApi
 from pydantic import BaseModel, Field
-from typing import List, Generator, Iterable
+from typing import Generator, Iterable
 import instructor
 import openai
 
@@ -50,11 +50,11 @@ class YoutubeClip(BaseModel):
     )
     start: float
     end: float
-    source_ids: List[int] = Field(exclude=True)
+    source_ids: list[int] = Field(exclude=True)
 
 
 class YoutubeClips(BaseModel):
-    clips: List[YoutubeClip]
+    clips: list[YoutubeClip]
 
 
 def yield_clips(segments: Iterable[TranscriptSegment]) -> Iterable[YoutubeClips]:

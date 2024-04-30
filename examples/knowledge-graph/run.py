@@ -2,7 +2,6 @@ import instructor
 
 from graphviz import Digraph
 from pydantic import BaseModel, Field
-from typing import List
 from openai import OpenAI
 
 
@@ -23,8 +22,8 @@ class Edge(BaseModel):
 
 
 class KnowledgeGraph(BaseModel):
-    nodes: List[Node] = Field(..., default_factory=list)
-    edges: List[Edge] = Field(..., default_factory=list)
+    nodes: list[Node] = Field(..., default_factory=list)
+    edges: list[Edge] = Field(..., default_factory=list)
 
 
 def generate_graph(input) -> KnowledgeGraph:

@@ -1,4 +1,3 @@
-from typing import List
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
@@ -14,7 +13,7 @@ class SearchQuery(BaseModel):
 
 
 class MultiSearchQuery(BaseModel):
-    products: List[SearchQuery]
+    products: list[SearchQuery]
 
 
 def extract_table(url: str):

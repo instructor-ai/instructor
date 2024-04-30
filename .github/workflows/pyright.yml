@@ -1,0 +1,52 @@
+name: Pyright
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+env:
+  WORKING_DIRECTORY: "."
+  PYRIGHT_OUTPUT_FILENAME: "pyright.log"
+
+jobs:
+  Pyright:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.3.1
+
+      - name: Install dependencies
+        run: poetry install --with dev,anthropic
+
+      - name: Run Static Type Checking with Pyright
+        run: |
+          set -e -o pipefail
+          poetry run pyright > ${{ env.WORKING_DIRECTORY }}/${{ env.PYRIGHT_OUTPUT_FILENAME }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: pyright-log
+          path: ${{ env.WORKING_DIRECTORY }}/${{ env.PYRIGHT_OUTPUT_FILENAME }}

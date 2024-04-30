@@ -158,7 +158,7 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
-## Type are infered correctly
+## Type are inferred correctly
 
 This was the dream of instructor but due to the patching of openai, it wasnt possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
 
@@ -186,7 +186,7 @@ user = client.chat.completions.create(
 )
 ```
 
-Now if you use a IDE, you can see the type is correctly infered.
+Now if you use a IDE, you can see the type is correctly inferred.
 
 ![type](./docs/blog/posts/img/type.png)
 
@@ -298,7 +298,7 @@ for user in user_stream:
     # name='John Doe' age=30
 ```
 
-Notice now that the type infered is `Generator[User, None]`
+Notice now that the type inferred is `Generator[User, None]`
 
 ![generator](./docs/blog/posts/img/generator.png)
 

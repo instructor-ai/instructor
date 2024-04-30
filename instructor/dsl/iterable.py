@@ -1,6 +1,6 @@
-from typing import Any, AsyncGenerator, Generator, Iterable, List, Optional, Tuple, Type
+from typing import Any, AsyncGenerator, Generator, Iterable, Optional, cast, ClassVar
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, Field, create_model  # type: ignore - remove once Pydantic is updated
 
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
@@ -8,7 +8,7 @@ from instructor.utils import extract_json_from_stream, extract_json_from_stream_
 
 
 class IterableBase:
-    task_type = None  # type: ignore[var-annotated]
+    task_type: ClassVar[Optional[type[BaseModel]]] = None
 
     @classmethod
     def from_streaming_response(
@@ -119,7 +119,7 @@ class IterableBase:
                 pass
 
     @staticmethod
-    def get_object(s: str, stack: int) -> Tuple[Optional[str], str]:
+    def get_object(s: str, stack: int) -> tuple[Optional[str], str]:
         start_index = s.find("{")
         for i, c in enumerate(s):
             if c == "{":
@@ -132,10 +132,10 @@ class IterableBase:
 
 
 def IterableModel(
-    subtask_class: Type[BaseModel],
+    subtask_class: type[BaseModel],
     name: Optional[str] = None,
     description: Optional[str] = None,
-) -> Type[BaseModel]:
+) -> type[BaseModel]:
     """
     Dynamically create a IterableModel OpenAISchema that can be used to segment multiple
     tasks given a base class. This creates class that can be used to create a toolkit
@@ -191,7 +191,7 @@ def IterableModel(
     name = f"Iterable{task_name}"
 
     list_tasks = (
-        List[subtask_class],  # type: ignore[valid-type]
+        list[subtask_class],
         Field(
             default_factory=list,
             repr=False,
@@ -199,11 +199,14 @@ def IterableModel(
         ),
     )
 
+    base_models = cast(tuple[type[BaseModel], ...], (OpenAISchema, IterableBase))
     new_cls = create_model(
         name,
         tasks=list_tasks,
-        __base__=(OpenAISchema, IterableBase),  # type: ignore
+        __base__=base_models,
     )
+    new_cls = cast(type[IterableBase], new_cls)
+
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class
 

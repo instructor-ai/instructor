@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-from typing import List, Optional
+from typing import Optional
 
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
@@ -22,7 +22,7 @@ logger.setLevel("INFO")
 
 class Competitor(BaseModel):
     name: str
-    features: Optional[List[str]]
+    features: Optional[list[str]]
 
 
 # Define models
@@ -32,7 +32,7 @@ class Industry(BaseModel):
     """
 
     name: str = Field(description="The name of the industry")
-    competitor_list: List[Competitor] = Field(
+    competitor_list: list[Competitor] = Field(
         description="A list of competitors for this industry"
     )
 
@@ -45,7 +45,7 @@ class Competition(BaseModel):
     competitors and their qualities.
     """
 
-    industry_list: List[Industry] = Field(
+    industry_list: list[Industry] = Field(
         description="A list of industries and their competitors"
     )
 
@@ -55,7 +55,7 @@ client_image = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 
 
 # Define functions
-def read_images(image_urls: List[str]) -> Competition:
+def read_images(image_urls: list[str]) -> Competition:
     """
     Given a list of image URLs, identify the competitors in the images.
     """

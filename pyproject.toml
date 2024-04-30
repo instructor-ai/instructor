@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "instructor"
-version = "1.2.2"
+version = "1.2.4"
 description = "structured outputs for llm"
 authors = ["Jason Liu <jason@jxnl.co>"]
 license = "MIT"
@@ -26,7 +26,7 @@ diskcache = { version = "^5.6.3", optional = true }
 pandas = { version = "^2.2.0", optional = true }
 tabulate = { version = "^0.9.0", optional = true }
 pydantic_extra_types = { version = "^2.6.0", optional = true }
-litellm = { version = "^1.0.0", optional = true }
+litellm = { version = "^1.35.31", optional = true }
 anthropic = { version = "^0.23.1", optional = true }
 xmltodict = { version = "^0.13.0", optional = true }
 groq = { version = "^0.4.2", optional = true }
@@ -39,6 +39,7 @@ groq = ["groq"]
 cohere = ["cohere"]
 test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere", "mistralai"]
 mistralai = ["mistralai"]
+litellm = ["litellm"]
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"
@@ -47,7 +48,7 @@ instructor = "instructor.cli.cli:app"
 pytest = "^7.4.0"
 pytest-asyncio = "^0.21.1"
 coverage = "^7.3.2"
-mypy = "^1.7.1"
+pyright = "^1.1.360"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
@@ -70,7 +71,7 @@ diskcache = "^5.6.3"
 pandas = "^2.2.0"
 tabulate = "^0.9.0"
 pydantic_extra_types = "^2.6.0"
-litellm = "^1.0.0"
+litellm = "^1.35.31"
 anthropic = "^0.23.1"
 xmltodict = "^0.13.0"
 groq = "^0.4.2"
@@ -78,6 +79,25 @@ phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
 mistralai = "^0.1.8"
 
+[tool.poetry.group.litellm.dependencies]
+litellm = "^1.35.31"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+include = ["instructor"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs",
+    "**/tests/**",
+]
+pythonVersion = "3.9"
+typeCheckingMode = "strict"
+# Allow "redundant" runtime type-checking.
+reportUnnecessaryIsInstance = "none"
+reportUnnecessaryTypeIgnoreComment = "error"
+reportDeprecated = "warning"

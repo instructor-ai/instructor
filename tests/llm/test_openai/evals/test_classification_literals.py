@@ -1,5 +1,5 @@
 from itertools import product
-from typing import List, Literal
+from typing import Literal
 
 import pytest
 import instructor
@@ -27,7 +27,7 @@ data = [
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 @pytest.mark.asyncio
 async def test_classification(model, data, mode, aclient):
-    client = instructor.patch(aclient, mode=mode)
+    client = instructor.from_openai(aclient, mode=mode)
 
     if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
         pytest.skip(
@@ -50,7 +50,7 @@ async def test_classification(model, data, mode, aclient):
 
 # Adjust the prediction model to accommodate a list of labels
 class MultiClassPrediction(BaseModel):
-    predicted_labels: List[Literal["billing", "general_query", "hardware"]]
+    predicted_labels: list[Literal["billing", "general_query", "hardware"]]
 
 
 data = [
@@ -72,7 +72,7 @@ data = [
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 @pytest.mark.asyncio
 async def test_multi_classify(model, data, mode, aclient):
-    client = instructor.patch(aclient, mode=mode)
+    client = instructor.from_openai(aclient, mode=mode)
 
     if (mode, model) in {
         (Mode.JSON, "gpt-3.5-turbo"),

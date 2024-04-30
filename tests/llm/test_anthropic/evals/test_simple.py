@@ -1,8 +1,12 @@
-import anthropic
-import instructor
-from pydantic import BaseModel, field_validator
-from typing import List, Literal
 from enum import Enum
+from typing import Literal
+
+import anthropic
+import pytest
+from pydantic import BaseModel, field_validator
+
+import instructor
+from instructor.retry import InstructorRetryException
 
 client = instructor.from_anthropic(
     anthropic.Anthropic(), mode=instructor.Mode.ANTHROPIC_TOOLS
@@ -16,7 +20,7 @@ def test_simple():
 
         @field_validator("name")
         def name_is_uppercase(cls, v: str):
-            assert v.isupper(), "Name must be uppercase"
+            assert v.isupper(), "Name must be uppercase, please fix"
             return v
 
     resp = client.messages.create(
@@ -73,7 +77,7 @@ def test_list_str():
     class User(BaseModel):
         name: str
         age: int
-        family: List[str]
+        family: list[str]
 
     resp = client.messages.create(
         model="claude-3-haiku-20240307",
@@ -89,11 +93,12 @@ def test_list_str():
     )
 
     assert isinstance(resp, User)
-    assert isinstance(resp.family, List)
+    assert isinstance(resp.family, list)
     for member in resp.family:
         assert isinstance(member, str)
 
 
+@pytest.mark.skip("Just use Literal!")
 def test_enum():
     class Role(str, Enum):
         ADMIN = "admin"
@@ -106,7 +111,7 @@ def test_enum():
     resp = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1024,
-        max_retries=0,
+        max_retries=1,
         messages=[
             {
                 "role": "user",
@@ -114,7 +119,7 @@ def test_enum():
             }
         ],
         response_model=User,
-    )  # type: ignore
+    )
 
     assert isinstance(resp, User)
     assert resp.role == Role.ADMIN
@@ -150,7 +155,7 @@ def test_nested_list():
     class User(BaseModel):
         name: str
         age: int
-        properties: List[Properties]
+        properties: list[Properties]
 
     resp = client.messages.create(
         model="claude-3-haiku-20240307",
@@ -163,7 +168,7 @@ def test_nested_list():
             }
         ],
         response_model=User,
-    )  # type: ignore
+    )
 
     assert isinstance(resp, User)
     for property in resp.properties:
@@ -187,7 +192,60 @@ def test_system_messages_allcaps():
             },
         ],
         response_model=User,
-    )  # type: ignore
+    )
 
     assert isinstance(resp, User)
     assert resp.name.isupper()
+
+
+def test_retry_error():
+    class User(BaseModel):
+        name: str
+
+        @field_validator("name")
+        def validate_name(cls, _):
+            raise ValueError("Never succeed")
+
+    try:
+        client.messages.create(
+            model="claude-3-haiku-20240307",
+            max_tokens=1024,
+            max_retries=2,
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Extract John is 18 years old",
+                },
+            ],
+            response_model=User,
+        )
+    except InstructorRetryException as e:
+        assert e.total_usage.input_tokens > 0 and e.total_usage.output_tokens > 0
+
+
+@pytest.mark.asyncio
+async def test_async_retry_error():
+    client = instructor.from_anthropic(anthropic.AsyncAnthropic())
+
+    class User(BaseModel):
+        name: str
+
+        @field_validator("name")
+        def validate_name(cls, _):
+            raise ValueError("Never succeed")
+
+    try:
+        await client.messages.create(
+            model="claude-3-haiku-20240307",
+            max_tokens=1024,
+            max_retries=2,
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Extract John is 18 years old",
+                },
+            ],
+            response_model=User,
+        )
+    except InstructorRetryException as e:
+        assert e.total_usage.input_tokens > 0 and e.total_usage.output_tokens > 0

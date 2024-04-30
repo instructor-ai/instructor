@@ -5,7 +5,6 @@ import instructor
 import anthropic
 import pytest
 from pydantic import BaseModel, Field
-from typing import List
 
 
 class User(BaseModel):
@@ -281,7 +280,7 @@ def test_client_cohere_response_with_nested_classes():
 
     class Group(BaseModel):
         group_name: str = Field(description="name of the group")
-        members: List[Person] = Field(description="list of members in the group")
+        members: list[Person] = Field(description="list of members in the group")
 
     task = """\
     Given the following text, create a Group object for 'The Beatles' band
@@ -318,7 +317,7 @@ async def test_client_cohere_async():
 
     class Group(BaseModel):
         group_name: str = Field(description="name of the group")
-        members: List[Person] = Field(description="list of members in the group")
+        members: list[Person] = Field(description="list of members in the group")
 
     task = """\
     Given the following text, create a Group object for 'The Beatles' band

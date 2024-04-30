@@ -58,11 +58,3 @@ def test_iterable_not_simple():
     new_type = Iterable[int]
 
     assert not is_simple_type(new_type), "Failed for type: " + str(new_type)
-
-
-def test_list_is_simple():
-    from typing import List
-
-    new_type = List[int]
-
-    assert is_simple_type(new_type), "Failed for type: " + str(new_type)

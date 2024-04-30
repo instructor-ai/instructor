@@ -8,16 +8,7 @@ repos:
         files: ^(instructor|tests|examples)/
       - id: ruff-format       # Run the formatter.
         name: Run Formatter (Ruff)
-  - repo: local
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.360
     hooks:
-      - id: ci_type_mypy
-        name: Run Type Check (Mypy)
-        entry: >
-            bash -c 'set -o pipefail;
-            export CUSTOM_PACKAGES="instructor/_types/_alias.py instructor/cli/cli.py instructor/cli/files.py instructor/cli/usage.py instructor/exceptions.py" &&
-            export CUSTOM_FLAGS="--python-version=3.9 --color-output --no-pretty --follow-imports=skip" &&
-            curl -sSL https://raw.githubusercontent.com/gao-hongnan/omniverse/2fd5de1b8103e955cd5f022ab016b72fa901fa8f/scripts/devops/continuous-integration/type_mypy.sh |
-            bash'
-        language: system
-        types: [python]
-        pass_filenames: false
+    - id: pyright

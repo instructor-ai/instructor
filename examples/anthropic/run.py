@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import List
 import anthropic
 import instructor
 
@@ -15,7 +14,7 @@ class Properties(BaseModel):
 class User(BaseModel):
     name: str
     age: int
-    properties: List[Properties]
+    properties: list[Properties]
 
 
 user = client.messages.create(

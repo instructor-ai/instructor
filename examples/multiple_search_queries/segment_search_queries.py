@@ -1,7 +1,6 @@
 import enum
 import instructor
 
-from typing import List
 from openai import OpenAI
 from pydantic import Field, BaseModel
 
@@ -42,7 +41,7 @@ class MultiSearch(BaseModel):
         searches (List[Search]): The list of searches to perform.
     """
 
-    searches: List[Search] = Field(..., description="List of searches")
+    searches: list[Search] = Field(..., description="List of searches")
 
     def execute(self):
         import asyncio

@@ -1,5 +1,5 @@
 import json
-from typing import Iterable, List
+from typing import Iterable
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.params import Depends
 from instructor import OpenAISchema
@@ -33,7 +33,7 @@ class Fact(BaseModel):
         ...,
         description="Body of the sentences, as part of a response, it should read like a sentence that answers the question",
     )
-    substring_quotes: List[str] = Field(
+    substring_quotes: list[str] = Field(
         ...,
         description="Each source should be a direct quote from the context, as a substring of the original content",
     )
@@ -65,7 +65,7 @@ class QuestionAnswer(OpenAISchema, MultiTaskBase):
     each sentence contains a body and a list of sources."""
 
     question: str = Field(..., description="Question that was asked")
-    tasks: List[Fact] = Field(
+    tasks: list[Fact] = Field(
         ...,
         description="Body of the answer, each fact should be its separate object with a body and a list of sources",
     )

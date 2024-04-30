@@ -1,4 +1,3 @@
-from typing import List
 from enum import Enum
 from pydantic import BaseModel, Field
 import instructor
@@ -36,7 +35,7 @@ class CRMSearchQuery(BaseModel):
     for large locations decompose into multiple queries of smaller locations
     """
 
-    queries: List[CRMSearch]
+    queries: list[CRMSearch]
 
 
 def query_crm(query: str) -> CRMSearchQuery:
