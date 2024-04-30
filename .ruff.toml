@@ -39,8 +39,8 @@ select = [
   "E722",
   # unused arguments
   "ARG",
-  # Enforce modern type-syntax
-  "UP006",
+  # pyupgrade
+  "UP",
 ]
 ignore = [
   # mutable defaults
@@ -55,10 +55,9 @@ unfixable = [
 ]
 ignore-init-module-imports = true
 
-[extend-per-file-ignores]
+[lint.extend-per-file-ignores]
 "instructor/distil.py" = ["ARG002"]
 "tests/test_distil.py" = ["ARG001"]
 "tests/test_patch.py" = ["ARG001"]
 "examples/task_planner/task_planner_topological_sort.py" = ["ARG002"]
 "examples/citation_with_extraction/main.py" = ["ARG001"]
-

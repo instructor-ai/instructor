@@ -1,12 +1,12 @@
 from typing import (
     Any,
-    Generator,
     Optional,
     TypeVar,
     Union,
     get_args,
     get_origin,
 )
+from collections.abc import Generator
 from pydantic import BaseModel
 from instructor.function_calls import OpenAISchema, openai_schema
 from collections.abc import Iterable

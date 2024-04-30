@@ -2,7 +2,7 @@ import instructor
 
 from instructor import openai_moderation
 
-from typing_extensions import Annotated
+from typing import Annotated
 from pydantic import BaseModel, AfterValidator
 from openai import OpenAI
 

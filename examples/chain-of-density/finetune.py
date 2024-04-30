@@ -44,7 +44,7 @@ def distil_summarization(text: str) -> GeneratedSummary:
     return GeneratedSummary(summary=summary_chain[-1])
 
 
-with open("test.csv", "r") as file:
+with open("test.csv") as file:
     reader = csv.reader(file)
     next(reader)  # Skip the header
     for article, _summary in reader:

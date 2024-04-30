@@ -19,7 +19,7 @@ from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
 
 from json import JSONDecodeError
 from pydantic import BaseModel
-from typing import Callable, Optional, TypeVar, Any
+from typing import Callable, TypeVar, Any
 from typing_extensions import ParamSpec
 
 logger = logging.getLogger("instructor")
@@ -129,7 +129,7 @@ def retry_sync(
     args,
     kwargs,
     max_retries: int | Retrying = 1,
-    strict: Optional[bool] = None,
+    strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
 ) -> T_Model:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
@@ -189,12 +189,12 @@ def retry_sync(
 
 async def retry_async(
     func: Callable[T_ParamSpec, T_Retval],
-    response_model: Optional[type[T]],
-    validation_context: Optional[dict[str, Any]],
+    response_model: type[T] | None,
+    validation_context: dict[str, Any] | None,
     args: Any,
     kwargs: Any,
     max_retries: int | AsyncRetrying = 1,
-    strict: Optional[bool] = None,
+    strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
 ) -> T:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)

@@ -191,7 +191,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     image_file = sys.argv[1]
-    with open(image_file, "r") as file:
+    with open(image_file) as file:
         logger.info(f"Reading images from file: {image_file}")
         try:
             image_list = file.read().splitlines()

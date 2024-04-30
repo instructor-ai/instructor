@@ -1,6 +1,6 @@
 import time
 
-from typing import Iterable
+from collections.abc import Iterable
 from openai import OpenAI
 from pydantic import BaseModel
 

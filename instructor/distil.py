@@ -62,7 +62,7 @@ def get_signature_from_fn(fn: Callable[..., Any]) -> str:
     return f"{lines}\n{formatted_docstring}"
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def format_function(func: Callable[..., Any]) -> str:
     """
     Format a function as a string with docstring and body.

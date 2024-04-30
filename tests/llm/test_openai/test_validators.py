@@ -3,7 +3,7 @@ import pytest
 
 import instructor
 
-from typing_extensions import Annotated
+from typing import Annotated
 from pydantic import BaseModel, AfterValidator, BeforeValidator, ValidationError
 
 from instructor.dsl.validators import llm_validator
