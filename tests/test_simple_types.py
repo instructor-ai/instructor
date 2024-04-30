@@ -53,7 +53,7 @@ def test_union_simple():
 
 
 def test_iterable_not_simple():
-    from typing import Iterable
+    from collections.abc import Iterable
 
     new_type = Iterable[int]
 

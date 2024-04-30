@@ -1,5 +1,5 @@
 import json
-from typing import Iterable
+from collections.abc import Iterable
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.params import Depends
 from instructor import OpenAISchema

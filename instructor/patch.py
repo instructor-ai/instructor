@@ -6,8 +6,8 @@ from typing import (
     TypeVar,
     Union,
     overload,
-    Awaitable,
 )
+from collections.abc import Awaitable
 from typing_extensions import ParamSpec
 
 from openai import AsyncOpenAI, OpenAI

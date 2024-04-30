@@ -93,7 +93,7 @@ def process_and_identify_competitors():
     logger.info("Starting app...")
 
     try:
-        with open(IMAGE_FILE, "r") as file:
+        with open(IMAGE_FILE) as file:
             logger.info(f"Reading images from file: {IMAGE_FILE}")
             image_list = file.read().splitlines()
             logger.info(f"{len(image_list)} images read from file: {IMAGE_FILE}")

@@ -3,7 +3,8 @@ from __future__ import annotations
 import inspect
 import json
 import logging
-from typing import Callable, Generator, Iterable, AsyncGenerator, Protocol, TypeVar
+from typing import Callable, Protocol, TypeVar
+from collections.abc import Generator, Iterable, AsyncGenerator
 from openai.types.completion_usage import CompletionUsage
 from anthropic.types import Usage as AnthropicUsage
 from typing import Any

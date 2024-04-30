@@ -1,4 +1,5 @@
-from typing import Any, AsyncGenerator, Generator, Iterable, Optional, cast, ClassVar
+from typing import Any, Optional, cast, ClassVar
+from collections.abc import AsyncGenerator, Generator, Iterable
 
 from pydantic import BaseModel, Field, create_model  # type: ignore - remove once Pydantic is updated
 

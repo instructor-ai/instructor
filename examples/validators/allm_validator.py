@@ -1,5 +1,5 @@
 import asyncio
-from typing_extensions import Annotated
+from typing import Annotated
 from pydantic import BaseModel, BeforeValidator
 from instructor import llm_validator, patch
 from openai import AsyncOpenAI
