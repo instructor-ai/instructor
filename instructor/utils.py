@@ -5,13 +5,11 @@ import json
 import logging
 from typing import (
     Callable,
-    Generator,
     Generic,
-    Iterable,
-    AsyncGenerator,
     Protocol,
     TypeVar,
 )
+from collections.abc import Generator, Iterable, AsyncGenerator
 from typing import Callable, Protocol, TypeVar
 from collections.abc import Generator, Iterable, AsyncGenerator
 from openai.types.completion_usage import CompletionUsage
