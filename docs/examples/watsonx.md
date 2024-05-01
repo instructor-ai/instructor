@@ -6,7 +6,7 @@ You can use IBM watsonx.ai for inference using [LiteLLM](https://docs.litellm.ai
 
 - IBM Cloud Account
 - API Key from IBM Cloud IAM: https://cloud.ibm.com/iam/apikeys
-- Project ID (from xatsonx.ai instance URL: https://dataplatform.cloud.ibm.com/projects/<WATSONX_PROJECT_ID>/)
+- Project ID (from watsonx.ai instance URL: https://dataplatform.cloud.ibm.com/projects/<WATSONX_PROJECT_ID>/)
 
 ## Install
 
