@@ -237,7 +237,7 @@ openai_client = OpenAI()
 logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
 logfire.instrument_openai(openai_client)
 client = instructor.from_openai(
-    openai_client, mode=instructor.function_calls.Mode.MD_JSON
+    openai_client, mode=instructor.Mode.MD_JSON
 )
 
 @logfire.instrument("extract-table", extract_args=True)
