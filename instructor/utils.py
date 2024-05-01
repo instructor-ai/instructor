@@ -12,6 +12,8 @@ from typing import (
     Protocol,
     TypeVar,
 )
+from typing import Callable, Protocol, TypeVar
+from collections.abc import Generator, Iterable, AsyncGenerator
 from openai.types.completion_usage import CompletionUsage
 from anthropic.types import Usage as AnthropicUsage
 from typing import Any

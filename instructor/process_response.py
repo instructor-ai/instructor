@@ -16,13 +16,12 @@ import json
 import inspect
 import logging
 from typing import (
-    Generator,
-    Optional,
     get_args,
     get_origin,
     TypeVar,
     Any,
 )
+from collections.abc import Generator
 from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
@@ -38,10 +37,10 @@ T = TypeVar("T")
 async def process_response_async(
     response: ChatCompletion,
     *,
-    response_model: Optional[type[T_Model | OpenAISchema | BaseModel]],
+    response_model: type[T_Model | OpenAISchema | BaseModel] | None,
     stream: bool = False,
-    validation_context: Optional[dict[str, Any]] = None,
-    strict: Optional[bool] = None,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
 ) -> T_Model | ChatCompletion:
     """Processes a OpenAI response with the response model, if available.
@@ -103,7 +102,7 @@ def process_response(
     *,
     response_model: type[OpenAISchema | BaseModel],
     stream: bool,
-    validation_context: Optional[dict] = None,
+    validation_context: dict | None = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
 ) -> T_Model | Generator[T_Model, None, None] | ChatCompletion:
@@ -166,7 +165,7 @@ def process_response(
 
 
 def handle_response_model(
-    response_model: Optional[type[T]], mode: Mode = Mode.TOOLS, **kwargs: Any
+    response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
 ) -> tuple[type[T], dict[str, Any]]:
     """Prepare the response model type hint, and returns the response_model
     along with the new modified kwargs needed to be able to use the response_model

@@ -7,7 +7,7 @@ from typing import (
     TypeVar,
     overload,
 )
-from typing import Any, Optional
+from typing import Any
 from typing_extensions import ParamSpec
 from pydantic import BaseModel
 from instructor.process_response import handle_response_model
@@ -58,8 +58,8 @@ def from_cohere(
 
     @wraps(client.chat)
     async def new_create_async(
-        response_model: Optional[type[T_Model]] = None,
-        validation_context: Optional[dict[str, Any]] = None,
+        response_model: type[T_Model] | None = None,
+        validation_context: dict[str, Any] | None = None,
         max_retries: int = 1,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,

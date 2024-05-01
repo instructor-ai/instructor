@@ -1,4 +1,5 @@
-from typing import Iterable, Literal, Union
+from typing import Literal, Union
+from collections.abc import Iterable
 from pydantic import BaseModel
 from instructor import OpenAISchema
 

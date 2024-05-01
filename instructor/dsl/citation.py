@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, model_validator, ValidationInfo
-from typing import Generator
+from collections.abc import Generator
 
 
 class CitationMixin(BaseModel):

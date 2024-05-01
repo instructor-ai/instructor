@@ -13,18 +13,16 @@ from pydantic import BaseModel, create_model  # type: ignore - remove once Pydan
 from pydantic.fields import FieldInfo
 from typing import (
     Any,
-    AsyncGenerator,
-    Generator,
     Generic,
     get_args,
     get_origin,
-    Iterable,
     NoReturn,
     Optional,
     TypeVar,
 )
+from collections.abc import AsyncGenerator, Generator, Iterable
 from copy import deepcopy
-from functools import lru_cache
+from functools import cache
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
@@ -78,7 +76,7 @@ def _make_field_optional(
 
 class PartialBase(Generic[T_Model]):
     @classmethod
-    @lru_cache(maxsize=None)
+    @cache
     def get_partial_model(cls) -> type[T_Model]:
         """Return a partial model we can use to validate partial results."""
         assert issubclass(
@@ -207,7 +205,7 @@ class Partial(Generic[T_Model]):
         cls,
         *args: object,  # noqa :ARG003
         **kwargs: object,  # noqa :ARG003
-    ) -> "Partial[T_Model]":
+    ) -> Partial[T_Model]:
         """Cannot instantiate.
 
         Raises:
@@ -225,7 +223,7 @@ class Partial(Generic[T_Model]):
         Raises:
            TypeError: Subclassing not allowed.
         """
-        raise TypeError("Cannot subclass {}.Partial".format(cls.__module__))
+        raise TypeError(f"Cannot subclass {cls.__module__}.Partial")
 
     def __class_getitem__(
         cls,

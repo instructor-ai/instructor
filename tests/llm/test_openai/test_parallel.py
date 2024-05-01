@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Iterable, Literal, Union
+from typing import Literal, Union
+from collections.abc import Iterable
 from pydantic import BaseModel
 
 import pytest

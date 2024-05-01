@@ -1,9 +1,11 @@
-from typing import Any, Awaitable, List, Union
+from typing import Any, Union
+from collections.abc import Awaitable
 from datetime import datetime, timedelta
 import typer
 import os
 import aiohttp
 import asyncio
+from builtins import list as List
 from collections import defaultdict
 from rich.console import Console
 from rich.table import Table

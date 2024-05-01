@@ -7,15 +7,12 @@ from .utils import Provider, get_provider
 from openai.types.chat import ChatCompletionMessageParam
 from typing import (
     TypeVar,
-    Generator,
-    Iterable,
     Callable,
     overload,
     Union,
-    Awaitable,
-    AsyncGenerator,
     Any,
 )
+from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator
 from typing_extensions import Self
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
@@ -59,7 +56,7 @@ class Instructor:
 
     @overload
     def create(
-        self: "AsyncInstructor",
+        self: AsyncInstructor,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
@@ -88,7 +85,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Union[T, Awaitable[T]]:
+    ) -> T | Awaitable[T]:
         kwargs = self.handle_kwargs(kwargs)
 
         return self.create_fn(
@@ -102,7 +99,7 @@ class Instructor:
 
     @overload
     def create_partial(
-        self: "AsyncInstructor",
+        self: AsyncInstructor,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
@@ -130,7 +127,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Union[Generator[T, None, None], AsyncGenerator[T, None]]:
+    ) -> Generator[T, None, None] | AsyncGenerator[T, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
 
         kwargs["stream"] = True
@@ -149,7 +146,7 @@ class Instructor:
 
     @overload
     def create_iterable(
-        self: "AsyncInstructor",
+        self: AsyncInstructor,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
@@ -177,7 +174,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Union[Generator[T, None, None], AsyncGenerator[T, None]]:
+    ) -> Generator[T, None, None] | AsyncGenerator[T, None]:
         assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
 
         kwargs["stream"] = True
@@ -195,7 +192,7 @@ class Instructor:
 
     @overload
     def create_with_completion(
-        self: "AsyncInstructor",
+        self: AsyncInstructor,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
@@ -223,7 +220,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Union[tuple[T, Any], Awaitable[tuple[T, Any]]]:
+    ) -> tuple[T, Any] | Awaitable[tuple[T, Any]]:
         kwargs = self.handle_kwargs(kwargs)
         model = self.create_fn(
             messages=messages,
@@ -368,7 +365,7 @@ def from_openai(
 
 
 def from_openai(
-    client: Union[openai.OpenAI, openai.AsyncOpenAI],
+    client: openai.OpenAI | openai.AsyncOpenAI,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
