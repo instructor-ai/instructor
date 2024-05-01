@@ -1,9 +1,9 @@
-import instructor
-
+from generate import Program
 from openai import OpenAI
 from pydantic import Field, parse_file_as
+
+import instructor
 from instructor import OpenAISchema
-from generate import Program
 
 client = instructor.from_openai(OpenAI())
 

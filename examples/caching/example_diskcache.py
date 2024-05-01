@@ -1,10 +1,11 @@
 import functools
 import inspect
-import instructor
-import diskcache
 
-from openai import OpenAI, AsyncOpenAI
+import diskcache
+from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
+
+import instructor
 
 client = instructor.from_openai(OpenAI())
 aclient = instructor.from_openai(AsyncOpenAI())

@@ -1,22 +1,24 @@
 from __future__ import annotations
 
-import openai
 import inspect
-import instructor
-from .utils import Provider, get_provider
-from openai.types.chat import ChatCompletionMessageParam
+from collections.abc import AsyncGenerator, Awaitable, Generator, Iterable
 from typing import (
-    TypeVar,
-    Callable,
-    overload,
-    Union,
     Any,
+    Callable,
+    TypeVar,
+    Union,
+    overload,
 )
-from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator
-from typing_extensions import Self
+
+import openai
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
+from typing_extensions import Self
+
+import instructor
 from instructor.dsl.partial import Partial
 
+from .utils import Provider, get_provider
 
 T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
 

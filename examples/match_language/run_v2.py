@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
-from instructor import patch
-from openai import AsyncOpenAI
 from langdetect import detect
+from openai import AsyncOpenAI
+from pydantic import BaseModel, Field
+
+from instructor import patch
 
 docs = map(
     lambda x: x.strip(),

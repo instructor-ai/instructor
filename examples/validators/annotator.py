@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from pydantic import BaseModel, ValidationError
 from pydantic.functional_validators import AfterValidator
 

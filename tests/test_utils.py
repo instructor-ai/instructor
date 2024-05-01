@@ -1,5 +1,7 @@
 import json
+
 import pytest
+
 from instructor.utils import (
     classproperty,
     extract_json_from_codeblock,

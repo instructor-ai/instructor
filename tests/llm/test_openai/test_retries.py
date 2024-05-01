@@ -1,8 +1,11 @@
-from typing import Annotated
-from pydantic import AfterValidator, BaseModel, Field
-import pytest
-import instructor
 from itertools import product
+from typing import Annotated
+
+import pytest
+from pydantic import AfterValidator, BaseModel, Field
+
+import instructor
+
 from .util import models, modes
 
 

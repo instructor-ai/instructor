@@ -1,7 +1,9 @@
-import openai
-import instructor
 from collections.abc import Iterable
+
+import openai
 from pydantic import BaseModel, ConfigDict
+
+import instructor
 
 client = instructor.from_openai(openai.OpenAI())
 

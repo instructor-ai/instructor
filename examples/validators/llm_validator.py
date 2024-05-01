@@ -1,9 +1,10 @@
-import instructor
+from typing import Annotated
 
 from openai import OpenAI
+from pydantic import BaseModel, BeforeValidator, ValidationError
+
+import instructor
 from instructor import llm_validator
-from pydantic import BaseModel, ValidationError, BeforeValidator
-from typing import Annotated
 
 # Apply the patch to the OpenAI client
 client = instructor.from_openai(OpenAI())

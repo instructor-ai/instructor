@@ -1,10 +1,12 @@
-import cohere
 import os
-import openai
-import instructor
+
 import anthropic
+import cohere
+import openai
 import pytest
 from pydantic import BaseModel, Field
+
+import instructor
 
 
 class User(BaseModel):

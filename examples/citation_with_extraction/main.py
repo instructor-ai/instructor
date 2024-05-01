@@ -1,16 +1,16 @@
 import json
+import logging
+import os
 from collections.abc import Iterable
-from fastapi import FastAPI, Request, HTTPException
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.params import Depends
-from instructor import OpenAISchema
+from openai import OpenAI
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
-import os
 import instructor
-import logging
-
-from openai import OpenAI
+from instructor import OpenAISchema
 from instructor.dsl.multitask import MultiTaskBase
 
 client = instructor.from_openai(OpenAI())

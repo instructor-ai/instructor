@@ -1,8 +1,9 @@
 import logging
 
 from pydantic import BaseModel, Field
-from instructor import Instructions
+
 import instructor
+from instructor import Instructions
 
 instructor.from_openai()
 

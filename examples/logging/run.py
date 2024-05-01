@@ -1,9 +1,9 @@
-import instructor
-import openai
 import logging
 
+import openai
 from pydantic import BaseModel
 
+import instructor
 
 # Set logging to DEBUG
 logging.basicConfig(level=logging.DEBUG)

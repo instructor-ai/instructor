@@ -1,8 +1,10 @@
 import asyncio
 from typing import Annotated
-from pydantic import BaseModel, BeforeValidator
-from instructor import llm_validator, patch
+
 from openai import AsyncOpenAI
+from pydantic import BaseModel, BeforeValidator
+
+from instructor import llm_validator, patch
 
 aclient = AsyncOpenAI()
 

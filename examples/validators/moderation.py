@@ -1,10 +1,10 @@
-import instructor
-
-from instructor import openai_moderation
-
 from typing import Annotated
-from pydantic import BaseModel, AfterValidator
+
 from openai import OpenAI
+from pydantic import AfterValidator, BaseModel
+
+import instructor
+from instructor import openai_moderation
 
 client = instructor.from_openai(OpenAI())
 

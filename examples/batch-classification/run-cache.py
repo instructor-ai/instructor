@@ -1,9 +1,10 @@
-import instructor
 import asyncio
+from enum import Enum
 
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, field_validator
-from enum import Enum
+
+import instructor
 
 client = instructor.from_openai(AsyncOpenAI(), mode=instructor.Mode.TOOLS)
 sem = asyncio.Semaphore(5)

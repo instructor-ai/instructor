@@ -14,8 +14,7 @@ import asyncio
 from collections.abc import Generator
 
 from openai import OpenAI
-
-from pydantic import Field, BaseModel
+from pydantic import BaseModel, Field
 
 import instructor
 

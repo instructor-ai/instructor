@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Literal, Union
 from collections.abc import Iterable
-from pydantic import BaseModel
+from typing import Literal, Union
 
 import pytest
+from pydantic import BaseModel
+
 import instructor
 
 

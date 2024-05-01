@@ -1,5 +1,5 @@
-from main import app
 import modal
+from main import app
 
 stub = modal.Stub("rag-citation")
 

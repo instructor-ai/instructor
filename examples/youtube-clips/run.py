@@ -1,8 +1,10 @@
-from youtube_transcript_api import YouTubeTranscriptApi
-from pydantic import BaseModel, Field
 from collections.abc import Generator, Iterable
-import instructor
+
 import openai
+from pydantic import BaseModel, Field
+from youtube_transcript_api import YouTubeTranscriptApi
+
+import instructor
 
 client = instructor.from_openai(openai.OpenAI())
 
@@ -88,9 +90,9 @@ def yield_clips(segments: Iterable[TranscriptSegment]) -> Iterable[YoutubeClips]
 
 # Example usage
 if __name__ == "__main__":
-    from rich.table import Table
     from rich.console import Console
     from rich.prompt import Prompt
+    from rich.table import Table
 
     console = Console()
     url = Prompt.ask("Enter a YouTube URL")

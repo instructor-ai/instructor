@@ -1,10 +1,11 @@
-import redis
 import functools
 import inspect
-import instructor
 
-from pydantic import BaseModel
+import redis
 from openai import OpenAI
+from pydantic import BaseModel
+
+import instructor
 
 client = instructor.from_openai(OpenAI())
 cache = redis.Redis("localhost")

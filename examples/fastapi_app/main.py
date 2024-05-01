@@ -1,7 +1,8 @@
 from fastapi import FastAPI
-from instructor import OpenAISchema
-import instructor.dsl as dsl
 from pydantic import BaseModel, Field
+
+import instructor.dsl as dsl
+from instructor import OpenAISchema
 
 app = FastAPI(title="Example Application using instructor")
 

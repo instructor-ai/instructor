@@ -1,10 +1,11 @@
-import json
-import instructor
 import asyncio
+import json
+from enum import Enum
 
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, field_validator
-from enum import Enum
+
+import instructor
 
 client = AsyncOpenAI()
 client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)

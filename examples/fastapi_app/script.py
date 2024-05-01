@@ -1,6 +1,8 @@
-from instructor import OpenAISchema, dsl
-from pydantic import Field
 import json
+
+from pydantic import Field
+
+from instructor import OpenAISchema, dsl
 
 
 class SearchQuery(OpenAISchema):

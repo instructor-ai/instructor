@@ -1,12 +1,11 @@
 from typing import Optional
 
-import typer
 import httpx
-
+import typer
 from pydantic import BaseModel
 from rich.console import Console
-from rich.table import Table
 from rich.markdown import Markdown
+from rich.table import Table
 
 app = typer.Typer(
     name="hub",

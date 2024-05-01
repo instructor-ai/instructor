@@ -1,12 +1,12 @@
-import instructor
 import asyncio
+from enum import Enum
 
 from langsmith import traceable
 from langsmith.wrappers import wrap_openai
-
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, field_validator
-from enum import Enum
+
+import instructor
 
 client = wrap_openai(AsyncOpenAI())
 client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)

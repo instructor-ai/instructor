@@ -1,8 +1,9 @@
 import typer
-import instructor.cli.jobs as jobs
+
 import instructor.cli.files as files
-import instructor.cli.usage as usage
 import instructor.cli.hub as hub
+import instructor.cli.jobs as jobs
+import instructor.cli.usage as usage
 
 app = typer.Typer()
 

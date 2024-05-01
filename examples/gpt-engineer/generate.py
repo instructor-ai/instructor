@@ -1,7 +1,7 @@
-import instructor
-
 from openai import OpenAI
 from pydantic import Field
+
+import instructor
 from instructor import OpenAISchema
 
 client = instructor.from_openai(OpenAI())

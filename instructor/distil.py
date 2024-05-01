@@ -1,27 +1,26 @@
 import enum
-import json
-import uuid
-import logging
-import inspect
 import functools
-
+import inspect
+import json
+import logging
+import uuid
 from typing import (
     Any,
     Callable,
-    Optional,
-    TypeVar,
-    TypedDict,
     Literal,
+    Optional,
+    TypedDict,
+    TypeVar,
     Union,
 )
-from typing_extensions import ParamSpec, NotRequired
+
+from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
 from pydantic import BaseModel, validate_call
+from typing_extensions import NotRequired, ParamSpec
 
-from openai import OpenAI
 from instructor.function_calls import openai_schema
-
 
 P = ParamSpec("P")
 T_Retval = TypeVar("T_Retval", bound=BaseModel)

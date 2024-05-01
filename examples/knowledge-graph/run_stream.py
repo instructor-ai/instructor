@@ -1,10 +1,10 @@
-from openai import OpenAI
-import instructor
-
-from graphviz import Digraph
 from typing import Optional
 
+from graphviz import Digraph
+from openai import OpenAI
 from pydantic import BaseModel, Field
+
+import instructor
 
 client = instructor.from_openai(OpenAI())
 

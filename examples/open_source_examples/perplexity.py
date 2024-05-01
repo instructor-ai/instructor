@@ -1,8 +1,10 @@
 import os
-import instructor
+from typing import Optional
+
 from openai import OpenAI
 from pydantic import BaseModel, Field
-from typing import Optional
+
+import instructor
 from instructor import Maybe, Mode
 
 # Extract API key from environment

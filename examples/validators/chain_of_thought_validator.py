@@ -1,8 +1,9 @@
-import instructor
-from openai import OpenAI
-
-from pydantic import BaseModel, Field, model_validator
 from typing import Optional
+
+from openai import OpenAI
+from pydantic import BaseModel, Field, model_validator
+
+import instructor
 
 # Enables `response_model` and `max_retries` parameters
 client = instructor.from_openai(OpenAI())

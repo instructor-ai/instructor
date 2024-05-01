@@ -1,4 +1,6 @@
 # type: ignore[all]
+import logging
+from collections.abc import Awaitable
 from functools import wraps
 from typing import (
     Callable,
@@ -7,18 +9,15 @@ from typing import (
     Union,
     overload,
 )
-from collections.abc import Awaitable
-from typing_extensions import ParamSpec
 
 from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
+from typing_extensions import ParamSpec
 
+from instructor.mode import Mode
 from instructor.process_response import handle_response_model
 from instructor.retry import retry_async, retry_sync
 from instructor.utils import is_async
-
-from instructor.mode import Mode
-import logging
 
 logger = logging.getLogger("instructor")
 

@@ -3,8 +3,8 @@ from typing import Callable, Optional
 from openai import OpenAI
 from pydantic import Field
 
-from instructor.function_calls import OpenAISchema
 from instructor.client import Instructor
+from instructor.function_calls import OpenAISchema
 
 
 class Validator(OpenAISchema):

@@ -1,12 +1,12 @@
 from typing import TypeVar
+
 import pytest
-from pydantic import BaseModel
 from openai.resources.chat.completions import ChatCompletion
+from pydantic import BaseModel
 
-from instructor import openai_schema, OpenAISchema
 import instructor
+from instructor import OpenAISchema, openai_schema
 from instructor.exceptions import IncompleteOutputException
-
 
 T = TypeVar("T")
 

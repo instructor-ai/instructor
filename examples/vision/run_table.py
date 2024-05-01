@@ -1,16 +1,17 @@
 from io import StringIO
 from typing import Annotated, Any
+
+import pandas as pd
 from openai import OpenAI
 from pydantic import (
     BaseModel,
     BeforeValidator,
-    PlainSerializer,
     InstanceOf,
+    PlainSerializer,
     WithJsonSchema,
 )
-import pandas as pd
-import instructor
 
+import instructor
 
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 

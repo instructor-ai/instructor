@@ -1,11 +1,10 @@
 import time
-
 from collections.abc import Iterable
+
 from openai import OpenAI
 from pydantic import BaseModel
 
 import instructor
-
 
 client = instructor.from_openai(OpenAI())
 

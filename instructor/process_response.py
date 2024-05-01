@@ -1,30 +1,29 @@
 # type: ignore[all]
 from __future__ import annotations
 
-from collections.abc import Iterable
+import inspect
+import json
+import logging
+from collections.abc import Generator, Iterable
 from textwrap import dedent
+from typing import (
+    Any,
+    TypeVar,
+    get_args,
+    get_origin,
+)
+
+from openai.types.chat import ChatCompletion
+from pydantic import BaseModel
+from typing_extensions import ParamSpec
+
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
-from instructor.utils import merge_consecutive_messages
-from openai.types.chat import ChatCompletion
-from pydantic import BaseModel
-
-import json
-import inspect
-import logging
-from typing import (
-    get_args,
-    get_origin,
-    TypeVar,
-    Any,
-)
-from collections.abc import Generator
-from typing_extensions import ParamSpec
-
 from instructor.mode import Mode
+from instructor.utils import merge_consecutive_messages
 
 logger = logging.getLogger("instructor")
 

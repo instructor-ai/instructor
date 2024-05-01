@@ -1,5 +1,4 @@
 import erdantic as erd
-
 from parse_recursive_paths import DirectoryTree
 
 diagram = erd.create(DirectoryTree)

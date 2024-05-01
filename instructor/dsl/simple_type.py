@@ -1,13 +1,16 @@
 from __future__ import annotations
-from inspect import isclass
-import typing
-from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
-from enum import Enum
 
+import typing
+from enum import Enum
+from inspect import isclass
+
+from pydantic import (  # type: ignore - remove once Pydantic is updated
+    BaseModel,
+    create_model,
+)
 
 from instructor.dsl.partial import Partial
 from instructor.function_calls import OpenAISchema
-
 
 T = typing.TypeVar("T")
 

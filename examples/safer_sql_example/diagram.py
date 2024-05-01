@@ -1,5 +1,4 @@
 import erdantic as erd
-
 from safe_sql import SQL
 
 diagram = erd.create(SQL)

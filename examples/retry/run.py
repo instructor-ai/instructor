@@ -1,7 +1,8 @@
-from pydantic import BaseModel, field_validator
-from openai import OpenAI
-import instructor
 import tenacity
+from openai import OpenAI
+from pydantic import BaseModel, field_validator
+
+import instructor
 
 client = OpenAI()
 client = instructor.from_openai(client)

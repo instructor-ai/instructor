@@ -1,7 +1,11 @@
-from typing import Any, Optional, cast, ClassVar
 from collections.abc import AsyncGenerator, Generator, Iterable
+from typing import Any, ClassVar, Optional, cast
 
-from pydantic import BaseModel, Field, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import (  # type: ignore - remove once Pydantic is updated
+    BaseModel,
+    Field,
+    create_model,
+)
 
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode

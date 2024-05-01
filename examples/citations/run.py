@@ -1,4 +1,5 @@
 from typing import Optional
+
 from openai import OpenAI
 from pydantic import (
     BaseModel,

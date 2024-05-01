@@ -1,18 +1,19 @@
-from openai import OpenAI
 from io import StringIO
 from typing import Annotated, Any
+
+import pandas as pd
+from langsmith import traceable
+from langsmith.wrappers import wrap_openai
+from openai import OpenAI
 from pydantic import (
     BaseModel,
     BeforeValidator,
-    PlainSerializer,
     InstanceOf,
+    PlainSerializer,
     WithJsonSchema,
 )
-import instructor
-import pandas as pd
-from langsmith.wrappers import wrap_openai
-from langsmith import traceable
 
+import instructor
 
 client = wrap_openai(OpenAI())
 client = instructor.from_openai(client, mode=instructor.function_calls.Mode.MD_JSON)

@@ -1,6 +1,8 @@
 import os
+
 import openai
 from pydantic import BaseModel
+
 import instructor
 
 client = openai.OpenAI(

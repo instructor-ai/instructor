@@ -1,8 +1,10 @@
-from pydantic import BaseModel
+import os
+
 from mistralai.client import MistralClient
+from pydantic import BaseModel
+
 from instructor import from_mistral
 from instructor.function_calls import Mode
-import os
 
 
 class UserDetails(BaseModel):

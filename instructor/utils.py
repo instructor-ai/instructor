@@ -3,24 +3,23 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
+    Any,
     Callable,
     Generic,
     Protocol,
     TypeVar,
 )
-from collections.abc import Generator, Iterable, AsyncGenerator
-from typing import Callable, Protocol, TypeVar
-from collections.abc import Generator, Iterable, AsyncGenerator
-from openai.types.completion_usage import CompletionUsage
+
 from anthropic.types import Usage as AnthropicUsage
-from typing import Any
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
+from openai.types.completion_usage import CompletionUsage
 
 logger = logging.getLogger("instructor")
 R_co = TypeVar("R_co", covariant=True)

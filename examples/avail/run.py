@@ -1,9 +1,10 @@
-from pydantic import BaseModel, Field
-from typing import Literal
 from collections.abc import Iterable
 from datetime import datetime, timedelta
+from typing import Literal
 
 from openai import OpenAI
+from pydantic import BaseModel, Field
+
 import instructor
 
 client = instructor.from_openai(OpenAI())

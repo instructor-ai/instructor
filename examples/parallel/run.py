@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import openai
-import instructor
-
-from typing import Literal
 from collections.abc import Iterable
+from typing import Literal
+
+import openai
 from pydantic import BaseModel
+
+import instructor
 
 
 class Weather(BaseModel):

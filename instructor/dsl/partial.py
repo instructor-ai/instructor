@@ -8,21 +8,25 @@
 
 from __future__ import annotations
 
-import pydantic_core
-from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
-from pydantic.fields import FieldInfo
-from typing import (
-    Any,
-    Generic,
-    get_args,
-    get_origin,
-    NoReturn,
-    Optional,
-    TypeVar,
-)
 from collections.abc import AsyncGenerator, Generator, Iterable
 from copy import deepcopy
 from functools import cache
+from typing import (
+    Any,
+    Generic,
+    NoReturn,
+    Optional,
+    TypeVar,
+    get_args,
+    get_origin,
+)
+
+import pydantic_core
+from pydantic import (  # type: ignore - remove once Pydantic is updated
+    BaseModel,
+    create_model,
+)
+from pydantic.fields import FieldInfo
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async

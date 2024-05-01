@@ -1,10 +1,10 @@
 from typing import Any, Callable, cast
-import pytest
-import instructor
 
+import pytest
 from openai import OpenAI
 from pydantic import BaseModel
 
+import instructor
 from instructor.distil import (
     Instructions,
     format_function,

@@ -1,8 +1,11 @@
-import pytest
 from itertools import product
+
+import pytest
 from pydantic import BaseModel
+
 import instructor
 from instructor.function_calls import Mode
+
 from ..util import models, modes
 
 

@@ -1,12 +1,12 @@
 from itertools import product
+from typing import Annotated
+
 import pytest
+from pydantic import AfterValidator, BaseModel, BeforeValidator, ValidationError
 
 import instructor
-
-from typing import Annotated
-from pydantic import BaseModel, AfterValidator, BeforeValidator, ValidationError
-
 from instructor.dsl.validators import llm_validator
+
 from .util import models, modes
 
 

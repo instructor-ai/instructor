@@ -1,7 +1,9 @@
-from itertools import product
 from collections.abc import Iterable
-from pydantic import BaseModel
+from itertools import product
+
 import pytest
+from pydantic import BaseModel
+
 import instructor
 from instructor.dsl.partial import Partial
 

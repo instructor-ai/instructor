@@ -1,8 +1,9 @@
-import instructor
+from typing import Optional
 
 from openai import OpenAI
 from pydantic import BaseModel, Field
-from typing import Optional
+
+import instructor
 
 client = instructor.from_openai(OpenAI())
 

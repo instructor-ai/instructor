@@ -1,7 +1,9 @@
-import instructor
+import functools
+
 from openai import OpenAI
 from pydantic import BaseModel
-import functools
+
+import instructor
 
 client = instructor.from_openai(OpenAI())
 

@@ -1,3 +1,4 @@
+from collections.abc import Generator, Iterable
 from typing import (
     Any,
     Optional,
@@ -6,11 +7,10 @@ from typing import (
     get_args,
     get_origin,
 )
-from collections.abc import Generator
-from pydantic import BaseModel
-from instructor.function_calls import OpenAISchema, openai_schema
-from collections.abc import Iterable
 
+from pydantic import BaseModel
+
+from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.mode import Mode
 
 T = TypeVar("T", bound=OpenAISchema)

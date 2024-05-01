@@ -1,7 +1,9 @@
-import instructor
+import base64
+
 from openai import OpenAI
 from pydantic import BaseModel
-import base64
+
+import instructor
 
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 
@@ -18,8 +20,9 @@ def encode_image(image_path):
 
 
 def draw_circle(image_size, num_circles, path):
-    from PIL import Image, ImageDraw
     import random
+
+    from PIL import Image, ImageDraw
 
     image = Image.new("RGB", image_size, "white")
 

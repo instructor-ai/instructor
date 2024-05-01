@@ -1,6 +1,8 @@
 import os
-from pydantic import BaseModel, Field
+
 from groq import Groq
+from pydantic import BaseModel, Field
+
 import instructor
 
 

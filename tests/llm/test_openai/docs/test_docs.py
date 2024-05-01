@@ -1,5 +1,5 @@
 import pytest
-from pytest_examples import find_examples, CodeExample, EvalExample
+from pytest_examples import CodeExample, EvalExample, find_examples
 
 
 @pytest.mark.parametrize("example", find_examples("README.md"), ids=str)

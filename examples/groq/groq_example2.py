@@ -1,6 +1,8 @@
 import os
-from pydantic import BaseModel
+
 from groq import Groq
+from pydantic import BaseModel
+
 import instructor
 
 client = Groq(

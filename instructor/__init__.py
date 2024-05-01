@@ -1,27 +1,25 @@
 import importlib.util
 
-from .mode import Mode
-from .process_response import handle_response_model
+from .client import (
+    AsyncInstructor,
+    Instructor,
+    Provider,
+    from_litellm,
+    from_openai,
+)
 from .distil import FinetuneFormat, Instructions
 from .dsl import (
     CitationMixin,
+    IterableModel,
     Maybe,
     Partial,
-    IterableModel,
     llm_validator,
     openai_moderation,
 )
 from .function_calls import OpenAISchema, openai_schema
+from .mode import Mode
 from .patch import apatch, patch
-from .process_response import handle_parallel_model
-from .client import (
-    Instructor,
-    AsyncInstructor,
-    from_openai,
-    from_litellm,
-    Provider,
-)
-
+from .process_response import handle_parallel_model, handle_response_model
 
 __all__ = [
     "Instructor",

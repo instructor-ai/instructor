@@ -1,7 +1,9 @@
 from itertools import product
-from pydantic import BaseModel, field_validator
-from openai.types.chat import ChatCompletion
+
 import pytest
+from openai.types.chat import ChatCompletion
+from pydantic import BaseModel, field_validator
+
 import instructor
 
 from .util import models, modes

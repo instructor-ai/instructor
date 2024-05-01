@@ -1,9 +1,10 @@
 import enum
-import instructor
-
 from typing import Any
+
 from openai import OpenAI
 from pydantic import BaseModel, Field
+
+import instructor
 
 client = instructor.from_openai(OpenAI())
 

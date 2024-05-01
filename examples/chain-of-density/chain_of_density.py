@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field, field_validator
-import instructor
 import nltk
-from openai import OpenAI
 import spacy
+from openai import OpenAI
+from pydantic import BaseModel, Field, field_validator
+
+import instructor
 
 client = instructor.from_openai(OpenAI())
 nlp = spacy.load("en_core_web_sm")

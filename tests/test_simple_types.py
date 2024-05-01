@@ -1,5 +1,6 @@
-from instructor.dsl import is_simple_type, Partial
 from pydantic import BaseModel
+
+from instructor.dsl import Partial, is_simple_type
 
 
 def test_enum_simple():
@@ -28,8 +29,9 @@ def test_partial_not_simple():
 
 
 def test_annotated_simple():
-    from pydantic import Field
     from typing import Annotated
+
+    from pydantic import Field
 
     new_type = Annotated[int, Field(description="test")]
 

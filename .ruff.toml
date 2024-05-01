@@ -31,6 +31,8 @@ target-version = "py39"
 
 [lint]
 select = [
+  # isort
+  "I",
   # bugbear rules
   "B",
   # remove unused imports

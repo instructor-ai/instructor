@@ -1,9 +1,10 @@
 from itertools import product
-from pydantic import BaseModel, Field
 
 import pytest
+from pydantic import BaseModel, Field
 
 import instructor
+
 from .util import models, modes
 
 

@@ -1,8 +1,8 @@
-import instructor
-
 from loguru import logger
 from openai import OpenAI
-from pydantic import Field, BaseModel, FieldValidationInfo, model_validator
+from pydantic import BaseModel, Field, FieldValidationInfo, model_validator
+
+import instructor
 
 client = instructor.from_openai(OpenAI())
 

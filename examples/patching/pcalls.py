@@ -1,12 +1,12 @@
-from typing import Literal, Union
-from collections.abc import Iterable
-from pydantic import BaseModel
-from instructor import OpenAISchema
-
 import time
-import openai
-import instructor
+from collections.abc import Iterable
+from typing import Literal, Union
 
+import openai
+from pydantic import BaseModel
+
+import instructor
+from instructor import OpenAISchema
 
 client = openai.OpenAI()
 

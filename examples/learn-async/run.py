@@ -1,10 +1,10 @@
-import time
 import asyncio
+import time
+
+from openai import AsyncOpenAI
+from pydantic import BaseModel
 
 import instructor
-from pydantic import BaseModel
-from openai import AsyncOpenAI
-
 
 client = instructor.apatch(AsyncOpenAI())
 

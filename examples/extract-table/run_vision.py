@@ -1,16 +1,18 @@
-from openai import OpenAI
 from io import StringIO
 from typing import Annotated, Any
+
+import pandas as pd
+from openai import OpenAI
 from pydantic import (
     BaseModel,
     BeforeValidator,
-    PlainSerializer,
     InstanceOf,
+    PlainSerializer,
     WithJsonSchema,
 )
-import instructor
-import pandas as pd
 from rich.console import Console
+
+import instructor
 
 console = Console()
 client = instructor.from_openai(

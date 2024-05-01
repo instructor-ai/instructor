@@ -1,6 +1,8 @@
 from typing import Annotated
-from pydantic import BaseModel, ValidationError, ValidationInfo, AfterValidator
+
 from openai import OpenAI
+from pydantic import AfterValidator, BaseModel, ValidationError, ValidationInfo
+
 import instructor
 
 client = instructor.from_openai(OpenAI())

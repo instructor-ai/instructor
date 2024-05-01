@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import anthropic
-import instructor
+from typing import Any, overload
 
-from typing import overload, Any
+import anthropic
+
+import instructor
 
 
 @overload

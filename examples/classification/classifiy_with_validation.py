@@ -1,8 +1,9 @@
 # pip install openai instructor
-from pydantic import BaseModel, field_validator, Field
 import openai
-import instructor
+from pydantic import BaseModel, Field, field_validator
 from tqdm import tqdm
+
+import instructor
 
 client = instructor.from_openai(openai.OpenAI())
 

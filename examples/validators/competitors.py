@@ -1,6 +1,7 @@
 from typing import Annotated
-from pydantic import BaseModel, ValidationError, AfterValidator
+
 from openai import OpenAI
+from pydantic import AfterValidator, BaseModel, ValidationError
 
 import instructor
 

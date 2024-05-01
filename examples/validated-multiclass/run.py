@@ -1,7 +1,9 @@
-from pydantic import BaseModel, ValidationInfo, model_validator
-import openai
-import instructor
 import asyncio
+
+import openai
+from pydantic import BaseModel, ValidationInfo, model_validator
+
+import instructor
 
 client = instructor.from_openai(
     openai.AsyncOpenAI(),

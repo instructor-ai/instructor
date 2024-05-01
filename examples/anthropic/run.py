@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 import anthropic
+from pydantic import BaseModel
+
 import instructor
 
 # Patching the Anthropics client with the instructor for enhanced capabilities

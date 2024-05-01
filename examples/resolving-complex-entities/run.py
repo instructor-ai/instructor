@@ -1,8 +1,8 @@
 from graphviz import Digraph
+from openai import OpenAI
 from pydantic import BaseModel, Field
 
 import instructor
-from openai import OpenAI
 
 client = OpenAI()
 

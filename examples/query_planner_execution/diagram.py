@@ -1,5 +1,4 @@
 from erdantic import erd
-
 from query_planner_execution import QueryPlan
 
 diagram = erd.create(QueryPlan)

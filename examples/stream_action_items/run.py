@@ -1,11 +1,11 @@
-import instructor
-
-from pydantic import BaseModel, Field
-from typing import Optional
 from collections.abc import Iterable
+from typing import Optional
+
 from openai import OpenAI
+from pydantic import BaseModel, Field
 from rich.console import Console
 
+import instructor
 
 client = instructor.from_openai(OpenAI())
 

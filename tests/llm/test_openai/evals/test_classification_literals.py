@@ -2,11 +2,11 @@ from itertools import product
 from typing import Literal
 
 import pytest
-import instructor
-
 from pydantic import BaseModel
 
+import instructor
 from instructor.function_calls import Mode
+
 from ..util import models, modes
 
 

@@ -1,10 +1,12 @@
 # Future imports to ensure compatibility with Python 3.9
 from __future__ import annotations
 
-import mistralai.client
+from typing import Any, overload
+
 import mistralai.async_client as mistralaiasynccli
+import mistralai.client
+
 import instructor
-from typing import overload, Any
 
 
 @overload

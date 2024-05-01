@@ -1,14 +1,14 @@
-from typing import Optional, TypedDict
-from openai import OpenAI
-
-from openai.types.fine_tuning.job_create_params import Hyperparameters
-import typer
 import time
+from datetime import datetime
+from typing import Optional, TypedDict
+
+import typer
+from openai import OpenAI
+from openai.types.fine_tuning import FineTuningJob
+from openai.types.fine_tuning.job_create_params import Hyperparameters
+from rich.console import Console
 from rich.live import Live
 from rich.table import Table
-from rich.console import Console
-from datetime import datetime
-from openai.types.fine_tuning import FineTuningJob
 
 client = OpenAI()
 app = typer.Typer()

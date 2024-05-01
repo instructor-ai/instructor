@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from openai import OpenAI
+
 import instructor
 
 client = instructor.from_openai(OpenAI())

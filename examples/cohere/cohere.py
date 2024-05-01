@@ -1,7 +1,7 @@
 import cohere
-import instructor
 from pydantic import BaseModel, Field
 
+import instructor
 
 # Patching the Cohere client with the instructor for enhanced capabilities
 client = instructor.from_cohere(

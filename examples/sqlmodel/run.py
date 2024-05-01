@@ -1,7 +1,9 @@
-import instructor
-from openai import OpenAI
 from typing import Optional
-from sqlmodel import Field, SQLModel, create_engine, Session
+
+from openai import OpenAI
+from sqlmodel import Field, Session, SQLModel, create_engine
+
+import instructor
 
 
 # Define the model that will serve as a Table for the database

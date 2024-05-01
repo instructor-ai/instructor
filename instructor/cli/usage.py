@@ -1,18 +1,18 @@
-from typing import Any, Union
-from collections.abc import Awaitable
-from datetime import datetime, timedelta
-import typer
-import os
-import aiohttp
 import asyncio
+import os
 from builtins import list as List
 from collections import defaultdict
+from collections.abc import Awaitable
+from datetime import datetime, timedelta
+from typing import Any, Union
+
+import aiohttp
+import typer
 from rich.console import Console
-from rich.table import Table
 from rich.progress import Progress
+from rich.table import Table
 
 from instructor._types._alias import ModelNames
-
 
 app = typer.Typer()
 console = Console()

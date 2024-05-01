@@ -2,25 +2,22 @@
 from __future__ import annotations
 
 import logging
+from json import JSONDecodeError
+from typing import Any, Callable, TypeVar
 
 from openai.types.chat import ChatCompletion
+from openai.types.completion_usage import CompletionUsage
+from pydantic import BaseModel, ValidationError
+from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
+from typing_extensions import ParamSpec
+
 from instructor.mode import Mode
 from instructor.process_response import process_response, process_response_async
 from instructor.utils import (
     dump_message,
-    update_total_usage,
     merge_consecutive_messages,
+    update_total_usage,
 )
-
-from openai.types.completion_usage import CompletionUsage
-from pydantic import ValidationError
-from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
-
-
-from json import JSONDecodeError
-from pydantic import BaseModel
-from typing import Callable, TypeVar, Any
-from typing_extensions import ParamSpec
 
 logger = logging.getLogger("instructor")
 

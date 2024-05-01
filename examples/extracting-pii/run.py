@@ -1,7 +1,7 @@
+from openai import OpenAI
 from pydantic import BaseModel
 
 import instructor
-from openai import OpenAI
 
 client = instructor.from_openai(OpenAI())
 

@@ -1,11 +1,12 @@
+import json
 from collections import Counter, defaultdict
 from enum import Enum
-from typing import Any, Union
-import numpy as np
-import json
-from pydantic import ValidationError
 from pprint import pprint
+from typing import Any, Union
+
 import models as m
+import numpy as np
+from pydantic import ValidationError
 
 
 class Status(Enum):

@@ -1,9 +1,10 @@
-import pytest
-import instructor
 import enum
-
 from typing import Annotated, Literal, Union
+
+import pytest
 from pydantic import Field
+
+import instructor
 
 
 @pytest.mark.asyncio

@@ -1,9 +1,11 @@
-from openai import OpenAI
-from chain_of_density import summarize_article
 import csv
 import logging
-import instructor
+
+from chain_of_density import summarize_article
+from openai import OpenAI
 from pydantic import BaseModel, Field
+
+import instructor
 
 logging.basicConfig(level=logging.INFO)
 
