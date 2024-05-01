@@ -13,7 +13,7 @@ authors:
 
 ## Introduction
 
-Logfire is a new observability platform coming from the creators of Pydantic. It hooks directly into the system itself. In this article, we'll show you how to integrate Logfire with Instructor for easy observability using a few different examples.
+Logfire is a new observability platform coming from the creators of Pydantic. It integrates almost seamlessly with many of your favourite libraries such as Pydantic, HTTPx and Instructor. In this article, we'll show you how to use Logfire with Instructor to gain visibility into the performance of your entire application.
 
 We'll first walk you through a simple classification example. We'll then introduce some simple validation using our pre-built `llm_validator` avaliable in Instructor before finally concluding with a vision table example.
 
