@@ -4,7 +4,6 @@ from typing import Annotated, Any
 from collections.abc import Iterable
 from pydantic import (
     BeforeValidator,
-    PlainSerializer,
     InstanceOf,
     WithJsonSchema,
     BaseModel,
