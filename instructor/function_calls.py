@@ -4,10 +4,11 @@ from typing import Annotated, Any, Optional, TypeVar, cast
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from pydantic import BaseModel, Field, TypeAdapter, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import BaseModel, Field, TypeAdapter, ConfigDict, create_model  # type: ignore - remove once Pydantic is updated
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
-from instructor.utils import extract_json_from_codeblock
+from instructor.utils import extract_json_from_codeblock, classproperty
+
 
 T = TypeVar("T")
 
@@ -15,9 +16,11 @@ logger = logging.getLogger("instructor")
 
 
 class OpenAISchema(BaseModel):
-    @classmethod
-    @property
-    def openai_schema(cls) -> dict[str, Any]:
+    # Ignore classproperty, since Pydantic doesn't understand it like it would a normal property.
+    model_config = ConfigDict(ignored_types=(classproperty,))
+
+    @classproperty
+    def openai_schema(self) -> dict[str, Any]:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
 
@@ -27,8 +30,8 @@ class OpenAISchema(BaseModel):
         Returns:
             model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
         """
-        schema = cls.model_json_schema()
-        docstring = parse(cls.__doc__ or "")
+        schema = self.model_json_schema()
+        docstring = parse(self.__doc__ or "")
         parameters = {
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
@@ -48,7 +51,7 @@ class OpenAISchema(BaseModel):
                 schema["description"] = docstring.short_description
             else:
                 schema["description"] = (
-                    f"Correctly extracted `{cls.__name__}` with all "
+                    f"Correctly extracted `{self.__name__}` with all "
                     f"the required parameters with correct types"
                 )
 
@@ -58,13 +61,12 @@ class OpenAISchema(BaseModel):
             "parameters": parameters,
         }
 
-    @classmethod
-    @property
-    def anthropic_schema(cls) -> dict[str, Any]:
+    @classproperty
+    def anthropic_schema(self) -> dict[str, Any]:
         return {
-            "name": cls.openai_schema["name"],
-            "description": cls.openai_schema["description"],
-            "input_schema": cls.model_json_schema(),
+            "name": self.openai_schema["name"],
+            "description": self.openai_schema["description"],
+            "input_schema": self.model_json_schema(),
         }
 
     @classmethod
