@@ -15,9 +15,7 @@ import logfire
 openai_client = OpenAI()
 logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
 logfire.instrument_openai(openai_client)
-client = instructor.from_openai(
-    openai_client, mode=instructor.function_calls.Mode.MD_JSON
-)
+client = instructor.from_openai(openai_client, mode=instructor.Mode.MD_JSON)
 
 
 def md_to_df(data: Any) -> Any:
