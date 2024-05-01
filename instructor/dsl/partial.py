@@ -22,9 +22,9 @@ from typing import (
 )
 
 import pydantic_core
-from pydantic import (  # type: ignore - remove once Pydantic is updated
+from pydantic import (
     BaseModel,
-    create_model,
+    create_model,  # type: ignore - remove once Pydantic is updated
 )
 from pydantic.fields import FieldInfo
 

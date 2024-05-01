@@ -4,9 +4,9 @@ import typing
 from enum import Enum
 from inspect import isclass
 
-from pydantic import (  # type: ignore - remove once Pydantic is updated
+from pydantic import (
     BaseModel,
-    create_model,
+    create_model,  # type: ignore - remove once Pydantic is updated
 )
 
 from instructor.dsl.partial import Partial

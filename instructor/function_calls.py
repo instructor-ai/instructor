@@ -4,12 +4,12 @@ from typing import Annotated, Any, Optional, TypeVar, cast
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from pydantic import (  # type: ignore - remove once Pydantic is updated
+from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
     TypeAdapter,
-    create_model,
+    create_model,  # type: ignore - remove once Pydantic is updated
 )
 
 from instructor.exceptions import IncompleteOutputException

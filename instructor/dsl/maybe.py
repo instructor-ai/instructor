@@ -1,9 +1,9 @@
 from typing import Generic, Optional, TypeVar
 
-from pydantic import (  # type: ignore - remove once Pydantic is updated
+from pydantic import (
     BaseModel,
     Field,
-    create_model,
+    create_model,  # type: ignore - remove once Pydantic is updated
 )
 
 T = TypeVar("T", bound=BaseModel)
