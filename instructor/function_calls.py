@@ -1,14 +1,21 @@
+import json
 import logging
 from functools import wraps
 from typing import Annotated, Any, Optional, TypeVar, cast
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from pydantic import BaseModel, Field, TypeAdapter, ConfigDict, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import (  # type: ignore - remove once Pydantic is updated
+    BaseModel,
+    ConfigDict,
+    Field,
+    TypeAdapter,
+    create_model,
+)
+
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
-from instructor.utils import extract_json_from_codeblock, classproperty
-
+from instructor.utils import classproperty, extract_json_from_codeblock
 
 T = TypeVar("T")
 
@@ -141,9 +148,16 @@ class OpenAISchema(BaseModel):
 
         text = completion.content[0].text
         extra_text = extract_json_from_codeblock(text)
-        return cls.model_validate_json(
-            extra_text, context=validation_context, strict=strict
-        )
+
+        if strict:
+            return cls.model_validate_json(
+                extra_text, context=validation_context, strict=True
+            )
+        else:
+            # Allow control characters.
+            parsed = json.loads(extra_text, strict=False)
+            # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
+            return cls.model_validate(parsed, context=validation_context, strict=False)
 
     @classmethod
     def parse_cohere_tools(
