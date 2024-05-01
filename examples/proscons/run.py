@@ -1,6 +1,5 @@
 from openai import OpenAI
 from pydantic import BaseModel, Field
-from typing import List
 
 import instructor
 
@@ -8,7 +7,7 @@ import instructor
 class Character(BaseModel):
     name: str
     age: int
-    fact: List[str] = Field(..., description="A list of facts about the character")
+    fact: list[str] = Field(..., description="A list of facts about the character")
 
 
 # enables `response_model` in create call

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Callable, Tuple, cast
+from typing import Any, Callable, cast
 import pytest
 import instructor
 
@@ -93,7 +93,7 @@ def test_distil_decorator_with_name_argument() -> None:
 
 
 # Mock track function for decorator tests
-def mock_track(*args: Tuple[Any, ...], **kwargs: Dict[str, Any]) -> None:
+def mock_track(*args: tuple[Any, ...], **kwargs: dict[str, Any]) -> None:
     pass
 
 

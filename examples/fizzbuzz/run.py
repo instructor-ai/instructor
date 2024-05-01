@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from typing import List
 from openai import OpenAI
 import instructor
 
 client = instructor.from_openai(OpenAI())
 
 
-def fizzbuzz_gpt(n) -> List[int | str]:
+def fizzbuzz_gpt(n) -> list[int | str]:
     return client.chat.completions.create(
         model="gpt-3.5-turbo",
-        response_model=List[int | str],
+        response_model=list[int | str],
         messages=[
             {
                 "role": "user",

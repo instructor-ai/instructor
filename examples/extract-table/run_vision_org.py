@@ -1,4 +1,3 @@
-from typing import List
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from rich.console import Console
@@ -16,16 +15,16 @@ class People(BaseModel):
     id: str
     name: str
     role: str
-    reports: List[str] = Field(
+    reports: list[str] = Field(
         default_factory=list, description="People who report to this person"
     )
-    manages: List[str] = Field(
+    manages: list[str] = Field(
         default_factory=list, description="People who this person manages"
     )
 
 
 class Organization(BaseModel):
-    people: List[People]
+    people: list[People]
 
 
 def extract(url: str):

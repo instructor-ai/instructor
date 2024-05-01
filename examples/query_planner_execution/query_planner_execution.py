@@ -2,7 +2,6 @@ import asyncio
 import enum
 import instructor
 
-from typing import List
 from openai import OpenAI
 from pydantic import Field, BaseModel
 
@@ -34,7 +33,7 @@ class MergedResponses(BaseModel):
     Currently we just concatinate them but we can do much more complex things.
     """
 
-    responses: List[ComputeQuery]
+    responses: list[ComputeQuery]
 
 
 class Query(BaseModel):
@@ -48,7 +47,7 @@ class Query(BaseModel):
         ...,
         description="Question we are asking using a question answer system, if we are asking multiple questions, this question is asked by also providing the answers to the sub questions",
     )
-    dependancies: List[int] = Field(
+    dependancies: list[int] = Field(
         default_factory=list,
         description="List of sub questions that need to be answered before we can ask the question. Use a subquery when anything may be unknown, and we need to ask multiple questions to get the answer. Dependences must only be other queries.",
     )
@@ -89,7 +88,7 @@ class QueryPlan(BaseModel):
     and its dependencies. Make sure every question is in the tree, and every question is asked only once.
     """
 
-    query_graph: List[Query] = Field(
+    query_graph: list[Query] = Field(
         ..., description="The original question we are asking"
     )
 
@@ -99,7 +98,7 @@ class QueryPlan(BaseModel):
         print(f"Executing query plan from `{original_question.question}`")
         return await original_question.execute(dependency_func=self.dependencies)
 
-    def dependencies(self, idz: List[int]) -> List[Query]:
+    def dependencies(self, idz: list[int]) -> list[Query]:
         """
         Returns the dependencies of the query with the given id.
         """

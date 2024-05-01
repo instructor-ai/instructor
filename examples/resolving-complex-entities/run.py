@@ -1,4 +1,3 @@
-from typing import List
 from graphviz import Digraph
 from pydantic import BaseModel, Field
 
@@ -23,22 +22,22 @@ class Entity(BaseModel):
         ...,
         description="Unique identifier for the entity, used for deduplication, design a scheme allows multiple entities",
     )
-    subquote_string: List[str] = Field(
+    subquote_string: list[str] = Field(
         ...,
         description="Correctly resolved value of the entity, if the entity is a reference to another entity, this should be the id of the referenced entity, include a few more words before and after the value to allow for some context to be used in the resolution",
     )
     entity_title: str
-    properties: List[Property] = Field(
+    properties: list[Property] = Field(
         ..., description="List of properties of the entity"
     )
-    dependencies: List[int] = Field(
+    dependencies: list[int] = Field(
         ...,
         description="List of entity ids that this entity depends  or relies on to resolve it",
     )
 
 
 class DocumentExtraction(BaseModel):
-    entities: List[Entity] = Field(
+    entities: list[Entity] = Field(
         ...,
         description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
     )

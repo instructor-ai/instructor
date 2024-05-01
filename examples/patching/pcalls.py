@@ -1,4 +1,5 @@
-from typing import Iterable, Literal, List, Union
+from typing import Literal, Union
+from collections.abc import Iterable
 from pydantic import BaseModel
 from instructor import OpenAISchema
 
@@ -22,7 +23,7 @@ class GoogleSearch(OpenAISchema):
 if __name__ == "__main__":
 
     class Query(BaseModel):
-        query: List[Union[Weather, GoogleSearch]]
+        query: list[Union[Weather, GoogleSearch]]
 
     client = instructor.from_openai(client, mode=instructor.Mode.PARALLEL_TOOLS)
 

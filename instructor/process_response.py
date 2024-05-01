@@ -1,5 +1,4 @@
 # type: ignore[all]
-
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -17,16 +16,12 @@ import json
 import inspect
 import logging
 from typing import (
-    Generator,
-    Optional,
-    Type,
-    Tuple,
     get_args,
     get_origin,
     TypeVar,
     Any,
-    Dict,
 )
+from collections.abc import Generator
 from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
@@ -42,10 +37,10 @@ T = TypeVar("T")
 async def process_response_async(
     response: ChatCompletion,
     *,
-    response_model: Type[T_Model | OpenAISchema | BaseModel],
+    response_model: type[T_Model | OpenAISchema | BaseModel] | None,
     stream: bool = False,
-    validation_context: Optional[dict] = None,
-    strict: Optional[bool] = None,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
 ) -> T_Model | ChatCompletion:
     """Processes a OpenAI response with the response model, if available.
@@ -105,9 +100,9 @@ async def process_response_async(
 def process_response(
     response: T_Model,
     *,
-    response_model: Type[OpenAISchema | BaseModel],
+    response_model: type[OpenAISchema | BaseModel],
     stream: bool,
-    validation_context: Optional[dict] = None,
+    validation_context: dict | None = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
 ) -> T_Model | Generator[T_Model, None, None] | ChatCompletion:
@@ -170,8 +165,8 @@ def process_response(
 
 
 def handle_response_model(
-    response_model: T, mode: Mode = Mode.TOOLS, **kwargs
-) -> Tuple[Type[OpenAISchema], Dict[str, Any]]:
+    response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
+) -> tuple[type[T], dict[str, Any]]:
     """Prepare the response model type hint, and returns the response_model
     along with the new modified kwargs needed to be able to use the response_model
     parameter with the patch function.

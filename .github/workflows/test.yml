@@ -36,6 +36,7 @@ jobs:
         run: poetry install --with dev,anthropic
 
       - name: Run tests
+        if: matrix.python-version != '3.11'
         run: poetry run pytest tests/ -k "not openai and not anthropic and not evals and not docs"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -50,9 +51,3 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-
-      - name: Coveralls GitHub Action
-        if: matrix.python-version == '3.11'
-        uses: coverallsapp/github-action@v2.2.3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}

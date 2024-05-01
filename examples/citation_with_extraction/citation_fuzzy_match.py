@@ -1,6 +1,5 @@
 import instructor
 
-from typing import List
 from loguru import logger
 from openai import OpenAI
 from pydantic import Field, BaseModel, FieldValidationInfo, model_validator
@@ -12,7 +11,7 @@ class Fact(BaseModel):
     statement: str = Field(
         ..., description="Body of the sentence, as part of a response"
     )
-    substring_phrase: List[str] = Field(
+    substring_phrase: list[str] = Field(
         ...,
         description="String quote long enough to evaluate the truthfulness of the fact",
     )
@@ -65,7 +64,7 @@ class QuestionAnswer(instructor.OpenAISchema):
     each sentence contains a body and a list of sources."""
 
     question: str = Field(..., description="Question that was asked")
-    answer: List[Fact] = Field(
+    answer: list[Fact] = Field(
         ...,
         description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
     )

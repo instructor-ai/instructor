@@ -3,7 +3,6 @@ import asyncio
 
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, field_validator
-from typing import List
 from enum import Enum
 
 client = instructor.from_openai(AsyncOpenAI(), mode=instructor.Mode.TOOLS)
@@ -40,7 +39,7 @@ class QuestionClassification(BaseModel):
     chain_of_thought: str = Field(
         ..., description="The chain of thought that led to the classification"
     )
-    classification: List[QuestionType] = Field(
+    classification: list[QuestionType] = Field(
         description=f"An accuracy and correct prediction predicted class of question. Only allowed types: {[t.value for t in QuestionType]}, should be used",
     )
 
@@ -68,7 +67,7 @@ async def classify(data: str):
         )
 
 
-async def main(questions: List[str]):
+async def main(questions: list[str]):
     tasks = [classify(question) for question in questions]
     resps = []
     for task in asyncio.as_completed(tasks):

@@ -9,22 +9,20 @@
 from __future__ import annotations
 
 import pydantic_core
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
 from pydantic.fields import FieldInfo
 from typing import (
     Any,
-    AsyncGenerator,
-    Generator,
     Generic,
     get_args,
     get_origin,
-    Iterable,
     NoReturn,
     Optional,
     TypeVar,
 )
+from collections.abc import AsyncGenerator, Generator, Iterable
 from copy import deepcopy
-from functools import lru_cache
+from functools import cache
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
@@ -38,7 +36,7 @@ class MakeFieldsOptional:
 
 def _make_field_optional(
     field: FieldInfo,
-) -> tuple[object, FieldInfo]:
+) -> tuple[Any, FieldInfo]:
     tmp_field = deepcopy(field)
 
     annotation = field.annotation
@@ -72,12 +70,13 @@ def _make_field_optional(
     else:
         tmp_field.annotation = Optional[field.annotation]  # type: ignore[assignment]
         tmp_field.default = None
-    return tmp_field.annotation, tmp_field
+
+    return tmp_field.annotation, tmp_field  # type: ignore
 
 
 class PartialBase(Generic[T_Model]):
     @classmethod
-    @lru_cache(maxsize=None)
+    @cache
     def get_partial_model(cls) -> type[T_Model]:
         """Return a partial model we can use to validate partial results."""
         assert issubclass(
@@ -124,14 +123,13 @@ class PartialBase(Generic[T_Model]):
     def model_from_chunks(
         cls, json_chunks: Iterable[Any], **kwargs: Any
     ) -> Generator[T_Model, None, None]:
-        prev_obj = None
         potential_object = ""
         partial_model = cls.get_partial_model()
         for chunk in json_chunks:
             potential_object += chunk
 
             obj = pydantic_core.from_json(potential_object or "{}", allow_partial=True)
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)  # type: ignore[attr-defined]
+            obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
     @classmethod
@@ -139,7 +137,6 @@ class PartialBase(Generic[T_Model]):
         cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
     ) -> AsyncGenerator[T_Model, None]:
         potential_object = ""
-        prev_obj = None
         partial_model = cls.get_partial_model()
         async for chunk in json_chunks:
             potential_object += chunk
@@ -208,7 +205,7 @@ class Partial(Generic[T_Model]):
         cls,
         *args: object,  # noqa :ARG003
         **kwargs: object,  # noqa :ARG003
-    ) -> "Partial[T_Model]":
+    ) -> Partial[T_Model]:
         """Cannot instantiate.
 
         Raises:
@@ -226,9 +223,9 @@ class Partial(Generic[T_Model]):
         Raises:
            TypeError: Subclassing not allowed.
         """
-        raise TypeError("Cannot subclass {}.Partial".format(cls.__module__))
+        raise TypeError(f"Cannot subclass {cls.__module__}.Partial")
 
-    def __class_getitem__(  # type: ignore[override]
+    def __class_getitem__(
         cls,
         wrapped_class: type[T_Model] | tuple[type[T_Model], type[MakeFieldsOptional]],
     ) -> type[T_Model]:
@@ -260,7 +257,7 @@ class Partial(Generic[T_Model]):
                 # Recursively apply Partial to each of the generic arguments
                 modified_args = tuple(
                     (
-                        Partial[arg]  # type: ignore[valid-type]
+                        Partial[arg]
                         if isinstance(arg, type) and issubclass(arg, BaseModel)
                         else arg
                     )
@@ -274,7 +271,7 @@ class Partial(Generic[T_Model]):
             # If the field is a BaseModel, then recursively convert it's
             # attributes to optionals.
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
-                tmp_field.annotation = Partial[annotation]  # type: ignore[assignment, valid-type]
+                tmp_field.annotation = Partial[annotation]
             return tmp_field.annotation, tmp_field
 
         return create_model(
@@ -293,4 +290,4 @@ class Partial(Generic[T_Model]):
                 )
                 for field_name, field_info in wrapped_class.model_fields.items()
             },
-        )  # type: ignore[all]
+        )  # type: ignore

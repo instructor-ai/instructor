@@ -1,4 +1,3 @@
-from typing import List
 from openai import OpenAI
 from chain_of_density import summarize_article
 import csv
@@ -41,11 +40,11 @@ class GeneratedSummary(BaseModel):
 
 @instructions.distil
 def distil_summarization(text: str) -> GeneratedSummary:
-    summary_chain: List[str] = summarize_article(text)
+    summary_chain: list[str] = summarize_article(text)
     return GeneratedSummary(summary=summary_chain[-1])
 
 
-with open("test.csv", "r") as file:
+with open("test.csv") as file:
     reader = csv.reader(file)
     next(reader)  # Skip the header
     for article, _summary in reader:

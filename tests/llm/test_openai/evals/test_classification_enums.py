@@ -1,6 +1,5 @@
 import enum
 from itertools import product
-from typing import List
 
 import pytest
 import instructor
@@ -38,7 +37,7 @@ data = [
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 def test_classification(model, data, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
         pytest.skip(
@@ -68,7 +67,7 @@ class MultiLabels(str, enum.Enum):
 
 # Adjust the prediction model to accommodate a list of labels
 class MultiClassPrediction(BaseModel):
-    predicted_labels: List[MultiLabels]
+    predicted_labels: list[MultiLabels]
 
 
 data = [
@@ -89,7 +88,7 @@ data = [
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 def test_multi_classify(model, data, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     if (mode, model) in {
         (Mode.JSON, "gpt-3.5-turbo"),
