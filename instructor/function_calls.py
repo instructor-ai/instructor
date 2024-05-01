@@ -4,10 +4,11 @@ from typing import Annotated, Any, Optional, TypeVar, cast
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from pydantic import BaseModel, Field, TypeAdapter, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import BaseModel, Field, TypeAdapter, ConfigDict, create_model  # type: ignore - remove once Pydantic is updated
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
-from instructor.utils import extract_json_from_codeblock
+from instructor.utils import extract_json_from_codeblock, classproperty
+
 
 T = TypeVar("T")
 
@@ -15,8 +16,10 @@ logger = logging.getLogger("instructor")
 
 
 class OpenAISchema(BaseModel):
-    @classmethod
-    @property
+    # Ignore classproperty, since Pydantic doesn't understand it like it would a normal property.
+    model_config = ConfigDict(ignored_types=(classproperty,))
+
+    @classproperty
     def openai_schema(cls) -> dict[str, Any]:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
@@ -58,8 +61,7 @@ class OpenAISchema(BaseModel):
             "parameters": parameters,
         }
 
-    @classmethod
-    @property
+    @classproperty
     def anthropic_schema(cls) -> dict[str, Any]:
         return {
             "name": cls.openai_schema["name"],

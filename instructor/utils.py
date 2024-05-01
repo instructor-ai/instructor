@@ -3,6 +3,13 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+from typing import (
+    Callable,
+    Generic,
+    Protocol,
+    TypeVar,
+)
+from collections.abc import Generator, Iterable, AsyncGenerator
 from typing import Callable, Protocol, TypeVar
 from collections.abc import Generator, Iterable, AsyncGenerator
 from openai.types.completion_usage import CompletionUsage
@@ -16,6 +23,7 @@ from openai.types.chat import (
 )
 
 logger = logging.getLogger("instructor")
+R_co = TypeVar("R_co", covariant=True)
 T_Model = TypeVar("T_Model", bound="Response")
 
 from enum import Enum
@@ -180,3 +188,24 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
             )
 
     return new_messages
+
+
+class classproperty(Generic[R_co]):
+    """Descriptor for class-level properties.
+
+    Examples:
+        >>> from instructor.utils import classproperty
+
+        >>> class MyClass:
+        ...     @classproperty
+        ...     def my_property(cls):
+        ...         return cls
+
+        >>> assert MyClass.my_property
+    """
+
+    def __init__(self, method: Callable[[Any], R_co]) -> None:
+        self.cproperty = method
+
+    def __get__(self, instance: object, cls: type[Any]) -> R_co:
+        return self.cproperty(cls)

@@ -100,4 +100,3 @@ typeCheckingMode = "strict"
 # Allow "redundant" runtime type-checking.
 reportUnnecessaryIsInstance = "none"
 reportUnnecessaryTypeIgnoreComment = "error"
-reportDeprecated = "warning"
