@@ -20,7 +20,7 @@ class OpenAISchema(BaseModel):
     model_config = ConfigDict(ignored_types=(classproperty,))
 
     @classproperty
-    def openai_schema(self) -> dict[str, Any]:
+    def openai_schema(cls) -> dict[str, Any]:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
 
@@ -30,8 +30,8 @@ class OpenAISchema(BaseModel):
         Returns:
             model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
         """
-        schema = self.model_json_schema()
-        docstring = parse(self.__doc__ or "")
+        schema = cls.model_json_schema()
+        docstring = parse(cls.__doc__ or "")
         parameters = {
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
@@ -51,7 +51,7 @@ class OpenAISchema(BaseModel):
                 schema["description"] = docstring.short_description
             else:
                 schema["description"] = (
-                    f"Correctly extracted `{self.__name__}` with all "
+                    f"Correctly extracted `{cls.__name__}` with all "
                     f"the required parameters with correct types"
                 )
 
@@ -62,11 +62,11 @@ class OpenAISchema(BaseModel):
         }
 
     @classproperty
-    def anthropic_schema(self) -> dict[str, Any]:
+    def anthropic_schema(cls) -> dict[str, Any]:
         return {
-            "name": self.openai_schema["name"],
-            "description": self.openai_schema["description"],
-            "input_schema": self.model_json_schema(),
+            "name": cls.openai_schema["name"],
+            "description": cls.openai_schema["description"],
+            "input_schema": cls.model_json_schema(),
         }
 
     @classmethod
