@@ -134,7 +134,11 @@ We've also got full visibility into the arguments that were passed into the endp
 
 ## Using Asyncio
 
-Sometimes, we might need to run multiple jobs in parallel. Let's see how we can take advantage of `asyncio` so that we can speed up our operations. ( For a deeper guide into how to work with Asycnio, see our previous guide [here](/docs/blog/posts/learn-async.md)). We can do so by adding the following bits of code to our previous file.
+Sometimes, we might need to run multiple jobs in parallel. Let's see how we can take advantage of `asyncio` so that we can speed up our operations. We can do so by adding the following bits of code to our previous file.
+
+??? info "What is Asyncio?"
+
+    For a deeper guide into how to work with Asycnio, see our previous guide [here](./learn-async.md).
 
 === "New Code"
 
@@ -265,7 +269,7 @@ Let's add a new endpoint to our server to see how this might work
     @app.post("/extract", response_class=StreamingResponse)
     async def extract(data: UserData):
         supressed_client = AsyncOpenAI()
-        logfire.instrument_openai(supressed_client, suppress_other_instrumentation=False)
+        logfire.instrument_openai(supressed_client, suppress_other_instrumentation=False) #(1)!
         client = instructor.from_openai(supressed_client)
         users = await client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -286,6 +290,8 @@ Let's add a new endpoint to our server to see how this might work
 
         return StreamingResponse(generate(), media_type="text/event-stream")
     ```
+
+    1. Note that we supress instrumentation to print out the stream objects. This has to do with the parsing of partials in Instructor.
 
 === "Full File"
 
