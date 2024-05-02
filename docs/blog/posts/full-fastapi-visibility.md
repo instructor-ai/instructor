@@ -18,11 +18,8 @@ Logfire is a new tool that provides key insight into your application with Open 
 In short, this is the secret sauce to help you get your application to the finish line and beyond. We'll show you how to easily integrate Logfire into FastAPI, one of the most popular choices amongst users of Instructor using two examples
 
 1. Data Extraction from a single User Query
-   <<<<<<< HEAD
 2. Using `asyncio` to process multiple users in parallel
-3. # Streaming multiple objects using an `Iterable` so that they're avaliable on demand
-4. Streaming multiple objects using an `Iterable` so that they're avaliable on demand
-   > > > > > > > main
+3. Streaming multiple objects using an `Iterable` so that they're avaliable on demand
 
 <!-- more -->
 
