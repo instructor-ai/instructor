@@ -1,0 +1,7 @@
+pydantic==2.7.1
+openai==1.24.1
+instructor==1.0.3
+logfire==0.28.0
+fastapi==0.110.3
+uvicorn[standard]
+logfire[fastapi]
