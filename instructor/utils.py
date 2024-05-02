@@ -4,6 +4,7 @@ import inspect
 import json
 import logging
 from typing import (
+    TYPE_CHECKING,
     Callable,
     Generic,
     Protocol,
@@ -12,15 +13,19 @@ from typing import (
 from collections.abc import Generator, Iterable, AsyncGenerator
 from typing import Callable, Protocol, TypeVar
 from collections.abc import Generator, Iterable, AsyncGenerator
-from openai.types.completion_usage import CompletionUsage
-from anthropic.types import Usage as AnthropicUsage
 from typing import Any
-from openai.types import CompletionUsage as OpenAIUsage
+
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
+
+if TYPE_CHECKING:
+    from anthropic.types import Usage as AnthropicUsage
+    from openai.types import CompletionUsage as OpenAIUsage
+    from openai.types.completion_usage import CompletionUsage
+
 
 logger = logging.getLogger("instructor")
 R_co = TypeVar("R_co", covariant=True)
