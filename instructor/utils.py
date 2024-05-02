@@ -21,7 +21,6 @@ from openai.types.chat import (
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
-from openai.types.completion_usage import CompletionUsage
 
 if TYPE_CHECKING:
     from anthropic.types import Usage as AnthropicUsage
@@ -115,12 +114,10 @@ async def extract_json_from_stream_async(
 
 def update_total_usage(
     response: T_Model,
-    total_usage: CompletionUsage | AnthropicUsage,
+    total_usage: OpenAIUsage | AnthropicUsage,
 ) -> T_Model | ChatCompletion:
     response_usage = getattr(response, "usage", None)
-    if isinstance(response_usage, OpenAIUsage) and isinstance(
-        total_usage, CompletionUsage
-    ):
+    if isinstance(response_usage, OpenAIUsage) and isinstance(total_usage, OpenAIUsage):
         total_usage.completion_tokens += response_usage.completion_tokens or 0
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
         total_usage.total_tokens += response_usage.total_tokens or 0
