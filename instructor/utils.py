@@ -3,17 +3,15 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
     TYPE_CHECKING,
+    Any,
     Callable,
     Generic,
     Protocol,
     TypeVar,
 )
-from collections.abc import Generator, Iterable, AsyncGenerator
-from typing import Callable, Protocol, TypeVar
-from collections.abc import Generator, Iterable, AsyncGenerator
-from typing import Any
 
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
