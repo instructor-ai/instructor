@@ -245,7 +245,9 @@ curl -X 'POST' \
 }'
 ```
 
-This is all logged in Logfire as seen below. We have complete visiblity into the eprformance of our entire application and it's pretty clear that a large chunk of the latency is taken up by the OpenAI Call. We could also potentially separate the logs into more graunular levels by creating a new span for each instance of `extract_user` created.
+This is all logged in Logfire as seen below. We have complete visiblity into the eprformance of our entire application and it's pretty clear that a large chunk of the latency is taken up by the OpenAI Call.
+
+We could also potentially separate the logs into more graunular levels by creating a new span for each instance of `extract_user` created.
 
 ![Logfire Asyncio](img/logfire-asyncio.png)
 
