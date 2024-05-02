@@ -15,16 +15,16 @@ from typing import Callable, Protocol, TypeVar
 from collections.abc import Generator, Iterable, AsyncGenerator
 from typing import Any
 
+from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
+from openai.types.completion_usage import CompletionUsage
 
 if TYPE_CHECKING:
     from anthropic.types import Usage as AnthropicUsage
-    from openai.types import CompletionUsage as OpenAIUsage
-    from openai.types.completion_usage import CompletionUsage
 
 
 logger = logging.getLogger("instructor")
