@@ -6,7 +6,6 @@ import logfire
 import asyncio
 from collections.abc import Iterable
 from fastapi.responses import StreamingResponse
-from typing import List
 
 
 class UserData(BaseModel):

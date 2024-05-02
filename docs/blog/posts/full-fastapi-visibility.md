@@ -143,7 +143,6 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
 === "New Code"
 
     ```python
-    from typing import List
     import asyncio
 
     class MultipleUserData(BaseModel):
@@ -176,7 +175,6 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     import logfire
     from collections.abc import Iterable
     from fastapi.responses import StreamingResponse
-    from typing import List
     import asyncio
 
 
@@ -263,7 +261,6 @@ Let's add a new endpoint to our server to see how this might work
     import asyncio
     from collections.abc import Iterable
     from fastapi.responses import StreamingResponse
-    from typing import List
 
     class MultipleUserData(BaseModel):
         queries: list[str]
@@ -306,7 +303,6 @@ Let's add a new endpoint to our server to see how this might work
     import asyncio
     from collections.abc import Iterable
     from fastapi.responses import StreamingResponse
-    from typing import List
 
 
     class UserData(BaseModel):
