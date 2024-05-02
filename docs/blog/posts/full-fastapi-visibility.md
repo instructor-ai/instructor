@@ -18,7 +18,8 @@ Logfire is a new tool that provides key insight into your application with Open 
 In short, this is the secret sauce to help you get your application to the finish line and beyond. We'll show you how to easily integrate Logfire into FastAPI, one of the most popular choices amongst users of Instructor using two examples
 
 1. Data Extraction from a single User Query
-2. Streaming multiple objects using an `Iterable` so that they're avaliable on demand
+2. Using `asyncio` to process multiple users in parallel
+3. Streaming multiple objects using an `Iterable` so that they're avaliable on demand
 
 <!-- more -->
 
@@ -89,8 +90,8 @@ class UserDetail(BaseModel):
 
 app = FastAPI()
 openai_client = AsyncOpenAI() #(2)!
-logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="failure"))
-client = instructor.from_openai(openai_client)
+logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
+logfire.instrument_openai(openai_client)
 logfire.instrument_fastapi(app)
 client = instructor.from_openai(openai_client)
 
@@ -115,7 +116,7 @@ With just those few lines of code, we've got ourselves a working integration wit
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:3000/user' \
+  'http://localhost:8000/user' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -123,7 +124,7 @@ curl -X 'POST' \
 }'
 ```
 
-We can see that Pydantic has nicely logged for us the result of our `UserDetail` schema validation
+We can see that Pydantic has nicely logged for us the validation result of our openai call here. Just right above, we also have the result of the OpenAI call.
 
 ![Pydantic Validation](img/logfire-sync-pydantic-validation.png)
 
@@ -131,76 +132,254 @@ We've also got full visibility into the arguments that were passed into the endp
 
 ![FastAPI arguments](img/logfire-sync-fastapi-arguments.png)
 
+## Using Asyncio
+
+Sometimes, we might need to run multiple jobs in parallel. Let's see how we can take advantage of `asyncio` so that we can speed up our operations. We can do so by adding the following bits of code to our previous file.
+
+??? info "What is Asyncio?"
+
+    For a deeper guide into how to work with Asycnio, see our previous guide [here](./learn-async.md).
+
+=== "New Code"
+
+    ```python
+    import asyncio
+
+    class MultipleUserData(BaseModel):
+        queries: list[str]
+
+    @app.post("/many-users", response_model=list[UserDetail])
+    async def extract_many_users(data: MultipleUserData):
+        async def extract_user(query: str):
+            user_detail = await client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                response_model=UserDetail,
+                messages=[
+                    {"role": "user", "content": f"Extract: `{query}`"},
+                ],
+            )
+            logfire.info("/User returning", value=user_detail)
+            return user_detail
+
+        coros = [extract_user(query) for query in data.queries]
+        return await asyncio.gather(*coros)
+    ```
+
+=== "Full File"
+
+    ```python
+    from pydantic import BaseModel
+    from fastapi import FastAPI
+    from openai import AsyncOpenAI
+    import instructor
+    import logfire
+    from collections.abc import Iterable
+    from fastapi.responses import StreamingResponse
+    import asyncio
+
+
+    class UserData(BaseModel):
+        query: str
+
+
+    class MultipleUserData(BaseModel):
+        queries: list[str]
+
+
+    class UserDetail(BaseModel):
+        name: str
+        age: int
+
+
+    app = FastAPI()
+    openai_client = AsyncOpenAI()
+    logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
+    logfire.instrument_openai(openai_client)
+    logfire.instrument_fastapi(app)
+    client = instructor.from_openai(openai_client)
+
+
+    @app.post("/user", response_model=UserDetail)
+    async def endpoint_function(data: UserData) -> UserDetail:
+        user_detail = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            response_model=UserDetail,
+            messages=[
+                {"role": "user", "content": f"Extract: `{data.query}`"},
+            ],
+        )
+        logfire.info("/User returning", value=user_detail)
+        return user_detail
+
+
+    @app.post("/many-users", response_model=list[UserDetail])
+    async def extract_many_users(data: MultipleUserData):
+        async def extract_user(query: str):
+            user_detail = await client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                response_model=UserDetail,
+                messages=[
+                    {"role": "user", "content": f"Extract: `{query}`"},
+                ],
+            )
+            logfire.info("/User returning", value=user_detail)
+            return user_detail
+
+        coros = [extract_user(query) for query in data.queries]
+        return await asyncio.gather(*coros)
+    ```
+
+We can call this endpoint with a simple `curl` call
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/many-users' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "queries": [
+    "Daniel is a 34 year man in New York City","Sarah is a 20 year old living in Tokyo", "Jeffrey is 55 and lives down in Leeds"
+  ]
+}'
+```
+
+This is all logged in Logfire as seen below. We have complete visiblity into the eprformance of our entire application and it's pretty clear that a large chunk of the latency is taken up by the OpenAI Call.
+
+We could also potentially separate the logs into more graunular levels by creating a new span for each instance of `extract_user` created.
+
+![Logfire Asyncio](img/logfire-asyncio.png)
+
 ## Streaming
 
-Now that we've covered a simple data extraction endpoint, let's see how we can take advantage of Instructor's `Iterable` support to stream multiple instances of an extracted object. This is extremely useful for application where speed is crucial and users want to get the results quickly.
+Now let's see how we can take advantage of Instructor's `Iterable` support to stream multiple instances of an extracted object. This is extremely useful for application where speed is crucial and users want to get the results quickly.
 
 Let's add a new endpoint to our server to see how this might work
 
-```python hl_lines="6-7 40-59"
-from pydantic import BaseModel
-from fastapi import FastAPI
-from openai import AsyncOpenAI
-import instructor
-import logfire
-from collections.abc import Iterable #(1)!
-from fastapi.responses import StreamingResponse
+=== "New Code"
+
+    ```python
+    import asyncio
+    from collections.abc import Iterable
+    from fastapi.responses import StreamingResponse
+
+    class MultipleUserData(BaseModel):
+        queries: list[str]
+
+    @app.post("/extract", response_class=StreamingResponse)
+    async def extract(data: UserData):
+        supressed_client = AsyncOpenAI()
+        logfire.instrument_openai(supressed_client, suppress_other_instrumentation=False) #(1)!
+        client = instructor.from_openai(supressed_client)
+        users = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            response_model=Iterable[UserDetail],
+            stream=True,
+            messages=[
+                {"role": "user", "content": data.query},
+            ],
+        )
+
+        async def generate():
+            with logfire.span("Generating User Response Objects"):
+                async for user in users:
+                    resp_json = user.model_dump_json()
+                    logfire.info("Returning user object", value=resp_json)
+
+                    yield resp_json
+
+        return StreamingResponse(generate(), media_type="text/event-stream")
+    ```
+
+    1. Note that we supress instrumentation to print out the stream objects. This has to do with the parsing of partials in Instructor.
+
+=== "Full File"
+
+    ```python
+    from pydantic import BaseModel
+    from fastapi import FastAPI
+    from openai import AsyncOpenAI
+    import instructor
+    import logfire
+    import asyncio
+    from collections.abc import Iterable
+    from fastapi.responses import StreamingResponse
 
 
-class UserData(BaseModel):
-    query: str
+    class UserData(BaseModel):
+        query: str
 
 
-class UserDetail(BaseModel):
-    name: str
-    age: int
+    class MultipleUserData(BaseModel):
+        queries: list[str]
 
 
-app = FastAPI()
-openai_client = AsyncOpenAI()
-logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="failure"))
-client = instructor.from_openai(openai_client)
-logfire.instrument_fastapi(app)
-client = instructor.from_openai(openai_client)
+    class UserDetail(BaseModel):
+        name: str
+        age: int
 
 
-@app.post("/user", response_model=UserDetail)
-async def endpoint_function(data: UserData) -> UserDetail:
-    user_detail = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserDetail,
-        messages=[
-            {"role": "user", "content": f"Extract: `{data.query}`"},
-        ],
-    )
-
-    return user_detail
+    app = FastAPI()
+    openai_client = AsyncOpenAI()
+    logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
+    logfire.instrument_fastapi(app)
+    logfire.instrument_openai(openai_client)
+    client = instructor.from_openai(openai_client)
 
 
-@app.post("/extract", response_class=StreamingResponse)
-async def extract(data: UserData):
-    users = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=Iterable[UserDetail],
-        stream=True,
-        messages=[
-            {"role": "user", "content": data.query},
-        ],
-    )
+    @app.post("/user", response_model=UserDetail)
+    async def endpoint_function(data: UserData) -> UserDetail:
+        user_detail = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            response_model=UserDetail,
+            messages=[
+                {"role": "user", "content": f"Extract: `{data.query}`"},
+            ],
+        )
+        logfire.info("/User returning", value=user_detail)
+        return user_detail
 
-    async def generate(): #(2)!
-        with logfire.span("Generating User Response Objects"):
-            async for user in users:
-                resp_json = user.model_dump_json()
-                logfire.info("Returning user object", value=resp_json)
 
-                yield resp_json
+    @app.post("/many-users", response_model=list[UserDetail])
+    async def extract_many_users(data: MultipleUserData):
+        async def extract_user(query: str):
+            user_detail = await client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                response_model=UserDetail,
+                messages=[
+                    {"role": "user", "content": f"Extract: `{query}`"},
+                ],
+            )
+            logfire.info("/User returning", value=user_detail)
+            return user_detail
 
-    return StreamingResponse(generate(), media_type="text/event-stream")
-```
+        coros = [extract_user(query) for query in data.queries]
+        return await asyncio.gather(*coros)
 
-1. Import in the Iterable and Streaming Response so that we are able to return a stream to the user
-2. Define a generator which will return the individual instances of the `UserDetail` object
+
+    @app.post("/extract", response_class=StreamingResponse)
+    async def extract(data: UserData):
+        supressed_client = AsyncOpenAI()
+        logfire.instrument_openai(supressed_client, suppress_other_instrumentation=False)
+        client = instructor.from_openai(supressed_client)
+        users = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            response_model=Iterable[UserDetail],
+            stream=True,
+            messages=[
+                {"role": "user", "content": data.query},
+            ],
+        )
+
+        async def generate():
+            with logfire.span("Generating User Response Objects"):
+                async for user in users:
+                    resp_json = user.model_dump_json()
+                    logfire.info("Returning user object", value=resp_json)
+
+                    yield resp_json
+
+        return StreamingResponse(generate(), media_type="text/event-stream")
+    ```
 
 We can call and log out the stream returned using the `requests` library and using the `iter_content` method
 
