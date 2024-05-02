@@ -3,24 +3,26 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
+    TYPE_CHECKING,
+    Any,
     Callable,
     Generic,
     Protocol,
     TypeVar,
 )
-from collections.abc import Generator, Iterable, AsyncGenerator
-from typing import Callable, Protocol, TypeVar
-from collections.abc import Generator, Iterable, AsyncGenerator
-from openai.types.completion_usage import CompletionUsage
-from anthropic.types import Usage as AnthropicUsage
-from typing import Any
+
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
 )
+
+if TYPE_CHECKING:
+    from anthropic.types import Usage as AnthropicUsage
+
 
 logger = logging.getLogger("instructor")
 R_co = TypeVar("R_co", covariant=True)
@@ -110,12 +112,10 @@ async def extract_json_from_stream_async(
 
 def update_total_usage(
     response: T_Model,
-    total_usage: CompletionUsage | AnthropicUsage,
+    total_usage: OpenAIUsage | AnthropicUsage,
 ) -> T_Model | ChatCompletion:
     response_usage = getattr(response, "usage", None)
-    if isinstance(response_usage, OpenAIUsage) and isinstance(
-        total_usage, CompletionUsage
-    ):
+    if isinstance(response_usage, OpenAIUsage) and isinstance(total_usage, OpenAIUsage):
         total_usage.completion_tokens += response_usage.completion_tokens or 0
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
         total_usage.total_tokens += response_usage.total_tokens or 0
