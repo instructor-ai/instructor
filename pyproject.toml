@@ -82,6 +82,10 @@ mistralai = "^0.1.8"
 [tool.poetry.group.litellm.dependencies]
 litellm = "^1.35.31"
 
+
+[tool.poetry.group.vertexai.dependencies]
+google-cloud-aiplatform = "^1.50.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
