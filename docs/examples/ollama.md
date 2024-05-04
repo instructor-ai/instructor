@@ -17,7 +17,7 @@ Instructor's patch enhances an openai api with the following features:
 
 ## Ollama
 
-Start by downloading [Ollama](https://ollama.ai/download), and then pull a model such as Llama 2 or Mistral.
+Start by downloading [Ollama](https://ollama.ai/download), and then pull a model such as Llama 3 or Mistral.
 
 !!! tip "Make sure you update your `ollama` to the latest version!"
 
