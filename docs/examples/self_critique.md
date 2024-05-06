@@ -56,6 +56,10 @@ Lets integrate `llm_validator` into the model and see the error message. Its imp
 from pydantic import BaseModel, BeforeValidator
 from typing_extensions import Annotated
 from instructor import llm_validator
+from openai import OpenAI
+import instructor
+
+client = instructor.from_openai(OpenAI())
 
 class QuestionAnswerNoEvil(BaseModel):
     question: str
