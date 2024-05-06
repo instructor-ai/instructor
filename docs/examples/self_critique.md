@@ -62,7 +62,7 @@ class QuestionAnswerNoEvil(BaseModel):
     answer: Annotated[
         str,
         BeforeValidator(
-            llm_validator("don't say objectionable things", allow_override=True)
+            llm_validator("don't say objectionable things", client=client, allow_override=True)
         ),
     ]
 
