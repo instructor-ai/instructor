@@ -197,7 +197,7 @@ def handle_response_model(
                 new_kwargs.get("stream", False) is False
             ), "stream=True is not supported when using PARALLEL_TOOLS mode"
             new_kwargs["tools"] = handle_parallel_model(response_model)
-            new_kwargs["tool_choice"] = "auto"
+            new_kwargs["tool_choice"] = "required"
 
             # This is a special case for parallel models
             response_model = ParallelModel(typehint=response_model)
@@ -303,7 +303,9 @@ def handle_response_model(
                 + "\n\n".join(openai_system_messages)
             )
 
-            new_kwargs["system"] += f"""
+            new_kwargs[
+                "system"
+            ] += f"""
             You must only response in JSON format that adheres to the following schema:
 
             <JSON_SCHEMA>
