@@ -51,7 +51,7 @@ client = Groq(
 )
 
 # By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods to support the response_model parameter
-client = instructor.from_openai(client, mode=instructor.Mode.MD_JSON)
+client = instructor.from_groq(client, mode=instructor.Mode.JSON)
 
 
 # Now, we can use the response_model parameter using only a base model
