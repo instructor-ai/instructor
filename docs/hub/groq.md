@@ -32,7 +32,7 @@ Instructor's patch enhances the openai api it with the following features:
 
 ## Groq AI
 
-While Groq AI does not support function calling directly, you can still leverage the MD_JSON mode for structured outputs.
+While Groq AI does not support function calling directly, you can still leverage the TOOLS mode for structured outputs.
 
 !!! note "Getting access"
 
@@ -51,7 +51,7 @@ client = Groq(
 )
 
 # By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods to support the response_model parameter
-client = instructor.from_groq(client, mode=instructor.Mode.JSON)
+client = instructor.from_groq(client, mode=instructor.Mode.TOOLS)
 
 
 # Now, we can use the response_model parameter using only a base model
