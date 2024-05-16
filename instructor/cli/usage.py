@@ -50,6 +50,9 @@ async def get_usage_for_past_n_days(n_days: int) -> list[dict[str, Any]]:
 # Define the cost per unit for each model
 MODEL_COSTS = {
     "gpt-4o": {"prompt": 0.005 / 1000, "completion": 0.015 / 1000},
+    "gpt-4o-2024-05-13": {"prompt": 0.005 / 1000, "completion": 0.015 / 1000},
+    "gpt-4-turbo": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
+    "gpt-4-turbo-2024-04-09": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
     "gpt-4-0125-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
     "gpt-4-turbo-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
     "gpt-4-1106-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
