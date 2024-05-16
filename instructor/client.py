@@ -392,6 +392,7 @@ def from_openai(
             instructor.Mode.JSON,
             instructor.Mode.JSON_SCHEMA,
             instructor.Mode.MD_JSON,
+            instructor.Mode.MD_YAML,
         }
 
     if provider in {Provider.DATABRICKS}:
@@ -406,6 +407,7 @@ def from_openai(
             instructor.Mode.FUNCTIONS,
             instructor.Mode.PARALLEL_TOOLS,
             instructor.Mode.MD_JSON,
+            instructor.Mode.MD_YAML,
         }
 
     if isinstance(client, openai.OpenAI):
