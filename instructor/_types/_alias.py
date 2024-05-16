@@ -3,6 +3,7 @@ from typing import Literal
 from typing_extensions import TypeAlias
 
 ModelNames: TypeAlias = Literal[
+    "gpt-4o",
     "gpt-4-0125-preview",
     "gpt-4-turbo-preview",
     "gpt-4-1106-preview",
