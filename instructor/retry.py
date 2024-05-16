@@ -115,6 +115,11 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             "role": "user",
             "content": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
         }
+    elif mode == Mode.MD_YAML:
+        yield {
+            "role": "user",
+            "content": f"Correct your YAML ONLY RESPONSE, based on the following errors:\n{exception}",
+        }
     else:
         yield {
             "role": "user",
