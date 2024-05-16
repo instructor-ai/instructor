@@ -43,7 +43,7 @@ import instructor
 
 # Adds response_model to ChatCompletion
 # Allows the return of Pydantic model rather than raw JSON
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def generate_graph(input) -> KnowledgeGraph:
@@ -91,7 +91,7 @@ This will produce a visual representation of the knowledge graph, stored as "kno
 
 ## Iterative Updates
 
-Now that we've seen how to generate a knowledge graph from a single input, let's see how we can iteratively update our knowledge graph with new information, or when informatino does not fit into a single prompt.
+Now that we've seen how to generate a knowledge graph from a single input, let's see how we can iteratively update our knowledge graph with new information, or when information does not fit into a single prompt.
 
 Let's take an easy example where we want to visualise the combined knowledge graph that the following sentences represent.
 

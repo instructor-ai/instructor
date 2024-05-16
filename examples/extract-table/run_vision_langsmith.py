@@ -1,6 +1,6 @@
 from openai import OpenAI
 from io import StringIO
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 from pydantic import (
     BaseModel,
     BeforeValidator,
@@ -15,7 +15,7 @@ from langsmith import traceable
 
 
 client = wrap_openai(OpenAI())
-client = instructor.patch(client, mode=instructor.function_calls.Mode.MD_JSON)
+client = instructor.from_openai(client, mode=instructor.function_calls.Mode.MD_JSON)
 
 
 def md_to_df(data: Any) -> Any:
@@ -55,7 +55,7 @@ class Table(BaseModel):
 
 
 class MultipleTables(BaseModel):
-    tables: List[Table]
+    tables: list[Table]
 
 
 example = MultipleTables(

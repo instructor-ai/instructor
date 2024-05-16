@@ -35,7 +35,7 @@ import instructor
 from openai import OpenAI
 
 # Enables the response_model
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class UserDetail(pydantic.BaseModel):

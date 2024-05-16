@@ -7,7 +7,7 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI(), mode=instructor.Mode.MD_JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 
 
 def num_tokens_from_string(string: str, model_name: str) -> int:
@@ -26,15 +26,12 @@ class User(BaseModel):
     age: int
 
 
-PartialUser = instructor.Partial[User]
-
-
 def benchmark_raw_stream(model="gpt-4"):
     content = f"""Respond only in JSON that would validate to this schema and include nothing extra.
     Otherwise something bad will happen:\n {User.model_json_schema()}"""
 
     start_time = time.time()
-    extraction_stream = client.chat.completions.create(
+    extraction_stream = client.chat.completions.create_fn(
         model=model,
         messages=[
             {"role": "system", "content": content},
@@ -59,9 +56,9 @@ def benchmark_raw_stream(model="gpt-4"):
 
 def benchmark_partial_streaming(model="gpt-4"):
     start_time = time.time()
-    extraction_stream = client.chat.completions.create(
+    extraction_stream = client.chat.completions.create_partial(
         model=model,
-        response_model=PartialUser,
+        response_model=User,
         messages=[
             {
                 "role": "user",
@@ -91,10 +88,16 @@ if __name__ == "__main__":
     print(f"Raw streaming: {avg_raw_time:.2f} tokens/sec")
 
     print(f"Partial streaming: {avg_partial_time:.2f} token/sec")
-    print(f"Relative speedup: {avg_partial_time / avg_raw_time:.2f}x")
+    print(f"Overhead: {avg_partial_time / avg_raw_time:.2f}x")
 
+    """OLD IMPLEMENTATION
+    Raw streaming: 35.73 tokens/sec
+    Partial streaming: 24.42 token/sec
+    Overhead: 0.68x
     """
-    Raw streaming: 22.36 tokens/sec
-    Partial streaming: 15.46 token/sec
-    Relative speedup: 0.69x
+
+    """NEW IMPLEMENTATION
+    Raw streaming: 35.77 tokens/sec
+    Partial streaming: 31.58 token/sec
+    Overhead: 0.88x
     """

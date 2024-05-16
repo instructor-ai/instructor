@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from openai import OpenAI
 from pydantic import (
     BaseModel,
@@ -11,7 +11,7 @@ from pydantic import (
 
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 """ 
 Example 1) Simple Substring check that compares a citation to a text chunk
@@ -39,7 +39,7 @@ class Statements(BaseModel):
 
 class AnswerWithCitaton(BaseModel):
     question: str
-    answer: List[Statements]
+    answer: list[Statements]
 
 
 try:
@@ -111,7 +111,7 @@ class Statements(BaseModel):
 
 class AnswerWithCitaton(BaseModel):
     question: str
-    answer: List[Statements]
+    answer: list[Statements]
 
 
 resp = AnswerWithCitaton.model_validate(
@@ -169,7 +169,7 @@ answer.0
 # that also verifies that the citations are aligned with the answers
 class AnswerWithCitaton(BaseModel):
     question: str
-    answer: List[Statements]
+    answer: list[Statements]
 
     @model_validator(mode="after")
     def validate_answer(self, info: ValidationInfo):

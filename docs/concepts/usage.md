@@ -6,7 +6,7 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class UserExtract(BaseModel):
@@ -14,7 +14,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user: UserExtract = client.chat.completions.create(
+user, completion = client.chat.completions.create_with_completion(
     model="gpt-3.5-turbo",
     response_model=UserExtract,
     messages=[
@@ -22,6 +22,6 @@ user: UserExtract = client.chat.completions.create(
     ],
 )
 
-print(user._raw_response.usage)
+print(completion.usage)
 #> CompletionUsage(completion_tokens=9, prompt_tokens=82, total_tokens=91)
 ```

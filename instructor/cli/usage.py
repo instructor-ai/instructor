@@ -1,9 +1,11 @@
-from typing import List, Dict, Any, Union, DefaultDict
+from typing import Any, Union
+from collections.abc import Awaitable
 from datetime import datetime, timedelta
 import typer
 import os
 import aiohttp
 import asyncio
+from builtins import list as List
 from collections import defaultdict
 from rich.console import Console
 from rich.table import Table
@@ -18,7 +20,7 @@ console = Console()
 api_key = os.environ.get("OPENAI_API_KEY")
 
 
-async def fetch_usage(date: str) -> Dict[str, Any]:
+async def fetch_usage(date: str) -> dict[str, Any]:
     headers = {"Authorization": f"Bearer {api_key}"}
     url = f"https://api.openai.com/v1/usage?date={date}"
     async with aiohttp.ClientSession() as session:
@@ -26,9 +28,9 @@ async def fetch_usage(date: str) -> Dict[str, Any]:
             return await resp.json()
 
 
-async def get_usage_for_past_n_days(n_days: int) -> List[Dict[str, Any]]:
-    tasks = []
-    all_data = []
+async def get_usage_for_past_n_days(n_days: int) -> list[dict[str, Any]]:
+    tasks: List[Awaitable[dict[str, Any]]] = []  # noqa: UP006 - conflicting with the fn name
+    all_data: List[dict[str, Any]] = []  # noqa: UP006 - conflicting with the fn name
     with Progress() as progress:
         if n_days > 1:
             task = progress.add_task("[green]Fetching usage data...", total=n_days)
@@ -46,44 +48,39 @@ async def get_usage_for_past_n_days(n_days: int) -> List[Dict[str, Any]]:
 
 
 # Define the cost per unit for each model
-# Add temporary body type hint here because mypy may infer the dict type
-# from the first few items (?) in the dict, which may not be representative of
-# the entire dict.
-MODEL_COSTS: Dict[
-    ModelNames,
-    Union[Dict[str, float], float],
-] = {
-      "gpt-4-0125-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000}, 
-      "gpt-4-turbo-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000}, 
-      "gpt-4-1106-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000}, 
-      "gpt-4-vision-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000}, 
-      "gpt-4": {"prompt": 0.03 / 1000, "completion": 0.06 / 1000}, 
-      "gpt-4-0314": {"prompt": 0.03 / 1000, "completion": 0.06 / 1000},
-      "gpt-4-0613": {"prompt": 0.03 / 1000, "completion": 0.06 / 1000}, 
-      "gpt-4-32k": {"prompt": 0.06 / 1000, "completion": 0.12 / 1000}, 
-      "gpt-4-32k-0314": {"prompt": 0.06 / 1000, "completion": 0.12 / 1000}, 
-      "gpt-4-32k-0613": {"prompt": 0.06 / 1000, "completion": 0.12 / 1000}, 
-      "gpt-3.5-turbo": {"prompt": 0.0005 / 1000, "completion": 0.0015 / 1000}, 
-      "gpt-3.5-turbo-16k": {"prompt": 0.0030 / 1000, "completion": 0.0040 / 1000}, 
-      "gpt-3.5-turbo-0301": {"prompt": 0.0015 / 1000, "completion": 0.0020 / 1000}, 
-      "gpt-3.5-turbo-0613": {"prompt": 0.0015 / 1000, "completion": 0.0020 / 1000}, 
-      "gpt-3.5-turbo-1106": {"prompt": 0.0010 / 1000, "completion": 0.0020 / 1000}, 
-      "gpt-3.5-turbo-0125": {"prompt": 0.0005 / 1000, "completion": 0.0015 / 1000}, 
-      "gpt-3.5-turbo-16k-0613": {"prompt": 0.0030 / 1000, "completion": 0.0040 / 1000}, 
-      "gpt-3.5-turbo-instruct": {"prompt": 0.0015 / 1000, "completion": 0.0020 / 1000}, 
-      "text-embedding-3-small": 0.00002 / 1000,
-      "text-embedding-3-large": 0.00013 / 1000,
-      "text-embedding-ada-002": 0.00010 / 1000,
+MODEL_COSTS = {
+    "gpt-4o": {"prompt": 0.005 / 1000, "completion": 0.015 / 1000},
+    "gpt-4-0125-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
+    "gpt-4-turbo-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
+    "gpt-4-1106-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
+    "gpt-4-vision-preview": {"prompt": 0.01 / 1000, "completion": 0.03 / 1000},
+    "gpt-4": {"prompt": 0.03 / 1000, "completion": 0.06 / 1000},
+    "gpt-4-0314": {"prompt": 0.03 / 1000, "completion": 0.06 / 1000},
+    "gpt-4-0613": {"prompt": 0.03 / 1000, "completion": 0.06 / 1000},
+    "gpt-4-32k": {"prompt": 0.06 / 1000, "completion": 0.12 / 1000},
+    "gpt-4-32k-0314": {"prompt": 0.06 / 1000, "completion": 0.12 / 1000},
+    "gpt-4-32k-0613": {"prompt": 0.06 / 1000, "completion": 0.12 / 1000},
+    "gpt-3.5-turbo": {"prompt": 0.0005 / 1000, "completion": 0.0015 / 1000},
+    "gpt-3.5-turbo-16k": {"prompt": 0.0030 / 1000, "completion": 0.0040 / 1000},
+    "gpt-3.5-turbo-0301": {"prompt": 0.0015 / 1000, "completion": 0.0020 / 1000},
+    "gpt-3.5-turbo-0613": {"prompt": 0.0015 / 1000, "completion": 0.0020 / 1000},
+    "gpt-3.5-turbo-1106": {"prompt": 0.0010 / 1000, "completion": 0.0020 / 1000},
+    "gpt-3.5-turbo-0125": {"prompt": 0.0005 / 1000, "completion": 0.0015 / 1000},
+    "gpt-3.5-turbo-16k-0613": {"prompt": 0.0030 / 1000, "completion": 0.0040 / 1000},
+    "gpt-3.5-turbo-instruct": {"prompt": 0.0015 / 1000, "completion": 0.0020 / 1000},
+    "text-embedding-3-small": 0.00002 / 1000,
+    "text-embedding-3-large": 0.00013 / 1000,
+    "text-embedding-ada-002": 0.00010 / 1000,
 }
 
 
 def get_model_cost(
     model: ModelNames,
-) -> Union[Dict[str, float], float]:
+) -> Union[dict[str, float], float]:
     """Get the cost details for a given model."""
     if model in MODEL_COSTS:
         return MODEL_COSTS[model]
-    
+
     if model.startswith("gpt-3.5-turbo-16k"):
         return MODEL_COSTS["gpt-3.5-turbo-16k"]
     elif model.startswith("gpt-3.5-turbo"):
@@ -104,7 +101,7 @@ def calculate_cost(
     """Calculate the cost based on the snapshot ID and number of tokens."""
     cost = get_model_cost(snapshot_id)
 
-    if isinstance(cost, float):
+    if isinstance(cost, (float, int)):
         return cost * (n_context_tokens + n_generated_tokens)
 
     prompt_cost = cost["prompt"] * n_context_tokens
@@ -112,13 +109,13 @@ def calculate_cost(
     return prompt_cost + completion_cost
 
 
-def group_and_sum_by_date_and_snapshot(usage_data: List[Dict[str, Any]]) -> Table:
+def group_and_sum_by_date_and_snapshot(usage_data: list[dict[str, Any]]) -> Table:
     """Group and sum the usage data by date and snapshot, including costs."""
-    summary: DefaultDict[
-        str, DefaultDict[str, Dict[str, Union[int, float]]]
-    ] = defaultdict(
-        lambda: defaultdict(
-            lambda: {"total_requests": 0, "total_tokens": 0, "total_cost": 0.0}
+    summary: defaultdict[str, defaultdict[str, dict[str, Union[int, float]]]] = (
+        defaultdict(
+            lambda: defaultdict(
+                lambda: {"total_requests": 0, "total_tokens": 0, "total_cost": 0.0}
+            )
         )
     )
 
@@ -160,7 +157,7 @@ def group_and_sum_by_date_and_snapshot(usage_data: List[Dict[str, Any]]) -> Tabl
     return table
 
 
-@app.command(help="Displays OpenAI API usage data for the past N days.")  # type: ignore[misc]
+@app.command(help="Displays OpenAI API usage data for the past N days.")
 def list(
     n: int = typer.Option(0, help="Number of days."),
 ) -> None:

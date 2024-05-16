@@ -45,7 +45,7 @@ The OpenAI API is utilized to extract PII information from a given document.
 from openai import OpenAI
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 EXAMPLE_DOCUMENT = """
 # Fake Document with PII for Testing PII Scrubbing Model

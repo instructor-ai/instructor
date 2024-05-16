@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
@@ -32,7 +32,7 @@ class Product(BaseModel):
     name: str = Field(
         description="A generic name for the product.", example="Headphones"
     )
-    key_features: Optional[List[str]] = Field(
+    key_features: Optional[list[str]] = Field(
         description="A list of key features of the product that stand out.",
         example=["Wireless", "Noise Cancellation"],
         default=None,
@@ -58,7 +58,7 @@ class IdentifiedProduct(BaseModel):
     Represents a list of products identified in the images.
     """
 
-    products: Optional[List[Product]] = Field(
+    products: Optional[list[Product]] = Field(
         description="A list of products identified by the AI.",
         example=[
             Product(
@@ -99,16 +99,16 @@ class AdCopy(BaseModel):
 
 
 # Define clients
-client_image = instructor.patch(
+client_image = instructor.from_openai(
     OpenAI(api_key=os.getenv("OPENAI_API_KEY")), mode=instructor.Mode.MD_JSON
 )
-client_copy = instructor.patch(
+client_copy = instructor.from_openai(
     OpenAI(api_key=os.getenv("OPENAI_API_KEY")), mode=instructor.Mode.FUNCTIONS
 )
 
 
 # Define functions
-def read_images(image_urls: List[str]) -> IdentifiedProduct:
+def read_images(image_urls: list[str]) -> IdentifiedProduct:
     """
     Given a list of image URLs, identify the products in the images.
     """
@@ -159,7 +159,7 @@ def generate_ad_copy(product: Product) -> AdCopy:
     )
 
 
-def run(images: List[str]) -> Tuple[List[Product], List[AdCopy]]:
+def run(images: list[str]) -> tuple[list[Product], list[AdCopy]]:
     """
     Given a list of images, identify the products in the images and generate ad copy for each product.
     """
@@ -191,7 +191,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     image_file = sys.argv[1]
-    with open(image_file, "r") as file:
+    with open(image_file) as file:
         logger.info(f"Reading images from file: {image_file}")
         try:
             image_list = file.read().splitlines()

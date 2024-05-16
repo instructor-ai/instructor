@@ -41,7 +41,7 @@ class Lead(BaseModel):
     # Can define some function here to send Lead information to a database using an API
 
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def parse_lead_from_message(user_message: str):

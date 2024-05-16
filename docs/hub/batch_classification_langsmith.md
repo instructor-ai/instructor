@@ -42,10 +42,11 @@ from enum import Enum
 client = wrap_openai(AsyncOpenAI())
 
 # Patch the client with instructor
-client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(client)
 
 # Rate limit the number of requests
 sem = asyncio.Semaphore(5)
+
 
 # Use an Enum to define the types of questions
 class QuestionType(Enum):

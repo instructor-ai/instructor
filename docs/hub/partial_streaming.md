@@ -16,7 +16,7 @@ from openai import OpenAI
 from pydantic import BaseModel
 from typing import List
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 text_block = """
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:

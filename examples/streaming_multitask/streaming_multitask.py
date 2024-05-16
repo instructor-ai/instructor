@@ -1,13 +1,13 @@
 import time
 
-from typing import Iterable
+from collections.abc import Iterable
 from openai import OpenAI
 from pydantic import BaseModel
 
 import instructor
 
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class User(BaseModel):

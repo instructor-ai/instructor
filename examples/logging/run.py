@@ -8,7 +8,7 @@ from pydantic import BaseModel
 # Set logging to DEBUG
 logging.basicConfig(level=logging.DEBUG)
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class UserDetail(BaseModel):
@@ -22,7 +22,7 @@ user = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ],
-)
+)  # type: ignore
 
 """ 
 DEBUG:httpx:load_ssl_context verify=True cert=None trust_env=True http2=False

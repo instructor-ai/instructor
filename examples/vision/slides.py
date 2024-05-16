@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-from typing import List, Optional
+from typing import Optional
 
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
@@ -12,16 +12,17 @@ import instructor
 
 load_dotenv(find_dotenv())
 
-IMAGE_FILE = "image-file.txt" # file with all the images to be processed
+IMAGE_FILE = "image-file.txt"  # file with all the images to be processed
 
 # Add logger
 logging.basicConfig()
 logger = logging.getLogger("app")
 logger.setLevel("INFO")
 
+
 class Competitor(BaseModel):
     name: str
-    features: Optional[List[str]]
+    features: Optional[list[str]]
 
 
 # Define models
@@ -30,12 +31,11 @@ class Industry(BaseModel):
     Represents competitors from a specific industry extracted from an image using AI.
     """
 
-    name: str = Field(
-        description="The name of the industry"
-    )
-    competitor_list: List[Competitor] = Field(
+    name: str = Field(description="The name of the industry")
+    competitor_list: list[Competitor] = Field(
         description="A list of competitors for this industry"
     )
+
 
 class Competition(BaseModel):
     """
@@ -45,17 +45,17 @@ class Competition(BaseModel):
     competitors and their qualities.
     """
 
-    industry_list: List[Industry] = Field(
+    industry_list: list[Industry] = Field(
         description="A list of industries and their competitors"
     )
 
+
 # Define clients
-client_image = instructor.patch(
-    OpenAI(), mode=instructor.Mode.MD_JSON
-)
+client_image = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
+
 
 # Define functions
-def read_images(image_urls: List[str]) -> Competition:
+def read_images(image_urls: list[str]) -> Competition:
     """
     Given a list of image URLs, identify the competitors in the images.
     """
@@ -85,7 +85,6 @@ def read_images(image_urls: List[str]) -> Competition:
     )
 
 
-
 def process_and_identify_competitors():
     """
     Main function to process the image list file and identify competitors.
@@ -94,7 +93,7 @@ def process_and_identify_competitors():
     logger.info("Starting app...")
 
     try:
-        with open(IMAGE_FILE, "r") as file:
+        with open(IMAGE_FILE) as file:
             logger.info(f"Reading images from file: {IMAGE_FILE}")
             image_list = file.read().splitlines()
             logger.info(f"{len(image_list)} images read from file: {IMAGE_FILE}")
@@ -120,6 +119,7 @@ def process_and_identify_competitors():
             f,
             indent=4,
         )
+
 
 if __name__ == "__main__":
     process_and_identify_competitors()

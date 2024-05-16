@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import openai
 import instructor
 
-from typing import Iterable, Literal
+from typing import Literal
+from collections.abc import Iterable
 from pydantic import BaseModel
 
 
@@ -16,7 +19,8 @@ class GoogleSearch(BaseModel):
 
 client = openai.OpenAI()
 
-client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
+client = instructor.from_openai(client, mode=instructor.Mode.PARALLEL_TOOLS)
+
 resp = client.chat.completions.create(
     model="gpt-4-turbo-preview",
     messages=[

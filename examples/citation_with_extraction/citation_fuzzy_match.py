@@ -1,18 +1,17 @@
 import instructor
 
-from typing import List
 from loguru import logger
 from openai import OpenAI
 from pydantic import Field, BaseModel, FieldValidationInfo, model_validator
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class Fact(BaseModel):
     statement: str = Field(
         ..., description="Body of the sentence, as part of a response"
     )
-    substring_phrase: List[str] = Field(
+    substring_phrase: list[str] = Field(
         ...,
         description="String quote long enough to evaluate the truthfulness of the fact",
     )
@@ -65,7 +64,7 @@ class QuestionAnswer(instructor.OpenAISchema):
     each sentence contains a body and a list of sources."""
 
     question: str = Field(..., description="Question that was asked")
-    answer: List[Fact] = Field(
+    answer: list[Fact] = Field(
         ...,
         description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
     )
@@ -82,29 +81,19 @@ class QuestionAnswer(instructor.OpenAISchema):
 
 
 def ask_ai(question: str, context: str) -> QuestionAnswer:
-    completion = client.chat.completions.create(
+    return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         temperature=0,
-        functions=[QuestionAnswer.openai_schema],
-        function_call={"name": QuestionAnswer.openai_schema["name"]},
+        response_model=QuestionAnswer,
         messages=[
             {
                 "role": "system",
-                "content": "You are a world class algorithm to answer questions with correct and exact citations. ",
+                "content": "You are a world class algorithm to answer questions with correct and exact citations.",
             },
-            {"role": "user", "content": "Answer question using the following context"},
             {"role": "user", "content": f"{context}"},
             {"role": "user", "content": f"Question: {question}"},
-            {
-                "role": "user",
-                "content": "Tips: Make sure to cite your sources, and use the exact words from the context.",
-            },
         ],
-    )
-
-    # Creating an Answer object from the completion response
-    return QuestionAnswer.from_response(
-        completion, validation_context={"text_chunk": context}
+        validation_context={"text_chunk": context},
     )
 
 

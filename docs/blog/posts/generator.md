@@ -238,7 +238,7 @@ from openai import OpenAI
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.JSON)
 
 
 class ProductRecommendation(BaseModel):

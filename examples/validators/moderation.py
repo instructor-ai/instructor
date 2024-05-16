@@ -2,11 +2,11 @@ import instructor
 
 from instructor import openai_moderation
 
-from typing_extensions import Annotated
+from typing import Annotated
 from pydantic import BaseModel, AfterValidator
 from openai import OpenAI
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class Response(BaseModel):

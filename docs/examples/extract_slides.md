@@ -56,7 +56,7 @@ from openai import OpenAI
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(), mode=instructor.Mode.MD_JSON
 )
 

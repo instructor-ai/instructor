@@ -1,11 +1,10 @@
 import enum
 import instructor
 
-from typing import List
 from openai import OpenAI
 from pydantic import Field, BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class SearchType(str, enum.Enum):
@@ -42,7 +41,7 @@ class MultiSearch(BaseModel):
         searches (List[Search]): The list of searches to perform.
     """
 
-    searches: List[Search] = Field(..., description="List of searches")
+    searches: list[Search] = Field(..., description="List of searches")
 
     def execute(self):
         import asyncio

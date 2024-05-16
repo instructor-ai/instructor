@@ -1,11 +1,11 @@
 import enum
 import instructor
 
-from typing import Any, List
+from typing import Any
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class SQLTemplateType(str, enum.Enum):
@@ -39,7 +39,7 @@ class SQL(BaseModel):
         ...,
         description="Query to search for relevant content, always use query parameters for user defined inputs",
     )
-    query_parameters: List[Parameters] = Field(
+    query_parameters: list[Parameters] = Field(
         description="List of query parameters use in the query template when sql query is executed",
     )
     is_dangerous: bool = Field(

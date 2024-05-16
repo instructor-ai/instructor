@@ -286,7 +286,7 @@ Now that we have our models and the rough flow figured out, let's implement a fu
 from openai import OpenAI
 import instructor
 
-client = instructor.patch(OpenAI()) #(1)!
+client = instructor.from_openai(OpenAI()) #(1)!
 
 def summarize_article(article: str, summary_steps: int = 3):
     summary_chain = []
@@ -397,7 +397,7 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
-client = instructor.patch(OpenAI()) # (2)!
+client = instructor.from_openai(OpenAI()) # (2)!
 
 logging.basicConfig(level=logging.INFO) #(3)!
 

@@ -3,7 +3,7 @@ site_author: Jason Liu
 site_description: A lightweight library for structured outputs with LLMs. 
 repo_name: instructor
 repo_url: https://github.com/jxnl/instructor/
-site_url: https://jxnl.github.io/instructor/
+site_url: https://python.useinstructor.com/ 
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2024 Jason Liu 
 theme:
@@ -120,31 +120,10 @@ nav:
   - Introduction: 
     - Welcome To Instructor: 'index.md'
     - Why use Instructor?: 'why.md'
-    - Prompting Tips: 'concepts/prompting.md'
     - Help with Instructor: 'help.md'
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
-  - Concepts:
     - Philosophy: 'concepts/philosophy.md'
-    - Models: 'concepts/models.md'
-    - Fields: 'concepts/fields.md'
-    - Types: 'concepts/types.md'
-    - Validators: "concepts/reask_validation.md"
-    - Usage Tokens: 'concepts/usage.md'
-    - Missing: "concepts/maybe.md"
-    - Patching: 'concepts/patching.md'
-    - Retrying: 'concepts/retrying.md'
-    - Parallel Tools: 'concepts/parallel.md'
-    - Stream Iterable: "concepts/lists.md"
-    - Stream Partial: "concepts/partial.md"
-    - Raw Response: 'concepts/raw_response.md'
-    - FastAPI: 'concepts/fastapi.md'
-    - Caching: 'concepts/caching.md'
-    - Distillation: "concepts/distillation.md"
-    - Union: 'concepts/union.md'
-    - Alias: 'concepts/alias.md'
-    - Enums: 'concepts/enums.md'
-    - Type Adapter: 'concepts/typeadapter.md'
   - Cookbook:
     - Cookbooks: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
@@ -163,6 +142,32 @@ nav:
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
     - Ollama: 'examples/ollama.md'
     - SQLModel Integration: 'examples/sqlmodel.md'
+    - Including Examples in Prompt: 'examples/examples.md'
+    - Document Segmentation: 'examples/document_segmentation.md'
+    - IBM watsonx.ai: 'examples/watsonx.md'
+  - Blog:
+    - "blog/index.md"
+  - Concepts:
+    - Models: 'concepts/models.md'
+    - Fields: 'concepts/fields.md'
+    - Types: 'concepts/types.md'
+    - Validators: "concepts/reask_validation.md"
+    - Usage Tokens: 'concepts/usage.md'
+    - Missing: "concepts/maybe.md"
+    - Patching: 'concepts/patching.md'
+    - Retrying: 'concepts/retrying.md'
+    - Parallel Tools: 'concepts/parallel.md'
+    - Stream Iterable: "concepts/lists.md"
+    - Stream Partial: "concepts/partial.md"
+    - Raw Response: 'concepts/raw_response.md'
+    - FastAPI: 'concepts/fastapi.md'
+    - Caching: 'concepts/caching.md'
+    - Logging: 'concepts/logging.md'
+    - Distillation: "concepts/distillation.md"
+    - Union: 'concepts/union.md'
+    - Alias: 'concepts/alias.md'
+    - Enums: 'concepts/enums.md'
+    - Type Adapter: 'concepts/typeadapter.md'
   - Hub:
     - Introducing Instructor Hub: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
@@ -173,27 +178,27 @@ nav:
     - Using Llama CPP: 'hub/llama-cpp-python.md'
     - Using Together Compute: 'hub/together.md'
     - Using Anyscale: 'hub/anyscale.md'
+    - Using Groq: 'hub/groq.md'
+    - Using Mistral: 'hub/mistral.md'
+    - Using Cohere: 'hub/cohere.md'
     - Batch Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
     - Action Items: 'hub/action_items.md'
     - Partial Streaming: 'hub/partial_streaming.md'
     - Extract Contact Info: 'hub/extract_contact_info.md'
     - Using Mistral Large: 'hub/mistral.md'
     - Knowledge Graphs: 'hub/knowledge_graph.md'
+    - Extract Youtube Clips: "hub/youtube_clips.md"
+    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
+  - CLI Reference:
+      - "CLI Reference": "cli/index.md"
+      - "Finetuning GPT-3.5": "cli/finetune.md"
+      - "Usage Tracking": "cli/usage.md"
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
     - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
     - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
     - Validation: 'tutorials/4-validation.ipynb'
-    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
-  - CLI Reference:
-      - "CLI Reference": "cli/index.md"
-      - "Finetuning GPT-3.5": "cli/finetune.md"
-      - "Usage Tracking": "cli/usage.md"
-  - API Reference:
-      - 'Core Library': 'api.md'
-  - Blog:
-    - "blog/index.md"
   
 plugins:
   - mkdocs-jupyter:
@@ -219,21 +224,6 @@ plugins:
       post_date_format: yyyy/MM/dd
       post_url_format: "{date}/{slug}"
       authors_file: "{blog}/.authors.yml"
-  - rss:
-      match_path: blog/posts/.* 
-      date_from_meta:
-        as_creation: date
-      categories:
-        - categories
-        - tags 
-      enabled: !ENV [CI, false]
-  - redirects:
-      redirect_maps:
-        'blog/posts/ollama.md': 'hub/ollama.md'
-        'blob/posts/llama-cpp-python.md': 'hub/llama-cpp-python.md'
-        'blog/posts/together.md': 'hub/together.md'
-        'blog/posts/anyscale.md': 'hub/anyscale.md'
-        'examples/action_items.md': 'hub/action_items.md'
 extra:
   analytics:
     provider: google

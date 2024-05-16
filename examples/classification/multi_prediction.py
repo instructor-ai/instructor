@@ -1,11 +1,10 @@
 import enum
 import instructor
 
-from typing import List
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 # Define new Enum class for multiple labels
@@ -17,7 +16,7 @@ class MultiLabels(str, enum.Enum):
 
 # Adjust the prediction model to accommodate a list of labels
 class MultiClassPrediction(BaseModel):
-    predicted_labels: List[MultiLabels]
+    predicted_labels: list[MultiLabels]
 
 
 # Modify the classify function

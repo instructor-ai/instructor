@@ -3,7 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 ---
 
-- [ ] This is an actually a bug report.
+- [ ] This is actually a bug report.
 - [ ] I am not getting good LLM Results
 - [ ] I have tried asking for help in the community on discord or discussions and have not received a response.
 - [ ] I have tried searching the documentation and have not found an answer.

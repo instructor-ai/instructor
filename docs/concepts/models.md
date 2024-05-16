@@ -30,7 +30,7 @@ Here all docstrings, types, and field annotations will be used to generate the p
 
 ## Optional Values
 
-If we use `Optional` and `default`, they will be considered not required when sent to the language model
+If we use `Optional` and `default`, they will be considered not required when sent to the language model.
 
 ```python
 from pydantic import BaseModel, Field
@@ -42,6 +42,8 @@ class User(BaseModel):
     age: int = Field(description="The age of the user.")
     email: Optional[str] = Field(description="The email of the user.", default=None)
 ```
+
+Note that fields can also be omitted entirely from being sent to the language model by using Pydantic's `SkipJsonSchema` annotation. See [Fields](fields.md#omitting-fields-from-schema-sent-to-the-language-model) for additional details.
 
 ## Dynamic model creation
 
@@ -141,7 +143,7 @@ from openai import OpenAI
 
 import instructor
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class SearchQuery(BaseModel):
@@ -150,7 +152,7 @@ class SearchQuery(BaseModel):
 
     def execute(self):
         print(f"Searching for {self.query} of type {self.query_type}")
-        #> Searching for cat pictures of type image
+        #> Searching for cat of type image
         return "Results for cat"
 
 

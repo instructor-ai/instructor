@@ -58,7 +58,7 @@ class UserDetails(BaseModel):
 
 
 # enables `response_model` in create call
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(
         base_url="https://api.endpoints.anyscale.com/v1",
         api_key=os.environ["ANYSCALE_API_KEY"],

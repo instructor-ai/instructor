@@ -4,11 +4,10 @@ import asyncio
 
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, field_validator
-from typing import List
 from enum import Enum
 
 client = AsyncOpenAI()
-client = instructor.patch(client, mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
 sem = asyncio.Semaphore(5)
 
 
@@ -42,7 +41,7 @@ class QuestionClassification(BaseModel):
     chain_of_thought: str = Field(
         ..., description="The chain of thought that led to the classification"
     )
-    classification: List[QuestionType] = Field(
+    classification: list[QuestionType] = Field(
         description=f"An accuracy and correct prediction predicted class of question. Only allowed types: {[t.value for t in QuestionType]}, should be used",
     )
 
@@ -54,7 +53,7 @@ class QuestionClassification(BaseModel):
         return v
 
 
-async def classify(data: str) -> QuestionClassification:
+async def classify(data: str):
     async with sem:  # some simple rate limiting
         return data, await client.chat.completions.create(
             model="gpt-4",
@@ -69,9 +68,7 @@ async def classify(data: str) -> QuestionClassification:
         )
 
 
-async def main(
-    questions: List[str], *, path_to_jsonl: str = None
-) -> List[QuestionClassification]:
+async def main(questions: list[str], *, path_to_jsonl: str = None):
     tasks = [classify(question) for question in questions]
     for task in asyncio.as_completed(tasks):
         question, label = await task

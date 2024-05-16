@@ -28,6 +28,7 @@ print(model.model_json_schema())
             'type': 'boolean',
         }
     },
+    'required': ['content'],
     'title': 'Response',
     'type': 'object',
 }
@@ -40,7 +41,7 @@ print(model.model_json_schema())
 import instructor
 import openai
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 # Response model with simple types like str, int, float, bool
 resp = client.chat.completions.create(
@@ -68,7 +69,7 @@ import openai
 from typing import Annotated
 from pydantic import Field
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 UpperCaseStr = Annotated[str, Field(description="string must be upper case")]
 
@@ -97,7 +98,7 @@ import instructor
 import openai
 from typing import Literal
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 resp = client.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -129,7 +130,7 @@ class Label(str, Enum):
     SHIPPING = "SHIPPING"
 
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 resp = client.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -153,7 +154,7 @@ import instructor
 import openai
 from typing import List
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 resp = client.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -181,7 +182,7 @@ import openai
 from pydantic import BaseModel
 from typing import Union
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class Add(BaseModel):
@@ -260,7 +261,7 @@ MarkdownDataFrame = Annotated[
 ]
 
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 resp = client.chat.completions.create(
     model="gpt-3.5-turbo",
@@ -294,7 +295,7 @@ import openai
 from pydantic import BaseModel
 from typing import Union, List
 
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 class Weather(BaseModel, frozen=True):

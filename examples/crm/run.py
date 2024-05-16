@@ -1,10 +1,9 @@
-from typing import List
 from enum import Enum
 from pydantic import BaseModel, Field
 import instructor
 from openai import OpenAI
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class CRMSource(Enum):
@@ -36,7 +35,7 @@ class CRMSearchQuery(BaseModel):
     for large locations decompose into multiple queries of smaller locations
     """
 
-    queries: List[CRMSearch]
+    queries: list[CRMSearch]
 
 
 def query_crm(query: str) -> CRMSearchQuery:

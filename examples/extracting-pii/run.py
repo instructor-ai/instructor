@@ -1,10 +1,9 @@
-from typing import List
 from pydantic import BaseModel
 
 import instructor
 from openai import OpenAI
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class Data(BaseModel):
@@ -18,7 +17,7 @@ class PIIDataExtraction(BaseModel):
     Extracted PII data from a document, all data_types should try to have consistent property names
     """
 
-    private_data: List[Data]
+    private_data: list[Data]
 
     def scrub_data(self, content):
         """

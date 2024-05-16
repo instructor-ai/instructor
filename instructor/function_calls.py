@@ -1,44 +1,33 @@
-from typing import Any, Dict, Optional, Type, TypeVar
-from docstring_parser import parse
+import json
+import logging
 from functools import wraps
-from pydantic import BaseModel, create_model
+from typing import Annotated, Any, Optional, TypeVar, cast
+
+from docstring_parser import parse
+from openai.types.chat import ChatCompletion
+from pydantic import (  # type: ignore - remove once Pydantic is updated
+    BaseModel,
+    ConfigDict,
+    Field,
+    TypeAdapter,
+    create_model,
+)
+
 from instructor.exceptions import IncompleteOutputException
-import enum
-import warnings
+from instructor.mode import Mode
+from instructor.utils import classproperty, extract_json_from_codeblock
 
 T = TypeVar("T")
 
-
-class Mode(enum.Enum):
-    """The mode to use for patching the client"""
-
-    FUNCTIONS: str = "function_call"
-    PARALLEL_TOOLS: str = "parallel_tool_call"
-    TOOLS: str = "tool_call"
-    MISTRAL_TOOLS: str = "mistral_tools"
-    JSON: str = "json_mode"
-    MD_JSON: str = "markdown_json_mode"
-    JSON_SCHEMA: str = "json_schema_mode"
-
-    def __new__(cls, value: str) -> "Mode":
-        member = object.__new__(cls)
-        member._value_ = value
-
-        # Deprecation warning for FUNCTIONS
-        if value == "function_call":
-            warnings.warn(
-                "FUNCTIONS is deprecated and will be removed in future versions",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        return member
+logger = logging.getLogger("instructor")
 
 
-class OpenAISchema(BaseModel):  # type: ignore[misc]
-    @classmethod  # type: ignore[misc]
-    @property
-    def openai_schema(cls) -> Dict[str, Any]:
+class OpenAISchema(BaseModel):
+    # Ignore classproperty, since Pydantic doesn't understand it like it would a normal property.
+    model_config = ConfigDict(ignored_types=(classproperty,))
+
+    @classproperty
+    def openai_schema(cls) -> dict[str, Any]:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
 
@@ -79,14 +68,22 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
             "parameters": parameters,
         }
 
+    @classproperty
+    def anthropic_schema(cls) -> dict[str, Any]:
+        return {
+            "name": cls.openai_schema["name"],
+            "description": cls.openai_schema["description"],
+            "input_schema": cls.model_json_schema(),
+        }
+
     @classmethod
     def from_response(
         cls,
-        completion: T,
-        validation_context: Optional[Dict[str, Any]] = None,
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
-    ) -> Dict[str, Any]:
+    ) -> BaseModel:
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -99,52 +96,145 @@ class OpenAISchema(BaseModel):  # type: ignore[misc]
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-        assert hasattr(completion, "choices")
+        if mode == Mode.ANTHROPIC_TOOLS:
+            return cls.parse_anthropic_tools(completion, validation_context, strict)
+
+        if mode == Mode.ANTHROPIC_JSON:
+            return cls.parse_anthropic_json(completion, validation_context, strict)
+
+        if mode == Mode.COHERE_TOOLS:
+            return cls.parse_cohere_tools(completion, validation_context, strict)
 
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException()
 
-        message = completion.choices[0].message
-
         if mode == Mode.FUNCTIONS:
-            assert (
-                message.function_call.name == cls.openai_schema["name"]  # type: ignore[index]
-            ), "Function name does not match"
+            return cls.parse_functions(completion, validation_context, strict)
+
+        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
+            return cls.parse_tools(completion, validation_context, strict)
+
+        if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
+            return cls.parse_json(completion, validation_context, strict)
+
+        raise ValueError(f"Invalid patch mode: {mode}")
+
+    @classmethod
+    def parse_anthropic_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        tool_calls = [c.input for c in completion.content if c.type == "tool_use"]  # type: ignore - TODO update with anthropic specific types
+
+        tool_calls_validator = TypeAdapter(
+            Annotated[list[Any], Field(min_length=1, max_length=1)]
+        )
+        tool_call = tool_calls_validator.validate_python(tool_calls)[0]
+
+        return cls.model_validate(tool_call, context=validation_context, strict=strict)
+
+    @classmethod
+    def parse_anthropic_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        from anthropic.types import Message
+
+        assert isinstance(completion, Message)
+
+        text = completion.content[0].text
+        extra_text = extract_json_from_codeblock(text)
+
+        if strict:
             return cls.model_validate_json(
-                message.function_call.arguments,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
-            assert (
-                len(message.tool_calls) == 1
-            ), "Instructor does not support multiple tool calls, use List[Model] instead."
-            tool_call = message.tool_calls[0]
-            assert (
-                tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
-            ), "Tool name does not match"
-            return cls.model_validate_json(
-                tool_call.function.arguments,
-                context=validation_context,
-                strict=strict,
-            )
-        elif mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
-            return cls.model_validate_json(
-                message.content,
-                context=validation_context,
-                strict=strict,
+                extra_text, context=validation_context, strict=True
             )
         else:
-            raise ValueError(f"Invalid patch mode: {mode}")
+            # Allow control characters.
+            parsed = json.loads(extra_text, strict=False)
+            # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
+            return cls.model_validate(parsed, context=validation_context, strict=False)
+
+    @classmethod
+    def parse_cohere_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        text = cast(str, completion.text)  # type: ignore - TODO update with cohere specific types
+        extra_text = extract_json_from_codeblock(text)
+        return cls.model_validate_json(
+            extra_text, context=validation_context, strict=strict
+        )
+
+    @classmethod
+    def parse_functions(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        message = completion.choices[0].message
+        assert (
+            message.function_call.name == cls.openai_schema["name"]  # type: ignore[index]
+        ), "Function name does not match"
+        return cls.model_validate_json(
+            message.function_call.arguments,  # type: ignore[attr-defined]
+            context=validation_context,
+            strict=strict,
+        )
+
+    @classmethod
+    def parse_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        message = completion.choices[0].message
+        assert (
+            len(message.tool_calls or []) == 1
+        ), "Instructor does not support multiple tool calls, use List[Model] instead."
+        tool_call = message.tool_calls[0]  # type: ignore
+        assert (
+            tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
+        ), "Tool name does not match"
+        return cls.model_validate_json(
+            tool_call.function.arguments,  # type: ignore
+            context=validation_context,
+            strict=strict,
+        )
+
+    @classmethod
+    def parse_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        message = completion.choices[0].message.content or ""
+        message = extract_json_from_codeblock(message)
+
+        return cls.model_validate_json(
+            message,
+            context=validation_context,
+            strict=strict,
+        )
 
 
-def openai_schema(cls: Type[BaseModel]) -> OpenAISchema:
+def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
-    return wraps(cls, updated=())(
+    shema = wraps(cls, updated=())(
         create_model(
-            cls.__name__,
+            cls.__name__ if hasattr(cls, "__name__") else str(cls),
             __base__=(cls, OpenAISchema),
         )
     )
+    return cast(OpenAISchema, shema)

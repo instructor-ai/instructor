@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List
 
 from pydantic import BaseModel
 
@@ -24,4 +23,4 @@ class PhoneNumber(BaseModel):
 class ExtractPerson(BaseModel):
     name: str
     age: int
-    phoneNumbers: List[PhoneNumber]
+    phoneNumbers: list[PhoneNumber]

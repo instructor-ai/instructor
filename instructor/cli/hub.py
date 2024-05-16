@@ -58,7 +58,7 @@ class HubClient:
         else:
             raise Exception(f"Failed to fetch cookbooks: {response.status_code}")
 
-    def get_content_markdown(self, branch, slug):
+    def get_content_markdown(self, branch: str, slug: str) -> str:
         """Get markdown content."""
         url = f"{self.base_url}/api/{branch}/items/{slug}/md/"
         response = httpx.get(url)
@@ -67,7 +67,7 @@ class HubClient:
         else:
             raise Exception(f"Failed to fetch markdown content: {response.status_code}")
 
-    def get_content_python(self, branch, slug):
+    def get_content_python(self, branch: str, slug: str) -> str:
         """Get Python code blocks from content."""
         url = f"{self.base_url}/api/{branch}/items/{slug}/py/"
         response = httpx.get(url)
@@ -76,12 +76,12 @@ class HubClient:
         else:
             raise Exception(f"Failed to fetch Python content: {response.status_code}")
 
-    def get_cookbook_id(self, id: int, branch: str = "main") -> HubPage:
+    def get_cookbook_id(self, id: int, branch: str = "main") -> Optional[HubPage]:
         for cookbook in self.get_cookbooks(branch):
             if cookbook.id == id:
                 return cookbook
 
-    def get_cookbook_slug(self, slug: str, branch: str = "main") -> HubPage:
+    def get_cookbook_slug(self, slug: str, branch: str = "main") -> Optional[HubPage]:
         for cookbook in self.get_cookbooks(branch):
             if cookbook.slug == slug:
                 return cookbook
@@ -155,7 +155,7 @@ def pull(
 
     if file:
         with open(file, "w") as f:
-            f.write(output)
+            f.write(output)  # type: ignore - markdown is writable
             return
 
     if page:

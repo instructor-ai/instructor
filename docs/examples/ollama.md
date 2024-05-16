@@ -40,7 +40,7 @@ class Character(BaseModel):
 
 
 # enables `response_model` in create call
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(
         base_url="http://localhost:11434/v1",
         api_key="ollama",  # required, but unused

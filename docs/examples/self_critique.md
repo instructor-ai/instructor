@@ -11,7 +11,7 @@ import instructor
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 class QuestionAnswer(BaseModel):
     question: str
@@ -56,13 +56,17 @@ Lets integrate `llm_validator` into the model and see the error message. Its imp
 from pydantic import BaseModel, BeforeValidator
 from typing_extensions import Annotated
 from instructor import llm_validator
+from openai import OpenAI
+import instructor
+
+client = instructor.from_openai(OpenAI())
 
 class QuestionAnswerNoEvil(BaseModel):
     question: str
     answer: Annotated[
         str,
         BeforeValidator(
-            llm_validator("don't say objectionable things", allow_override=True)
+            llm_validator("don't say objectionable things", client=client, allow_override=True)
         ),
     ]
 

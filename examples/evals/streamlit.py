@@ -2,7 +2,7 @@ import streamlit as st
 from stats_dict import stats_dict
 
 # Sample data
-query_data = {i: line.strip() for i, line in enumerate(open("test.jsonl", "r"))}
+query_data = {i: line.strip() for i, line in enumerate(open("test.jsonl"))}
 
 # Initialize selected keys
 selected_keys = {}

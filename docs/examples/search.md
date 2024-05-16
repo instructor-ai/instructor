@@ -13,12 +13,12 @@ The `Search` class is a Pydantic model that defines the structure of the search 
 ```python
 import instructor
 from openai import OpenAI
-from typing import Iterable
+from typing import Iterable, Literal
 from pydantic import BaseModel, Field
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 class Search(BaseModel):
     query: str = Field(..., description="Query to search for relevant content")
@@ -30,7 +30,7 @@ class Search(BaseModel):
         )
 
 
-def segment(data: str) -> MultiSearch:
+def segment(data: str) -> Search:
     return client.chat.completions.create(
         model="gpt-3.5-turbo-0613",
         response_model=Iterable[Search],

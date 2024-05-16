@@ -1,13 +1,14 @@
-from typing import List
-from rich.table import Table
-from rich.console import Console
+# type: ignore - stub mismatched
 
+import time
 from datetime import datetime
-from openai import OpenAI
+from typing import Literal, cast
 
 import openai
 import typer
-import time
+from openai import OpenAI
+from rich.console import Console
+from rich.table import Table
 
 client = OpenAI()
 app = typer.Typer()
@@ -15,7 +16,7 @@ console = Console()
 
 
 # Sample response data
-def generate_file_table(files: List[openai.types.FileObject]) -> Table:
+def generate_file_table(files: list[openai.types.FileObject]) -> Table:
     table = Table(
         title="OpenAI Files",
     )
@@ -37,11 +38,11 @@ def generate_file_table(files: List[openai.types.FileObject]) -> Table:
     return table
 
 
-def get_files(limit: int = 5) -> List[openai.types.FileObject]:
-    files = client.files.list(limit=limit)
+def get_files() -> list[openai.types.FileObject]:
+    files = client.files.list()
     files = files.data
     files = sorted(files, key=lambda x: x.created_at, reverse=True)
-    return files[:limit]
+    return files
 
 
 def get_file_status(file_id: str) -> str:
@@ -51,15 +52,17 @@ def get_file_status(file_id: str) -> str:
 
 @app.command(
     help="Upload a file to OpenAI's servers, will monitor the upload status until it is processed",
-)  # type: ignore[misc]
+)
 def upload(
-    filepath: str = typer.Argument(..., help="Path to the file to upload"),
+    filepath: str = typer.Argument(help="Path to the file to upload"),
     purpose: str = typer.Option("fine-tune", help="Purpose of the file"),
     poll: int = typer.Option(5, help="Polling interval in seconds"),
 ) -> None:
+    # Literals aren't supported by Typer yet.
+    file_purpose = cast(Literal["fine-tune", "assistants"], purpose)
     with open(filepath, "rb") as file:
-        response = client.files.create(file=file, purpose=purpose)
-    file_id = response["id"]
+        response = client.files.create(file=file, purpose=file_purpose)
+    file_id = response["id"]  # type: ignore - types might be out of date
     with console.status(f"Monitoring upload: {file_id}...") as status:
         status.spinner_style = "dots"
         while True:
@@ -72,10 +75,10 @@ def upload(
 
 @app.command(
     help="Download a file from OpenAI's servers",
-)  # type: ignore[misc]
+)
 def download(
-    file_id: str = typer.Argument(..., help="ID of the file to download"),
-    output: str = typer.Argument(..., help="Output path for the downloaded file"),
+    file_id: str = typer.Argument(help="ID of the file to download"),
+    output: str = typer.Argument(help="Output path for the downloaded file"),
 ) -> None:
     with console.status(f"[bold green]Downloading file {file_id}...", spinner="dots"):
         content = client.files.download(file_id)
@@ -86,8 +89,8 @@ def download(
 
 @app.command(
     help="Delete a file from OpenAI's servers",
-)  # type: ignore[misc]
-def delete(file_id: str = typer.Argument(..., help="ID of the file to delete")) -> None:
+)
+def delete(file_id: str = typer.Argument(help="ID of the file to delete")) -> None:
     with console.status(f"[bold red]Deleting file {file_id}...", spinner="dots"):
         try:
             client.files.delete(file_id)
@@ -99,9 +102,9 @@ def delete(file_id: str = typer.Argument(..., help="ID of the file to delete")) 
 
 @app.command(
     help="Monitor the status of a file on OpenAI's servers",
-)  # type: ignore[misc]
+)
 def status(
-    file_id: str = typer.Argument(..., help="ID of the file to check the status of"),
+    file_id: str = typer.Argument(help="ID of the file to check the status of"),
 ) -> None:
     with console.status(f"Monitoring status of file {file_id}...") as status:
         while True:
@@ -114,9 +117,7 @@ def status(
 
 @app.command(
     help="List the files on OpenAI's servers",
-)  # type: ignore[misc]
-def list(
-    limit: int = typer.Option(5, help="Limit the number of files to list"),
-) -> None:
-    files = get_files(limit=limit)
+)
+def list() -> None:
+    files = get_files()
     console.log(generate_file_table(files))

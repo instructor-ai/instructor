@@ -13,7 +13,7 @@ class Hero(SQLModel, instructor.OpenAISchema, table=True):
 
 
 # Function to query OpenAI for a Hero record
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 def create_hero() -> Hero:

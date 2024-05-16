@@ -162,6 +162,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
+.vscode/
+
 examples/citation_with_extraction/fly.toml
 my_cache_directory/
 tutorials/wandb/*

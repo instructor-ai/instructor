@@ -65,7 +65,7 @@ from openai import OpenAI
 
 # Apply the patch to the OpenAI client to support response_model
 # Also use MD_JSON mode since the visino model does not support any special structured output mode
-client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
 
 
 def extract_table(url: str) -> Iterable[Table]:

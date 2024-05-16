@@ -14,7 +14,7 @@ openrouter_base_url = os.environ.get("OPENROUTER_BASE_URL")
 assert openrouter_base_url, "OPENROUTER_BASE_URL is not set in environment variables"
 
 # Initialize OpenAI client
-client = instructor.patch(
+client = instructor.from_openai(
     OpenAI(api_key=openrouter_api_key, base_url=openrouter_base_url),
     mode=Mode.JSON,
 )

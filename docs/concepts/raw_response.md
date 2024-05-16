@@ -1,4 +1,7 @@
-Often times not only do you want the base model but may also want the original response from the API. You can do this by retrieving the `raw_response`, since the `raw_response` is also a pydantic model, you can use any of the pydantic model methods on it.
+
+# Creating a model with completions
+
+In instructor>1.0.0 we have a custom client, if you wish to use the raw response you can do the following
 
 ```python
 import instructor
@@ -6,7 +9,7 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class UserExtract(BaseModel):
@@ -14,7 +17,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user: UserExtract = client.chat.completions.create(
+user, completion = client.chat.completions.create_with_completion(
     model="gpt-3.5-turbo",
     response_model=UserExtract,
     messages=[
@@ -22,10 +25,13 @@ user: UserExtract = client.chat.completions.create(
     ],
 )
 
-print(user._raw_response)
+print(user)
+#> name='Jason' age=25
+
+print(completion)
 """
 ChatCompletion(
-    id='chatcmpl-8u9bsrmmf5YjZyfCtQymoZV8LK1qg',
+    id='chatcmpl-9AUijAMiPb1gQ3qs2bdJepRTVlWip',
     choices=[
         Choice(
             finish_reason='stop',
@@ -37,7 +43,7 @@ ChatCompletion(
                 function_call=None,
                 tool_calls=[
                     ChatCompletionMessageToolCall(
-                        id='call_O5rpXf47YgXiYrYWv45yZUeM',
+                        id='call_yAwmIEIXBdMaKvU8aXnsjdem',
                         function=Function(
                             arguments='{"name":"Jason","age":25}', name='UserExtract'
                         ),
@@ -47,17 +53,11 @@ ChatCompletion(
             ),
         )
     ],
-    created=1708394000,
+    created=1712288397,
     model='gpt-3.5-turbo-0125',
     object='chat.completion',
-    system_fingerprint='fp_69829325d0',
+    system_fingerprint='fp_b28b39ffa8',
     usage=CompletionUsage(completion_tokens=9, prompt_tokens=82, total_tokens=91),
 )
 """
 ```
-
-!!! tip "Accessing tokens usage"
-
-    This is the recommended way to access the tokens usage, since it is a pydantic model you can use any of the pydantic model methods on it. For example, you can access the `total_tokens` by doing `user._raw_response.usage.total_tokens`. Note that this also includes the tokens used during any previous unsuccessful attempts.
-
-    In the future, we may add additional hooks to the `raw_response` to make it easier to access the tokens usage.

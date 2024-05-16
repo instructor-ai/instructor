@@ -1,12 +1,11 @@
 import enum
 import instructor
 
-from typing import List
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
 
-client = instructor.patch(OpenAI())
+client = instructor.from_openai(OpenAI())
 
 
 class NodeType(str, enum.Enum):
@@ -31,7 +30,7 @@ class Node(BaseModel):
     """
 
     name: str = Field(..., description="Name of the folder")
-    children: List["Node"] = Field(
+    children: list["Node"] = Field(
         default_factory=list,
         description="List of children nodes, only applicable for folders, files cannot have children",
     )
