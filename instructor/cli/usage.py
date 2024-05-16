@@ -85,6 +85,8 @@ def get_model_cost(
         return MODEL_COSTS["gpt-3.5-turbo-16k"]
     elif model.startswith("gpt-3.5-turbo"):
         return MODEL_COSTS["gpt-3.5-turbo"]
+    elif model.startswith("gpt-4-turbo"):
+        return MODEL_COSTS["gpt-4-turbo-preview"]
     elif model.startswith("gpt-4-32k"):
         return MODEL_COSTS["gpt-4-32k"]
     elif model.startswith("gpt-4o"):
