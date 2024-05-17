@@ -16,7 +16,7 @@ The instructor values [simplicity](https://eugeneyan.com/writing/simplicity/) an
 
 ### Proof that its flexible
 
-1. If you build a system with OpenAI dirrectly, it is easy to incrementally adopt instructor.
+1. If you build a system with OpenAI directly, it is easy to incrementally adopt instructor.
 2. Add `response_model` and if you want to revert, just remove it.
 
 ## The zen of `instructor`
