@@ -150,7 +150,12 @@ class PartialBase(Generic[T_Model]):
     ) -> Generator[str, None, None]:
         for chunk in completion:
             try:
-                if chunk.choices:
+                if mode == Mode.ANTHROPIC_JSON:
+                    if json_chunk := chunk.delta.text:
+                        yield json_chunk
+                if mode == Mode.ANTHROPIC_TOOLS:
+                    yield chunk.model_extra.get("delta", "").get("partial_json", "")
+                elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
@@ -173,7 +178,12 @@ class PartialBase(Generic[T_Model]):
     ) -> AsyncGenerator[str, None]:
         async for chunk in completion:
             try:
-                if chunk.choices:
+                if mode == Mode.ANTHROPIC_JSON:
+                    if json_chunk := chunk.delta.text:
+                        yield json_chunk
+                if mode == Mode.ANTHROPIC_TOOLS:
+                    yield chunk.model_extra.get("delta", "").get("partial_json", "")
+                elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
