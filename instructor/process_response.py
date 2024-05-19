@@ -280,6 +280,7 @@ def handle_response_model(
         elif mode == Mode.ANTHROPIC_TOOLS:
             tool_descriptions = response_model.anthropic_schema
             new_kwargs["tools"] = [tool_descriptions]
+            new_kwargs["tool_choice"] = {"type": "tool", "name": response_model.__name__}
 
             system_messages = [
                 m["content"] for m in new_kwargs["messages"] if m["role"] == "system"

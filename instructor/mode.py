@@ -2,7 +2,18 @@ import enum
 import warnings
 
 
-class Mode(enum.Enum):
+class _WarnOnFunctionsAccessEnumMeta(enum.EnumMeta):
+    def __getattribute__(cls, name):
+        if name == "FUNCTIONS":
+            warnings.warn(
+                "FUNCTIONS is deprecated and will be removed in future versions",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        return super().__getattribute__(name)
+
+
+class Mode(enum.Enum, metaclass=_WarnOnFunctionsAccessEnumMeta):
     """The mode to use for patching the client"""
 
     FUNCTIONS = "function_call"
@@ -15,17 +26,3 @@ class Mode(enum.Enum):
     ANTHROPIC_TOOLS = "anthropic_tools"
     ANTHROPIC_JSON = "anthropic_json"
     COHERE_TOOLS = "cohere_tools"
-
-    def __new__(cls, value: str) -> "Mode":
-        member = object.__new__(cls)
-        member._value_ = value
-
-        # Deprecation warning for FUNCTIONS
-        if value == "function_call":
-            warnings.warn(
-                "FUNCTIONS is deprecated and will be removed in future versions",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        return member
