@@ -4,7 +4,7 @@ class IncompleteOutputException(Exception):
     def __init__(
         self,
         *args,
-        last_completion,
+        last_completion = None,
         message: str = "The output is incomplete due to a max_tokens length limit.",
         **kwargs,
     ):
