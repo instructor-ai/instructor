@@ -9,6 +9,6 @@ class IncompleteOutputException(Exception):
         **kwargs,
     ):
         self.last_completion = last_completion
-        self.message = message
+        super().__init__(message, *args, **kwargs)
         super().__init__(*args, **kwargs)
 
