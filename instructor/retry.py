@@ -99,6 +99,11 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
         }
         return
+    if mode == Mode.GEMINI_JSON:
+        yield {
+            "role": "user",
+            "parts": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
+        }
 
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration
@@ -165,6 +170,8 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
+                    if mode in {Mode.GEMINI_JSON}:
+                        kwargs["contents"].extend(reask_messages(response, mode, e))
                     kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
                         kwargs["messages"] = merge_consecutive_messages(

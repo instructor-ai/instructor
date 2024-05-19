@@ -26,6 +26,8 @@ from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
 
+from .utils import transform_to_gemini_prompt
+
 logger = logging.getLogger("instructor")
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -345,6 +347,34 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 )
             new_kwargs["message"] = instruction
             new_kwargs["chat_history"] = chat_history
+        elif mode == Mode.GEMINI_JSON:
+            message = dedent(
+                f"""
+                As a genius expert, your task is to understand the content and provide
+                the parsed objects in json that match the following json_schema:\n
+
+                {json.dumps(response_model.model_json_schema(), indent=2)}
+
+                Make sure to return an instance of the JSON, not the schema itself
+                """
+            )
+            # check that the first message is a system message
+            # if it is not, add a system message to the beginning
+            if new_kwargs["messages"][0]["role"] != "system":
+                new_kwargs["messages"].insert(
+                    0,
+                    {
+                        "role": "system",
+                        "content": message,
+                    },
+                )
+            # if it is, system append the schema to the end
+            else:
+                new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+
+            # gemini has a different prompt format and params from other providers
+            new_kwargs["contents"] = transform_to_gemini_prompt(new_kwargs["messages"])
+            del new_kwargs["messages"]
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 
