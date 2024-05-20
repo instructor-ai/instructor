@@ -1,6 +1,9 @@
-# Streaming Partial Responses
+# Streaming Partial Responses (Anthropics Support)
+
 
 Field level streaming provides incremental snapshots of the current state of the response model that are immediately useable. This approach is particularly relevant in contexts like rendering UI components.
+
+Anthropics now supports streaming with the `create_partial` function. This allows for streaming of partial responses with Anthropics as a provider. The examples in this document have been updated to reflect this change.
 
 Instructor supports this pattern by making use of `create_partial`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`.
 
@@ -8,32 +11,32 @@ Instructor supports this pattern by making use of `create_partial`. This lets us
 
 Consider what happens whene we define a response model:
 
-```python
+\`\`\`python
 from pydantic import BaseModel
 
 
 class User(BaseModel):
     name: str
     age: int
-```
+\`\`\`
 
 If we streamed json out from OpenAI, we would only be able to parse when the object is completed returned!
 
-```
+\`\`\`
 {"name": "Jo
 {"name": "John", "ag
 {"name": "John", "age":
 {"name": "John", "age": 25} # Completed
-```
+\`\`\`
 
 When specifying a `create_partial` and setting `stream=True`, the response from `instructor` becomes a `Generator[T]`. As the generator yields results, you can iterate over these incremental updates. The last value yielded by the generator represents the completed extraction!
 
-```
+\`\`\`
 {"name": "Jo                 => User(name="Jo", age=None)
 {"name": "John", "ag         => User(name="John", age=None)
 {"name": "John", "age:       => User(name="John", age=None)
 {"name": "John", "age": 25}  => User(name="John", age=25)
-```
+\`\`\`
 
 !!! warning "Limited Validator Support"
 
@@ -41,7 +44,7 @@ When specifying a `create_partial` and setting `stream=True`, the response from 
 
 Let's look at an example of streaming an extraction of conference information, that would be used to stream in an react component.
 
-```python
+\`\`\`python
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
@@ -49,6 +52,8 @@ from typing import List
 from rich.console import Console
 
 client = instructor.from_openai(OpenAI())
+
+client = instructor.from_anthropics(Anthropics())
 
 text_block = """
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -65,10 +70,12 @@ A follow-up meetingis scheduled for January 25th at 3 PM GMT to finalize the age
 """
 
 
+
 class User(BaseModel):
     name: str
     email: str
     twitter: str
+
 
 
 class MeetingInfo(BaseModel):
@@ -79,8 +86,9 @@ class MeetingInfo(BaseModel):
     deadline: str
 
 
+
 extraction_stream = client.chat.completions.create_partial(
-    model="gpt-4",
+    model="claude-3-haiku-20240307",
     response_model=MeetingInfo,
     messages=[
         {
@@ -92,6 +100,7 @@ extraction_stream = client.chat.completions.create_partial(
 )
 
 
+
 console = Console()
 
 for extraction in extraction_stream:
@@ -100,6 +109,7 @@ for extraction in extraction_stream:
     console.print(obj)
 
 print(extraction.model_dump_json(indent=2))
+
 """
 {
   "users": [
@@ -125,7 +135,8 @@ print(extraction.model_dump_json(indent=2))
   "deadline": "February 20th"
 }
 """
-```
+
+\`\`\`
 
 This will output the following:
 
@@ -135,12 +146,12 @@ This will output the following:
 
 I also just want to call out in this example that `instructor` also supports asynchronous streaming. This is useful when you want to stream a response model and process the results as they come in, but you'll need to use the `async for` syntax to iterate over the results.
 
-```python
+
 import instructor
-from openai import AsyncOpenAI
+from anthropics import AsyncAnthropics
 from pydantic import BaseModel
 
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_anthropics(AsyncAnthropics())
 
 
 class User(BaseModel):
@@ -148,9 +159,10 @@ class User(BaseModel):
     age: int
 
 
+
 async def print_partial_results():
     user = client.chat.completions.create_partial(
-        model="gpt-4-turbo-preview",
+        model="claude-3-haiku-20240307",
         response_model=User,
         max_retries=2,
         stream=True,
@@ -172,7 +184,7 @@ async def print_partial_results():
         #> name='Jason' age=12
 
 
+
 import asyncio
 
 asyncio.run(print_partial_results())
-```
