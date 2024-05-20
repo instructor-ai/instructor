@@ -106,7 +106,7 @@ class OpenAISchema(BaseModel):
             return cls.parse_cohere_tools(completion, validation_context, strict)
 
         if completion.choices[0].finish_reason == "length":
-            raise IncompleteOutputException()
+            raise IncompleteOutputException(last_completion=completion)
 
         if mode == Mode.FUNCTIONS:
             return cls.parse_functions(completion, validation_context, strict)
