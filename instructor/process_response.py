@@ -234,7 +234,7 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
-        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA, Mode.DATABRICKS_JSON}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
             message = dedent(

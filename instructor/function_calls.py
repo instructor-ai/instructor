@@ -114,7 +114,7 @@ class OpenAISchema(BaseModel):
         if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             return cls.parse_tools(completion, validation_context, strict)
 
-        if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
+        if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.DATABRICKS_JSON}:
             return cls.parse_json(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
