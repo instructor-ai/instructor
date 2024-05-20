@@ -3,9 +3,8 @@
 Instructor is a Python library that makes it a breeze to work with structured outputs from large language models (LLMs). Built on top of Pydantic, it provides a simple, transparent, and user-friendly API to manage validation, retries, and streaming responses. Get ready to supercharge your LLM workflows!
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
-[![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/CV8sPM5k5Y)
+[![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
-
 
 ## Key Features
 
@@ -124,7 +123,6 @@ assert isinstance(resp, User)
 assert resp.name == "Jason"
 assert resp.age == 25
 ```
-
 
 ### Using Litellm
 
@@ -250,7 +248,6 @@ user, completion = client.chat.completions.create_with_completion(
 ```
 
 ![with_completion](./docs/blog/posts/img/with_completion.png)
-
 
 ### Streaming Partial Objects: `create_partial`
 
