@@ -99,7 +99,7 @@ email = client.messages.create(
     model="gpt-3.5-turbo",
     max_tokens=1024,
     max_retries=3,
-    messages=[ # (3)!
+    messages=[ #(1)!
         {
             "role": "user",
             "content": "I'm responding to a student's question. Here is the link to the documentation: {{doc_link1}} and {{doc_link2}}",
