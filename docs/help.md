@@ -4,7 +4,7 @@ If you need help getting started with Instructor or with advanced usage, the fol
 
 ## :material-discord: Discord
 
-The [Discord](https://discord.gg/CV8sPM5k5Y) is a great place to ask questions and get help from the community.
+The [Discord](https://discord.gg/bD9YE9JArw) is a great place to ask questions and get help from the community.
 
 ## :material-creation: Concepts
 
