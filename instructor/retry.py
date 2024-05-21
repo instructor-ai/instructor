@@ -102,8 +102,11 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.GEMINI_JSON:
         yield {
             "role": "user",
-            "parts": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
+            "parts": [
+                f"Correct the following JSON response, based on the errors given below:\n\nJSON:\n{response.text}\n\nExceptions:\n{exception}"
+            ],
         }
+        return
 
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration

@@ -169,7 +169,13 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        text = completion.text
+        try:
+            text = completion.text
+        except ValueError:
+            logger.debug(
+                f"Error response: {completion._result.candidates[0].finish_reason}\n\n{completion_result.candidates[0].safety_ratings}"
+            )
+
         extra_text = extract_json_from_codeblock(text)
 
         if strict:
