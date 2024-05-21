@@ -66,3 +66,25 @@ from openai import OpenAI
 
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 ```
+
+## Databricks JSON Mode
+
+This is similar to Markdown JSON Mode, but does not provide an extra user message as Databricks Foundational models only support alternating message types. This should only be used when using [Databricks Foundational models served from a Databricks Workspace](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/model-serving/score-foundation-models#openaiclient-1).
+
+!!! warning "Experimental"
+
+    This mode is experimental and subject to change.
+
+```python
+import instructor
+from openai import OpenAI
+
+# Assuming Databricks secrets are set
+client = instructor.from_openai(
+    OpenAI(
+        api_key=dbutils.secrets.get("databricks", "token"),
+        base_url=f"{dbutils.secrets.get('databricks', 'host')}/serving-endpoints",
+    ),
+    mode=instructor.Mode.DATABRICKS_JSON
+)
+```
