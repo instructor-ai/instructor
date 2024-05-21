@@ -66,3 +66,14 @@ from openai import OpenAI
 
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 ```
+
+## Gemini JSON Mode
+
+This mode uses Gemini's response mimetype field to generate a response in JSON format using the schema provided.
+
+```python
+import instructor
+import google.generativeai as genai
+
+client = instructor.from_gemini(genai.GenerativeModel(), mode=instructor.Mode.MD_JSON)
+```
