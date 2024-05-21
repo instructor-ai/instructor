@@ -23,7 +23,8 @@ def from_cohere(
     client: cohere.Client,
     mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
     **kwargs: Any,
-) -> instructor.Instructor: ...
+) -> instructor.Instructor:
+    ...
 
 
 @overload
@@ -31,7 +32,8 @@ def from_cohere(
     client: cohere.AsyncClient,
     mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
     **kwargs: Any,
-) -> instructor.AsyncInstructor: ...
+) -> instructor.AsyncInstructor:
+    ...
 
 
 def from_cohere(
