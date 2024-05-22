@@ -264,6 +264,9 @@ def handle_response_model(
                         "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
                     },
                 )
+                # For some providers, the messages array must be alternating roles of user and assistant, we must merge
+                # consecutive user messages into a single message
+                new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":

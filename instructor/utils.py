@@ -43,6 +43,7 @@ class Provider(Enum):
     GROQ = "groq"
     MISTRAL = "mistral"
     COHERE = "cohere"
+    DATABRICKS = "databricks"
     UNKNOWN = "unknown"
 
 
@@ -61,6 +62,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.MISTRAL
     elif "cohere" in str(base_url):
         return Provider.COHERE
+    elif "databricks" in str(base_url):
+        return Provider.DATABRICKS
     return Provider.UNKNOWN
 
 
@@ -172,13 +175,22 @@ def is_async(func: Callable[..., Any]) -> bool:
 def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     # merge all consecutive user messages into a single message
     new_messages: list[dict[str, Any]] = []
+    # Detect whether all messages have a flat content (i.e. all string)
+    # Some providers require content to be a string, so we need to check that and behave accordingly
+    flat_string = all(isinstance(m["content"], str) for m in messages)
     for message in messages:
         new_content = message["content"]
-        if isinstance(new_content, str):
+        if not flat_string and isinstance(new_content, str):
+            # If content is not flat, transform it into a list of text
             new_content = [{"type": "text", "text": new_content}]
 
         if len(new_messages) > 0 and message["role"] == new_messages[-1]["role"]:
-            new_messages[-1]["content"].extend(new_content)
+            if flat_string:
+                # New content is a string
+                new_messages[-1]["content"] += f"\n\n{new_content}"
+            else:
+                # New content is a list
+                new_messages[-1]["content"].extend(new_content)
         else:
             new_messages.append(
                 {
