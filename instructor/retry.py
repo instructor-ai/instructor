@@ -175,7 +175,8 @@ def retry_sync(
                     logger.debug(f"Error response: {response}")
                     if mode in {Mode.GEMINI_JSON}:
                         kwargs["contents"].extend(reask_messages(response, mode, e))
-                    kwargs["messages"].extend(reask_messages(response, mode, e))
+                    else:
+                        kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]
@@ -184,7 +185,7 @@ def retry_sync(
                         e,
                         last_completion=response,
                         n_attempts=attempt.retry_state.attempt_number,
-                        messages=kwargs["messages"],
+                        messages=kwargs.get("messages", kwargs.get("contents")),
                         total_usage=total_usage,
                     ) from e
     except RetryError as e:
@@ -192,7 +193,7 @@ def retry_sync(
             e,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
-            messages=kwargs["messages"],
+            messages=kwargs.get("messages", kwargs.get("contents")),
             total_usage=total_usage,
         ) from e
 
