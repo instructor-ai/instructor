@@ -234,7 +234,7 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
-        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA, Mode.DATABRICKS_JSON}:
+        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
             message = dedent(
@@ -264,6 +264,9 @@ def handle_response_model(
                         "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
                     },
                 )
+                # For some providers, the messages array must be alternating roles of user and assistant, we must merge
+                # consecutive user messages into a single message
+                new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":

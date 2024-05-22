@@ -54,12 +54,13 @@ client = instructor.from_openai(OpenAI(), mode=instructor.Mode.JSON)
 
 ## Markdown JSON Mode
 
-This just asks for the response in JSON format, but it is not recommended, and may not be supported in the future, this is just left to support vision models and will not give you the full benefits of instructor.
+This just asks for the response in JSON format, but it is not recommended, and may not be supported in the future, this is just left to support vision models and models provided by Databricks and will not give you the full benefits of instructor.
 
 !!! warning "Experimental"
 
-    This is not recommended, and may not be supported in the future, this is just left to support vision models.
+    This is not recommended, and may not be supported in the future, this is just left to support vision models and models provided by Databricks.
 
+General syntax:
 ```python
 import instructor
 from openai import OpenAI
@@ -67,14 +68,7 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 ```
 
-## Databricks JSON Mode
-
-This is similar to Markdown JSON Mode, but does not provide an extra user message as Databricks Foundational models only support alternating message types. This should only be used when using [Databricks Foundational models served from a Databricks Workspace](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/model-serving/score-foundation-models#openaiclient-1).
-
-!!! warning "Experimental"
-
-    This mode is experimental and subject to change.
-
+Databricks syntax:
 ```python
 import instructor
 from openai import OpenAI
@@ -85,6 +79,6 @@ client = instructor.from_openai(
         api_key=dbutils.secrets.get("databricks", "token"),
         base_url=f"{dbutils.secrets.get('databricks', 'host')}/serving-endpoints",
     ),
-    mode=instructor.Mode.DATABRICKS_JSON
+    mode=instructor.Mode.MD_JSON
 )
 ```
