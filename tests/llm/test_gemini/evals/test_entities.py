@@ -4,7 +4,6 @@ import pytest
 import google.generativeai as genai
 import instructor
 
-from instructor.function_calls import Mode
 from ..util import models, modes
 
 
@@ -40,7 +39,7 @@ class DocumentExtraction(BaseModel):
     )
 
 
-def ask_ai(content, model, client) -> DocumentExtraction:
+def ask_ai(content, client) -> DocumentExtraction:
     resp: DocumentExtraction = client.chat.completions.create(
         response_model=DocumentExtraction,
         messages=[
@@ -87,6 +86,6 @@ The contract can be terminated with a 30-day notice, unless there are outstandin
 def test_extract(model, mode):
     client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
 
-    extract = ask_ai(content=content, model=model, client=client)
+    extract = ask_ai(content=content, client=client)
 
     assert len(extract.entities) > 0

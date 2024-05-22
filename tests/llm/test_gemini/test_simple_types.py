@@ -1,10 +1,8 @@
-import pytest
 import instructor
 import enum
 
 import google.generativeai as genai
-from typing import Annotated, Literal, Union
-from pydantic import Field
+from typing import Literal, Union
 
 
 def test_literal():

@@ -2,7 +2,6 @@ import pytest
 from itertools import product
 from pydantic import BaseModel
 import instructor
-from instructor.function_calls import Mode
 import google.generativeai as genai
 from ..util import models, modes
 

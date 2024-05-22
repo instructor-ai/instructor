@@ -7,7 +7,6 @@ import google.generativeai as genai
 
 from pydantic import BaseModel
 
-from instructor.function_calls import Mode
 from ..util import models, modes
 
 
