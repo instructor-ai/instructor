@@ -86,6 +86,7 @@ litellm = "^1.35.31"
 
 [tool.poetry.group.google-generativeai.dependencies]
 google-generativeai = "^0.5.4"
+jsonref = "^1.1.0"
 
 [build-system]
 requires = ["poetry-core"]

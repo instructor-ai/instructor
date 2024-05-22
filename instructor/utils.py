@@ -8,10 +8,13 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Dict,
     Generic,
+    Optional,
     Protocol,
     TypeVar,
 )
+from pydantic import BaseModel
 
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
@@ -246,3 +249,69 @@ def transform_to_gemini_prompt(
         messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
 
     return messages_gemini
+
+
+def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
+    """
+    Gemini function call schemas are very strict
+
+    # function declaration reference - https://github.com/google-gemini/generative-ai-js/blob/main/docs/reference/main/generative-ai.functiondeclarationschema.md
+
+    # function property reference - https://github.com/google-gemini/generative-ai-js/blob/main/docs/reference/main/generative-ai.functiondeclarationschemaproperty.md
+    """
+
+    class GeminiSchema(BaseModel):
+        description: Optional[str] = None
+        required: Optional[list[str]] = None
+        type: str
+        properties: Optional[Dict[str, "PropertySchema"]] = None
+
+        class Config:
+            exclude_unset = True
+
+    class PropertySchema(BaseModel):
+        description: Optional[str] = None
+        enum: Optional[list[str]] = None
+        example: Optional[Any] = None
+        format: Optional[str] = None
+        nullable: Optional[bool] = None
+        items: Optional[GeminiSchema] = None
+        required: Optional[list[str]] = None
+        type: str
+        properties: Optional[GeminiSchema] = None
+
+        class Config:
+            exclude_unset = True
+
+    return GeminiSchema(**obj).model_dump(exclude_none=True)
+
+
+def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    map_openai_args_to_gemini = {
+        "max_tokens": "max_output_tokens",
+        "temperature": "temperature",
+        "n": "candidate_count",
+        "top_p": "top_p",
+        "stop": "stop_sequences",
+    }
+
+    # update gemini config if any params are set
+    for k, v in map_openai_args_to_gemini.items():
+        val = kwargs.pop(k, None)
+        if val == None:
+            continue
+        kwargs["generation_config"][v] = val
+
+    # gemini has a different prompt format and params from other providers
+    kwargs["contents"] = transform_to_gemini_prompt(kwargs.pop("messages"))
+
+    # minimize gemini safety related errors - model is highly prone to false alarms
+    from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
+
+    kwargs["safety_settings"] = kwargs.get("safety_settings", {}) | {
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    }
+
+    return kwargs

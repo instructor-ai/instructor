@@ -12,9 +12,10 @@ def from_gemini(
     mode: instructor.Mode = instructor.Mode.GEMINI_JSON,
     **kwargs: Any,
 ) -> instructor.Instructor:
-    assert (
-        mode == instructor.Mode.GEMINI_JSON
-    ), "Mode must be instructor.Mode.GEMINI_JSON"
+    assert mode in {
+        instructor.Mode.GEMINI_JSON,
+        instructor.Mode.GEMINI_TOOLS,
+    }, "Mode be one of {instructor.Mode.GEMINI_JSON, instructor.Mode.GEMINI_TOOLS}"
 
     assert isinstance(
         client,
