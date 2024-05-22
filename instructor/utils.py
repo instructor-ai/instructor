@@ -187,7 +187,7 @@ def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str,
         if len(new_messages) > 0 and message["role"] == new_messages[-1]["role"]:
             if flat_string:
                 # New content is a string
-                new_messages[-1]["content"] += new_content
+                new_messages[-1]["content"] += f"\n\n{new_content}"
             else:
                 # New content is a list
                 new_messages[-1]["content"].extend(new_content)
