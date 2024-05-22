@@ -71,13 +71,14 @@ client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 Databricks syntax:
 ```python
 import instructor
+import os
 from openai import OpenAI
 
-# Assuming Databricks secrets are set
+# Assuming Databricks environment variables are set
 client = instructor.from_openai(
     OpenAI(
-        api_key=dbutils.secrets.get("databricks", "token"),
-        base_url=f"{dbutils.secrets.get('databricks', 'host')}/serving-endpoints",
+        api_key=os.environ["DATABRICKS_TOKEN"],
+        base_url=f"{os.environ['DATABRICKS_HOST']}/serving-endpoints",
     ),
     mode=instructor.Mode.MD_JSON
 )
