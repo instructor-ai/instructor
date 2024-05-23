@@ -198,7 +198,7 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
-## Type are inferred correctly
+## Types are inferred correctly
 
 This was the dream of instructor but due to the patching of openai, it wasnt possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
 
@@ -226,7 +226,7 @@ user = client.chat.completions.create(
 )
 ```
 
-Now if you use a IDE, you can see the type is correctly inferred.
+Now if you use an IDE, you can see the type is correctly inferred.
 
 ![type](./docs/blog/posts/img/type.png)
 
