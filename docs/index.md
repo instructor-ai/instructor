@@ -9,12 +9,16 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GPT](https://img.shields.io/badge/docs-InstructorGPT-blue)](https://chat.openai.com/g/g-EvZweRWrE-instructor-gpt)
 
-Instructor makes it easy to reliably get structured data like JSON from Large Language Models (LLMs) like GPT-3.5, GPT-4, GPT-4-Vision, including open source models like Mistral/Mixtral from [Together](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
+Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
 
-By leveraging various modes like Function Calling, Tool Calling and even constrained sampling modes like JSON mode, JSON Schema; Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
+It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
-
-We also provide a library in [Typescript](https://instructor-ai.github.io/instructor-js/), [Elixir](https://github.com/thmsmlr/instructor_ex/) and [PHP](https://github.com/cognesy/instructor-php/).
+- Instructor provides support for a wide range of programming languages, including:
+  - [Python](https://python.useinstructor.com)
+  - [TypeScript](https://js.useinstructor.com)
+  - [Ruby](https://ruby.useinstructor.com)
+  - [Go](https://go.useinstructor.com)
+  - [Elixir](https://hex.pm/packages/instructor)
 
 ## Why use Instructor?
 
@@ -260,16 +264,6 @@ user_stream = client.chat.completions.create_partial(
 
 for user in user_stream:
     print(user)
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=30
-    #> name=None age=30
-    #> name=None age=30
-    #> name=None age=30
-    #> name=None age=30
-    #> name='John' age=30
     # name=None age=None
     # name='' age=None
     # name='John' age=None
