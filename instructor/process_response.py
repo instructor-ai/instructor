@@ -314,9 +314,7 @@ def handle_response_model(
                 + "\n\n".join(openai_system_messages)
             )
 
-            new_kwargs[
-                "system"
-            ] += f"""
+            new_kwargs["system"] += f"""
             You must only response in JSON format that adheres to the following schema:
 
             <JSON_SCHEMA>
