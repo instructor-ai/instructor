@@ -84,6 +84,8 @@ class IterableBase:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.model_extra.get("delta", "").get("partial_json", "")
+                if mode == Mode.GEMINI_JSON:
+                    yield chunk.text
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:

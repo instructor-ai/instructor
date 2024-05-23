@@ -105,6 +105,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.COHERE_TOOLS:
             return cls.parse_cohere_tools(completion, validation_context, strict)
 
+        if mode == Mode.GEMINI_JSON:
+            return cls.parse_gemini_json(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
@@ -147,6 +150,32 @@ class OpenAISchema(BaseModel):
         assert isinstance(completion, Message)
 
         text = completion.content[0].text
+        extra_text = extract_json_from_codeblock(text)
+
+        if strict:
+            return cls.model_validate_json(
+                extra_text, context=validation_context, strict=True
+            )
+        else:
+            # Allow control characters.
+            parsed = json.loads(extra_text, strict=False)
+            # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
+            return cls.model_validate(parsed, context=validation_context, strict=False)
+
+    @classmethod
+    def parse_gemini_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        try:
+            text = completion.text
+        except ValueError:
+            logger.debug(
+                f"Error response: {completion._result.candidates[0].finish_reason}\n\n{completion_result.candidates[0].safety_ratings}"
+            )
+
         extra_text = extract_json_from_codeblock(text)
 
         if strict:

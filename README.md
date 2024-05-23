@@ -125,6 +125,47 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+### Using Gemini Models
+
+Make sure you [install](https://ai.google.dev/api/python/google/generativeai#setup) the Google AI Python SDK. You should set a `GOOGLE_API_KEY` environment variable with your API key.
+
+```
+pip install google-generativeai
+```
+
+```python
+import instructor
+import google.generativeai as genai
+from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    age: int
+
+# genai.configure(api_key=os.environ["API_KEY"]) # alternative API key configuration
+client = instructor.from_gemini(
+    client=genai.GenerativeModel(
+        model_name="models/gemini-1.5-flash-latest", # model defaults to "gemini-pro"
+    ),
+    mode=instructor.Mode.GEMINI_JSON,
+)
+
+# note that client.chat.completions.create will also work
+resp = client.chat.completions.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
 ### Using Litellm
 
 ```python

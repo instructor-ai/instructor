@@ -43,6 +43,7 @@ class Provider(Enum):
     GROQ = "groq"
     MISTRAL = "mistral"
     COHERE = "cohere"
+    GEMINI = "gemini"
     DATABRICKS = "databricks"
     UNKNOWN = "unknown"
 
@@ -62,6 +63,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.MISTRAL
     elif "cohere" in str(base_url):
         return Provider.COHERE
+    elif "gemini" in str(base_url):
+        return Provider.GEMINI
     elif "databricks" in str(base_url):
         return Provider.DATABRICKS
     return Provider.UNKNOWN
@@ -221,3 +224,21 @@ class classproperty(Generic[R_co]):
 
     def __get__(self, instance: object, cls: type[Any]) -> R_co:
         return self.cproperty(cls)
+
+
+def transform_to_gemini_prompt(
+    messages_chatgpt: list[ChatCompletionMessageParam],
+) -> list[dict[str, Any]]:
+    messages_gemini: list[dict[str, Any]] = []
+    system_prompt = ""
+    for message in messages_chatgpt:
+        if message["role"] == "system":
+            system_prompt = message["content"]
+        elif message["role"] == "user":
+            messages_gemini.append({"role": "user", "parts": [message["content"]]})
+        elif message["role"] == "assistant":
+            messages_gemini.append({"role": "model", "parts": [message["content"]]})
+    if system_prompt:
+        messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
+
+    return messages_gemini
