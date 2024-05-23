@@ -13,6 +13,7 @@ Instructor is a Python library that makes it a breeze to work with structured ou
 - **Validation**: Ensure LLM responses conform to your expectations with Pydantic validation
 - **Streaming Support**: Work with Lists and Partial responses effortlessly
 - **Flexible Backends**: Seamlessly integrate with various LLM providers beyond OpenAI
+- **Support in many Languages**: We support many languages including [Python](https://python.useinstructor.com), [TypeScript](https://js.useinstructor.com), [Ruby](https://ruby.useinstructor.com), [Go](https://go.useinstructor.com), and [Elixir](https://hex.pm/packages/instructor)
 
 ## Get Started in Minutes
 
