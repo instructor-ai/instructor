@@ -10,7 +10,6 @@ from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
 from openai.types.chat import ChatCompletion
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from pydantic import BaseModel
 
 import json
@@ -315,7 +314,9 @@ def handle_response_model(
                 + "\n\n".join(openai_system_messages)
             )
 
-            new_kwargs["system"] += f"""
+            new_kwargs[
+                "system"
+            ] += f"""
             You must only response in JSON format that adheres to the following schema:
 
             <JSON_SCHEMA>
