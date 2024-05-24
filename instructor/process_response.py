@@ -387,6 +387,8 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             ) | {"response_mime_type": "application/json"}
 
             # minimize gemini safety related errors - model is highly prone to false alarms
+            from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
             new_kwargs["safety_settings"] = new_kwargs.get("safety_settings", {}) | {
                 HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
                 HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,

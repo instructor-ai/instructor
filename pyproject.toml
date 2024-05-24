@@ -38,7 +38,7 @@ google-generativeai = { version = "^0.5.4", optional = true }
 anthropic = ["anthropic", "xmltodict"]
 groq = ["groq"]
 cohere = ["cohere"]
-test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere", "mistralai"]
+test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere", "mistralai", "google-generativeai"]
 mistralai = ["mistralai"]
 litellm = ["litellm"]
 google-generativeai = ["google-generativeai"]
@@ -80,6 +80,7 @@ groq = "^0.4.2"
 phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
 mistralai = "^0.1.8"
+google-generativeai = "^0.5.4"
 
 [tool.poetry.group.litellm.dependencies]
 litellm = "^1.35.31"
