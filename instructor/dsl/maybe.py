@@ -56,7 +56,7 @@ def Maybe(model: type[T]) -> type[MaybeBase[T]]:
     return create_model(
         f"Maybe{model.__name__}",
         __base__=MaybeBase,
-        results=(
+        result=(
             Optional[model],
             Field(
                 default=None,

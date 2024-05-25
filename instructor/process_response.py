@@ -26,6 +26,8 @@ from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
 
+from .utils import transform_to_gemini_prompt
+
 logger = logging.getLogger("instructor")
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -264,6 +266,11 @@ def handle_response_model(
                         "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
                     },
                 )
+                # For some providers, the messages array must be alternating roles of user and assistant, we must merge
+                # consecutive user messages into a single message
+                new_kwargs["messages"] = merge_consecutive_messages(
+                    new_kwargs["messages"]
+                )
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":
@@ -349,6 +356,45 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 )
             new_kwargs["message"] = instruction
             new_kwargs["chat_history"] = chat_history
+        elif mode == Mode.GEMINI_JSON:
+            message = dedent(
+                f"""
+                As a genius expert, your task is to understand the content and provide
+                the parsed objects in json that match the following json_schema:\n
+
+                {json.dumps(response_model.model_json_schema(), indent=2)}
+
+                Make sure to return an instance of the JSON, not the schema itself
+                """
+            )
+            # check that the first message is a system message
+            # if it is not, add a system message to the beginning
+            if new_kwargs["messages"][0]["role"] != "system":
+                new_kwargs["messages"].insert(
+                    0,
+                    {
+                        "role": "system",
+                        "content": message,
+                    },
+                )
+            # if it is, system append the schema to the end
+            else:
+                new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+
+            # default to json response type
+            new_kwargs["generation_config"] = new_kwargs.get(
+                "generation_config", {}
+            ) | {"response_mime_type": "application/json"}
+
+            # minimize gemini safety related errors - model is highly prone to false alarms
+            new_kwargs["safety_settings"] = new_kwargs.get("safety_settings", {}) | {
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            }
+            # gemini has a different prompt format and params from other providers
+            new_kwargs["contents"] = transform_to_gemini_prompt(new_kwargs["messages"])
+            del new_kwargs["messages"]
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 
