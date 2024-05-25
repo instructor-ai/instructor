@@ -61,5 +61,5 @@ urls = [
 ]
 
 for url in urls:
-    for table in extract(url):
-        console.print(table)
+    receipt = extract(url)
+    console.print(receipt)
