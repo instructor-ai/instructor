@@ -35,6 +35,7 @@ def from_reka(api_key: Optional[str] =None,
     assert isinstance(
         client, (RekaClient, reka.chat)
     ), "Client must be an instance of reka.chat or reka.completion"
+    assert not isinstance(client, (reka.AsyncRekaClient)), "Reka does not support asynchronous clients"
     client.default_model = model
     return instructor.Instructor(
         client=client,

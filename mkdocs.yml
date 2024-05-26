@@ -180,6 +180,7 @@ nav:
     - Using Groq: 'hub/groq.md'
     - Using Mistral: 'hub/mistral.md'
     - Using Cohere: 'hub/cohere.md'
+    - Using Reka: 'hub/reka.md'
     - Batch Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
     - Action Items: 'hub/action_items.md'
     - Partial Streaming: 'hub/partial_streaming.md'
