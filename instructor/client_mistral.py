@@ -37,7 +37,6 @@ def from_mistral(
     ), "Client must be an instance of mistralai.client.MistralClient or mistralai.async_cli.MistralAsyncClient"
 
     if isinstance(client, mistralai.client.MistralClient):
-
         return instructor.Instructor(
             client=client,
             create=instructor.patch(create=client.chat, mode=mode),
@@ -47,7 +46,6 @@ def from_mistral(
         )
 
     else:
-
         return instructor.AsyncInstructor(
             client=client,
             create=instructor.patch(create=client.chat, mode=mode),

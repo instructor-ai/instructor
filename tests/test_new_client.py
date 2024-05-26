@@ -342,6 +342,7 @@ async def test_client_cohere_async():
 @pytest.mark.skip(reason="Skip for now")
 def test_client_from_mistral_with_response():
     import mistralai.client as mistralaicli
+
     client = instructor.from_mistral(
         mistralaicli.MistralClient(),
         max_tokens=1000,
@@ -360,6 +361,7 @@ def test_client_from_mistral_with_response():
 @pytest.mark.skip(reason="Skip for now")
 def test_client_mistral_response():
     import mistralai.client as mistralaicli
+
     client = mistralaicli.MistralClient()
     instructor_client = instructor.from_mistral(
         client, max_tokens=1000, model="mistral-large-latest"
