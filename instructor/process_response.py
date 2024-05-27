@@ -394,7 +394,7 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 "temperature": "temperature",
                 "n": "candidate_count",
                 "top_p": "top_p",
-                "stop": "stop_sequences"
+                "stop": "stop_sequences",
             }
 
             # update gemini config if any params are set
