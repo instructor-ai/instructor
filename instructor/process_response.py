@@ -357,6 +357,9 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             new_kwargs["message"] = instruction
             new_kwargs["chat_history"] = chat_history
         elif mode == Mode.GEMINI_JSON:
+            assert (
+                "model" not in new_kwargs
+            ), "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
             message = dedent(
                 f"""
                 As a genius expert, your task is to understand the content and provide
@@ -386,15 +389,34 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 "generation_config", {}
             ) | {"response_mime_type": "application/json"}
 
+            map_openai_args_to_gemini = {
+                "max_tokens": "max_output_tokens",
+                "temperature": "temperature",
+                "n": "candidate_count",
+                "top_p": "top_p",
+                "stop": "stop_sequences"
+            }
+
+            # update gemini config if any params are set
+            for k, v in map_openai_args_to_gemini.items():
+                val = new_kwargs.pop(k, None)
+                if val == None:
+                    continue
+                new_kwargs["generation_config"][v] = val
+
+            # gemini has a different prompt format and params from other providers
+            new_kwargs["contents"] = transform_to_gemini_prompt(
+                new_kwargs.pop("messages")
+            )
+
             # minimize gemini safety related errors - model is highly prone to false alarms
+            from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
             new_kwargs["safety_settings"] = new_kwargs.get("safety_settings", {}) | {
                 HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
                 HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
                 HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
             }
-            # gemini has a different prompt format and params from other providers
-            new_kwargs["contents"] = transform_to_gemini_prompt(new_kwargs["messages"])
-            del new_kwargs["messages"]
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 
