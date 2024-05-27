@@ -293,7 +293,7 @@ user, completion = client.chat.completions.create_with_completion(
 
 ### Streaming Partial Objects: `create_partial`
 
-In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but to simply the type inference, we've added `create_iterable` and `create_partial` methods as well!
+In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but to simplify the type inference, we've added `create_iterable` and `create_partial` methods as well!
 
 ```python
 import openai
