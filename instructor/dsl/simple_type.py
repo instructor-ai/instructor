@@ -32,7 +32,7 @@ class ModelAdapter(typing.Generic[T]):
 
 
 def is_simple_type(
-    response_model: type[BaseModel] | str | int | float | bool,
+    response_model: type[BaseModel] | str | int | float | bool | typing.Any,
 ) -> bool:
     # ! we're getting mixes between classes and instances due to how we handle some
     # ! response model types, we should fix this in later PRs
