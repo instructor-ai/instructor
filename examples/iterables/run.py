@@ -16,15 +16,12 @@ class User(BaseModel):
     age: int
 
 
-Users = Iterable[User]
-
-
-def stream_extract(input: str) -> Users:
-    return client.chat.completions.create(
-        model="gpt-4-0613",
+def stream_extract(input: str) -> Iterable[User]:
+    return client.chat.completions.create_iterable(
+        model="gpt-4o",
         temperature=0.1,
         stream=True,
-        response_model=Users,
+        response_model=User,
         messages=[
             {
                 "role": "system",
@@ -50,10 +47,10 @@ for user in stream_extract(
     delay = round(time.time() - start, 1)
     print(f"{delay} s: User({user})")
     """
-    5.0 s: User(name='Ye Wenjie' job='Astrophysicist' age=50)
-    6.6 s: User(name='Wang Miao' job='Nanomaterials Researcher' age=40)
-    8.0 s: User(name='Shi Qiang' job='Detective' age=55)
-    9.4 s: User(name='Ding Yi' job='Theoretical Physicist' age=45)
-    10.6 s: User(name='Chang Weisi' job='Major General' age=60)
+    0.8 s: User(name='Ye Wenjie' job='Astrophysicist' age=60)
+    1.1 s: User(name='Wang Miao' job='Nanomaterials Researcher' age=40)
+    1.7 s: User(name='Shi Qiang' job='Detective' age=50)
+    1.9 s: User(name='Ding Yi' job='Theoretical Physicist' age=45)
+    1.9 s: User(name='Chang Weisi' job='Military Strategist' age=55)
     """
     # Notice that the first one would return at 5s bu the last one returned in 10s!
