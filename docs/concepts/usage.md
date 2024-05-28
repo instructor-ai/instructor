@@ -30,9 +30,19 @@ You can catch an IncompleteOutputException whenever the context length is exceed
 
 ```python
 from instructor.exceptions import IncompleteOutputException
+import openai
+import instructor
+
+client = instructor.from_openai(openai.OpenAI())
 
 try:
-    # call to your model
+    client.chat.completions.create_with_completion(
+        model="gpt-3.5-turbo",
+        response_model=UserExtract,
+        messages=[
+            {"role": "user", "content": "Extract jason is 25 years old"},
+        ],
+    )
 except IncompleteOutputException as e:
     token_count = e.last_completion.usage.total_tokens
     # your logic here

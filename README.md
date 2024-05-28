@@ -138,32 +138,19 @@ import instructor
 import google.generativeai as genai
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
 
+
 # genai.configure(api_key=os.environ["API_KEY"]) # alternative API key configuration
 client = instructor.from_gemini(
     client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest", # model defaults to "gemini-pro"
+        model_name="models/gemini-1.5-flash-latest",  # model defaults to "gemini-pro"
     ),
     mode=instructor.Mode.GEMINI_JSON,
 )
-
-# note that client.chat.completions.create will also work
-resp = client.chat.completions.create(
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
 ```
 
 ### Using Litellm
@@ -323,13 +310,13 @@ for user in user_stream:
     #> name=None age=None
     #> name=None age=None
     #> name=None age=None
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name='John Doe' age=25
+    #> name=None age=None
+    #> name=None age=None
+    #> name='John Doe' age=None
+    #> name='John Doe' age=None
+    #> name='John Doe' age=None
+    #> name='John Doe' age=30
+    #> name='John Doe' age=30
     # name=None age=None
     # name='' age=None
     # name='John' age=None
@@ -369,8 +356,8 @@ users = client.chat.completions.create_iterable(
 
 for user in users:
     print(user)
-    #> name='John' age=30
-    #> name='Jane' age=25
+    #> name='John Doe' age=30
+    #> name='Jane Doe' age=28
     # User(name='John Doe', age=30)
     # User(name='Jane Smith', age=25)
 ```

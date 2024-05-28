@@ -60,7 +60,9 @@ This mode uses Gemini's response mimetype field to generate a response in JSON f
 import instructor
 import google.generativeai as genai
 
-client = instructor.from_gemini(genai.GenerativeModel(), mode=instructor.Mode.GEMINI_JSON)
+client = instructor.from_gemini(
+    genai.GenerativeModel(), mode=instructor.Mode.GEMINI_JSON
+)
 ```
 
 ## Markdown JSON Mode
@@ -72,6 +74,7 @@ This just asks for the response in JSON format, but it is not recommended, and m
     This is not recommended, and may not be supported in the future, this is just left to support vision models and models provided by Databricks.
 
 General syntax:
+
 ```python
 import instructor
 from openai import OpenAI
@@ -86,12 +89,15 @@ import instructor
 import os
 from openai import OpenAI
 
+DATABRICKS_TOKEN = os.environ.get("DATABRICKS_TOKEN", "")
+DATABRICKS_HOST = os.environ.get("DATABRICKS_HOST", "")
+
 # Assuming Databricks environment variables are set
 client = instructor.from_openai(
     OpenAI(
-        api_key=os.environ["DATABRICKS_TOKEN"],
-        base_url=f"{os.environ['DATABRICKS_HOST']}/serving-endpoints",
+        api_key=DATABRICKS_TOKEN,
+        base_url=f"{DATABRICKS_HOST}/serving-endpoints",
     ),
-    mode=instructor.Mode.MD_JSON
+    mode=instructor.Mode.MD_JSON,
 )
 ```

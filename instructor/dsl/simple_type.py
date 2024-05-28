@@ -23,13 +23,12 @@ class ModelAdapter(typing.Generic[T]):
 
     def __class_getitem__(cls, response_model: type[BaseModel]) -> type[BaseModel]:
         assert is_simple_type(response_model), "Only simple types are supported"
-        tmp = create_model(
+        return create_model(
             "Response",
             content=(response_model, ...),
             __doc__="Correctly Formated and Extracted Response.",
             __base__=(AdapterBase, OpenAISchema),
         )
-        return tmp
 
 
 def is_simple_type(
@@ -37,7 +36,15 @@ def is_simple_type(
 ) -> bool:
     # ! we're getting mixes between classes and instances due to how we handle some
     # ! response model types, we should fix this in later PRs
-    if isclass(response_model) and issubclass(response_model, BaseModel):
+
+    try:
+        if isclass(response_model) and issubclass(response_model, BaseModel):
+            return False
+    except TypeError:
+        # ! In versions < 3.11, typing.Iterable is not a class, so we can't use isclass
+        # ! for now if `response_model` is an Iterable isclass and issubclass will raise
+        # ! TypeError, so we need to check if `response_model` is an Iterable
+        # ! This is a workaround for now, we should fix this in later PRs
         return False
 
     if typing.get_origin(response_model) in {typing.Iterable, Partial}:

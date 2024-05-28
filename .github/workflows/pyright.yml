@@ -1,9 +1,10 @@
 name: Pyright
 
 on:
-  push:
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  push:
+    branches: [main]
 
 env:
   WORKING_DIRECTORY: "."
@@ -40,13 +41,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev,anthropic
 
-      - name: Run Static Type Checking with Pyright
-        run: |
-          set -e -o pipefail
-          poetry run pyright > ${{ env.WORKING_DIRECTORY }}/${{ env.PYRIGHT_OUTPUT_FILENAME }}
+      - name: Add poetry to PATH
+        run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: pyright-log
-          path: ${{ env.WORKING_DIRECTORY }}/${{ env.PYRIGHT_OUTPUT_FILENAME }}
+      - uses: jakebailey/pyright-action@v2

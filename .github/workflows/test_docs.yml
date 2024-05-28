@@ -33,7 +33,7 @@ jobs:
             ${{ runner.os }}-poetry-
 
       - name: Install dependencies
-        run: poetry install --with dev,docs,test-docs,anthropic
+        run: poetry install --with dev,docs,test-docs,anthropic,google-generativeai
 
       - name: Run tests
         run: poetry run pytest tests/llm/test_openai/docs

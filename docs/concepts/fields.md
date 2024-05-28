@@ -43,9 +43,7 @@ The `Field` function can also be used together with `Annotated`.
 
 ```py
 from uuid import uuid4
-
 from typing_extensions import Annotated
-
 from pydantic import BaseModel, Field
 
 
@@ -93,12 +91,13 @@ In some cases, you may wish to have the language model ignore certain fields in 
 ```py
 from pydantic import BaseModel
 from pydantic.json_schema import SkipJsonSchema
+from typing import Union
 
 
 class Response(BaseModel):
     question: str
     answer: str
-    private_field: SkipJsonSchema[str | None] = None
+    private_field: SkipJsonSchema[Union[str, None]] = None
 
 
 assert "private_field" not in Response.model_json_schema()["properties"]
