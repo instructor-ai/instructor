@@ -15,3 +15,20 @@ class IncompleteOutputException(Exception):
     ):
         self.last_completion = last_completion
         super().__init__(message, *args, **kwargs)
+
+
+class InstructorRetryException(Exception):
+    def __init__(
+        self,
+        *args: list[Any],
+        last_completion: Any | None = None,
+        messages: list[Any] | None = None,
+        n_attempts: int,
+        total_usage: int,
+        **kwargs: dict[str, Any],
+    ):
+        self.last_completion = last_completion
+        self.messages = messages
+        self.n_attempts = n_attempts
+        self.total_usage = total_usage
+        super().__init__(*args, **kwargs)
