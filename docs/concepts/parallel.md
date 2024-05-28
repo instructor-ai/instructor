@@ -12,6 +12,8 @@ To learn more you can read up on [this](https://platform.openai.com/docs/guides/
 By using parallel function callings that allow you to call multiple functions in a single request, you can significantly reduce the latency of your application without having to use tricks with now one builds a schema.
 
 ```python hl_lines="19 31"
+from __future__ import annotations
+
 import openai
 import instructor
 

@@ -11,6 +11,7 @@ from instructor.utils import (
     update_total_usage,
     merge_consecutive_messages,
 )
+from instructor.exceptions import InstructorRetryException
 
 from openai.types.completion_usage import CompletionUsage
 from pydantic import ValidationError
@@ -28,23 +29,6 @@ T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
-
-
-class InstructorRetryException(Exception):
-    def __init__(
-        self,
-        *args,
-        last_completion,
-        messages: list,
-        n_attempts: int,
-        total_usage,
-        **kwargs,
-    ):
-        self.last_completion = last_completion
-        self.messages = messages
-        self.n_attempts = n_attempts
-        self.total_usage = total_usage
-        super().__init__(*args, **kwargs)
 
 
 def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):

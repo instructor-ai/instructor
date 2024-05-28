@@ -3,7 +3,7 @@ import warnings
 
 
 class _WarnOnFunctionsAccessEnumMeta(enum.EnumMeta):
-    def __getattribute__(cls, name):
+    def __getattribute__(cls, name: str):
         if name == "FUNCTIONS":
             warnings.warn(
                 "FUNCTIONS is deprecated and will be removed in future versions",
