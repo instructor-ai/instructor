@@ -8,7 +8,7 @@ from .util import models, modes
 
 def uppercase_validator(v):
     if v.islower():
-        raise ValueError("Name must be ALL CAPS")
+        raise ValueError("Name must be ALL CAPS, please fix this.")
     return v
 
 
