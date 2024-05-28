@@ -56,7 +56,7 @@ if (
     importlib.util.find_spec("google")
     and importlib.util.find_spec("google.generativeai") is not None
 ):
-    from .client_gemini import from_gemini
+    from .client_gemini import from_gemini  # type: ignore
 
     __all__ += ["from_gemini"]
 

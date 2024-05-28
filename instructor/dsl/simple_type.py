@@ -28,7 +28,7 @@ class ModelAdapter(typing.Generic[T]):
             content=(response_model, ...),
             __doc__="Correctly Formated and Extracted Response.",
             __base__=(AdapterBase, OpenAISchema),
-        )  # type: ignore
+        )
 
 
 def is_simple_type(

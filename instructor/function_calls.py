@@ -1,3 +1,4 @@
+# type: ignore
 import json
 import logging
 from functools import wraps
@@ -5,7 +6,7 @@ from typing import Annotated, Any, Optional, TypeVar, cast
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from pydantic import (  # type: ignore - remove once Pydantic is updated
+from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
@@ -165,7 +166,7 @@ class OpenAISchema(BaseModel):
     @classmethod
     def parse_gemini_json(
         cls: type[BaseModel],
-        completion: ChatCompletion,
+        completion: Any,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
@@ -173,10 +174,13 @@ class OpenAISchema(BaseModel):
             text = completion.text
         except ValueError:
             logger.debug(
-                f"Error response: {completion._result.candidates[0].finish_reason}\n\n{completion_result.candidates[0].safety_ratings}"
+                f"Error response: {completion.result.candidates[0].finish_reason}\n\n{completion.result.candidates[0].safety_ratings}"
             )
 
-        extra_text = extract_json_from_codeblock(text)
+        try:
+            extra_text = extract_json_from_codeblock(text)  # type: ignore
+        except UnboundLocalError:
+            raise ValueError("Unable to extract JSON from completion text") from None
 
         if strict:
             return cls.model_validate_json(
