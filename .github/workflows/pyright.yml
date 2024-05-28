@@ -3,7 +3,7 @@ name: Pyright
 on:
   push:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   WORKING_DIRECTORY: "."
