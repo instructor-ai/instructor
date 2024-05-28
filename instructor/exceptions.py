@@ -3,7 +3,11 @@ class IncompleteOutputException(Exception):
 
     def __init__(
         self,
+        *args,
+        last_completion=None,
         message: str = "The output is incomplete due to a max_tokens length limit.",
-    ) -> None:
-        self.message = message
-        super().__init__(self.message)
+        **kwargs,
+    ):
+        self.last_completion = last_completion
+        super().__init__(message, *args, **kwargs)
+        super().__init__(*args, **kwargs)

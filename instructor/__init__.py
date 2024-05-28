@@ -52,6 +52,14 @@ if importlib.util.find_spec("anthropic") is not None:
 
     __all__ += ["from_anthropic"]
 
+if (
+    importlib.util.find_spec("google")
+    and importlib.util.find_spec("google.generativeai") is not None
+):
+    from .client_gemini import from_gemini
+
+    __all__ += ["from_gemini"]
+
 if importlib.util.find_spec("groq") is not None:
     from .client_groq import from_groq
 

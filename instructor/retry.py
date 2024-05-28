@@ -99,6 +99,14 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
         }
         return
+    if mode == Mode.GEMINI_JSON:
+        yield {
+            "role": "user",
+            "parts": [
+                f"Correct the following JSON response, based on the errors given below:\n\nJSON:\n{response.text}\n\nExceptions:\n{exception}"
+            ],
+        }
+        return
     if mode == Mode.VERTEXAI_TOOLS:
         from .client_vertexai import vertexai_function_response_parser
         yield response.candidates[0].content
@@ -170,7 +178,10 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
-                    try:
+                    if mode in {Mode.GEMINI_JSON}:
+                        kwargs["contents"].extend(reask_messages(response, mode, e))
+                    else:
+                        try:
                         kwargs["messages"].extend(reask_messages(response, mode, e))
                     except KeyError:
                         if mode == Mode.VERTEXAI_TOOLS:
@@ -183,7 +194,7 @@ def retry_sync(
                         e,
                         last_completion=response,
                         n_attempts=attempt.retry_state.attempt_number,
-                        messages=kwargs["messages"],
+                        messages=kwargs.get("messages", kwargs.get("contents")),
                         total_usage=total_usage,
                     ) from e
     except RetryError as e:
@@ -191,7 +202,7 @@ def retry_sync(
             e,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
-            messages=kwargs["messages"],
+            messages=kwargs.get("messages", kwargs.get("contents")),
             total_usage=total_usage,
         ) from e
 
