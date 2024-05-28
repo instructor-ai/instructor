@@ -37,6 +37,7 @@ class Response(Protocol):
 
 class Provider(Enum):
     OPENAI = "openai"
+    VERTEXAI = "vertexai"
     ANTHROPIC = "anthropic"
     ANYSCALE = "anyscale"
     TOGETHER = "together"
@@ -61,6 +62,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.MISTRAL
     elif "cohere" in str(base_url):
         return Provider.COHERE
+    elif "vertexai" in str(base_url):
+        return Provider.VERTEXAI
     return Provider.UNKNOWN
 
 

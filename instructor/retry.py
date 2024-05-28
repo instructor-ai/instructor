@@ -99,6 +99,11 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
         }
         return
+    if mode == Mode.VERTEXAI_TOOLS:
+        from .client_vertexai import vertexai_function_response_parser
+        yield response.candidates[0].content
+        yield vertexai_function_response_parser(response, exception)
+        return
 
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration
@@ -165,7 +170,11 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
-                    kwargs["messages"].extend(reask_messages(response, mode, e))
+                    try:
+                        kwargs["messages"].extend(reask_messages(response, mode, e))
+                    except KeyError:
+                        if mode == Mode.VERTEXAI_TOOLS:
+                            kwargs["contents"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]
