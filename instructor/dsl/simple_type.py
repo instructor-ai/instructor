@@ -1,7 +1,6 @@
 from __future__ import annotations
 from inspect import isclass
 import typing
-from collections.abc import Iterable
 from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
 from enum import Enum
 
