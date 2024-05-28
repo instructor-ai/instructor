@@ -178,14 +178,10 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
-                    if mode in {Mode.GEMINI_JSON}:
+                    if mode in {Mode.GEMINI_JSON, Mode.VERTEXAI_TOOLS}:
                         kwargs["contents"].extend(reask_messages(response, mode, e))
                     else:
-                        try:
                         kwargs["messages"].extend(reask_messages(response, mode, e))
-                    except KeyError:
-                        if mode == Mode.VERTEXAI_TOOLS:
-                            kwargs["contents"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]

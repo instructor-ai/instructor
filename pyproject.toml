@@ -33,6 +33,8 @@ groq = { version = "^0.4.2", optional = true }
 cohere = { version = "^5.1.8", optional = true }
 mistralai = { version = "^0.1.8", optional = true }
 google-generativeai = { version = "^0.5.4", optional = true }
+google-cloud-aiplatform = "^1.52.0"
+jsonref = "^1.1.0"
 
 [tool.poetry.extras]
 anthropic = ["anthropic", "xmltodict"]

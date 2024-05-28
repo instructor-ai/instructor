@@ -2,19 +2,25 @@ from __future__ import annotations
 
 from typing import Any
 
+from vertexai.preview.generative_models import ToolConfig #type: ignore[reportMissingTypeStubs]
 import vertexai.generative_models as gm  #type: ignore[reportMissingTypeStubs]
 from pydantic import BaseModel
 import instructor
+import jsonref #type: ignore[reportMissingTypeStubs]
 
 def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
-    schema = model.model_json_schema()
-    if 'description' in schema:
-        del schema['description']
+    schema: dict[Any, Any] = jsonref.replace_refs(model.model_json_schema()) #type: ignore[reportMissingTypeStubs]
+    
+    parameters: dict[Any, Any] = {
+        "type": schema["type"],
+        "properties": schema["properties"],
+        "required": schema["required"]
+    }
 
     declaration = gm.FunctionDeclaration(
         name=model.__name__,
         description=model.__doc__,
-        parameters=schema
+        parameters=parameters
     )
 
     tool = gm.Tool(function_declarations=[declaration])
@@ -47,7 +53,12 @@ def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
         _vertexai_message_parser(message) for message in messages
         ]
     tool = _create_vertexai_tool(model=model)
-    return contents, [tool]
+    tool_config = ToolConfig(
+        function_calling_config=ToolConfig.FunctionCallingConfig(
+            mode=ToolConfig.FunctionCallingConfig.Mode.ANY,
+        )
+    )
+    return contents, [tool], tool_config
 
 
 def from_vertexai(
