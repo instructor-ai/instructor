@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 
-import pydantic_core
+import jitter
 from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
 from pydantic.fields import FieldInfo
 from typing import (
@@ -128,7 +128,7 @@ class PartialBase(Generic[T_Model]):
         for chunk in json_chunks:
             potential_object += chunk
 
-            obj = pydantic_core.from_json(potential_object or "{}", allow_partial=True)
+jitter.from_json(potential_object or "{}", allow_partial=True)
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
@@ -140,7 +140,7 @@ class PartialBase(Generic[T_Model]):
         partial_model = cls.get_partial_model()
         async for chunk in json_chunks:
             potential_object += chunk
-            obj = pydantic_core.from_json(potential_object or "{}", allow_partial=True)
+jitter.from_json(potential_object or "{}", allow_partial=True)
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
