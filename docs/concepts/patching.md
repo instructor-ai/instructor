@@ -19,6 +19,26 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
 ```
 
+### Gemini Tool Calling
+
+Gemini supports tool calling for stuctured data extraction. Gemini tool calling requires `jsonref` to be installed.
+
+!!! Warning
+Gemini tool calling comes with some known limitations:
+
+    - `strict` Pydantic validation can fail for integer/float and enum validations
+    - Gemini tool calling is incompatible with Pydantic schema customizations such as examples due to API limitations and may result in errors
+    - Gemini can sometimes call the wrong function name, resulting in malformed or invalid json
+
+```python
+import instructor
+import google.generativeai as genai
+
+client = instructor.from_gemini(
+    genai.GenerativeModel(), mode=instructor.Mode.GEMINI_TOOLS
+)
+```
+
 ## Parallel Tool Calling
 
 Parallel tool calling is also an option but you must set `response_model` to be `Iterable[Union[...]]` types since we expect an array of results. Check out [Parallel Tool Calling](./parallel.md) for more information.
@@ -82,8 +102,8 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 ```
 
-
 Databricks syntax:
+
 ```python
 import instructor
 import os
