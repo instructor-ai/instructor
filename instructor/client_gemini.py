@@ -32,9 +32,7 @@ def from_gemini(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert (
-        mode == instructor.Mode.GEMINI_JSON
-    ), "Mode must be instructor.Mode.GEMINI_JSON"
+    assert mode == instructor.Mode.GEMINI_JSON, "Mode must be instructor.Mode.GEMINI_JSON"
 
     assert isinstance(
         client,
@@ -50,12 +48,12 @@ def from_gemini(
             mode=mode,
             **kwargs,
         )
-    else:
-        create = client.generate_content
-        return instructor.Instructor(
-            client=client,
-            create=instructor.patch(create=create, mode=mode),
-            provider=instructor.Provider.GEMINI,
-            mode=mode,
-            **kwargs,
-        )
+
+    create = client.generate_content
+    return instructor.Instructor(
+        client=client,
+        create=instructor.patch(create=create, mode=mode),
+        provider=instructor.Provider.GEMINI,
+        mode=mode,
+        **kwargs,
+    )
