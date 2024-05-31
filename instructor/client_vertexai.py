@@ -8,6 +8,7 @@ from pydantic import BaseModel
 import instructor
 import jsonref #type: ignore[reportMissingTypeStubs]
 
+
 def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
     schema: dict[Any, Any] = jsonref.replace_refs(model.model_json_schema()) #type: ignore[reportMissingTypeStubs]
     
@@ -50,7 +51,9 @@ def vertexai_function_response_parser(response: gm.GenerationResponse, exception
 def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
     messages = _kwargs.pop("messages")
     contents = [
-        _vertexai_message_parser(message) for message in messages
+        _vertexai_message_parser(message) #type: ignore[reportUnkownArgumentType]
+        if isinstance(message, dict) else message
+        for message in messages
         ]
     tool = _create_vertexai_tool(model=model)
     tool_config = ToolConfig(

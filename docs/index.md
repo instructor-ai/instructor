@@ -112,6 +112,8 @@ assert resp.age == 25
 
 ## Using Gemini
 
+### Google AI
+
 ```python
 import instructor
 import google.generativeai as genai
@@ -132,6 +134,44 @@ client = instructor.from_gemini(
 
 # note that client.chat.completions.create will also work
 resp = client.messages.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
+### Vertex AI
+
+**Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](../hub/vertexai.md).
+
+```python
+import instructor
+import vertexai
+import vertexai.generative_models as gm
+from pydantic import BaseModel
+
+vertexai.init()
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_vertexai(
+    client=gm.GenerativeModel("gemini-1.5-pro-preview-0409")
+    mode=instructor.Mode.VERTEXAI_TOOLS,
+)
+
+# note that client.chat.completions.create will also work
+resp = client.create(
     messages=[
         {
             "role": "user",
