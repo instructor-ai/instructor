@@ -141,6 +141,7 @@ def retry_sync(
         raise ValueError("max_retries must be an int or a `tenacity.Retrying` object")
 
     try:
+        response = None
         for attempt in max_retries:
             with attempt:
                 try:
@@ -165,13 +166,7 @@ def retry_sync(
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]
                         )
-                    raise InstructorRetryException(
-                        e,
-                        last_completion=response,
-                        n_attempts=attempt.retry_state.attempt_number,
-                        messages=kwargs.get("messages", kwargs.get("contents")),
-                        total_usage=total_usage,
-                    ) from e
+                    raise e
     except RetryError as e:
         raise InstructorRetryException(
             e,
@@ -211,6 +206,7 @@ async def retry_async(
         )
 
     try:
+        response = None
         async for attempt in max_retries:
             logger.debug(f"Retrying, attempt: {attempt}")
             with attempt:
@@ -233,13 +229,7 @@ async def retry_async(
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]
                         )
-                    raise InstructorRetryException(
-                        e,
-                        last_completion=response,
-                        n_attempts=attempt.retry_state.attempt_number,
-                        messages=kwargs["messages"],
-                        total_usage=total_usage,
-                    ) from e
+                    raise e
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
         raise InstructorRetryException(
