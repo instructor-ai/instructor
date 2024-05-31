@@ -32,7 +32,7 @@ def from_gemini(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-     assert (
+    assert (
         mode == instructor.Mode.GEMINI_JSON
     ), "Mode must be instructor.Mode.GEMINI_JSON"
 
