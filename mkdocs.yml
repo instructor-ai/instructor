@@ -175,6 +175,7 @@ nav:
     - Multiple Classification Model: 'hub/multiple_classification.md'
     - Extracting Tables using GPT-4o: 'hub/tables_from_vision.md'
     - Extract Pandas Dataframes: 'hub/pandas_df.md'
+    - Using Vertex AI: 'hub/vertexai.md'
     - Using Ollama: 'hub/ollama.md'
     - Using Llama CPP: 'hub/llama-cpp-python.md'
     - Using Together Compute: 'hub/together.md'

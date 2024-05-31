@@ -19,6 +19,22 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
 ```
 
+### Gemini Tool Calling
+
+This method allows us to get structured output from Gemini via tool calling with the Vertex AI SDK.
+
+**Note:** Gemini Tool Calling is in preview and there are some limitations, you can learn more in the [Vertex AI examples notebook](../hub/vertexai.md).
+
+```python
+import instructor
+import vertexai
+import vertexai.generative_models as gm
+
+client = instructor.from_gemini(
+    genai.GenerativeModel(), mode=instructor.Mode.GEMINI_JSON
+)
+```
+
 ## Parallel Tool Calling
 
 Parallel tool calling is also an option but you must set `response_model` to be `Iterable[Union[...]]` types since we expect an array of results. Check out [Parallel Tool Calling](./parallel.md) for more information.

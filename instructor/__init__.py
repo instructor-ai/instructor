@@ -74,3 +74,8 @@ if importlib.util.find_spec("cohere") is not None:
     from .client_cohere import from_cohere
 
     __all__ += ["from_cohere"]
+
+if importlib.util.find_spec("vertexai") is not None:
+    from .client_vertexai import from_vertexai
+
+    __all__ += ["from_vertexai"]

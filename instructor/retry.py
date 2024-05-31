@@ -91,6 +91,11 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             ],
         }
         return
+    if mode == Mode.VERTEXAI_TOOLS:
+        from .client_vertexai import vertexai_function_response_parser
+        yield response.candidates[0].content
+        yield vertexai_function_response_parser(response, exception)
+        return
 
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration
@@ -158,7 +163,7 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
-                    if mode in {Mode.GEMINI_JSON}:
+                    if mode in {Mode.GEMINI_JSON, Mode.VERTEXAI_TOOLS}:
                         kwargs["contents"].extend(reask_messages(response, mode, e))
                     else:
                         kwargs["messages"].extend(reask_messages(response, mode, e))

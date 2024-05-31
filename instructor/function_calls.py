@@ -103,6 +103,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
 
+        if mode == Mode.VERTEXAI_TOOLS:
+            return cls.parse_vertexai_tools(completion, validation_context, strict)
+
         if mode == Mode.COHERE_TOOLS:
             return cls.parse_cohere_tools(completion, validation_context, strict)
 
@@ -191,6 +194,20 @@ class OpenAISchema(BaseModel):
             parsed = json.loads(extra_text, strict=False)
             # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
             return cls.model_validate(parsed, context=validation_context, strict=False)
+
+    @classmethod
+    def parse_vertexai_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        strict=False
+        tool_call= completion.candidates[0].content.parts[0].function_call.args # type: ignore
+        model = {}
+        for field in tool_call: # type: ignore
+            model[field] = tool_call[field]
+        return cls.model_validate(model, context=validation_context, strict=strict)
 
     @classmethod
     def parse_cohere_tools(
