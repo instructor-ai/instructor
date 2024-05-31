@@ -1,0 +1,556 @@
+- slug: meeting-minutes
+  description: A concise summary of the key points, decisions, and action items discussed during a meeting.
+  noteable_features:
+    - Discussion of agenda items
+    - Decisions made and voting outcomes
+    - Action items assigned to participants
+    - Key deadlines or milestones identified
+  instructions_or_template: |
+    # Meeting Minutes
+    Date: [Meeting Date]
+    Time: [Start Time] - [End Time]
+    Attendees:
+    - [Attendee 1]
+    - [Attendee 2]
+    - [...]
+    
+    ## Agenda Items
+    1. [Agenda Item 1]
+       - [Discussion Notes]
+       - [Decisions Made]
+       - [Action Items]
+    2. [Agenda Item 2]
+       - [Discussion Notes]
+       - [Decisions Made]
+       - [Action Items]
+    3. [...]
+    
+    ## Next Steps
+    - [Action Item 1] (Owner: [Name], Due: [Date])
+    - [Action Item 2] (Owner: [Name], Due: [Date])
+    - [...]
+
+- slug: action-plan
+  description: A list of specific, actionable tasks or next steps identified during a meeting or discussion.
+  noteable_features:
+    - Clear, concise task descriptions
+    - Assigned owners and due dates
+    - Prioritization based on importance and urgency
+    - Progress tracking mechanisms
+  instructions_or_template: |
+    # Action Plan
+    
+    ## High Priority
+    - [ ] [Task 1] (Owner: [Name], Due: [Date])
+    - [ ] [Task 2] (Owner: [Name], Due: [Date])
+    - [...]
+    
+    ## Medium Priority 
+    - [ ] [Task 3] (Owner: [Name], Due: [Date])
+    - [ ] [Task 4] (Owner: [Name], Due: [Date])
+    - [...]
+    
+    ## Low Priority
+    - [ ] [Task 5] (Owner: [Name], Due: [Date])
+    - [ ] [Task 6] (Owner: [Name], Due: [Date])
+    - [...]
+
+- slug: summary-report
+  description: A comprehensive overview of a meeting or discussion, including key topics, insights, and conclusions.
+  noteable_features: 
+    - Executive summary
+    - Organized sections with clear headings
+    - Supporting data, quotes, or examples
+    - Key takeaways and recommendations
+  instructions_or_template: |
+    # Summary Report
+    
+    ## Executive Summary
+    [Brief overview of the key points and conclusions]
+    
+    ## Background
+    [Context and purpose of the meeting or discussion]
+    
+    ## Key Topics
+    1. [Topic 1]
+       - [Key Points]
+       - [Supporting Data/Examples]
+    2. [Topic 2]
+       - [Key Points]  
+       - [Supporting Data/Examples]
+    3. [...]
+    
+    ## Conclusions
+    [Summary of the main insights and takeaways]
+    
+    ## Recommendations
+    1. [Recommendation 1]
+    2. [Recommendation 2]
+    3. [...]
+
+- slug: followup-email
+  description: A post-meeting email summarizing key outcomes, action items, and next steps.
+  noteable_features:
+    - Gratitude and meeting recap
+    - Bullet points for key outcomes and next steps
+    - Relevant attachments or links
+    - Clear call-to-action or request for feedback
+  instructions_or_template: |
+    Subject: [Meeting Name] Follow-Up
+    
+    Hi [Attendee Names],
+    
+    Thank you for attending today's meeting on [Meeting Topic]. I wanted to share a quick recap of our discussion and next steps.
+    
+    Key Outcomes:
+    - [Outcome 1]
+    - [Outcome 2]
+    - [...]
+    
+    Next Steps:
+    - [Action Item 1] (Owner: [Name], Due: [Date])
+    - [Action Item 2] (Owner: [Name], Due: [Date]) 
+    - [...]
+    
+    Please see the attached [Meeting Minutes/Summary Report] for more details. Let me know if you have any questions or feedback.
+    
+    Thanks,
+    [Your Name]
+
+- slug: memo
+  description: A structured document outlining the purpose, key points, and implications of a meeting or discussion.
+  noteable_features:  
+    - Standard memo format (To, From, Date, Subject)
+    - Clear statement of purpose
+    - Organized headings and paragraphs
+    - Summary and required actions
+  instructions_or_template: |
+    To: [Recipient Names]
+    From: [Your Name]  
+    Date: [Current Date]
+    Subject: [Memo Subject]
+    
+    ## Purpose
+    [Brief statement of the memo's purpose]
+    
+    ## Background
+    [Context and relevant information]
+    
+    ## Key Points
+    1. [Point 1]
+    2. [Point 2]  
+    3. [...]
+    
+    ## Implications
+    [Potential consequences or impacts of the key points]  
+    
+    ## Summary
+    [Overview of the main ideas and conclusions]
+    
+    ## Required Actions  
+    1. [Action 1]
+    2. [Action 2]
+    3. [...]
+
+- slug: blog-post
+  description: A polished, narrative-style article that expands on one or more themes from a meeting or discussion.
+  noteable_features:
+    - Engaging headline and introduction 
+    - Logical outline or narrative structure
+    - Subheadings, bullet points, and other formatting for readability
+    - Relevant images, links, or other media
+    - Strong conclusion and call-to-action
+  instructions_or_template: |
+    # [Headline]
+    
+    [Engaging introduction]
+    
+    ## [Subheading 1]
+    [Content for section 1]
+    
+    ## [Subheading 2]  
+    [Content for section 2]
+    
+    ## [Subheading 3]
+    [Content for section 3]
+    
+    [Strong conclusion]
+    
+    [Call-to-action]
+
+- slug: infographic
+  description: A visual representation of key data points, ideas, or outcomes from a meeting or discussion.
+  noteable_features:
+    - Focus on important data points or takeaways
+    - Clear, easy-to-read visuals and minimal text 
+    - Properly labeled and sourced visuals
+    - Branding and contact information
+  instructions_or_template: |
+    # [Infographic Title]
+    
+    [Visual 1]
+    [Label/Caption]
+    [Source]
+    
+    [Visual 2]  
+    [Label/Caption]
+    [Source]
+    
+    [Visual 3]
+    [Label/Caption]  
+    [Source]
+    
+    [Branding]
+    [Contact Information]
+
+- slug: faq-doc
+  description: A list of frequently asked questions and answers based on the content of a meeting or discussion.
+  noteable_features:
+    - Questions organized by theme or topic
+    - Concise, direct answers to each question
+    - Formatting (bold, italics, etc.) to highlight key points  
+    - Links to additional resources if applicable
+  instructions_or_template: |  
+    # [FAQ Topic]
+    
+    ## [Theme 1]
+    
+    ### Q: [Question 1]?
+    A: [Answer 1]
+    
+    ### Q: [Question 2]?
+    A: [Answer 2]
+    
+    ## [Theme 2]
+    
+    ### Q: [Question 3]?  
+    A: [Answer 3]
+    
+    ### Q: [Question 4]?
+    A: [Answer 4]
+    
+    [Links to additional resources]
+
+- slug: sop
+  description: Step-by-step instructions or guidelines for completing a specific task or process discussed during a meeting.
+  noteable_features:  
+    - Step-by-step format with numbered lists
+    - Necessary diagrams, images, or examples
+    - Definitions for technical terms or abbreviations
+    - Safety or quality control requirements
+  instructions_or_template: |
+    # [SOP Title]
+    
+    ## Purpose
+    [Brief description of the SOP's purpose]
+    
+    ## Scope
+    [Specifics on when and where the SOP applies]  
+    
+    ## Definitions
+    - [Term 1]: [Definition 1]
+    - [Term 2]: [Definition 2]
+    - [...]
+    
+    ## Procedure
+    1. [Step 1]
+    2. [Step 2]
+    3. [...]
+    
+    [Diagram or image if applicable]
+    
+    ## Quality Control
+    [Requirements for ensuring quality]
+    
+    ## Safety  
+    [Important safety considerations]
+
+- slug: pull-request
+  description: A request to merge code changes into a main branch or repository, based on discussions from a meeting.
+  noteable_features:
+    - Clear, descriptive title and summary
+    - Steps to reproduce any bugs or issues
+    - References to related code, files, or documentation 
+    - Appropriate tags, labels, or milestones
+  instructions_or_template: |
+    # [Pull Request Title]  
+    
+    ## Summary
+    [Brief overview of the changes and their purpose]
+    
+    ## Related Issues
+    - [Issue 1]
+    - [Issue 2]
+    - [...]
+    
+    ## Changes Made  
+    - [Change 1]
+    - [Change 2]
+    - [...]
+    
+    ## Testing
+    [Steps for testing the changes]  
+    
+    ## Screenshots
+    [Relevant screenshots, if applicable]
+    
+    ## Checklist
+    - [ ] Tested changes locally
+    - [ ] Updated documentation
+    - [ ] Reviewed by [Reviewer Name]
+
+- slug: bug-report
+  description: A detailed description of a software bug or issue identified during a meeting or discussion.
+  noteable_features:
+    - Clear problem description
+    - Steps to reproduce the issue
+    - Expected vs. actual behavior
+    - Relevant error messages, screenshots, or logs  
+  instructions_or_template: |
+    # [Bug Title]
+    
+    ## Description
+    [Detailed description of the problem]  
+    
+    ## Steps to Reproduce
+    1. [Step 1]
+    2. [Step 2]
+    3. [...]
+    
+    ## Expected Behavior
+    [What should happen]
+    
+    ## Actual Behavior  
+    [What actually happens]
+    
+    ## Screenshots or Logs
+    [Relevant visuals or error messages]  
+    
+    ## Environment
+    - OS: [Operating System]
+    - Browser: [Browser Name and Version]
+    - [Other relevant specs]
+
+- slug: problem-statement
+  description: A clear, concise description of a problem identified during a meeting or discussion.
+  noteable_features:  
+    - Specific problem description
+    - Who is affected and how
+    - Quantified impact of the problem
+    - Avoidance of suggesting solutions
+  instructions_or_template: |
+    # Problem Statement
+    
+    ## Problem Description
+    [Concise statement of the problem]
+    
+    ## Affected Parties
+    - [Group 1]
+    - [Group 2]
+    - [...]
+    
+    ## Impact
+    [Quantified impact of the problem, if possible]
+    
+    ## Root Cause
+    [Underlying cause of the problem, if known]
+    
+    ## Constraints  
+    [Limitations or restrictions on potential solutions]
+
+- slug: decision-memo
+  description: A document outlining a decision to be made based on discussions from a meeting.  
+  noteable_features:
+    - Statement of the decision to be made
+    - Background and context for the decision
+    - Key options and their pros and cons 
+    - Clear recommendation and rationale
+  instructions_or_template: |
+    # Decision Memo
+    
+    ## Decision to be Made
+    [Concise statement of the decision at hand]
+    
+    ## Background
+    [Context and relevant information]
+    
+    ## Options
+    1. [Option 1]
+       - Pros: [Advantages of Option 1]  
+       - Cons: [Disadvantages of Option 1]
+    2. [Option 2]  
+       - Pros: [Advantages of Option 2]
+       - Cons: [Disadvantages of Option 2]  
+    3. [...]
+    
+    ## Recommendation
+    [Preferred option]
+    
+    ## Rationale  
+    [Justification for the recommendation]
+    
+    ## Next Steps
+    [Actions required to implement the decision]
+
+- slug: recommendation-memo
+  description: A document providing specific recommendations based on discussions from a meeting.
+  noteable_features:  
+    - Statement of the recommendations
+    - Background and context
+    - Key benefits and risks
+    - Implementation plan and timeline
+  instructions_or_template: |  
+    # Recommendation Memo
+    
+    ## Recommendations
+    1. [Recommendation 1]
+    2. [Recommendation 2]
+    3. [...]
+    
+    ## Background  
+    [Context and relevant information]
+    
+    ## Benefits
+    - [Benefit 1]
+    - [Benefit 2]  
+    - [...]
+    
+    ## Risks
+    - [Risk 1]
+    - [Risk 2]
+    - [...]
+    
+    ## Implementation Plan
+    1. [Step 1]  
+    2. [Step 2]
+    3. [...]
+    
+    ## Timeline
+    - [Milestone 1]: [Date]
+    - [Milestone 2]: [Date]
+    - [...]
+
+- slug: interview-writeup
+  description: A formatted summary or highlights reel from an interview conducted during a meeting.
+  noteable_features:
+    - Overview of interviewee and interview purpose
+    - Question-and-answer or narrative format
+    - Direct quotes highlighting key points
+    - Key takeaways or next steps  
+  instructions_or_template: |
+    # Interview with [Interviewee Name]
+    
+    ## Overview
+    [Brief description of the interviewee and the purpose of the interview]  
+    
+    ## Key Points
+    - [Point 1]
+    - [Point 2] 
+    - [...]
+    
+    ## Interview Highlights
+    
+    ### Question 1
+    [Question text]
+    
+    [Interviewee's response, including direct quotes]
+    
+    ### Question 2
+    [Question text]
+    
+    [Interviewee's response, including direct quotes]
+    
+    ## Takeaways
+    [Key insights or conclusions from the interview]
+    
+    ## Next Steps  
+    [Actions to be taken based on the interview]
+
+- slug: qa-doc
+  description: A document organizing key questions and answers from a meeting or discussion.
+  noteable_features: 
+    - Consistent format for each Q&A pair
+    - Concise, to-the-point answers
+    - Related questions grouped together
+    - Links to additional resources if applicable
+  instructions_or_template: |
+    # [Topic] Q&A
+    
+    ## [Subtopic 1]
+    
+    ### Q: [Question 1]?
+    A: [Answer 1]
+    
+    ### Q: [Question 2]?  
+    A: [Answer 2]
+    
+    [Link to related resource, if applicable]
+    
+    ## [Subtopic 2]
+    
+    ### Q: [Question 3]?
+    A: [Answer 3]
+    
+    ### Q: [Question 4]?
+    A: [Answer 4] 
+    
+    [Link to related resource, if applicable]
+- slug: spec-doc
+  description: A document outlining the specifications, requirements, and design details for a project or initiative.
+  noteable_features:
+    - Clear problem statement and objectives
+    - Functional and non-functional requirements
+    - System architecture and design
+    - Acceptance criteria and testing plan
+    - Assumptions, constraints, and risks
+  instructions_or_template: |
+    # [Project Name] Specification Document
+    
+    ## Overview
+    [Brief description of the project and its purpose]
+    
+    ## Problem Statement
+    [Detailed explanation of the problem or opportunity being addressed]
+    
+    ## Objectives
+    1. [Objective 1]
+    2. [Objective 2]
+    3. [...]
+    
+    ## Requirements
+    
+    ### Functional Requirements
+    - [Requirement 1]
+    - [Requirement 2]
+    - [...]
+    
+    ### Non-Functional Requirements
+    - [Requirement 1]
+    - [Requirement 2]
+    - [...]
+    
+    ## System Architecture
+    [High-level overview of the system components and their interactions]
+    
+    ## Detailed Design
+    [In-depth description of each component, including diagrams, schemas, and APIs]
+    
+    ## Acceptance Criteria
+    - [Criteria 1]
+    - [Criteria 2]
+    - [...]
+    
+    ## Testing Plan
+    [Outline of the testing strategy, including test cases and scenarios]
+    
+    ## Assumptions and Constraints
+    - [Assumption/Constraint 1]
+    - [Assumption/Constraint 2]
+    - [...]
+    
+    ## Risks and Mitigation
+    1. [Risk 1]
+       - [Mitigation Strategy]
+    2. [Risk 2]
+       - [Mitigation Strategy]
+    3. [...]

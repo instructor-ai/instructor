@@ -1,0 +1,7 @@
+openai
+instructor
+pydantic
+typer
+pyperclip
+rich
+pyyaml
