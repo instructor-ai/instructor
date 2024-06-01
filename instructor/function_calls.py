@@ -2,7 +2,7 @@
 import json
 import logging
 from functools import wraps
-from typing import Annotated, Any, Optional, TypeVar, cast, Dict
+from typing import Annotated, Any, Optional, TypeVar, cast
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
@@ -83,18 +83,12 @@ class OpenAISchema(BaseModel):
 
     @classproperty
     def gemini_schema(cls) -> Any:
-        import jsonref
         import google.generativeai.types as genai_types
-
-        parameters = jsonref.replace_refs(
-            cls.openai_schema["parameters"], lazy_load=False
-        )
-        parameters.pop("$defs", "")
 
         function = genai_types.FunctionDeclaration(
             name=cls.openai_schema["name"],
             description=cls.openai_schema["description"],
-            parameters=map_to_gemini_function_schema(parameters),
+            parameters=map_to_gemini_function_schema(cls.openai_schema["parameters"]),
         )
         return function
 

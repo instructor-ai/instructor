@@ -8,9 +8,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
     Generic,
-    Optional,
     Protocol,
     TypeVar,
 )
@@ -253,37 +251,42 @@ def transform_to_gemini_prompt(
 
 def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     """
-    Gemini function call schemas are very strict
+    Map OpenAPI schema to Gemini properties: gemini function call schemas are very strict
 
-    # function declaration reference - https://github.com/google-gemini/generative-ai-js/blob/main/docs/reference/main/generative-ai.functiondeclarationschema.md
+    function declaration reference - https://github.com/google-gemini/generative-ai-js/blob/main/docs/reference/main/generative-ai.functiondeclarationschema.md
 
-    # function property reference - https://github.com/google-gemini/generative-ai-js/blob/main/docs/reference/main/generative-ai.functiondeclarationschemaproperty.md
+    function property reference - https://github.com/google-gemini/generative-ai-js/blob/main/docs/reference/main/generative-ai.functiondeclarationschemaproperty.md
     """
 
+    import jsonref  # type: ignore
+
     class GeminiSchema(BaseModel):
-        description: Optional[str] = None
-        required: Optional[list[str]] = None
+        description: str | None = None
+        required: list[str] | None = None
         type: str
-        properties: Optional[Dict[str, "PropertySchema"]] = None
+        properties: dict[str, PropertySchema] | None = None
 
         class Config:
             exclude_unset = True
 
     class PropertySchema(BaseModel):
-        description: Optional[str] = None
-        enum: Optional[list[str]] = None
-        example: Optional[Any] = None
-        format: Optional[str] = None
-        nullable: Optional[bool] = None
-        items: Optional[GeminiSchema] = None
-        required: Optional[list[str]] = None
+        description: str | None = None
+        enum: list[str] | None = None
+        example: Any | None = None
+        format: str | None = None
+        nullable: bool | None = None
+        items: GeminiSchema | None = None
+        required: list[str] | None = None
         type: str
-        properties: Optional[GeminiSchema] = None
+        properties: GeminiSchema | None = None
 
         class Config:
             exclude_unset = True
 
-    return GeminiSchema(**obj).model_dump(exclude_none=True)
+    schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)  # type: ignore
+    schema.pop("$defs", "")
+
+    return GeminiSchema(**schema).model_dump(exclude_none=True)
 
 
 def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
