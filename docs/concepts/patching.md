@@ -23,7 +23,7 @@ client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
 
 Gemini supports tool calling for stuctured data extraction. Gemini tool calling requires `jsonref` to be installed.
 
-!!! Warning
+!!! warning "Limitations"
 Gemini tool calling comes with some known limitations:
 
     - `strict` Pydantic validation can fail for integer/float and enum validations
