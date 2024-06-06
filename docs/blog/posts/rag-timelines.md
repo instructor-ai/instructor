@@ -70,6 +70,22 @@ response = client.chat.completions.create(
 }
 ```
 
-The LLM will generate a search query string and a `TimeFilter` object representing "past week" which you can use to filter the data in a subsequent request.
+## Nuances in dates and timezones
+
+When working with time-based queries, it's important to consider the nuances of dates, timezones, and publication times. Depending on the data source, the user's location, and when the content was originally published, the definition of "past week" or "last month" may vary.
+
+To handle this, you'll want to design your `TimeFilter` model to intelligently reason about these relative time periods. This could involve:
+
+- Defaulting to the user's local timezone if available, or using a consistent default like UTC  
+- Defining clear rules for how to calculate the start and end of relative periods like "week" or "month"
+  - e.g. does "past week" mean the last 7 days or the previous Sunday-Saturday range?
+- Allowing for flexibility in how users specify dates (exact datetimes, just dates, natural language phrases)
+- Validating and normalizing user input to fit the expected `TimeFilter` format
+- Considering the original publication timestamp of the content, not just the current date
+  - e.g. "articles published in the last month" should look at the publish date, not the query date
+
+By building this logic into the `TimeFilter` model, you can abstract away the complexity and provide a consistent interface for the rest of your RAG system to work with standardized absolute datetime ranges
+
+Of course, there may be edge cases or ambiguities that are hard to resolve programmatically. In these situations, you may need to prompt the user for clarification or make a best guess based on the available information. The key is to strive for a balance of flexibility and consistency in how you handle time-based queries, factoring in publication dates when relevant.
 
 By modeling time filters with Pydantic and leveraging Instructor, RAG systems can effectively handle time-based queries. Clear prompts, careful model design, and appropriate parsing strategies enable accurate retrieval of information within specific time frames, enhancing the system's overall relevance and accuracy.
