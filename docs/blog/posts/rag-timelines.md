@@ -1,7 +1,7 @@
 ---
 draft: False
 date: 2024-06-06
-tags:
+categories:
   - RAG
 authors:
   - jxnl
