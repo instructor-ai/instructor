@@ -49,7 +49,7 @@ def is_simple_type(
     # ! response model types, we should fix this in later PRs
 
     try:
-        if isclass(response_model) and validateIsSubClass(response_model, BaseModel):
+        if isclass(response_model) and validateIsSubClass(response_model):
             return False
     except TypeError:
         # ! In versions < 3.11, typing.Iterable is not a class, so we can't use isclass
