@@ -43,7 +43,7 @@ class SimpleTypeTests(unittest.TestCase):
         self.assertTrue(is_simple_type(UnionType))
 
     def test_is_simple_type_with_list(self):
-        ListType = list[int]
+        ListType = typing.List[int]
         self.assertTrue(is_simple_type(ListType))
 
     def test_is_simple_type_with_iterable(self):
