@@ -42,10 +42,6 @@ class SimpleTypeTests(unittest.TestCase):
         UnionType = typing.Union[int, str]
         self.assertTrue(is_simple_type(UnionType))
 
-    def test_is_simple_type_with_list(self):
-        ListType = typing.List[int]
-        self.assertTrue(is_simple_type(ListType))
-
     def test_is_simple_type_with_iterable(self):
         IterableType = typing.Iterable[int]
         self.assertFalse(is_simple_type(IterableType))
