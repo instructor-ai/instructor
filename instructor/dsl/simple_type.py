@@ -38,6 +38,8 @@ def validateIsSubClass(response_model: type):
     import sys
 
     if sys.version_info < (3, 10):
+        if len(typing.get_args(response_model)) == 0:
+            return False
         return issubclass(typing.get_args(response_model)[0], BaseModel)
     return issubclass(response_model, BaseModel)
 
