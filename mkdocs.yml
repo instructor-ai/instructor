@@ -201,8 +201,10 @@ nav:
     - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
     - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
     - Validation: 'tutorials/4-validation.ipynb'
-  
 plugins:
+  - redirects:
+      redirect_maps:
+         jobs.md: https://567-labs.notion.site/Jason-Liu-s-AI-Job-Board-2434ce1b4cb9443dad60e0d578133135?pvs=4 
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
