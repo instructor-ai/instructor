@@ -206,7 +206,7 @@ nav:
 plugins:
   - redirects:
       redirect_maps:
-         jobs.md: https://567-labs.notion.site/Jason-Liu-s-AI-Job-Board-2434ce1b4cb9443dad60e0d578133135?pvs=4 
+         jobs.md: https://jobs.applied-llms.org/
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
