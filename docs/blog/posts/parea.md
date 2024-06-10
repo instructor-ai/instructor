@@ -1,12 +1,9 @@
 ---
 draft: False
 date: 2024-05-21
-tags:
-  - parea
-  - python
-  - observability
-  - testing
-  - fine-tuning
+categories:
+  - Partnerships
+  - Observability
 authors:
   - jxnl
   - joschkabraun

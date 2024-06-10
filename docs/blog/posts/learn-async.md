@@ -2,12 +2,8 @@
 draft: False
 date: 2023-11-13
 slug: learn-async
-tags:
-  - python
-  - batch
-  - asyncio
-  - async
-  - async/await
+categories:
+  - Python
 authors:
   - jxnl
 ---

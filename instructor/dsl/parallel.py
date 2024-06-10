@@ -1,3 +1,4 @@
+import sys
 from typing import (
     Any,
     Optional,
@@ -44,18 +45,22 @@ class ParallelBase:
             )
 
 
+if sys.version_info >= (3, 10):
+    from types import UnionType
+    def is_union_type(typehint: type[Iterable[T]]) -> bool:
+        return get_origin(get_args(typehint)[0]) in (Union, UnionType)
+else:
+    def is_union_type(typehint: type[Iterable[T]]) -> bool:
+        return get_origin(get_args(typehint)[0]) is Union
+
+
 def get_types_array(typehint: type[Iterable[T]]) -> tuple[type[T], ...]:
     should_be_iterable = get_origin(typehint)
     if should_be_iterable is not Iterable:
         raise TypeError(f"Model should be with Iterable instead if {typehint}")
 
-    if get_origin(get_args(typehint)[0]) is Union:
-        # works for Iterable[Union[int, str]]
-        the_types = get_args(get_args(typehint)[0])
-        return the_types
-
-    if get_origin(get_args(typehint)[0]) is Union:
-        # works for Iterable[Union[int, str]]
+    if is_union_type(typehint):
+        # works for Iterable[Union[int, str]], Iterable[int | str]
         the_types = get_args(get_args(typehint)[0])
         return the_types
 
