@@ -2003,7 +2003,7 @@ files = [
 name = "jsonref"
 version = "1.1.0"
 description = "jsonref is a library for automatic dereferencing of JSON Reference objects for Python."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "jsonref-1.1.0-py3-none-any.whl", hash = "sha256:590dc7773df6c21cbf948b5dac07a72a251db28b0238ceecce0a2abfa8ec30a9"},
@@ -4915,4 +4915,4 @@ vertexai = ["google-cloud-aiplatform", "jsonref"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "e6d225968fa128561b13d6ef3d0d2ac88d0d15be71f66ec21b7b74ca44c9e0d1"
+content-hash = "a3455aed7581d7496cae97e67c6f9fc1855befe38599819d6835fe275817b864"
