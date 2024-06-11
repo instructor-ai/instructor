@@ -96,7 +96,7 @@ class UserDetail(BaseModel):
     age: int
 
     @field_validator("age")
-    def validate_age(cls, v):
+    def validate_age(cls,v): # noqa: ARG002
         raise ValueError("You will never succeed")
 
 
@@ -226,7 +226,6 @@ Tenacity features a huge number of different retrying capabilities. A few of the
 
 Remember that for async clients you need to use `AsyncRetrying` instead of `Retrying`!
 
-
 ## Retry Callbacks
 
 You can also define callbacks to be called before and after each attempt. This is useful for logging or debugging.
@@ -256,12 +255,12 @@ resp = client.messages.create(
     max_retries=tenacity.Retrying(
         stop=tenacity.stop_after_attempt(3),
         before=lambda _: print("before:", _),
-"""
-before:
-<RetryCallState 4682490016: attempt #1; slept for 0.0; last result: none yet>
-"""
+        # """
+        # before:
+        # <RetryCallState 4682490016: attempt #1; slept for 0.0; last result: none yet>
+        # """
         after=lambda _: print("after:", _),
-    ),
+    ),  # type: ignore
     messages=[
         {
             "role": "user",

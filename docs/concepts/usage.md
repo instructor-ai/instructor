@@ -30,8 +30,15 @@ You can catch an IncompleteOutputException whenever the context length is exceed
 
 ```python
 from instructor.exceptions import IncompleteOutputException
+from pydantic import BaseModel
 import openai
 import instructor
+
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
 
 client = instructor.from_openai(openai.OpenAI())
 
@@ -44,6 +51,6 @@ try:
         ],
     )
 except IncompleteOutputException as e:
-    token_count = e.last_completion.usage.total_tokens
+    token_count = e.last_completion.usage.total_tokens  # type: ignore
     # your logic here
 ```
