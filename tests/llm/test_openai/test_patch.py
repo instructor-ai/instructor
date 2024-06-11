@@ -1,5 +1,5 @@
 from itertools import product
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from openai.types.chat import ChatCompletion
 import pytest
 import instructor
@@ -64,7 +64,7 @@ class UserExtractValidated(BaseModel):
     def validate_name(cls, v):
         if v.upper() != v:
             raise ValueError(
-                "Name should be uppercase, make sure to use the `uppercase` version of the name"
+                "Name should be in uppercase, make sure to use the `uppercase` version of the name. Eg. tom -> TOM"
             )
         return v
 
@@ -101,7 +101,9 @@ async def test_runmodel_async_validator(model, mode, aclient):
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
-    assert isinstance(model, UserExtractValidated), "Should be instance of UserExtract"
+    assert isinstance(
+        model, UserExtractValidated
+    ), "Should be instance of UserExtractValidated"
     assert model.name == "JASON"
     assert hasattr(
         model, "_raw_response"
