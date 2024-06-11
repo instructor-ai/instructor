@@ -30,7 +30,6 @@ The question of using Instructor is fundamentally a question of why to use Pydan
 
 3. **Ecosystem** Pydantic is the most widely used data validation library for Python with over 100M downloads a month. It's used by FastAPI, Typer, and many other popular libraries.
 
-
 ## Getting Started
 
 ```
@@ -154,11 +153,12 @@ assert resp.age == 25
 
 ```python
 import instructor
-import vertexai
-import vertexai.generative_models as gm
+import vertexai  # type: ignore
+from vertexai.generative_models import GenerativeModel  # type: ignore
 from pydantic import BaseModel
 
 vertexai.init()
+
 
 class User(BaseModel):
     name: str
@@ -166,7 +166,7 @@ class User(BaseModel):
 
 
 client = instructor.from_vertexai(
-    client=gm.GenerativeModel("gemini-1.5-pro-preview-0409")
+    client=GenerativeModel("gemini-1.5-pro-preview-0409"),
     mode=instructor.Mode.VERTEXAI_TOOLS,
 )
 
@@ -252,7 +252,7 @@ Now if you use a IDE, you can see the type is correctly infered.
 
 ### Handling async: `await create`
 
-This will also work correctly with asynchronous clients. 
+This will also work correctly with asynchronous clients.
 
 ```python
 import openai
@@ -310,7 +310,6 @@ user, completion = client.chat.completions.create_with_completion(
 ```
 
 ![with_completion](./blog/posts/img/with_completion.png)
-
 
 ### Streaming Partial Objects: `create_partial`
 
