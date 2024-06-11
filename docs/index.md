@@ -9,6 +9,8 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GPT](https://img.shields.io/badge/docs-InstructorGPT-blue)](https://chat.openai.com/g/g-EvZweRWrE-instructor-gpt)
 
+
+
 Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
 
 It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
@@ -19,6 +21,10 @@ It stands out for its simplicity, transparency, and user-centric design, built o
   - [Ruby](https://ruby.useinstructor.com)
   - [Go](https://go.useinstructor.com)
   - [Elixir](https://hex.pm/packages/instructor)
+
+## Want your logo on our website?
+
+If your company use instructor a lot, we'd love to have your logo on our website! Please fill out [this form](https://q7gjsgfstrp.typeform.com/to/wluQlVVQ)
 
 ## Why use Instructor?
 

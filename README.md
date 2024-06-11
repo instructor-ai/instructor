@@ -6,6 +6,10 @@ Instructor is a Python library that makes it a breeze to work with structured ou
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
+## Want your logo on our website?
+
+If your company use instructor a lot, we'd love to have your logo on our website! Please fill out [this form](https://q7gjsgfstrp.typeform.com/to/wluQlVVQ)
+
 ## Key Features
 
 - **Response Models**: Specify Pydantic models to define the structure of your LLM outputs
