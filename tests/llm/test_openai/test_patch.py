@@ -64,7 +64,7 @@ class UserExtractValidated(BaseModel):
     def validate_name(cls, v):
         if v.upper() != v:
             raise ValueError(
-                "Name should be uppercase, make sure to use the `uppercase` version of the name"
+                "Name should have all letters in uppercase. Make sure to use the `uppercase` form of the name"
             )
         return v
 
