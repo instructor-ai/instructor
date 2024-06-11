@@ -1,8 +1,6 @@
 from itertools import product
 from collections.abc import Iterable
 from pydantic import BaseModel, Field
-
-
 import pytest
 import instructor
 from instructor.dsl.partial import Partial
