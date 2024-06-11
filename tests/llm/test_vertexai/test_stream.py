@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from pydantic import BaseModel
 import instructor
-import vertexai.generative_models as gm #type: ignore[reportMissingTypeStubs]
+import vertexai.generative_models as gm  # type: ignore[reportMissingTypeStubs]
 from instructor.dsl.partial import Partial
 from .util import model, mode
 

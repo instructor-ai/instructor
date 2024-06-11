@@ -12,8 +12,7 @@ def from_mistral(
     client: mistralai.client.MistralClient,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     **kwargs: Any,
-) -> instructor.Instructor:
-    ...
+) -> instructor.Instructor: ...
 
 
 @overload
@@ -21,8 +20,7 @@ def from_mistral(
     client: mistralaiasynccli.MistralAsyncClient,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     **kwargs: Any,
-) -> instructor.AsyncInstructor:
-    ...
+) -> instructor.AsyncInstructor: ...
 
 
 def from_mistral(

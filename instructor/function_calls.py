@@ -202,10 +202,10 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        strict=False
-        tool_call= completion.candidates[0].content.parts[0].function_call.args # type: ignore
+        strict = False
+        tool_call = completion.candidates[0].content.parts[0].function_call.args  # type: ignore
         model = {}
-        for field in tool_call: # type: ignore
+        for field in tool_call:  # type: ignore
             model[field] = tool_call[field]
         return cls.model_validate(model, context=validation_context, strict=strict)
 

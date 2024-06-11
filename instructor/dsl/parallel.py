@@ -47,9 +47,11 @@ class ParallelBase:
 
 if sys.version_info >= (3, 10):
     from types import UnionType
+
     def is_union_type(typehint: type[Iterable[T]]) -> bool:
         return get_origin(get_args(typehint)[0]) in (Union, UnionType)
 else:
+
     def is_union_type(typehint: type[Iterable[T]]) -> bool:
         return get_origin(get_args(typehint)[0]) is Union
 

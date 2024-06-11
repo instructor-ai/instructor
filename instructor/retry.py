@@ -93,6 +93,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
         return
     if mode == Mode.VERTEXAI_TOOLS:
         from .client_vertexai import vertexai_function_response_parser
+
         yield response.candidates[0].content
         yield vertexai_function_response_parser(response, exception)
         return

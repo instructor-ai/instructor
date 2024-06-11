@@ -1,7 +1,7 @@
 from typing import Annotated, cast
 from pydantic import AfterValidator, BaseModel, Field
 import instructor
-import vertexai.generative_models as gm #type: ignore[reportMissingTypeStubs]
+import vertexai.generative_models as gm  # type: ignore[reportMissingTypeStubs]
 from .util import model, mode
 
 

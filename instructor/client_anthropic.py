@@ -13,8 +13,7 @@ def from_anthropic(
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     **kwargs: Any,
-) -> instructor.Instructor:
-    ...
+) -> instructor.Instructor: ...
 
 
 @overload
@@ -26,8 +25,7 @@ def from_anthropic(
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     **kwargs: Any,
-) -> instructor.AsyncInstructor:
-    ...
+) -> instructor.AsyncInstructor: ...
 
 
 def from_anthropic(

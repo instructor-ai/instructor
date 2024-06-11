@@ -1,6 +1,6 @@
 import instructor
 import enum
-import vertexai.generative_models as gm #type: ignore[reportMissingTypeStubs]
+import vertexai.generative_models as gm  # type: ignore[reportMissingTypeStubs]
 from typing import Literal, Union
 from .util import model, mode
 
@@ -21,7 +21,7 @@ def test_literal():
 
 
 def test_union():
-    client = instructor.from_vertexai(gm.GenerativeModel(model) , mode)
+    client = instructor.from_vertexai(gm.GenerativeModel(model), mode)
 
     response = client.create(
         response_model=Union[int, str],

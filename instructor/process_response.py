@@ -419,10 +419,13 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             }
         elif mode == Mode.VERTEXAI_TOOLS:
             from instructor.client_vertexai import vertexai_process_response
-            contents, tools, tool_config = vertexai_process_response(new_kwargs, response_model)
-            new_kwargs['contents'] = contents
-            new_kwargs['tools'] = tools
-            new_kwargs['tool_config'] = tool_config
+
+            contents, tools, tool_config = vertexai_process_response(
+                new_kwargs, response_model
+            )
+            new_kwargs["contents"] = contents
+            new_kwargs["tools"] = tools
+            new_kwargs["tool_config"] = tool_config
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 

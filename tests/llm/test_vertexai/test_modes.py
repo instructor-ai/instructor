@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-import vertexai.generative_models as gm #type: ignore[reportMissingTypeStubs]
+import vertexai.generative_models as gm  # type: ignore[reportMissingTypeStubs]
 import instructor
 from .util import model, mode
 
