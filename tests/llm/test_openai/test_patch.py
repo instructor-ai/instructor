@@ -1,5 +1,5 @@
 from itertools import product
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, field_validator
 from openai.types.chat import ChatCompletion
 import pytest
 import instructor
