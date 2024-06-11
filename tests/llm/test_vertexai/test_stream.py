@@ -3,7 +3,7 @@ from itertools import product
 from pydantic import BaseModel
 import pytest
 import instructor
-import vertexai.generative_models as gm #type: ignore[reportMissingTypeStubs]
+import vertexai.generative_models as gm  # type: ignore
 from instructor.dsl.partial import Partial
 
 from .util import models, modes

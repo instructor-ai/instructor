@@ -2,20 +2,20 @@ from __future__ import annotations
 
 from typing import Any
 
-from vertexai.preview.generative_models import ToolConfig #type: ignore
-import vertexai.generative_models as gm  #type: ignore
+from vertexai.preview.generative_models import ToolConfig  # type: ignore
+import vertexai.generative_models as gm  # type: ignore
 from pydantic import BaseModel
 import instructor
-import jsonref #type: ignore
+import jsonref  # type: ignore
 
 
 def _create_gemini_json_schema(model: BaseModel):
     schema = model.model_json_schema()
-    schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema) #type: ignore
+    schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],
         "properties": schema_without_refs["properties"],
-        "required": schema_without_refs["required"]
+        "required": schema_without_refs["required"],
     }
     return gemini_schema
 
@@ -24,9 +24,7 @@ def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
     parameters = _create_gemini_json_schema(model)
 
     declaration = gm.FunctionDeclaration(
-        name=model.__name__,
-        description=model.__doc__,
-        parameters=parameters
+        name=model.__name__, description=model.__doc__, parameters=parameters
     )
 
     tool = gm.Tool(function_declarations=[declaration])
@@ -36,33 +34,31 @@ def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
 
 def vertexai_message_parser(message: dict[str, str]) -> gm.Content:
     return gm.Content(
-            role=message["role"],
-            parts=[
-                gm.Part.from_text(message["content"])
-            ]
-        )
+        role=message["role"], parts=[gm.Part.from_text(message["content"])]
+    )
 
 
 def _vertexai_message_list_parser(messages: list[dict[str, str]]) -> list[gm.Content]:
     contents = [
-        vertexai_message_parser(message)
-        if isinstance(message, dict) else message
+        vertexai_message_parser(message) if isinstance(message, dict) else message
         for message in messages
-        ]
-    return contents 
+    ]
+    return contents
 
 
-def vertexai_function_response_parser(response: gm.GenerationResponse, exception: Exception) -> gm.Content:
+def vertexai_function_response_parser(
+    response: gm.GenerationResponse, exception: Exception
+) -> gm.Content:
     return gm.Content(
-                parts=[
-                    gm.Part.from_function_response(
-                        name=response.candidates[0].content.parts[0].function_call.name,
-                        response={
-                            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
-                        }
-                    )
-                ]
+        parts=[
+            gm.Part.from_function_response(
+                name=response.candidates[0].content.parts[0].function_call.name,
+                response={
+                    "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+                },
             )
+        ]
+    )
 
 
 def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
@@ -84,15 +80,15 @@ def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
     contents = _vertexai_message_list_parser(messages)
 
     config: dict[str, Any] | None = _kwargs.pop("generation_config", None)
-    
+
     response_schema = _create_gemini_json_schema(model)
 
     generation_config = gm.GenerationConfig(
         response_mime_type="application/json",
         response_schema=response_schema,
-        **(config if config else {})
-     )
-    
+        **(config if config else {}),
+    )
+
     return contents, generation_config
 
 
@@ -102,7 +98,10 @@ def from_vertexai(
     _async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor:
-    assert mode in {instructor.Mode.VERTEXAI_TOOLS, instructor.Mode.VERTEXAI_JSON}, "Mode must be instructor.Mode.VERTEXAI_TOOLS"
+    assert mode in {
+        instructor.Mode.VERTEXAI_TOOLS,
+        instructor.Mode.VERTEXAI_JSON,
+    }, "Mode must be instructor.Mode.VERTEXAI_TOOLS"
 
     assert isinstance(
         client, gm.GenerativeModel

@@ -1,7 +1,7 @@
 import instructor
 import pytest
 import enum
-import vertexai.generative_models as gm #type: ignore[reportMissingTypeStubs]
+import vertexai.generative_models as gm  # type: ignore
 from itertools import product
 from typing import Literal, Union
 
@@ -23,9 +23,10 @@ def test_literal(model, mode):
     )
     assert response in ["1231", "212", "331"]
 
+
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_union(model, mode):
-    client = instructor.from_vertexai(gm.GenerativeModel(model) , mode)
+    client = instructor.from_vertexai(gm.GenerativeModel(model), mode)
 
     response = client.create(
         response_model=Union[int, str],
@@ -37,6 +38,7 @@ def test_union(model, mode):
         ],
     )
     assert type(response) in [int, str]
+
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_enum(model, mode):
@@ -57,6 +59,7 @@ def test_enum(model, mode):
         ],
     )
     assert response in [Options.A, Options.B, Options.C]
+
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_bool(model, mode):

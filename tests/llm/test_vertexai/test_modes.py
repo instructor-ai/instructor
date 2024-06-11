@@ -1,6 +1,6 @@
 from itertools import product
 from pydantic import BaseModel, Field
-import vertexai.generative_models as gm #type: ignore[reportMissingTypeStubs]
+import vertexai.generative_models as gm  # type: ignore
 import pytest
 import instructor
 
@@ -15,6 +15,7 @@ class Item(BaseModel):
 class Order(BaseModel):
     items: list[Item] = Field(..., default_factory=list)
     customer: str
+
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_nested(model, mode):
@@ -56,6 +57,7 @@ class LibraryRecord(BaseModel):
     books: list[Book] = Field(..., default_factory=list)
     visitor: str
     library_id: str
+
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_complex_nested_model(model, mode):
