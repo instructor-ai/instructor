@@ -2,7 +2,6 @@
 from pydantic import BaseModel, Field
 from instructor.dsl.partial import Partial
 import pytest
-from itertools import product
 import instructor
 from openai import OpenAI, AsyncOpenAI
 
