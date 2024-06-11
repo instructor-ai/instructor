@@ -1,6 +1,8 @@
 from itertools import product
 from collections.abc import Iterable
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
 import pytest
 import instructor
 from instructor.dsl.partial import Partial
@@ -27,6 +29,61 @@ def test_iterable_model(model, mode, stream, client):
     )
     for m in model:
         assert isinstance(m, UserExtract)
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_summary_extraction(model, mode, client):
+    class Summary(BaseModel):
+        summary: str = Field(description="A detailed summary")
+
+    client = instructor.from_openai(client, mode=mode)
+    extraction_stream = client.chat.completions.create_partial(
+        model=model,
+        response_model=Summary,
+        messages=[
+            {"role": "system", "content": "You summarize text"},
+            {"role": "user", "content": "Summarize: Mary had a little lamb"},
+        ],
+        stream=True,
+    )
+
+    previous_summary = None
+    updates = 0
+    for extraction in extraction_stream:
+        if previous_summary is not None:
+            assert extraction.summary.startswith(previous_summary)
+            updates += 1
+        previous_summary = extraction.summary
+
+    assert updates > 1
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+@pytest.mark.asyncio
+async def test_summary_extraction_async(model, mode, aclient):
+    class Summary(BaseModel):
+        summary: str = Field(description="A detailed summary")
+
+    client = instructor.from_openai(aclient, mode=mode)
+    extraction_stream = client.chat.completions.create_partial(
+        model=model,
+        response_model=Summary,
+        messages=[
+            {"role": "system", "content": "You summarize text"},
+            {"role": "user", "content": "Summarize: Mary had a little lamb"},
+        ],
+        stream=True,
+    )
+
+    previous_summary = None
+    updates = 0
+    async for extraction in extraction_stream:
+        if previous_summary is not None:
+            assert extraction.summary.startswith(previous_summary)
+            updates += 1
+        previous_summary = extraction.summary
+
+    assert updates > 1
 
 
 @pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
