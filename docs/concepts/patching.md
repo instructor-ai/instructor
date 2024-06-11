@@ -27,11 +27,15 @@ This method allows us to get structured output from Gemini via tool calling with
 
 ```python
 import instructor
+from vertexai.generative_models import GenerativeModel  # type: ignore
 import vertexai
-import vertexai.generative_models as gm
 
-client = instructor.from_gemini(
-    genai.GenerativeModel(), mode=instructor.Mode.GEMINI_JSON
+vertexai.init(project="vertexai-generative-models")
+
+
+client = instructor.from_vertexai(
+    client=GenerativeModel("gemini-1.5-pro-preview-0409"),
+    mode=instructor.Mode.VERTEXAI_TOOLS,
 )
 ```
 
@@ -98,8 +102,8 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
 ```
 
-
 Databricks syntax:
+
 ```python
 import instructor
 import os
