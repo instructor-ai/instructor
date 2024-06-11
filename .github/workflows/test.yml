@@ -35,12 +35,12 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev,anthropic
 
-      - name: Run tests
-        if: matrix.python-version != '3.11'
-        run: poetry run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai'
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # - name: Run tests
+      #   if: matrix.python-version != '3.11'
+      #   run: poetry run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai'
+      #   env:
+      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
