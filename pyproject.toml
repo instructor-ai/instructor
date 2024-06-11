@@ -5,7 +5,7 @@ description = "structured outputs for llm"
 authors = ["Jason Liu <jason@jxnl.co>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "instructor"}]
+packages = [{ include = "instructor" }]
 repository = "https://github.com/jxnl/instructor"
 
 [tool.poetry.dependencies]
@@ -41,7 +41,19 @@ jsonref = { version = "^1.1.0", optional = true }
 anthropic = ["anthropic", "xmltodict"]
 groq = ["groq"]
 cohere = ["cohere"]
-test-docs = ["fastapi", "redis", "diskcache", "pandas", "tabulate", "pydantic_extra_types", "litellm", "anthropic", "groq", "cohere", "mistralai"]
+test-docs = [
+    "fastapi",
+    "redis",
+    "diskcache",
+    "pandas",
+    "tabulate",
+    "pydantic_extra_types",
+    "litellm",
+    "anthropic",
+    "groq",
+    "cohere",
+    "mistralai",
+]
 mistralai = ["mistralai"]
 litellm = ["litellm"]
 google-generativeai = ["google-generativeai"]
@@ -59,7 +71,7 @@ jsonref = "^1.1.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
-mkdocs-material = {extras = ["imaging"], version = "^9.5.9"}
+mkdocs-material = { extras = ["imaging"], version = "^9.5.9" }
 mkdocstrings = "^0.22.0"
 mkdocstrings-python = "^1.1.2"
 pytest-examples = "^0.0.10"

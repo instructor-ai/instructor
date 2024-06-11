@@ -54,6 +54,7 @@ def ask_ai(content, model, client) -> DocumentExtraction:
                 "content": content,
             },
         ],
+        max_retries=4,
     )  # type: ignore
     return resp
 
