@@ -9,14 +9,19 @@ import instructor
 import jsonref #type: ignore[reportMissingTypeStubs]
 
 
-def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
-    schema: dict[Any, Any] = jsonref.replace_refs(model.model_json_schema()) #type: ignore[reportMissingTypeStubs]
-    
-    parameters: dict[Any, Any] = {
-        "type": schema["type"],
-        "properties": schema["properties"],
-        "required": schema["required"]
+def _create_gemini_json_schema(model: BaseModel):
+    schema = model.model_json_schema()
+    schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema) #type: ignore[reportMissingTypeStubs]
+    gemini_schema: dict[Any, Any] = {
+        "type": schema_without_refs["type"],
+        "properties": schema_without_refs["properties"],
+        "required": schema_without_refs["required"]
     }
+    return gemini_schema
+
+
+def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
+    parameters = _create_gemini_json_schema(model)
 
     declaration = gm.FunctionDeclaration(
         name=model.__name__,
@@ -28,13 +33,24 @@ def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
 
     return tool
 
-def _vertexai_message_parser(message: dict[str, str]) -> gm.Content:
+
+def vertexai_message_parser(message: dict[str, str]) -> gm.Content:
     return gm.Content(
             role=message["role"],
             parts=[
                 gm.Part.from_text(message["content"])
             ]
         )
+
+
+def _vertexai_message_list_parser(messages: list[dict[str, str]]) -> list[gm.Content]:
+    contents = [
+        vertexai_message_parser(message)
+        if isinstance(message, dict) else message
+        for message in messages
+        ]
+    return contents 
+
 
 def vertexai_function_response_parser(response: gm.GenerationResponse, exception: Exception) -> gm.Content:
     return gm.Content(
@@ -48,14 +64,13 @@ def vertexai_function_response_parser(response: gm.GenerationResponse, exception
                 ]
             )
 
+
 def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
-    messages = _kwargs.pop("messages")
-    contents = [
-        _vertexai_message_parser(message) #type: ignore[reportUnkownArgumentType]
-        if isinstance(message, dict) else message
-        for message in messages
-        ]
+    messages: list[dict[str, str]] = _kwargs.pop("messages")
+    contents = _vertexai_message_list_parser(messages)
+
     tool = _create_vertexai_tool(model=model)
+
     tool_config = ToolConfig(
         function_calling_config=ToolConfig.FunctionCallingConfig(
             mode=ToolConfig.FunctionCallingConfig.Mode.ANY,
@@ -64,13 +79,30 @@ def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
     return contents, [tool], tool_config
 
 
+def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
+    messages: list[dict[str, str]] = _kwargs.pop("messages")
+    contents = _vertexai_message_list_parser(messages)
+
+    config: dict[str, Any] | None = _kwargs.pop("generation_config", None)
+    
+    response_schema = _create_gemini_json_schema(model)
+
+    generation_config = gm.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=response_schema,
+        **(config if config else {})
+     )
+    
+    return contents, generation_config
+
+
 def from_vertexai(
     client: gm.GenerativeModel,
     mode: instructor.Mode = instructor.Mode.VERTEXAI_TOOLS,
     _async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor:
-    assert mode == instructor.Mode.VERTEXAI_TOOLS, "Mode must be instructor.Mode.VERTEXAI_TOOLS"
+    assert mode in {instructor.Mode.VERTEXAI_TOOLS, instructor.Mode.VERTEXAI_JSON}, "Mode must be instructor.Mode.VERTEXAI_TOOLS"
 
     assert isinstance(
         client, gm.GenerativeModel

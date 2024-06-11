@@ -69,6 +69,20 @@ if __name__ == "__main__":
     #> name='Jason' age=20
 ```
 
+### JSON Mode
+
+By default, `instructor.from_vertexai()` uses the mode `instructor.Mode.VERTEXAI_TOOLS`, which means it will use tool calling to create the model response. Alternatively, you can use `instructor.Mode.VERTEXAI_JSON` to use the response_schema parameter provided by the VertexAI SDK. This parameter will prompt Gemini to respond with JSON directly, which can then be parsed into a model response.
+
+If you are not getting good results with tool calling, or prefer this method por any reason, you can switch to this mode:
+
+```python
+### rest of the code as above ...
+
+client = gm.GenerativeModel("gemini-1.5-pro-preview-0409", mode=instructor.Mode.VERTEXAI_JSON)
+
+## rest of the code as above ...
+```
+
 ## Limitations
 
 Currently, Vertex AI offers does not support the following attributes from the OpenAPI schema: `optional`, `maximum`, `anyOf`. This means that not all pydantic models will be supported. Below, I'll share some models that could trigger this error and some work-arounds.
