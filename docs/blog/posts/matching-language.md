@@ -2,9 +2,8 @@
 draft: False
 date: 2024-03-28
 slug: matching-language-summaries
-tags:
-  - multilingual
-  - summarization
+categories:
+  - Summarization
 authors:
   - jxnl
 ---

@@ -201,8 +201,12 @@ nav:
     - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
     - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
     - Validation: 'tutorials/4-validation.ipynb'
-  
+  - Jobs Board (External):
+    - Jobs: 'jobs.md'
 plugins:
+  - redirects:
+      redirect_maps:
+         jobs.md: https://jobs.applied-llms.org/
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false

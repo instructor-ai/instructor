@@ -31,6 +31,19 @@ class ModelAdapter(typing.Generic[T]):
         )
 
 
+def validateIsSubClass(response_model: type):
+    """
+    Temporary guard against issues with generics in Python 3.9
+    """
+    import sys
+
+    if sys.version_info < (3, 10):
+        if len(typing.get_args(response_model)) == 0:
+            return False
+        return issubclass(typing.get_args(response_model)[0], BaseModel)
+    return issubclass(response_model, BaseModel)
+
+
 def is_simple_type(
     response_model: type[BaseModel] | str | int | float | bool | typing.Any,
 ) -> bool:
@@ -38,7 +51,7 @@ def is_simple_type(
     # ! response model types, we should fix this in later PRs
 
     try:
-        if isclass(response_model) and issubclass(response_model, BaseModel):
+        if isclass(response_model) and validateIsSubClass(response_model):
             return False
     except TypeError:
         # ! In versions < 3.11, typing.Iterable is not a class, so we can't use isclass

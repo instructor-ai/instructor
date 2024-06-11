@@ -1,12 +1,8 @@
 ---
 draft: False
 date: 2023-09-17
-tags:
+categories:
   - RAG
-  - Embeddings
-  - Query Understanding
-  - Search Systems
-  - Personal Assistant
 authors:
   - jxnl
 ---

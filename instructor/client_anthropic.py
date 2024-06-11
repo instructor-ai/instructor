@@ -11,10 +11,9 @@ def from_anthropic(
     client: (
         anthropic.Anthropic | anthropic.AnthropicBedrock | anthropic.AnthropicVertex
     ),
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     **kwargs: Any,
-) -> instructor.Instructor:
-    ...
+) -> instructor.Instructor: ...
 
 
 @overload
@@ -24,10 +23,9 @@ def from_anthropic(
         | anthropic.AsyncAnthropicBedrock
         | anthropic.AsyncAnthropicVertex
     ),
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     **kwargs: Any,
-) -> instructor.AsyncInstructor:
-    ...
+) -> instructor.AsyncInstructor: ...
 
 
 def from_anthropic(
@@ -39,7 +37,7 @@ def from_anthropic(
         | anthropic.AsyncAnthropicVertex
         | anthropic.AnthropicVertex
     ),
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_JSON,
+    mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
     assert (
@@ -62,10 +60,7 @@ def from_anthropic(
         ),
     ), "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
 
-    if mode == instructor.Mode.ANTHROPIC_TOOLS:
-        create = client.beta.tools.messages.create  # type: ignore - unknown in stubs
-    else:
-        create = client.messages.create
+    create = client.messages.create
 
     if isinstance(
         client,

@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from typing import Any
 
-from vertexai.preview.generative_models import ToolConfig #type: ignore[reportMissingTypeStubs]
-import vertexai.generative_models as gm  #type: ignore[reportMissingTypeStubs]
+from vertexai.preview.generative_models import ToolConfig #type: ignore
+import vertexai.generative_models as gm  #type: ignore
 from pydantic import BaseModel
 import instructor
-import jsonref #type: ignore[reportMissingTypeStubs]
+import jsonref #type: ignore
 
 
 def _create_gemini_json_schema(model: BaseModel):
     schema = model.model_json_schema()
-    schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema) #type: ignore[reportMissingTypeStubs]
+    schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema) #type: ignore
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],
         "properties": schema_without_refs["properties"],

@@ -1,6 +1,8 @@
 # Welcome to the Instructor Blog
 
-The goal of the blog is to capture some content that does not neatly fit within documentation or the cookbooks.
+The goal of the blog is to capture some content that does not neatly fit within documentation or the cookbooks. I also want to share some of my thoughts and experiences with the community.
+
+<script async data-uid="fe6b71773e" src="https://fivesixseven.ck.page/fe6b71773e/index.js"></script>
 
 ## Advanced Topics
 
