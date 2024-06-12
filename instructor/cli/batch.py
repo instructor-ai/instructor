@@ -6,6 +6,7 @@ from openai.types.batch import Batch
 import typer
 import datetime
 import time
+from typing import Optional
 
 client = OpenAI()
 app = typer.Typer()
@@ -41,13 +42,18 @@ def generate_table(batch_jobs: list[Batch]):
     return table
 
 
-def get_jobs(limit: int = 10):
-    return client.batches.list(limit=limit).data
+def get_jobs(after: Optional[str], limit: int = 10):
+    if not after:
+        return client.batches.list(limit=limit).data
+    return client.batches.list(after=after, limit=limit).data
 
 
 @app.command(name="list", help="See all existing batch jobs")
 def watch(
     limit: int = typer.Option(10, help="Total number of batch jobs to show"),
+    after: Optional[str] = typer.Option(
+        None, help="Batch job ID to start listing from"
+    ),
     poll: int = typer.Option(
         10, help="Time in seconds to wait for the batch job to complete"
     ),
@@ -56,13 +62,13 @@ def watch(
     """
     Monitor the status of the most recent batch jobs
     """
-    batch_jobs = get_jobs(limit)
+    batch_jobs = get_jobs(after, limit)
     table = generate_table(batch_jobs)
     with Live(
         generate_table(batch_jobs), refresh_per_second=2, screen=screen
     ) as live_table:
         while True:
-            batch_jobs = get_jobs(limit)
+            batch_jobs = get_jobs(after, limit)
             table = generate_table(batch_jobs)
             live_table.update(table)
             time.sleep(poll)
