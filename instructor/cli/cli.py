@@ -18,6 +18,6 @@ def docs(query: str = typer.Argument(None, help="Search the documentation")) -> 
     Open the instructor documentation website.
     """
     if query:
-        typer.launch(f"https://jxnl.github.io/instructor/?q={query}")
+        typer.launch(f"https://python.useinstructor.com/?q={query}")
     else:
-        typer.launch("https://jxnl.github.io/instructor")
+        typer.launch("https://python.useinstructor.com/")
