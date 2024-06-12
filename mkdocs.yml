@@ -1,16 +1,16 @@
 site_name: Instructor
 site_author: Jason Liu
-site_description: A lightweight library for structured outputs with LLMs.
+site_description: A lightweight library for structured outputs with LLMs. 
 repo_name: instructor
 repo_url: https://github.com/jxnl/instructor/
-site_url: https://python.useinstructor.com/
+site_url: https://python.useinstructor.com/ 
 edit_uri: edit/main/docs/
-copyright: Copyright &copy; 2024 Jason Liu
+copyright: Copyright &copy; 2024 Jason Liu 
 theme:
   name: material
   icon:
     repo: fontawesome/brands/github
-    edit: material/pencil
+    edit: material/pencil 
     view: material/eye
     theme:
     admonition:
@@ -54,18 +54,18 @@ theme:
     - toc.follow
     # - toc.integrate
   palette:
-    - scheme: default
-      primary: black
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - scheme: slate
-      primary: black
-      accent: indigo
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+      - scheme: default
+        primary: black 
+        accent: indigo
+        toggle:
+          icon: material/brightness-7
+          name: Switch to dark mode
+      - scheme: slate
+        primary: black
+        accent: indigo
+        toggle:
+          icon: material/brightness-4
+          name: Switch to light mode
   font:
     text: Roboto
     code: Roboto Mono
@@ -99,7 +99,7 @@ markdown_extensions:
   - pymdownx.magiclink:
       normalize_issue_symbols: true
       repo_url_shorthand: true
-      user: jxnl
+      user: jxnl 
       repo: instructor
   - pymdownx.mark
   - pymdownx.smartsymbols
@@ -117,96 +117,96 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
 nav:
-  - Introduction:
-      - Welcome To Instructor: "index.md"
-      - Why use Instructor?: "why.md"
-      - Help with Instructor: "help.md"
-      - Installation: "installation.md"
-      - Contributing: "contributing.md"
-      - Philosophy: "concepts/philosophy.md"
+  - Introduction: 
+    - Welcome To Instructor: 'index.md'
+    - Why use Instructor?: 'why.md'
+    - Help with Instructor: 'help.md'
+    - Installation: 'installation.md'
+    - Contributing: 'contributing.md'
+    - Philosophy: 'concepts/philosophy.md'
   - Cookbook:
-      - Cookbooks: "examples/index.md"
-      - Text Classification: "examples/classification.md"
-      - Batch Classification (User Defined): "examples/batch_classification.md"
-      - LLM Self Critique: "examples/self_critique.md"
-      - Extracting Tables with GPT-V: "examples/extracting_tables.md"
-      - Extracting Receipts using GPT-4o: "examples/extract_receipts.md"
-      - Extracting From Slides with GPT-V: "examples/extract_slides.md"
-      - Content Moderation: "examples/moderation.md"
-      - Citing Sources (RAG): "examples/exact_citations.md"
-      - Extracting Knowledge Graphs: "examples/knowledge_graph.md"
-      - Extracting Complex Entities: "examples/entity_resolution.md"
-      - Expanding Search Queries (RAG): "examples/search.md"
-      - Query Planning (RAG): "examples/planning-tasks.md"
-      - PII Data Sanitization: "examples/pii.md"
-      - Enabling Open Source Models: "examples/open_source.md"
-      - Image to Ad Copy: "examples/image_to_ad_copy.md"
-      - Ollama: "examples/ollama.md"
-      - SQLModel Integration: "examples/sqlmodel.md"
-      - Including Examples in Prompt: "examples/examples.md"
-      - Document Segmentation: "examples/document_segmentation.md"
-      - IBM watsonx.ai: "examples/watsonx.md"
+    - Cookbooks: 'examples/index.md'
+    - Text Classification: 'examples/classification.md'
+    - Batch Classification (User Defined): 'examples/batch_classification.md'
+    - LLM Self Critique: 'examples/self_critique.md'
+    - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
+    - Extracting Receipts using GPT-4o: 'examples/extract_receipts.md'
+    - Extracting From Slides with GPT-V: 'examples/extract_slides.md'
+    - Content Moderation: 'examples/moderation.md'
+    - Citing Sources (RAG): 'examples/exact_citations.md'
+    - Extracting Knowledge Graphs: 'examples/knowledge_graph.md'
+    - Extracting Complex Entities: 'examples/entity_resolution.md'
+    - Expanding Search Queries (RAG): 'examples/search.md'
+    - Query Planning (RAG): 'examples/planning-tasks.md'
+    - PII Data Sanitization: 'examples/pii.md'
+    - Enabling Open Source Models: 'examples/open_source.md'
+    - Image to Ad Copy: 'examples/image_to_ad_copy.md'
+    - Ollama: 'examples/ollama.md'
+    - SQLModel Integration: 'examples/sqlmodel.md'
+    - Including Examples in Prompt: 'examples/examples.md'
+    - Document Segmentation: 'examples/document_segmentation.md'
+    - IBM watsonx.ai: 'examples/watsonx.md'
   - Blog:
-      - "blog/index.md"
+    - "blog/index.md"
   - Concepts:
-      - Models: "concepts/models.md"
-      - Fields: "concepts/fields.md"
-      - Types: "concepts/types.md"
-      - Validators: "concepts/reask_validation.md"
-      - Usage Tokens: "concepts/usage.md"
-      - Missing: "concepts/maybe.md"
-      - Patching: "concepts/patching.md"
-      - Retrying: "concepts/retrying.md"
-      - Parallel Tools: "concepts/parallel.md"
-      - Stream Iterable: "concepts/lists.md"
-      - Stream Partial: "concepts/partial.md"
-      - Raw Response: "concepts/raw_response.md"
-      - FastAPI: "concepts/fastapi.md"
-      - Caching: "concepts/caching.md"
-      - Logging: "concepts/logging.md"
-      - Distillation: "concepts/distillation.md"
-      - Union: "concepts/union.md"
-      - Alias: "concepts/alias.md"
-      - Enums: "concepts/enums.md"
-      - Type Adapter: "concepts/typeadapter.md"
+    - Models: 'concepts/models.md'
+    - Fields: 'concepts/fields.md'
+    - Types: 'concepts/types.md'
+    - Validators: "concepts/reask_validation.md"
+    - Usage Tokens: 'concepts/usage.md'
+    - Missing: "concepts/maybe.md"
+    - Patching: 'concepts/patching.md'
+    - Retrying: 'concepts/retrying.md'
+    - Parallel Tools: 'concepts/parallel.md'
+    - Stream Iterable: "concepts/lists.md"
+    - Stream Partial: "concepts/partial.md"
+    - Raw Response: 'concepts/raw_response.md'
+    - FastAPI: 'concepts/fastapi.md'
+    - Caching: 'concepts/caching.md'
+    - Logging: 'concepts/logging.md'
+    - Distillation: "concepts/distillation.md"
+    - Union: 'concepts/union.md'
+    - Alias: 'concepts/alias.md'
+    - Enums: 'concepts/enums.md'
+    - Type Adapter: 'concepts/typeadapter.md'
   - Hub:
-      - Introducing Instructor Hub: "hub/index.md"
-      - Single Classification Model: "hub/single_classification.md"
-      - Multiple Classification Model: "hub/multiple_classification.md"
-      - Extracting Tables using GPT-4o: "hub/tables_from_vision.md"
-      - Extract Pandas Dataframes: "hub/pandas_df.md"
-      - Using Vertex AI: "hub/vertexai.md"
-      - Using Ollama: "hub/ollama.md"
-      - Using Llama CPP: "hub/llama-cpp-python.md"
-      - Using Together Compute: "hub/together.md"
-      - Using Anyscale: "hub/anyscale.md"
-      - Using Groq: "hub/groq.md"
-      - Using Mistral: "hub/mistral.md"
-      - Using Cohere: "hub/cohere.md"
-      - Batch Async Classification w/ Langsmith: "hub/batch_classification_langsmith.md"
-      - Action Items: "hub/action_items.md"
-      - Partial Streaming: "hub/partial_streaming.md"
-      - Extract Contact Info: "hub/extract_contact_info.md"
-      - Using Mistral Large: "hub/mistral.md"
-      - Knowledge Graphs: "hub/knowledge_graph.md"
-      - Extract Youtube Clips: "hub/youtube_clips.md"
-      - Knowledge Graphs: "tutorials/5-knowledge-graphs.ipynb"
+    - Introducing Instructor Hub: 'hub/index.md'
+    - Single Classification Model: 'hub/single_classification.md'
+    - Multiple Classification Model: 'hub/multiple_classification.md'
+    - Extracting Tables using GPT-4o: 'hub/tables_from_vision.md'
+    - Extract Pandas Dataframes: 'hub/pandas_df.md'
+    - Using Vertex AI: 'hub/vertexai.md'
+    - Using Ollama: 'hub/ollama.md'
+    - Using Llama CPP: 'hub/llama-cpp-python.md'
+    - Using Together Compute: 'hub/together.md'
+    - Using Anyscale: 'hub/anyscale.md'
+    - Using Groq: 'hub/groq.md'
+    - Using Mistral: 'hub/mistral.md'
+    - Using Cohere: 'hub/cohere.md'
+    - Batch Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
+    - Action Items: 'hub/action_items.md'
+    - Partial Streaming: 'hub/partial_streaming.md'
+    - Extract Contact Info: 'hub/extract_contact_info.md'
+    - Using Mistral Large: 'hub/mistral.md'
+    - Knowledge Graphs: 'hub/knowledge_graph.md'
+    - Extract Youtube Clips: "hub/youtube_clips.md"
+    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
       - "Usage Tracking": "cli/usage.md"
   - Tutorials:
-      - Tutorials (Notebooks): "tutorials/1-introduction.ipynb"
-      - Tips and Tricks: "tutorials/2-tips.ipynb"
-      - Applications RAG: "tutorials/3-0-applications-rag.ipynb"
-      - Applications RAG - 2: "tutorials/3-1-validation-rag.ipynb"
-      - Validation: "tutorials/4-validation.ipynb"
+    - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
+    - Tips and Tricks: 'tutorials/2-tips.ipynb'
+    - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
+    - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
+    - Validation: 'tutorials/4-validation.ipynb'
   - Jobs Board (External):
-      - Jobs: "jobs.md"
+    - Jobs: 'jobs.md'
 plugins:
   - redirects:
       redirect_maps:
-        jobs.md: https://jobs.applied-llms.org/
+         jobs.md: https://jobs.applied-llms.org/
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
@@ -245,9 +245,9 @@ extra:
         - icon: material/emoticon-sad-outline
           name: This page could be improved
           data: 0
-          note: >-
+          note: >- 
             Thanks for your feedback! Help us improve this page by
-            using our <a href="https://forms.gle/U6siAanuAULbcRmbA" target="_blank" rel="noopener">feedback form</a>.
+            using our <a href="https://forms.gle/ijr9Zrcg2QWgKoWs7" target="_blank" rel="noopener">feedback form</a>.
   social:
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/jxnlco
