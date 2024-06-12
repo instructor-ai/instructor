@@ -206,7 +206,7 @@ nav:
 plugins:
   - redirects:
       redirect_maps:
-         jobs.md: https://applied-llms.org/jobs
+         jobs.md: https://jobs.applied-llms.org/
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
