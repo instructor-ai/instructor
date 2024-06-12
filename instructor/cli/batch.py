@@ -31,9 +31,9 @@ def generate_table(batch_jobs: list[Batch]):
             batch_job.id,
             str(datetime.datetime.fromtimestamp(batch_job.created_at)),
             batch_job.status,
-            str(batch_job.request_counts.failed),
-            str(batch_job.request_counts.completed),
-            str(batch_job.request_counts.total),
+            str(batch_job.request_counts.failed),  # type: ignore
+            str(batch_job.request_counts.completed),  # type: ignore
+            str(batch_job.request_counts.total),  # type: ignore
         )
 
     return table
@@ -75,7 +75,7 @@ def watch(
     help="Create a batch job from a file",
 )
 def create_from_file(
-    file_path: str = typer.Option(..., help="File containing the batch job requests"),
+    file_path: str = typer.Option(help="File containing the batch job requests"),
 ):
     with console.status(f"[bold green] Uploading batch job file...", spinner="dots"):
         batch_input_file = client.files.create(
@@ -97,7 +97,7 @@ def create_from_file(
 
 
 @app.command(help="Cancel a batch job")
-def cancel(batch_id: str = typer.Option(..., help="Batch job ID to cancel")):
+def cancel(batch_id: str = typer.Option(help="Batch job ID to cancel")):
     try:
         client.batches.cancel(batch_id)
         console.log(f"[bold red]Job {batch_id} cancelled successfully!")

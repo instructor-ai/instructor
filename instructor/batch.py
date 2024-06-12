@@ -35,7 +35,7 @@ class Tool(BaseModel):
 
 
 class RequestBody(BaseModel):
-    model: openai_models | str
+    model: Union[openai_models, str]
     messages: list[dict[str, Any]]
     max_tokens: int = Field(default=1000)
     tools: list[Tool]
