@@ -18,9 +18,6 @@ def generate_table(batch_jobs: list[Batch]):
     table = Table(
         title="OpenAI Batch Jobs",
     )
-    table = Table(
-        title="OpenAI Batch Jobs",
-    )
 
     table.add_column("Batch ID", style="dim")
     table.add_column("Created At")
@@ -103,6 +100,6 @@ def create_from_file(
 def cancel(batch_id: str = typer.Option(..., help="Batch job ID to cancel")):
     try:
         client.batches.cancel(batch_id)
-        console.log(f"[bold red]Job {id} cancelled successfully!")
+        console.log(f"[bold red]Job {batch_id} cancelled successfully!")
     except Exception as e:
-        console.log(f"[bold red]Error cancelling job {id}: {e}")
+        console.log(f"[bold red]Error cancelling job {batch_id}: {e}")
