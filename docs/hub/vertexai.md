@@ -37,17 +37,16 @@ The Vertex AI client employs a different client than OpenAI, making the patching
 
 ```python
 import instructor
-
-from pydantic import BaseModel
-import vertexai.generative_models as gm
 import vertexai
+import vertexai.generative_models as gm
+from pydantic import BaseModel
 
 vertexai.init()
 
-client = gm.GenerativeModel("gemini-1.5-pro-preview-0409")
-
 # enables `response_model` in chat call
-patched_chat = instructor.from_vertexai(client)
+client = instructor.from_vertexai(
+    client=gm.GenerativeModel("gemini-1.5-pro-preview-0409")
+)
 
 
 if __name__ == "__main__":
@@ -56,12 +55,12 @@ if __name__ == "__main__":
         name: str
         age: int
 
-    resp = patched_chat(
+    resp = client.create(
         response_model=UserDetails,
         messages=[
             {
                 "role": "user",
-                "content": f'Extract the following entities: "Jason is 20"',
+                "content": "Extract the following entities: 'Jason is 20'",
             },
         ],
     )
