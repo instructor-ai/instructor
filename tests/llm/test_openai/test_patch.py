@@ -29,7 +29,7 @@ def test_typed_dict(model, mode, client):
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
-    assert isinstance(model, UserExtract), "Should be instance of UserExtract"
+    assert isinstance(model, BaseModel), "Should be instance of a pydantic model"
     assert model.name.lower() == "jason"
     assert model.age == 25
     assert hasattr(
