@@ -234,8 +234,8 @@ def handle_response_model(
             )
 
         if mode == Mode.FUNCTIONS:
-            new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
-            new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}  # type: ignore
+            new_kwargs["functions"] = [response_model.openai_schema]
+            new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
