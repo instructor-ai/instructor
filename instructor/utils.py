@@ -230,6 +230,10 @@ class classproperty(Generic[R_co]):
         return self.cproperty(cls)
 
 
+def disable_pydantic_error_url():
+    os.environ["PYDANTIC_ERRORS_INCLUDE_URL"] = "0"
+
+
 def transform_to_gemini_prompt(
     messages_chatgpt: list[ChatCompletionMessageParam],
 ) -> list[dict[str, Any]]:
@@ -250,7 +254,3 @@ def transform_to_gemini_prompt(
         messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
 
     return messages_gemini
-
-
-def set_env_variable():
-    os.environ["PYDANTIC_ERRORS_INCLUDE_URL"] = "0"

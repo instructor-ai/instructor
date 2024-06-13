@@ -1,7 +1,6 @@
 import importlib.util
 
 from .mode import Mode
-from .utils import set_env_variable
 from .process_response import handle_response_model
 from .distil import FinetuneFormat, Instructions
 from .dsl import (
@@ -23,7 +22,6 @@ from .client import (
     Provider,
 )
 
-set_env_variable()
 
 __all__ = [
     "Instructor",
