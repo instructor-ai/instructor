@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, List
 
 import pytest
 from anthropic.types import Message, Usage
@@ -186,3 +186,16 @@ def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
         mock_anthropic_message, mode=instructor.Mode.ANTHROPIC_JSON, strict=False
     )
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
+
+
+def test_pylance_url_config() -> None:
+    class Model(BaseModel):
+        list_of_ints: List[int] = None
+        a_float: float = None
+
+    data = dict(list_of_ints=["1", 2, "bad"], a_float="Not a float")
+
+    try:
+        Model(**data)
+    except ValidationError as e:
+        assert "https://errors.pydantic.dev" not in str(e)

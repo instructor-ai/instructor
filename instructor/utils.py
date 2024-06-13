@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import os
 import json
 import logging
 from collections.abc import AsyncGenerator, Generator, Iterable
@@ -249,3 +250,7 @@ def transform_to_gemini_prompt(
         messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
 
     return messages_gemini
+
+
+def set_env_variable():
+    os.environ["PYDANTIC_ERRORS_INCLUDE_URL"] = "0"
