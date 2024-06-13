@@ -1,8 +1,8 @@
-from typing import TypeVar, List
+from typing import TypeVar
 
 import pytest
 from anthropic.types import Message, Usage
-from openai.resources.chat.completions import ChatCompletion
+from openai.types.chat.chat_completion import ChatCompletion
 from pydantic import BaseModel, ValidationError
 
 import instructor
