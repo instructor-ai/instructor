@@ -47,7 +47,7 @@ vertexai.init()
 client = gm.GenerativeModel("gemini-1.5-pro-preview-0409")
 
 # enables `response_model` in chat call
-patched_chat = instructor.from_vertexai(client)
+client = instructor.from_vertexai(client)
 
 
 if __name__ == "__main__":
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         name: str
         age: int
 
-    resp = patched_chat(
+    resp = client.create(
         response_model=UserDetails,
         messages=[
             {
