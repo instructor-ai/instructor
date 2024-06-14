@@ -169,6 +169,7 @@ import google.auth
 import google.auth.transport.requests
 import instructor
 from openai import OpenAI
+from pydantic import BaseModel
 
 creds, project = google.auth.default()
 auth_req = google.auth.transport.requests.Request()

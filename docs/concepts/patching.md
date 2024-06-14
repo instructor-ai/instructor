@@ -61,7 +61,6 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.FUNCTIONS)
 ```
 
-
 ## JSON Mode
 
 JSON mode uses OpenAI's JSON fromat for responses. by setting `response_format={"type": "json_object"}` in the `chat.completions.create` method.
@@ -74,6 +73,10 @@ client = instructor.from_openai(OpenAI(), mode=instructor.Mode.JSON)
 ```
 
 JSON mode is also required for [the Gemini Models via OpenAI's SDK](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/call-gemini-using-openai-library#client-setup).
+
+```sh
+pip install google-auth
+```
 
 ```python
 import google.auth
