@@ -195,6 +195,9 @@ nav:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
       - "Usage Tracking": "cli/usage.md"
+  - Prompt Techniques:
+      - Index: "prompts/index.md" 
+      - Least to One: "prompts/zero-shot/least-to-one.md"
   - Tutorials:
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
