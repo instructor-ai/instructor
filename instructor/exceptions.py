@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import Any
+from anthropic.types import Usage
+from openai.types.completion_usage import CompletionUsage
 
 
 class IncompleteOutputException(Exception):
@@ -24,7 +26,7 @@ class InstructorRetryException(Exception):
         last_completion: Any | None = None,
         messages: list[Any] | None = None,
         n_attempts: int,
-        total_usage: int,
+        total_usage: Usage | CompletionUsage | int,
         **kwargs: dict[str, Any],
     ):
         self.last_completion = last_completion

@@ -173,7 +173,7 @@ def retry_sync(
                             kwargs["messages"]
                         )
                     raise e
-    except RetryError as e:
+    except Exception as e:
         raise InstructorRetryException(
             e,
             last_completion=response,
