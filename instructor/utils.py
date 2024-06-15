@@ -5,6 +5,7 @@ import json
 import logging
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
+    cast,
     TYPE_CHECKING,
     Any,
     Callable,
@@ -128,9 +129,11 @@ def update_total_usage(
     if isinstance(response_usage, (CompletionUsage, LiteLLMUsage)) and isinstance(
         total_usage, CompletionUsage
     ):
-        total_usage.completion_tokens += response_usage.completion_tokens or 0
-        total_usage.prompt_tokens += response_usage.prompt_tokens or 0
-        total_usage.total_tokens += response_usage.total_tokens or 0
+        total_usage.completion_tokens += (
+            cast(int, response_usage.completion_tokens) or 0
+        )
+        total_usage.prompt_tokens += cast(int, response_usage.prompt_tokens) or 0
+        total_usage.total_tokens += cast(int, response_usage.total_tokens) or 0
         response.usage = total_usage  # Replace each response usage with the total usage
         return response
 
