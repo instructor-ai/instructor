@@ -236,8 +236,7 @@ async def retry_async(
                             kwargs["messages"]
                         )
                     raise e
-    except RetryError as e:
-        logger.exception(f"Failed after retries: {e.last_attempt.exception}")
+    except Exception as e:
         raise InstructorRetryException(
             e,
             last_completion=response,
