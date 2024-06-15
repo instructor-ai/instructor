@@ -26,7 +26,7 @@ class InstructorRetryException(Exception):
         last_completion: Any | None = None,
         messages: list[Any] | None = None,
         n_attempts: int,
-        total_usage: Usage | CompletionUsage | int,
+        total_usage: Usage | CompletionUsage,
         **kwargs: dict[str, Any],
     ):
         self.last_completion = last_completion
