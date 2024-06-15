@@ -174,6 +174,7 @@ def retry_sync(
                         )
                     raise e
     except Exception as e:
+        logger.error(f"Failed after retries: {attempt.retry_state.attempt_number}")
         raise InstructorRetryException(
             e,
             last_completion=response,
@@ -237,6 +238,7 @@ async def retry_async(
                         )
                     raise e
     except Exception as e:
+        logger.error(f"Failed after retries: {attempt.retry_state.attempt_number}")
         raise InstructorRetryException(
             e,
             last_completion=response,
