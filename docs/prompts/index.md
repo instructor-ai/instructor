@@ -67,7 +67,7 @@
 
 - [ ] Decomposition 2.2.4
     - [ ] DECOMP 2.2.4
-    - [ ] Faithful CoT 2.2.4
+    - [x] Faithful CoT 2.2.4
     - [x] Least-to-Most 2.2.4
     - [ ] Plan-and-Solve 2.2.4
     - [ ] Program-of-Thought 2.2.4
