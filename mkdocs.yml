@@ -203,13 +203,19 @@ nav:
     - Validation: 'tutorials/4-validation.ipynb'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
-  - Prompt engineering:
-      - Zero-Shot: 'prompt_engineering/zero_shot.md'
-      - Few-Shot: 'prompt_engineering/few_shot.md'
-      - Thought Generation: 'prompt_engineering/thought_generation.md'
-      - Ensembling: 'prompt_engineering/ensembling.md'
-      - Self-Criticism: 'prompt_engineering/self_criticism.md'
-      - Decomposition: 'prompt_engineering/decomposition.md'
+  - Prompt Engineering:
+    - Zero-Shot:
+      - Emotion Prompting: 'prompt_engineering/zero_shot/emotion_prompting.md'
+    - Few-Shot:
+      - Example Generation: 'prompt_engineering/few_shot/example_generation.md'
+    - Thought Generation:
+      - Chain-Of-Thought: 'prompt_engineering/thought_generation/chain_of_thought.md'
+    - Ensembling:
+      - COSP: 'prompt_engineering/ensembling/cosp.md'
+    - Self-Criticism:
+      - Chain-Of-Verification: 'prompt_engineering/self_criticism/chain_of_verification.md'
+    - Decomposition:
+      - DECOMP: 'prompt_engineering/decomposition/decomp.md'
 plugins:
   - redirects:
       redirect_maps:
