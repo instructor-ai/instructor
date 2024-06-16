@@ -173,8 +173,6 @@ class Instructor:
         strict: bool = True,
         **kwargs: Any,
     ) -> Generator[T, None, None] | AsyncGenerator[T, None]:
-        assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
-
         kwargs["stream"] = True
         kwargs = self.handle_kwargs(kwargs)
 

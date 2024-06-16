@@ -80,7 +80,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.COHERE_TOOLS:
         yield {
             "role": "user",
-            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+            "message": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
         }
         return
     if mode == Mode.GEMINI_JSON:
@@ -96,6 +96,17 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
 
         yield response.candidates[0].content
         yield vertexai_function_response_parser(response, exception)
+        return
+    if mode == Mode.VERTEXAI_JSON:
+        from .client_vertexai import vertexai_message_parser
+
+        yield response.candidates[0].content
+        yield vertexai_message_parser(
+            {
+                "role": "user",
+                "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.text}",
+            }
+        )
         return
 
     yield dump_message(response.choices[0].message)
@@ -164,8 +175,14 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
-                    if mode in {Mode.GEMINI_JSON, Mode.VERTEXAI_TOOLS}:
+                    if mode in {
+                        Mode.GEMINI_JSON,
+                        Mode.VERTEXAI_TOOLS,
+                        Mode.VERTEXAI_JSON,
+                    }:
                         kwargs["contents"].extend(reask_messages(response, mode, e))
+                    elif mode in {Mode.COHERE_TOOLS}:
+                        kwargs["chat_history"].extend(reask_messages(response, mode, e))
                     else:
                         kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:

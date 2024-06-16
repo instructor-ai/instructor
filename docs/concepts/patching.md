@@ -72,6 +72,31 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.JSON)
 ```
 
+JSON mode is also required for [the Gemini Models via OpenAI's SDK](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/call-gemini-using-openai-library#client-setup).
+
+```sh
+pip install google-auth
+```
+
+```python
+import google.auth
+import google.auth.transport.requests
+import instructor
+from openai import OpenAI
+
+creds, project = google.auth.default()
+auth_req = google.auth.transport.requests.Request()
+creds.refresh(auth_req)
+
+# Pass the Vertex endpoint and authentication to the OpenAI SDK
+PROJECT = 'PROJECT_ID'
+LOCATION = 'LOCATION'
+
+base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
+client = instructor.from_openai(OpenAI(base_url=base_url, api_key=creds.token),mode=instructor.Mode.JSON)
+```
+
+
 ### Gemini JSON Mode
 
 This mode uses Gemini's response mimetype field to generate a response in JSON format using the schema provided.
