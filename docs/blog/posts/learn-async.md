@@ -8,7 +8,7 @@ authors:
   - jxnl
 ---
 
-# Batch Processing OpenAI using `asyncio` and `Instructor` with Python
+# Async Processing OpenAI using `asyncio` and `Instructor` with Python
 
 Today, I will introduce you to various approaches for using asyncio in Python. We will apply this to batch process data using `instructor` and learn how to use `asyncio.gather` and `asyncio.as_completed` for concurrent data processing. Additionally, we will explore how to limit the number of concurrent requests to a server using `asyncio.Semaphore`.
 
@@ -24,7 +24,7 @@ We will start by defining an `async` function that calls `openai` to extract dat
 
 `asyncio` is a Python library that enables writing concurrent code using the async/await syntax. It is particularly useful for IO-bound and structured network code. If you are familiar with OpenAI's SDK, you might have encountered two classes: `OpenAI()` and `AsyncOpenAI()`. Today, we will be using the `AsyncOpenAI()` class, which processes data asynchronously.
 
-By utilizing these tools in web applications or batch processing, we can significantly improve performance by handling multiple requests concurrently instead of sequentially.
+By utilizing these tools in web applications or bulk processing, we can significantly improve performance by handling multiple requests concurrently instead of sequentially.
 
 ### Understanding `async` and `await`
 
@@ -38,7 +38,7 @@ In this post we'll show two ways to run tasks concurrently: `asyncio.gather` and
 
 ## Example: Batch Processing
 
-In this example, we will demonstrate how to use `asyncio` for batch processing tasks, specifically for extracting and processing data concurrently. The script will extract data from a list of texts and process it concurrently using `asyncio`.
+In this example, we will demonstrate how to use `asyncio` for async processing tasks, specifically for extracting and processing data concurrently. The script will extract data from a list of texts and process it concurrently using `asyncio`.
 
 ```python
 import instructor
@@ -185,7 +185,7 @@ As you can see, the `for` loop is the slowest, while `asyncio.as_completed` and 
 | Asyncio.gather       | 3.04 seconds   | 2                        |
 | Asyncio.as_completed | 3.26 seconds   | 2                        |
 
-## Practical implications of batch processing
+## Practical implications of async processing
 
 The choice of approach depends on the task's nature and the desired balance between speed and resource utilization.
 
