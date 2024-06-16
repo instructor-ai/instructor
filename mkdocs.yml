@@ -127,7 +127,7 @@ nav:
   - Cookbook:
     - Cookbooks: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
-    - Batch Classification (User Defined): 'examples/batch_classification.md'
+    - Bulk Classification (User Defined): 'examples/bulk_classification.md'
     - LLM Self Critique: 'examples/self_critique.md'
     - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
     - Extracting Receipts using GPT-4o: 'examples/extract_receipts.md'
@@ -183,7 +183,7 @@ nav:
     - Using Groq: 'hub/groq.md'
     - Using Mistral: 'hub/mistral.md'
     - Using Cohere: 'hub/cohere.md'
-    - Batch Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
+    - Bulk Async Classification w/ Langsmith: 'hub/batch_classification_langsmith.md'
     - Action Items: 'hub/action_items.md'
     - Partial Streaming: 'hub/partial_streaming.md'
     - Extract Contact Info: 'hub/extract_contact_info.md'
