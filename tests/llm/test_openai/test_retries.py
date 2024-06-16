@@ -6,9 +6,11 @@ from itertools import product
 from .util import models, modes
 
 
-def uppercase_validator(v):
+def uppercase_validator(v: str):
     if v.islower():
-        raise ValueError("Name must be ALL CAPS, please fix this.")
+        raise ValueError(
+            "All letters in the name should be in uppercase (Eg. TOM, JONES ) instead of tom, jones"
+        )
     return v
 
 
