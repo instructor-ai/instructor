@@ -12,7 +12,6 @@ from typing import (
     Protocol,
     TypeVar,
 )
-from decimal import Decimal
 
 from litellm.utils import Usage as LiteLLMUsage
 from openai.types.completion_usage import CompletionUsage
