@@ -203,13 +203,13 @@ nav:
       - Validation: "tutorials/4-validation.ipynb"
   - Jobs Board (External):
       - Jobs: "jobs.md"
-  - Prompting Cookbooks:
-      - Zero-Shot: "prompting_cookbooks/zero_shot.md"
-      - Few-Shot: "prompting_cookbooks/few_shot.md"
-      - Thought Generation: "prompting_cookbooks/thought_generation.md"
-      - Ensembling: "prompting_cookbooks/ensembling.md"
-      - Self-Criticism: "prompting_cookbooks/self_criticism.md"
-      - Decomposition: "prompting_cookbooks/decomposition.md"
+  - Prompt engineering:
+      - Zero-Shot: "prompt_engineering/zero_shot.md"
+      - Few-Shot: "prompt_engineering/few_shot.md"
+      - Thought Generation: "prompt_engineering/thought_generation.md"
+      - Ensembling: "prompt_engineering/ensembling.md"
+      - Self-Criticism: "prompt_engineering/self_criticism.md"
+      - Decomposition: "prompt_engineering/decomposition.md"
 plugins:
   - redirects:
       redirect_maps:
