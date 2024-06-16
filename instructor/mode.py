@@ -27,4 +27,5 @@ class Mode(enum.Enum, metaclass=_WarnOnFunctionsAccessEnumMeta):
     ANTHROPIC_JSON = "anthropic_json"
     COHERE_TOOLS = "cohere_tools"
     VERTEXAI_TOOLS = "vertexai_tools"
+    VERTEXAI_JSON = "vertexai_json"
     GEMINI_JSON = "gemini_json"
