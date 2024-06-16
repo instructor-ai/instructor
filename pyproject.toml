@@ -34,7 +34,7 @@ groq = { version = "^0.4.2", optional = true }
 cohere = { version = "^5.1.8", optional = true }
 mistralai = { version = "^0.1.8", optional = true }
 google-generativeai = { version = "^0.5.4", optional = true }
-google-cloud-aiplatform = { version = "^1.52.0", optional = true }
+google-cloud-aiplatform = { version = "^1.53.0", optional = true }
 jsonref = { version = "^1.1.0", optional = true }
 
 [tool.poetry.extras]
@@ -105,7 +105,8 @@ litellm = "^1.35.31"
 google-generativeai = "^0.5.4"
 
 [tool.poetry.group.vertexai.dependencies]
-google-cloud-aiplatform = "^1.52.0"
+google-cloud-aiplatform = "^1.53.0"
+jsonref = "^1.1.0"
 
 [build-system]
 requires = ["poetry-core"]

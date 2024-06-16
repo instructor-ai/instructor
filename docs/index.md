@@ -115,9 +115,9 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
-## Using Gemini
+### Using Gemini
 
-### Google AI
+#### Google AI
 
 ```python
 import instructor
@@ -153,7 +153,7 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
-### Vertex AI
+#### Vertex AI
 
 **Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](../hub/vertexai.md).
 
