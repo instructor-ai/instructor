@@ -152,6 +152,7 @@ nav:
     - Models: 'concepts/models.md'
     - Fields: 'concepts/fields.md'
     - Types: 'concepts/types.md'
+    - TypedDicts: 'concepts/typeddicts.md'
     - Validators: "concepts/reask_validation.md"
     - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
