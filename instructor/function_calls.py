@@ -106,6 +106,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.VERTEXAI_TOOLS:
             return cls.parse_vertexai_tools(completion, validation_context, strict)
 
+        if mode == Mode.VERTEXAI_JSON:
+            return cls.parse_vertexai_json(completion, validation_context, strict)
+
         if mode == Mode.COHERE_TOOLS:
             return cls.parse_cohere_tools(completion, validation_context, strict)
 
@@ -207,6 +210,16 @@ class OpenAISchema(BaseModel):
         model = {}
         for field in tool_call:  # type: ignore
             model[field] = tool_call[field]
+        return cls.model_validate(model, context=validation_context, strict=strict)
+
+    @classmethod
+    def parse_vertexai_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        model = json.loads(completion.text)
         return cls.model_validate(model, context=validation_context, strict=strict)
 
     @classmethod

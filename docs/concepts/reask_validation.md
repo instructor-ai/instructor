@@ -200,6 +200,45 @@ The docs are currently incomplete, but we have a few advanced validation techniq
 1. Validate the entire object with all attributes rather than one attribute at a time
 2. Using some 'context' to validate the object: In this case, we use the `context` to check if the citation existed in the original text.
 
+## Optimizing Token usage
+
+Pydantic automatically includes a URL within the error message itself when an error is thrown so that users can learn more about the specific error that was thrown. Some users might want to remove this URL since it adds extra tokens that otherwise might not add much value to the validation process.
+
+We've created a small helper function that you can use below which removes this url in the error message
+
+```python hl_lines="6"
+from instructor.utils import disable_pydantic_error_url
+from pydantic import BaseModel, ValidationError
+from typing_extensions import Annotated
+from pydantic import AfterValidator
+
+disable_pydantic_error_url() # (1)!
+
+
+def name_must_contain_space(v: str) -> str:
+    if " " not in v:
+        raise ValueError("Name must contain a space.")
+    return v.lower()
+
+
+class UserDetail(BaseModel):
+    age: int
+    name: Annotated[str, AfterValidator(name_must_contain_space)]
+
+
+try:
+    person = UserDetail(age=29, name="Jason")
+except ValidationError as e:
+    print(e)
+    """
+    1 validation error for UserDetail
+    name
+        Value error, Name must contain a space. [type=value_error, input_value='Jason', input_type=str]
+    """
+```
+
+1.  We disable the error by setting an environment variable `PYDANTIC_ERRORS_INCLUDE_URL` to `0`. This is valid only for the duration that the script is executed for, once the function is not called, the original behaviour is restored.
+
 ## Takeaways
 
 By integrating these advanced validation techniques, we not only improve the quality and reliability of LLM-generated content, but also pave the way for more autonomous and effective systems.
