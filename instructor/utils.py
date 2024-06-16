@@ -12,6 +12,7 @@ from typing import (
     Protocol,
     TypeVar,
 )
+from decimal import Decimal
 
 from litellm.utils import Usage as LiteLLMUsage
 from openai.types.completion_usage import CompletionUsage
@@ -130,7 +131,7 @@ def update_total_usage(
     ):
         total_usage.completion_tokens += response_usage.completion_tokens or 0
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
-        total_usage.total_tokens += int, response_usage.total_tokens or 0
+        total_usage.total_tokens += response_usage.total_tokens or 0
         response.usage = total_usage  # Replace each response usage with the total usage
         return response
 
