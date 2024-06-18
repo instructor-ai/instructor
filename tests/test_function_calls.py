@@ -2,12 +2,13 @@ from typing import TypeVar
 
 import pytest
 from anthropic.types import Message, Usage
-from openai.resources.chat.completions import ChatCompletion
+from openai.types.chat.chat_completion import ChatCompletion
 from pydantic import BaseModel, ValidationError
 
 import instructor
 from instructor import OpenAISchema, openai_schema
 from instructor.exceptions import IncompleteOutputException
+from instructor.utils import disable_pydantic_error_url
 
 T = TypeVar("T")
 
@@ -186,3 +187,17 @@ def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
         mock_anthropic_message, mode=instructor.Mode.ANTHROPIC_JSON, strict=False
     )
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
+
+
+def test_pylance_url_config() -> None:
+    class Model(BaseModel):
+        list_of_ints: list[int]
+        a_float: float
+
+    disable_pydantic_error_url()
+    data = dict(list_of_ints=["1", 2, "bad"], a_float="Not a float")
+
+    try:
+        Model(**data)  # type: ignore
+    except ValidationError as e:
+        assert "https://errors.pydantic.dev" not in str(e)

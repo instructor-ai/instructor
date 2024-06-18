@@ -10,7 +10,7 @@ from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
 from openai.types.chat import ChatCompletion
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 
 import json
 import inspect
@@ -166,6 +166,14 @@ def process_response(
     return model
 
 
+def is_typed_dict(cls) -> bool:
+    return (
+        isinstance(cls, type)
+        and issubclass(cls, dict)
+        and hasattr(cls, "__annotations__")
+    )
+
+
 def handle_response_model(
     response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
 ) -> tuple[type[T], dict[str, Any]]:
@@ -192,6 +200,12 @@ def handle_response_model(
         # We wrap the response_model in a ModelAdapter that sets 'content' as the response
         if is_simple_type(response_model):
             response_model = ModelAdapter[response_model]
+
+        if is_typed_dict(response_model):
+            response_model: BaseModel = create_model(
+                response_model.__name__,
+                **{k: (v, ...) for k, v in response_model.__annotations__.items()},
+            )
 
         # This a special case for parallel tools
         if mode == Mode.PARALLEL_TOOLS:
@@ -220,8 +234,8 @@ def handle_response_model(
             )
 
         if mode == Mode.FUNCTIONS:
-            new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
-            new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}  # type: ignore
+            new_kwargs["functions"] = [response_model.openai_schema]
+            new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
