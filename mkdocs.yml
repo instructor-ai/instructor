@@ -204,6 +204,64 @@ nav:
     - Validation: 'tutorials/4-validation.ipynb'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
+  - Prompting:
+    - Zero-Shot:
+      - Emotion Prompting: 'prompting/zero_shot/emotion_prompting.md'
+      - Role Prompting: 'prompting/zero_shot/role_prompting.md'
+      - Style Prompting: 'prompting/zero_shot/style_prompting.md'
+      - S2A: 'prompting/zero_shot/s2a.md'
+      - SimToM: 'prompting/zero_shot/simtom.md'
+      - RaR: 'prompting/zero_shot/rar.md' 
+      - RE2: 'prompting/zero_shot/re2.md'
+      - Self-Ask: 'prompting/zero_shot/self_ask.md'
+    - Few-Shot:
+      - Example Generation:
+        - SG-ICL: 'prompting/few_shot/example_generation/sg_icl.md'
+      - Example Ordering: 'prompting/few_shot/example_ordering.md'
+      - Exemplar Selection:
+        - KNN: 'prompting/few_shot/exemplar_selection/knn.md'
+        - Vote-K: 'prompting/few_shot/exemplar_selection/vote_k.md'
+    - Thought Generation:
+      - Chain-Of-Thought (Zero-Shot):
+        - Analogical Prompting: 'prompting/thought_generation/chain_of_thought_zero_shot/analogical_prompting.md'
+        - Step-Back Prompting: 'prompting/thought_generation/chain_of_thought_zero_shot/step_back_prompting.md'
+        - Thread-of-Thought (ThoT): 'prompting/thought_generation/chain_of_thought_zero_shot/thread_of_thought.md'
+        - Tab-CoT: 'prompting/thought_generation/chain_of_thought_zero_shot/tab_cot.md'
+      - Chain-Of-Thought (Few-Shot):
+        - Active-Prompt: 'prompting/thought_generation/chain_of_thought_few_shot/active_prompt.md'
+        - Auto-CoT: 'prompting/thought_generation/chain_of_thought_few_shot/auto_cot.md'
+        - Complexity-Based: 'prompting/thought_generation/chain_of_thought_few_shot/complexity_based.md'
+        - Contrastive: 'prompting/thought_generation/chain_of_thought_few_shot/contrastive.md'
+        - Memory-of-Thought: 'prompting/thought_generation/chain_of_thought_few_shot/memory_of_thought.md'
+        - Uncertainty-Routed CoT: 'prompting/thought_generation/chain_of_thought_few_shot/uncertainty_routed_cot.md'
+        - Prompt Mining: 'prompting/thought_generation/chain_of_thought_few_shot/prompt_mining.md'
+    - Ensembling:
+      - COSP: 'prompting/ensembling/cosp.md'
+      - DENSE: 'prompting/ensembling/dense.md'
+      - DiVeRSe: 'prompting/ensembling/diverse.md'
+      - Max Mutual Information: 'prompting/ensembling/max_mutual_information.md'
+      - Meta-CoT: 'prompting/ensembling/meta_cot.md'
+      - MoRE: 'prompting/ensembling/more.md'
+      - Self-Consistency: 'prompting/ensembling/self_consistency.md'
+      - Universal Self-Consistency: 'prompting/ensembling/universal_self_consistency.md'
+      - USP: 'prompting/ensembling/usp.md'
+      - Prompt Paraphrasing: 'prompting/ensembling/prompt_paraphrasing.md'
+    - Self-Criticism:
+      - Chain-Of-Verification: 'prompting/self_criticism/chain_of_verification.md'
+      - Self-Calibration: 'prompting/self_criticism/self_calibration.md'
+      - Self-Refine: 'prompting/self_criticism/self_refine.md'
+      - Self-Verification: 'prompting/self_criticism/self_verification.md'
+      - ReverseCoT: 'prompting/self_criticism/reversecot.md'
+      - Cumulative Reason: 'prompting/self_criticism/cumulative_reason.md'
+    - Decomposition:
+      - DECOMP: 'prompting/decomposition/decomp.md'
+      - Faithful CoT: 'prompting/decomposition/faithful_cot.md'
+      - Least-to-Most: 'prompting/decomposition/least_to_most.md'
+      - Plan-and-Solve: 'prompting/decomposition/plan_and_solve.md'
+      - Program-of-Thought: 'prompting/decomposition/program_of_thought.md'
+      - Recurs.-of-Thought: 'prompting/decomposition/recurs_of_thought.md'
+      - Skeleton-of-Thought: 'prompting/decomposition/skeleton_of_thought.md'
+      - Tree-of-Thought: 'prompting/decomposition/tree-of-thought.md'
 plugins:
   - redirects:
       redirect_maps:
