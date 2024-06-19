@@ -69,6 +69,6 @@ class BatchJob:
                     messages=messages,
                     **tools,
                 ),
-            ).model_dump_json()
+            ).model_dump(mode="json")
             for messages in messages_batch
         ]

@@ -39,18 +39,13 @@ def generate_table(batch_jobs: list[Batch]):
     return table
 
 
-def get_jobs(after: Optional[str], limit: int = 10):
-    if not after:
-        return client.batches.list(limit=limit).data
-    return client.batches.list(after=after, limit=limit).data
+def get_jobs(limit: int = 10):
+    return client.batches.list(limit=limit).data
 
 
 @app.command(name="list", help="See all existing batch jobs")
 def watch(
     limit: int = typer.Option(10, help="Total number of batch jobs to show"),
-    after: Optional[str] = typer.Option(
-        None, help="Batch job ID to start listing from"
-    ),
     poll: int = typer.Option(
         10, help="Time in seconds to wait for the batch job to complete"
     ),
@@ -59,13 +54,13 @@ def watch(
     """
     Monitor the status of the most recent batch jobs
     """
-    batch_jobs = get_jobs(after, limit)
+    batch_jobs = get_jobs(limit)
     table = generate_table(batch_jobs)
     with Live(
         generate_table(batch_jobs), refresh_per_second=2, screen=screen
     ) as live_table:
         while True:
-            batch_jobs = get_jobs(after, limit)
+            batch_jobs = get_jobs(limit)
             table = generate_table(batch_jobs)
             live_table.update(table)
             time.sleep(poll)
@@ -93,6 +88,7 @@ def create_from_file(
             completion_window="24h",
             metadata={"description": "testing job"},
         )
+
     watch(limit=5, poll=2, screen=False)
 
 
@@ -100,6 +96,7 @@ def create_from_file(
 def cancel(batch_id: str = typer.Option(help="Batch job ID to cancel")):
     try:
         client.batches.cancel(batch_id)
+        watch(limit=5, poll=2, screen=False)
         console.log(f"[bold red]Job {batch_id} cancelled successfully!")
     except Exception as e:
         console.log(f"[bold red]Error cancelling job {batch_id}: {e}")
