@@ -6,7 +6,6 @@ from openai.types.batch import Batch
 import typer
 import datetime
 import time
-from typing import Optional
 
 client = OpenAI()
 app = typer.Typer()
