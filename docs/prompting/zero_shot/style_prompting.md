@@ -1,7 +1,7 @@
 ---
 title: "Style Prompting"
 description: ""
-keywords: "prompt, prompting, prompt engineering, llm, gpt, openai, style prompting, persona prompting, model, AI, python, instructor, zero-shot, role prompting"
+keywords: "prompt, prompting, prompt engineering, llm, gpt, openai, style prompting, model, AI, python, instructor, zero-shot, role prompting"
 ---
 
 Style prompting<sup><a href="https://arxiv.org/abs/2302.09185">1</a></sup> includes a style, tone, or genre in the prompt. The effect can be similar to [role prompting](https://python.useinstructor.com/prompting/zero_shot/role_prompting/).<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>
