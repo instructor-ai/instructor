@@ -18,15 +18,18 @@ class Recipe(BaseModel):
 
 client = instructor.from_openai(openai.OpenAI())
 
-emotion_prompt = """
-    I want to impress my friends with my cooking.
-    Provide a recipe for a delicious chocolate cake.
-    """
+emotion_prompt = {
+    "role": "user",
+    "content": (
+        "I want to impress my friends with my cooking." # Emotion prompting
+        "Provide a recipe for a delicious chocolate cake."
+    )
+}
 
 recipe = client.chat.completions.create(
     model="gpt-4o",
     response_model=Recipe,
-    messages=[{"role": "user", "content": emotion_prompt}],
+    messages=[emotion_prompt],
 )
 
 print("Dish Name:", recipe.dish_name)
