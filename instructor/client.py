@@ -439,7 +439,7 @@ def from_litellm(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    is_async = inspect.isawaitable(completion)
+    is_async = inspect.iscoroutinefunction(completion)
 
     if not is_async:
         return Instructor(
