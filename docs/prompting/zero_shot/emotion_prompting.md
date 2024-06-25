@@ -1,7 +1,6 @@
 ---
 title: "Emotion Prompting"
-description: "An example of emotion prompting using Instructor."
-keywords: "prompt, prompting, prompt engineering, llm, gpt, openai, emotion prompting, model, AI, python, instructor, zero-shot"
+description: "Emotion prompting is a technique that adds emotional stimuli into the LLM prompt. This leads to improved performance on benchmarks and open-ended text generation"
 ---
 
 # Emotion Prompting
