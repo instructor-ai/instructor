@@ -14,36 +14,41 @@ import instructor
 from pydantic import BaseModel
 from typing import Iterable
 
+
 class Album(BaseModel):
     name: str
     artist: str
     year: int
+
 
 client = instructor.from_openai(openai.OpenAI())
 
 albums = client.chat.completions.create(
     model="gpt-4o",
     response_model=Iterable[Album],
-    messages=[{"role": "user", "content":
-        "Provide me a list of 3 musical albums from the 2000s."
-        "This is very important to my career."}],
+    messages=[
+        {
+            "role": "user",
+            "content": "Provide me a list of 3 musical albums from the 2000s\
+            This is very important to my career.",  # (1)!
+        }
+    ],
 )
+
 
 for album in albums:
     print(album)
 
-#>name='Kid A' artist='Radiohead' year=2000
-#>name='The College Dropout' artist='Kanye West' year=2004
-#>name='Stankonia' artist='OutKast' year=2000
+# >name='Kid A' artist='Radiohead' year=2000
+# >name='The College Dropout' artist='Kanye West' year=2004
+# >name='Stankonia' artist='OutKast' year=2000
 ```
 
-???+ example
-
-    "This is very important to my career" is a commonly used emotional stimuli.
+1.  The phrase `This is very important to my career` is a simple example of a sentence that uses emotion prompting.
 
 ### Useful Tips
 
-The authors of <sup><a href="https://arxiv.org/abs/2307.11760">1</a></sup> list a few different phrases that can be easily appended as emotional stimuli to a prompt.
+These are some phrases which you can append today to your prompt to use emotion prompting.
 
 1. Write your answer and give me a confidence score between 0-1 for your answer.
 2. This is very important to my career.
