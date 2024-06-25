@@ -49,9 +49,9 @@ print(label_prediction.label)  # BILLING
 
 !!! note "This is an example of Role Based Prompting"
 
-    - Role: You are a support agent at a tech company
-    - Task : You will be assigned a support ticket to classify
-    - Reminder: Make sure to only select the label that applies to the support ticket
+    - **Role**: You are a support agent at a tech company
+    - **Task** : You will be assigned a support ticket to classify
+    - **Reminder**: Make sure to only select the label that applies to the support ticket
 
 ### References
 
