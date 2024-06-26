@@ -61,4 +61,4 @@ print(label_prediction.label)  # BILLING
 <sup id="ref-4">4</sup>: [Unleashing the Emergent Cognitive Synergy in Large Lanuage Models: A Task-Solving Agent through Multi-Persona Self-Collaboration ](https://arxiv.org/abs/2307.05300)  
 <sup id="ref-5">5</sup>: [Prompt Programming for Large Language Models: Beyond the Few-Shot Paradigm](https://dl.acm.org/doi/10.1145/3411763.3451760)
 
-<sup id="ref-asterisk">\*</sup>: [The Prompt Resport: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
+<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
