@@ -85,3 +85,7 @@ Here are some phrases that you can add to your prompt to refine the question bef
 - Modify the original question for clarity and detail, then offer an answer.
 - Restate and elaborate on the inquiry before proceeding with a response.
 - Given the above question, rephrase and expand it to help you do better answering. Maintain all information in the original question.
+
+### References
+
+<sup id="ref-1">1</sup>: [Rephrase and Respond: Let Large Language Models Ask Better Questions for Themselves](https://arxiv.org/pdf/2311.04205)
