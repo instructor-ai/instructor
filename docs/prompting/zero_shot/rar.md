@@ -9,16 +9,13 @@ Rephrase and Respond(RaR)<sup><a href="https://arxiv.org/pdf/2311.04205">1</a></
 
 This could look something like this
 
-```
-User : Take the last letters of the words in 'Edgar Bob' and concatenate them.
-Rephrase and expand the question, and respond
+!!! example "Rephrase and Respond Example"
 
-Assistant: Could you please form a new string or series of characters by joining
-together the final letters from each word in the phrase "Edgar Bob"?
+    **User**: Take the last letters of the words in 'Edgar Bob' and concatenate them.
 
-Assistant :  The last letters in the words "Edgar" and "Bob" are "r" and "b", hence
-when concatenated, it forms "rb".
-```
+    **Rephrased Question**: Could you please form a new string or series of characters by joining together the final letters from each word in the phrase "Edgar Bob"?
+
+    **Assistant**: The last letters in the words "Edgar" and "Bob" are "r" and "b", hence when concatenated, it forms "rb".
 
 We can implement this in instructor as seen below.
 

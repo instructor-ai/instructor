@@ -5,7 +5,9 @@ description: "Role prompting is a technique where we assign a specific role to a
 
 Role prompting is a technique where we assign a specific role to a LLM. We can do so by using the format
 
-> You are a {role}. You will be {description of task}. {Reiterate instructions}.
+!!! example "Role Prompting Template"
+
+    You are a **[ role ]**. You **[ description of task ]**. **[ Reiterate instructions ]**.
 
 ```python
 import openai
@@ -33,7 +35,7 @@ def classify(support_ticket_title: str):
                 "content": f"You are a support agent at a tech company.\
                 You will be assigned a support ticket to classify. \
                 Make sure to only select the label that applies to \
-                the support ticket.", # (1)!
+                the support ticket.",
             },
             {
                 "role": "user",
