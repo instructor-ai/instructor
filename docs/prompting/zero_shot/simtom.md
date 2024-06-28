@@ -46,7 +46,7 @@ def simtom(entity):
                     Alice puts the book on the table.
                     Alice leaves the room.
                     Bob moves the book to the shelf.
-                    Where is the book?
+                    Where does {entity} think the book is?
 
                     List only the facts relevant to {entity}.
                     """
@@ -65,7 +65,7 @@ def simtom(entity):
             },
             {
                 "role": "user",
-                "content": f"Question: Where is the book?"
+                "content": f"Question: Where does {entity} think the book is?"
             }
         ]
     )
@@ -82,7 +82,7 @@ simtom("bob")
 # >fact='Alice puts the book on the table.'
 # >fact='Alice leaves the room.'
 # >fact='Bob moves the book to the shelf.'
-# >the shelf
+# >shelf
 ```
 
 ### References
