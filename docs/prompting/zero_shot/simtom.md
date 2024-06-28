@@ -48,7 +48,7 @@ def simtom(entity):
                     Bob moves the book to the shelf.
                     Where is the book?
 
-                    List only the facts relevant to {entity}:
+                    List only the facts relevant to {entity}.
                     """
             }
         ]
