@@ -8,9 +8,13 @@ description: "SimToM (Simulated Theory of Mind) is a two-step prompting techniqu
 SimToM (Simulated Theory of Mind)<sup><a href="https://arxiv.org/abs/2311.10227">1</a></sup> is a prompting technique designed to handle complex questions involving multiple people or objects. It involves two steps:
 
 1. Establish the set of facts known to a specific person or entity
-   > Given the following context, list the facts that {entity} would know. Context: {context}.
 2. Answer the question based on solely on those established facts
-   > You are {entity}. Answer the following question based only on these facts you know {facts}. Question: {question}
+
+!!! example "SimToM Example Template"
+
+    **Step 1**: Given the following context, list the facts that {entity} would know. Context: {context}
+
+    **Step 2**: You are {entity}. Answer the following question based only on these facts you know {facts}. Question: {question}
 
 This approach can help eliminate the influence of irrelevant information in the prompt.<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>
 
