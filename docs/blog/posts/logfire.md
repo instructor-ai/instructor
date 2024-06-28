@@ -2,10 +2,8 @@
 draft: False
 date: 2024-05-01
 slug: instructor-logfire
-tags:
-  - python
-  - observability
-  - open-telemetry
+categories:
+  - Observability
 authors:
   - ivanleomk
   - jxnl

@@ -6,6 +6,10 @@ Instructor is a Python library that makes it a breeze to work with structured ou
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
+## Want your logo on our website?
+
+If your company use instructor a lot, we'd love to have your logo on our website! Please fill out [this form](https://q7gjsgfstrp.typeform.com/to/wluQlVVQ)
+
 ## Key Features
 
 - **Response Models**: Specify Pydantic models to define the structure of your LLM outputs
@@ -153,6 +157,53 @@ client = instructor.from_gemini(
     mode=instructor.Mode.GEMINI_JSON,
 )
 ```
+
+
+Alternatively, you can [call Gemini from the OpenAI client](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/call-gemini-using-openai-library#python).You'll have to setup [`gcloud`](https://cloud.google.com/docs/authentication/provide-credentials-adc#local-dev), get setup on Vertex AI, and install the Google Auth library.
+
+```sh
+pip install google-auth
+```
+
+```python
+import google.auth
+import google.auth.transport.requests
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+creds, project = google.auth.default()
+auth_req = google.auth.transport.requests.Request()
+creds.refresh(auth_req)
+
+# Pass the Vertex endpoint and authentication to the OpenAI SDK
+PROJECT = 'PROJECT_ID'
+LOCATION = 'LOCATION' # https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations
+base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
+
+client = instructor.from_openai(OpenAI(base_url=base_url, api_key=creds.token), mode=instructor.Mode.JSON)
+# JSON mode is req'd
+class User(BaseModel):
+    name: str
+    age: int
+
+resp = client.chat.completions.create(
+    model="google/gemini-1.5-flash-001",
+    max_tokens=1024,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
 
 ### Using Litellm
 

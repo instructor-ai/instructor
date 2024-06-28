@@ -12,7 +12,11 @@ from typing import (
     Protocol,
     TypeVar,
 )
+<<<<<<< gemini-tools
 from pydantic import BaseModel
+=======
+import os
+>>>>>>> main
 
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
@@ -38,6 +42,7 @@ class Response(Protocol):
 
 class Provider(Enum):
     OPENAI = "openai"
+    VERTEXAI = "vertexai"
     ANTHROPIC = "anthropic"
     ANYSCALE = "anyscale"
     TOGETHER = "together"
@@ -68,6 +73,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.GEMINI
     elif "databricks" in str(base_url):
         return Provider.DATABRICKS
+    elif "vertexai" in str(base_url):
+        return Provider.VERTEXAI
     return Provider.UNKNOWN
 
 
@@ -249,6 +256,7 @@ def transform_to_gemini_prompt(
     return messages_gemini
 
 
+<<<<<<< gemini-tools
 def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     """
     Map OpenAPI schema to Gemini properties: gemini function call schemas are very strict
@@ -318,3 +326,7 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     }
 
     return kwargs
+=======
+def disable_pydantic_error_url():
+    os.environ["PYDANTIC_ERRORS_INCLUDE_URL"] = "0"
+>>>>>>> main

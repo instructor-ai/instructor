@@ -6,9 +6,11 @@ from itertools import product
 from .util import models, modes
 
 
-def uppercase_validator(v):
+def uppercase_validator(v: str):
     if v.islower():
-        raise ValueError("Name must be ALL CAPS, please fix this.")
+        raise ValueError(
+            "All letters in the name should be in uppercase (Eg. TOM, JONES ) instead of tom, jones"
+        )
     return v
 
 
@@ -93,6 +95,7 @@ def test_upper_case_tenacity(model, mode, client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_custom_retry_response_error(model, mode, client):
+    original_key = client.api_key
     client = instructor.patch(client, mode=mode)
     client.api_key = "incorrect_key"
 
@@ -118,3 +121,5 @@ def test_custom_retry_response_error(model, mode, client):
     except InstructorRetryException as e:
         assert isinstance(e.__cause__.__cause__, AuthenticationError)
         assert e.last_completion is None
+    finally:
+        client.api_key = original_key

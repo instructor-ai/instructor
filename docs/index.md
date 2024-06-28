@@ -9,6 +9,8 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GPT](https://img.shields.io/badge/docs-InstructorGPT-blue)](https://chat.openai.com/g/g-EvZweRWrE-instructor-gpt)
 
+
+
 Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
 
 It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
@@ -20,6 +22,10 @@ It stands out for its simplicity, transparency, and user-centric design, built o
   - [Go](https://go.useinstructor.com)
   - [Elixir](https://hex.pm/packages/instructor)
 
+## Want your logo on our website?
+
+If your company use instructor a lot, we'd love to have your logo on our website! Please fill out [this form](https://q7gjsgfstrp.typeform.com/to/wluQlVVQ)
+
 ## Why use Instructor?
 
 The question of using Instructor is fundamentally a question of why to use Pydantic.
@@ -29,7 +35,6 @@ The question of using Instructor is fundamentally a question of why to use Pydan
 2. **Customizable** — Pydantic is highly customizable. You can define your own validators, custom error messages, and more.
 
 3. **Ecosystem** Pydantic is the most widely used data validation library for Python with over 100M downloads a month. It's used by FastAPI, Typer, and many other popular libraries.
-
 
 ## Getting Started
 
@@ -110,7 +115,9 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
-## Using Gemini
+### Using Gemini
+
+#### Google AI
 
 ```python
 import instructor
@@ -132,6 +139,45 @@ client = instructor.from_gemini(
 
 # note that client.chat.completions.create will also work
 resp = client.messages.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
+#### Vertex AI
+
+**Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](../hub/vertexai.md).
+
+```python
+import instructor
+import vertexai  # type: ignore
+from vertexai.generative_models import GenerativeModel  # type: ignore
+from pydantic import BaseModel
+
+vertexai.init()
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_vertexai(
+    client=GenerativeModel("gemini-1.5-pro-preview-0409"),
+    mode=instructor.Mode.VERTEXAI_TOOLS,
+)
+
+# note that client.chat.completions.create will also work
+resp = client.create(
     messages=[
         {
             "role": "user",
@@ -212,7 +258,7 @@ Now if you use a IDE, you can see the type is correctly infered.
 
 ### Handling async: `await create`
 
-This will also work correctly with asynchronous clients. 
+This will also work correctly with asynchronous clients.
 
 ```python
 import openai
@@ -270,7 +316,6 @@ user, completion = client.chat.completions.create_with_completion(
 ```
 
 ![with_completion](./blog/posts/img/with_completion.png)
-
 
 ### Streaming Partial Objects: `create_partial`
 
