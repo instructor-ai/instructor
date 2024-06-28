@@ -9,6 +9,8 @@ The order of few-shot examples in the prompt can affect LLM outputs <sup><a href
 
 ## Choosing Your Examples
 
+Depending on your use-case, here are a few different methods that you can consider using to improve the quality of your examples.
+
 ### Combinatorics
 
 One of the easiest methods is for us to manually iterate over each of the examples that we have and try all possible combinations we could create. This will in turn allow us to find the best combination that we can find.
@@ -19,6 +21,12 @@ KATE (k-Nearest Example Tuning) is a method designed to enhance GPT-3's performa
 
 For each example in the test set, K nearest neighbors (examples) are retrieved based on semantic similarity.
 Among these K examples, those that appear most frequently across different queries are selected as the best in-context examples.
+
+### Using a Unsupervised Retriever
+
+![Retriever Image](../../img/retriever.png)
+
+We can use a large LLM to compute a single score for each example with respect to a given prompt. This allows us to create a training set that scores an example's relevance when compared against a prompt. Using this training set, we can train a model that mimics this functionality. This allows us to determine the top `k` most relevant and most irrelevant examples when a user makes a query so that we can include this in our final prompt.
 
 ### References
 
