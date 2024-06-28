@@ -29,8 +29,8 @@ client = instructor.from_openai(openai.OpenAI())
 class KnownFact(BaseModel):
     fact: str
 
-class Ingredient(BaseModel):
-    ingredient: str
+class Response(BaseModel):
+    location: str
 
 def simtom(entity):
     # Step 1: Establish known facts
@@ -43,11 +43,10 @@ def simtom(entity):
                 "content": f"""Given the following context, list the facts that {entity} would know:
 
                     Context:
-                    The woman in green fills a cup with steamed whole milk.
-                    Then, the women does not see the man in purple replace the whole milk in the cup with oat milk.
-                    The woman then adds cinnamon spice on top, which the man does not see.
-                    Then, both observe that the drink is given to a customer.
-                    What are the ingredients of the drink according to {entity}?
+                    Alice puts the book on the table.
+                    Alice leaves the room.
+                    Bob moves the book to the shelf.
+                    Where is the book?
 
                     List only the facts relevant to {entity}:
                     """
@@ -56,9 +55,9 @@ def simtom(entity):
     )
 
     # Step 2: Answer the question based on known facts
-    ingredients = client.chat.completions.create(
+    response = client.chat.completions.create(
         model="gpt-4o",
-        response_model=Iterable[Ingredient],
+        response_model=Response,
         messages=[
             {
                 "role": "system",
@@ -66,27 +65,24 @@ def simtom(entity):
             },
             {
                 "role": "user",
-                "content": f"Question: What are the ingredients of the drink according to {entity}?"
+                "content": f"Question: Where is the book?"
             }
         ]
     )
 
     for fact in known_facts:
         print(fact)
-    for ingredient in ingredients:
-        print(ingredient)
+    print(response.location)
 
-simtom("the woman in green")
-# >fact='The woman in green fills a cup with steamed whole milk.'
-# >fact='The woman in green adds cinnamon spice on top.'
-# >fact='The woman in green observes that the drink is given to a customer.'
-# >ingredient='steamed whole milk'
-# >ingredient='cinnamon spice'
-simtom("the man in purple")
-# >fact='The woman in green fills a cup with steamed whole milk.'
-# >fact='The man in purple replaces the whole milk in the cup with oat milk.'
-# >fact='Both observe that the drink is given to a customer.'
-# >ingredient='oat milk'
+simtom("alice")
+# >fact='Alice puts the book on the table.'
+# >fact='Alice leaves the room.'
+# >on the table
+simtom("bob")
+# >fact='Alice puts the book on the table.'
+# >fact='Alice leaves the room.'
+# >fact='Bob moves the book to the shelf.'
+# >the shelf
 ```
 
 ### References
