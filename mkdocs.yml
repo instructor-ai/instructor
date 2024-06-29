@@ -206,6 +206,7 @@ nav:
   - Jobs Board (External):
     - Jobs: 'jobs.md'
   - Prompting:
+    - "prompting/index.md"
     - Zero-Shot:
       - Emotion Prompting: 'prompting/zero_shot/emotion_prompting.md'
       - Role Prompting: 'prompting/zero_shot/role_prompting.md'
