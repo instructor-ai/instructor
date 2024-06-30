@@ -23,13 +23,6 @@ def from_gemini(
     mode: instructor.Mode = instructor.Mode.GEMINI_JSON,
     use_async: Literal[False] = False,
     **kwargs: Any,
-<<<<<<< gemini-tools
-) -> instructor.Instructor:
-    assert mode in {
-        instructor.Mode.GEMINI_JSON,
-        instructor.Mode.GEMINI_TOOLS,
-    }, "Mode be one of {instructor.Mode.GEMINI_JSON, instructor.Mode.GEMINI_TOOLS}"
-=======
 ) -> instructor.Instructor: ...
 
 
@@ -39,10 +32,10 @@ def from_gemini(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert (
-        mode == instructor.Mode.GEMINI_JSON
-    ), "Mode must be instructor.Mode.GEMINI_JSON"
->>>>>>> main
+    assert mode in {
+        instructor.Mode.GEMINI_JSON,
+        instructor.Mode.GEMINI_TOOLS,
+    }, "Mode be one of {instructor.Mode.GEMINI_JSON, instructor.Mode.GEMINI_TOOLS}"
 
     assert isinstance(
         client,

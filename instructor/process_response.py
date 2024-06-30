@@ -26,7 +26,6 @@ from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
 
-from .utils import update_gemini_kwargs
 
 logger = logging.getLogger("instructor")
 
@@ -328,9 +327,7 @@ def handle_response_model(
                 + "\n\n".join(openai_system_messages)
             )
 
-            new_kwargs[
-                "system"
-            ] += f"""
+            new_kwargs["system"] += f"""
             You must only response in JSON format that adheres to the following schema:
 
             <JSON_SCHEMA>
@@ -376,6 +373,9 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             assert (
                 "model" not in new_kwargs
             ), "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+
+            from .utils import update_gemini_kwargs
+
             message = dedent(
                 f"""
                 As a genius expert, your task is to understand the content and provide
@@ -411,6 +411,8 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             assert (
                 "model" not in new_kwargs
             ), "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+            from .utils import update_gemini_kwargs
+
             new_kwargs["tools"] = [response_model.gemini_schema]
 
             message = dedent(
@@ -437,10 +439,8 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                     "mode": "ANY",
                 },
             }
-<<<<<<< gemini-tools
 
             new_kwargs = update_gemini_kwargs(new_kwargs)
-=======
         elif mode == Mode.VERTEXAI_TOOLS:
             from instructor.client_vertexai import vertexai_process_response
 
@@ -460,7 +460,6 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
 
             new_kwargs["contents"] = contents
             new_kwargs["generation_config"] = generation_config
->>>>>>> main
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 

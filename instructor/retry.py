@@ -194,15 +194,12 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
-<<<<<<< gemini-tools
-                    if mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
-=======
                     if mode in {
                         Mode.GEMINI_JSON,
+                        Mode.GEMINI_TOOLS,
                         Mode.VERTEXAI_TOOLS,
                         Mode.VERTEXAI_JSON,
                     }:
->>>>>>> main
                         kwargs["contents"].extend(reask_messages(response, mode, e))
                     elif mode in {Mode.COHERE_TOOLS}:
                         kwargs["chat_history"].extend(reask_messages(response, mode, e))

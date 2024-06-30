@@ -217,17 +217,12 @@ class OpenAISchema(BaseModel):
             return cls.model_validate(parsed, context=validation_context, strict=False)
 
     @classmethod
-<<<<<<< gemini-tools
     def parse_gemini_tools(
-=======
-    def parse_vertexai_tools(
->>>>>>> main
         cls: type[BaseModel],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-<<<<<<< gemini-tools
         tool_call = completion.parts[0].function_call
         assert (
             tool_call.name == cls.openai_schema["name"]  # type: ignore[index]
@@ -236,7 +231,14 @@ class OpenAISchema(BaseModel):
         response = type(tool_call).to_dict(tool_call)["args"]
 
         return cls.model_validate(response, context=validation_context, strict=strict)
-=======
+
+    @classmethod
+    def parse_vertexai_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
         strict = False
         tool_call = completion.candidates[0].content.parts[0].function_call.args  # type: ignore
         model = {}
@@ -253,7 +255,6 @@ class OpenAISchema(BaseModel):
     ) -> BaseModel:
         model = json.loads(completion.text)
         return cls.model_validate(model, context=validation_context, strict=strict)
->>>>>>> main
 
     @classmethod
     def parse_cohere_tools(

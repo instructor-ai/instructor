@@ -21,7 +21,6 @@ client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
 
 ### Gemini Tool Calling
 
-<<<<<<< gemini-tools
 Gemini supports tool calling for stuctured data extraction. Gemini tool calling requires `jsonref` to be installed.
 
 !!! warning "Limitations"
@@ -37,7 +36,11 @@ import google.generativeai as genai
 
 client = instructor.from_gemini(
     genai.GenerativeModel(), mode=instructor.Mode.GEMINI_TOOLS
-=======
+)
+```
+
+### Gemini Vertex AI Tool Callin
+
 This method allows us to get structured output from Gemini via tool calling with the Vertex AI SDK.
 
 **Note:** Gemini Tool Calling is in preview and there are some limitations, you can learn more in the [Vertex AI examples notebook](../hub/vertexai.md).
@@ -53,7 +56,6 @@ vertexai.init(project="vertexai-generative-models")
 client = instructor.from_vertexai(
     client=GenerativeModel("gemini-1.5-pro-preview-0409"),
     mode=instructor.Mode.VERTEXAI_TOOLS,
->>>>>>> main
 )
 ```
 
@@ -113,7 +115,6 @@ LOCATION = 'LOCATION'
 base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
 client = instructor.from_openai(OpenAI(base_url=base_url, api_key=creds.token),mode=instructor.Mode.JSON)
 ```
-
 
 ### Gemini JSON Mode
 
