@@ -8,14 +8,16 @@ from instructor.mode import Mode
 from instructor.process_response import process_response, process_response_async
 from instructor.utils import (
     dump_message,
-    update_total_usage,
     merge_consecutive_messages,
 )
-from instructor.exceptions import InstructorRetryException
 
-from openai.types.completion_usage import CompletionUsage
+from instructor.usage import (
+    update_total_usage,
+)
+from instructor.exceptions import InstructorRetryException
+from instructor.usage import UnifiedUsage
 from pydantic import ValidationError
-from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
+from tenacity import AsyncRetrying, Retrying, stop_after_attempt
 
 
 from json import JSONDecodeError
@@ -80,7 +82,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.COHERE_TOOLS:
         yield {
             "role": "user",
-            "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+            "message": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
         }
         return
     if mode == Mode.GEMINI_JSON:
@@ -129,12 +131,8 @@ def retry_sync(
     max_retries: int | Retrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model:
-    total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
-    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
-        from anthropic.types import Usage as AnthropicUsage
-
-        total_usage = AnthropicUsage(input_tokens=0, output_tokens=0)
+) -> tuple[T_Model, UnifiedUsage]:
+    total_usage = UnifiedUsage(input_tokens=0, output_tokens=0, total_tokens=0)
 
     # If max_retries is int, then create a Retrying object
     if isinstance(max_retries, int):
@@ -153,8 +151,8 @@ def retry_sync(
                 try:
                     response = func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
-                    response = update_total_usage(response, total_usage)
-                    return process_response(
+                    total_usage = update_total_usage(response, total_usage)
+                    processed_response = process_response(
                         response,
                         response_model=response_model,
                         stream=stream,
@@ -162,10 +160,13 @@ def retry_sync(
                         strict=strict,
                         mode=mode,
                     )
+                    return processed_response, total_usage
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
                     if mode in {Mode.GEMINI_JSON, Mode.VERTEXAI_TOOLS}:
                         kwargs["contents"].extend(reask_messages(response, mode, e))
+                    elif mode in {Mode.COHERE_TOOLS}:
+                        kwargs["chat_history"].extend(reask_messages(response, mode, e))
                     else:
                         kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
@@ -193,12 +194,8 @@ async def retry_async(
     max_retries: int | AsyncRetrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-) -> T:
-    total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
-    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
-        from anthropic.types import Usage as AnthropicUsage
-
-        total_usage = AnthropicUsage(input_tokens=0, output_tokens=0)
+) -> tuple[T, UnifiedUsage]:
+    total_usage = UnifiedUsage(input_tokens=0, output_tokens=0, total_tokens=0)
 
     # If max_retries is int, then create a AsyncRetrying object
     if isinstance(max_retries, int):
@@ -220,8 +217,8 @@ async def retry_async(
                 try:
                     response: ChatCompletion = await func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
-                    response = update_total_usage(response, total_usage)
-                    return await process_response_async(
+                    total_usage = update_total_usage(response, total_usage)
+                    processed_response = await process_response_async(
                         response,
                         response_model=response_model,
                         stream=stream,
@@ -229,6 +226,7 @@ async def retry_async(
                         strict=strict,
                         mode=mode,
                     )
+                    return processed_response, total_usage
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}", e)
                     kwargs["messages"].extend(reask_messages(response, mode, e))
