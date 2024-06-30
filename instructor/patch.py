@@ -2,6 +2,7 @@
 from functools import wraps
 from typing import (
     Callable,
+    Optional,
     Protocol,
     TypeVar,
     Union,
@@ -16,6 +17,7 @@ from pydantic import BaseModel
 from instructor.process_response import handle_response_model
 from instructor.retry import retry_async, retry_sync
 from instructor.utils import is_async
+from instructor.usage import UnifiedUsage
 
 from instructor.mode import Mode
 import logging
@@ -25,6 +27,7 @@ logger = logging.getLogger("instructor")
 T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
+T_ResponseWithUsage = tuple[T_Model, UnifiedUsage]
 
 
 class InstructorChatCompletionCreate(Protocol):
@@ -33,9 +36,10 @@ class InstructorChatCompletionCreate(Protocol):
         response_model: type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
+        with_usage: bool = False,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model: ...
+    ) -> Union[T_Model, T_ResponseWithUsage]: ...
 
 
 class AsyncInstructorChatCompletionCreate(Protocol):
@@ -44,9 +48,10 @@ class AsyncInstructorChatCompletionCreate(Protocol):
         response_model: type[T_Model] = None,
         validation_context: dict = None,
         max_retries: int = 1,
+        with_usage: bool = False,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model: ...
+    ) -> Union[T_Model, T_ResponseWithUsage]: ...
 
 
 @overload
@@ -110,13 +115,14 @@ def patch(
         validation_context: dict = None,
         max_retries: int = 1,
         strict: bool = True,
+        with_usage: bool = False,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model:
+    ) -> Union[T_Model, T_ResponseWithUsage]:
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
-        response = await retry_async(
+        response, usage = await retry_async(
             func=func,
             response_model=response_model,
             validation_context=validation_context,
@@ -126,7 +132,7 @@ def patch(
             strict=strict,
             mode=mode,
         )
-        return response
+        return (response, usage) if with_usage else response
 
     @wraps(func)
     def new_create_sync(
@@ -134,13 +140,14 @@ def patch(
         validation_context: dict = None,
         max_retries: int = 1,
         strict: bool = True,
+        with_usage: bool = False,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model:
+    ) -> Union[T_Model, T_ResponseWithUsage]:
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
-        response = retry_sync(
+        response, usage = retry_sync(
             func=func,
             response_model=response_model,
             validation_context=validation_context,
@@ -149,8 +156,9 @@ def patch(
             strict=strict,
             kwargs=new_kwargs,
             mode=mode,
+            with_usage=with_usage,
         )
-        return response
+        return (response, usage) if with_usage else response
 
     new_create = new_create_async if func_is_async else new_create_sync
 
