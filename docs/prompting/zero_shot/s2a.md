@@ -43,7 +43,7 @@ rewritten_prompt = client.chat.completions.create(
                 Text by user:
                 Mary has 3 times as much candy as Megan.
                 Mary then adds 10 more pieces of candy to her collection.
-                Max has 1000 more books than Mary.
+                Max is 5 years older than Mary.
                 If Megan has 5 pieces of candy, how many does Mary have in total?
                 """,
         }
@@ -52,10 +52,10 @@ rewritten_prompt = client.chat.completions.create(
 
 print(rewritten_prompt.relevant_context)
 """
-Mary has 3 times as much candy as Megan. Mary then adds 10 more pieces of candy to her collection. Max has 1000 more books than Mary.
+Mary has 3 times as much candy as Megan. Mary then adds 10 more pieces of candy to her collection. If Megan has 5 pieces of candy, how many does Mary have in total?
 """
 print(rewritten_prompt.user_query)
-#> If Megan has 5 pieces of candy, how many does Mary have in total?
+#> how many does Mary have in total?
 
 # Step 2: Generate the final response using the rewritten prompt
 final_response = client.chat.completions.create(
