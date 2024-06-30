@@ -29,6 +29,7 @@ Gemini tool calling comes with some known limitations:
     - `strict` Pydantic validation can fail for integer/float and enum validations
     - Gemini tool calling is incompatible with Pydantic schema customizations such as examples due to API limitations and may result in errors
     - Gemini can sometimes call the wrong function name, resulting in malformed or invalid json
+    - Gemini tool calling could fail with enum and literal field types
 
 ```python
 import instructor
