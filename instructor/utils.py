@@ -5,7 +5,6 @@ import json
 import logging
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Generic,
