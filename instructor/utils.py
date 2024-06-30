@@ -11,6 +11,7 @@ from typing import (
     Generic,
     TypeVar,
 )
+import os
 
 from openai.types.chat import (
     ChatCompletionMessage,
@@ -207,3 +208,7 @@ def transform_to_gemini_prompt(
         messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
 
     return messages_gemini
+
+
+def disable_pydantic_error_url():
+    os.environ["PYDANTIC_ERRORS_INCLUDE_URL"] = "0"

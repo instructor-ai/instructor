@@ -1,8 +1,11 @@
+from itertools import product
 from typing import Annotated, cast
 from pydantic import AfterValidator, BaseModel, Field
+import pytest
 import instructor
-import vertexai.generative_models as gm  # type: ignore[reportMissingTypeStubs]
-from .util import model, mode
+import vertexai.generative_models as gm  # type: ignore
+
+from .util import models, modes
 
 
 def uppercase_validator(v: str):
@@ -18,8 +21,9 @@ class UserDetail(BaseModel):
     age: int
 
 
-def test_upper_case():
-    client = instructor.from_vertexai(gm.GenerativeModel(model), mode=mode)
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_upper_case(model, mode):
+    client = instructor.from_vertexai(gm.GenerativeModel(model), mode)
     response = client.create(
         response_model=UserDetail,
         messages=[
@@ -30,8 +34,9 @@ def test_upper_case():
     assert response.name == "JASON"
 
 
-def test_upper_case_tenacity():
-    client = instructor.from_vertexai(gm.GenerativeModel(model), mode=mode)
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_upper_case_tenacity(model, mode):
+    client = instructor.from_vertexai(gm.GenerativeModel(model), mode)
     from tenacity import Retrying, stop_after_attempt, wait_fixed
 
     retries = Retrying(
