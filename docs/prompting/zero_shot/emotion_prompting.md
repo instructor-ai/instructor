@@ -28,8 +28,8 @@ albums = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Provide me a list of 3 musical albums from the 2000s\
-            This is very important to my career.",  # (1)!
+            "content": """Provide me a list of 3 musical albums from the 2000s.
+                This is very important to my career.""",  # (1)!
         }
     ],
 )
@@ -37,9 +37,9 @@ albums = client.chat.completions.create(
 
 for album in albums:
     print(album)
-    #> name='The Marshall Mathers LP' artist='Eminem' year=2000
     #> name='Kid A' artist='Radiohead' year=2000
-    #> name='Speakerboxxx/The Love Below' artist='OutKast' year=2003
+    #> name='The College Dropout' artist='Kanye West' year=2004
+    #> name='In Rainbows' artist='Radiohead' year=2007
 ```
 
 1.  The phrase `This is very important to my career` is a simple example of a sentence that uses emotion prompting.
