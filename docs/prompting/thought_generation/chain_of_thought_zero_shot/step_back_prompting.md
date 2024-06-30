@@ -1,6 +1,6 @@
 ---
 title: "Step-Back Prompting"
-description: ""
+description: "Step-back prompting is a two-step prompting technique that asks the LLM a step-back question to gather context for the query"
 ---
 
 # Step-Back Prompting
