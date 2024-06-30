@@ -156,7 +156,6 @@ def patch(
             strict=strict,
             kwargs=new_kwargs,
             mode=mode,
-            with_usage=with_usage,
         )
         return (response, usage) if with_usage else response
 
