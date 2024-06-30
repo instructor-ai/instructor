@@ -96,6 +96,7 @@ def patch(
     - `max_retries` parameter to retry the function if the response is not valid
     - `validation_context` parameter to validate the response using the pydantic model
     - `strict` parameter to use strict json parsing
+    - `with_usage` True value will return a tuple of (response, usage), False (default) will return only the response
     """
 
     logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
