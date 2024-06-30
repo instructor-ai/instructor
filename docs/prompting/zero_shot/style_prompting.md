@@ -27,10 +27,10 @@ email = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Write an email addressed to Mr. John Smith from Jane Doe. \
-            The email should be formal and the message should be polite\
-            and respectful. The topic of the email is to invite Mr Smith\
-            to a business meeting on July 15, 2024 at 10:00 AM in Room 123.",  # (!) !
+            "content": """Write an email addressed to Mr. John Smith from Jane Doe.
+            The email should be formal and the message should be polite
+            and respectful. The topic of the email is to invite Mr Smith
+            to a business meeting on July 15, 2024 at 10:00 AM in Room 123.""",  # (!) !
         }
     ],
     response_model=Email,
@@ -38,13 +38,17 @@ email = client.chat.completions.create(
 
 print(email.message)
 """
-Dear Mr. Smith,
+Subject: Invitation to Business Meeting on July 15, 2024
 
-I hope this message finds you well. I am writing to extend a formal invitation for you to attend a business meeting scheduled on July 15, 2024, at 10:00 AM. The meeting will take place in Room 123.
+Dear Mr. John Smith,
 
-Your presence and insights would be highly valuable, and I sincerely hope you can join us.
+I hope this message finds you well. My name is Jane Doe, and I am writing to extend a cordial invitation to you for a business meeting scheduled on July 15, 2024, at 10:00 AM. The meeting will take place in Room 123.
 
-Thank you for considering this invitation. Please let me know if you have any questions or need further information.
+The purpose of this meeting is to discuss important developments and explore potential opportunities for collaboration. Your insights and expertise would be highly valuable, and we believe your participation will greatly contribute to the success of our endeavors.
+
+Kindly confirm your availability for this meeting at your earliest convenience. Should you have any questions or require further information, please do not hesitate to reach out.
+
+Thank you for considering this invitation. I look forward to your positive response.
 
 Best regards,
 Jane Doe
