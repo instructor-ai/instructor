@@ -37,10 +37,9 @@ albums = client.chat.completions.create(
 
 for album in albums:
     print(album)
-
-# >name='Kid A' artist='Radiohead' year=2000
-# >name='The College Dropout' artist='Kanye West' year=2004
-# >name='Stankonia' artist='OutKast' year=2000
+    #> name='The Marshall Mathers LP' artist='Eminem' year=2000
+    #> name='Kid A' artist='Radiohead' year=2000
+    #> name='Speakerboxxx/The Love Below' artist='OutKast' year=2003
 ```
 
 1.  The phrase `This is very important to my career` is a simple example of a sentence that uses emotion prompting.

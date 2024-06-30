@@ -47,7 +47,8 @@ response = client.chat.completions.create(
     ],
 )
 
-print(response.final_answer) # 11
+print(response.final_answer)
+#> 11
 ```
 
 ### References

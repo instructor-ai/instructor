@@ -46,7 +46,8 @@ def classify(support_ticket_title: str):
 
 
 label_prediction = classify("My account is locked and I can't access my billing info")
-print(label_prediction.label)  # BILLING
+print(label_prediction.label)
+#> BILLING
 ```
 
 !!! note "This is an example of Role Based Prompting"

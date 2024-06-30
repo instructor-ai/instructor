@@ -19,12 +19,15 @@ from pydantic import BaseModel, Field
 
 client = instructor.from_openai(openai.OpenAI())
 
+
 class Step1(BaseModel):
     relevant_context: str = Field(..., description="Relevant context")
     user_query: str = Field(..., description="The question from the user")
 
+
 class Step2(BaseModel):
     answer: int
+
 
 # Step 1: Rewrite the prompt
 rewritten_prompt = client.chat.completions.create(
@@ -42,15 +45,17 @@ rewritten_prompt = client.chat.completions.create(
                 Mary then adds 10 more pieces of candy to her collection.
                 Max has 1000 more books than Mary.
                 If Megan has 5 pieces of candy, how many does Mary have in total?
-                """
+                """,
         }
-    ]
+    ],
 )
 
 print(rewritten_prompt.relevant_context)
-# >Mary has 3 times as much candy as Megan. Mary then adds 10 more pieces of candy to her collection.
+"""
+Mary has 3 times as much candy as Megan. Mary then adds 10 more pieces of candy to her collection. Max has 1000 more books than Mary.
+"""
 print(rewritten_prompt.user_query)
-# >If Megan has 5 pieces of candy, how many does Mary have in total?
+#> If Megan has 5 pieces of candy, how many does Mary have in total?
 
 # Step 2: Generate the final response using the rewritten prompt
 final_response = client.chat.completions.create(
@@ -60,13 +65,13 @@ final_response = client.chat.completions.create(
         {
             "role": "user",
             "content": f"""{rewritten_prompt.relevant_context}
-                Question: {rewritten_prompt.user_query}"""
+                Question: {rewritten_prompt.user_query}""",
         }
-    ]
+    ],
 )
 
 print(final_response.answer)
-# >25
+#> 25
 ```
 
 ### References

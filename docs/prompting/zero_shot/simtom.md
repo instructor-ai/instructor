@@ -26,11 +26,14 @@ from typing import Iterable
 
 client = instructor.from_openai(openai.OpenAI())
 
+
 class KnownFact(BaseModel):
     fact: str
 
+
 class Response(BaseModel):
     location: str
+
 
 def simtom(entity):
     # Step 1: Establish known facts
@@ -49,9 +52,9 @@ def simtom(entity):
                     Where does {entity} think the book is?
 
                     List only the facts relevant to {entity}.
-                    """
+                    """,
             }
-        ]
+        ],
     )
 
     # Step 2: Answer the question based on known facts
@@ -61,18 +64,19 @@ def simtom(entity):
         messages=[
             {
                 "role": "system",
-                "content": f"You are {entity}. Answer the following question based only on these facts you know: {" ".join([str(fact) for fact in known_facts])}"
+                "content": f"You are {entity}. Answer the following question based only on these facts you know: {" ".join([str(fact) for fact in known_facts])}",
             },
             {
                 "role": "user",
-                "content": f"Question: Where does {entity} think the book is?"
-            }
-        ]
+                "content": f"Question: Where does {entity} think the book is?",
+            },
+        ],
     )
 
     for fact in known_facts:
         print(fact)
     print(response.location)
+
 
 simtom("alice")
 # >fact='Alice puts the book on the table.'

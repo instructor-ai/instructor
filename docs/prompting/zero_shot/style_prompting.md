@@ -37,24 +37,19 @@ email = client.chat.completions.create(
 )
 
 print(email.message)
+"""
+Dear Mr. Smith,
+
+I hope this message finds you well. I am writing to extend a formal invitation for you to attend a business meeting scheduled on July 15, 2024, at 10:00 AM. The meeting will take place in Room 123.
+
+Your presence and insights would be highly valuable, and I sincerely hope you can join us.
+
+Thank you for considering this invitation. Please let me know if you have any questions or need further information.
+
+Best regards,
+Jane Doe
+"""
 ```
-
-??? note "Sample Style Prompting output"
-
-    ```
-    Dear Mr. John Smith,
-
-    I hope this email finds you well. My name is Jane Doe, and I am writing to cordially invite you to attend a business meeting scheduled for July 15, 2024, at 10:00 AM in Room 123.
-
-    Your presence at this meeting would be greatly appreciated, as your insights and expertise would be invaluable to our discussions.
-
-    If you have any questions or require any additional information, please do not hesitate to contact me.
-
-    Thank you for your time and consideration. I look forward to the possibility of your attendance.
-
-    Best regards,
-    Jane Doe
-    ```
 
 ## Useful Tips
 
