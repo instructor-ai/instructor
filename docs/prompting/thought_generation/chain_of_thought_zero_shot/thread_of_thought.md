@@ -76,7 +76,7 @@ print(response)
 
 ## Useful Tips
 
-Here are some alternative phrases that you can add to your prompt to generate a thread of thought before your model generates a response
+Here are some alternative phrases that you can add to your prompt to generate a thread of thought before your model generates a response.
 
 1. In a step-by-step manner, go through the context, surfacing important information that could be useful.
 2. Walk me through this lengthy document segment by segment, focusing on each part's significance.
