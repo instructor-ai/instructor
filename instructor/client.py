@@ -282,7 +282,7 @@ class AsyncInstructor(Instructor):
         **kwargs: Any,
     ) -> T:
         kwargs = self.handle_kwargs(kwargs)
-        result = await self.create_fn(
+        return await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
             max_retries=max_retries,
