@@ -26,7 +26,7 @@ $ instructor usage --help
 To display API usage for the past 3 days, use the following command:
 
 ```sh
-$ instructor usage list -n 3
+$ instructor usage list --n 3
 ```
 
 This will output a table similar to:

@@ -88,8 +88,8 @@ print(user2.model_dump_json(indent=2))
 """
 {
   "result": null,
-  "error": false,
-  "message": null
+  "error": true,
+  "message": "User details could not be extracted"
 }
 """
 ```
