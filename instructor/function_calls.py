@@ -136,14 +136,19 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        tool_calls = [c.input for c in completion.content if c.type == "tool_use"]  # type: ignore - TODO update with anthropic specific types
+        # Anthropic returns arguments as a dict, dump to json for model validation below
+        tool_calls = [
+            json.dumps(c.input) for c in completion.content if c.type == "tool_use"
+        ]  # type: ignore - TODO update with anthropic specific types
 
         tool_calls_validator = TypeAdapter(
             Annotated[list[Any], Field(min_length=1, max_length=1)]
         )
         tool_call = tool_calls_validator.validate_python(tool_calls)[0]
 
-        return cls.model_validate(tool_call, context=validation_context, strict=strict)
+        return cls.model_validate_json(
+            tool_call, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_anthropic_json(
