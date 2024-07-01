@@ -205,16 +205,16 @@ nav:
     - Validation: 'tutorials/4-validation.ipynb'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
-  - Prompting:
+  - Prompting Tips:
     - "prompting/index.md"
     - Zero-Shot:
-      - Emotion Prompting: 'prompting/zero_shot/emotion_prompting.md'
-      - Role Prompting: 'prompting/zero_shot/role_prompting.md'
-      - Style Prompting: 'prompting/zero_shot/style_prompting.md'
-      - S2A: 'prompting/zero_shot/s2a.md'
-      - SimToM: 'prompting/zero_shot/simtom.md'
-      - RaR: 'prompting/zero_shot/rar.md' 
-      - RE2: 'prompting/zero_shot/re2.md'
+      - Use Emotional Language: 'prompting/zero_shot/emotion_prompting.md'
+      - Assign a Role: 'prompting/zero_shot/role_prompting.md'
+      - Use a Specific Style: 'prompting/zero_shot/style_prompting.md'
+      - Refine Your Query: 'prompting/zero_shot/s2a.md'
+      - Limit Knowledge Strategically: 'prompting/zero_shot/simtom.md'
+      - Rephrase the Prompt: 'prompting/zero_shot/rar.md' 
+      - Read the prompt again: 'prompting/zero_shot/re2.md'
       - Self-Ask: 'prompting/zero_shot/self_ask.md'
     - Few-Shot:
       - Example Generation:

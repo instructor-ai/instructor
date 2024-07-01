@@ -2,6 +2,8 @@
 description: "We can see a small improvement of <4% in different models by just appending the phrase - Read The Question Again."
 ---
 
+# Read the Prompt Again
+
 By appending the phrase "Read the question again", you can improve the reasoning abilities of Large Langauge Models <sup><a href="https://arxiv.org/pdf/2309.06275">1</a></sup>
 
 This could look something like this
@@ -15,7 +17,7 @@ This could look something like this
 
 We can implement this in Instructor pretty simply.
 
-```python
+```python hl_lines="20-21"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -35,7 +37,11 @@ def solve_question(question: str) -> int:
         messages=[
             {
                 "role": "system",
-                "content": f"{question}. Read the question again.\n {question}. Adhere to the provided format when responding to the problem and make sure to think through this step by step.",
+                "content": f"""{question}. Read the question
+                again. {question}. Adhere to the provided
+                format when responding to the problem and
+                make sure to think through this step by
+                step.""",
             },
         ],
     )

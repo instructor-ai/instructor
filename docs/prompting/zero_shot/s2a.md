@@ -9,7 +9,7 @@ Refine your prompt using the System 2 Attention (S2A) technique<sup><a href="htt
 
 This method helps in producing more factual and less opinionated outputs<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup>.<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>
 
-```python
+```python hl_lines="25-28"
 import openai
 import instructor
 from pydantic import BaseModel, Field
@@ -34,14 +34,16 @@ def rewrite_prompt():
             {
                 "role": "user",
                 "content": f"""
-                    Given the following text by a user, extract the part that is actually relevant to their question.
-                    Please include the actual question or query that the user is asking.
+                    Given the following text by a user, extract the part
+                    that is actually relevant to their question. Please
+                    include the actual question or query that the user
+                    is asking.
 
                     Text by user:
-                    Mary has 3 times as much candy as Megan.
-                    Mary then adds 10 more pieces of candy to her collection.
-                    Max is 5 years older than Mary.
-                    If Megan has 5 pieces of candy, how many does Mary have in total?
+                    Mary has 3 times as much candy as Megan. Mary then
+                    adds 10 more pieces of candy to her collection. Max
+                    is 5 years older than Mary. If Megan has 5 pieces of
+                    candy, how many does Mary have in total?
                     """,
             }
         ],

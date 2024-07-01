@@ -17,7 +17,7 @@ This helps our model focus on the most pertinent details and ultimately produce 
 
 This approach can help eliminate the influence of irrelevant information in the prompt.<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>
 
-```python
+```python hl_lines="24-25"
 import openai
 import instructor
 from pydantic import BaseModel

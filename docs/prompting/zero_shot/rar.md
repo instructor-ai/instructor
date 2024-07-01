@@ -16,7 +16,7 @@ This could look something like this
 
 We can implement this in instructor as seen below.
 
-```python hl_lines="24"
+```python hl_lines="24-25"
 from pydantic import BaseModel, Field
 import instructor
 from openai import OpenAI
@@ -40,7 +40,8 @@ def rewrite_question(question: str):
         messages=[
             {
                 "role": "system",
-                "content": "You are an expert at rewriting questions to be more specific and answerable.",
+                "content": """You excel at making questions clearer
+                and more specific.""",
             },
             {"role": "user", "content": f"The question is {question}"},
         ],

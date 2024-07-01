@@ -6,7 +6,7 @@ Be specific about the desired writing style<sup><a href="https://arxiv.org/abs/2
 
 By giving clear directions about these stylistic elements, you can guide the model to produce text that closely matches your intended style and format.
 
-```python hl_lines="18-22"
+```python hl_lines="19-23"
 import instructor
 from pydantic import BaseModel
 import openai
@@ -29,7 +29,7 @@ def create_email():
                 from Jane Doe. The email should be formal and the
                 message should be polite and respectful. The topic of
                 the email is to invite Mr Smith to a business meeting
-                on July 15, 2024 at 10:00 AM in Room 123.""",  # (!) !
+                on July 15, 2024 at 10:00 AM in Room 123.""",
             }
         ],
         response_model=Email,
