@@ -1,13 +1,10 @@
 ---
-title: "Thread of Thought Unraveling Chaotic Contexts"
 description: "Thread of Thought helps models ignore irrelevant context in their prompt, improving overall response quality and relevance"
 ---
 
-# Thread Of Thought unravelling chaotic contexts
+By encouraging our model to examine each source in the provided context, we can help mitigate the impact of irrelevant context. This improves reasoning performance and the final output. This is known as Thread Of Thought <sup><a href="https://arxiv.org/pdf/2311.08734">1</a></sup>.
 
-Thread Of Thought <sup><a href="https://arxiv.org/pdf/2311.08734">1</a></sup> aims to help language models deal with irrelevant context, thus improving reasoning perfomance.
-
-We can implement Thread Of Thought as seen below.
+We can implement Thread Of Thought using the following template.
 
 !!! example "Thread Of Thought template"
 
@@ -17,7 +14,7 @@ We can implement Thread Of Thought as seen below.
 
 We can implement this in Instructor as seen below
 
-```python
+```python hl_lines="53-54"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -29,49 +26,66 @@ client = instructor.from_openai(OpenAI())
 class Response(BaseModel):
     analysis: list[str] = Field(
         ...,
-        description="This is a list that should contain a single \
-            explanation for each source about its relevance and content.",
+        description="""This is a list that should contain a single
+        explanation for a relevant source""",
     )
-    answer: str = Field(..., description="This is the answer to\
-         the user's question")
+    answer: str = Field(
+        ..., description="""This is the answer to the user's question"""
+    )
 
 
-response = client.chat.completions.create(
-    model="gpt-4o",
-    response_model=Response,
-    messages=[
-        {
-            "role": "system",
-            "content": """
-                You are an expert Question Answerer.
+def get_response():
+    return client.chat.completions.create(
+        model="gpt-4o",
+        response_model=Response,
+        messages=[
+            {
+                "role": "system",
+                "content": """
+                    You are an expert Question Answerer.
 
-                Here are all of the sources that you should refer to for context
-                - The price of a house was $100,000 in 2024
-                - The Great Wall of China is not visible from space \
-                    with the naked eye
-                - Honey never spoils; archaeologists have found pots of \
-                    honey in ancient Egyptian tombs that are over 3,000 years old
-                -The world's oldest known living tree is over 5,000 years \
-                    old and is located in California
-                - The price of a house was $80,000 in 2023
-            """.strip(),
-        },
-        {
-            "role": "user",
-            "content": "What is the increase in the price of a home in \
-                absolute figures in the US?",
-        },
-        {
-            "role": "assistant",
-            "content": "Proceed through the context systematically, zeroing in \
-                on areas that could provide the answers we’re seeking",
-        },
-    ],
-)
+                    Here are all of the sources that you should refer to
+                    for context:
+                    - The price of a house was $100,000 in 2024
+                    - The Great Wall of China is not visible from space
+                      with the naked eye
+                    - Honey never spoils; archaeologists have found pots
+                      of honey in ancient Egyptian tombs that are over
+                      3,000 years old
+                    - The world's oldest known living tree is over 5,000
+                      years old and is located in California
+                    - The price of a house was $80,000 in 2023
+                """.strip(),
+            },
+            {
+                "role": "user",
+                "content": """
+                    What is the increase in the price of a home in
+                    absolute figures in the US?
+                """,
+            },
+            {
+                "role": "assistant",
+                "content": """
+                    Navigate through the context incrementally,
+                    identifying and summarizing relevant portions.
+                """,
+            },
+        ],
+    )
 
-print(response)
-# The increase in the price of a home from 2023 to
-# 2024 is $20,000 in absolute figures.
+
+if __name__ == "__main__":
+    response = get_response()
+    print(response)
+    """
+    analysis=[
+        'The price of a house was $80,000 in 2023',
+        'The price of a house was $100,000 in 2024'
+    ]
+    answer='The increase in the price of a house in the
+    US from 2023 to 2024 is $20,000.'
+    """
 ```
 
 ## Useful Tips

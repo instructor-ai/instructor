@@ -1,19 +1,12 @@
 ---
-title: "Tab-CoT: Zero-shot Tabular Chain of Thought"
 description: "Tab-CoT encourages LLMs to output reasoning as a markdown table, improving the structure and reasoning of its output"
 ---
 
-Tab-CoT <sup><a href="https://arxiv.org/pdf/2305.17812">1</a></sup> aims to help language models output their reasoning as a structured markdown table, thus improving the structure and reasoning of it's output.
+By getting language models to output their reasoning as a structured markdown table, we can improve their reasoning capabilities and the quality of their outputs. This is known as Tabular Chain Of Thought (Tab-CoT) <sup><a href="https://arxiv.org/pdf/2305.17812">1</a></sup>.
 
-!!! example "Tab-CoT sample prompt"
+We can implement this in Instructor as a response object as seen below to ensure we get exactly the data that we want. Each row in our table is represented here as a `ReasoningStep` object.
 
-    {input prompt}
-
-    | step | subquestion | procedure | result |
-
-We can implement this in Instructor as a response object as seen below to ensure we get exactly the data that we want.
-
-```python
+```python linenums="1"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -27,38 +20,60 @@ class ReasoningStep(BaseModel):
     subquestion: str = Field(..., description="This is the subquestion")
     procedure: str = Field(
         ...,
-        description="This represents any intermediate computation that was done in the reasoning process. Leave empty if no computation is needed",
+        description="""This represents any intermediate
+        computation that was done in the reasoning process.
+        Leave empty if no computation is needed""",
     )
-    result: str = Field(..., description="This is the result\
-         of the reasoning step")
+    result: str = Field(
+        ...,
+        description="""This is the result of the reasoning
+        step""",
+    )
 
 
 class Response(BaseModel):
     reasoning: list[ReasoningStep] = Field(
         ...,
-        description="This is a list of reasoning steps to get the answer",
+        description="""This is a list of reasoning steps to
+        get the answer""",
     )
-    answer: str = Field(..., description="This is the answer\
-         to the user's question")
+    answer: str = Field(
+        ...,
+        description="""This is the answer to the user's
+        question""",
+    )
 
 
-response = client.chat.completions.create(
-    model="gpt-4o",
-    response_model=Response,
-    messages=[
-        {
-            "role": "system",
-            "content": """
-                The bakers at the Beverly Hills Bakery baked
-                200 loaves of bread on Monday morning.
-                They sold 93 loaves in the morning and 39
-                loaves in the afternoon. A grocery store
-                returned 6 unsold loaves. How many loaves
-                of bread did they have left?
-            """.strip(),
-        },
-    ],
-)
+def get_bread_loaves_left(query: str):
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        response_model=Response,
+        messages=[
+            {
+                "role": "system",
+                "content": f"""
+                 The bakers at the Beverly Hills Bakery baked
+                200 loaves of bread on Monday morning. They
+                sold 93 loaves in the morning and 39 loaves
+                in the afternoon. A grocery store returned 6
+                unsold loaves.
+
+                {query}
+                """,
+            },
+        ],
+    )
+    return response
+
+
+if __name__ == "__main__":
+    query = "How many loaves of bread did they have left?"
+
+    response = get_bread_loaves_left(query)
+    print(f"\nAnswer: {response.answer}")
+    """
+    Answer: 74
+    """
 ```
 
 This generates the following reasoning step and the correct response of 74.
