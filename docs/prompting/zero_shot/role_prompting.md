@@ -1,15 +1,14 @@
 ---
-title: "Role Prompting"
 description: "Role prompting is a technique where we assign a specific role to a LLM. We can do so by using the format"
 ---
 
-Role prompting is a technique where we assign a specific role to a LLM. We can do so by using the format
+By assigning a specific role to the model, we can improve the performance of the model. This can be done by using the format below.
 
 !!! example "Role Prompting Template"
 
     You are a **[ role ]**. You **[ description of task ]**. **[ Reiterate instructions ]**.
 
-```python
+```python hl_lines="23-26"
 import openai
 import instructor
 from typing import Literal
@@ -32,21 +31,25 @@ def classify(support_ticket_title: str):
         messages=[
             {
                 "role": "system",
-                "content": f"You are a support agent at a tech company.\
-                You will be assigned a support ticket to classify. \
-                Make sure to only select the label that applies to \
-                the support ticket.",
+                "content": f"""You are a support agent at a tech company.
+                You will be assigned a support ticket to classify.
+                Make sure to only select the label that applies to
+                the support ticket.""",
             },
             {
                 "role": "user",
-                "content": f"Classify the following support ticket: {support_ticket_title}",
+                "content": f"Classify this ticket: {support_ticket_title}",
             },
         ],
     )
 
 
-label_prediction = classify("My account is locked and I can't access my billing info")
-print(label_prediction.label)  # BILLING
+if __name__ == "__main__":
+    label_prediction = classify(
+        "My account is locked and I can't access my billing info"
+    )
+    print(label_prediction.label)
+    #> BILLING
 ```
 
 !!! note "This is an example of Role Based Prompting"
