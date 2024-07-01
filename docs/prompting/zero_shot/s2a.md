@@ -1,16 +1,13 @@
 ---
-title: "System 2 Attention (S2A)"
 description: "System 2 Attention (S2A) is a two-step prompting technique that focuses on improving the LLM's attention to relevant information"
 ---
 
-# System 2 Attention (S2A)
+Refine your prompt using the System 2 Attention (S2A) technique<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup>.
 
-System 2 Attention (S2A)<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup> is a two-step prompting technique that aims to improve the LLM's focus on relevant information. The two steps are:
+1. Ask the LLM to rewrite the prompt by removing any information unrelated to the question.
+2. Pass this new, focused prompt back to the LLM to generate the final response.
 
-1. Asking the LLM to rewrite the prompt, removing any information unrelated to the question.
-2. Passing this new, focused prompt to the LLM to generate the final response.
-
-This technique can result in more factual and less opinionated LLM outputs<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup>.<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>
+This method helps in producing more factual and less opinionated outputs<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup>.<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>
 
 ```python
 import openai
@@ -29,49 +26,60 @@ class Step2(BaseModel):
     answer: int
 
 
-# Step 1: Rewrite the prompt
-rewritten_prompt = client.chat.completions.create(
-    model="gpt-4o",
-    response_model=Step1,
-    messages=[
-        {
-            "role": "user",
-            "content": f"""
-                Given the following text by a user, extract the part that is actually relevant to their question.
-                Please include the actual question or query that the user is asking.
+def rewrite_prompt():
+    rewritten_prompt = client.chat.completions.create(
+        model="gpt-4o",
+        response_model=Step1,
+        messages=[
+            {
+                "role": "user",
+                "content": f"""
+                    Given the following text by a user, extract the part that is actually relevant to their question.
+                    Please include the actual question or query that the user is asking.
 
-                Text by user:
-                Mary has 3 times as much candy as Megan.
-                Mary then adds 10 more pieces of candy to her collection.
-                Max is 5 years older than Mary.
-                If Megan has 5 pieces of candy, how many does Mary have in total?
-                """,
-        }
-    ],
-)
+                    Text by user:
+                    Mary has 3 times as much candy as Megan.
+                    Mary then adds 10 more pieces of candy to her collection.
+                    Max is 5 years older than Mary.
+                    If Megan has 5 pieces of candy, how many does Mary have in total?
+                    """,
+            }
+        ],
+    )
+    return rewritten_prompt
 
-print(rewritten_prompt.relevant_context)
-"""
-Mary has 3 times as much candy as Megan. Mary then adds 10 more pieces of candy to her collection. If Megan has 5 pieces of candy, how many does Mary have in total?
-"""
-print(rewritten_prompt.user_query)
-#> how many does Mary have in total?
 
-# Step 2: Generate the final response using the rewritten prompt
-final_response = client.chat.completions.create(
-    model="gpt-4o",
-    response_model=Step2,
-    messages=[
-        {
-            "role": "user",
-            "content": f"""{rewritten_prompt.relevant_context}
-                Question: {rewritten_prompt.user_query}""",
-        }
-    ],
-)
+def generate_final_response(rewritten_prompt):
+    final_response = client.chat.completions.create(
+        model="gpt-4o",
+        response_model=Step2,
+        messages=[
+            {
+                "role": "user",
+                "content": f"""{rewritten_prompt.relevant_context}
+                    Question: {rewritten_prompt.user_query}""",
+            }
+        ],
+    )
+    return final_response
 
-print(final_response.answer)
-#> 25
+
+if __name__ == "__main__":
+    # Step 1: Rewrite the prompt
+    rewritten_prompt = rewrite_prompt()
+    print(rewritten_prompt.relevant_context)
+    """
+    Mary has 3 times as much candy as Megan.
+    Mary then adds 10 more pieces of candy to her collection.
+    If Megan has 5 pieces of candy, how many does Mary have in total?
+    """
+    print(rewritten_prompt.user_query)
+    #> how many does Mary have in total?
+
+    # Step 2: Generate the final response
+    final_response = generate_final_response(rewritten_prompt)
+    print(final_response.answer)
+    #> 25
 ```
 
 ### References
