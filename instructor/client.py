@@ -344,7 +344,7 @@ class AsyncInstructor(Instructor):
         **kwargs: Any,
     ) -> Union[tuple[T, Any], tuple[T, Any, UnifiedUsage]]:
         kwargs = self.handle_kwargs(kwargs)
-        response, usage = await self.create_fn(
+        result = await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
             max_retries=max_retries,
@@ -353,11 +353,11 @@ class AsyncInstructor(Instructor):
             with_usage=with_usage,
             **kwargs,
         )
-        return (
-            (response, response._raw_response, usage)
-            if with_usage
-            else (response, response._raw_response)
-        )
+        if with_usage:
+            response, usage = result
+            return (response, response._raw_response, usage)
+        else:
+            return (result, result._raw_response)
 
 
 @overload
