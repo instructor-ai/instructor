@@ -34,7 +34,7 @@ class Response(BaseModel):
     )
 
 
-def get_response():
+def get_response(query:str):
     return client.chat.completions.create(
         model="gpt-4o",
         response_model=Response,
@@ -60,8 +60,7 @@ def get_response():
             {
                 "role": "user",
                 "content": """
-                    What is the increase in the price of a home in
-                    absolute figures in the US?
+                    {query}
                 """,
             },
             {
@@ -76,7 +75,8 @@ def get_response():
 
 
 if __name__ == "__main__":
-    response = get_response()
+    query = "What was the increase in the price of a house from 2023 to 2024"
+    response = get_response(query)
     print(response)
     """
     analysis=[
