@@ -12,7 +12,7 @@ We can implement Thread Of Thought using the following template.
 
     Proceed through the context systematically, zeroing in on areas that could provide the answers we’re seeking
 
-We can implement this using `instructor` as seen below
+We can implement this using `instructor` as seen below.
 
 ```python hl_lines="43-44"
 import instructor
