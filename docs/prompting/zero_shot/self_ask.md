@@ -6,7 +6,7 @@ By encouraging our model to generate and answer clarifying questions before tack
 
 We can implement this using `instructor` as seen below.
 
-```python hl_lines="37-39"
+```python hl_lines="35-37"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -17,14 +17,12 @@ client = instructor.from_openai(OpenAI())
 
 class FollowupQuestion(BaseModel):
     question: str = Field(
-        ...,
-        description="""Question to be answered""",
+        description="Question to be answered",
     )
     answer: str
 
 class SelfAskResponse(BaseModel):
     follow_up_questions: list[FollowupQuestion] = Field(
-        ...,
         description="""A list of question and
             answer pairs that are required to be
             answered in order to answer the original

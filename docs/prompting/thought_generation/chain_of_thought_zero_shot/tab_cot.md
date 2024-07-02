@@ -6,7 +6,7 @@ By getting language models to output their reasoning as a structured markdown ta
 
 We can implement this using `instructor` as a response object as seen below to ensure we get exactly the data that we want. Each row in our table is represented here as a `ReasoningStep` object.
 
-```python hl_lines="38-40"
+```python hl_lines="36-38"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -16,10 +16,9 @@ client = instructor.from_openai(OpenAI())
 
 
 class ReasoningStep(BaseModel):
-    step: int = Field(..., description="The step number")
-    subquestion: str = Field(..., description="Subquestion to solve")
+    step: int = Field(description="The step number")
+    subquestion: str = Field(description="Subquestion to solve")
     procedure: str = Field(
-        ...,
         description="""Any intermediate computation
         that was done in the reasoning process. Leave
         empty if no computation is needed""",
@@ -29,7 +28,6 @@ class ReasoningStep(BaseModel):
 
 class Response(BaseModel):
     reasoning: list[ReasoningStep] = Field(
-        ...,
         description="reasoning steps to derive answer",
     )
     correct_answer: int

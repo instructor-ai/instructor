@@ -14,7 +14,7 @@ We can implement Thread Of Thought using the following template.
 
 We can implement this using `instructor` as seen below.
 
-```python hl_lines="43-44"
+```python hl_lines="42-43"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -25,7 +25,6 @@ client = instructor.from_openai(OpenAI())
 
 class ThreadOfThoughtResponse(BaseModel):
     analysis: list[str] = Field(
-        ...,
         description="""An explanation for each relevant source explaining
         its relevance and content""",
     )
