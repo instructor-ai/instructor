@@ -4,7 +4,7 @@ description: "Self-Ask is a prompting technique that enhances language model per
 
 By encouraging our model to generate and answer clarifying questions before tackling the main query, we can obtain more accurate and comprehensive responses. This is known as Self-Ask <sup><a href="https://arxiv.org/pdf/2210.03350">1</a></sup>.
 
-We can implement this using `instructor` easily as seen below.
+We can implement this using `instructor` as seen below.
 
 ```python hl_lines="37-39"
 import instructor
