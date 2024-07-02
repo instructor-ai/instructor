@@ -16,10 +16,11 @@ We can get better performance from our model when using chain-of-thought by incl
 
 We can implement Contrastive Chain Of Thought using `instructor` as seen below.
 
-```python
+```python hl_lines="35-40"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
+from textwrap import dedent
 
 client = instructor.from_openai(OpenAI())
 
@@ -49,7 +50,7 @@ def contrastive_chain_of_thought(
         messages=[
             {
                 "role": "system",
-                "content": f"""
+                "content": dedent(f"""
             You are an expert question answering AI System.
 
             You are about to be given some examples of incorrect
@@ -64,8 +65,7 @@ def contrastive_chain_of_thought(
             {incorrect_example_prompt}
 
             Question: {context}. {query}.
-
-            """,
+            """),
             }
         ],
     )
