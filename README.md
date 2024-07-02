@@ -157,6 +157,7 @@ client = instructor.from_gemini(
 )
 ```
 
+
 Alternatively, you can [call Gemini from the OpenAI client](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/call-gemini-using-openai-library#python).You'll have to setup [`gcloud`](https://cloud.google.com/docs/authentication/provide-credentials-adc#local-dev), get setup on Vertex AI, and install the Google Auth library.
 
 ```sh
@@ -201,6 +202,7 @@ assert isinstance(resp, User)
 assert resp.name == "Jason"
 assert resp.age == 25
 ```
+
 
 ### Using Litellm
 
