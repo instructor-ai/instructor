@@ -1,11 +1,8 @@
 ---
-title: "Rephrase and Respond"
 description: "Rephrase and Respond aims to reduce prompt ambiguity and align the question more closely with the LLM's existing frame"
 ---
 
-# Rephrase and Respond
-
-Rephrase and Respond(RaR)<sup><a href="https://arxiv.org/pdf/2311.04205">1</a></sup> aims to reduce prompt ambiguity and align the question more closely with the LLM.
+We can improve performance of our LLM by getting the model to rewrite the prompt<sup><a href="https://arxiv.org/pdf/2311.04205">1</a></sup> such that is is less ambigious.
 
 This could look something like this
 
@@ -19,7 +16,7 @@ This could look something like this
 
 We can implement this in instructor as seen below.
 
-```python
+```python hl_lines="24-25"
 from pydantic import BaseModel, Field
 import instructor
 from openai import OpenAI
@@ -43,7 +40,8 @@ def rewrite_question(question: str):
         messages=[
             {
                 "role": "system",
-                "content": "You are an expert at rewriting questions to be more specific and answerable.",
+                "content": """You excel at making questions clearer
+                and more specific.""",
             },
             {"role": "user", "content": f"The question is {question}"},
         ],
@@ -60,15 +58,18 @@ def answer_question(question: str):
     ).response
 
 
-rewritten_query = rewrite_question(
-    "Take the last letters of the words in 'Elon Musk' and concatenate them"
-)
-# What are the last letters of the words in 'Elon Musk', and
-# what do you get if you concatenate them?
+if __name__ == "__main__":
+    rewritten_query = rewrite_question(
+        "Take the last letters of the words in 'Elon Musk' and concatenate them"
+    )
+    print(f"Rewritten query: {rewritten_query.rewritten_question}")
+    """
+    Rewritten query: What is the result when you take the last letters of each word in the name 'Elon Musk' and concatenate them?
+    """
 
-response = answer_question(rewritten_query.rewritten_question)
-# The last letters of the words in 'Elon Musk' are 'n' and 'k'.
-# If you concatenate them, you get 'nk'.
+    response = answer_question(rewritten_query.rewritten_question)
+    print(f"Response: {response}")
+    #> Response: nk
 ```
 
 We can also achieve the same benefits by **using a better model to generate the question** before we prompt a weaker model - this is known as a two-step RaR.

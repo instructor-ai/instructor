@@ -1,13 +1,14 @@
 ---
-title: "Emotion Prompting"
-description: "Emotion prompting is a technique that adds emotional stimuli into the LLM prompt. This leads to improved performance on benchmarks and open-ended text generation"
+description: "Using emotional language, we can improve the results of our LLM calls and encourage more open-ended text generation"
 ---
 
-# Emotion Prompting
+Use emotional language in prompts to enhance the performance of language models. This includes phrases such as
 
-Emotion prompting<sup><a href="https://arxiv.org/abs/2307.11760">1</a></sup> adds emotional stimuli into the LLM prompt. This may lead to improved performance on benchmarks and open-ended text generation.<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>
+- This is very important for my career
+- Are you sure?
+- Are you sure that's your final answer? It might be worth taking another look.
 
-```python
+```python hl_lines="25"
 import openai
 import instructor
 from pydantic import BaseModel
@@ -22,25 +23,29 @@ class Album(BaseModel):
 
 client = instructor.from_openai(openai.OpenAI())
 
-albums = client.chat.completions.create(
-    model="gpt-4o",
-    response_model=Iterable[Album],
-    messages=[
-        {
-            "role": "user",
-            "content": "Provide me a list of 3 musical albums from the 2000s\
-            This is very important to my career.",  # (1)!
-        }
-    ],
-)
+
+def get_albums():
+    return client.chat.completions.create(
+        model="gpt-4o",
+        response_model=Iterable[Album],
+        messages=[
+            {
+                "role": "user",
+                "content": """
+                Provide me a list of 3 musical albums from the 2000s.
+                This is very important to my career.""",  # (1)!
+            }
+        ],
+    )
 
 
-for album in albums:
-    print(album)
-
-# >name='Kid A' artist='Radiohead' year=2000
-# >name='The College Dropout' artist='Kanye West' year=2004
-# >name='Stankonia' artist='OutKast' year=2000
+if __name__ == "__main__":
+    albums = get_albums()
+    for album in albums:
+        print(album)
+        #> name='Kid A' artist='Radiohead' year=2000
+        #> name='Stankonia' artist='OutKast' year=2000
+        #> name='Is This It' artist='The Strokes' year=2001
 ```
 
 1.  The phrase `This is very important to my career` is a simple example of a sentence that uses emotion prompting.
@@ -53,14 +58,13 @@ These are some phrases which you can append today to your prompt to use emotion 
 2. This is very important to my career.
 3. You'd better be sure.
 4. Are you sure?
-5. Are you sure that's your final answer? It might be worth taking another look.
-6. Are you sure that's your final answer? Believe in your abilities and strive for excellence. Your hard work will yield remarkable results.
-7. Embrace challenges as opportunities for growth. Each obstacle you overcome brings you closer to success.
-8. Stay focused and dedicated to your goals. Your consistent efforts will lead to outstanding achievements.
-9. Take pride in your work and give it your best. Your commitment to excellence sets you apart.
-10. Remember that progress is made one step at a time. Stay determined and keep moving forward.
+5. Are you sure that's your final answer? Believe in your abilities and strive for excellence. Your hard work will yield remarkable results.
+6. Embrace challenges as opportunities for growth. Each obstacle you overcome brings you closer to success.
+7. Stay focused and dedicated to your goals. Your consistent efforts will lead to outstanding achievements.
+8. Take pride in your work and give it your best. Your commitment to excellence sets you apart.
+9. Remember that progress is made one step at a time. Stay determined and keep moving forward.
 
-More broadly, we want phrases that either
+We want phrases that either
 
 - **Encourage Self Monitoring** : These are phrases that generally encourage humans to reflect on their responses (e.g., Are you sure?) in anticipation of the judgement of others
 - **Set a higher bar** : These are phrases that generally encourage humans to have a higher standard for themselves (e.g., Take pride in your work and give it your best shot).

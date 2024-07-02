@@ -1,15 +1,12 @@
 ---
-title: "Style Prompting"
-description: "Style Prompting include a specific style, tone or genre in the prompt"
+description: "Use a specific style and be specific about the tone, pacing and other aspects of the model's response"
 ---
 
-## What is Style Prompting?
+Be specific about the desired writing style<sup><a href="https://arxiv.org/abs/2302.09185">1</a></sup> that you want from the model using specific instructions to the model about tone, pacing among other factors.
 
-Style Prompting<sup><a href="https://arxiv.org/abs/2302.09185">1</a></sup> aims to influence the structure by prompting the LLM to adhere to a specific writing style. This includes things such as indicating a certain tone, pacing or even characterization to follow.
+By giving clear directions about these stylistic elements, you can guide the model to produce text that closely matches your intended style and format.
 
-The effect can be similar to [role prompting](https://python.useinstructor.com/prompting/zero_shot/role_prompting/).<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>
-
-```python
+```python hl_lines="19-23"
 import instructor
 from pydantic import BaseModel
 import openai
@@ -22,39 +19,50 @@ class Email(BaseModel):
 client = instructor.from_openai(openai.OpenAI())
 
 
-email = client.chat.completions.create(
-    model="gpt-4o",
-    messages=[
-        {
-            "role": "user",
-            "content": "Write an email addressed to Mr. John Smith from Jane Doe. \
-            The email should be formal and the message should be polite\
-            and respectful. The topic of the email is to invite Mr Smith\
-            to a business meeting on July 15, 2024 at 10:00 AM in Room 123.",  # (!) !
-        }
-    ],
-    response_model=Email,
-)
+def create_email():
+    return client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {
+                "role": "user",
+                "content": """Write an email addressed to Mr. John Smith
+                from Jane Doe. The email should be formal and the
+                message should be polite and respectful. The topic of
+                the email is to invite Mr Smith to a business meeting
+                on July 15, 2024 at 10:00 AM in Room 123.""",
+            }
+        ],
+        response_model=Email,
+    )
+    return email.message
 
-print(email.message)
-```
+if __name__ == "__main__":
+    email_message = create_email()
+    print(email_message)
+    """
+    Subject: Invitation to Business Meeting
 
-??? note "Sample Style Prompting output"
-
-    ```
     Dear Mr. John Smith,
 
-    I hope this email finds you well. My name is Jane Doe, and I am writing to cordially invite you to attend a business meeting scheduled for July 15, 2024, at 10:00 AM in Room 123.
+    I hope this message finds you well. My name is Jane Doe, and I am
+    writing to cordially invite you to a business meeting that will be
+    held on July 15, 2024, at 10:00 AM in Room 123.
 
-    Your presence at this meeting would be greatly appreciated, as your insights and expertise would be invaluable to our discussions.
+    Your presence at this meeting would be greatly valued as we plan to
+    discuss important matters pertaining to our ongoing projects and
+    future collaborations. We believe your insights and experience will
+    greatly contribute to the success of our discussions.
 
-    If you have any questions or require any additional information, please do not hesitate to contact me.
+    Please let me know if this time and date are convenient for you, or
+    if any adjustments are necessary. We look forward to your
+    affirmative response.
 
-    Thank you for your time and consideration. I look forward to the possibility of your attendance.
+    Thank you for considering this invitation.
 
-    Best regards,
+    Warm regards,
     Jane Doe
-    ```
+    """
+```
 
 ## Useful Tips
 
