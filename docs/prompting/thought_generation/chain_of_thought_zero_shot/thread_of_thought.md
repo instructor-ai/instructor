@@ -127,5 +127,3 @@ Here are some alternative phrases that you can add to your prompt to generate a 
 30. Let's take a segmented approach to the context, carefully evaluating each part for its relevance to the questions posed.
 
 ### References
-
-<sup id="ref-1">1</sup>: [Thread of Thought Unraveling Chaotic Contexts](https://arxiv.org/pdf/2311.08734)
