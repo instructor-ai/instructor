@@ -33,7 +33,7 @@ class ThreadOfThoughtResponse(BaseModel):
     )
 
 
-def generate_response_from_context(query: str, context: list[str]):
+def analyze_context_and_generate_response(query: str, context: list[str]):
     return client.chat.completions.create(
         model="gpt-4o",
         response_model=ThreadOfThoughtResponse,
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         "The price of a house was $80,000 in 2023",
     ]
     query = "What was the increase in the price of a house from 2023 to 2024"
-    response = generate_response_from_context(query, context)
+    response = analyze_context_and_generate_response(query, context)
     print(response)
     """
     analysis=[

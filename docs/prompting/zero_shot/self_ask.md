@@ -82,7 +82,8 @@ if __name__ == "__main__":
     """
     print(response.answer)
     """
-    The President of the U.S. when superconductivity was discovered in April 1911 was William Howard Taft.
+    The President of the U.S. when superconductivity was discovered in April 1911
+    was William Howard Taft.
     """
 ```
 

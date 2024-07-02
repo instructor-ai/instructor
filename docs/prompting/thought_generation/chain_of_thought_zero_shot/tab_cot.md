@@ -20,9 +20,9 @@ class ReasoningStep(BaseModel):
     subquestion: str = Field(..., description="Subquestion to solve")
     procedure: str = Field(
         ...,
-        description="""This represents any intermediate
-        computation that was done in the reasoning process.
-        Leave empty if no computation is needed""",
+        description="""Any intermediate computation
+        that was done in the reasoning process. Leave
+        empty if no computation is needed""",
     )
     result: str = Field(
         ...,
@@ -41,7 +41,7 @@ class Response(BaseModel):
     )
 
 
-def generate_tab_cot_response(query: str, context: str):
+def generate_structured_reasoning_response(query: str, context: str):
     response = client.chat.completions.create(
         model="gpt-4o",
         response_model=Response,
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     unsold loaves.
     """
 
-    response = generate_tab_cot_response(query, context)
+    response = generate_structured_reasoning_response(query, context)
     print(f"\nAnswer: {response.answer}")
     """
     Answer: 74
