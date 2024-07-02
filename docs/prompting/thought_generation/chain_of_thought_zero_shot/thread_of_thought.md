@@ -83,11 +83,10 @@ if __name__ == "__main__":
     """
     {
       "analysis": [
-        "The price of a house was $80,000 in 2023.",
-        "The price of a house was $100,000 in 2024."
+        "The price of a house was $80,000 in 2023",
+        "The price of a house was $100,000 in 2024"
       ],
-      "answer": "The increase in the price of a house from
-      2023 to 2024 was $20,000."
+      "correct_answer": 20000
     }
     """
 ```
