@@ -14,11 +14,11 @@ We can implement Thread Of Thought using the following template.
 
 We can implement this using `instructor` as seen below
 
-```python linenums="1" hl_lines="43-44"
+```python hl_lines="43-44"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
-
+from textwrap import dedent
 
 client = instructor.from_openai(OpenAI())
 
@@ -26,11 +26,10 @@ client = instructor.from_openai(OpenAI())
 class ThreadOfThoughtResponse(BaseModel):
     analysis: list[str] = Field(
         ...,
-        description="Explanations for relevant sources",
+        description="""An explanation for each relevant source explaining
+        its relevance and content""",
     )
-    answer: str = Field(
-        ..., description="Answer to user's question"
-    )
+    correct_answer: int
 
 
 def analyze_context_and_generate_response(query: str, context: list[str]):
@@ -40,26 +39,28 @@ def analyze_context_and_generate_response(query: str, context: list[str]):
         messages=[
             {
                 "role": "system",
-                "content": f"""
+                "content": dedent(
+                    f"""
                     You are an expert Question Answerer.
 
                     Here are all of the sources that you should refer to
                     for context:
                     {'\n'.join(context)}
-                """.strip(),
+                """
+                ),
             },
             {
                 "role": "user",
-                "content": f"""
-                    {query}
-                """,
+                "content": query,
             },
             {
                 "role": "assistant",
-                "content": """
+                "content": dedent(
+                    """
                     Navigate through the context incrementally,
                     identifying and summarizing relevant portions.
-                """,
+                    """
+                ),
             },
         ],
     )
@@ -79,13 +80,16 @@ if __name__ == "__main__":
     ]
     query = "What was the increase in the price of a house from 2023 to 2024"
     response = analyze_context_and_generate_response(query, context)
-    print(response)
+    print(response.model_dump_json(indent=2))
     """
-    analysis=[
-    'The price of a house was $80,000 in 2023',
-    'The price of a house was $100,000 in 2024'
-    ]
-    answer='The increase in the price of a house from 2023 to 2024 was $20,000.'
+    {
+      "analysis": [
+        "The price of a house was $80,000 in 2023.",
+        "The price of a house was $100,000 in 2024."
+      ],
+      "answer": "The increase in the price of a house from
+      2023 to 2024 was $20,000."
+    }
     """
 ```
 

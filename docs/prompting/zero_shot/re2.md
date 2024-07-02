@@ -27,7 +27,7 @@ client = instructor.from_openai(OpenAI())
 
 
 class Solution(BaseModel):
-    final_answer: int = Field(..., description="Final Answer")
+    final_answer
 
 
 def solve_question(question: str) -> int:

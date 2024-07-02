@@ -6,11 +6,11 @@ By getting language models to output their reasoning as a structured markdown ta
 
 We can implement this using `instructor` as a response object as seen below to ensure we get exactly the data that we want. Each row in our table is represented here as a `ReasoningStep` object.
 
-```python linenums="1"
+```python hl_lines="38-40"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
-
+from textwrap import dedent
 
 client = instructor.from_openai(OpenAI())
 
@@ -24,10 +24,7 @@ class ReasoningStep(BaseModel):
         that was done in the reasoning process. Leave
         empty if no computation is needed""",
     )
-    result: str = Field(
-        ...,
-        description="Final Answer",
-    )
+    result: str
 
 
 class Response(BaseModel):
@@ -35,10 +32,7 @@ class Response(BaseModel):
         ...,
         description="reasoning steps to derive answer",
     )
-    answer: str = Field(
-        ...,
-        description="Final answer",
-    )
+    correct_answer: int
 
 
 def generate_structured_reasoning_response(query: str, context: str):
@@ -48,10 +42,20 @@ def generate_structured_reasoning_response(query: str, context: str):
         messages=[
             {
                 "role": "system",
-                "content": f"""
+                "content": dedent(
+                    f"""
+                You are an expert Question Answering system. Make sure
+                to output your reasoning in structured reasoning steps
+                before generating a response to the user's query.
+
+
+                Context:
                 {context}
+
+                Query:
                 {query}
-                """,
+                """
+                ),
             },
         ],
     )
@@ -69,21 +73,51 @@ if __name__ == "__main__":
     """
 
     response = generate_structured_reasoning_response(query, context)
-    print(f"\nAnswer: {response.answer}")
+    print(response.model_dump_json(indent=2))
     """
-    Answer: 74
+    {
+      "reasoning": [
+        {
+          "step": 1,
+          "subquestion": "How many loaves of bread were sold in the morning
+          and afternoon?",
+          "procedure": "93 (morning) + 39 (afternoon)",
+          "result": "132"
+        },
+        {
+          "step": 2,
+          "subquestion": "How many loaves of bread were originally baked?",
+          "procedure": "",
+          "result": "200"
+        },
+        {
+          "step": 3,
+          "subquestion": "How many loaves of bread were returned by the
+          grocery store?",
+          "procedure": "",
+          "result": "6"
+        },
+        {
+          "step": 4,
+          "subquestion": "How many loaves of bread were left after accounting
+          for sales and returns?",
+          "procedure": "200 (originally baked) - 132 (sold) + 6 (returned)",
+          "result": "74"
+        }
+      ],
+      "correct_answer": 74
+    }
     """
 ```
 
 This generates the following reasoning step and the correct response of 74.
 
-| Step | Subquestion                                                                                   | Procedure | Result |
-| ---- | --------------------------------------------------------------------------------------------- | --------- | ------ |
-| 1    | How many loaves of bread were sold in total on Monday?                                        | 93 + 39   | 132    |
-| 2    | How many loaves of bread were left after accounting for loaves sold?                          | 200 - 132 | 68     |
-| 3    | How many loaves of bread were left after accounting for loaves returned by the grocery store? | 68 + 6    | 74     |
-
-Answer: 74
+| Step | Subquestion                                                                | Procedure                                          | Result |
+| ---- | -------------------------------------------------------------------------- | -------------------------------------------------- | ------ |
+| 1    | How many loaves of bread were sold in the morning and afternoon?           | 93 (morning) + 39 (afternoon)                      | 132    |
+| 2    | How many loaves of bread were originally baked?                            |                                                    | 200    |
+| 3    | How many loaves of bread were returned by the grocery store?               |                                                    | 6      |
+| 4    | How many loaves of bread were left after accounting for sales and returns? | 200 (originally baked) - 132 (sold) + 6 (returned) | 74     |
 
 ### References
 

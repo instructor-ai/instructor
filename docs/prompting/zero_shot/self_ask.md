@@ -6,7 +6,7 @@ By encouraging our model to generate and answer clarifying questions before tack
 
 We can implement this using `instructor` easily as seen below
 
-```python hl_lines="44-46"
+```python hl_lines="37-39"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -20,11 +20,7 @@ class FollowupQuestion(BaseModel):
         ...,
         description="""Question to be answered""",
     )
-    answer: str = Field(
-        ...,
-        description="Answer to the Follow Up Question",
-    )
-
+    answer: str
 
 class SelfAskResponse(BaseModel):
     follow_up_questions: list[FollowupQuestion] = Field(
@@ -35,13 +31,10 @@ class SelfAskResponse(BaseModel):
             question.""",
         default_factory=list,
     )
-    answer: str = Field(
-        ...,
-        description="Answer to the user's question",
-    )
+    answer:str
 
 
-def generate_response(query):
+def generate_questions_and_response(query):
     return client.chat.completions.create(
         model="gpt-4o",
         response_model=SelfAskResponse,
@@ -56,7 +49,7 @@ def generate_response(query):
             },
             {
                 "role": "user",
-                "content": f"{query}",
+                "content": query,
             },
         ],
     )
@@ -66,24 +59,25 @@ if __name__ == "__main__":
     query = """Who was president of the U.S.
     when superconductivity was discovered?"""
 
-    response = generate_response(query)
-    print(response.follow_up_questions)
+    response = generate_questions_and_response(query)
+    print(response.model_dump_json(indent=2))
     """
-    [
-        FollowupQuestion(
-            question='When was superconductivity discovered?',
-            answer='Superconductivity was discovered in April 1911.',
-        ),
-        FollowupQuestion(
-            question='Who was the president of the U.S. in April 1911?',
-            answer='The President of the U.S. in April 1911 was William Howard Taft.',
-        ),
-    ]
-    """
-    print(response.answer)
-    """
-    The President of the U.S. when superconductivity was discovered in April 1911
-    was William Howard Taft.
+    {
+      "follow_up_questions": [
+        {
+          "question": "When was superconductivity discovered?",
+          "answer": "Superconductivity was discovered in 1911 by
+          Heike Kamerlingh Onnes."
+        },
+        {
+          "question": "Who was president of the U.S. in 1911?",
+          "answer": "The president of the U.S. in 1911 was William
+          Howard Taft."
+        }
+      ],
+      "answer": "The president of the U.S. when superconductivity was
+      discovered in 1911 was William Howard Taft."
+    }
     """
 ```
 
