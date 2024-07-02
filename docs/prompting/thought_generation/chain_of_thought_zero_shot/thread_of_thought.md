@@ -12,9 +12,9 @@ We can implement Thread Of Thought using the following template.
 
     Proceed through the context systematically, zeroing in on areas that could provide the answers we’re seeking
 
-We can implement this in Instructor as seen below
+We can implement this using `instructor` as seen below
 
-```python hl_lines="53-54"
+```python linenums="1" hl_lines="43-44"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -23,43 +23,34 @@ from pydantic import BaseModel, Field
 client = instructor.from_openai(OpenAI())
 
 
-class Response(BaseModel):
+class ThreadOfThoughtResponse(BaseModel):
     analysis: list[str] = Field(
         ...,
-        description="""This is a list that should contain a single
-        explanation for a relevant source""",
+        description="Explanations for relevant sources",
     )
     answer: str = Field(
-        ..., description="""This is the answer to the user's question"""
+        ..., description="Answer to user's question"
     )
 
 
-def get_response(query:str):
+def generate_response_from_context(query: str, context: list[str]):
     return client.chat.completions.create(
         model="gpt-4o",
-        response_model=Response,
+        response_model=ThreadOfThoughtResponse,
         messages=[
             {
                 "role": "system",
-                "content": """
+                "content": f"""
                     You are an expert Question Answerer.
 
                     Here are all of the sources that you should refer to
                     for context:
-                    - The price of a house was $100,000 in 2024
-                    - The Great Wall of China is not visible from space
-                      with the naked eye
-                    - Honey never spoils; archaeologists have found pots
-                      of honey in ancient Egyptian tombs that are over
-                      3,000 years old
-                    - The world's oldest known living tree is over 5,000
-                      years old and is located in California
-                    - The price of a house was $80,000 in 2023
+                    {'\n'.join(context)}
                 """.strip(),
             },
             {
                 "role": "user",
-                "content": """
+                "content": f"""
                     {query}
                 """,
             },
@@ -75,16 +66,26 @@ def get_response(query:str):
 
 
 if __name__ == "__main__":
+    context = [
+        "The price of a house was $100,000 in 2024",
+        """The Great Wall of China is not visible from space
+        with the naked eye""",
+        """Honey never spoils; archaeologists have found pots
+        of honey in ancient Egyptian tombs that are over
+        3,000 years old""",
+        """The world's oldest known living tree is over 5,000
+        years old and is located in California""",
+        "The price of a house was $80,000 in 2023",
+    ]
     query = "What was the increase in the price of a house from 2023 to 2024"
-    response = get_response(query)
+    response = generate_response_from_context(query, context)
     print(response)
     """
     analysis=[
-        'The price of a house was $80,000 in 2023',
-        'The price of a house was $100,000 in 2024'
+    'The price of a house was $80,000 in 2023',
+    'The price of a house was $100,000 in 2024'
     ]
-    answer='The increase in the price of a house in the
-    US from 2023 to 2024 is $20,000.'
+    answer='The increase in the price of a house from 2023 to 2024 was $20,000.'
     """
 ```
 

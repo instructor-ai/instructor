@@ -4,9 +4,9 @@ description: "Self-Ask is a prompting technique that enhances language model per
 
 By encouraging our model to generate and answer clarifying questions before tackling the main query, we can obtain more accurate and comprehensive responses. This is known as Self-Ask <sup><a href="https://arxiv.org/pdf/2210.03350">1</a></sup>.
 
-We can implement this in Instructor easily as seen below
+We can implement this using `instructor` easily as seen below
 
-```python hl_lines="47-49"
+```python hl_lines="44-46"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -18,20 +18,18 @@ client = instructor.from_openai(OpenAI())
 class FollowupQuestion(BaseModel):
     question: str = Field(
         ...,
-        description="""This is a follow up question
-        that the user needs to answer.""",
+        description="""Question to be answered""",
     )
     answer: str = Field(
         ...,
-        description="""This is the
-        answer to the above question.""",
+        description="Answer to the Follow Up Question",
     )
 
 
-class Response(BaseModel):
+class SelfAskResponse(BaseModel):
     follow_up_questions: list[FollowupQuestion] = Field(
         ...,
-        description="""These are a list of question and
+        description="""A list of question and
             answer pairs that are required to be
             answered in order to answer the original
             question.""",
@@ -39,15 +37,14 @@ class Response(BaseModel):
     )
     answer: str = Field(
         ...,
-        description="""This is the
-            answer to the user's question""",
+        description="Answer to the user's question",
     )
 
 
-def generate_response():
+def generate_response(query):
     return client.chat.completions.create(
         model="gpt-4o",
-        response_model=Response,
+        response_model=SelfAskResponse,
         messages=[
             {
                 "role": "system",
@@ -59,26 +56,33 @@ def generate_response():
             },
             {
                 "role": "user",
-                "content": """Who was president of the U.S.
-                when superconductivity was discovered?""",
+                "content": f"{query}",
             },
         ],
     )
 
 
 if __name__ == "__main__":
-    response = generate_response()
+    query = """Who was president of the U.S.
+    when superconductivity was discovered?"""
+
+    response = generate_response(query)
     print(response.follow_up_questions)
     """
-    [FollowupQuestion(
-        question='When was superconductivity discovered?',
-        answer='1911'
-    )]
+    [
+        FollowupQuestion(
+            question='When was superconductivity discovered?',
+            answer='Superconductivity was discovered in April 1911.',
+        ),
+        FollowupQuestion(
+            question='Who was the president of the U.S. in April 1911?',
+            answer='The President of the U.S. in April 1911 was William Howard Taft.',
+        ),
+    ]
     """
     print(response.answer)
     """
-    William Howard Taft was the President of the United States
-    when superconductivity was discovered in 1911.
+    The President of the U.S. when superconductivity was discovered in April 1911 was William Howard Taft.
     """
 ```
 

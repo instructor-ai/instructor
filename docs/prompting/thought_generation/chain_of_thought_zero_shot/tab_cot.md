@@ -4,7 +4,7 @@ description: "Tab-CoT encourages LLMs to output reasoning as a markdown table, i
 
 By getting language models to output their reasoning as a structured markdown table, we can improve their reasoning capabilities and the quality of their outputs. This is known as Tabular Chain Of Thought (Tab-CoT) <sup><a href="https://arxiv.org/pdf/2305.17812">1</a></sup>.
 
-We can implement this in Instructor as a response object as seen below to ensure we get exactly the data that we want. Each row in our table is represented here as a `ReasoningStep` object.
+We can implement this using `instructor` as a response object as seen below to ensure we get exactly the data that we want. Each row in our table is represented here as a `ReasoningStep` object.
 
 ```python linenums="1"
 import instructor
@@ -16,8 +16,8 @@ client = instructor.from_openai(OpenAI())
 
 
 class ReasoningStep(BaseModel):
-    step: int = Field(..., description="This is the step number")
-    subquestion: str = Field(..., description="This is the subquestion")
+    step: int = Field(..., description="The step number")
+    subquestion: str = Field(..., description="Subquestion to solve")
     procedure: str = Field(
         ...,
         description="""This represents any intermediate
@@ -26,25 +26,22 @@ class ReasoningStep(BaseModel):
     )
     result: str = Field(
         ...,
-        description="""This is the result of the reasoning
-        step""",
+        description="Final Answer",
     )
 
 
 class Response(BaseModel):
     reasoning: list[ReasoningStep] = Field(
         ...,
-        description="""This is a list of reasoning steps to
-        get the answer""",
+        description="reasoning steps to derive answer",
     )
     answer: str = Field(
         ...,
-        description="""This is the answer to the user's
-        question""",
+        description="Final answer",
     )
 
 
-def get_bread_loaves_left(query: str):
+def generate_tab_cot_response(query: str, context: str):
     response = client.chat.completions.create(
         model="gpt-4o",
         response_model=Response,
@@ -52,12 +49,7 @@ def get_bread_loaves_left(query: str):
             {
                 "role": "system",
                 "content": f"""
-                 The bakers at the Beverly Hills Bakery baked
-                200 loaves of bread on Monday morning. They
-                sold 93 loaves in the morning and 39 loaves
-                in the afternoon. A grocery store returned 6
-                unsold loaves.
-
+                {context}
                 {query}
                 """,
             },
@@ -68,8 +60,15 @@ def get_bread_loaves_left(query: str):
 
 if __name__ == "__main__":
     query = "How many loaves of bread did they have left?"
+    context = """
+    The bakers at the Beverly Hills Bakery baked
+    200 loaves of bread on Monday morning. They
+    sold 93 loaves in the morning and 39 loaves
+    in the afternoon. A grocery store returned 6
+    unsold loaves.
+    """
 
-    response = get_bread_loaves_left(query)
+    response = generate_tab_cot_response(query, context)
     print(f"\nAnswer: {response.answer}")
     """
     Answer: 74
@@ -78,11 +77,13 @@ if __name__ == "__main__":
 
 This generates the following reasoning step and the correct response of 74.
 
-| Step | Subquestion                                                                          | Procedure                                                                                    | Result                |
-| ---- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | --------------------- |
-| 1    | How many loaves of bread were sold during the entire day?                            | Add the number of loaves sold in the morning and the number of loaves sold in the afternoon. | 93 + 39 = 132 loaves  |
-| 2    | How many loaves of bread were left after sales of the day?                           | Subtract the total loaves sold from the total loaves baked.                                  | 200 - 132 = 68 loaves |
-| 3    | How many loaves of bread were left after the grocery store returned 6 unsold loaves? | Add the number of loaves returned to the number of loaves left after sales.                  | 68 + 6 = 74 loaves    |
+| Step | Subquestion                                                                                   | Procedure | Result |
+| ---- | --------------------------------------------------------------------------------------------- | --------- | ------ |
+| 1    | How many loaves of bread were sold in total on Monday?                                        | 93 + 39   | 132    |
+| 2    | How many loaves of bread were left after accounting for loaves sold?                          | 200 - 132 | 68     |
+| 3    | How many loaves of bread were left after accounting for loaves returned by the grocery store? | 68 + 6    | 74     |
+
+Answer: 74
 
 ### References
 
