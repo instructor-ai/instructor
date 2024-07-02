@@ -9,7 +9,7 @@ In the event that no examples are avaliable, we can sample multiple responses an
 
 We can implement Complexity Based Consistency using `instructor` as seen below.
 
-```python
+```python hl_lines="40-42"
 import instructor
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
@@ -88,12 +88,20 @@ if __name__ == "__main__":
     unsold loaves.
     """
 
-    response = asyncio.run(complexity_based_consistency(query, context, 5, 3))
+    number_of_reasoning_chains = 5
+    top_k_to_sample = 3
+    response = asyncio.run(
+        complexity_based_consistency(
+            query, context, number_of_reasoning_chains, top_k_to_sample
+        )
+    )
 
     answer_counts = Counter([res.correct_answer for res in response])
     max_count = max(answer_counts.values())
     max_answers = [
-        answer for answer, count in answer_counts.items() if count == max_count
+        answer for answer, count
+        in answer_counts.items()
+        if count == max_count
     ]
 
     final_answer = random.choice(max_answers)
