@@ -6,13 +6,16 @@ We can get better performance from our model when using chain-of-thought by incl
 
 !!! example "Contrastive Chain Of Thought template"
 
-    Question: **sample question**
+    <context>sample question</context>
+    <question>sample question</question>
 
-    Explanation: **correct reasoning**
+    <Explanations>
+        <Explanation>correct reasoning</Explanation>
+        <WrongExplanation>incorrect reasoning example</WrongExplanation>
+    <Explanations>
 
-    Wrong Explanation: **incorrect reasoning example**
-
-    Question: **Context + Prompt**
+    <context>sample question</context>
+    <question>sample question</question>
 
 We can implement Contrastive Chain Of Thought using `instructor` as seen below.
 
@@ -38,10 +41,13 @@ def contrastive_chain_of_thought(
     incorrect_examples: list[str],
 ):
     correct_example_prompt = "\n".join(
-        [f"Explanation:\n{example}" for example in correct_examples]
+        [f"<Explanation>{example}</Explanation>" for example in correct_examples]
     )
     incorrect_example_prompt = "\n".join(
-        [f"Wrong Explanation:\n{example}" for example in incorrect_examples]
+        [
+            f"<WrongExplanation>{example}</WrongExplanation>"
+            for example in incorrect_examples
+        ]
     )
     ""
     return client.chat.completions.create(
@@ -50,22 +56,31 @@ def contrastive_chain_of_thought(
         messages=[
             {
                 "role": "system",
-                "content": dedent(f"""
-            You are an expert question answering AI System.
+                "content": dedent(
+                    f"""
+            <prompt>
+                <role>system</role>
+                <context>
+                You are an expert question answering AI System.
 
-            You are about to be given some examples of incorrect
-            and correct reasoning for a question. You will then
-            be asked to correctly reason through another question
-            to generate a valid response.
+                You are about to be given some examples of incorrect
+                and correct reasoning for a question. You will then
+                be asked to correctly reason through another question
+                to generate a valid response.
+                </context>
 
-            Question: {example_prompt}
+                <question>{example_prompt}</question>
 
-            {correct_example_prompt}
+                <Explanations>
+                    {correct_example_prompt}
+                    {incorrect_example_prompt}
+                </Explanations>
+                <context>{context}</context>
+                <question>{query}</question>
 
-            {incorrect_example_prompt}
-
-            Question: {context}. {query}.
-            """),
+            </prompt>
+            """
+                ),
             }
         ],
     )
@@ -117,14 +132,14 @@ if __name__ == "__main__":
     print(response.model_dump_json(indent=2))
     """
     {
-      "chain_of_thought": "To determine how many pages James writes in a year,
-      we first need to understand his weekly writing pattern. James writes a
-      3-page letter to 2 different friends twice a week. This means he writes
-      3 pages * 2 friends = 6 pages per session. Since he does this twice a
-      week, he writes 6 pages * 2 = 12 pages per week. There are 52 weeks in
-      a year, so James writes 12 pages/week * 52 weeks/year = 624 pages/year.",
-
-      "answer": "624 pages/year"
+      "chain_of_thought": "First, let's determine how many pages James writes per week.
+      He writes a 3-page letter to 2 different friends, so for one writing session, he
+      writes 3 pages x 2 friends = 6 pages. He does this twice a week, so the total number
+       of pages written per week is 6 pages/session x 2 sessions/week = 12 pages/week. \n\n
+       Next, we need to find out how many weeks are in a year. There are 52 weeks in a year,
+       so we multiply the number of pages James writes per week by the number of weeks in a year:
+       12 pages/week x 52 weeks/year = 624 pages/year.\n\nTherefore, James writes 624 pages in a year.",
+      "correct_answer": "624"
     }
     """
 ```

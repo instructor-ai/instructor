@@ -101,20 +101,21 @@ if __name__ == "__main__":
     for prompt in generated_prompts:
         print(prompt)
         """
-        You are a specialist system skilled in user review
-        sentiment analysis.
+        You are an expert system specializing in user review sentiment analysis. Here are a few examples to guide you: 1. It was an exceptional experience! I will definitely recommend it to all my friends // Positive 2. I think it was a mediocre evening. There wasn't anything outstanding or particularly bad for me // Negative 3. I am horrified by the condition of things in this new restaurant // Negative Sentence: It was an amazing experience!
+        """
+        """
+        You are an expert system that excels in User Review Sentiment Analysis.
 
-        Here are some examples for your reference:
+        Here are some reference examples:
 
-        1. I had an absolutely fantastic experience! I will
-        definitely recommend it to all my friends // Positive
-        2. I think the night was just okay. I don't believe
-        there was anything particularly outstanding or
-        objectionable // Neutral
-        3. I am terrified by the condition of this new
-        restaurant // Negative
+        1. I had an amazing experience! I will definitely recommend it to all my friends.
+        // Positive
+        2. I think it was an average evening. I don’t believe there was anything remarkable or unpleasant about it for me.
+        // Negative
+        3. I am horrified by the situation at this new restaurant.
+        // Negative
 
-        Sentence: This was an amazing experience!
+        Sentence: This was a fantastic experience!
         """
         """
         You are an expert system skilled in conducting user
