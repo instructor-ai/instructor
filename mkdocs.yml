@@ -226,7 +226,7 @@ nav:
     - Thought Generation:
       - Chain-Of-Thought (Zero-Shot):
         - Analogical Prompting: 'prompting/thought_generation/chain_of_thought_zero_shot/analogical_prompting.md'
-        - Step-Back Prompting: 'prompting/thought_generation/chain_of_thought_zero_shot/step_back_prompting.md'
+        - Consider higher-level context: 'prompting/thought_generation/chain_of_thought_zero_shot/step_back_prompting.md'
         - Thread-of-Thought (ThoT): 'prompting/thought_generation/chain_of_thought_zero_shot/thread_of_thought.md'
         - Tab-CoT: 'prompting/thought_generation/chain_of_thought_zero_shot/tab_cot.md'
       - Chain-Of-Thought (Few-Shot):
