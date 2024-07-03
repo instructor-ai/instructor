@@ -1,16 +1,16 @@
 ---
-title: "Active Prompting"
-description: ""
+title: "Prioritize annotating uncertain examples"
+description: "Active prompting is a method used to identify the most effective examples for human annotation. "
 ---
 
-# Active Prompting
+When we have a large pool of unlabeled examples that could be used in a prompt, how should we decide which examples to manually label?
 
-Active prompting<sup><a href="https://arxiv.org/abs/2302.12246">1</a></sup> is a method used to identify the most effective examples for human annotation. It is particularly useful when dealing with large amounts of unlabeled data, as it provides a system to prioritze which data to label by humans. The process involves four key steps:
+Active prompting is a method used to identify the most effective examples for human annotation. The process involves four key steps:
 
-1. **Uncertainty Estimation**: Assessing the uncertainty of the model's predictions
-2. **Selection**: Choosing the most uncertain examples for human annotation
-3. **Annotation**: Having humans label the selected examples
-4. **Inference**: Using the newly labeled data to improve the model's performance
+1. **Uncertainty Estimation**: Assess the uncertainty of the LLM's predictions on each possible example
+2. **Selection**: Choose the most uncertain examples for human annotation
+3. **Annotation**: Have humans label the selected examples
+4. **Inference**: Use the newly labeled data to improve the LLM's performance
 
 ## Uncertainty Estimation
 
@@ -39,50 +39,53 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
-class UserInfo(BaseModel):
-    name: str
-    age: int
+
+class Response(BaseModel):
+    height: int
+
 
 client = instructor.from_openai(OpenAI())
 
-k = 5 # (1)!
-responses = []
 
-# Query the LLM k times
-for _ in range(k):
-    user_info = client.chat.completions.create(
+def query_llm():
+    return client.chat.completions.create(
         model="gpt-4o",
-        response_model=UserInfo,
-        messages=[{"role": "user", "content": "How old is Jason Liu?"}],
+        response_model=Response,
+        messages=[
+            {
+                "role": "user",
+                "content": "How tall is the Empire State Building in meters?",
+            }
+        ],
     )
-    responses.append(user_info.age)
 
-# Calculate the disagreement
-unique_responses = set(responses)
-h = len(unique_responses)
-u = h / k
 
-for i, response in enumerate(responses):
-    print(f"Response {i+1}: Age: {response}")
-#>Response 1: Age: 25
-#>Response 2: Age: 0
-#>Response 3: Age: 30
-#>Response 4: Age: 30
-#>Response 5: Age: 30
+def calculate_disagreement(responses):
+    unique_responses = set(responses)
+    h = len(unique_responses)
+    return h / k
 
-print(f"\nDisagreement (u): {u}")
-#>Disagreement (u): 0.6
+
+if __name__ == "__main__":
+    k = 5  # (1)!
+    responses = [query_llm() for _ in range(k)]  # Query the LLM k times
+    for response in responses:
+        print(response)
+        #> height=443
+        #> height=443
+        #> height=443
+        #> height=443
+        #> height=381
+
+    print(
+        calculate_disagreement([response.height for response in responses])
+    )  # Calculate the uncertainty metric
+    #> 0.4
 ```
 
 1. _k_ is the number of times to query the LLM with a single unlabeled example
 
 This process will then be repeated for all unlabeled examples.
-
-!!! info "Uncertainty Estimation Output"
-
-    Before uncertainty estimation, we have a list of unlabeled examples (List[x]).
-
-    After uncertainty estimation, we have a list of unlabeled examples and their uncertainties (List[x: uncertainty]).
 
 ## Selection & Annotation
 

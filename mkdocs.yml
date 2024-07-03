@@ -230,7 +230,7 @@ nav:
         - Thread-of-Thought (ThoT): 'prompting/thought_generation/chain_of_thought_zero_shot/thread_of_thought.md'
         - Tab-CoT: 'prompting/thought_generation/chain_of_thought_zero_shot/tab_cot.md'
       - Chain-Of-Thought (Few-Shot):
-        - Active-Prompt: 'prompting/thought_generation/chain_of_thought_few_shot/active_prompt.md'
+        - Prioritize annotating uncertain examples: 'prompting/thought_generation/chain_of_thought_few_shot/active_prompt.md'
         - Automate Example Selection: 'prompting/thought_generation/chain_of_thought_few_shot/auto_cot.md'
         - Complexity-Based: 'prompting/thought_generation/chain_of_thought_few_shot/complexity_based.md'
         - Contrastive: 'prompting/thought_generation/chain_of_thought_few_shot/contrastive.md'
