@@ -1,5 +1,5 @@
 ---
-description: "Demonstration Ensembling(DENSE) creates multiple few-shot prompts, each containing a distinct subset of exemplars from the training set. We then use that to generate a final response"
+description: "Demonstration Ensembling(DENSE) creates multiple few-shot prompts, each containing a distinct subset of examples from the training set. We then use that to generate a final response"
 ---
 
 We can maximise the use of our examples by prompting our model multiple times, each time using a different subset of examples. We can then take these multiple outputs and aggregate over them to generate a final response. This is known as Demonstration Ensembling ( DENSE ) <sup><a href="https://arxiv.org/pdf/2308.08780">1</a></sup>.
