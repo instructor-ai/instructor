@@ -97,11 +97,10 @@ if __name__ == "__main__":
     )
 
     answer_counts = Counter([res.correct_answer for res in response])
-    max_count = max(answer_counts.values())
+
+    most_common_count = answer_counts.most_common(len(answer_counts))[0][1]
     max_answers = [
-        answer for answer, count
-        in answer_counts.items()
-        if count == max_count
+        answer for answer, count in answer_counts.items() if count == most_common_count
     ]
 
     final_answer = random.choice(max_answers)
