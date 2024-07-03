@@ -42,16 +42,18 @@ def generate_structured_reasoning_response(query: str, context: str):
                 "role": "system",
                 "content": dedent(
                     f"""
-                You are an expert Question Answering system. Make sure
-                to output your reasoning in structured reasoning steps
-                before generating a response to the user's query.
+                <system>
+                    <role>expert Question Answering system</role>
+                    <instruction>Make sure to output your reasoning in structured reasoning steps before generating a response to the user's query.</instruction>
+                </system>
 
+                <context>
+                    {context}
+                </context>
 
-                Context:
-                {context}
-
-                Query:
-                {query}
+                <query>
+                    {query}
+                </query>
                 """
                 ),
             },
