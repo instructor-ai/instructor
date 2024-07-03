@@ -255,42 +255,42 @@ def transform_to_gemini_prompt(
 
 def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     """
-    Map OpenAPI schema to Gemini properties: gemini function call schemas are very strict
+    Map OpenAPI schema to Gemini properties: gemini function call schemas
 
-    function declaration reference - https://github.com/google-gemini/generative-ai-js/blob/main/docs/reference/main/generative-ai.functiondeclarationschema.md
-
-    function property reference - https://github.com/google-gemini/generative-ai-js/blob/main/docs/reference/main/generative-ai.functiondeclarationschemaproperty.md
+    Ref - https://ai.google.dev/api/python/google/generativeai/protos/Schema,
+    Note that `enum` requires specific `format` setting
     """
 
     import jsonref  # type: ignore
 
-    class GeminiSchema(BaseModel):
-        description: str | None = None
-        required: list[str] | None = None
-        type: str
-        properties: dict[str, PropertySchema] | None = None
-
-        class Config:
-            exclude_unset = True
-
-    class PropertySchema(BaseModel):
+    class FunctionSchema(BaseModel):
         description: str | None = None
         enum: list[str] | None = None
         example: Any | None = None
         format: str | None = None
         nullable: bool | None = None
-        items: GeminiSchema | None = None
+        items: FunctionSchema | None = None
         required: list[str] | None = None
         type: str
-        properties: GeminiSchema | None = None
-
-        class Config:
-            exclude_unset = True
+        properties: dict[str, FunctionSchema] | None = None
 
     schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)  # type: ignore
     schema.pop("$defs", "")
 
-    return GeminiSchema(**schema).model_dump(exclude_none=True)
+    def add_enum_format(obj: dict[str, Any]) -> dict[str, Any]:
+        if isinstance(obj, dict):
+            new_dict: dict[str, Any] = {}
+            for key, value in obj.items():
+                new_dict[key] = add_enum_format(value)
+                if key == "enum":
+                    new_dict["format"] = "enum"
+            return new_dict
+        else:
+            return obj
+
+    schema = add_enum_format(schema)
+
+    return FunctionSchema(**schema).model_dump(exclude_none=True, exclude_unset=True)
 
 
 def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
