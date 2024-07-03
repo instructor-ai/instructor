@@ -3,11 +3,13 @@ title: "Automate Chain of Thought"
 description: "Automate few-shot chain of thought to choose diverse examples"
 ---
 
+How can we improve the performance of few-shot CoT?
+
 While few-shot CoT reasoning is effective, its effectiveness relies on manually crafted examples. Further, choosing diverse examples has shown effective in reducing reasoning errors from CoT.
 
-Here, we automate CoT to choose diverse examples. Given a list of possible examples:
+Here, we automate CoT to choose diverse examples. Given a list of potential examples:
 
-1. **Cluster**: Cluster input examples
+1. **Cluster**: Cluster potential examples
 2. **Sample**: For each cluster,
     1. Sort examples by distance from cluster center
     2. Select the first example that meets a predefined selection criteria
