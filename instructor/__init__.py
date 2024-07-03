@@ -75,7 +75,7 @@ if importlib.util.find_spec("cohere") is not None:
 
     __all__ += ["from_cohere"]
 
-if importlib.util.find_spec("vertexai") is not None:
+if all(importlib.util.find_spec(pkg) for pkg in ("vertexai", "jsonref")):
     from .client_vertexai import from_vertexai
 
     __all__ += ["from_vertexai"]

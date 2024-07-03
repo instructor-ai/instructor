@@ -63,7 +63,7 @@ client = instructor.from_openai(OpenAI(), mode=instructor.Mode.FUNCTIONS)
 
 ## JSON Mode
 
-JSON mode uses OpenAI's JSON fromat for responses. by setting `response_format={"type": "json_object"}` in the `chat.completions.create` method.
+JSON mode uses OpenAI's JSON format for responses by setting `response_format={"type": "json_object"}` in the `chat.completions.create` method.
 
 ```python
 import instructor
