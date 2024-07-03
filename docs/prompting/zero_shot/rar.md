@@ -14,9 +14,9 @@ This could look something like this
 
     **Assistant**: The last letters in the words "Edgar" and "Bob" are "r" and "b", hence when concatenated, it forms "rb".
 
-We can implement this in instructor as seen below.
+We can implement this using `instructor` as seen below.
 
-```python hl_lines="24-25"
+```python hl_lines="26-27"
 from pydantic import BaseModel, Field
 import instructor
 from openai import OpenAI
@@ -26,12 +26,14 @@ client = instructor.from_openai(OpenAI())
 
 class ImprovedQuestion(BaseModel):
     rewritten_question: str = Field(
-        ..., description="An improved, more specific version of the original question"
+        ...,
+        description="""An improved, more specific
+        version of the original question""",
     )
 
 
 class FinalResponse(BaseModel):
-    response: str = Field(..., description="This is a response to an object")
+    answer: str
 
 
 def rewrite_question(question: str):
@@ -55,21 +57,29 @@ def answer_question(question: str):
         messages=[{"role": "user", "content": question}],
         max_tokens=1000,
         response_model=FinalResponse,
-    ).response
+    )
 
 
 if __name__ == "__main__":
     rewritten_query = rewrite_question(
         "Take the last letters of the words in 'Elon Musk' and concatenate them"
     )
-    print(f"Rewritten query: {rewritten_query.rewritten_question}")
+    print(rewritten_query.model_dump_json(indent=2))
     """
-    Rewritten query: What is the result when you take the last letters of each word in the name 'Elon Musk' and concatenate them?
+    {
+      "rewritten_question": "What are the last letters of each word in 'Elon Musk',
+      and how would they look when concatenated together?"
+    }
     """
 
     response = answer_question(rewritten_query.rewritten_question)
-    print(f"Response: {response}")
-    #> Response: nk
+    print(response.model_dump_json(indent=2))
+    """
+    {
+      "answer": "The last letters of the words 'Elon Musk' are 'n' and 'k'. When
+      concatenated together, they look like 'nk'."
+    }
+    """
 ```
 
 We can also achieve the same benefits by **using a better model to generate the question** before we prompt a weaker model - this is known as a two-step RaR.
