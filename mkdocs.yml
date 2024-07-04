@@ -249,7 +249,7 @@ nav:
       - USP: 'prompting/ensembling/usp.md'
       - Use Translation for Paraphrasing: 'prompting/ensembling/prompt_paraphrasing.md'
     - Self-Criticism:
-      - Chain-Of-Verification: 'prompting/self_criticism/chain_of_verification.md'
+      - Independently Verify Responses: 'prompting/self_criticism/chain_of_verification.md'
       - Self-Calibration: 'prompting/self_criticism/self_calibration.md'
       - Self-Refine: 'prompting/self_criticism/self_refine.md'
       - Self-Verification: 'prompting/self_criticism/self_verification.md'
