@@ -250,7 +250,7 @@ nav:
       - Use Translation for Paraphrasing: 'prompting/ensembling/prompt_paraphrasing.md'
     - Self-Criticism:
       - Independently Verify Responses: 'prompting/self_criticism/chain_of_verification.md'
-      - Self-Calibration: 'prompting/self_criticism/self_calibration.md'
+      - Iteratively Provide Feedback: 'prompting/self_criticism/self_calibration.md'
       - Self-Refine: 'prompting/self_criticism/self_refine.md'
       - Self-Verification: 'prompting/self_criticism/self_verification.md'
       - ReverseCoT: 'prompting/self_criticism/reversecot.md'
