@@ -304,7 +304,7 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
 
     # update gemini config if any params are set
     for k, v in map_openai_args_to_gemini.items():
-        val = kwargs.pop(k, None)
+        val = kwargs["generation_config"].pop(k, None)
         if val == None:
             continue
         kwargs["generation_config"][v] = val
