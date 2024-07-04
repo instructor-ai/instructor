@@ -242,7 +242,7 @@ nav:
       - Use Distinct Example Subsets: 'prompting/ensembling/dense.md'
       - DiVeRSe: 'prompting/ensembling/diverse.md'
       - Max Mutual Information: 'prompting/ensembling/max_mutual_information.md'
-      - Meta-CoT: 'prompting/ensembling/meta_cot.md'
+      - Combine Multiple Reasoning Chains: 'prompting/ensembling/meta_cot.md'
       - MoRE: 'prompting/ensembling/more.md'
       - Generate Multiple Candidate Responses: 'prompting/ensembling/self_consistency.md'
       - Universal Self-Consistency: 'prompting/ensembling/universal_self_consistency.md'
