@@ -1,5 +1,4 @@
 ---
-title: "Prioritize annotating uncertain examples"
 description: "Active prompting is a method used to identify the most effective examples for human annotation. "
 ---
 

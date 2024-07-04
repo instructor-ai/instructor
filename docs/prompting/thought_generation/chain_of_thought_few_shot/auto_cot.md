@@ -1,5 +1,4 @@
 ---
-title: "Automate Chain of Thought"
 description: "Automate few-shot chain of thought to choose diverse examples"
 ---
 
@@ -11,8 +10,8 @@ Here, we automate CoT to choose diverse examples. Given a list of potential exam
 
 1. **Cluster**: Cluster potential examples
 2. **Sample**: For each cluster,
-    1. Sort examples by distance from cluster center
-    2. Select the first example that meets a predefined selection criteria
+   1. Sort examples by distance from cluster center
+   2. Select the first example that meets a predefined selection criteria
 3. **Prompt**: Incorporate the chosen questions from each cluster as examples in the LLM prompt
 
 !!! info

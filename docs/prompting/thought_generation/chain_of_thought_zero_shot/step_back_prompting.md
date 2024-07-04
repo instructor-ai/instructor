@@ -1,5 +1,4 @@
 ---
-title: "Consider higher-level context"
 description: "Step-back prompting is a two-step prompting technique that asks the LLM a step-back question to gather context for the query"
 ---
 
@@ -53,20 +52,27 @@ def generate_stepback_question():
             {
                 "role": "user",
                 "content": f"""
-                    You are an expert at world knowledge.
-                    Your task is to step back and paraphrase a question to a more generic step-back question, which is easier to answer.
+                You are an expert at world knowledge. Your task is to step back
+                and paraphrase a question to a more generic step-back question,
+                which is easier to answer.
 
-                    Here are a few examples:
-                    Original Question: Which position did Knox Cunningham hold from May 1955 to Apr 1956?
-                    Step-back Question: Which positions has Knox Cunningham held in his career?
-                    Original Question:Who was the spouse of Anna Karina from 1968 to 1974?
-                    Step-back Question: Who were the spouses of Anna Karina?
-                    Original Question: Which team did Thierry Audel play for from 2007 to 2008?
-                    Step-back Question: Which teams did Thierry Audel play for in his career?
+                Here are a few examples:
+                Original Question: Which position did Knox Cunningham hold from
+                May 1955 to Apr 1956?
+                Step-back Question: Which positions has Knox Cunningham held in
+                his career?
+                Original Question: Who was the spouse of Anna Karina from 1968
+                to 1974?
+                Step-back Question: Who were the spouses of Anna Karina?
+                Original Question: Which team did Thierry Audel play for from
+                2007 to 2008?
+                Step-back Question: Which teams did Thierry Audel play for in
+                his career?
 
-                    Now, generate the step-back question for the following question:
-                    Estella Leopold went to which school between Aug 1954 and Nov 1954?
-                    """,
+                Now, generate the step-back question for the following question:
+                Estella Leopold went to which school between Aug 1954 and
+                Nov 1954?
+                """,
             },
         ],
     )
@@ -89,8 +95,12 @@ def get_final_response(stepback, stepback_response):
         messages=[
             {
                 "role": "user",
-                "content": f"""Q: {stepback.abstract_question}, A: {stepback_response}
-                            Q: {stepback.original_question}, A:""",
+                "content": f"""
+                Q: {stepback.abstract_question},
+                A: {stepback_response}
+                Q: {stepback.original_question}
+                A:
+                """,
             },
         ],
     )
@@ -109,13 +119,22 @@ if __name__ == "__main__":
     for item in stepback_response:
         print(item)
         """
-        degree='Bachelors' school='University of Wisconsin-Madison' topic='Botany' year=1948
+        degree='Bachelors'
+        school='University of Wisconsin-Madison'
+        topic='Botany'
+        year=1948
         """
         """
-        degree='Masters' school='University of California, Berkeley' topic='Botany and Paleobotany' year=1950
+        degree='Masters'
+        school='University of California, Berkeley'
+        topic='Botany and Paleobotany'
+        year=1950
         """
         """
-        degree='PhD' school='Yale University' topic='Botany and Paleobotany' year=1955
+        degree='PhD'
+        school='Yale University'
+        topic='Botany and Paleobotany'
+        year=1955
         """
 
     # Ask the original question, appended with context from the stepback response
