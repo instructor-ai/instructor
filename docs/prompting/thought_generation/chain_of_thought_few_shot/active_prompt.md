@@ -27,9 +27,9 @@ In this step, we define an unsupervised method to measure the uncertainty of an 
 
 In order to do this, we query the LLM with the same example _k_ times. Then, we use the _k_ responses to determine how dissimmilar these responses are. Three possible metrics<sup><a href="https://arxiv.org/abs/2302.12246">1</a></sup> are:
 
-1. Disagreement
-2. Entropy
-3. Variance
+1. **Disagreement**: Ratio of unique responses to total responses.
+2. **Entropy**: Measurement based on frequency of each response.
+3. **Variance**: Calculation of the spread of numerical responses.
 
 Below is an example of uncertainty estimation for a single input example using the disagreement uncertainty metric.
 
