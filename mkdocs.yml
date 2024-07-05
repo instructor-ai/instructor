@@ -252,8 +252,8 @@ nav:
       - Independently Verify Responses: 'prompting/self_criticism/chain_of_verification.md'
       - Determine Uncertainty of Reasoning Chain: 'prompting/self_criticism/self_calibration.md'
       - Iteratively Provide Feedback: 'prompting/self_criticism/self_refine.md'
-      - Self-Verification: 'prompting/self_criticism/self_verification.md'
-      - ReverseCoT: 'prompting/self_criticism/reversecot.md'
+      - Verify Reasoning Steps: 'prompting/self_criticism/self_verification.md'
+      - Reconstruct Prompt from Reasoning Steps : 'prompting/self_criticism/reversecot.md'
       - Cumulative Reason: 'prompting/self_criticism/cumulative_reason.md'
     - Decomposition:
       - DECOMP: 'prompting/decomposition/decomp.md'
