@@ -2,7 +2,7 @@
 description: "Cumulative Reasoning breaks the reasoning process into three separate steps so that our model has enough room to reason and filter out the reasoning steps at each point, thus improving model performance"
 ---
 
-Cumulative Reasoning aims to generate better outputs by dividing the reasoning process into three separate steps
+Cumulative Reasoning<sup><a href="https://arxiv.org/pdf/2308.04371">1</a></sup> aims to generate better outputs by dividing the reasoning process into three separate steps
 
 1. **Propose** : A LLM first suggests potential steps based o the current context, initiating the reasoning cycle
 2. **Verify** : We then assess the proposer's suggestions for accuracy, incorporating valid steps into the ongoing context
@@ -229,3 +229,7 @@ if __name__ == "__main__":
     }
     """
 ```
+
+### References
+
+<sup id="ref-1">1</sup>: [Cumulative Reasoning with Large Language Models](https://arxiv.org/pdf/2308.04371)

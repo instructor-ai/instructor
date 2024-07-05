@@ -10,7 +10,7 @@ We can ask language models to evaluate their outputs by using the following temp
 
 We can implement this using `instructor` as seen below
 
-```python hl_lines="29-33"
+```python hl_lines="23-27"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field

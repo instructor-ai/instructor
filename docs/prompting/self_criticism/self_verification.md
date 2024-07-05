@@ -2,7 +2,9 @@
 description: "Self Verification involves getting language models to generate a candidate response before evaluating each individual intermediate reasoning step to verify if it's logical entailment holds"
 ---
 
-We can verify the correctness of the reasoning steps taken by our Large Language Model by rewriting them as logical entailments. This enables us to use an LLM to check if the original statement can be derived from the new logical entailment. By doing this, we can score each reasoning step and obtain a metric for the quality of the response.
+We can verify the correctness of the reasoning steps taken by our Large Language Model by rewriting them as logical entailments. This enables us to use an LLM to check if the original statement can be derived from the new logical entailment.
+
+By doing this, we can score each reasoning step and obtain a metric for the quality of the response. This process is known as Self Verification <sup><a href="https://arxiv.org/pdf/2212.09561">1</a></sup>
 
 We can scale this out to multiple candidate solutions to choose the best solution.
 
@@ -167,3 +169,7 @@ if __name__ == "__main__":
     print(response.correct_answer)
     #> 36
 ```
+
+### References
+
+<sup id="ref-1">1</sup>: [Large Language Models are Better Reasoners with Self-Verification](https://arxiv.org/pdf/2212.09561)

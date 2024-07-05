@@ -2,7 +2,7 @@
 description: "DECOMP involves using a LLM to break down a complicated task into sub tasks that it has been provided with"
 ---
 
-Decomposed Prompting leverages a Language Model (LLM) to deconstruct a complex task into a series of manageable sub-tasks. Each sub-task is then processed by specific functions, enabling the LLM to handle intricate problems more effectively and systematically.
+Decomposed Prompting<sup><a href="https://arxiv.org/pdf/2210.02406">1</a></sup> leverages a Language Model (LLM) to deconstruct a complex task into a series of manageable sub-tasks. Each sub-task is then processed by specific functions, enabling the LLM to handle intricate problems more effectively and systematically.
 
 In the code snippet below, we define a series of data models and functions to implement this approach.
 
@@ -149,3 +149,7 @@ if __name__ == "__main__":
     print(curr)
     #> ay
 ```
+
+### References
+
+<sup id="ref-1">1</sup>: [Decomposed Prompting: A Modular Approach for Solving Complex Tasks](https://arxiv.org/pdf/2210.02406)

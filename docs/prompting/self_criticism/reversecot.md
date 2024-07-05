@@ -12,14 +12,12 @@ This is done through a 3 step process
 
 We can implement this using `instructor` as seen below.
 
-```python hl_lines="55-60 78-85 101-110 130-143 158-170"
+```python hl_lines="53-58 76-83 99-108 128-141 156-168"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
-from textwrap import dedent
 
 client = instructor.from_openai(OpenAI())
-
 
 class ReconstructedPrompt(BaseModel):
     chain_of_thought: str
@@ -88,7 +86,7 @@ def reconstruct_prompt(model_response: ModelResponse):
         messages=[
             {
                 "role": "system",
-                "content": dedent(
+                "content":
                     f"""
                     Give the concrete prompt (problem) that can
                     generate this answer. The problem should
@@ -99,7 +97,7 @@ def reconstruct_prompt(model_response: ModelResponse):
                     Reasoning: {model_response.chain_of_thought}
                     Response: {model_response.correct_answer}
                     """
-                ),
+                ,
             }
         ],
     )
