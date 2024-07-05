@@ -80,8 +80,6 @@ async def generate_self_consistent_responses(
 
 
 if __name__ == "__main__":
-    from textwrap import dedent
-
     user_query = "What is the weather like today?"
     examples = [
         "I love this product! [Positive]",
