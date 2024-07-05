@@ -15,7 +15,7 @@ The `derive_action_plan` function generates an action plan using the LLM, which 
 
 We can implement this using `instructor` as seen below.
 
-```python linenums="1"
+```python
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
