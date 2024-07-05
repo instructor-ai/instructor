@@ -256,7 +256,7 @@ nav:
       - Reconstruct Prompt from Reasoning Steps : 'prompting/self_criticism/reversecot.md'
       - Break Down Reasoning Into Multiple Steps: 'prompting/self_criticism/cumulative_reason.md'
     - Decomposition:
-      - DECOMP: 'prompting/decomposition/decomp.md'
+      - Break Down Complex Tasks: 'prompting/decomposition/decomp.md'
       - Faithful CoT: 'prompting/decomposition/faithful_cot.md'
       - Least-to-Most: 'prompting/decomposition/least_to_most.md'
       - Plan-and-Solve: 'prompting/decomposition/plan_and_solve.md'
