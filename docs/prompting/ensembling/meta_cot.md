@@ -184,7 +184,7 @@ if __name__ == "__main__":
     print(response.model_dump_json(indent=2))
     """
     {
-      "intermdiate_reasoning": "Arnold Schwarzenegger's
+      "intermediate_reasoning": "Arnold Schwarzenegger's
       peak deadlift was 710 lbs (322 kg). The average
       weight of an adult Black rhinoceros ranges between
       800 to 1,400 kg (1764 to 3086 lbs). Even at the
