@@ -6,19 +6,32 @@ Meta Chain Of Thought (Meta COT) <sup><a href="https://arxiv.org/pdf/2304.13007"
 
 We can implement this using `instructor` as seen below.
 
-```python hl_lines="28-29 44-45 74-77"
+```python hl_lines="41-42 57-61 96-99"
 import instructor
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 import asyncio
+from typing import Optional
 
 client = instructor.from_openai(AsyncOpenAI())
 
 
 class ReasoningAndResponse(BaseModel):
-    intermdiate_reasoning: str = Field(description="""
-    Intermediate reasoning steps""")
+    intermediate_reasoning: str = Field(
+        description="""
+    Intermediate reasoning steps"""
+    )
     correct_answer: str
+
+
+class MaybeResponse(BaseModel):
+    result: Optional[ReasoningAndResponse]
+    error: Optional[bool]
+    error_message: Optional[str] = Field(
+        description="""Informative explanation of why
+        the reasoning chain was unable to generate
+        a result"""
+    )
 
 
 class QueryDecomposition(BaseModel):
@@ -35,7 +48,7 @@ async def generate_queries(query: str):
             {
                 "role": "system",
                 "content": """You are a helpful assistant that
-                decomposes a query into multiple queries.""",
+                decomposes a query into multiple sub-queries.""",
             },
             {"role": "user", "content": query},
         ],
@@ -43,7 +56,7 @@ async def generate_queries(query: str):
     )
 
 
-async def generate_reasoning_chain(query: str):
+async def generate_reasoning_chain(query: str) -> MaybeResponse:
     return await client.chat.completions.create(
         model="gpt-4o",
         messages=[
@@ -53,25 +66,34 @@ async def generate_reasoning_chain(query: str):
                 Given a question and a context,
                 answer the question step-by-step.
 
-                If you are unsure, answer Unknown.
+                Indicate the intermediate reasoning
+                steps.
                 """,
             },
             {"role": "user", "content": query},
         ],
-        response_model=ReasoningAndResponse,
+        response_model=MaybeResponse,
     )
 
 
-async def batch_reasoning_chains(queries: list[str]):
+async def batch_reasoning_chains(
+    queries: list[str],
+) -> list[MaybeResponse]:
     coros = [generate_reasoning_chain(query) for query in queries]
     results = await asyncio.gather(*coros)
     return results
 
 
-async def generate_response(query: str, context: list[ReasoningAndResponse]):
+async def generate_response(query: str, context: list[MaybeResponse]):
     formatted_context = "\n".join(
-        [f"{item.intermdiate_reasoning}\n{item.correct_answer}"
-         for item in context]
+        [
+            f"""
+            {item.result.intermediate_reasoning}
+            {item.result.correct_answer}
+            """
+            for item in context
+            if not item.error and item.result
+        ]
     )
 
     return await client.chat.completions.create(
@@ -103,32 +125,75 @@ async def generate_response(query: str, context: list[ReasoningAndResponse]):
 
 
 if __name__ == "__main__":
-    query = "Can Arnold Schwarzenegger deadlift an adult Black rhinoceros?"
-    decomposed_queries = asyncio.run(generate_queries(query))
+    query = """Would Arnold Schwarzenegger have been
+    able to deadlift an adult Black rhinoceros at his
+    peak strength?"""
+    decomposed_queries = asyncio.run(generate_queries(
+        query))
 
     for generated_query in decomposed_queries.queries:
         print(generated_query)
-        #> How much can Arnold Schwarzenegger deadlift?
-        #> How much does an adult Black rhinoceros weigh?
+        #> How much weight could Arnold Schwarzenegger
+        #> deadlift at his peak strength?
+        #> What is the average weight of an adult Black
+        #> rhinoceros?
 
-    chains = asyncio.run(batch_reasoning_chains(decomposed_queries.queries))
+    chains = asyncio.run(batch_reasoning_chains(
+        decomposed_queries.queries))
 
-    response = asyncio.run(generate_response(query, chains))
+    for chain in chains:
+        print(chain.model_dump_json(indent=2))
+        """
+        {
+          "result": {
+            "intermediate_reasoning": "Determining Arnold
+            Schwarzenegger's peak deadlift involves
+            researching historical records, interviews,
+            and Arnold’s competitive powerlifting
+            results.",
+            "correct_answer": "Arnold Schwarzenegger's
+            peak deadlift was reportedly 710 lbs (322
+            kg)."
+          },
+          "error": false,
+          "error_message": null
+        }
+        """
+        """
+        {
+          "result": {
+            "intermediate_reasoning": "To determine the
+            average weight of an adult Black rhinoceros,
+            I need to consult reliable sources such as
+            wildlife encyclopedias, zoological databases,
+            or scientific articles. Commonly, the average
+            weight of adult Black rhinoceros ranges
+            between 800 to 1,400 kg.",
+            "correct_answer": "The average weight of an
+            adult Black rhinoceros ranges between 800 to
+            1,400 kg."
+          },
+          "error": false,
+          "error_message": null
+        }
+        """
+
+    response = asyncio.run(generate_response(query,
+        chains))
 
     print(response.model_dump_json(indent=2))
     """
     {
-      "intermdiate_reasoning": "Arnold Schwarzenegger, during his prime
-      bodybuilding years, was known for his impressive strength. However,
-      the specific records of his deadlift are not well documented. The
-      capacity to deadlift involves lifting a weight from the ground to
-      the level of the hips before standing up straight with it. Even if
-      Arnold's strength was substantial, lifting an adult Black rhinoceros,
-      which weighs between 1,750 – 3,000 pounds (800 – 1,400 kg), would be
-      an extraordinary feat. The heaviest documented deadlifts by top
-      powerlifters are slightly above 1,000 pounds, far less than the weight
-      of an adult Black rhinoceros, making it highly unlikely that Arnold
-      Schwarzenegger could deadlift such an animal.",
+      "intermdiate_reasoning": "Arnold Schwarzenegger's
+      peak deadlift was 710 lbs (322 kg). The average
+      weight of an adult Black rhinoceros ranges between
+      800 to 1,400 kg (1764 to 3086 lbs). Even at the
+      lower end of the rhinoceros weight range (800 kg
+      or 1764 lbs), it exceeds Arnold Schwarzenegger's
+      peak deadlift capacity of 710 lbs (322 kg).
+      Therefore, Arnold Schwarzenegger would not have
+      been able to deadlift an adult Black rhinoceros at
+      his peak strength.",
       "correct_answer": "No"
     }
     """
