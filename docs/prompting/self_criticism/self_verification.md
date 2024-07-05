@@ -1,5 +1,5 @@
 ---
-description: "Self Verification involves getting language models to generate a candidate response before evaluating each individual intermediate reasoning step to verify if it's logical entailemtn holds"
+description: "Self Verification involves getting language models to generate a candidate response before evaluating each individual intermediate reasoning step to verify if it's logical entailment holds"
 ---
 
 We can verify the correctness of the reasoning steps taken by our Large Language Model by rewriting them as logical entailments. This enables us to use an LLM to check if the original statement can be derived from the new logical entailment. By doing this, we can score each reasoning step and obtain a metric for the quality of the response.
