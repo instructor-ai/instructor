@@ -33,7 +33,7 @@ def classify(support_ticket_title: str):
         messages=[
             {
                 "role": "system",
-                "content": f"""You are a support agent at a tech company.
+                "content": """You are a support agent at a tech company.
                 You will be assigned a support ticket to classify.
                 Make sure to only select the label that applies to
                 the support ticket.""",

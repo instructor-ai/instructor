@@ -226,12 +226,12 @@ nav:
     - Thought Generation:
       - Chain-Of-Thought (Zero-Shot):
         - Analogical Prompting: 'prompting/thought_generation/chain_of_thought_zero_shot/analogical_prompting.md'
-        - Step-Back Prompting: 'prompting/thought_generation/chain_of_thought_zero_shot/step_back_prompting.md'
+        - Consider Higher-Level Context: 'prompting/thought_generation/chain_of_thought_zero_shot/step_back_prompting.md'
         - Examine The Context: 'prompting/thought_generation/chain_of_thought_zero_shot/thread_of_thought.md'
         - Structure The Reasoning: 'prompting/thought_generation/chain_of_thought_zero_shot/tab_cot.md'
       - Chain-Of-Thought (Few-Shot):
-        - Active-Prompt: 'prompting/thought_generation/chain_of_thought_few_shot/active_prompt.md'
-        - Auto-CoT: 'prompting/thought_generation/chain_of_thought_few_shot/auto_cot.md'
+        - Prioritize Uncertain Examples: 'prompting/thought_generation/chain_of_thought_few_shot/active_prompt.md'
+        - Automate Example Selection: 'prompting/thought_generation/chain_of_thought_few_shot/auto_cot.md'
         - Prioritize Complex Examples: 'prompting/thought_generation/chain_of_thought_few_shot/complexity_based.md'
         - Include Incorrect Examples: 'prompting/thought_generation/chain_of_thought_few_shot/contrastive.md'
         - Memory-of-Thought: 'prompting/thought_generation/chain_of_thought_few_shot/memory_of_thought.md'
