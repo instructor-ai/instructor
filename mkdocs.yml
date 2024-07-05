@@ -254,7 +254,7 @@ nav:
       - Iteratively Provide Feedback: 'prompting/self_criticism/self_refine.md'
       - Verify Reasoning Steps: 'prompting/self_criticism/self_verification.md'
       - Reconstruct Prompt from Reasoning Steps : 'prompting/self_criticism/reversecot.md'
-      - Break down reasoning into multiple steps: 'prompting/self_criticism/cumulative_reason.md'
+      - Break Down Reasoning Into Multiple Steps: 'prompting/self_criticism/cumulative_reason.md'
     - Decomposition:
       - DECOMP: 'prompting/decomposition/decomp.md'
       - Faithful CoT: 'prompting/decomposition/faithful_cot.md'
