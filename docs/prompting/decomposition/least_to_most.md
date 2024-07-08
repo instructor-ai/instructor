@@ -91,3 +91,9 @@ if __name__ == "__main__":
         #> How old was Kody four years ago? 28
         #> How old is Kody currently? 32
 ```
+
+### References
+
+<sup id="ref-1">1</sup>: [Least-to-Most Prompting Enables Complex Reasoning in Large Language Models](https://arxiv.org/abs/2205.10625)
+
+<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
