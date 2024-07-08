@@ -58,10 +58,16 @@ def solve(question, solved_questions, original_question):
             {
                 "role": "user",
                 "content": f"""
-                This is the original question we are trying to solve: {original_question}
-                These are subquestions that have already been solved: {solved_questions}
-                Solve this next subquestion: {question}
-                """,
+                    <original_question>
+                    {original_question}
+                    </original_question>
+
+                    <solved_subquestions>
+                    {solved_questions}
+                    </solved_subquestions>
+
+                    Solve this next subquestion: {question}
+                    """,
             }
         ],
     ).answer
@@ -88,7 +94,7 @@ if __name__ == "__main__":
         print(f"{item.question} {item.answer}")
         #> How old is Mohamed currently? 60
         #> How old was Mohamed four years ago? 56
-        #> How old was Kody four years ago? 28
+        #> How old was Kody four years ago if he was half as old as Mohamed? 28
         #> How old is Kody currently? 32
 ```
 
