@@ -22,7 +22,7 @@ graph TD
     linkStyle 1,2,4 stroke:#FFB74D,stroke-width:2px;
 ``` 
 
-```python hl_lines="88-92"
+```python hl_lines="102-106"
 import instructor
 from pydantic import BaseModel, Field
 from openai import OpenAI
@@ -42,12 +42,17 @@ class Feedback(BaseModel):
 
 class Timestep(BaseModel):
     response: str
-    feedback: Optional[list[str]] = []
-    refined_response: Optional[str] = ""
+    feedback: Optional[list[str]] = Field(default_factory=list)
+    refined_response: Optional[str] = Field(default="")
 
 
 class History(BaseModel):
-    history: list[Timestep] = []
+    history: list[Timestep] = Field(default_factory=list)
+
+    def add(self, code, feedback, refined_code):
+        self.history.append(
+            Timestep(response=code, feedback=feedback, refined_response=refined_code)
+        )
 
 
 client = instructor.from_openai(OpenAI())
@@ -64,7 +69,11 @@ def generate_feedback(response):
                         You are an expert Python coder.
                         Provide feedback on this code.
                         How can we make it (1) faster and (2) more readable?
+
+                        <code>
                         {response.code}
+                        </code>
+
                         If the code does not need to be improved, then indicate by setting "done" to True.
                         """,
             }
@@ -81,10 +90,15 @@ def refine(response, feedback):
                 "role": "user",
                 "content": f"""
                         You are an expert Python coder.
-                        Given this response:
+
+                        <response>
                         {response.code}
-                        And this feedback:
+                        </response>
+
+                        <feedback>
                         {feedback.feedback}
+                        </feedback>
+
                         Refine your response.
                         """,
             }
@@ -117,13 +131,7 @@ if __name__ == "__main__":
         refined_response = refine(response, feedback)
 
         # Save to history
-        history.history.append(
-            Timestep(
-                response=response.code,
-                feedback=feedback.feedback,
-                refined_response=refined_response.code,
-            )
-        )
+        history.add(response.code, feedback.feedback, refined_response.code)
         response = refined_response
 
     print(history.history[0].response)
@@ -131,44 +139,41 @@ if __name__ == "__main__":
     def fibonacci(n):
         sequence = [0, 1]
         while len(sequence) < n:
-            next_value = sequence[-1] + sequence[-2]
-            sequence.append(next_value)
+            sequence.append(sequence[-1] + sequence[-2])
         return sequence[:n]
 
-    # Example usage
+    # Example usage:
     n = 10
     print(fibonacci(n))
     """
     print(history.history[0].feedback)
     """
     [
-        'To optimize the code for better performance and readability, we can consider the following changes:',
-        '1. Use a generator to improve memory efficiency and potentially speed up the calculations. Generators yield items one at a time and thus reduce memory overhead.',
-        '2. Add type hints for better readability and to help static analysis tools.',
-        '3. Improve the loop logic to make it more concise.',
-        '4. Add a docstring for better code documentation.',
+        'Use a generator to reduce memory consumption for large `n` values and improve speed.',
+        'Enhance readability by adding type hints for input and output.',
+        "Add docstrings to explain the function's purpose and parameters.",
+        "Avoid slicing the list at the end if it's not necessary; instead, ensure the loop condition is precise.",
     ]
     """
     print(history.history[0].refined_response)
     """
     def fibonacci(n: int) -> list[int]:
-        """
-        Generate a Fibonacci sequence of length n.
+        """Generate a Fibonacci sequence of length n.
 
-        Parameters:
-        n (int): The length of the Fibonacci sequence to generate.
+        Args:
+            n (int): The length of the Fibonacci sequence to generate.
 
         Returns:
-        list[int]: A list containing the first n numbers in the Fibonacci sequence.
+            list[int]: A list containing the Fibonacci sequence of length n.
         """
-        def fibonacci_generator() -> int:
+        def fibonacci_generator():
             a, b = 0, 1
             for _ in range(n):
                 yield a
                 a, b = b, a + b
         return list(fibonacci_generator())
 
-    # Example usage
+    # Example usage:
     n = 10
     print(fibonacci(n))
     """
@@ -176,34 +181,27 @@ if __name__ == "__main__":
     #> ...process repeated 3 times...
     print(response.code)
     """
-    from typing import Generator
+    def fibonacci(n: int) -> list[int]:
+        """Generate a Fibonacci sequence of length n.
 
-    def fibonacci(n: int) -> Generator[int, None, None]:
-        """
-        Generate a Fibonacci sequence of length n.
-
-        Parameters:
-        n (int): The length of the Fibonacci sequence to generate.
+        Args:
+            n (int): The length of the Fibonacci sequence to generate.
 
         Returns:
-        Generator[int, None, None]: A generator yielding the first n numbers in the Fibonacci sequence.
-
-        Raises:
-        ValueError: If the length of the Fibonacci sequence is negative.
+            list[int]: A list containing the Fibonacci sequence of length n.
         """
-        if n < 0:
-            raise ValueError("The length of the Fibonacci sequence must be non-negative.")
-        current: int, next_val: int = 0, 1
-        count: int = 0
-        while count < n:
-            yield current
-            current, next_val = next_val, current + next_val
-            count += 1
+        if n <= 0:
+            return []
+        sequence = [0] * n
+        if n > 1:
+            sequence[1] = 1
+        for i in range(2, n):
+            sequence[i] = sequence[i-1] + sequence[i-2]
+        return sequence
 
-    # Example usage
+    # Example usage:
     n = 10
-    for number in fibonacci(n):
-        print(number)
+    print(fibonacci(n))
     """
 ```
 
