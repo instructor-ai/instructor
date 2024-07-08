@@ -252,7 +252,7 @@ nav:
       - Independently Verify Responses: 'prompting/self_criticism/chain_of_verification.md'
       - Iteratively Provide Feedback: 'prompting/self_criticism/self_calibration.md'
       - Improve With Feedback: 'prompting/self_criticism/self_refine.md'
-      - Self-Verify LLM Responses: 'prompting/self_criticism/self_verification.md'
+      - Self-Verify Responses: 'prompting/self_criticism/self_verification.md'
       - ReverseCoT: 'prompting/self_criticism/reversecot.md'
       - Cumulative Reason: 'prompting/self_criticism/cumulative_reason.md'
     - Decomposition:
