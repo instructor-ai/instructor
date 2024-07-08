@@ -258,7 +258,7 @@ nav:
     - Decomposition:
       - DECOMP: 'prompting/decomposition/decomp.md'
       - Faithful CoT: 'prompting/decomposition/faithful_cot.md'
-      - Least-to-Most: 'prompting/decomposition/least_to_most.md'
+      - Solve simpler subproblems: 'prompting/decomposition/least_to_most.md'
       - Plan-and-Solve: 'prompting/decomposition/plan_and_solve.md'
       - Program-of-Thought: 'prompting/decomposition/program_of_thought.md'
       - Recurs.-of-Thought: 'prompting/decomposition/recurs_of_thought.md'
