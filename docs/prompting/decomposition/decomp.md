@@ -15,17 +15,13 @@ The `derive_action_plan` function generates an action plan using the LLM, which 
 
 We can implement this using `instructor` as seen below.
 
-```python
+```python hl_lines="57-58"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
-from typing import Union, Optional
+from typing import Union
 
 client = instructor.from_openai(OpenAI())
-
-
-class InitialInput(BaseModel):
-    input_data: str
 
 
 class Split(BaseModel):
@@ -34,12 +30,18 @@ class Split(BaseModel):
         the string with"""
     )
 
+    def split_chars(self, s: str, c: str):
+        return s.split(c)
+
 
 class StrPos(BaseModel):
     index: int = Field(
         description="""This is the index of the character
         we wish to return"""
     )
+
+    def get_char(self, s: list[str], i: int):
+        return [c[i] for c in s]
 
 
 class Merge(BaseModel):
@@ -48,21 +50,20 @@ class Merge(BaseModel):
         inputs we plan to pass to this function with"""
     )
 
+    def merge_string(self, s: list[str]):
+        return self.merge_char.join(s)
+
 
 class Action(BaseModel):
     id: int = Field(
         description="""Unique Incremental id to identify
         this action with"""
     )
-    action: Union[Split, StrPos, Merge, InitialInput]
-    input_source: Optional[int] = Field(
-        description="""Prior Action Id whose inputs we
-        wish to use for this action""",
-        default=None,
-    )
+    action: Union[Split, StrPos, Merge]
 
 
 class ActionPlan(BaseModel):
+    initial_data: str
     plan: list[Action]
 
 
@@ -89,62 +90,47 @@ if __name__ == "__main__":
     print(plan.model_dump_json(indent=2))
     """
     {
+      "initial_data": "Jack Ryan",
       "plan": [
         {
           "id": 1,
           "action": {
-            "input_data": "Jack Ryan"
-          },
-          "input_source": null
+            "split_char": " "
+          }
         },
         {
           "id": 2,
           "action": {
-            "split_char": " "
-          },
-          "input_source": 1
+            "index": 1
+          }
         },
         {
           "id": 3,
           "action": {
-            "index": 1
-          },
-          "input_source": 2
-        },
-        {
-          "id": 4,
-          "action": {
             "merge_char": ""
-          },
-          "input_source": 3
+          }
         }
       ]
     }
     """
 
-    curr = ""
+    curr = plan.initial_data
     cache = {}
 
     for action in plan.plan:
-        input_source = action.input_source
-        if input_source:
-            input_source = cache[input_source]  # type:ignore
+        if isinstance(action.action, Split) and isinstance(curr, str):
+            curr = action.action.split_chars(curr, action.action.split_char)
+        elif isinstance(action.action, StrPos) and isinstance(curr, list):
+            curr = action.action.get_char(curr, action.action.index)
+        elif isinstance(action.action, Merge) and isinstance(curr, list):
+            curr = action.action.merge_string(curr)
+        else:
+            raise ValueError("Unsupported Operation")
 
-        if isinstance(action.action, InitialInput):
-            curr = action.action.input_data
-            cache[action.id] = curr
-        elif isinstance(action.action, Split):
-            curr = input_source.split(action.action.split_char)  # type:ignore
-            cache[action.id] = curr  # type:ignore
-        elif isinstance(action.action, StrPos):
-            assert isinstance(input_source, list)
-            extracted_strings = [
-                value[action.action.index] for value in input_source
-            ]  # type:ignore
-            cache[action.id] = extracted_strings
-        elif isinstance(action.action, Merge):
-            curr = action.action.merge_char.join(input_source)  # type:ignore
-            cache[action.id] = curr
+        print(action, curr)
+        #> id=1 action=Split(split_char=' ') ['Jack', 'Ryan']
+        #> id=2 action=StrPos(index=1) ['a', 'y']
+        #> id=3 action=Merge(merge_char='') ay
 
     print(curr)
     #> ay

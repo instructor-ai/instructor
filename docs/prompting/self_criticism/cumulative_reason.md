@@ -12,12 +12,13 @@ By first generating potential steps and separating out each portions of the reas
 
 We can implement this using `instructor` as seen below
 
-```python hl_lines="45-60 96-102 140-150"
+```python hl_lines="46-61 94-100 138-148"
 import instructor
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from textwrap import dedent
 from typing import Literal
+import asyncio
 
 client = instructor.from_openai(AsyncOpenAI())
 
@@ -94,9 +95,6 @@ async def generate_propositions(premises: list[str], hypothesis: str) -> Propose
         response_model=ProposerOutput,
         model="gpt-4o",
     )
-
-
-import asyncio
 
 
 async def verify_propositions(

@@ -12,12 +12,13 @@ This is done through a 3 step process
 
 We can implement this using `instructor` as seen below.
 
-```python hl_lines="53-58 76-83 99-108 128-141 156-168"
+```python hl_lines="54-59 76-83 98-107 127-140 155-167"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
 client = instructor.from_openai(OpenAI())
+
 
 class ReconstructedPrompt(BaseModel):
     chain_of_thought: str
@@ -86,8 +87,7 @@ def reconstruct_prompt(model_response: ModelResponse):
         messages=[
             {
                 "role": "system",
-                "content":
-                    f"""
+                "content": f"""
                     Give the concrete prompt (problem) that can
                     generate this answer. The problem should
                     contain all basic and necessary information
@@ -96,8 +96,7 @@ def reconstruct_prompt(model_response: ModelResponse):
 
                     Reasoning: {model_response.chain_of_thought}
                     Response: {model_response.correct_answer}
-                    """
-                ,
+                    """,
             }
         ],
     )
@@ -200,61 +199,69 @@ if __name__ == "__main__":
     reconstructed_prompt = reconstruct_prompt(response)
     print(reconstructed_prompt.reconstructed_prompt)
     """
-    reconstructed_prompt='Mary has 40 window ledges, and each
-    ledge has 2 potted plants on it. She received 18 new
-    potted plants yesterday. How many potted plants will Mary
-    have in total?'
+    Mary received 18 new potted plants. She already has 2 potted plants on each
+    of the 40 window ledges in her backyard. How many potted plants does she have now?
     """
 
     original_condition_list = deconstruct_prompt_into_condition_list(query)
     new_condition_list = deconstruct_prompt_into_condition_list(
         reconstructed_prompt.reconstructed_prompt
     )
-    print(original_condition_list)
+    print(original_condition_list.model_dump_json(indent=2))
     """
-    conditions = [
-        'Mary received 18 new potted plants.',
-        'Mary already has 2 potted plants on each of the 40
-        window ledges.',
-    ]
+    {
+      "conditions": [
+        "Mary received 18 new potted plants.",
+        "Mary has 2 potted plants on each of the 40 window ledges in her backyard.",
+        "We are required to find the total number of potted plants Mary will have."
+      ]
+    }
     """
-    print(new_condition_list)
+    print(new_condition_list.model_dump_json(indent=2))
     """
-    conditions = [
-        'Mary has 40 window ledges.',
-        'Each ledge has 2 potted plants on it.',
-        'Mary received 18 new potted plants yesterday.',
-    ]
+    {
+      "conditions": [
+        "Mary received 18 new potted plants.",
+        "She already has 2 potted plants on each of the 40 window ledges in her backyard."
+      ]
+    }
     """
 
     feedback = generate_feedback(
-        original_condition_list.conditions, new_condition_list.conditions
+        original_condition_list.conditions,
+        new_condition_list.conditions
     )
     print(feedback.model_dump_json(indent=2))
     """
     {
-      "detected_inconsistencies": [],
-      "feedback": "The reconstructed list is roughly equivalent
-      to the original list. No inconsistencies detected.",
-      "is_equal": true
+      "detected_inconsistencies": [
+        "The reconstructed list is missing the requirement
+        to find the total number of potted plants Mary will
+        have."
+      ],
+      "feedback": "Add the requirement of finding the total
+      number of potted plants Mary will have to the
+      reconstructed condition list to match the original
+      condition list.",
+      "is_equal": false
     }
     """
 
     if not feedback.is_equal:
         response = revise_response(response, feedback)
 
-    print(response)
+    print(response.model_dump_json(indent=2))
     """
-    chain_of_thought="First, let's determine how many potted
-    plants Mary already has on her window ledges. Since there
-    are 40 window ledges and each ledge has 2 potted plants,
-    we calculate the total number of potted plants by
-    multiplying 40 by 2.\n\n40 window ledges * 2 potted plants
-    per ledge = 80 potted plants.\n\nNext, we add the 18 new
-    potted plants she received yesterday to the 80 potted
-    plants she already has:\n\n80 potted plants + 18 new
-    potted plants = 98 potted plants.\n\nTherefore, Mary will
-    have a total of 98 potted plants." correct_answer='98'
+    {
+      "chain_of_thought": "First, we note that Mary starts
+      with 18 potted plants. According to the problem, she
+      bought 2 packs of 40 new potted plants. So, to find
+      the total number of plants she will have, we add the
+      number of plants she initially has to the number she
+      bought. This gives us 18 (initial) + 2 * 40 (new) =
+      18 + 80 = 98 potted plants.",
+      "correct_answer": "98 potted plants"
+    }
     """
 ```
 
