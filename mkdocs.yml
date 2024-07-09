@@ -243,9 +243,9 @@ nav:
       - DiVeRSe: 'prompting/ensembling/diverse.md'
       - Max Mutual Information: 'prompting/ensembling/max_mutual_information.md'
       - Combine Multiple Reasoning Chains: 'prompting/ensembling/meta_cot.md'
-      - MoRE: 'prompting/ensembling/more.md'
+      - Combine Different Specialized LLMs: 'prompting/ensembling/more.md'
       - Generate Multiple Candidate Responses: 'prompting/ensembling/self_consistency.md'
-      - Universal Self-Consistency: 'prompting/ensembling/universal_self_consistency.md'
+      - Use LLMs to Combine Different Responses: 'prompting/ensembling/universal_self_consistency.md'
       - USP: 'prompting/ensembling/usp.md'
       - Use Translation for Paraphrasing: 'prompting/ensembling/prompt_paraphrasing.md'
     - Self-Criticism:
