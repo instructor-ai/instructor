@@ -136,6 +136,10 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
+        from anthropic.types import Message
+        if isinstance(completion, Message) and completion.stop_reason == 'max_tokens':
+            raise IncompleteOutputException(last_completion=completion)
+
         # Anthropic returns arguments as a dict, dump to json for model validation below
         tool_calls = [
             json.dumps(c.input) for c in completion.content if c.type == "tool_use"
@@ -160,6 +164,9 @@ class OpenAISchema(BaseModel):
         from anthropic.types import Message
 
         assert isinstance(completion, Message)
+
+        if completion.stop_reason == 'max_tokens':
+            raise IncompleteOutputException(last_completion=completion)
 
         text = completion.content[0].text
         extra_text = extract_json_from_codeblock(text)
