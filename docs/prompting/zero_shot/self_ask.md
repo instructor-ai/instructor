@@ -2,7 +2,7 @@
 description: "Self-Ask is a prompting technique that enhances language model performance by encouraging the model to generate and answer follow-up questions before tackling the main query, leading to more accurate and comprehensive responses."
 ---
 
-By encouraging our model to generate and answer clarifying questions before tackling the main query, we can obtain more accurate and comprehensive responses. This is known as Self-Ask <sup><a href="https://arxiv.org/pdf/2210.03350">1</a></sup>.
+By encouraging our model to generate and answer clarifying questions before tackling the main query, we can obtain more accurate and comprehensive responses. This is known as Self-Ask <sup><a href="http://users.umiacs.umd.edu/~jbg/docs/2023_findings_more.pdf">1</a></sup>.
 
 We can implement this using `instructor` as seen below.
 
@@ -81,4 +81,4 @@ if __name__ == "__main__":
 
 ### References
 
-<sup id="ref-1">1</sup>: [Measuring and Narrowing the Compositionality Gap in Language Models](https://arxiv.org/pdf/2210.03350)
+<sup id="ref-1">1</sup>: [Getting MoRE out of Mixture of Language Model Reasoning Experts](http://users.umiacs.umd.edu/~jbg/docs/2023_findings_more.pdf)
