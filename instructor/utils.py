@@ -294,20 +294,21 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
 
 
 def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
-    map_openai_args_to_gemini = {
-        "max_tokens": "max_output_tokens",
-        "temperature": "temperature",
-        "n": "candidate_count",
-        "top_p": "top_p",
-        "stop": "stop_sequences",
-    }
+    if "generation_config" in kwargs:
+        map_openai_args_to_gemini = {
+            "max_tokens": "max_output_tokens",
+            "temperature": "temperature",
+            "n": "candidate_count",
+            "top_p": "top_p",
+            "stop": "stop_sequences",
+        }
 
-    # update gemini config if any params are set
-    for k, v in map_openai_args_to_gemini.items():
-        val = kwargs["generation_config"].pop(k, None)
-        if val == None:
-            continue
-        kwargs["generation_config"][v] = val
+        # update gemini config if any params are set
+        for k, v in map_openai_args_to_gemini.items():
+            val = kwargs["generation_config"].pop(k, None)
+            if val == None:
+                continue
+            kwargs["generation_config"][v] = val
 
     # gemini has a different prompt format and params from other providers
     kwargs["contents"] = transform_to_gemini_prompt(kwargs.pop("messages"))
