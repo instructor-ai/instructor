@@ -257,9 +257,9 @@ nav:
       - Break Down Reasoning Into Multiple Steps: 'prompting/self_criticism/cumulative_reason.md'
     - Decomposition:
       - Break Down Complex Tasks: 'prompting/decomposition/decomp.md'
-      - Faithful CoT: 'prompting/decomposition/faithful_cot.md'
+      - Leverage Task Specific Systems: 'prompting/decomposition/faithful_cot.md'
       - Least-to-Most: 'prompting/decomposition/least_to_most.md'
-      - Plan-and-Solve: 'prompting/decomposition/plan_and_solve.md'
+      - Ditch Vanilla Chain Of Thought: 'prompting/decomposition/plan_and_solve.md'
       - Program-of-Thought: 'prompting/decomposition/program_of_thought.md'
       - Recurs.-of-Thought: 'prompting/decomposition/recurs_of_thought.md'
       - Skeleton-of-Thought: 'prompting/decomposition/skeleton_of_thought.md'

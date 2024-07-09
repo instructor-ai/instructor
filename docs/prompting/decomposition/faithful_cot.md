@@ -7,10 +7,13 @@ Faithful Chain of Thought<sup><a href="https://arxiv.org/pdf/2301.13379">1</a></
 1. **Translation** : We first translate a user query into a series of reasoning steps. These are a task specific set of steps that we can execute deterministically.
 2. **Problem Solving**: We execute our steps and arrive at a final answer that we can derive. This ensures that our Chain Of Thought is able to derive a answer that is consistent with the reasoning steps.
 
-Depending on the specific task, these steps could be
+They list a few examples in the paper of what these task-specific steps could be
 
-- Using a python interpreter
-- Writing Datalog queries to be executed
+1. **Math Word Problems** : Python Code that can be executed by an interpreter to derive a final answer
+2. **Multi-Hop QA** : This is a multi-step reasoning process. To solve this, they use a mix of python and Datalog ( which is a relation and log programming language ) to arrive at a final answer
+3. **Planning** : When trying to generate a plan to solve a user query, they generate a list of symbolic goals in a Programming Language and then call a PDDL Planner to obtain a plan to solve the user's query
+
+![](../../img/faithful_cot_example.png)
 
 In the example below, we show how you can use a LLM to generate python code that can be executed by an Interpreter to arrive at a final answer.
 
