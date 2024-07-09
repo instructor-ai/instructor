@@ -260,7 +260,7 @@ nav:
       - Leverage Task Specific Systems: 'prompting/decomposition/faithful_cot.md'
       - Least-to-Most: 'prompting/decomposition/least_to_most.md'
       - Ditch Vanilla Chain Of Thought: 'prompting/decomposition/plan_and_solve.md'
-      - Program-of-Thought: 'prompting/decomposition/program_of_thought.md'
+      - Generate Python for Intermediate Steps: 'prompting/decomposition/program_of_thought.md'
       - Recurs.-of-Thought: 'prompting/decomposition/recurs_of_thought.md'
       - Skeleton-of-Thought: 'prompting/decomposition/skeleton_of_thought.md'
       - Tree-of-Thought: 'prompting/decomposition/tree-of-thought.md'
