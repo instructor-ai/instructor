@@ -1,13 +1,16 @@
 ---
-title: "Role Prompting"
 description: "Role prompting is a technique where we assign a specific role to a LLM. We can do so by using the format"
 ---
 
-Role prompting is a technique where we assign a specific role to a LLM. We can do so by using the format
+By assigning a specific role to the model, we can improve the performance of the model. This can be done by using the format below.
 
-> You are a {role}. You will be {description of task}. {Reiterate instructions}.
+!!! example "Role Prompting Template"
 
-```python
+    You are a **[ role ]**. You **[ description of task ]**. **[ Reiterate instructions ]**.
+
+We can implement this using `instructor` as seen below.
+
+```python hl_lines="23-26"
 import openai
 import instructor
 from typing import Literal
@@ -30,21 +33,25 @@ def classify(support_ticket_title: str):
         messages=[
             {
                 "role": "system",
-                "content": f"You are a support agent at a tech company.\
-                You will be assigned a support ticket to classify. \
-                Make sure to only select the label that applies to \
-                the support ticket.", # (1)!
+                "content": """You are a support agent at a tech company.
+                You will be assigned a support ticket to classify.
+                Make sure to only select the label that applies to
+                the support ticket.""",
             },
             {
                 "role": "user",
-                "content": f"Classify the following support ticket: {support_ticket_title}",
+                "content": f"Classify this ticket: {support_ticket_title}",
             },
         ],
     )
 
 
-label_prediction = classify("My account is locked and I can't access my billing info")
-print(label_prediction.label)  # BILLING
+if __name__ == "__main__":
+    label_prediction = classify(
+        "My account is locked and I can't access my billing info"
+    )
+    print(label_prediction.label)
+    #> BILLING
 ```
 
 !!! note "This is an example of Role Based Prompting"
@@ -61,4 +68,4 @@ print(label_prediction.label)  # BILLING
 <sup id="ref-4">4</sup>: [Unleashing the Emergent Cognitive Synergy in Large Lanuage Models: A Task-Solving Agent through Multi-Persona Self-Collaboration ](https://arxiv.org/abs/2307.05300)  
 <sup id="ref-5">5</sup>: [Prompt Programming for Large Language Models: Beyond the Few-Shot Paradigm](https://dl.acm.org/doi/10.1145/3411763.3451760)
 
-<sup id="ref-asterisk">\*</sup>: [The Prompt Resport: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
+<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
