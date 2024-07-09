@@ -6,11 +6,15 @@ Analogical Prompting<sup><a href="https://arxiv.org/pdf/2310.01714">1</a></sup> 
 
 This takes advantage of the various forms of knowledge that the LLM has acquired during training and explicitly prompts them to recall the relevant problems and solutions. We can use Analogical Prompting using the following template
 
+![](../../../img/analogical_prompting.png)
+
 !!! example "Analogical Prompting Prompt Template"
 
-    **Problem**: [User Prompt]
-    **Relevant Problems**: Recall three relevant and distinct problems. For each problem, describe it and explain the solution
-    **Solve the problem**
+    Problem: [User Prompt]
+
+    Relevant Problems: Recall three relevant and distinct problems. For each problem, describe it and explain the solution
+
+    Solve the problem
 
 We can implement this using `instructor` as seen below with some slight modifications.
 
