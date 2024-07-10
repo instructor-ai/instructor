@@ -130,7 +130,7 @@ nav:
     - Bulk Classification (User Defined): 'examples/bulk_classification.md'
     - LLM Self Critique: 'examples/self_critique.md'
     - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
-    - Extracting Receipts using GPT-4o: 'examples/extract_receipts.md'
+    - Extracting Receipts using GPT-4o: 'examples/extracting_receipts.md'
     - Extracting From Slides with GPT-V: 'examples/extract_slides.md'
     - Content Moderation: 'examples/moderation.md'
     - Citing Sources (RAG): 'examples/exact_citations.md'
