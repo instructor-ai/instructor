@@ -52,7 +52,7 @@ In the formula above, $Q$ refers to the number of phrases in the sentence and $W
 
 Repetitiveness aims to measure how often the language model repeats itself. To do so, the paper sums up the cosine similarity between each sentence inside the generated chain of thought rationale before normalizing it.
 
-The intuition behind this is that high repetitiveness indicates redundancy, which can lead to poorer performance.
+The intuition behind this is that high repetitiveness indicates redundancy, which can lead to poorer performance. Therefore responses with a high number of similar sentences will have a larger score for repetitiveness ( since cosine similarity will be larger for each sentence ).
 
 ### Step 2 - Self Consistency
 
@@ -64,16 +64,18 @@ Now that we understand what COSP is, let's see how we can implement it in instru
 
 !!! Info "Quick Note"
 
-    In our implementation below, there are two things that we do which are slightly different to simplify the implementation. Firstly, we do a sentence wise comparison and see if we have an exact match for each rationale. In the paper they calculate the cosine similarity between each sentence. Therefore the more similar the sentences, the larger the repetitiveness score. We also add in a new sorting term to favour longer chain of thoughts in our function.
+    Make sure to install `numpy` and `scikit-learn` before running the code, we need to use these two libraries to compute the cosine similarity
 
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 from collections import defaultdict, Counter
 import asyncio
 from textwrap import dedent
 import math
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 client = instructor.from_openai(AsyncOpenAI())
 
@@ -92,8 +94,7 @@ class ResponseScore(BaseModel):
         return dedent(
             f"""
         Q: {self.query}
-        A: {self.response.chain_of_thought}. Therefore the answer
-        is {self.response.answer}.
+        A: {self.response.chain_of_thought}. Therefore the answer is {self.response.answer}.
         """
         )
 
@@ -129,17 +130,24 @@ def score_entropy(predictions: list[Response]):
 
 
 def score_repetitiveness(prediction: Response):
-    sentences = prediction.chain_of_thought.split(".")
+    sentences = [item for item in prediction.chain_of_thought.split(".") if item]
+
     if len(sentences) == 1:
         return 0
 
-    ttl = 0
-    for idx in range(len(sentences)):
-        for idx2 in range(idx + 1, len(sentences)):
-            if sentences[idx] == sentences[idx2]:
-                ttl += 1
+    embedding = OpenAI().embeddings.create(
+        input=sentences, model="text-embedding-3-small"
+    )
+    embedding = [item.embedding for item in embedding.data]
 
-    return ttl / ((len(sentences) - 1) * len(sentences))
+    ttl = 0
+    for idx in range(len(embedding)):
+        for idx2 in range(idx + 1, len(embedding)):
+            ttl += cosine_similarity(
+                np.array([embedding[idx]]), np.array([embedding[idx2]])
+            )[0][0]
+
+    return ttl / ((len(embedding) - 1) * len(embedding))
 
 
 def score_responses(
@@ -169,15 +177,12 @@ def get_top_k_examples(queries: list[ResponseScore], k: int):
     """
     This gets the top k responses that have the minimum possible score
     """
-    sorted_responses = sorted(
-        queries, key=lambda x: (x.score, -len(x.response.chain_of_thought))
-    )
+    sorted_responses = sorted(queries, key=lambda x: x.score)
     return sorted_responses[:k]
 
 
 async def generate_answer_with_examples(query: str, examples: list[ResponseScore]):
-    examples = [example.format_response() for example in examples]
-    formatted_examples = "\n".join(examples)
+    formatted_examples = "\n".join([example.format_response() for example in examples])
     return await client.chat.completions.create(
         model="gpt-4o",
         messages=[
@@ -185,8 +190,7 @@ async def generate_answer_with_examples(query: str, examples: list[ResponseScore
                 "role": "system",
                 "content": dedent(
                     f"""
-                You are a world class AI system that excels at answering
-                user queries
+                You are a world class AI system that excels at answering user queries
 
                 <query>
                 {query}
@@ -207,29 +211,35 @@ async def generate_final_answers(
     query: str, examples: list[ResponseScore], number_samples: int
 ):
     coros = [
-        generate_answer_with_examples(query, examples)
-        for _ in range(number_samples)
+        generate_answer_with_examples(query, examples) for _ in range(number_samples)
     ]
 
     return await asyncio.gather(*coros)
 
 
 if __name__ == "__main__":
-    query = """The schools debate team had 5 boys and 40 girls on it.
-    If they were split into groups of 9 how many groups
-    could they make?"""
+    query = (
+        "The schools debate team had 5 boys and 40 girls on it. "
+        "If they were split into groups of 9 how many groups "
+        "could they make?"
+    )
 
     example_questions = [
-        """Debby's class is going on a field trip to the zoo.
-        If each van can hold 4 people and there are 2 students
-        and 6 adults going, how many vans will they need?""",
-        """Nancy had 80 files on her computer. She deleted 31
-        of them and put the rest into folders with 7 files in
-        each one. How many folders did Nancy end up with?""",
-        """At the arcade, Tom won 32 tickets playing 'whack a
-        mole' and 25 tickets playing 'skee ball'. If he spent
-        7 of his tickets on a hat, how many tickets does Tom
-        have left?""",
+        (
+            "Debby's class is going on a field trip to the zoo. "
+            "If each van can hold 4 people and there are 2 students "
+            "and 6 adults going, how many vans will they need?"
+        ),
+        (
+            "Nancy had 80 files on her computer. She deleted 31 of "
+            "them and put the rest into folders with 7 files in each "
+            "one. How many folders did Nancy end up with?"
+        ),
+        (
+            "At the arcade, Tom won 32 tickets playing 'whack a mole' "
+            "and 25 tickets playing 'skee ball'. If he spent 7 of his "
+            "tickets on a hat, how many tickets does Tom have left?"
+        ),
     ]
 
     m = 2  # Number of Reasoning Chains per example ( Step 1 )
@@ -240,65 +250,10 @@ if __name__ == "__main__":
     responses = asyncio.run(generate_batch_cot_responses(example_questions, m))
     scored_responses = score_responses(responses, 0.2)
 
-    for scored_response in scored_responses[:3]:
-        print(scored_response.model_dump_json(indent=2))
-        """
-        {
-          "query": "Debby's class is going on a field trip to the zoo. If
-          each van can hold 4 people and there are 2 students and 6 adults
-          going, how many vans will they need?",
-          "response": {
-            "chain_of_thought": "First, I will calculate the total number of
-            people going on the trip by adding the number of students and
-            adults. Then, I will divide this total by the capacity of each
-            van to determine the number of vans needed. Since the number of
-            vans must be a whole number, I will round up if necessary.",
-            "answer": 2
-          },
-          "score": 0.0
-        }
-        """
-        """
-        {
-          "query": "Debby's class is going on a field trip to the zoo. If
-          each van can hold 4 people and there are 2 students and 6 adults
-          going, how many vans will they need?",
-          "response": {
-            "chain_of_thought": "First, I need to calculate the total number
-            of people going on the field trip. There are 2 students and 6
-            adults, so the total number of people is 2 + 6 = 8. Next, I need
-            to determine how many vans are required if each van can hold 4
-            people. To find this, I will divide the total number of people
-            by the capacity of each van: 8 / 4 = 2. Therefore, they will
-            need 2 vans.",
-            "answer": 2
-          },
-          "score": 0.0
-        }
-        """
-        """
-        {
-          "query": "Nancy had 80 files on her computer. She deleted 31 of
-          them and put the rest into folders with 7 files in each one. How
-          many folders did Nancy end up with?",
-          "response": {
-            "chain_of_thought": "Nancy started with 80 files and deleted 31.
-            This leaves her with 80 - 31 = 49 files. She then put these 49
-            files into folders, each containing 7 files. To find out how
-            many folders she ended up with, we divide the total number of
-            files by the number of files per folder: 49 ÷ 7 = 7 folders.",
-            "answer": 7
-          },
-          "score": 0.0
-        }
-        """
-
     chosen_examples = get_top_k_examples(scored_responses, k)
 
     # Step 2 : Run Self-Consistency
-    final_responses = asyncio.run(
-        generate_final_answers(query, chosen_examples, n)
-    )
+    final_responses = asyncio.run(generate_final_answers(query, chosen_examples, n))
 
     c = Counter([response.answer for response in final_responses])
     answer = c.most_common(1)[0][0]
