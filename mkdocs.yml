@@ -251,14 +251,14 @@ nav:
     - Self-Criticism:
       - Independently Verify Responses: 'prompting/self_criticism/chain_of_verification.md'
       - Determine Uncertainty of Reasoning Chain: 'prompting/self_criticism/self_calibration.md'
-      - Iteratively Provide Feedback: 'prompting/self_criticism/self_refine.md'
-      - Verify Reasoning Steps: 'prompting/self_criticism/self_verification.md'
+      - Improve With Feedback: 'prompting/self_criticism/self_refine.md'
+      - Self-Verify Responses: 'prompting/self_criticism/self_verification.md'
       - Reconstruct Prompt from Reasoning Steps : 'prompting/self_criticism/reversecot.md'
       - Break Down Reasoning Into Multiple Steps: 'prompting/self_criticism/cumulative_reason.md'
     - Decomposition:
       - Break Down Complex Tasks: 'prompting/decomposition/decomp.md'
       - Leverage Task Specific Systems: 'prompting/decomposition/faithful_cot.md'
-      - Least-to-Most: 'prompting/decomposition/least_to_most.md'
+      - Solve simpler subproblems: 'prompting/decomposition/least_to_most.md'
       - Ditch Vanilla Chain Of Thought: 'prompting/decomposition/plan_and_solve.md'
       - Generate Python for Intermediate Steps: 'prompting/decomposition/program_of_thought.md'
       - Recurs.-of-Thought: 'prompting/decomposition/recurs_of_thought.md'
