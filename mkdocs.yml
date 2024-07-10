@@ -116,6 +116,16 @@ markdown_extensions:
       combine_header_slug: true
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.arithmatex:
+      generic: true
+      
+extra_javascript:
+  - javascripts/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+
+extra_css:
+  - https://unpkg.com/katex@0/dist/katex.min.css
 nav:
   - Introduction: 
     - Welcome To Instructor: 'index.md'
@@ -238,7 +248,7 @@ nav:
         - Use Majority Voting: 'prompting/thought_generation/chain_of_thought_few_shot/uncertainty_routed_cot.md'
         - Generate Prompt Variations: 'prompting/thought_generation/chain_of_thought_few_shot/prompt_mining.md'
     - Ensembling:
-      - COSP: 'prompting/ensembling/cosp.md'
+      - Prioritize Consistent Examples: 'prompting/ensembling/cosp.md'
       - Use Distinct Example Subsets: 'prompting/ensembling/dense.md'
       - DiVeRSe: 'prompting/ensembling/diverse.md'
       - Max Mutual Information: 'prompting/ensembling/max_mutual_information.md'
