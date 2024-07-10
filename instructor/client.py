@@ -284,8 +284,6 @@ class AsyncInstructor(Instructor):
         strict: bool = True,
         **kwargs: Any,
     ) -> AsyncGenerator[T, None]:
-        assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
-
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
         async for item in await self.create_fn(
