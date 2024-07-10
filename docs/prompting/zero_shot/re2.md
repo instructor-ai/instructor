@@ -20,14 +20,14 @@ We can implement this using `instructor` as seen below.
 ```python hl_lines="20-21"
 import instructor
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 client = instructor.from_openai(OpenAI())
 
 
 class Solution(BaseModel):
-    final_answer
+    final_answer: int
 
 
 def solve_question(question: str) -> int:
