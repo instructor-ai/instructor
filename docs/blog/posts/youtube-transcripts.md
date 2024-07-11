@@ -116,6 +116,8 @@ if __name__ == "__main__":
     process_youtube_video(video_id)
 ```
 
+![Example Output](./img/youtube-chapters.png)
+
 ### Complete Script
 
 Here's the complete script all together:
