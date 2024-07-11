@@ -218,7 +218,7 @@ nav:
       - Clarify with Questions: 'prompting/zero_shot/self_ask.md'
     - Few-Shot:
       - Example Generation:
-        - SG-ICL: 'prompting/few_shot/example_generation/sg_icl.md'
+        - Generate In-Context Examples: 'prompting/few_shot/example_generation/sg_icl.md'
       - Example Ordering: 'prompting/few_shot/example_ordering.md'
       - Exemplar Selection:
         - KNN: 'prompting/few_shot/exemplar_selection/knn.md'
