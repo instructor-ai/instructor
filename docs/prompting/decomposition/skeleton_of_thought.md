@@ -12,10 +12,10 @@ Below is an example of an implementation using parallel API calls with `instruct
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
-# from multiprocessing import Pool
+from openai import AsyncOpenAI
+import asyncio
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_openai(AsyncOpenAI())
 
 
 class Point(BaseModel):
@@ -31,8 +31,8 @@ class Response(BaseModel):
     response: str
 
 
-def get_skeleton(question):
-    return client.chat.completions.create(
+async def get_skeleton(question):
+    return await client.chat.completions.create(
         model="gpt-4o",
         response_model=Skeleton,
         messages=[
@@ -57,10 +57,8 @@ def get_skeleton(question):
     )
 
 
-def expand_point(input):
-    question, skeleton, point_index = input
-
-    return client.chat.completions.create(
+async def expand_point(question, skeleton, point_index):
+    return await client.chat.completions.create(
         model="gpt-4o",
         response_model=Response,
         messages=[
@@ -84,38 +82,68 @@ def expand_point(input):
                 """,
             }
         ],
-    ).response
+    )
 
 
-if __name__ == "__main__":
+async def main():
     query = "Compose an engaging travel blog post about a recent trip to Hawaii, highlighting cultural experiences and must-see attractions."
 
     # Step 1: Get the skeleton
-    skeleton = get_skeleton(query)
+    skeleton = await get_skeleton(query)
 
     for point in skeleton.points:
         print(point)
         #> index=1 description='Introduction to Hawaii trip'
-        #> index=2 description='First impressions'
-        #> index=3 description='Cultural insights'
-        #> index=4 description='Traditional food tasting'
-        #> index=5 description='Visit to historical sites'
-        #> index=6 description='Beach experiences'
-        #> index=7 description='Adventure activities'
-        #> index=8 description='Local festivals and events'
-        #> index=9 description='Meeting locals'
-        #> index=10 description='Conclusion and reflections'
+        #> index=2 description='Arrival and first impressions'
+        #> index=3 description='Traditional Hawaiian cuisine'
+        #> index=4 description='Exploring local markets'
+        #> index=5 description='Visit to historic sites'
+        #> index=6 description='Experience a Hawaiian luau'
+        #> index=7 description='Day at the beach'
+        #> index=8 description='Hiking adventures'
+        #> index=9 description='Scenic viewpoints'
+        #> index=10 description='Closing remarks and tips'
 
     # Step 2: Expand on each point in parallel
-    # with Pool() as pool:
-    #     args_list = [
-    #         [query, skeleton.model_dump_json(), point.index]
-    #         for point in skeleton.points
-    #     ]
-    #     results = pool.map(expand_point, args_list)
+    tasks = [expand_point(query, skeleton, point.index) for point in skeleton.points]
+    responses = await asyncio.gather(*tasks)
 
-    # for point, result in zip(skeleton.points, results):
-    #     print(f"Point {point.index}: {result}")
+    for response in responses:
+        print(response.response)
+        """
+        Hawaii—a paradise of golden beaches, lush landscapes, and vibrant culture—beckoned us with the promise of adventure and unforgettable experiences. Our journey began the moment we landed on this magical archipelago, ready to explore its unique blend of natural beauty and rich traditions.
+        """
+        """
+        The moment we landed in Hawaii, we were greeted with warm aloha spirit, lush tropical landscapes, and the gentle aroma of hibiscus flowers in the air.
+        """
+        """
+        The traditional Hawaiian cuisine was an exotic delight; from savoring the rich flavors of poke bowls to indulging in the sweet taste of haupia, every bite was a unique cultural experience.
+        """
+        """
+        Exploring local markets was a vibrant and delightful experience, where the air was filled with the scent of exotic fruits, freshly-made poke, and sounds of local musicians. We discovered unique handicrafts and interacted with friendly vendors eager to share their stories and traditions.
+        """
+        """
+        A visit to Pearl Harbor is a poignant reminder of the past, offering a chance to pay respects and learn about the events that shaped history. Walking through the USS Arizona Memorial and exploring the interactive exhibits was both humbling and enlightening.
+        """
+        """
+        Point 6: Experience a Hawaiian luau - Attending a traditional Hawaiian luau was unforgettable, filled with vibrant dances, soulful music, and a feast of mouthwatering dishes cooked in an imu (underground oven). It was a magical evening that immersed us in the heart of Hawaiian culture.
+        """
+        """
+        A day at the beach in Hawaii was pure bliss. The crystal-clear waters and soft sands were the perfect backdrop for both relaxation and adventure, from sunbathing to snorkeling.
+        """
+        """
+        Hiking adventures in Hawaii offer a unique chance to connect with nature, with trails leading to stunning waterfalls and lush rainforests. Don’t miss out on the Na Pali Coast's breathtaking hikes!
+        """
+        """
+        One of the highlights of my trip was visiting the scenic viewpoints such as the Na Pali Coast and Haleakalā National Park, offering breathtaking panoramic views that are perfect for photography aficionados and nature lovers alike.
+        """
+        """
+        As you plan your trip, don't forget to pack plenty of sunscreen and a camera to capture every magical moment. Hawaii offers a unique blend of relaxation and adventure that's sure to leave you with unforgettable memories.
+        """
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 
