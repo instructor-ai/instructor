@@ -2,7 +2,7 @@
 description: "Consistency Based Self Adaptive Prompting (COSP) is a ensembling technique that aims to combine multiple Chain Of Thought reasoning calls"
 ---
 
-Consistency Based Self Adaptive Prompting (COSP) aims to improve LLM output quality by generating high quality few shot examples to be included in the final prompt. These are examples without labelled ground truth so they use self-consistency and a metric known as normalized entropy to select the best examples.
+Consistency Based Self Adaptive Prompting (COSP)<sup><a href="https://arxiv.org/pdf/2305.14106">1</a></sup> aims to improve LLM output quality by generating high quality few shot examples to be included in the final prompt. These are examples without labelled ground truth so they use self-consistency and a metric known as normalized entropy to select the best examples.
 
 Once they've selected the examples, they then append them to the prompt and generate multiple reasoning chains before selecting the final result using [Self-Consistency](self_consistency.md).
 
@@ -261,3 +261,7 @@ if __name__ == "__main__":
     print(answer)
     #> 5
 ```
+
+### References
+
+<sup id="ref-1">1</sup>: [Better Zero-Shot Reasoning with Self-Adaptive Prompting](https://arxiv.org/pdf/2305.14106)

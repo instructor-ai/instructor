@@ -250,7 +250,7 @@ nav:
     - Ensembling:
       - Prioritize Consistent Examples: 'prompting/ensembling/cosp.md'
       - Use Distinct Example Subsets: 'prompting/ensembling/dense.md'
-      - DiVeRSe: 'prompting/ensembling/diverse.md'
+      - Verify Responses over Majority Voting : 'prompting/ensembling/diverse.md'
       - Max Mutual Information: 'prompting/ensembling/max_mutual_information.md'
       - Combine Multiple Reasoning Chains: 'prompting/ensembling/meta_cot.md'
       - Combine Different Specialized LLMs: 'prompting/ensembling/more.md'
