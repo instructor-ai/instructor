@@ -343,13 +343,21 @@ def handle_response_model(
                 )
 
                 new_kwargs["system"] += f"""
-                You must only response in JSON format that adheres to the following schema:
+                You must only responsd in JSON format that adheres to the following schema:
 
                 <JSON_SCHEMA>
                 {json.dumps(response_model.model_json_schema(), indent=2)}
                 </JSON_SCHEMA>
                 """
                 new_kwargs["system"] = dedent(new_kwargs["system"])
+            else:
+                new_kwargs["system"] += dedent(f"""
+                You must only responsd in JSON format that adheres to the following schema:
+
+                <JSON_SCHEMA>
+                {json.dumps(response_model.model_json_schema(), indent=2)}
+                </JSON_SCHEMA>
+                """)
 
             new_kwargs["messages"] = [
                 message
