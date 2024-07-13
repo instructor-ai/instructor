@@ -1,7 +1,7 @@
 # conftest.py
 from openai import AsyncOpenAI, OpenAI
 import pytest
-import os
+
 
 try:
     import braintrust
