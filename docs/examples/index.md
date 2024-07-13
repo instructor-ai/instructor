@@ -1,4 +1,4 @@
-# Function Calls by Example
+# Cookbooks: Leveraging Structured Outputs 
 
 ## Quick Links
 
