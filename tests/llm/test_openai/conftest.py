@@ -15,25 +15,25 @@ except ImportError:
 
 @pytest.fixture(scope="session")
 def client():
-    if os.environ.get("BRAINTRUST_API_KEY"):
-        yield wrap_openai(
-            OpenAI(
-                api_key=os.environ["BRAINTRUST_API_KEY"],
-                base_url="https://braintrustproxy.com/v1",
-            )
-        )
-    else:
-        yield OpenAI()
+    yield OpenAI()
+    # if os.environ.get("BRAINTRUST_API_KEY"):
+    #     yield wrap_openai(
+    #         OpenAI(
+    #             api_key=os.environ["BRAINTRUST_API_KEY"],
+    #             base_url="https://braintrustproxy.com/v1",
+    #         )
+    #     )
+    # else:
 
 
 @pytest.fixture(scope="session")
 def aclient():
-    if os.environ.get("BRAINTRUST_API_KEY"):
-        yield wrap_openai(
-            AsyncOpenAI(
-                api_key=os.environ["BRAINTRUST_API_KEY"],
-                base_url="https://braintrustproxy.com/v1",
-            )
-        )
-    else:
-        yield AsyncOpenAI()
+    yield AsyncOpenAI()
+    # if os.environ.get("BRAINTRUST_API_KEY"):
+    #     yield wrap_openai(
+    #         AsyncOpenAI(
+    #             api_key=os.environ["BRAINTRUST_API_KEY"],
+    #             base_url="https://braintrustproxy.com/v1",
+    #         )
+    #     )
+    # else:
