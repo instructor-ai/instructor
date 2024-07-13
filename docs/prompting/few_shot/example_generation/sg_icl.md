@@ -3,7 +3,11 @@ title: "Generate In-Context Examples"
 description: ""
 ---
 
-[wip]
+How can we generate examples for our prompt?
+
+Self-Generated In-Context Learning (SG-ICL) is a technique which uses an LLM to generate examples to be used during the task. This allows for in-context learning, where examples of the task are provided in the prompt.
+
+We can implement SG-ICL using `instructor` as seen below.
 
 ```python
 import instructor
@@ -103,3 +107,9 @@ if __name__ == "__main__":
     print(predict_sentiment(input_review, samples))
     #> positive
 ```
+
+### References
+
+<sup id="ref-1">1</sup>: [Self-Generated In-Context Learning: Leveraging Auto-regressive Language Models as a Demonstration Generator](https://arxiv.org/abs/2206.08082)
+
+<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
