@@ -311,8 +311,8 @@ def handle_response_model(
             ]
 
             if "system" in kwargs and system_messages:
-                "Conflicting 'system' definitions: Please provide the system message either as a 'system' parameter or within 'messages', but not both."
-                    "Only a single System message is supported - either set it using the system parameter or in the list of messages"
+                raise ValueError(
+                    "Only a single system message is supported - either set it as a message in the messages array or use the system parameter"
                 )
 
             if not "system" in kwargs:
