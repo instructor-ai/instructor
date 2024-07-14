@@ -127,6 +127,7 @@ nav:
   - Cookbook:
     - Cookbooks: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
+    - Local Classification: 'examples/local_classification.md'
     - Bulk Classification (User Defined): 'examples/bulk_classification.md'
     - LLM Self Critique: 'examples/self_critique.md'
     - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
