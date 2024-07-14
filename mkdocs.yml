@@ -263,7 +263,7 @@ nav:
       - Ditch Vanilla Chain Of Thought: 'prompting/decomposition/plan_and_solve.md'
       - Generate Python for Intermediate Steps: 'prompting/decomposition/program_of_thought.md'
       - Recurs.-of-Thought: 'prompting/decomposition/recurs_of_thought.md'
-      - Skeleton-of-Thought: 'prompting/decomposition/skeleton_of_thought.md'
+      - Generate in Parallel: 'prompting/decomposition/skeleton_of_thought.md'
       - Tree-of-Thought: 'prompting/decomposition/tree-of-thought.md'
 plugins:
   - redirects:
