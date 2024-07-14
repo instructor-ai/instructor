@@ -1,7 +1,7 @@
 # conftest.py
 from openai import AsyncOpenAI, OpenAI
 import pytest
-
+import os
 
 try:
     import braintrust
@@ -15,9 +15,25 @@ except ImportError:
 
 @pytest.fixture(scope="session")
 def client():
-    yield OpenAI()
+    if os.environ.get("BRAINTRUST_API_KEY"):
+        yield wrap_openai(
+            OpenAI(
+                api_key=os.environ["BRAINTRUST_API_KEY"],
+                base_url="https://braintrustproxy.com/v1",
+            )
+        )
+    else:
+        yield OpenAI()
 
 
 @pytest.fixture(scope="session")
 def aclient():
-    yield AsyncOpenAI()
+    if os.environ.get("BRAINTRUST_API_KEY"):
+        yield wrap_openai(
+            AsyncOpenAI(
+                api_key=os.environ["BRAINTRUST_API_KEY"],
+                base_url="https://braintrustproxy.com/v1",
+            )
+        )
+    else:
+        yield AsyncOpenAI()
