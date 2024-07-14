@@ -12,10 +12,17 @@ import jsonref  # type: ignore
 def _create_gemini_json_schema(model: BaseModel):
     schema = model.model_json_schema()
     schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore
+    try:
+        required = schema_without_refs["required"]
+    except KeyError:
+        required = []
+    params_with_default = [param for param, description in schema_without_refs["properties"].items() if "default" in description]
+    # combine lists without duplicates
+    required = list(set(required) | set(params_with_default))
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],
         "properties": schema_without_refs["properties"],
-        "required": schema_without_refs["required"],
+        "required": required,
     }
     return gemini_schema
 
