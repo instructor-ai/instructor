@@ -1,4 +1,4 @@
-from typing import Literal, Any, Union, Type, TypeVar
+from typing import Literal, Any, Union, TypeVar
 from pydantic import BaseModel, Field
 from instructor.process_response import handle_response_model
 import uuid
