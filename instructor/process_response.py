@@ -309,7 +309,15 @@ def handle_response_model(
             system_messages = [
                 m["content"] for m in new_kwargs["messages"] if m["role"] == "system"
             ]
-            new_kwargs["system"] = "\n\n".join(system_messages)
+
+            if "system" in kwargs and system_messages:
+                raise ValueError(
+                    "Only a single system message is supported - either set it as a message in the messages array or use the system parameter"
+                )
+
+            if not "system" in kwargs:
+                new_kwargs["system"] = "\n\n".join(system_messages)
+
             new_kwargs["messages"] = [
                 m for m in new_kwargs["messages"] if m["role"] != "system"
             ]
@@ -322,20 +330,34 @@ def handle_response_model(
                 if message["role"] == "system"
             ]
 
-            new_kwargs["system"] = (
-                new_kwargs.get("system", "")
-                + "\n\n"
-                + "\n\n".join(openai_system_messages)
-            )
+            if "system" in kwargs and openai_system_messages:
+                raise ValueError(
+                    "Only a single System message is supported - either set it using the system parameter or in the list of messages"
+                )
 
-            new_kwargs["system"] += f"""
-            You must only response in JSON format that adheres to the following schema:
+            if not "system" in kwargs:
+                new_kwargs["system"] = (
+                    new_kwargs.get("system", "")
+                    + "\n\n"
+                    + "\n\n".join(openai_system_messages)
+                )
 
-            <JSON_SCHEMA>
-            {json.dumps(response_model.model_json_schema(), indent=2)}
-            </JSON_SCHEMA>
-            """
-            new_kwargs["system"] = dedent(new_kwargs["system"])
+                new_kwargs["system"] += f"""
+                You must only responsd in JSON format that adheres to the following schema:
+
+                <JSON_SCHEMA>
+                {json.dumps(response_model.model_json_schema(), indent=2)}
+                </JSON_SCHEMA>
+                """
+                new_kwargs["system"] = dedent(new_kwargs["system"])
+            else:
+                new_kwargs["system"] += dedent(f"""
+                You must only responsd in JSON format that adheres to the following schema:
+
+                <JSON_SCHEMA>
+                {json.dumps(response_model.model_json_schema(), indent=2)}
+                </JSON_SCHEMA>
+                """)
 
             new_kwargs["messages"] = [
                 message
