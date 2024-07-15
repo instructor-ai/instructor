@@ -2,9 +2,13 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from youtube_transcript_api import YouTubeTranscriptApi
+from rich.console import Console
+from rich.table import Table
+from rich.live import Live
+
+client = instructor.from_openai(OpenAI())
 
 
-# Define the structure for our chapter data
 class Chapter(BaseModel):
     start_ts: float = Field(
         ...,
@@ -23,12 +27,7 @@ class Chapter(BaseModel):
     )
 
 
-# Initialize the OpenAI client with Instructor
-client = instructor.from_openai(OpenAI())
-
-
 def get_youtube_transcript(video_id: str) -> str:
-    """Fetch the transcript of a YouTube video."""
     try:
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
         return " ".join(
@@ -40,85 +39,58 @@ def get_youtube_transcript(video_id: str) -> str:
 
 
 def extract_chapters(transcript: str):
-    """Extract chapters from the transcript using AI."""
-    return client.chat.completions.create_iterable(
-        model="gpt-4o",  # Using a model with larger context
-        response_model=Chapter,
+    class Chapters(BaseModel):
+        chapters: list[Chapter]
+
+    return client.chat.completions.create_partial(
+        model="gpt-4o",  # You can experiment with different models
+        response_model=Chapters,
         messages=[
             {
                 "role": "system",
-                "content": "Analyze the given YouTube transcript and extract chapters. For each chapter, provide a start timestamp, title, summary, and any additional relevant information.",
+                "content": "Analyze the given YouTube transcript and extract chapters. For each chapter, provide a start timestamp, end timestamp, title, and summary.",
             },
             {"role": "user", "content": transcript},
         ],
     )
 
 
-def process_youtube_video(video_id: str):
-    # Step 1: Fetch the transcript
-    transcript = get_youtube_transcript(video_id)
-    if not transcript:
-        return "Failed to fetch transcript"
-
-    # Step 2 & 3: Pass to AI model and extract chapters
-    chapters = extract_chapters(transcript)
-
-    for chapter in chapters:
-        print(chapter.model_dump_json(indent=2))
-
-
-# Example usage
 if __name__ == "__main__":
-    # https://www.youtube.com/watch?v=yj-wSRJwrrc
-    video_id = "yj-wSRJwrrc"
-    process_youtube_video(video_id)
-    """ 
-    {
-  "start_ts": 1.04,
-  "end_ts": 14.0,
-  "title": "Introduction",
-  "summary": "The speaker introduces themselves and the topic of the keynote: using Pydantic to build with language models, focusing on structured prompting and integrating models with existing software systems."
-}
-{
-  "start_ts": 14.719,
-  "end_ts": 90.0,
-  "title": "Challenges in Using Language Models",
-  "summary": "Discussion about the challenges of using language models, such as getting reliable JSON output and integrating with legacy systems. The speaker emphasizes the need for better validation and maintainability."
-}
-{
-  "start_ts": 90.28,
-  "end_ts": 188.0,
-  "title": "Introducing Pydantic",
-  "summary": "Introduction to Pydantic, a Python library for data validation that outputs JSON schema compatible with OpenAI function calling. The benefits include cleaner code and automatic validation."
-}
-{
-  "start_ts": 188.879,
-  "end_ts": 383.68,
-  "title": "Structured Prompting with Pydantic",
-  "summary": "Explanation of structured prompting using Pydantic to define objects and schemas, leading to better code validation, type-checking, and integration with IDE features like auto-complete."
-}
-{
-  "start_ts": 384.44,
-  "end_ts": 620.76,
-  "title": "Advanced Concepts in Structured Prompting",
-  "summary": "Exploration of advanced topics like modularity, Chain of Thought, and reusable components in structured prompting, enhancing code manageability and reliability when using language models."
-}
-{
-  "start_ts": 622.92,
-  "end_ts": 718.48,
-  "title": "Advanced Applications",
-  "summary": "Demonstrating advanced applications such as complex data extraction, planning queries, and building more comprehensive models with structured prompts to achieve reliable outputs."
-}
-{
-  "start_ts": 720.639,
-  "end_ts": 1062.919,
-  "title": "Future Directions and Opportunities",
-  "summary": "Discussion about future opportunities in structured outputs, including multimodal applications and generative UI over various formats like images and audio, making the space exciting for innovation."
-}
-{
-  "start_ts": 1065.19,
-  "end_ts": 1073.679,
-  "title": "Conclusion and Closing Remarks",
-  "summary": "Closing remarks thanking the audience and summarizing key points discussed in the keynote on using structured prompting and Pydantic for better language model integration."
-}
-"""
+    video_id = input("Enter a Youtube Url: ")
+    video_id = video_id.split("v=")[1]
+    console = Console()
+
+    with console.status("[bold green]Processing YouTube URL...") as status:
+        transcripts = get_youtube_transcript(video_id)
+        status.update("[bold blue]Generating Clips...")
+        chapters = extract_chapters(transcripts)
+
+        table = Table(title="Video Chapters")
+        table.add_column("Title", style="magenta")
+        table.add_column("Description", style="green")
+        table.add_column("Start", style="cyan")
+        table.add_column("End", style="cyan")
+
+        with Live(refresh_per_second=4) as live:
+            for extraction in chapters:
+                if not extraction.chapters:
+                    continue
+
+                new_table = Table(title="Video Chapters")
+                new_table.add_column("Title", style="magenta")
+                new_table.add_column("Description", style="green")
+                new_table.add_column("Start", style="cyan")
+                new_table.add_column("End", style="cyan")
+
+                for chapter in extraction.chapters:
+                    new_table.add_row(
+                        chapter.title,
+                        chapter.summary,
+                        f"{chapter.start_ts:.2f}" if chapter.start_ts else "",
+                        f"{chapter.end_ts:.2f}" if chapter.end_ts else "",
+                    )
+                    new_table.add_row("", "", "", "")  # Add an empty row for spacing
+
+                live.update(new_table)
+
+    console.print("\nChapter extraction complete!")

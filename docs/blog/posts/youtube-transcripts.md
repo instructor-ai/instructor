@@ -11,7 +11,15 @@ authors:
 
 ## Extracting Chapter Information
 
+!!! info "Code Snippets"
+
+    As always, the code is readily available in our `examples/youtube` folder in our repo for your reference in the `run.py` file.
+
 In this post, we'll show you how to summarise Youtube video transcripts into distinct chapters using `instructor` before exploring some ways you can adapt the code to different applications.
+
+By the end of this article, you'll be able to build an application as per the video below.
+
+![](../../hub/img/youtube.gif)
 
 Let's first install the required packages.
 
