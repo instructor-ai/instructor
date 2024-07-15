@@ -1,7 +1,10 @@
-from typing import Literal, Any, Union
+from typing import Literal, Any, Union, Type, TypeVar
 from pydantic import BaseModel, Field
 from instructor.process_response import handle_response_model
 import uuid
+import json
+
+T = TypeVar("T", bound=BaseModel)
 
 openai_models = Literal[
     "gpt-4o",
@@ -49,6 +52,30 @@ class BatchModel(BaseModel):
 
 
 class BatchJob:
+    @classmethod
+    def parse_from_file(
+        cls, file_path: str, response_model: type[T]
+    ) -> tuple[list[T], list[dict[Any, Any]]]:
+        with open(file_path) as file:
+            res = []
+            error_objs = []
+            for line in file:
+                data = json.loads(line)
+                try:
+                    res.append(
+                        response_model(
+                            **json.loads(
+                                data["response"]["body"]["choices"][0]["message"][
+                                    "tool_calls"
+                                ][0]["function"]["arguments"]
+                            )
+                        )
+                    )
+                except Exception as e:
+                    error_objs.append(data)
+
+            return res, error_objs
+
     @classmethod
     def create_from_messages(
         cls,
