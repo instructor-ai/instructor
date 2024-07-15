@@ -57,12 +57,12 @@ class BatchJob:
         cls, file_path: str, response_model: type[T]
     ) -> tuple[list[T], list[dict[Any, Any]]]:
         with open(file_path) as file:
-            res = []
-            error_objs = []
+            res: list[T] = []
+            error_objs: list[dict[Any, Any]] = []
             for line in file:
                 data = json.loads(line)
                 try:
-                    res.append(  # type: ignore
+                    res.append(
                         response_model(
                             **json.loads(
                                 data["response"]["body"]["choices"][0]["message"][
@@ -71,10 +71,10 @@ class BatchJob:
                             )
                         )
                     )
-                except Exception as e:
-                    error_objs.append(data)  # type: ignore
+                except Exception:
+                    error_objs.append(data)
 
-            return res, error_objs  # type: ignore
+            return res, error_objs
 
     @classmethod
     def create_from_messages(
