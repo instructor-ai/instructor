@@ -62,7 +62,7 @@ class BatchJob:
             for line in file:
                 data = json.loads(line)
                 try:
-                    res.append(
+                    res.append(  # type: ignore
                         response_model(
                             **json.loads(
                                 data["response"]["body"]["choices"][0]["message"][
@@ -72,9 +72,9 @@ class BatchJob:
                         )
                     )
                 except Exception as e:
-                    error_objs.append(data)
+                    error_objs.append(data)  # type: ignore
 
-            return res, error_objs
+            return res, error_objs  # type: ignore
 
     @classmethod
     def create_from_messages(
