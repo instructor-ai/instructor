@@ -27,7 +27,7 @@ class ChainOfThoughtResponse(BaseModel):
 
 async def generate_response(query: str, options: dict[str, str]):
     formatted_options = "\n".join(
-        [f"<option>{key}:{answer}</option>" for key, answer
+        [f"{key}:{answer}" for key, answer
          in options.items()]
     )
     return await client.chat.completions.create(
