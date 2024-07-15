@@ -258,7 +258,7 @@ nav:
       - Combine Different Specialized LLMs: 'prompting/ensembling/more.md'
       - Generate Multiple Candidate Responses: 'prompting/ensembling/self_consistency.md'
       - Use LLMs to Combine Different Responses: 'prompting/ensembling/universal_self_consistency.md'
-      - USP: 'prompting/ensembling/usp.md'
+      - Use Task Specific Evaluation Metrics: 'prompting/ensembling/usp.md'
       - Use Translation for Paraphrasing: 'prompting/ensembling/prompt_paraphrasing.md'
     - Self-Criticism:
       - Independently Verify Responses: 'prompting/self_criticism/chain_of_verification.md'
