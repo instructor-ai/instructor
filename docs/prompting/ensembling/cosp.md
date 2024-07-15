@@ -60,11 +60,7 @@ We now take our `k` responses and append them to our prompt. We then sample our 
 
 ## Implementation
 
-Now that we understand what COSP is, let's see how we can implement it in instructor. Note that here we'll measure repetitiveness using exact string match for simplicity.
-
-!!! Info "Quick Note"
-
-    Make sure to install `numpy` and `scikit-learn` before running the code, we need to use these two libraries to compute the cosine similarity
+Now that we understand what COSP is, let's see how we can implement it in instructor. Note that here we'll measure repetitiveness using cosine similarity between sentence embeddings.
 
 ```python
 import instructor
@@ -74,14 +70,12 @@ from collections import defaultdict, Counter
 import asyncio
 from textwrap import dedent
 import math
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
 client = instructor.from_openai(AsyncOpenAI())
 
 
 class Response(BaseModel):
-    chain_of_thought: str
+    chain_of_thought: list[str]
     answer: int
 
 
@@ -93,10 +87,40 @@ class ResponseScore(BaseModel):
     def format_response(self):
         return dedent(
             f"""
-        Q: {self.query}
-        A: {self.response.chain_of_thought}. Therefore the answer is {self.response.answer}.
-        """
+            Q: {self.query}
+            A: {''.join(self.response.chain_of_thought)}. Therefore the answer is {self.response.answer}.
+            """
         )
+
+
+def cosine_similarity(vec1: list[float], vec2: list[float]):
+    dot_product = sum(a * b for a, b in zip(vec1, vec2))
+    magnitude1 = math.sqrt(sum(a * a for a in vec1))
+    magnitude2 = math.sqrt(sum(b * b for b in vec2))
+
+    if magnitude1 * magnitude2 == 0:
+        return 0  # Handle the case of zero vectors
+
+    return dot_product / (magnitude1 * magnitude2)
+
+
+def score_repetitiveness(prediction: Response):
+    if len(prediction.chain_of_thought) == 1:
+        return 0
+
+    embedding = OpenAI().embeddings.create(
+        input=prediction.chain_of_thought, model="text-embedding-3-small"
+    )
+    embedding = [item.embedding for item in embedding.data]
+
+    ttl = 0
+    num_comparisons = 0
+    for idx in range(len(embedding)):
+        for idx2 in range(idx + 1, len(embedding)):
+            ttl += cosine_similarity(embedding[idx], embedding[idx2])
+            num_comparisons += 1
+
+    return ttl / num_comparisons if num_comparisons > 0 else 0
 
 
 async def generate_cot_response(query: str) -> tuple[Response, str]:
@@ -127,27 +151,6 @@ def score_entropy(predictions: list[Response]):
     denom = math.log(len(predictions))
 
     return numer / denom
-
-
-def score_repetitiveness(prediction: Response):
-    sentences = [item for item in prediction.chain_of_thought.split(".") if item]
-
-    if len(sentences) == 1:
-        return 0
-
-    embedding = OpenAI().embeddings.create(
-        input=sentences, model="text-embedding-3-small"
-    )
-    embedding = [item.embedding for item in embedding.data]
-
-    ttl = 0
-    for idx in range(len(embedding)):
-        for idx2 in range(idx + 1, len(embedding)):
-            ttl += cosine_similarity(
-                np.array([embedding[idx]]), np.array([embedding[idx2]])
-            )[0][0]
-
-    return ttl / ((len(embedding) - 1) * len(embedding))
 
 
 def score_responses(
