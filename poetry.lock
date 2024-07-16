@@ -641,13 +641,13 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "cohere"
-version = "5.5.8"
+version = "5.6.1"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "cohere-5.5.8-py3-none-any.whl", hash = "sha256:e1ed84b90eadd13c6a68ee28e378a0bb955f8945eadc6eb7ee126b3399cafd54"},
-    {file = "cohere-5.5.8.tar.gz", hash = "sha256:84ce7666ff8fbdf4f41fb5f6ca452ab2639a514bc88967a2854a9b1b820d6ea0"},
+    {file = "cohere-5.6.1-py3-none-any.whl", hash = "sha256:1c8bcd39a54622d64b83cafb865f102cd2565ce091b0856fd5ce11bf7169109a"},
+    {file = "cohere-5.6.1.tar.gz", hash = "sha256:5d7efda64f0e512d4cc35aa04b17a6f74b3d8c175a99f2797991a7f31dfac349"},
 ]
 
 [package.dependencies]
@@ -1763,13 +1763,13 @@ files = [
 
 [[package]]
 name = "huggingface-hub"
-version = "0.23.4"
+version = "0.23.5"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
 optional = false
 python-versions = ">=3.8.0"
 files = [
-    {file = "huggingface_hub-0.23.4-py3-none-any.whl", hash = "sha256:3a0b957aa87150addf0cc7bd71b4d954b78e749850e1e7fb29ebbd2db64ca037"},
-    {file = "huggingface_hub-0.23.4.tar.gz", hash = "sha256:35d99016433900e44ae7efe1c209164a5a81dbbcd53a52f99c281dcd7ce22431"},
+    {file = "huggingface_hub-0.23.5-py3-none-any.whl", hash = "sha256:d7a7d337615e11a45cc14a0ce5a605db6b038dc24af42866f731684825226e90"},
+    {file = "huggingface_hub-0.23.5.tar.gz", hash = "sha256:67a9caba79b71235be3752852ca27da86bd54311d2424ca8afdb8dda056edf98"},
 ]
 
 [package.dependencies]
@@ -5039,4 +5039,4 @@ vertexai = ["google-cloud-aiplatform", "jsonref"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "ff48770f99847368891d324b4b85d0d6549e0d91c561c04b428e465e1a53fcb0"
+content-hash = "b7fca85b9f8a2e61927b91c63ea2ff029c66190dbdf899d249fa5355d0ebaa3a"
