@@ -99,3 +99,27 @@ def cancel(batch_id: str = typer.Option(help="Batch job ID to cancel")):
         console.log(f"[bold red]Job {batch_id} cancelled successfully!")
     except Exception as e:
         console.log(f"[bold red]Error cancelling job {batch_id}: {e}")
+
+
+@app.command(help="Download the file associated with a batch job")
+def download_file(
+    batch_id: str = typer.Option(help="Batch job ID to cancel"),
+    download_file_path: str = typer.Option(help="Path to download file to"),
+):
+    try:
+        batch = client.batches.retrieve(batch_id=batch_id)
+        status = batch.status
+
+        if status != "completed":
+            raise ValueError("Only completed Jobs can be downloaded")
+
+        file_id = batch.output_file_id
+
+        assert file_id, f"Equivalent Output File not found for {batch_id}"
+        file_response = client.files.content(file_id)
+
+        with open(download_file_path, "w") as file:
+            file.write(file_response.text)
+
+    except Exception as e:
+        console.log(f"[bold red]Error downloading file for {batch_id}: {e}")
