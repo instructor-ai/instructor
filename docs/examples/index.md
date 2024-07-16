@@ -19,6 +19,7 @@
 15. [How to store responses in a database with SQLModel](sqlmodel.md)
 16. [How to use groqcloud api](groq.md)
 17. [How to do document segmentation using LLMs?](document_segmentation.md)
-18. [How to save 50% of API costs with OpenAI's Batch API using Instructor](batch_job_oai.md)
+18. [Slash Your API Costs in Half: Unleashing the Power of OpenAI's Batch API with Instructor](batch_job_oai.md)
+19. [Turbocharge Your Embeddings: Scaling to 50,000 Items with OpenAI's Batch API and Instructor](batch_embed_oai.md)
 
 Explore more!

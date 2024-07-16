@@ -6,11 +6,17 @@ from openai.types.batch import Batch
 import typer
 import datetime
 import time
+from enum import Enum
 
 client = OpenAI()
 app = typer.Typer()
 
 console = Console()
+
+
+class BatchEndpoints(str, Enum):
+    CHAT = "/v1/chat/completions"
+    EMBEDDINGS = "/v1/embeddings"
 
 
 def generate_table(batch_jobs: list[Batch]):
@@ -70,6 +76,7 @@ def watch(
 )
 def create_from_file(
     file_path: str = typer.Option(help="File containing the batch job requests"),
+    endpoint: BatchEndpoints = BatchEndpoints.CHAT,
 ):
     with console.status(f"[bold green] Uploading batch job file...", spinner="dots"):
         batch_input_file = client.files.create(
@@ -83,9 +90,8 @@ def create_from_file(
     ):
         client.batches.create(
             input_file_id=batch_input_file_id,
-            endpoint="/v1/chat/completions",
+            endpoint=endpoint.value,
             completion_window="24h",
-            metadata={"description": "testing job"},
         )
 
     watch(limit=5, poll=2, screen=False)

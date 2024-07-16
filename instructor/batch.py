@@ -1,4 +1,4 @@
-from typing import Literal, Any, Union, TypeVar
+from typing import Literal, Any, Union, TypeVar, Optional
 from collections.abc import Iterable
 from pydantic import BaseModel, Field
 from instructor.process_response import handle_response_model
@@ -53,6 +53,22 @@ class BatchModel(BaseModel):
     body: RequestBody
 
 
+class EmbedRequestBody(BaseModel):
+    model: Literal[
+        "text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002"
+    ]
+    encoding_format: Literal["float", "base64"]
+    input: list[str]
+    dimensions: Optional[int] = Field(default=None)
+
+
+class EmbedBatchModel(BaseModel):
+    custom_id: str
+    method: Literal["POST"]
+    url: Literal["/v1/embeddings"]
+    body: EmbedRequestBody
+
+
 class BatchJob:
     @classmethod
     def parse_from_file(
@@ -77,6 +93,52 @@ class BatchJob:
                     error_objs.append(data)
 
             return res, error_objs
+
+    @classmethod
+    def parse_embeddings_from_file(cls, file_path: str) -> list[float]:
+        with open(file_path) as file:
+            return [
+                json_obj["response"]["body"]["data"][0]["embedding"]
+                for line in file
+                for json_obj in [json.loads(line)]
+            ]
+
+    @classmethod
+    def embed_list(
+        cls,
+        embedding_input: list[str],
+        model: Literal[
+            "text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002"
+        ],
+        file_path: str,
+        encoding_format: Literal["float", "base64"] = "float",
+        dimensions: Optional[int] = None,
+    ):
+        assert (
+            len(embedding_input) < 50000
+        ), "Batch Job has a maximum size of 50,000 items per batch job for now"
+        if dimensions:
+            assert model != "text-embedding-ada-002"
+
+        with open(file_path, "w") as file:
+            for input_string in embedding_input:
+                assert (
+                    len(input_string) > 0
+                ), "OpenAI Embedding API does not support empty strings"
+                file.write(
+                    EmbedBatchModel(
+                        custom_id=str(uuid.uuid4()),
+                        method="POST",
+                        url="/v1/embeddings",
+                        body=EmbedRequestBody(
+                            model=model,
+                            encoding_format=encoding_format,
+                            input=[input_string],
+                            dimensions=dimensions,
+                        ),
+                    ).model_dump_json(exclude_none=True)
+                    + "\n"
+                )
 
     @classmethod
     def create_from_messages(
