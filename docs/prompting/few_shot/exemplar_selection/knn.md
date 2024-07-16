@@ -3,23 +3,21 @@ title: "Select Effective Examples"
 description: "KNN can be leveraged to choose the most effective examples to use for a given query."
 ---
 
-How can we select effective in-context examples?
-
-Given a pool of possible in-context examples, KNN can be leveraged to choose the most effective examples to use for a given query.
+We can select effective in-context examples by choosing those that are semantically closer to the query using `KNN`.
 
 In the below implementation using `instructor`, we follow these steps:
 
-1. Embed the possible examples
-2. Embed the query
-3. Find the *k* examples closest to the query
-4. Use the chosen examples as the context for the LLM
+1. Embed the query examples
+2. Embed the query that we want to answer
+3. Find the _k_ query examples closest to the query
+4. Use the chosen examples and their as the context for the LLM
 
 ```python
 import instructor
 from pydantic import BaseModel
 from openai import OpenAI
-from sentence_transformers import SentenceTransformer
-import numpy as np
+import math
+from textwrap import dedent
 
 
 class Example(BaseModel):
@@ -31,58 +29,113 @@ class Response(BaseModel):
     answer: str
 
 
-client = instructor.from_openai(OpenAI())
-model = SentenceTransformer("all-distilroberta-v1")
+oai = OpenAI()
+client = instructor.from_openai(oai)
 
 
-def distance(a, b):
-    return 1 - np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))  # Cosine distance
+def distance(a: list[float], b: list[float]):
+    return 1 - sum(ai * bi for ai, bi in zip(a, b)) / (
+        math.sqrt(sum(ai**2 for ai in a)) * math.sqrt(sum(bi**2 for bi in b))
+    )
 
 
-def knn(embedded_examples, examples, embedded_query, k=2):
-    distances = [distance(embedded_query, ex) for ex in embedded_examples]
-    sorted_indicies = np.argsort(distances)
-    return [examples[i] for i in sorted_indicies[:k]]
-
-
-if __name__ == "__main__":
-    examples = [
-        Example(question="What is the capital of France?", answer="Paris"),
-        Example(question="Who wrote Romeo and Juliet?", answer="Shakespeare"),
-        Example(question="What is the largest planet in our solar system?", answer="Jupiter"),
-        Example(question="What is the capital of Germany?", answer="Berlin"),
+def embed_queries(queries: list[str]) -> list[tuple[list[float], str]]:
+    return [
+        (embedding_item.embedding, query)
+        for embedding_item, query in zip(
+            oai.embeddings.create(input=queries, model="text-embedding-3-large").data,
+            queries,
+        )
     ]
-    query = "What is the capital of Italy?"
 
-    # Step 1: Embed the examples
-    embedded_examples = [model.encode(example.question) for example in examples]
 
-    # Step 2: Embed the query
-    embedded_query = model.encode(query)
+def knn(
+    embedded_examples: list[tuple[list[float], str]],
+    query_embedding: list[float],
+    k: int,
+):
+    distances = [
+        (distance(embedding, query_embedding), example)
+        for embedding, example in embedded_examples
+    ]
+    distances.sort(key=lambda x: x[0])
+    return distances[:k]
 
-    # Step 3: Find the k closest examples to the query
-    k_closest_examples = knn(embedded_examples, examples, embedded_query)
 
-    for example in k_closest_examples:
-        print(example)
-        #> question='What is the capital of France?' answer='Paris'
-        #> question='What is the capital of Germany?' answer='Berlin'
-
-    # Step 4: Use these examples as in-context examples
-    response = client.chat.completions.create(
+def generate_response(examples: list[str], query: str):
+    formatted_examples = "\n".join(examples)
+    return client.chat.completions.create(
         model="gpt-4o",
         response_model=Response,
         messages=[
             {
                 "role": "user",
-                "content": f"""
-                           {k_closest_examples}
-                           {query}
-                           """,
+                "content": dedent(
+                    f"""
+                    Respond to the following query with the most accurate
+                    and concise answer possible.
+                    <examples>
+                    {formatted_examples}
+                    </examples>
+                    <query>
+                    {query}
+                    </query>
+                """
+                ),
             }
         ],
     )
 
+
+def generate_question_and_answer_pair(
+    questions: list[str], question_and_answers: list[dict[str, str]]
+) -> list[str]:
+    question_to_answer = {}
+
+    for question in question_and_answers:
+        question_to_answer[question["question"]] = question["answer"]
+
+    return [
+        dedent(
+            f"""
+        <example>
+        <question>{question}</question>
+        <answer>{question_to_answer[question]}</answer>
+        </example>
+        """
+        )
+        for question in questions
+    ]
+
+
+if __name__ == "__main__":
+    examples = [
+        {"question": "What is the capital of France?", "answer": "Paris"},
+        {"question": "Who wrote Romeo and Juliet", "answer": "Shakespeare"},
+        {"question": "What is the capital of Germany?", "answer": "Berlin"},
+    ]
+
+    query = "What is the capital of Italy?"
+
+    # Step 1 : Embed the Examples
+    embeddings = embed_queries([example["question"] for example in examples] + [query])
+
+    embedded_examples = embeddings[:-1]
+    embedded_query = embeddings[-1]
+
+    # # Step 3: Find the k closest examples to the query
+    k_closest_examples = knn(embedded_examples, embedded_query[0], 2)
+
+    for example in k_closest_examples:
+        print(example)
+        #> (0.4015450506411443, 'What is the capital of France?')
+        #> (0.4472610680568724, 'What is the capital of Germany?')
+
+    # Step 4: Use these examples as in-context examples
+    formatted_examples = generate_question_and_answer_pair(
+        [example[1] for example in k_closest_examples], examples
+    )
+    response = generate_response(formatted_examples, query)
     print(response.answer)
     #> Rome
 ```
