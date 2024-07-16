@@ -1,7 +1,6 @@
 import pytest
 import instructor
 from openai import OpenAI, AsyncOpenAI
-from itertools import product
 from .util import modes
 
 
