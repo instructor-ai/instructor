@@ -2,7 +2,7 @@ import pytest
 import instructor
 from openai import OpenAI, AsyncOpenAI
 from itertools import product
-from .util import models, modes
+from .util import modes
 
 
 @pytest.mark.parametrize("mode", modes)
@@ -29,6 +29,7 @@ def test_wrapped_client_properties(mode):
 @pytest.mark.parametrize("mode", modes)
 async def test_wrapped_async_client_properties(mode):
     client = instructor.from_openai(AsyncOpenAI(), mode=mode)
+    print(mode)
 
     # Check if embeddings.create property exists
     assert hasattr(client, "embeddings"), "Client should have 'embeddings' property"
