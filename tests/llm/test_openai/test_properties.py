@@ -5,9 +5,9 @@ from itertools import product
 from .util import models, modes
 
 
-@pytest.mark.parametrize("model, mode", product(models, modes))
-def test_wrapped_client_properties(model, mode):
-    client = instructor.from_openai(OpenAI())
+@pytest.mark.parametrize("mode", modes)
+def test_wrapped_client_properties(mode):
+    client = instructor.from_openai(OpenAI(), mode=mode)
 
     # Check if embeddings.create property exists
     assert hasattr(client, "embeddings"), "Client should have 'embeddings' property"
@@ -26,9 +26,9 @@ def test_wrapped_client_properties(model, mode):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("model, mode", product(models, modes))
-async def test_wrapped_async_client_properties(model, mode):
-    client = instructor.from_openai(AsyncOpenAI())
+@pytest.mark.parametrize("mode", modes)
+async def test_wrapped_async_client_properties(mode):
+    client = instructor.from_openai(AsyncOpenAI(), mode=mode)
 
     # Check if embeddings.create property exists
     assert hasattr(client, "embeddings"), "Client should have 'embeddings' property"
