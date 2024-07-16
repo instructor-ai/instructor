@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 from jiter import from_json
-from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 from typing import (
     Any,
