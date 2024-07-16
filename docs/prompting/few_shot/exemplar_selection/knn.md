@@ -1,7 +1,18 @@
 ---
-title: ""
-description: ""
+title: "Select Effective Examples"
+description: "KNN can be leveraged to choose the most effective examples to use for a given query."
 ---
+
+How can we select effective in-context examples?
+
+Given a pool of possible in-context examples, KNN can be leveraged to choose the most effective examples to use for a given query.
+
+In the below implementation using `instructor`, we follow these steps:
+
+1. Embed the possible examples
+2. Embed the query
+3. Find the *k* examples closest to the query
+4. Use the chosen examples as the context for the LLM
 
 ```python
 import instructor
@@ -75,3 +86,9 @@ if __name__ == "__main__":
     print(response.answer)
     #> Rome
 ```
+
+### References
+
+<sup id="ref-1">1</sup>: [What Makes Good In-Context Examples for GPT-3?](https://arxiv.org/abs/2101.06804)
+
+<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
