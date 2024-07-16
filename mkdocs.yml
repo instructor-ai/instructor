@@ -157,7 +157,8 @@ nav:
     - Including Examples in Prompt: 'examples/examples.md'
     - Document Segmentation: 'examples/document_segmentation.md'
     - IBM watsonx.ai: 'examples/watsonx.md'
-    - Running a OpenAI batch job with Instructor: 'examples/batch_job_oai.md'
+    - Slash your OpenAI inference Bill by 50% with Batch Jobs: 'examples/batch_job_oai.md'
+    - Scale up to 50,000 items to embed with OpenAI's new Batch API : 'examples/batch_embed_oai.md'
   - Blog:
     - "blog/index.md"
   - Concepts:

@@ -5,18 +5,19 @@ The instructor CLI provides functionalities for managing batch jobs on OpenAI
 ```bash
 $ instructor batch --help
 
- Usage: instructor batch [OPTIONS] COMMAND [ARGS]...
+Usage: instructor batch [OPTIONS] COMMAND [ARGS]...
 
  Manage OpenAI Batch jobs
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ --help          Show this message and exit.                                         │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ──────────────────────────────────────────────────────────────────────────╮
-│ cancel             Cancel a batch job                                               │
-│ create-from-file   Create a batch job from a file                                   │
-│ list               See all existing batch jobs                                      │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                 │
+╰─────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ──────────────────────────────────────────────────────────────────╮
+│ cancel             Cancel a batch job                                       │
+│ create-from-file   Create a batch job from a file                           │
+│ download-file      Download the file associated with a batch job            │
+│ list               See all existing batch jobs                              │
+╰─────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ## Creating a Batch Job
@@ -30,16 +31,16 @@ $ instructor batch list --help
 
  See all existing batch jobs
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ --limit                    INTEGER  Total number of batch jobs to show              │
-│                                     [default: 10]                                   │
-│ --poll                     INTEGER  Time in seconds to wait for the batch job to    │
-│                                     complete                                        │
-│                                     [default: 10]                                   │
-│ --screen    --no-screen             Enable or disable screen output                 │
-│                                     [default: no-screen]                            │
-│ --help                              Show this message and exit.                     │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────╮
+│ --limit                    INTEGER  Total number of batch jobs to show      │
+│                                     [default: 10]                           │
+│ --poll                     INTEGER  Time in seconds to wait for the batch   │
+│                                     job to complete                         │
+│                                     [default: 10]                           │
+│ --screen    --no-screen             Enable or disable screen output         │
+│                                     [default: no-screen]                    │
+│ --help                              Show this message and exit.             │
+╰─────────────────────────────────────────────────────────────────────────────╯
 ```
 
 This returns a list of jobs as seen below
@@ -98,16 +99,12 @@ You'll need to supply a valid .jsonl file in order to be able to create a Batch 
         for email in emails
     ]
 
-    import json
-
-    with open("output.jsonl", "w") as f:
-        for line in BatchJob.create_from_messages(
-            messages,
-            model="gpt-3.5-turbo",
-            response_model=Classification,
-            max_tokens=100,
-        ):
-            f.write(json.dumps(line) + "\n")
+    BatchJob.create_from_messages(
+        messages_batch=messages,
+        model="gpt-4o",
+        file_path="./output.jsonl",
+        response_model=Classification,
+    )
     ```
 
 You can then import in the .jsonl file using the `instructor batch create-from-file` command
@@ -119,11 +116,16 @@ Usage: instructor batch create-from-file [OPTIONS]
 
  Create a batch job from a file
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --file-path        TEXT  File containing the batch job requests [default: None]  │
-│                             [required]                                              │
-│    --help                   Show this message and exit.                             │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────╮
+│ *  --file-path        TEXT                       File containing the batch  │
+│                                                  job requests               │
+│                                                  [default: None]            │
+│                                                  [required]                 │
+│    --endpoint         [/v1/chat/completions|/v1  [default:                  │
+│                       /embeddings]               /v1/chat/completions]      │
+│    --help                                        Show this message and      │
+│                                                  exit.                      │
+╰─────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ### Cancelling a Batch Job
@@ -133,12 +135,35 @@ You can also cancel an outstanding batch job by using the `cancel` command.
 ```bash
 $ instructor batch cancel --help
 
- Usage: instructor batch cancel [OPTIONS]
+Usage: instructor batch cancel [OPTIONS]
 
  Cancel a batch job
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --batch-id        TEXT  Batch job ID to cancel [default: None] [required]        │
-│    --help                  Show this message and exit.                              │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────╮
+│ *  --batch-id        TEXT  Batch job ID to cancel [default: None]           │
+│                            [required]                                       │
+│    --help                  Show this message and exit.                      │
+╰─────────────────────────────────────────────────────────────────────────────
+```
+
+## Downloading Batch Job Result
+
+Once your batch job is complete, you can also download the result of a batch job using the `download-file` command.
+
+```bash
+$ instructor batch download-file --help
+
+ Usage: instructor batch download-file [OPTIONS]
+
+ Download the file associated with a batch job
+
+╭─ Options ───────────────────────────────────────────────────────────────────╮
+│ *  --batch-id                  TEXT  Batch job ID to cancel [default: None] │
+│                                      [required]                             │
+│ *  --download-file-path        TEXT  Path to download file to               │
+│                                      [default: None]                        │
+│                                      [required]                             │
+│    --help                            Show this message and exit.            │
+╰─────────────────────────────────────────────────────────────────────────────╯
+
 ```
