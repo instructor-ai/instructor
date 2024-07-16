@@ -18,7 +18,7 @@ def _create_gemini_json_schema(model: BaseModel):
         required = []
     params_with_default = [param for param, description in schema_without_refs["properties"].items() if "default" in description]
     # combine lists without duplicates
-    required = list(set(required) | set(params_with_default))
+    required += list(set(params_with_default) - set(required))
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],
         "properties": schema_without_refs["properties"],
