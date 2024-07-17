@@ -157,7 +157,7 @@ class OpenAISchema(BaseModel):
         # Anthropic returns arguments as a dict, dump to json for model validation below
         tool_calls = [
             json.dumps(c.input) for c in completion.content if c.type == "tool_use"
-        ]  # type: ignore - TODO update with anthropic specific types
+        ]  # TODO update with anthropic specific types
 
         tool_calls_validator = TypeAdapter(
             Annotated[list[Any], Field(min_length=1, max_length=1)]

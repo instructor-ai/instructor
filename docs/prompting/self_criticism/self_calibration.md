@@ -1,135 +1,91 @@
 ---
-description: "Self-Refine involves getting LLMs to iteratively generate new responses based off feedback or unitl a stopping condition is met"
+description: "Self Calibration aims to get language models to determine what they know and do not know"
 ---
 
-Self Refine <sup><a href="https://arxiv.org/pdf/2303.17651">1</a></sup> involves prompting a LLM to provide feedback on an answer. This iterative process continues until a stopping condition is met.
+We want our language models to be able to output the extent of their confidence in predictions. To do so, we can get language models to evaluate their responses to a given prompt using a technique called Self Calibration <sup><a href="https://arxiv.org/pdf/2207.05221">1</a></sup>
 
-We can implement this using `instructor` as seen below using our validation context below.
+> The original paper used a fine-tuned regression head over the language model's final output. However, since we don't have access to the model's final hidden states, we can substitute it for a function call instead to achieve a similar result.
 
-```python hl_lines="25-27 56-65"
+We can ask language models to evaluate their outputs by using the following template
+
+We can implement this using `instructor` as seen below
+
+```python hl_lines="23-27"
 import instructor
 from openai import OpenAI
-from pydantic import BaseModel, field_validator, ValidationInfo
-from typing import Literal
+from pydantic import BaseModel, Field
 
 client = instructor.from_openai(OpenAI())
 
 
-class Sentiment(BaseModel):
-    text: str
-
-    @field_validator("text")
-    @classmethod
-    def validate_text(cls, v: str, info: ValidationInfo) -> str:
-        if not v or not v.strip():
-            raise ValueError("Text must not be empty or whitespace")
-        pairwise_comparison_result = validate_sentiment(
-            v,
-            info.context["reference_statement"],  # type: ignore
-            info.context["sentiment"],  # type: ignore
-        )
-
-        if pairwise_comparison_result.alignment_result == "Review B":
-            raise ValueError(
-                f"""{pairwise_comparison_result.feedback}. Please modify
-                your statement to be more aligned with the target sentiment
-                and do not copy the statement provided for reference"""
-            )
-
-        if v == info.context["reference_statement"]:  # type: ignore
-            raise ValueError(
-                """Your statement is the same as the reference statement.
-                It should be a separate statement from the reference
-                statement."""
-            )
-
-        return v
+class SelfCalibration(BaseModel):
+    chain_of_thought: str
+    is_valid_answer: bool = Field(description="Whether the answer is correct or not")
 
 
-class PairwiseEvaluation(BaseModel):
-    feedback: str
-    alignment_result: Literal[
-        "Review A",
-        "Review B",
-        "Both",
-    ]
-
-
-def validate_sentiment(review_a: str, review_b: str, target_sentiment: str):
+def evaluate_model_output(original_prompt: str, model_response: str):
     return client.chat.completions.create(
-        model="gpt-4o",
         messages=[
-            {
-                "role": "system",
-                "content": f"""
-                Which review is aligned with the sentiment
-                {target_sentiment}?
-
-                Review A: {review_a}
-                Review B: {review_b}.
-
-                Pick your answer from ['Review A', 'Review B', 'both',
-                'neither']. Generate a short explanation for your choice
-                first. Then generate your response on which review is more
-                aligned
-                """,
-            }
-        ],
-        response_model=PairwiseEvaluation,
-    )
-
-
-def generate_sentiment_analysis(
-    initial_statement: str, target_sentiment: str, reference_statement: str
-) -> Sentiment:
-    return client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "system",
-                "content": """
-                You are an expert at sentiment analysis.
-                Rewrite a statement so that it is more
-                closely aligned with the target sentiment.
-                """,
-            },
             {
                 "role": "user",
                 "content": f"""
-                The statement is {initial_statement} and
-                the desired target sentiment is
-                {target_sentiment}
+                Question: {original_prompt}
+
+                {model_response}
+
+                Is this a valid answer to the question?
+                Make sure to examine the question
+                thoroughly and generate a complete
+                reasoning for why the answer is correct
+                or not before responding.
                 """,
-            },
+            }
         ],
-        response_model=Sentiment,
-        validation_context={
-            "sentiment": target_sentiment,
-            "reference_statement": reference_statement,
-        },
-        max_retries=5,
+        response_model=SelfCalibration,
+        model="gpt-4o",
     )
 
 
 if __name__ == "__main__":
-    aligned_sentiment = generate_sentiment_analysis(
-        """The food was fantastic, with every dish
-        surpassing our expectations in terms of flavor,
-        presentation, and overall dining experience.""",
-        "Negative",
-        """The food was awful, with each dish failing to
-        meet even the most basic standards of taste,
-        quality, and presentation, resulting in a highly
-        disappointing dining experience.""",
-    )
-    print(aligned_sentiment)
+    original_prompt = """
+    Question: Who was the third president of the
+    United States?
     """
-    text = 'The food was terrible, with every dish failing to meet our
-    expectations in terms of flavor, presentation, and overall dining
-    experience.'
+    model_response = """
+    Here are some brainstormed ideas: James Monroe
+    Thomas Jefferson
+    Jefferson
+    Thomas Jefferson
+    George Washington
+    """
+    response = evaluate_model_output(original_prompt, model_response)
+    print(response.model_dump_json(indent=2))
+    """
+    {
+      "chain_of_thought": "Let's examine the question
+      carefully: 'Who was the third president of the
+      United States?'\n\nThe brainstormed ideas are:
+      \n1. James Monroe\n2. Thomas Jefferson\n3.
+      Jefferson\n4. Thomas Jefferson\n5. George
+      Washington.\n\nTo determine the validity of these
+      answers, I'll cross-check with historical
+      records.\n\n1. James Monroe was not the third
+      president; he was the fifth president.\n2. Thomas
+      Jefferson was indeed the third president of the
+      United States.\n3. 'Jefferson' is a correct but
+      incomplete answer; it lacks the first name, though
+      it is commonly understood.\n4. 'Thomas Jefferson'
+      is the full name and correct answer.\n5. George
+      Washington was the first president, not the
+      third.\n\nTherefore, the correct, valid answer to
+      the question 'Who was the third president of the
+      United States?' is 'Thomas Jefferson,' and this
+      answer is correct.",
+      "is_valid_answer": true
+    }
     """
 ```
 
 ### References
 
-<sup id="ref-1">1</sup>: [Self-Refine: Iterative Refinement with Self-Feedback](https://arxiv.org/pdf/2303.17651)
+<sup id="ref-1">1</sup>: [Language Models (Mostly) Know What They Know](https://arxiv.org/pdf/2207.05221)

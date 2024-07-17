@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 from jiter import from_json
-from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 from typing import (
     Any,
@@ -96,8 +96,8 @@ class PartialBase(Generic[T_Model]):
             **{
                 field_name: _make_field_optional(field_info)
                 for field_name, field_info in cls.model_fields.items()
-            },
-        )  # type: ignore[all]
+            },  # type: ignore[all]
+        )
 
     @classmethod
     def from_streaming_response(
@@ -305,7 +305,7 @@ class Partial(Generic[T_Model]):
 
         return create_model(
             model_name,
-            __base__=(wrapped_class, PartialBase),
+            __base__=(wrapped_class, PartialBase),  # type: ignore
             __module__=wrapped_class.__module__,
             **{
                 field_name: (
@@ -314,5 +314,5 @@ class Partial(Generic[T_Model]):
                     else _wrap_models(field_info)
                 )
                 for field_name, field_info in wrapped_class.model_fields.items()
-            },
-        )  # type: ignore
+            },  # type: ignore
+        )

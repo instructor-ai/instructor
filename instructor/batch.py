@@ -1,7 +1,11 @@
-from typing import Literal, Any, Union
+from typing import Literal, Any, Union, TypeVar
+from collections.abc import Iterable
 from pydantic import BaseModel, Field
 from instructor.process_response import handle_response_model
 import uuid
+import json
+
+T = TypeVar("T", bound=BaseModel)
 
 openai_models = Literal[
     "gpt-4o",
@@ -39,6 +43,7 @@ class RequestBody(BaseModel):
     messages: list[dict[str, Any]]
     max_tokens: int = Field(default=1000)
     tools: list[Tool]
+    tool_choice: dict[str, Any]
 
 
 class BatchModel(BaseModel):
@@ -50,25 +55,55 @@ class BatchModel(BaseModel):
 
 class BatchJob:
     @classmethod
+    def parse_from_file(
+        cls, file_path: str, response_model: type[T]
+    ) -> tuple[list[T], list[dict[Any, Any]]]:
+        with open(file_path) as file:
+            res: list[T] = []
+            error_objs: list[dict[Any, Any]] = []
+            for line in file:
+                data = json.loads(line)
+                try:
+                    res.append(
+                        response_model(
+                            **json.loads(
+                                data["response"]["body"]["choices"][0]["message"][
+                                    "tool_calls"
+                                ][0]["function"]["arguments"]
+                            )
+                        )
+                    )
+                except Exception:
+                    error_objs.append(data)
+
+            return res, error_objs
+
+    @classmethod
     def create_from_messages(
         cls,
-        messages_batch: list[list[dict[str, Any]]],
+        messages_batch: Union[
+            list[list[dict[str, Any]]], Iterable[list[dict[str, Any]]]
+        ],
         model: Union[openai_models, str],
         response_model: type[BaseModel],
+        file_path: str,
         max_tokens: int = 1000,
     ):
-        _, tools = handle_response_model(response_model=response_model)
-        return [
-            BatchModel(
-                custom_id=str(uuid.uuid4()),
-                method="POST",
-                url="/v1/chat/completions",
-                body=RequestBody(
-                    model=model,
-                    max_tokens=max_tokens,
-                    messages=messages,
-                    **tools,
-                ),
-            ).model_dump(mode="json")
-            for messages in messages_batch
-        ]
+        _, kwargs = handle_response_model(response_model=response_model)
+
+        with open(file_path, "w") as file:
+            for messages in messages_batch:
+                file.write(
+                    BatchModel(
+                        custom_id=str(uuid.uuid4()),
+                        method="POST",
+                        url="/v1/chat/completions",
+                        body=RequestBody(
+                            model=model,
+                            max_tokens=max_tokens,
+                            messages=messages,
+                            **kwargs,
+                        ),
+                    ).model_dump_json()
+                    + "\n"
+                )

@@ -1,4 +1,4 @@
-# Function Calls by Example
+# Cookbooks: Leveraging Structured Outputs
 
 ## Quick Links
 
@@ -19,5 +19,6 @@
 15. [How to store responses in a database with SQLModel](sqlmodel.md)
 16. [How to use groqcloud api](groq.md)
 17. [How to do document segmentation using LLMs?](document_segmentation.md)
+18. [How to save 50% of API costs with OpenAI's Batch API using Instructor](batch_job_oai.md)
 
 Explore more!
