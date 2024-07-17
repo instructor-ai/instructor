@@ -3,7 +3,7 @@
 In this guide, we demonstrate how to do document segmentation using structured output from an LLM. We'll be using [command-r-plus](https://docs.cohere.com/docs/command-r-plus) - one of Cohere's latest LLMs with 128k context length and testing the approach on an article explaining the Transformer architecture. Same approach to document segmentation can be applied to any other domain where we need to break down a complex long document into smaller chunks.
 
 !!! tips "Motivation"
-    Sometimes we need a way to split the document into meaningful parts that center around a signle key concept/idea. Simple length-based / rule-based text-splitters are not reliable enough. Consider the cases where documents contain code snippets or math equations - we don't want to split those on `'\n\n'` or have to write extensive rules for different types of documents. It turns out that LLMs with sufficiently long context length are well suited for this task.
+    Sometimes we need a way to split the document into meaningful parts that center around a single key concept/idea. Simple length-based / rule-based text-splitters are not reliable enough. Consider the cases where documents contain code snippets or math equations - we don't want to split those on `'\n\n'` or have to write extensive rules for different types of documents. It turns out that LLMs with sufficiently long context length are well suited for this task.
 
 ## Defining the Data Structures
 

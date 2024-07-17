@@ -2,10 +2,9 @@
 draft: False
 date: 2024-05-03
 slug: fastapi-open-telemetry-and-instructor
-tags:
-  - Logfire
-  - Open Telemetry
-  - FastAPI
+categories:
+    - Python
+    - Observability
 authors:
   - ivanleomk
   - jxnl

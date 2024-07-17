@@ -179,8 +179,6 @@ class Instructor:
         strict: bool = True,
         **kwargs: Any,
     ) -> Generator[T, None, None] | AsyncGenerator[T, None]:
-        assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support iterable"
-
         kwargs["stream"] = True
         kwargs = self.handle_kwargs(kwargs)
 
@@ -294,8 +292,6 @@ class AsyncInstructor(Instructor):
         strict: bool = True,
         **kwargs: Any,
     ) -> AsyncGenerator[T, None]:
-        assert self.provider != Provider.ANTHROPIC, "Anthropic doesn't support partial"
-
         kwargs = self.handle_kwargs(kwargs)
         kwargs["stream"] = True
         async for item in await self.create_fn(
@@ -394,6 +390,11 @@ def from_openai(
             instructor.Mode.MD_JSON,
         }
 
+    if provider in {Provider.DATABRICKS}:
+        assert mode in {
+            instructor.Mode.MD_JSON
+        }, "Databricks provider only supports `MD_JSON` mode."
+
     if provider in {Provider.OPENAI}:
         assert mode in {
             instructor.Mode.TOOLS,
@@ -445,7 +446,7 @@ def from_litellm(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    is_async = inspect.isawaitable(completion)
+    is_async = inspect.iscoroutinefunction(completion)
 
     if not is_async:
         return Instructor(

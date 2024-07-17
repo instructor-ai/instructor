@@ -3,8 +3,9 @@ import logging
 from pydantic import BaseModel, Field
 from instructor import Instructions
 import instructor
+from openai import OpenAI
 
-instructor.from_openai()
+client = instructor.from_openai(OpenAI())
 
 logging.basicConfig(level=logging.INFO)
 
@@ -16,6 +17,7 @@ instructions = Instructions(
     log_handlers=[
         logging.FileHandler("math_finetunes.jsonl"),
     ],
+    openai_client=client
 )
 
 
@@ -25,7 +27,7 @@ class Multiply(BaseModel):
     result: int = Field(..., description="The result of the multiplication")
 
 
-@instructions.distil(mode="dispatch", model="ft:gpt-3.5-turbo-0613:personal::8CazU0uq")
+@instructions.distil(mode="dispatch", model="ft:gpt-3.5-turbo-0125:personal::9i1JeuxJ")
 def fn(a: int, b: int) -> Multiply:
     """Return the result of the multiplication as an integer"""
     resp = a * b

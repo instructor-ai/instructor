@@ -6,9 +6,11 @@ from itertools import product
 from .util import models, modes
 
 
-def uppercase_validator(v):
+def uppercase_validator(v: str):
     if v.islower():
-        raise ValueError("Name must be ALL CAPS")
+        raise ValueError(
+            "All letters in the name should be in uppercase (Eg. TOM, JONES ) instead of tom, jones"
+        )
     return v
 
 
@@ -89,3 +91,35 @@ def test_upper_case_tenacity(model, mode, client):
         max_retries=retries,
     )
     assert response.name == "JASON"
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_custom_retry_response_error(model, mode, client):
+    original_key = client.api_key
+    client = instructor.patch(client, mode=mode)
+    client.api_key = "incorrect_key"
+
+    from openai import AuthenticationError
+    from instructor.exceptions import InstructorRetryException
+    from tenacity import Retrying, retry_if_not_exception_type, stop_after_attempt
+
+    retries = Retrying(
+        retry=retry_if_not_exception_type(ZeroDivisionError), stop=stop_after_attempt(1)
+    )
+    try:
+        client.chat.completions.create(
+            model=model,
+            max_retries=retries,
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Jason is 25 years old",
+                }
+            ],
+            response_model=UserDetail,
+        )
+    except InstructorRetryException as e:
+        assert isinstance(e.__cause__.__cause__, AuthenticationError)
+        assert e.last_completion is None
+    finally:
+        client.api_key = original_key

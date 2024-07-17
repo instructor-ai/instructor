@@ -3,7 +3,7 @@ import warnings
 
 
 class _WarnOnFunctionsAccessEnumMeta(enum.EnumMeta):
-    def __getattribute__(cls, name):
+    def __getattribute__(cls, name: str):
         if name == "FUNCTIONS":
             warnings.warn(
                 "FUNCTIONS is deprecated and will be removed in future versions",
@@ -26,3 +26,6 @@ class Mode(enum.Enum, metaclass=_WarnOnFunctionsAccessEnumMeta):
     ANTHROPIC_TOOLS = "anthropic_tools"
     ANTHROPIC_JSON = "anthropic_json"
     COHERE_TOOLS = "cohere_tools"
+    VERTEXAI_TOOLS = "vertexai_tools"
+    VERTEXAI_JSON = "vertexai_json"
+    GEMINI_JSON = "gemini_json"

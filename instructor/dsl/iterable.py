@@ -1,7 +1,7 @@
 from typing import Any, Optional, cast, ClassVar
 from collections.abc import AsyncGenerator, Generator, Iterable
 
-from pydantic import BaseModel, Field, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import BaseModel, Field, create_model
 
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
@@ -83,7 +83,9 @@ class IterableBase:
                     if json_chunk := chunk.delta.text:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
-                    yield chunk.model_extra.get("delta", "").get("partial_json", "")
+                    yield chunk.delta.partial_json
+                if mode == Mode.GEMINI_JSON:
+                    yield chunk.text
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
@@ -111,7 +113,7 @@ class IterableBase:
                     if json_chunk := chunk.delta.text:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
-                    yield chunk.model_extra.get("delta", "").get("partial_json", "")
+                    yield chunk.delta.partial_json
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:

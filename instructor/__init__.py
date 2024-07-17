@@ -52,6 +52,14 @@ if importlib.util.find_spec("anthropic") is not None:
 
     __all__ += ["from_anthropic"]
 
+if (
+    importlib.util.find_spec("google")
+    and importlib.util.find_spec("google.generativeai") is not None
+):
+    from .client_gemini import from_gemini
+
+    __all__ += ["from_gemini"]
+
 if importlib.util.find_spec("groq") is not None:
     from .client_groq import from_groq
 
@@ -66,3 +74,8 @@ if importlib.util.find_spec("cohere") is not None:
     from .client_cohere import from_cohere
 
     __all__ += ["from_cohere"]
+
+if all(importlib.util.find_spec(pkg) for pkg in ("vertexai", "jsonref")):
+    from .client_vertexai import from_vertexai
+
+    __all__ += ["from_vertexai"]

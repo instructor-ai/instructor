@@ -10,7 +10,7 @@ from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
 from openai.types.chat import ChatCompletion
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 
 import json
 import inspect
@@ -25,6 +25,8 @@ from collections.abc import Generator
 from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
+
+from .utils import transform_to_gemini_prompt
 
 logger = logging.getLogger("instructor")
 
@@ -164,6 +166,14 @@ def process_response(
     return model
 
 
+def is_typed_dict(cls) -> bool:
+    return (
+        isinstance(cls, type)
+        and issubclass(cls, dict)
+        and hasattr(cls, "__annotations__")
+    )
+
+
 def handle_response_model(
     response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
 ) -> tuple[type[T], dict[str, Any]]:
@@ -190,6 +200,12 @@ def handle_response_model(
         # We wrap the response_model in a ModelAdapter that sets 'content' as the response
         if is_simple_type(response_model):
             response_model = ModelAdapter[response_model]
+
+        if is_typed_dict(response_model):
+            response_model: BaseModel = create_model(
+                response_model.__name__,
+                **{k: (v, ...) for k, v in response_model.__annotations__.items()},
+            )
 
         # This a special case for parallel tools
         if mode == Mode.PARALLEL_TOOLS:
@@ -218,8 +234,8 @@ def handle_response_model(
             )
 
         if mode == Mode.FUNCTIONS:
-            new_kwargs["functions"] = [response_model.openai_schema]  # type: ignore
-            new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}  # type: ignore
+            new_kwargs["functions"] = [response_model.openai_schema]
+            new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
@@ -264,6 +280,11 @@ def handle_response_model(
                         "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
                     },
                 )
+                # For some providers, the messages array must be alternating roles of user and assistant, we must merge
+                # consecutive user messages into a single message
+                new_kwargs["messages"] = merge_consecutive_messages(
+                    new_kwargs["messages"]
+                )
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":
@@ -288,7 +309,15 @@ def handle_response_model(
             system_messages = [
                 m["content"] for m in new_kwargs["messages"] if m["role"] == "system"
             ]
-            new_kwargs["system"] = "\n\n".join(system_messages)
+
+            if "system" in kwargs and system_messages:
+                raise ValueError(
+                    "Only a single system message is supported - either set it as a message in the messages array or use the system parameter"
+                )
+
+            if not "system" in kwargs:
+                new_kwargs["system"] = "\n\n".join(system_messages)
+
             new_kwargs["messages"] = [
                 m for m in new_kwargs["messages"] if m["role"] != "system"
             ]
@@ -301,20 +330,34 @@ def handle_response_model(
                 if message["role"] == "system"
             ]
 
-            new_kwargs["system"] = (
-                new_kwargs.get("system", "")
-                + "\n\n"
-                + "\n\n".join(openai_system_messages)
-            )
+            if "system" in kwargs and openai_system_messages:
+                raise ValueError(
+                    "Only a single System message is supported - either set it using the system parameter or in the list of messages"
+                )
 
-            new_kwargs["system"] += f"""
-            You must only response in JSON format that adheres to the following schema:
+            if not "system" in kwargs:
+                new_kwargs["system"] = (
+                    new_kwargs.get("system", "")
+                    + "\n\n"
+                    + "\n\n".join(openai_system_messages)
+                )
 
-            <JSON_SCHEMA>
-            {json.dumps(response_model.model_json_schema(), indent=2)}
-            </JSON_SCHEMA>
-            """
-            new_kwargs["system"] = dedent(new_kwargs["system"])
+                new_kwargs["system"] += f"""
+                You must only responsd in JSON format that adheres to the following schema:
+
+                <JSON_SCHEMA>
+                {json.dumps(response_model.model_json_schema(), indent=2)}
+                </JSON_SCHEMA>
+                """
+                new_kwargs["system"] = dedent(new_kwargs["system"])
+            else:
+                new_kwargs["system"] += dedent(f"""
+                You must only responsd in JSON format that adheres to the following schema:
+
+                <JSON_SCHEMA>
+                {json.dumps(response_model.model_json_schema(), indent=2)}
+                </JSON_SCHEMA>
+                """)
 
             new_kwargs["messages"] = [
                 message
@@ -349,6 +392,86 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 )
             new_kwargs["message"] = instruction
             new_kwargs["chat_history"] = chat_history
+        elif mode == Mode.GEMINI_JSON:
+            assert (
+                "model" not in new_kwargs
+            ), "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+            message = dedent(
+                f"""
+                As a genius expert, your task is to understand the content and provide
+                the parsed objects in json that match the following json_schema:\n
+
+                {json.dumps(response_model.model_json_schema(), indent=2)}
+
+                Make sure to return an instance of the JSON, not the schema itself
+                """
+            )
+            # check that the first message is a system message
+            # if it is not, add a system message to the beginning
+            if new_kwargs["messages"][0]["role"] != "system":
+                new_kwargs["messages"].insert(
+                    0,
+                    {
+                        "role": "system",
+                        "content": message,
+                    },
+                )
+            # if it is, system append the schema to the end
+            else:
+                new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+
+            # default to json response type
+            new_kwargs["generation_config"] = new_kwargs.get(
+                "generation_config", {}
+            ) | {"response_mime_type": "application/json"}
+
+            map_openai_args_to_gemini = {
+                "max_tokens": "max_output_tokens",
+                "temperature": "temperature",
+                "n": "candidate_count",
+                "top_p": "top_p",
+                "stop": "stop_sequences",
+            }
+
+            # update gemini config if any params are set
+            for k, v in map_openai_args_to_gemini.items():
+                val = new_kwargs.pop(k, None)
+                if val == None:
+                    continue
+                new_kwargs["generation_config"][v] = val
+
+            # gemini has a different prompt format and params from other providers
+            new_kwargs["contents"] = transform_to_gemini_prompt(
+                new_kwargs.pop("messages")
+            )
+
+            # minimize gemini safety related errors - model is highly prone to false alarms
+            from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
+            new_kwargs["safety_settings"] = new_kwargs.get("safety_settings", {}) | {
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            }
+        elif mode == Mode.VERTEXAI_TOOLS:
+            from instructor.client_vertexai import vertexai_process_response
+
+            contents, tools, tool_config = vertexai_process_response(
+                new_kwargs, response_model
+            )
+
+            new_kwargs["contents"] = contents
+            new_kwargs["tools"] = tools
+            new_kwargs["tool_config"] = tool_config
+        elif mode == Mode.VERTEXAI_JSON:
+            from instructor.client_vertexai import vertexai_process_json_response
+
+            contents, generation_config = vertexai_process_json_response(
+                new_kwargs, response_model
+            )
+
+            new_kwargs["contents"] = contents
+            new_kwargs["generation_config"] = generation_config
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 

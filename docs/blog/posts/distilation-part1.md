@@ -1,11 +1,8 @@
 ---
 draft: False
 date: 2023-10-17
-tags:
-  - python
-  - distillation
-  - function calling
-  - finetuning
+categories:
+  - Finetuning
 authors:
   - jxnl
 ---

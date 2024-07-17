@@ -2,15 +2,13 @@
 draft: False
 date: 2024-03-07
 slug: open-source-local-structured-output-pydantic-json-openai
-tags:
-  - llms
-  - opensource
-  - together
-  - llama-cpp-python
-  - anyscale
-  - groq
-  - mistral
-  - ollama
+categories:
+  - Open Source
+  - Ollama
+  - Anyscale
+  - Groq
+  - Mistral
+  - Ollama
 authors:
   - jxnl
 ---

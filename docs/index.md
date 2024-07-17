@@ -9,12 +9,22 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GPT](https://img.shields.io/badge/docs-InstructorGPT-blue)](https://chat.openai.com/g/g-EvZweRWrE-instructor-gpt)
 
-Instructor makes it easy to reliably get structured data like JSON from Large Language Models (LLMs) like GPT-3.5, GPT-4, GPT-4-Vision, including open source models like Mistral/Mixtral from [Together](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
-
-By leveraging various modes like Function Calling, Tool Calling and even constrained sampling modes like JSON mode, JSON Schema; Instructor stands out for its simplicity, transparency, and user-centric design. We leverage Pydantic to do the heavy lifting, and we've built a simple, easy-to-use API on top of it by helping you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
 
-We also provide a library in [Typescript](https://instructor-ai.github.io/instructor-js/), [Elixir](https://github.com/thmsmlr/instructor_ex/) and [PHP](https://github.com/cognesy/instructor-php/).
+Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
+
+It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
+
+- Instructor provides support for a wide range of programming languages, including:
+  - [Python](https://python.useinstructor.com)
+  - [TypeScript](https://js.useinstructor.com)
+  - [Ruby](https://ruby.useinstructor.com)
+  - [Go](https://go.useinstructor.com)
+  - [Elixir](https://hex.pm/packages/instructor)
+
+## Want your logo on our website?
+
+If your company use instructor a lot, we'd love to have your logo on our website! Please fill out [this form](https://q7gjsgfstrp.typeform.com/to/wluQlVVQ)
 
 ## Why use Instructor?
 
@@ -25,7 +35,6 @@ The question of using Instructor is fundamentally a question of why to use Pydan
 2. **Customizable** — Pydantic is highly customizable. You can define your own validators, custom error messages, and more.
 
 3. **Ecosystem** Pydantic is the most widely used data validation library for Python with over 100M downloads a month. It's used by FastAPI, Typer, and many other popular libraries.
-
 
 ## Getting Started
 
@@ -106,6 +115,83 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+### Using Gemini
+
+#### Google AI
+
+```python
+import instructor
+import google.generativeai as genai
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_gemini(
+    client=genai.GenerativeModel(
+        model_name="models/gemini-1.5-flash-latest",
+    ),
+    mode=instructor.Mode.GEMINI_JSON,
+)
+
+# note that client.chat.completions.create will also work
+resp = client.messages.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
+#### Vertex AI
+
+**Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](../hub/vertexai.md).
+
+```python
+import instructor
+import vertexai  # type: ignore
+from vertexai.generative_models import GenerativeModel  # type: ignore
+from pydantic import BaseModel
+
+vertexai.init()
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_vertexai(
+    client=GenerativeModel("gemini-1.5-pro-preview-0409"),
+    mode=instructor.Mode.VERTEXAI_TOOLS,
+)
+
+# note that client.chat.completions.create will also work
+resp = client.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
 ### Using Litellm
 
 ```python
@@ -172,7 +258,7 @@ Now if you use a IDE, you can see the type is correctly infered.
 
 ### Handling async: `await create`
 
-This will also work correctly with asynchronous clients. 
+This will also work correctly with asynchronous clients.
 
 ```python
 import openai
@@ -231,7 +317,6 @@ user, completion = client.chat.completions.create_with_completion(
 
 ![with_completion](./blog/posts/img/with_completion.png)
 
-
 ### Streaming Partial Objects: `create_partial`
 
 In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but to simply the type inference, we've added `create_iterable` and `create_partial` methods as well!
@@ -264,12 +349,13 @@ for user in user_stream:
     #> name=None age=None
     #> name=None age=None
     #> name=None age=None
-    #> name=None age=30
-    #> name=None age=30
-    #> name=None age=30
-    #> name=None age=30
-    #> name=None age=30
-    #> name='John' age=30
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name='John Doe' age=25
     # name=None age=None
     # name='' age=None
     # name='John' age=None
@@ -309,8 +395,8 @@ users = client.chat.completions.create_iterable(
 
 for user in users:
     print(user)
-    #> name='Alice' age=30
-    #> name='Bob' age=25
+    #> name='John Doe' age=30
+    #> name='Jane Doe' age=28
     # User(name='John Doe', age=30)
     # User(name='Jane Smith', age=25)
 ```

@@ -2,10 +2,8 @@
 draft: False
 date: 2023-11-26
 slug: python-generators-and-llm-streaming
-tags:
-  - generators
-  - streaming
-  - python
+categories:
+  - Python
 authors:
   - jxnl
   - anmol

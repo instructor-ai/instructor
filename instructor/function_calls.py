@@ -1,3 +1,4 @@
+# type: ignore
 import json
 import logging
 from functools import wraps
@@ -5,7 +6,7 @@ from typing import Annotated, Any, Optional, TypeVar, cast
 
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
-from pydantic import (  # type: ignore - remove once Pydantic is updated
+from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
@@ -102,8 +103,17 @@ class OpenAISchema(BaseModel):
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
 
+        if mode == Mode.VERTEXAI_TOOLS:
+            return cls.parse_vertexai_tools(completion, validation_context, strict)
+
+        if mode == Mode.VERTEXAI_JSON:
+            return cls.parse_vertexai_json(completion, validation_context, strict)
+
         if mode == Mode.COHERE_TOOLS:
             return cls.parse_cohere_tools(completion, validation_context, strict)
+
+        if mode == Mode.GEMINI_JSON:
+            return cls.parse_gemini_json(completion, validation_context, strict)
 
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
@@ -126,14 +136,19 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        tool_calls = [c.input for c in completion.content if c.type == "tool_use"]  # type: ignore - TODO update with anthropic specific types
+        # Anthropic returns arguments as a dict, dump to json for model validation below
+        tool_calls = [
+            json.dumps(c.input) for c in completion.content if c.type == "tool_use"
+        ]  # TODO update with anthropic specific types
 
         tool_calls_validator = TypeAdapter(
             Annotated[list[Any], Field(min_length=1, max_length=1)]
         )
         tool_call = tool_calls_validator.validate_python(tool_calls)[0]
 
-        return cls.model_validate(tool_call, context=validation_context, strict=strict)
+        return cls.model_validate_json(
+            tool_call, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_anthropic_json(
@@ -158,6 +173,59 @@ class OpenAISchema(BaseModel):
             parsed = json.loads(extra_text, strict=False)
             # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
             return cls.model_validate(parsed, context=validation_context, strict=False)
+
+    @classmethod
+    def parse_gemini_json(
+        cls: type[BaseModel],
+        completion: Any,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        try:
+            text = completion.text
+        except ValueError:
+            logger.debug(
+                f"Error response: {completion.result.candidates[0].finish_reason}\n\n{completion.result.candidates[0].safety_ratings}"
+            )
+
+        try:
+            extra_text = extract_json_from_codeblock(text)  # type: ignore
+        except UnboundLocalError:
+            raise ValueError("Unable to extract JSON from completion text") from None
+
+        if strict:
+            return cls.model_validate_json(
+                extra_text, context=validation_context, strict=True
+            )
+        else:
+            # Allow control characters.
+            parsed = json.loads(extra_text, strict=False)
+            # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
+            return cls.model_validate(parsed, context=validation_context, strict=False)
+
+    @classmethod
+    def parse_vertexai_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        strict = False
+        tool_call = completion.candidates[0].content.parts[0].function_call.args  # type: ignore
+        model = {}
+        for field in tool_call:  # type: ignore
+            model[field] = tool_call[field]
+        return cls.model_validate(model, context=validation_context, strict=strict)
+
+    @classmethod
+    def parse_vertexai_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        model = json.loads(completion.text)
+        return cls.model_validate(model, context=validation_context, strict=strict)
 
     @classmethod
     def parse_cohere_tools(

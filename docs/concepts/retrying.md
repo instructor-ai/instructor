@@ -28,7 +28,7 @@ class UserDetail(BaseModel):
 
 try:
     UserDetail(name="jason", age=12)
-except InstructorRetryException as e:
+except Exception as e:
     print(e)
     """
     1 validation error for UserDetail
@@ -81,13 +81,14 @@ print(response.model_dump_json(indent=2))
 If you want to catch the retry exceptions, you can do so and access the `last_completion`, `n_attempts` and `messages` attributes.
 
 ```python
-from openai import OpenAI
-from instructor import from_openai
-from instructor.retry import InstructorRetryException
 from pydantic import BaseModel, field_validator
+import openai
+import instructor
+from instructor.exceptions import InstructorRetryException
+from tenacity import Retrying, retry_if_not_exception_type, stop_after_attempt
 
 # Patch the OpenAI client to enable response_model
-client = from_openai(OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 
 # Define a Pydantic model for the user details
@@ -96,25 +97,28 @@ class UserDetail(BaseModel):
     age: int
 
     @field_validator("age")
-    def validate_age(cls, v):
-        raise ValueError("You will never succeed")
+    def validate_age(cls, v: int):
+        raise ValueError(f"You will never succeed with {str(v)}")
 
 
+retries = Retrying(
+    retry=retry_if_not_exception_type(ZeroDivisionError), stop=stop_after_attempt(3)
+)
 # Use the client to create a user detail
 try:
-    user: UserDetail = client.chat.completions.create(
+    user = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[{"role": "user", "content": "Extract Jason is 25 years old"}],
-        max_retries=3,
+        max_retries=retries,
     )
 except InstructorRetryException as e:
-    print(e)
+    print(e.messages[-1]["content"])  # type: ignore
     """
     1 validation error for UserDetail
     age
-        Value error, You will never succeed [type=value_error, input_value=25, input_type=int]
-            For further information visit https://errors.pydantic.dev/2.7/v/value_error
+    Value error, You will never succeed with 25 [type=value_error, input_value=25, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.7/v/value_error
     """
 
     print(e.n_attempts)
@@ -226,19 +230,17 @@ Tenacity features a huge number of different retrying capabilities. A few of the
 
 Remember that for async clients you need to use `AsyncRetrying` instead of `Retrying`!
 
-
 ## Retry Callbacks
 
 You can also define callbacks to be called before and after each attempt. This is useful for logging or debugging.
 
 ```python
 from pydantic import BaseModel, field_validator
-from openai import OpenAI
 import instructor
 import tenacity
+import openai
 
-client = OpenAI()
-client = instructor.from_openai(client)
+client = instructor.from_openai(openai.OpenAI())
 
 
 class User(BaseModel):
@@ -257,12 +259,12 @@ resp = client.messages.create(
     max_retries=tenacity.Retrying(
         stop=tenacity.stop_after_attempt(3),
         before=lambda _: print("before:", _),
-"""
-before:
-<RetryCallState 4746154832: attempt #1; slept for 0.0; last result: none yet>
-"""
+        # """
+        # before:
+        # <RetryCallState 4682490016: attempt #1; slept for 0.0; last result: none yet>
+        # """
         after=lambda _: print("after:", _),
-    ),
+    ),  # type: ignore
     messages=[
         {
             "role": "user",
@@ -270,7 +272,7 @@ before:
         }
     ],
     response_model=User,
-)  # type: ignore
+)
 
 assert isinstance(resp, User)
 assert resp.name == "JOHN"  # due to validation

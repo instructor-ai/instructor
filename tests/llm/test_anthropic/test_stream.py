@@ -85,3 +85,36 @@ async def test_partial_model_async(model, mode, aclient):
     )
     async for m in model:
         assert isinstance(m, UserExtract)
+
+
+@pytest.mark.parametrize("model,mode", product(models, modes))
+def test_model(model, mode, client):
+    client = instructor.from_anthropic(client, mode=mode)
+    model = client.create(
+        model=model,
+        response_model=UserExtract,
+        max_retries=2,
+        max_tokens=1024,
+        system="You are a helpful assistant that extracts user information from sentences",
+        messages=[{"role": "user", "content": "Jason is 8 years old"}],
+    )
+
+    assert model.name == "Jason"
+    assert model.age == 8
+
+
+@pytest.mark.parametrize("model,mode", product(models, modes))
+@pytest.mark.asyncio
+async def test_model_async(model, mode, aclient):
+    aclient = instructor.from_anthropic(aclient, mode=mode)
+    model = await aclient.create(
+        model=model,
+        response_model=UserExtract,
+        max_retries=2,
+        max_tokens=1024,
+        system="You are a helpful assistant that extracts user information from sentences",
+        messages=[{"role": "user", "content": "Jason is 8 years old"}],
+    )
+
+    assert model.name == "Jason"
+    assert model.age == 8
