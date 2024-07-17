@@ -81,6 +81,9 @@ async def process_response_async(
         mode=mode,
     )
 
+    if hasattr(model, "validate_async") and callable(model.validate_async):
+        await model.validate_async()
+
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
