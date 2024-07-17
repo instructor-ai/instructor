@@ -414,26 +414,6 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             from .utils import update_gemini_kwargs
 
             new_kwargs["tools"] = [response_model.gemini_schema]
-
-            message = dedent(
-                f"""
-                As a genius expert, your task is to understand the content and provide arguments to the functions provided. Make sure to provide the right function name and an openAPI compatible response!
-                """
-            )
-            # check that the first message is a system message
-            # if it is not, add a system message to the beginning
-            if new_kwargs["messages"][0]["role"] != "system":
-                new_kwargs["messages"].insert(
-                    0,
-                    {
-                        "role": "system",
-                        "content": message,
-                    },
-                )
-            # if it is, system append the schema to the end
-            else:
-                new_kwargs["messages"][0]["content"] += f"\n\n{message}"
-
             new_kwargs["tool_config"] = {
                 "function_calling_config": {
                     "mode": "ANY",
