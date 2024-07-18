@@ -9,9 +9,9 @@ from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
+from instructor.decorators import AsyncValidationError
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, create_model
-
 import json
 import inspect
 import logging
@@ -56,7 +56,6 @@ async def process_response_async(
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
-
     logger.debug(
         f"Instructor Raw Response: {response}",
     )
@@ -80,6 +79,11 @@ async def process_response_async(
         strict=strict,
         mode=mode,
     )
+
+    if isinstance(model, OpenAISchema) and model.get_async_validators():
+        validation_errors = await model.model_async_validate(validation_context)
+        if validation_errors:
+            raise AsyncValidationError(f"Validation errors: {validation_errors}")
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
