@@ -1,5 +1,5 @@
 from itertools import product
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import BaseModel, ValidationInfo
 import pytest
 import instructor
 from instructor.decorators import async_field_validator
