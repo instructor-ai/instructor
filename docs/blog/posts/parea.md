@@ -1,6 +1,6 @@
 ---
 draft: False
-date: 2024-05-21
+date: 2024-07-17
 categories:
   - Partnerships
   - Observability
@@ -13,7 +13,7 @@ authors:
 
 [Parea](https://www.parea.ai) is a platform that enables teams to monitor, collaborate, test & label for LLM applications. In this blog we will explore how Parea can be used to enhance the OpenAI client alongside `instructor` and debug + improve `instructor` calls. Parea has some features which makes it particularly useful for `instructor`:
 
-- it automatically groups any related LLM calls under a single trace
+- it automatically groups any LLM calls due to reties under a single trace
 - it automatically tracks any validation error counts & fields that occur when using `instructor`
 - it provides a UI to label JSON responses by filling out a form instead of editing JSON objects
 
@@ -125,7 +125,12 @@ To take a look at trace of this execution checkout the screenshot below. Noticea
 
 ![](./img/parea/trace.png)
 
-We can see that while the email was successfully created, there was a validation error which meant that additional cost & latency were introduced because of the initially failed validation.
+
+Above we can see that while the email was successfully created, there was a validation error which meant that additional cost & latency were introduced because of the initially failed validation.
+Below we can see a visualization of the average validation error count for our instructor usage over time.
+
+![](./img/parea/validation-error-chart.png)
+
 
 ## Label Responses for Fine-Tuning
 
