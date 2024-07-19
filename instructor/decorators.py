@@ -25,7 +25,7 @@ def async_field_validator(field: str, *fields: str) -> Callable[[T], T]:
         params = signature(func).parameters
         requires_validation_context = False
         if len(params) == 3:
-            if not params["info"]:
+            if "info" not in params:
                 raise ValueError(
                     "Async validator can only have a value parameter and an optional info parameter"
                 )
@@ -51,7 +51,7 @@ def async_model_validator() -> Callable[[T], T]:
             raise ValueError("Invalid Parameter Count!")
 
         if len(params) == 2:
-            if not params["info"]:
+            if "info" not in params:
                 raise ValueError(
                     "Async validator can only have a value parameter and an optional info parameter"
                 )
