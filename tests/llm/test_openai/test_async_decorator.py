@@ -225,6 +225,7 @@ async def test_context_passing_in_nested_field_validator():
 
         @async_field_validator("user_names")
         def validate_model(self, v: list[str], info: ValidationInfo):
+            assert len(v) > 0
             raise ValueError(f"Invalid Error but with {info.context}!")
 
     class ModelValidationWrapper(OpenAISchema):
