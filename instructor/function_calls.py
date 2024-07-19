@@ -17,13 +17,16 @@ from pydantic import (
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import classproperty, extract_json_from_codeblock
+from pydantic_async_validation import (
+    AsyncValidationModelMixin,
+)
 
 T = TypeVar("T")
 
 logger = logging.getLogger("instructor")
 
 
-class OpenAISchema(BaseModel):
+class OpenAISchema(AsyncValidationModelMixin):
     # Ignore classproperty, since Pydantic doesn't understand it like it would a normal property.
     model_config = ConfigDict(ignored_types=(classproperty,))
 
