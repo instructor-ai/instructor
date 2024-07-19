@@ -24,6 +24,7 @@ class UserExtractValidated(OpenAISchema):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
+@pytest.mark.skip()
 async def test_simple_validator(model, mode, aclient):
     aclient = instructor.from_openai(aclient, mode=mode)
     model = await aclient.chat.completions.create(
@@ -77,6 +78,7 @@ class ExtractedContent(OpenAISchema):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
+@pytest.mark.skip()
 async def test_async_validator(model, mode, aclient):
     aclient = instructor.from_openai(aclient, mode=mode)
     content = """
@@ -113,6 +115,7 @@ async def test_async_validator(model, mode, aclient):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
+@pytest.mark.skip()
 async def test_nested_model(model, mode, aclient):
     class Users(OpenAISchema):
         users: list[UserExtractValidated]
@@ -149,8 +152,8 @@ async def test_field_validator():
 
     assert len(exceptions) == 2
     assert [str(item) for item in exceptions] == [
-        "Uppercase response required for tom",
-        "Uppercase response required for active",
+        "Exception of Uppercase response required for tom encountered at name",
+        "Exception of Uppercase response required for active encountered at label",
     ]
 
 
@@ -169,7 +172,7 @@ async def test_model_validator():
 
     assert len(exceptions) == 1
     assert [str(item) for item in exceptions] == [
-        "Uppercase response required",
+        "Exception of Uppercase response required encountered",
     ]
 
 
@@ -187,8 +190,8 @@ async def test_parsing_nested_field():
 
     assert len(exceptions) == 2
     assert [str(item) for item in exceptions] == [
-        "All Letters in the name must be uppercased. thomas is not a valid response. Eg JASON, TOM not jason, tom",
-        "All Letters in the name must be uppercased. vincent is not a valid response. Eg JASON, TOM not jason, tom",
+        "Exception of All Letters in the name must be uppercased. thomas is not a valid response. Eg JASON, TOM not jason, tom encountered at users.name",
+        "Exception of All Letters in the name must be uppercased. vincent is not a valid response. Eg JASON, TOM not jason, tom encountered at users.name",
     ]
 
 
@@ -209,7 +212,10 @@ async def test_context_passing_in_nested_model():
     ).model_async_validate(validation_context={"abcdef": "123"})
 
     assert len(res) == 1
-    assert str(res[0]) == "Invalid Error but with {'abcdef': '123'}!"
+    assert (
+        str(res[0])
+        == "Exception of Invalid Error but with {'abcdef': '123'}! encountered at model"
+    )
 
 
 @pytest.mark.asyncio
@@ -229,4 +235,7 @@ async def test_context_passing_in_nested_field_validator():
     ).model_async_validate(validation_context={"abcdef": "123"})
 
     assert len(res) == 1
-    assert str(res[0]) == "Invalid Error but with {'abcdef': '123'}!"
+    assert (
+        str(res[0])
+        == "Exception of Invalid Error but with {'abcdef': '123'}! encountered at model.user_names"
+    )

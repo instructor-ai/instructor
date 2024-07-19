@@ -105,6 +105,7 @@ class OpenAISchema(BaseModel):
         func: Any,
         value: Any,
         context: Optional[AsyncValidationContext] = None,
+        prefix=[],
     ):
         try:
             if not context:
@@ -113,12 +114,11 @@ class OpenAISchema(BaseModel):
                 await func(self, value, context)
 
         except Exception as e:
-            return e
+            prefix_path = f" at {'.'.join(prefix)}" if prefix else ""
+            return ValueError(f"Exception of {e} encountered{prefix_path}")
 
     async def execute_model_validator(
-        self,
-        func: Any,
-        context: Optional[AsyncValidationContext] = None,
+        self, func: Any, context: Optional[AsyncValidationContext] = None, prefix=[]
     ):
         try:
             if not context:
@@ -127,9 +127,12 @@ class OpenAISchema(BaseModel):
                 await func(self, context)
 
         except Exception as e:
-            return e
+            prefix_path = f" at {'.'.join(prefix)}" if prefix else ""
+            return ValueError(f"Exception of {e} encountered{prefix_path}")
 
-    async def get_model_coroutines(self, validation_context: dict[str, Any] = {}):
+    async def get_model_coroutines(
+        self, validation_context: dict[str, Any] = {}, prefix=[]
+    ):
         values = dict(self)
         validators = self.__class__.get_async_validators()
         model_validators = self.get_async_model_validators()
@@ -146,6 +149,7 @@ class OpenAISchema(BaseModel):
                         AsyncValidationContext(context=validation_context)
                         if requires_validation_context
                         else None,
+                        prefix,
                     )
                 )
             else:
@@ -163,14 +167,17 @@ class OpenAISchema(BaseModel):
                             AsyncValidationContext(context=validation_context)
                             if requires_validation_context
                             else None,
+                            prefix=prefix + [field],
                         )
                     )
 
-        for _, attribute_value in self.__dict__.items():
+        for attribute_name, attribute_value in self.__dict__.items():
             # Supporting Sub Array
             if isinstance(attribute_value, OpenAISchema):
                 coros.extend(
-                    await attribute_value.get_model_coroutines(validation_context)
+                    await attribute_value.get_model_coroutines(
+                        validation_context, prefix=prefix + [attribute_name]
+                    )
                 )
 
             # List of items too
@@ -178,7 +185,9 @@ class OpenAISchema(BaseModel):
                 for _, item in enumerate(attribute_value):
                     if isinstance(item, OpenAISchema):
                         coros.extend(
-                            await item.get_model_coroutines(validation_context)
+                            await item.get_model_coroutines(
+                                validation_context, prefix=prefix + [attribute_name]
+                            )
                         )
 
         return coros
