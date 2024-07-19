@@ -80,7 +80,7 @@ async def process_response_async(
         mode=mode,
     )
 
-    if isinstance(model, OpenAISchema) and model.get_async_validators():
+    if isinstance(model, OpenAISchema):
         validation_errors = await model.model_async_validate(validation_context)
         if validation_errors:
             raise AsyncValidationError(f"Validation errors: {validation_errors}")

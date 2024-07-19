@@ -87,7 +87,7 @@ class OpenAISchema(BaseModel):
         ]
         return validators
 
-    async def execute_validator(
+    async def execute_field_validator(
         self,
         func: Any,
         value: Any,
@@ -102,9 +102,11 @@ class OpenAISchema(BaseModel):
         except Exception as e:
             return e
 
-    async def model_async_validate(self, validation_context: dict[str, Any] = {}):
+    async def get_model_coroutines(self, validation_context: dict[str, Any] = {}):
         values = dict(self)
-        validators = self.__class__.get_async_validators()
+        validators = (
+            self.__class__.get_async_validators()
+        )  # TODO: Add in support for model level validators
         coros: list[Awaitable[Any]] = []
         for validator in validators:
             fields, validation_func, requires_validation_context = getattr(
@@ -116,15 +118,31 @@ class OpenAISchema(BaseModel):
 
                 if requires_validation_context:
                     coros.append(
-                        self.execute_validator(
+                        self.execute_field_validator(
                             validation_func,
                             values[field],
                             AsyncValidationContext(context=validation_context),
                         )
                     )
                 else:
-                    coros.append(self.execute_validator(validation_func, values[field]))
+                    coros.append(
+                        self.execute_field_validator(validation_func, values[field])
+                    )
+        for _, attribute_value in self.__dict__.items():
+            # Supporting Sub Array
+            if isinstance(attribute_value, OpenAISchema):
+                coros.extend(await attribute_value.get_model_coroutines())
 
+            # List of items too
+            if isinstance(attribute_value, (list, set, tuple)):
+                for _, item in enumerate(attribute_value):
+                    if isinstance(item, OpenAISchema):
+                        coros.extend(await item.get_model_coroutines())
+
+        return coros
+
+    async def model_async_validate(self, validation_context: dict[str, Any] = {}):
+        coros = await self.get_model_coroutines(validation_context)
         return [item for item in await asyncio.gather(*coros) if item]
 
     @classmethod

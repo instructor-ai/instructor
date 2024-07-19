@@ -6,9 +6,10 @@ from instructor.decorators import async_field_validator
 from openai import AsyncOpenAI
 from instructor import from_openai
 from .util import models, modes
+from instructor.function_calls import OpenAISchema
 
 
-class UserExtractValidated(BaseModel):
+class UserExtractValidated(OpenAISchema):
     name: str
     age: int
 
@@ -21,9 +22,9 @@ class UserExtractValidated(BaseModel):
         return v
 
 
-# @pytest.mark.parametrize("model, mode", product(models, modes))
-# @pytest.mark.asyncio
-async def test_async_validator(model, mode, aclient):
+@pytest.mark.parametrize("model, mode", product(models, modes))
+@pytest.mark.asyncio
+async def test_simple_validator(model, mode, aclient):
     aclient = instructor.from_openai(aclient, mode=mode)
     model = await aclient.chat.completions.create(
         model=model,
@@ -37,12 +38,12 @@ async def test_async_validator(model, mode, aclient):
     assert model.name == "JASON"
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(OpenAISchema):
     chain_of_thought: str
     is_valid: bool
 
 
-class ExtractedContent(BaseModel):
+class ExtractedContent(OpenAISchema):
     relevant_question: str
 
     @async_field_validator("relevant_question")
@@ -105,3 +106,27 @@ async def test_async_validator(model, mode, aclient):
     assert isinstance(
         model, ExtractedContent
     ), "Should be instance of Extracted Content"
+
+
+class Users(OpenAISchema):
+    users: list[UserExtractValidated]
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+@pytest.mark.asyncio
+async def test_nested_model(model, mode, aclient):
+    aclient = instructor.from_openai(aclient, mode=mode)
+    resp = await aclient.chat.completions.create(
+        model=model,
+        response_model=Users,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Extract users from this sentence - Tom is 22 and lives with his roomate Jack who is 24",
+            }
+        ],
+    )
+
+    assert isinstance(resp, Users)
+    for user in resp.users:
+        assert user.name.isupper()
