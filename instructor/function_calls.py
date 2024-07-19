@@ -17,7 +17,11 @@ from pydantic import (
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import classproperty, extract_json_from_codeblock
-from instructor.decorators import ASYNC_VALIDATOR_KEY, AsyncValidationContext
+from instructor.decorators import (
+    ASYNC_VALIDATOR_KEY,
+    AsyncValidationContext,
+    ASYNC_MODEL_VALIDATOR_KEY,
+)
 
 T = TypeVar("T")
 
@@ -87,6 +91,15 @@ class OpenAISchema(BaseModel):
         ]
         return validators
 
+    @classmethod
+    def get_async_model_validators(cls):
+        validators = [
+            getattr(cls, name)
+            for name in dir(cls)
+            if hasattr(getattr(cls, name), ASYNC_MODEL_VALIDATOR_KEY)
+        ]
+        return validators
+
     async def execute_field_validator(
         self,
         func: Any,
@@ -102,47 +115,77 @@ class OpenAISchema(BaseModel):
         except Exception as e:
             return e
 
+    async def execute_model_validator(
+        self,
+        func: Any,
+        context: Optional[AsyncValidationContext] = None,
+    ):
+        try:
+            if not context:
+                await func(self)
+            else:
+                await func(self, context)
+
+        except Exception as e:
+            return e
+
     async def get_model_coroutines(self, validation_context: dict[str, Any] = {}):
         values = dict(self)
-        validators = (
-            self.__class__.get_async_validators()
-        )  # TODO: Add in support for model level validators
+        validators = self.__class__.get_async_validators()
+        model_validators = self.get_async_model_validators()
         coros: list[Awaitable[Any]] = []
-        for validator in validators:
-            fields, validation_func, requires_validation_context = getattr(
-                validator, ASYNC_VALIDATOR_KEY
-            )
-            for field in fields:
-                if field not in values:
-                    raise ValueError(f"Invalid Field of {field} provided")
+        for validator in validators + model_validators:
+            # Model Validator
+            if not hasattr(validator, ASYNC_VALIDATOR_KEY):
+                validation_func, requires_validation_context = getattr(
+                    validator, ASYNC_MODEL_VALIDATOR_KEY
+                )
+                coros.append(
+                    self.execute_model_validator(
+                        validation_func,
+                        AsyncValidationContext(context=validation_context)
+                        if requires_validation_context
+                        else None,
+                    )
+                )
+            else:
+                fields, validation_func, requires_validation_context = getattr(
+                    validator, ASYNC_VALIDATOR_KEY
+                )
+                for field in fields:
+                    if field not in values:
+                        raise ValueError(f"Invalid Field of {field} provided")
 
-                if requires_validation_context:
                     coros.append(
                         self.execute_field_validator(
                             validation_func,
                             values[field],
-                            AsyncValidationContext(context=validation_context),
+                            AsyncValidationContext(context=validation_context)
+                            if requires_validation_context
+                            else None,
                         )
                     )
-                else:
-                    coros.append(
-                        self.execute_field_validator(validation_func, values[field])
-                    )
+
         for _, attribute_value in self.__dict__.items():
             # Supporting Sub Array
             if isinstance(attribute_value, OpenAISchema):
-                coros.extend(await attribute_value.get_model_coroutines())
+                coros.extend(
+                    await attribute_value.get_model_coroutines(validation_context)
+                )
 
             # List of items too
             if isinstance(attribute_value, (list, set, tuple)):
                 for _, item in enumerate(attribute_value):
                     if isinstance(item, OpenAISchema):
-                        coros.extend(await item.get_model_coroutines())
+                        coros.extend(
+                            await item.get_model_coroutines(validation_context)
+                        )
 
         return coros
 
     async def model_async_validate(self, validation_context: dict[str, Any] = {}):
         coros = await self.get_model_coroutines(validation_context)
+
         return [item for item in await asyncio.gather(*coros) if item]
 
     @classmethod

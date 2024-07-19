@@ -43,13 +43,14 @@ def async_field_validator(field: str, *fields: str) -> Callable[[T], T]:
     return decorator
 
 
-def async_model_validator(field: str, *fields: str) -> Callable[[T], T]:
-    field_names = field, *fields
-
+def async_model_validator() -> Callable[[T], T]:
     def decorator(func: T) -> T:
         params = signature(func).parameters
         requires_validation_context = False
-        if len(params) == 3:
+        if len(params) > 2:
+            raise ValueError("Invalid Parameter Count!")
+
+        if len(params) == 2:
             if not params["info"]:
                 raise ValueError(
                     "Async validator can only have a value parameter and an optional info parameter"
@@ -63,7 +64,7 @@ def async_model_validator(field: str, *fields: str) -> Callable[[T], T]:
         setattr(
             func,
             ASYNC_MODEL_VALIDATOR_KEY,
-            (field_names, func, requires_validation_context),
+            (func, requires_validation_context),
         )
         return func
 

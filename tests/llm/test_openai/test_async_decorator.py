@@ -2,7 +2,7 @@ from itertools import product
 from pydantic import BaseModel, ValidationInfo
 import pytest
 import instructor
-from instructor.decorators import async_field_validator
+from instructor.decorators import async_field_validator, async_model_validator
 from openai import AsyncOpenAI
 from instructor import from_openai
 from .util import models, modes
@@ -108,13 +108,12 @@ async def test_async_validator(model, mode, aclient):
     ), "Should be instance of Extracted Content"
 
 
-class Users(OpenAISchema):
-    users: list[UserExtractValidated]
-
-
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
 async def test_nested_model(model, mode, aclient):
+    class Users(OpenAISchema):
+        users: list[UserExtractValidated]
+
     aclient = instructor.from_openai(aclient, mode=mode)
     resp = await aclient.chat.completions.create(
         model=model,
@@ -130,3 +129,101 @@ async def test_nested_model(model, mode, aclient):
     assert isinstance(resp, Users)
     for user in resp.users:
         assert user.name.isupper()
+
+
+@pytest.mark.asyncio
+async def test_field_validator():
+    class User(OpenAISchema):
+        name: str
+        label: str
+
+        @async_field_validator("name", "label")
+        def validate_user(self, v: str):
+            if not v.isupper():
+                raise ValueError(f"Uppercase response required for {v}")
+
+    exceptions = await User(name="tom", label="active").model_async_validate()
+
+    assert len(exceptions) == 2
+    assert [str(item) for item in exceptions] == [
+        "Uppercase response required for tom",
+        "Uppercase response required for active",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_model_validator():
+    class User(OpenAISchema):
+        name: str
+        label: str
+
+        @async_model_validator()
+        def validate_user(self):
+            if not self.name.isupper() or not self.label.isupper():
+                raise ValueError(f"Uppercase response required")
+
+    exceptions = await User(name="tom", label="active").model_async_validate()
+
+    assert len(exceptions) == 1
+    assert [str(item) for item in exceptions] == [
+        "Uppercase response required",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_parsing_nested_field():
+    class Users(OpenAISchema):
+        users: list[UserExtractValidated]
+
+    exceptions = await Users(
+        users=[
+            UserExtractValidated(name="thomas", age=22),
+            UserExtractValidated(name="vincent", age=24),
+        ]
+    ).model_async_validate()
+
+    assert len(exceptions) == 2
+    assert [str(item) for item in exceptions] == [
+        "All Letters in the name must be uppercased. thomas is not a valid response. Eg JASON, TOM not jason, tom",
+        "All Letters in the name must be uppercased. vincent is not a valid response. Eg JASON, TOM not jason, tom",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_context_passing_in_nested_model():
+    class ModelValidationCheck(OpenAISchema):
+        user_names: list[str]
+
+        @async_model_validator()
+        def validate_model(self, info: ValidationInfo):
+            raise ValueError(f"Invalid Error but with {info.context}!")
+
+    class ModelValidationWrapper(OpenAISchema):
+        model: ModelValidationCheck
+
+    res = await ModelValidationWrapper(
+        model=ModelValidationCheck(user_names=["Jack", "Thomas", "Ben"])
+    ).model_async_validate(validation_context={"abcdef": "123"})
+
+    assert len(res) == 1
+    assert str(res[0]) == "Invalid Error but with {'abcdef': '123'}!"
+
+
+@pytest.mark.asyncio
+async def test_context_passing_in_nested_field_validator():
+    class ModelValidationCheck(OpenAISchema):
+        user_names: list[str]
+
+        @async_field_validator("user_names")
+        def validate_model(self, v: list[str], info: ValidationInfo):
+            raise ValueError(f"Invalid Error but with {info.context}!")
+
+    class ModelValidationWrapper(OpenAISchema):
+        model: ModelValidationCheck
+
+    res = await ModelValidationWrapper(
+        model=ModelValidationCheck(user_names=["Jack", "Thomas", "Ben"])
+    ).model_async_validate(validation_context={"abcdef": "123"})
+
+    assert len(res) == 1
+    assert str(res[0]) == "Invalid Error but with {'abcdef': '123'}!"
