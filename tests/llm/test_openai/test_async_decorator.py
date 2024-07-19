@@ -1,11 +1,11 @@
 from itertools import product
-from pydantic import BaseModel, ValidationInfo
+from pydantic import ValidationInfo
 import pytest
 import instructor
-from instructor.decorators import async_field_validator, async_model_validator
 from openai import AsyncOpenAI
 from instructor import from_openai
 from .util import models, modes
+from instructor.decorators import async_field_validator, async_model_validator
 from instructor.function_calls import OpenAISchema
 
 
