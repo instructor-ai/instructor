@@ -51,6 +51,9 @@ class ExtractedContent(OpenAISchema):
         client = from_openai(AsyncOpenAI())
         if info.context and "content" in info.context:
             original_source = info.context["content"]
+            assert (
+                len(original_source) > 10
+            )  # Asserting that a valid string was indeed passed in
             evaluation = await client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[

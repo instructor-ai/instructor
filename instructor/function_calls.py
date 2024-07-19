@@ -185,7 +185,6 @@ class OpenAISchema(BaseModel):
 
     async def model_async_validate(self, validation_context: dict[str, Any] = {}):
         coros = await self.get_model_coroutines(validation_context)
-
         return [item for item in await asyncio.gather(*coros) if item]
 
     @classmethod
