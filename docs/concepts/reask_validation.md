@@ -218,7 +218,7 @@ class User(BaseModel):
     label: str
     name: str
 
-    @async_field_validator("label", "name") #(1)!
+    @async_field_validator("label", "name")  # (1)!
     async def validate_uppercase(self, v: str) -> str:
         if not v.isupper():
             raise ValueError(f"{v} must be an upper cased value")
@@ -251,7 +251,7 @@ We can also use a model validator to validate a combination of fields. In this c
 ```python hl_lines="11"
 from pydantic import BaseModel
 import asyncio
-from instructor import from_openai,async_model_validator
+from instructor import from_openai, async_model_validator
 from openai import AsyncOpenAI
 
 
@@ -259,7 +259,7 @@ class User(BaseModel):
     name: str
     occupation: str
 
-    @async_model_validator() #(1)!
+    @async_model_validator()  # (1)!
     async def validate_uppercase(self):
         if not self.name.isupper() or not self.occupation.isupper():
             raise ValueError("Name and Occupation must be capitalized (Eg. TOM, COOK)")
@@ -299,13 +299,14 @@ from openai import AsyncOpenAI
 import time
 
 
-class User(BaseModel): #(1)!
+class User(BaseModel):  # (1)!
     name: str
     occupation: str
 
     @async_model_validator()
     async def validate_uppercase(self):
         await asyncio.sleep(2)
+
 
 class Users(BaseModel):
     users: list[User]
@@ -329,7 +330,7 @@ resp = asyncio.run(
 )
 end = time.time()
 print(f"Elapsed Time: {end-start}")
-# > Elapsed Time: 3.375563859939575
+#> Elapsed Time: 3.375563859939575
 print(resp.model_dump_json())
 # {
 #     "users": [
@@ -347,13 +348,12 @@ Sometimes, you might want your validators to be able to access some context you 
 
 We allow you to access an arbitrary dictionary by defining an `info` parameter of type `ValidationInfo` in both the `async_model_validator` and `async_field_validator` objects.
 
-```python hl_lines="13-17 37"
+```python hl_lines="12-16 36"
 from pydantic import ValidationInfo, BaseModel
 from instructor import async_model_validator
 import asyncio
 from instructor import from_openai
 from openai import AsyncOpenAI
-import time
 
 
 class User(BaseModel):
@@ -361,7 +361,7 @@ class User(BaseModel):
     occupation: str
 
     @async_model_validator()
-    async def validate_uppercase(self, info: ValidationInfo): #(1)!
+    async def validate_uppercase(self, info: ValidationInfo):  # (1)!
         context = info.context
         if context and self.name in context.get("forbidden_names", []):
             raise ValueError(f"Do not include the name {self.name}")
@@ -384,7 +384,7 @@ resp = asyncio.run(
             }
         ],
         response_model=Users,
-        validation_context={"forbidden_names": "Thomas"}, #(2)!
+        validation_context={"forbidden_names": "Thomas"},  # (2)!
     )
 )
 print(resp.model_dump_json())
@@ -397,7 +397,7 @@ print(resp.model_dump_json())
 We also support the same api with the `field_validator` decorator
 
 ```python hl_lines="12-16 36"
-from pydantic import ValidationInfo,BaseModel
+from pydantic import ValidationInfo, BaseModel
 from instructor import async_field_validator
 import asyncio
 from instructor import from_openai
@@ -408,7 +408,7 @@ class User(BaseModel):
     name: str
     occupation: str
 
-    @async_field_validator("name") #(1)!
+    @async_field_validator("name")  # (1)!
     async def validate_uppercase(self, v: str, info: ValidationInfo):
         context = info.context
         if context and v in context.get("forbidden_names", []):
@@ -432,7 +432,7 @@ resp = asyncio.run(
             }
         ],
         response_model=Users,
-        validation_context={"forbidden_names": "Thomas"}, #(2)!
+        validation_context={"forbidden_names": "Thomas"},  # (2)!
     )
 )
 print(resp.model_dump_json())
@@ -461,7 +461,7 @@ from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 from pydantic import AfterValidator
 
-disable_pydantic_error_url() # (1)!
+disable_pydantic_error_url()  # (1)!
 
 
 def name_must_contain_space(v: str) -> str:
