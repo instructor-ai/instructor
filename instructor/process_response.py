@@ -73,6 +73,8 @@ async def process_response_async(
         )
         return model
 
+    print(response_model.schema_json())
+
     model = response_model.from_response(
         response,
         validation_context=validation_context,
