@@ -116,7 +116,7 @@ def process_response(
         stream (bool): Whether the response is a stream
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (_type_, optional): Whether to use strict json parsing. Defaults to None.
-        mode (Mode, optional): The openai completion mode. Defaults to Mode.TOOLS.
+        mode (Mode, optional): The openai completion mode. Defaults to Mode.FUNCTIONS.
 
     Returns:
         Union[T_Model, T]: The parsed response, if a response model is available, otherwise the response as is from the SDK
@@ -233,7 +233,10 @@ def handle_response_model(
                 "stream=True is not supported when using response_model parameter for non-iterables"
             )
 
-        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
+        if mode == Mode.FUNCTIONS:
+            new_kwargs["functions"] = [response_model.openai_schema]
+            new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
+        elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
                     "type": "function",
