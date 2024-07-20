@@ -138,21 +138,21 @@ nav:
     - Cookbooks: 'examples/index.md'
     - Text Classification: 'examples/classification.md'
     - Local Classification: 'examples/local_classification.md'
+    - Ollama: 'examples/ollama.md'
+    - Citing Sources (RAG): 'examples/exact_citations.md'
+    - Extracting Knowledge Graphs: 'examples/knowledge_graph.md'
+    - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
     - Bulk Classification (User Defined): 'examples/bulk_classification.md'
     - LLM Self Critique: 'examples/self_critique.md'
-    - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
     - Extracting Receipts using GPT-4o: 'examples/extracting_receipts.md'
     - Extracting From Slides with GPT-V: 'examples/extract_slides.md'
     - Content Moderation: 'examples/moderation.md'
-    - Citing Sources (RAG): 'examples/exact_citations.md'
-    - Extracting Knowledge Graphs: 'examples/knowledge_graph.md'
     - Extracting Complex Entities: 'examples/entity_resolution.md'
     - Expanding Search Queries (RAG): 'examples/search.md'
     - Query Planning (RAG): 'examples/planning-tasks.md'
     - PII Data Sanitization: 'examples/pii.md'
     - Enabling Open Source Models: 'examples/open_source.md'
     - Image to Ad Copy: 'examples/image_to_ad_copy.md'
-    - Ollama: 'examples/ollama.md'
     - SQLModel Integration: 'examples/sqlmodel.md'
     - Including Examples in Prompt: 'examples/examples.md'
     - Document Segmentation: 'examples/document_segmentation.md'
@@ -162,14 +162,14 @@ nav:
     - "blog/index.md"
   - Concepts:
     - Models: 'concepts/models.md'
+    - Retrying: 'concepts/retrying.md'
+    - Patching: 'concepts/patching.md'
     - Fields: 'concepts/fields.md'
     - Types: 'concepts/types.md'
     - TypedDicts: 'concepts/typeddicts.md'
     - Validators: "concepts/reask_validation.md"
     - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
-    - Patching: 'concepts/patching.md'
-    - Retrying: 'concepts/retrying.md'
     - Parallel Tools: 'concepts/parallel.md'
     - Stream Iterable: "concepts/lists.md"
     - Stream Partial: "concepts/partial.md"
