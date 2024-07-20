@@ -118,6 +118,9 @@ class OpenAISchema(BaseModel):
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
+        if mode == Mode.FUNCTIONS:
+            return cls.parse_functions(completion, validation_context, strict)
+
         if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             return cls.parse_tools(completion, validation_context, strict)
 
