@@ -55,7 +55,7 @@ def test_sync_parallel_tools_or(client):
 async def test_async_parallel_tools_or(model, mode):
     client = instructor.from_openai(aclient, mode=mode)
     resp = await client.chat.completions.create(
-        model="gpt-4-turbo-preview",
+        model=model,
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {
