@@ -224,7 +224,7 @@ nav:
       - Use Emotional Language: 'prompting/zero_shot/emotion_prompting.md'
       - Assign a Role: 'prompting/zero_shot/role_prompting.md'
       - Define A Style: 'prompting/zero_shot/style_prompting.md'
-      - Refine Your Query: 'prompting/zero_shot/s2a.md'
+      - Auto-Refine The Prompt: 'prompting/zero_shot/s2a.md'
       - Limit Knowledge Strategically: 'prompting/zero_shot/simtom.md'
       - Rephrase the Prompt: 'prompting/zero_shot/rar.md' 
       - Read the Prompt Again: 'prompting/zero_shot/re2.md'

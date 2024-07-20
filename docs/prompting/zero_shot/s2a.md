@@ -1,13 +1,16 @@
 ---
-description: "System 2 Attention (S2A) is a two-step prompting technique that focuses on improving the LLM's attention to relevant information"
+title: "System 2 Attention (S2A)"
+description: "System 2 Attention (S2A) is a two-step prompting technique that removes irrelevant information from the prompt."
 ---
 
-Refine your prompt using the System 2 Attention (S2A) technique<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup>.
+How do we remove irrelevant information from the prompt?
 
-1. Ask the LLM to rewrite the prompt by removing any information unrelated to the question.
-2. Pass this new, focused prompt back to the LLM to generate the final response.
+The S2A (System 2 Attention) technique auto-refines a prompt by asking the model to remove irrelevant information from the prompt. We implement this in two steps:
 
-This method helps in producing more factual and less opinionated outputs<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup>.<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>. We can implement this using `instructor` as seen below.
+1. Ask the model to rewrite the prompt
+2. Pass the rewritten prompt back to the model
+
+## Implementation
 
 ```python hl_lines="25-28"
 import openai
@@ -44,7 +47,7 @@ def rewrite_prompt():
                     adds 10 more pieces of candy to her collection. Max
                     is 5 years older than Mary. If Megan has 5 pieces of
                     candy, how many does Mary have in total?
-                    """,
+                    """, # (1)!
             }
         ],
     )
@@ -84,8 +87,8 @@ if __name__ == "__main__":
     #> 25
 ```
 
-### References
+1. This prompt template comes from this<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup> paper.
+
+## References
 
 <sup id="ref-1">1</sup>: [System 2 Attention (is something you might need too)](https://arxiv.org/abs/2311.11829)
-
-<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
