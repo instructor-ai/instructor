@@ -17,7 +17,7 @@ from pydantic import (
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import classproperty, extract_json_from_codeblock
-from instructor.decorators import (
+from instructor.validators import (
     ASYNC_VALIDATOR_KEY,
     AsyncValidationContext,
     ASYNC_MODEL_VALIDATOR_KEY,
@@ -182,7 +182,7 @@ class OpenAISchema(BaseModel):
 
             # List of items too
             if isinstance(attribute_value, (list, set, tuple)):
-                for _, item in enumerate(attribute_value):
+                for item in attribute_value:
                     if isinstance(item, OpenAISchema):
                         coros.extend(
                             await item.get_model_coroutines(
@@ -446,10 +446,4 @@ def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
-    shema = wraps(cls, updated=())(
-        create_model(
-            cls.__name__ if hasattr(cls, "__name__") else str(cls),
-            __base__=(cls, OpenAISchema),
-        )
-    )
-    return cast(OpenAISchema, shema)
+    return openai_schema_helper(cls)

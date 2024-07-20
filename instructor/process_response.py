@@ -9,7 +9,7 @@ from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
-from instructor.decorators import AsyncValidationError
+from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, create_model
 import json

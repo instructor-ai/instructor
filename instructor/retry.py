@@ -16,7 +16,7 @@ from instructor.exceptions import InstructorRetryException
 from openai.types.completion_usage import CompletionUsage
 from pydantic import ValidationError
 from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
-from instructor.decorators import AsyncValidationError
+from instructor.validators import AsyncValidationError
 
 from json import JSONDecodeError
 from pydantic import BaseModel
