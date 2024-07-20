@@ -52,7 +52,7 @@ def test_sync_parallel_tools_or(client):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("model, mode", "aclient", product(models, modes, [cli]))
-async def test_async_parallel_tools_or(model, mode):
+async def test_async_parallel_tools_or(mode):
     client = instructor.from_openai(aclient, mode=mode)
     resp = await client.chat.completions.create(
         model="gpt-4-turbo-preview",
