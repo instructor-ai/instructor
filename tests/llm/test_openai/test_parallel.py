@@ -3,8 +3,6 @@ from __future__ import annotations
 from typing import Literal, Union
 from collections.abc import Iterable
 from pydantic import BaseModel
-from itertools import product
-from .util import models, modes
 import pytest
 import instructor
 
