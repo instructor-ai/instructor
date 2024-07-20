@@ -39,6 +39,8 @@ class Instructor:
         self.client = client
         self.create_fn = create
         self.mode = mode
+        if mode == instructor.Mode.FUNCTIONS:
+            instructor.Mode.warn_mode_functions_deprecation()
         self.kwargs = kwargs
         self.provider = provider
 

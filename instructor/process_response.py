@@ -234,6 +234,7 @@ def handle_response_model(
             )
 
         if mode == Mode.FUNCTIONS:
+            Mode.warn_mode_functions_deprecation()
             new_kwargs["functions"] = [response_model.openai_schema]
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
