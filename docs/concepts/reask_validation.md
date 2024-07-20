@@ -212,7 +212,7 @@ from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 from pydantic import AfterValidator
 
-disable_pydantic_error_url() # (1)!
+disable_pydantic_error_url()  # (1)!
 
 
 def name_must_contain_space(v: str) -> str:
