@@ -199,19 +199,22 @@ Pydantic doesn't support async validators out of the box at the moment. We've im
 
 This is especially useful if you are making multiple api calls in parallel. This implementation is heavily inspired by [pydantic-async-validation](https://github.com/team23/pydantic-async-validation/tree/64e4190494141c881ade30963390f91c3286dafc).
 
+!!! warning "Async Client Required"
+
+    The async validation features (`async_field_validator` and `async_model_validator`) only work with an asynchronous client (Eg. `AsyncOpenAI()` vs `OpenAI()`).
+
 ### Field Validators
 
-To use our Async Validators, you'll need to import in the `OpenAISchema` class that we expose in instructor. Here's a quick example of how we can validate multiple fields at the same time
+To use the `async_field_validator`, all you'll need to do is to define your standard Pydantic `BaseModel` and import in the `async_field_validator` from instructor.
 
-```python hl_lines="12"
-from instructor.decorators import async_field_validator
-from instructor.function_calls import OpenAISchema
+```python hl_lines="11"
+from pydantic import BaseModel
 import asyncio
-from instructor import from_openai
+from instructor import from_openai, async_field_validator
 from openai import AsyncOpenAI
 
 
-class User(OpenAISchema):
+class User(BaseModel):
     label: str
     name: str
 
@@ -239,21 +242,20 @@ print(resp)
 #> label='SOFTWARE ENGINEER' name='IVAN'
 ```
 
-1.  You can set the fields to run the same validator on
+1.  You can set the fields to run the same validator on. We don't support wildcard characters (eg. '\*' ) at this moment but might in the future.
 
 ### Model Validators
 
 We can also use a model validator to validate a combination of fields. In this case, we want to make sure that every field is in caps. This helps us to prevent errors.
 
-```python linenums="1" hl_lines="12"
-from instructor.decorators import async_model_validator
-from instructor.function_calls import OpenAISchema
+```python hl_lines="11"
+from pydantic import BaseModel
 import asyncio
-from instructor import from_openai
+from instructor import from_openai,async_model_validator
 from openai import AsyncOpenAI
 
 
-class User(OpenAISchema):
+class User(BaseModel):
     name: str
     occupation: str
 
@@ -286,18 +288,18 @@ assert resp.occupation == "SOFTWARE ENGINEER"
 
 ### Nested Pydantic Objects
 
-We also support nested validation, just make sure that they also inherit from the `OpenAISchema`
+We also support nested validation as long as they inherit from Pydantic's `BaseModel` class
 
 ```python hl_lines="9-15"
-from instructor.decorators import async_model_validator
-from instructor.function_calls import OpenAISchema
+from instructor import async_model_validator
+from pydantic import BaseModel
 import asyncio
 from instructor import from_openai
 from openai import AsyncOpenAI
 import time
 
 
-class User(OpenAISchema): #(1)!
+class User(BaseModel): #(1)!
     name: str
     occupation: str
 
@@ -305,7 +307,7 @@ class User(OpenAISchema): #(1)!
     async def validate_uppercase(self):
         await asyncio.sleep(2)
 
-class Users(OpenAISchema):
+class Users(BaseModel):
     users: list[User]
 
 
@@ -337,23 +339,24 @@ print(resp.model_dump_json())
 # }
 ```
 
-1. As long as the class inherits from the `OpenAISchema` class, we'll be able to run the validation you define on a property
+1. As long as the class inherits from the `BaseModel` class, we'll be able to run the validation you define on a property
 
 ### Validation Context
 
-Sometimes, you might want your validators to be able to access some context you provide at runtime. We allow you to access an arbitrary dictionary by defining an `info` parameter of type `ValidationInfo` in both the `async_model_validator` and `async_field_validator` objects.
+Sometimes, you might want your validators to be able to access some context you provide at runtime.
 
-```python hl_lines="10-18 38"
-from pydantic import ValidationInfo
-from instructor.decorators import async_model_validator
-from instructor.function_calls import OpenAISchema
+We allow you to access an arbitrary dictionary by defining an `info` parameter of type `ValidationInfo` in both the `async_model_validator` and `async_field_validator` objects.
+
+```python hl_lines="13-17 37"
+from pydantic import ValidationInfo, BaseModel
+from instructor import async_model_validator
 import asyncio
 from instructor import from_openai
 from openai import AsyncOpenAI
 import time
 
 
-class User(OpenAISchema):
+class User(BaseModel):
     name: str
     occupation: str
 
@@ -364,7 +367,7 @@ class User(OpenAISchema):
             raise ValueError(f"Do not include the name {self.name}")
 
 
-class Users(OpenAISchema):
+class Users(BaseModel):
     users: list[User]
 
 
@@ -393,16 +396,15 @@ print(resp.model_dump_json())
 
 We also support the same api with the `field_validator` decorator
 
-```python hl_lines="13-17 37"
-from pydantic import ValidationInfo
-from instructor.decorators import async_field_validator
-from instructor.function_calls import OpenAISchema
+```python hl_lines="12-16 36"
+from pydantic import ValidationInfo,BaseModel
+from instructor import async_field_validator
 import asyncio
 from instructor import from_openai
 from openai import AsyncOpenAI
 
 
-class User(OpenAISchema):
+class User(BaseModel):
     name: str
     occupation: str
 
@@ -413,7 +415,7 @@ class User(OpenAISchema):
             raise ValueError(f"Do not include the user {v}")
 
 
-class Users(OpenAISchema):
+class Users(BaseModel):
     users: list[User]
 
 
