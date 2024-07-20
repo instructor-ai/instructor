@@ -241,6 +241,10 @@ async def test_context_passing_in_nested_field_validator():
     )
 
 
+from typing import Literal
+from pydantic import BaseModel, Field
+
+
 class User(BaseModel):
     name: str = Field(description="User's name")
     age: int = Field(description="User's age")
@@ -250,6 +254,26 @@ class User(BaseModel):
 def test_openai_schema_serialization():
     UserSchema = openai_schema(User)
     assert User.model_json_schema() == UserSchema.model_json_schema()
+
+
+def test_openai_schema_float_and_bool():
+    class FloatBoolModel(BaseModel):
+        price: float = Field(description="Price of an item")
+        is_available: bool = Field(description="Availability status")
+
+    FloatBoolSchema = openai_schema(FloatBoolModel)
+    assert FloatBoolModel.model_json_schema() == FloatBoolSchema.model_json_schema()
+
+
+def test_openai_schema_bytes_and_literal():
+    class BytesLiteralModel(BaseModel):
+        data: bytes = Field(description="Binary data")
+        status: Literal["active", "inactive"] = Field(description="Current status")
+
+    BytesLiteralSchema = openai_schema(BytesLiteralModel)
+    assert (
+        BytesLiteralModel.model_json_schema() == BytesLiteralSchema.model_json_schema()
+    )
 
 
 def test_nested_class():

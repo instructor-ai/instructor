@@ -2,7 +2,7 @@
 import json
 import logging
 from functools import wraps
-from typing import Annotated, Any, Optional, TypeVar, cast, get_origin
+from typing import Annotated, Any, Optional, TypeVar, cast, get_origin, Literal
 import asyncio
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
@@ -415,15 +415,18 @@ class OpenAISchema(BaseModel):
 
 
 def openai_schema_helper(cls: T) -> T:
-    if issubclass(cls, (str, int, bool, float, bytes)):
-        return cls
-
     origin = get_origin(cls)
 
     if origin is list:
         return list[openai_schema_helper(cls.__args__[0])]
 
-    if issubclass(cls, BaseModel):
+    if origin is Literal:
+        return cls
+
+    if issubclass(cls, (str, int, bool, float, bytes)):
+        return cls
+
+    if isinstance(cls, type) and issubclass(cls, BaseModel):
         new_types = {}
         for field_name, field_info in cls.model_fields.items():
             field_type = field_info.annotation
