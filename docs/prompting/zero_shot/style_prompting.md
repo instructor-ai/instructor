@@ -15,6 +15,7 @@ Stylistic constraints can include:
  - **genre**: write a *mystery* poem
 
 ## Implementation
+
 ```python hl_lines="21"
 import instructor
 from pydantic import BaseModel
