@@ -121,14 +121,14 @@ def test_incomplete_output_exception(
     test_model: type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
     with pytest.raises(IncompleteOutputException):
-        test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
+        test_model.from_response(mock_completion, mode=instructor.Mode.TOOLS)
 
 
 def test_complete_output_no_exception(
     test_model: type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
     test_model_instance = test_model.from_response(
-        mock_completion, mode=instructor.Mode.FUNCTIONS
+        mock_completion, mode=instructor.Mode.TOOLS
     )
     assert test_model_instance.data == "complete data"
 
@@ -143,7 +143,7 @@ def test_incomplete_output_exception_raise(
     test_model: type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
     with pytest.raises(IncompleteOutputException):
-        test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
+        test_model.from_response(mock_completion, mode=instructor.Mode.TOOLS)
 
 
 def test_anthropic_no_exception(

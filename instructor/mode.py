@@ -4,7 +4,6 @@ import enum
 class Mode(enum.Enum):
     """The mode to use for patching the client"""
 
-    FUNCTIONS = "function_call"
     PARALLEL_TOOLS = "parallel_tool_call"
     TOOLS = "tool_call"
     MISTRAL_TOOLS = "mistral_tools"

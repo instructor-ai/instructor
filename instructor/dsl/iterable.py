@@ -87,10 +87,7 @@ class IterableBase:
                 if mode == Mode.GEMINI_JSON:
                     yield chunk.text
                 elif chunk.choices:
-                    if mode == Mode.FUNCTIONS:
-                        if json_chunk := chunk.choices[0].delta.function_call.arguments:
-                            yield json_chunk
-                    elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+                    if mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
                     elif mode == Mode.TOOLS:
@@ -115,10 +112,7 @@ class IterableBase:
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
                 elif chunk.choices:
-                    if mode == Mode.FUNCTIONS:
-                        if json_chunk := chunk.choices[0].delta.function_call.arguments:
-                            yield json_chunk
-                    elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+                    if mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
                     elif mode == Mode.TOOLS:
