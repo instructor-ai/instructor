@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Literal, Union
 from collections.abc import Iterable
 from pydantic import BaseModel
-
+from itertools import product
+from .util import models, modes
 import pytest
 import instructor
 
@@ -51,9 +52,8 @@ def test_sync_parallel_tools_or(client):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("model, mode", "aclient", product(models, modes, [cli]))
-async def test_async_parallel_tools_or(mode):
-    client = instructor.from_openai(aclient, mode=mode)
+async def test_async_parallel_tools_or(aclient):
+    client = instructor.from_openai(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = await client.chat.completions.create(
         model="gpt-4-turbo-preview",
         messages=[
