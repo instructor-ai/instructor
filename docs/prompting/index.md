@@ -1,86 +1,91 @@
 # Prompting
 
-Prompting is a challenging task, with many small nuances that we need to take note of. We've created examples of 58 different prompting techniques<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup> that you can take advantage of today in order to get a quick boost to your model's performance.
+Effective prompting is an art which requires a nuanced understanding of different techniques. When executed well, prompting can significantly enhance model performance.
 
-The prompting techniques are separated into the following categories - [**Zero Shot**](#zero-shot), [**Few Shot**](#few-shot), [**Thought Generation**](#thought-generation), [**Ensembling**](#ensembling), [**Self-Criticism**](#self-criticism) and [**Decomposition**](#decomposition).
+To help, we've created examples of 58 different prompting techniques<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup> using `instructor` that you can take advantage of today.
 
-Each of these techniques offers unique advantages in different scenarios. Click on the links to learn more about each method and how to apply them effectively in your prompts.
+The prompting techniques are separated into the following categories - [**Zero Shot**](#zero-shot), [**Few Shot**](#few-shot), [**Thought Generation**](#thought-generation), [**Ensembling**](#ensembling), [**Self-Criticism**](#self-criticism), and [**Decomposition**](#decomposition).
+
+Click on the links to learn more about each method and how to apply them effectively in your prompts.
 
 ## Zero-Shot
+How do we increase the performance of our model without any examples?
 
-Before you get any examples, how can you maximise the effectiveness of your prompt? Zero Shot techniques help us to do so well.
-
-1. [Emotion Prompting](zero_shot/emotion_prompting.md)
-2. [Role Prompting](zero_shot/role_prompting.md)
-3. [Style Prompting](zero_shot/style_prompting.md)
-4. [S2A (Sentence to Action)](zero_shot/s2a.md)
-5. [SimToM (Simulated Theory of Mind)](zero_shot/simtom.md)
-6. [RaR (Retrieval-augmented Response)](zero_shot/rar.md)
-7. [RE2 (Recursive Explanation and Elaboration)](zero_shot/re2.md)
-8. [Self-Ask](zero_shot/self-ask.md)
+1. [Use Emotional Language](zero_shot/emotion_prompting.md)
+2. [Assign a Role](zero_shot/role_prompting.md)
+3. [Define a Writing Style](zero_shot/style_prompting.md)
+4. [Auto-Refine The Prompt](zero_shot/s2a.md)
+5. [Simulate a Perspective](zero_shot/simtom.md)
+6. [Auto-Clarify The Prompt](zero_shot/rar.md)
+7. [Ask Model To Repeat The Query](zero_shot/re2.md)
+8. [Generate Follow-Up Questions](zero_shot/self-ask.md)
 
 ## Few-Shot
 
-When choosing examples, how can we ensure they make a big difference in our model's performance? This isn't an easy thing to do and so we've broken it down into a few different things
+How do we choose effective examples to include in our prompt?
 
-1. [SG-ICL](few_shot/example_generation/sg_icl.md)
-2. [Example Ordering](few_shot/example_ordering.md)
-3. [KNN Choice](few_shot/exemplar_selection/knn.md)
-4. [Vote-K](few_shot/exemplar_selection/vote_k.md)
+1. [Auto-Generate Examples](few_shot/example_generation/sg_icl.md)
+2. [Re-Order Examples](few_shot/example_ordering.md)
+3. [Choose Examples Similar to the Query (KNN)](few_shot/exemplar_selection/knn.md)
+4. [Choose Examples Similar to the Query (Vote-K)](few_shot/exemplar_selection/vote_k.md)
 
 ## Thought Generation
 
-How can we encourage our model to reason better to get to the final result?
+How do we encourage our model to mimic human-like reasoning?
 
-1. [Analogical Prompting](thought_generation/chain_of_thought_zero_shot/analogical_prompting.md)
-2. [Step-Back Prompting](thought_generation/chain_of_thought_zero_shot/step_back_prompting.md)
-3. [Thread-of-Thought (ThoT)](thought_generation/chain_of_thought_zero_shot/thread_of_thought.md)
-4. [Tab-CoT](thought_generation/chain_of_thought_zero_shot/tab_cot.md)
-5. [Active-Prompt](thought_generation/chain_of_thought_few_shot/active_prompt.md)
-6. [Auto-CoT](thought_generation/chain_of_thought_few_shot/auto_cot.md)
-7. [Complexity-Based](thought_generation/chain_of_thought_few_shot/complexity_based.md)
-8. [Contrastive](thought_generation/chain_of_thought_few_shot/contrastive.md)
-9. [Memory-of-Thought](thought_generation/chain_of_thought_few_shot/memory_of_thought.md)
-10. [Uncertainty-Routed CoT](thought_generation/chain_of_thought_few_shot/uncertainty_routed_cot.md)
-11. [Prompt Mining](thought_generation/chain_of_thought_few_shot/prompt_mining.md)
+#### Zero Shot
+
+1. [Auto-Generate Chain-Of-Thought Examples](thought_generation/chain_of_thought_zero_shot/analogical_prompting.md)
+2. [First Ask a Higher-Level Question](thought_generation/chain_of_thought_zero_shot/step_back_prompting.md)
+3. [Encourage Analysis](thought_generation/chain_of_thought_zero_shot/thread_of_thought.md)
+4. [Encourage Structural Reasoning](thought_generation/chain_of_thought_zero_shot/tab_cot.md)
+
+#### Few Shot
+5. [Annotate Only Uncertain Examples](thought_generation/chain_of_thought_few_shot/active_prompt.md)
+6. [Choose Diverse Examples](thought_generation/chain_of_thought_few_shot/auto_cot.md)
+7. [Choose Complex Examples](thought_generation/chain_of_thought_few_shot/complexity_based.md)
+8. [Include Incorrect Demonstrations](thought_generation/chain_of_thought_few_shot/contrastive.md)
+9. [Choose Similar, Auto-Generated, High-Certainty Chain-Of-Thought Reasonings](thought_generation/chain_of_thought_few_shot/memory_of_thought.md)
+10. [Choose the Most Certain Reasoning](thought_generation/chain_of_thought_few_shot/uncertainty_routed_cot.md)
+11. [Generate Template-Based Prompts](thought_generation/chain_of_thought_few_shot/prompt_mining.md)
 
 ## Ensembling
 
-How can we combine multiple parallel inference calls to get a significant boost in performance? Ensembling techniques allow us to leverage the strengths of multiple model runs, potentially leading to more accurate and robust results.
+How can we use multiple prompts and aggregate their responses?
 
-1. [COSP](ensembling/cosp.md)
-2. [DENSE](ensembling/dense.md)
-3. [DiVeRSe](ensembling/diverse.md)
-4. [Max Mutual Information](ensembling/max_mutual_information.md)
-5. [Meta-CoT](ensembling/meta_cot.md)
-6. [MoRE](ensembling/more.md)
-7. [Self-Consistency](ensembling/self_consistency.md)
-8. [Universal Self-Consistency](ensembling/universal_self_consistency.md)
-9. [USP](ensembling/usp.md)
-10. [Prompt Paraphrasing](ensembling/prompt_paraphrasing.md)
+1. [Build a Set of Consistent, Diverse Examples](ensembling/cosp.md)
+2. [Batch In-Context Examples](ensembling/dense.md)
+3. [Verify Individual Reasoning Steps](ensembling/diverse.md)
+4. [Maximize Information Between Input and Output](ensembling/max_mutual_information.md)
+5. [Merge Multiple Chains-Of-Thought](ensembling/meta_cot.md)
+6. [Use Specialized Experts](ensembling/more.md)
+7. [Choose The Most Consistent Reasoning](ensembling/self_consistency.md)
+8. [Choose The Most Consistent Reasioning (Universal)](ensembling/universal_self_consistency.md)
+9. [Use Task-Specific Example Selection](ensembling/usp.md)
+10. [Paraphrase The Prompt](ensembling/prompt_paraphrasing.md)
 
 ## Self-Criticism
 
-What concrete steps can we take to get our model to critically evaluate and improve its own outputs? Self-criticism methods encourage the model to evaluate and refine its responses, promoting higher quality and more thoughtful outputs.
+How can a model verify or critique its own response?
 
-1. [Chain-Of-Verification](self_criticism/chain_of_verification.md)
-2. [Self-Calibration](self_criticism/self_calibration.md)
-3. [Self-Refine](self_criticism/self_refine.md)
-4. [Self-Verification](self_criticism/self_verification.md)
-5. [ReverseCoT](self_criticism/reversecot.md)
-6. [Cumulative Reason](self_criticism/cumulative_reason.md)
+1. [Generate Verification Questions](self_criticism/chain_of_verification.md)
+2. [Ask If the Answer is Correct](self_criticism/self_calibration.md)
+3. [Generate Feedback and Auto-Improve](self_criticism/self_refine.md)
+4. [Score Multiple Candidate Solutions](self_criticism/self_verification.md)
+5. [Reconstruct The Problem](self_criticism/reversecot.md)
+6. [Generate Possible Steps](self_criticism/cumulative_reason.md)
 
 ## Decomposition
 
-How can we break down complex problems into more manageable parts? Decomposition prompting methods offer an effective strategy to approach intricate questions by dividing them into smaller, more manageable sub-questions, allowing for a more structured and comprehensive problem-solving approach.
+How can we break down complex problems? How do we solve subproblems?
 
-1. [DECOMP](decomposition/decomp.md)
-2. [Faithful CoT](decomposition/faithful_cot.md)
-3. [Least-to-Most](decomposition/least_to_most.md)
-4. [Plan-and-Solve](decomposition/plan_and_solve.md)
-5. [Program-of-Thought](decomposition/program_of_thought.md)
-6. [Recurs.-of-Thought](decomposition/recurs_of_thought.md)
-7. [Skeleton-of-Thought](decomposition/skeleton_of_thought.md)
-8. [Tree-of-Thought](decomposition/tree-of-thought.md)
+1. [Implement Subproblems As Functions](decomposition/decomp.md)
+2. [Use Natural and Symbolic Language](decomposition/faithful_cot.md)
+3. [Solve Increasingly Complex Subproblems](decomposition/least_to_most.md)
+4. [Generate a Plan](decomposition/plan_and_solve.md)
+5. [Use Code As Reasoning](decomposition/program_of_thought.md)
+6. [Recursively Solve Subproblems](decomposition/recurs_of_thought.md)
+7. [Generate a Skeleton](decomposition/skeleton_of_thought.md)
+8. [Search Through Subproblems](decomposition/tree-of-thought.md)
 
 <sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)

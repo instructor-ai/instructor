@@ -218,7 +218,7 @@ nav:
     - Synthetic Data Generation: 'tutorials/7-synthetic-data-generation.ipynb'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
-  - Prompting Tips:
+  - Prompt Design:
     - "prompting/index.md"
     - Zero-Shot:
       - Use Emotional Language: 'prompting/zero_shot/emotion_prompting.md'
