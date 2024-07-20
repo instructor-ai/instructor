@@ -323,3 +323,44 @@ def test_nested_class_with_multiple_async_decorators():
             return self
 
     assert Users.model_json_schema() == openai_schema(Users).model_json_schema()
+
+
+def test_has_async_validators():
+    class UserWithAsyncValidators(OpenAISchema):
+        name: str
+        age: int
+
+        @async_field_validator("name")
+        async def validate_name(cls, v: str) -> str:
+            await asyncio.sleep(0.1)
+            return v.strip()
+
+        @async_model_validator()
+        async def validate_age(self) -> "UserWithAsyncValidators":
+            await asyncio.sleep(0.1)
+            if self.age < 0:
+                raise ValueError("Age must be non-negative")
+            return self
+
+    class UserWithoutAsyncValidators(OpenAISchema):
+        name: str
+        age: int
+
+    user_with = UserWithAsyncValidators(name="John", age=30)
+    user_without = UserWithoutAsyncValidators(name="Jane", age=25)
+
+    assert user_with.has_async_validators() == True
+    assert user_without.has_async_validators() == False
+
+    class NestedUsers(OpenAISchema):
+        user_with: UserWithAsyncValidators
+        user_without: UserWithoutAsyncValidators
+
+    nested_users = NestedUsers(user_with=user_with, user_without=user_without)
+    assert nested_users.has_async_validators() == True
+
+    class AllWithoutValidators(OpenAISchema):
+        users: list[UserWithoutAsyncValidators]
+
+    all_without = AllWithoutValidators(users=[user_without, user_without])
+    assert all_without.has_async_validators() == False

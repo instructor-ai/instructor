@@ -82,6 +82,26 @@ class OpenAISchema(BaseModel):
             "input_schema": cls.model_json_schema(),
         }
 
+    def has_async_validators(self):
+        has_validators = (
+            len(self.__class__.get_async_validators()) > 0
+            or len(self.get_async_model_validators()) > 0
+        )
+
+        for _, attribute_value in self.__dict__.items():
+            if isinstance(attribute_value, OpenAISchema):
+                has_validators = (
+                    has_validators or attribute_value.has_async_validators()
+                )
+
+                # List of items too
+            if isinstance(attribute_value, (list, set, tuple)):
+                for item in attribute_value:
+                    if isinstance(item, OpenAISchema):
+                        has_validators = has_validators or item.has_async_validators()
+
+        return has_validators
+
     @classmethod
     def get_async_validators(cls):
         validators = [
