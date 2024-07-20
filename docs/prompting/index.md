@@ -13,7 +13,7 @@ How do we increase the performance of our model without any examples?
 
 1. [Use Emotional Language](zero_shot/emotion_prompting.md)
 2. [Assign a Role](zero_shot/role_prompting.md)
-3. [Define a Writing Style](zero_shot/style_prompting.md)
+3. [Define a Style](zero_shot/style_prompting.md)
 4. [Auto-Refine The Prompt](zero_shot/s2a.md)
 5. [Simulate a Perspective](zero_shot/simtom.md)
 6. [Auto-Clarify The Prompt](zero_shot/rar.md)
