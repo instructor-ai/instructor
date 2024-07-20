@@ -1,21 +1,26 @@
 ---
-description: "Tip: Use SimToM to help the LLM answer tricky questions about different people or things in two easy steps"
+title: "SimToM (Simulated Theory of Mind)"
+description: "SimToM (Simulated Theory of Mind) is a two-step prompting technique that encourages a model to consider a specific perspective."
 ---
 
-We can handle complex questions that deal with different perspectives with a two-step process. This involves
+How can we encourage the model to focus on relevant information?
 
-1. Encouraging the LLM to identify and isolate the relevant information
-2. Instructing the LLM to take a specific perspective and answer the question doing so.
+SimToM (Simulated Theory of Mind) is a two-step prompting technique that encourages a model to consider a specific perspective.
 
-This helps our model focus on the most pertinent details and ultimately produce more accurate and relevant responses.
+This can be useful for complex questions with multiple entities. For example, if the prompt contains information about two individuals, we can ask the model to answer our query from the perspective of one of the individuals.
+
+This is implemented in two steps. Given an entity:
+
+1. Identify and isolate information relevant to the entity
+2. Ask the model to answer the query from the entity's perspective
 
 !!! example "Sample Template"
 
-    **Step 1**: Given the following context, list the facts that {entity} would know. Context: {context}
+    **Step 1**: Given the following context, list the facts that <*entity*> would know. Context: <*context*>
 
-    **Step 2**: You are {entity}. Answer the following question based only on these facts you know {facts}. Question: {question}
+    **Step 2**: You are <*entity*>. Answer the following question based only on these facts you know: <*facts*>. Question: <*query*>
 
-This approach can help eliminate the influence of irrelevant information in the prompt.<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup>. We can implement this using `instructor` as seen below.
+## Implementation
 
 ```python hl_lines="24-25"
 import openai
@@ -90,8 +95,6 @@ if __name__ == "__main__":
     #> on the table
 ```
 
-### References
+## References
 
 <sup id="ref-1">1</sup>: [Think Twice: Perspective-Taking Improves Large Language Models' Theory-of-Mind Capabilities](https://arxiv.org/abs/2311.10227)
-
-<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
