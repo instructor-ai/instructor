@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from textwrap import dedent
+from instructor.mode import Mode
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
@@ -509,6 +510,28 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             new_kwargs["generation_config"] = generation_config
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
+
+    # Handle Cohere Response Model Case
+    elif response_model is None and mode in {
+        Mode.COHERE_JSON_SCHEMA,
+        Mode.COHERE_TOOLS,
+    }:
+        messages = new_kwargs.pop("messages", [])
+        chat_history = []
+        for message in messages[:-1]:
+            # format in Cohere's ChatMessage format
+            chat_history.append(
+                {
+                    "role": message["role"],
+                    "message": message["content"],
+                }
+            )
+        new_kwargs["message"] = messages[-1]["content"]
+
+        new_kwargs["chat_history"] = chat_history
+        if new_kwargs["model_name"]:
+            new_kwargs["model"] = new_kwargs["model_name"]
+            del new_kwargs["model_name"]
 
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
