@@ -23,6 +23,8 @@ from pydantic import BaseModel
 from typing import Callable, TypeVar, Any
 from typing_extensions import ParamSpec
 
+import logfire_api as logfire
+
 logger = logging.getLogger("instructor")
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -157,9 +159,10 @@ def retry_sync(
     if not isinstance(max_retries, (Retrying, AsyncRetrying)):
         raise ValueError("max_retries must be an int or a `tenacity.Retrying` object")
 
-    try:
+    with logfire.span("Retrying", max_retries=max_retries, mode=mode):
         response = None
         for attempt in max_retries:
+            logfire.info(f"Attempt {attempt.retry_state.attempt_number}")
             with attempt:
                 try:
                     response = func(*args, **kwargs)
@@ -175,6 +178,7 @@ def retry_sync(
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Error response: {response}")
+                    logfire.info(f"Error Response: {response}")
                     if mode in {
                         Mode.GEMINI_JSON,
                         Mode.VERTEXAI_TOOLS,
@@ -190,14 +194,15 @@ def retry_sync(
                             kwargs["messages"]
                         )
                     raise e
-    except RetryError as e:
-        raise InstructorRetryException(
-            e,
-            last_completion=response,
-            n_attempts=attempt.retry_state.attempt_number,
-            messages=kwargs.get("messages", kwargs.get("contents")),
-            total_usage=total_usage,
-        ) from e
+                except RetryError as e:
+                    logfire.error(f"Retry Error: {e}")
+                    raise InstructorRetryException(
+                        e,
+                        last_completion=response,
+                        n_attempts=attempt.retry_state.attempt_number,
+                        messages=kwargs.get("messages", kwargs.get("contents")),
+                        total_usage=total_usage,
+                    ) from e
 
 
 async def retry_async(
