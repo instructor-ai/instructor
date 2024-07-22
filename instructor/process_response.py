@@ -529,9 +529,9 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
         new_kwargs["message"] = messages[-1]["content"]
 
         new_kwargs["chat_history"] = chat_history
-        if new_kwargs["model_name"]:
-            new_kwargs["model"] = new_kwargs["model_name"]
-            del new_kwargs["model_name"]
+        if "model_name" in new_kwargs and "model" not in new_kwargs:
+            new_kwargs["model"] = new_kwargs.pop("model_name")
+        new_kwargs.pop("strict", None)
 
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
