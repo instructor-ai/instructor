@@ -77,11 +77,8 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.content[0].text}""",
         }
         return
-    if mode == Mode.COHERE_TOOLS:
-        yield {
-            "role": "user",
-            "message": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-        }
+    if mode == Mode.COHERE_TOOLS or mode == Mode.COHERE_JSON_SCHEMA:
+        yield f"Correct the following JSON response, based on the errors given below:\n\nJSON:\n{response.text}\n\nExceptions:\n{exception}"
         return
     if mode == Mode.GEMINI_JSON:
         yield {
@@ -181,8 +178,13 @@ def retry_sync(
                         Mode.VERTEXAI_JSON,
                     }:
                         kwargs["contents"].extend(reask_messages(response, mode, e))
-                    elif mode in {Mode.COHERE_TOOLS}:
-                        kwargs["chat_history"].extend(reask_messages(response, mode, e))
+                    elif mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
+                        if attempt.retry_state.attempt_number == 1:
+                            kwargs["chat_history"].extend(
+                                [{"role": "user", "message": kwargs.get("message")}]
+                            )
+                        kwargs["message"] = next(reask_messages(response, mode, e))
+
                     else:
                         kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
@@ -248,7 +250,11 @@ async def retry_async(
                 except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
                     logger.debug(f"Error response: {response}", e)
                     if mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
-                        kwargs["chat_history"].extend(reask_messages(response, mode, e))
+                        if attempt.retry_state.attempt_number == 1:
+                            kwargs["chat_history"].extend(
+                                [{"role": "user", "message": kwargs.get("message")}]
+                            )
+                        kwargs["message"] = next(reask_messages(response, mode, e))
                     else:
                         kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
