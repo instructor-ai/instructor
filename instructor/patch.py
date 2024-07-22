@@ -113,37 +113,21 @@ def patch(
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
-        with logfire.span(
-            "Processing Response Model",
-            response_model=response_model.model_json_schema()  # type:ignore
-            if response_model
-            else None,
-            max_retries=max_retries,
+        response_model, new_kwargs = handle_response_model(
+            response_model=response_model, mode=mode, **kwargs
+        )
+
+        response = await retry_async(
+            func=func,
+            response_model=response_model,
             validation_context=validation_context,
+            max_retries=max_retries,
+            args=args,
+            kwargs=new_kwargs,
             strict=strict,
-            **kwargs,
-        ):
-            response_model, new_kwargs = handle_response_model(
-                response_model=response_model, mode=mode, **kwargs
-            )
-            logfire.info(
-                "Processed Response Model",
-                response_model=response_model.model_json_schema()  # type:ignore
-                if response_model
-                else None,
-                kwargs=new_kwargs,
-            )
-            response = await retry_async(
-                func=func,
-                response_model=response_model,
-                validation_context=validation_context,
-                max_retries=max_retries,
-                args=args,
-                kwargs=new_kwargs,
-                strict=strict,
-                mode=mode,
-            )
-            return response
+            mode=mode,
+        )
+        return response
 
     @wraps(func)
     def new_create_sync(

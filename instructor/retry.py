@@ -233,37 +233,49 @@ async def retry_async(
             "max_retries must be an `int` or a `tenacity.AsyncRetrying` object"
         )
 
-    try:
-        response = None
-        async for attempt in max_retries:
-            logger.debug(f"Retrying, attempt: {attempt}")
-            with attempt:
-                try:
-                    response: ChatCompletion = await func(*args, **kwargs)
-                    stream = kwargs.get("stream", False)
-                    response = update_total_usage(response, total_usage)
-                    return await process_response_async(
-                        response,
-                        response_model=response_model,
-                        stream=stream,
-                        validation_context=validation_context,
-                        strict=strict,
-                        mode=mode,
-                    )
-                except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
-                    logger.debug(f"Error response: {response}", e)
-                    kwargs["messages"].extend(reask_messages(response, mode, e))
-                    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
-                        kwargs["messages"] = merge_consecutive_messages(
-                            kwargs["messages"]
+    with logfire.span(
+        "Retrying",
+        response_model=response_model.model_json_schema() if response_model else None,
+        max_retries=max_retries,
+        validation_context=validation_context,
+        strict=strict,
+        mode=mode,
+    ):
+        try:
+            response = None
+            async for attempt in max_retries:
+                logger.debug(f"Retrying, attempt: {attempt}")
+                with attempt:
+                    try:
+                        response: ChatCompletion = await func(*args, **kwargs)
+                        stream = kwargs.get("stream", False)
+                        response = update_total_usage(response, total_usage)
+                        return await process_response_async(
+                            response,
+                            response_model=response_model,
+                            stream=stream,
+                            validation_context=validation_context,
+                            strict=strict,
+                            mode=mode,
                         )
-                    raise e
-    except RetryError as e:
-        logger.exception(f"Failed after retries: {e.last_attempt.exception}")
-        raise InstructorRetryException(
-            e,
-            last_completion=response,
-            n_attempts=attempt.retry_state.attempt_number,
-            messages=kwargs["messages"],
-            total_usage=total_usage,
-        ) from e
+                    except (
+                        ValidationError,
+                        JSONDecodeError,
+                        AsyncValidationError,
+                    ) as e:
+                        logfire.info(f"Error response: {response}", exception=e)
+                        kwargs["messages"].extend(reask_messages(response, mode, e))
+                        if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
+                            kwargs["messages"] = merge_consecutive_messages(
+                                kwargs["messages"]
+                            )
+                        raise e
+        except RetryError as e:
+            logfire.info("Failed after retries", exception=e)
+            raise InstructorRetryException(
+                e,
+                last_completion=response,
+                n_attempts=attempt.retry_state.attempt_number,
+                messages=kwargs["messages"],
+                total_usage=total_usage,
+            ) from e
