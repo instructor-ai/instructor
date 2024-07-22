@@ -247,7 +247,10 @@ async def retry_async(
                     )
                 except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
                     logger.debug(f"Error response: {response}", e)
-                    kwargs["messages"].extend(reask_messages(response, mode, e))
+                    if mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
+                        kwargs["chat_history"].extend(reask_messages(response, mode, e))
+                    else:
+                        kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]
