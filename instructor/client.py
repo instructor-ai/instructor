@@ -129,7 +129,7 @@ class Instructor:
                 strict=strict,
                 **kwargs,
             )
-            logfire.info("Result", result=result)
+            logfire.info("Result", result=result)  # type:ignore
             return result
 
     @overload
@@ -353,7 +353,7 @@ class AsyncInstructor(Instructor):
                 strict=strict,
                 **kwargs,
             )
-            logfire.info("Result", result=result)
+            logfire.info("Result", result=result)  # type:ignore
             return result
 
     async def create_partial(
@@ -389,7 +389,7 @@ class AsyncInstructor(Instructor):
             ):
                 final_result = item
                 yield item
-            logfire.info("Iterable Result", item=final_result)
+            logfire.info("Iterable Result", item=final_result)  # type:ignore
 
     async def create_iterable(
         self,
@@ -421,7 +421,7 @@ class AsyncInstructor(Instructor):
                 strict=strict,
                 **kwargs,
             ):
-                logfire.info("Iterable Generation Result", item=item)
+                logfire.info("Iterable Generation Result", item=item)  # type:ignore
                 yield item
 
     async def create_with_completion(
@@ -453,7 +453,7 @@ class AsyncInstructor(Instructor):
                 strict=strict,
                 **kwargs,
             )
-            logfire.info(
+            logfire.info(  # type:ignore
                 "Result", result=response, original_completion=response._raw_response
             )
 
