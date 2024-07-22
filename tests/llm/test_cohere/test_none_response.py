@@ -1,6 +1,5 @@
 import pytest
 from instructor import from_cohere
-import json
 
 
 def test_none_response_model(client):
