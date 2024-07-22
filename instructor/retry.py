@@ -16,7 +16,7 @@ from instructor.exceptions import InstructorRetryException
 from openai.types.completion_usage import CompletionUsage
 from pydantic import ValidationError
 from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
-
+from instructor.validators import AsyncValidationError
 
 from json import JSONDecodeError
 from pydantic import BaseModel
@@ -245,7 +245,7 @@ async def retry_async(
                         strict=strict,
                         mode=mode,
                     )
-                except (ValidationError, JSONDecodeError) as e:
+                except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
                     logger.debug(f"Error response: {response}", e)
                     kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
