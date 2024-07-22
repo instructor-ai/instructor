@@ -41,7 +41,8 @@ def from_cohere(
 ):
     assert mode in {
         instructor.Mode.COHERE_TOOLS,
-    }, "Mode be one of {instructor.Mode.COHERE_TOOLS}"
+        instructor.Mode.COHERE_JSON_SCHEMA,
+    }, "Mode be one of {instructor.Mode.COHERE_TOOLS} {COHERE_JSON_SCHEMA}"
 
     assert isinstance(
         client, (cohere.Client, cohere.AsyncClient)
