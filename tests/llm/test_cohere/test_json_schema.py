@@ -9,8 +9,7 @@ class User(BaseModel):
     age: int
 
 
-@pytest.mark.parametrize("mode", [Mode.COHERE_JSON_SCHEMA])
-def test_parse_user_sync(client, mode):
+def test_parse_user_sync(client):
     client = instructor.from_cohere(client, mode=instructor.Mode.COHERE_JSON_SCHEMA)
 
     resp = client.chat.completions.create(
