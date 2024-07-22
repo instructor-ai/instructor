@@ -12,7 +12,6 @@ from typing import (
     Union,
     Any,
 )
-import json
 from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator
 from typing_extensions import Self
 from pydantic import BaseModel

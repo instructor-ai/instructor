@@ -9,7 +9,6 @@ from typing import (
 )
 from collections.abc import Awaitable
 from typing_extensions import ParamSpec
-import logfire_api as logfire
 from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
 
