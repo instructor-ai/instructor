@@ -164,6 +164,7 @@ class PartialBase(Generic[T_Model]):
                     yield chunk.text
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
@@ -192,6 +193,7 @@ class PartialBase(Generic[T_Model]):
                     yield chunk.delta.partial_json
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:

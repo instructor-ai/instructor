@@ -258,6 +258,7 @@ class OpenAISchema(BaseModel):
             raise IncompleteOutputException(last_completion=completion)
 
         if mode == Mode.FUNCTIONS:
+            Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
         if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
