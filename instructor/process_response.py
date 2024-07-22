@@ -424,6 +424,9 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 )
             new_kwargs["message"] = instruction
             new_kwargs["chat_history"] = chat_history
+
+            if "strict" in new_kwargs:
+                del new_kwargs["strict"]
         elif mode == Mode.GEMINI_JSON:
             assert (
                 "model" not in new_kwargs
