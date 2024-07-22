@@ -29,7 +29,7 @@ def from_cohere(
 @overload
 def from_cohere(
     client: cohere.AsyncClient,
-    mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
+    mode: instructor.Mode = instructor.Mode.COHERE_JSON_SCHEMA,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
 
