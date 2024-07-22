@@ -398,6 +398,9 @@ def handle_response_model(
                 "schema": response_model.model_json_schema(),
             }
 
+            if "strict" in new_kwargs:
+                del new_kwargs["strict"]
+
         elif mode == Mode.COHERE_TOOLS:
             instruction = f"""\
 Extract a valid {response_model.__name__} object based on the chat history and the json schema below.

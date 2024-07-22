@@ -70,6 +70,7 @@ def from_cohere(
             mode=mode,
             **kwargs,
         )
+
         response = await retry_async(
             func=client.chat,
             response_model=prepared_response_model,
