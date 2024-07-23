@@ -13,6 +13,7 @@ from pydantic import (
     TypeAdapter,
     create_model,
 )
+from cohere import NonStreamedChatResponse
 
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
@@ -254,6 +255,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.GEMINI_JSON:
             return cls.parse_gemini_json(completion, validation_context, strict)
 
+        if mode == Mode.COHERE_JSON_SCHEMA:
+            return cls.parse_cohere_json_schema(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
@@ -268,6 +272,17 @@ class OpenAISchema(BaseModel):
             return cls.parse_json(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
+
+    @classmethod
+    def parse_cohere_json_schema(
+        cls: type[BaseModel],
+        completion: NonStreamedChatResponse,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ):
+        return cls.model_validate_json(
+            completion.text, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_anthropic_tools(

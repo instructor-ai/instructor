@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from textwrap import dedent
+from instructor.mode import Mode
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
@@ -204,6 +205,7 @@ def handle_response_model(
         Union[Type[OpenAISchema], dict]: The response model to use for parsing the response
     """
     new_kwargs = kwargs.copy()
+
     if response_model is not None:
         # Handles the case where the response_model is a simple type
         # Literal, Annotated, Union, str, int, float, bool, Enum
@@ -379,6 +381,27 @@ def handle_response_model(
             # the messages array must be alternating roles of user and assistant, we must merge
             # consecutive user messages into a single message
             new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
+        elif mode == Mode.COHERE_JSON_SCHEMA:
+            messages = new_kwargs.pop("messages", [])
+            chat_history = []
+            for message in messages[:-1]:
+                # format in Cohere's ChatMessage format
+                chat_history.append(
+                    {
+                        "role": message["role"],
+                        "message": message["content"],
+                    }
+                )
+            new_kwargs["message"] = messages[-1]["content"]
+
+            new_kwargs["chat_history"] = chat_history
+            new_kwargs["response_format"] = {
+                "type": "json_object",
+                "schema": response_model.model_json_schema(),
+            }
+
+            if "strict" in new_kwargs:
+                del new_kwargs["strict"]
 
         elif mode == Mode.COHERE_TOOLS:
             instruction = f"""\
@@ -403,6 +426,9 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 )
             new_kwargs["message"] = instruction
             new_kwargs["chat_history"] = chat_history
+
+            if "strict" in new_kwargs:
+                del new_kwargs["strict"]
         elif mode == Mode.GEMINI_JSON:
             assert (
                 "model" not in new_kwargs
@@ -485,6 +511,28 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             new_kwargs["generation_config"] = generation_config
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
+
+    # Handle Cohere Response Model Case
+    elif response_model is None and mode in {
+        Mode.COHERE_JSON_SCHEMA,
+        Mode.COHERE_TOOLS,
+    }:
+        messages = new_kwargs.pop("messages", [])
+        chat_history = []
+        for message in messages[:-1]:
+            # format in Cohere's ChatMessage format
+            chat_history.append(
+                {
+                    "role": message["role"],
+                    "message": message["content"],
+                }
+            )
+        new_kwargs["message"] = messages[-1]["content"]
+
+        new_kwargs["chat_history"] = chat_history
+        if "model_name" in new_kwargs and "model" not in new_kwargs:
+            new_kwargs["model"] = new_kwargs.pop("model_name")
+        new_kwargs.pop("strict", None)
 
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",

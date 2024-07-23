@@ -29,7 +29,7 @@ def from_cohere(
 @overload
 def from_cohere(
     client: cohere.AsyncClient,
-    mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
+    mode: instructor.Mode = instructor.Mode.COHERE_JSON_SCHEMA,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
 
@@ -41,7 +41,8 @@ def from_cohere(
 ):
     assert mode in {
         instructor.Mode.COHERE_TOOLS,
-    }, "Mode be one of {instructor.Mode.COHERE_TOOLS}"
+        instructor.Mode.COHERE_JSON_SCHEMA,
+    }, "Mode be one of {COHERE_TOOLS, COHERE_JSON_SCHEMA}"
 
     assert isinstance(
         client, (cohere.Client, cohere.AsyncClient)
@@ -69,6 +70,7 @@ def from_cohere(
             mode=mode,
             **kwargs,
         )
+
         response = await retry_async(
             func=client.chat,
             response_model=prepared_response_model,
