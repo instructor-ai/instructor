@@ -152,7 +152,6 @@ def retry_sync(
         logger.debug(f"max_retries: {max_retries}")
         max_retries = Retrying(
             stop=stop_after_attempt(max_retries),
-            reraise=True,
         )
     if not isinstance(max_retries, (Retrying, AsyncRetrying)):
         raise ValueError("max_retries must be an int or a `tenacity.Retrying` object")
@@ -221,7 +220,6 @@ async def retry_async(
         logger.debug(f"max_retries: {max_retries}")
         max_retries = AsyncRetrying(
             stop=stop_after_attempt(max_retries),
-            reraise=True,
         )
     if not isinstance(max_retries, (AsyncRetrying, Retrying)):
         raise ValueError(
