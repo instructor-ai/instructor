@@ -201,3 +201,9 @@ def test_pylance_url_config() -> None:
         Model(**data)  # type: ignore
     except ValidationError as e:
         assert "https://errors.pydantic.dev" not in str(e)
+
+
+def test_mode_functions_deprecation_warning() -> None:
+    from openai import OpenAI
+    with pytest.warns(DeprecationWarning, match="The FUNCTIONS mode is deprecated and will be removed in future versions"):
+        _ = instructor.from_openai(OpenAI(), mode=instructor.Mode.FUNCTIONS)
