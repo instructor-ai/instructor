@@ -16,7 +16,7 @@ Stylistic constraints can include:
 
 ## Implementation
 
-```python hl_lines="21"
+```python hl_lines="22"
 import instructor
 from pydantic import BaseModel
 import openai
@@ -29,30 +29,42 @@ class Email(BaseModel):
 
 client = instructor.from_openai(openai.OpenAI())
 
-if __name__ == "__main__":
-    email = client.chat.completions.create(
+
+def generate_email(subject, to, sender, tone):
+    return client.chat.completions.create(
         model="gpt-4o",
         messages=[
             {
                 "role": "user",
-                "content": """
-                Write an email addressed to Mr. John Smith from Jane Doe.
-                The email should be formal and the message should be polite and respectful.
+                "content": f"""
+                Write an email about {subject} to {to} from {sender}.
+                The email should be {tone}.
                 """,
             }
         ],
         response_model=Email,
     )
 
+
+if __name__ == "__main__":
+    email = generate_email(
+        subject="invitation to all-hands on Monday at 6pm",
+        to="John Smith",
+        sender="Jane Doe",
+        tone="formal",
+    )
+
     print(email.subject)
-    #> Formal Correspondence
+    #> Invitation to All-Hands Meeting
     print(email.message)
     """
-    Dear Mr. John Smith,
+    Dear John Smith,
 
-    I hope this email finds you well. My name is Jane Doe, and I am writing to you regarding [specific topic]. I would appreciate the opportunity to discuss this matter further with you at your earliest convenience.
+    I hope this message finds you well.
 
-    Thank you for your time and consideration. I look forward to your response.
+    I am writing to formally invite you to our upcoming all-hands meeting scheduled for this Monday at 6:00 PM. Your presence and participation would be greatly valued as we discuss important updates and initiatives.
+
+    Please let me know if you have any questions or need further information.
 
     Best regards,
     Jane Doe
