@@ -13,7 +13,6 @@ from pydantic import (
     TypeAdapter,
     create_model,
 )
-from cohere import NonStreamedChatResponse
 
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
@@ -276,10 +275,13 @@ class OpenAISchema(BaseModel):
     @classmethod
     def parse_cohere_json_schema(
         cls: type[BaseModel],
-        completion: NonStreamedChatResponse,
+        completion: Any,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ):
+        from cohere import NonStreamedChatResponse
+
+        assert isinstance(completion, NonStreamedChatResponse)
         return cls.model_validate_json(
             completion.text, context=validation_context, strict=strict
         )
