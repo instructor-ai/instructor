@@ -197,8 +197,7 @@ def retry_sync(
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             messages=kwargs.get(
-                "messages",
-                kwargs.get("contents", kwargs.get("chat_history", [])),
+                "messages", kwargs.get("contents", kwargs.get("chat_history", []))
             ),
             total_usage=total_usage,
         ) from e
