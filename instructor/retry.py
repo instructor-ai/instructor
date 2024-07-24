@@ -196,7 +196,9 @@ def retry_sync(
             e,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
-            messages=kwargs.get("messages", kwargs.get("contents")),
+            messages=kwargs.get(
+                "messages", kwargs.get("contents", kwargs.get("chat_history", []))
+            ),
             total_usage=total_usage,
         ) from e
 
@@ -266,6 +268,8 @@ async def retry_async(
             e,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
-            messages=kwargs["messages"],
+            messages=kwargs.get(
+                "messages", kwargs.get("contents", kwargs.get("chat_history", []))
+            ),
             total_usage=total_usage,
         ) from e

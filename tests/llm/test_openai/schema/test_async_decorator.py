@@ -4,14 +4,15 @@ import pytest
 import instructor
 from openai import AsyncOpenAI
 from instructor import from_openai
-from .util import models, modes
+from ..util import models, modes
 from instructor import async_field_validator, async_model_validator
 from instructor.function_calls import openai_schema
-from instructor.function_calls import OpenAISchema
 from pydantic import BaseModel, Field
+from enum import Enum
+from typing import Optional, Union, Literal
 
 
-class UserExtractValidated(OpenAISchema):
+class UserExtractValidated(BaseModel):
     name: str
     age: int
 
@@ -40,12 +41,12 @@ async def test_simple_validator(model, mode, aclient):
     assert model.name == "JASON"
 
 
-class ValidationResult(OpenAISchema):
+class ValidationResult(BaseModel):
     chain_of_thought: str
     is_valid: bool
 
 
-class ExtractedContent(OpenAISchema):
+class ExtractedContent(BaseModel):
     relevant_question: str
 
     @async_field_validator("relevant_question")
@@ -116,7 +117,7 @@ async def test_async_validator(model, mode, aclient):
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
 async def test_nested_model(model, mode, aclient):
-    class Users(OpenAISchema):
+    class Users(BaseModel):
         users: list[UserExtractValidated]
 
     aclient = instructor.from_openai(aclient, mode=mode)
@@ -138,7 +139,7 @@ async def test_nested_model(model, mode, aclient):
 
 @pytest.mark.asyncio
 async def test_field_validator():
-    class User(OpenAISchema):
+    class User(BaseModel):
         name: str
         label: str
 
@@ -147,7 +148,31 @@ async def test_field_validator():
             if not v.isupper():
                 raise ValueError(f"Uppercase response required for {v}")
 
-    exceptions = await User(name="tom", label="active").model_async_validate()
+    exceptions = await openai_schema(User)(
+        **{"name": "tom", "label": "active"}
+    ).model_async_validate()
+
+    assert len(exceptions) == 2
+    assert [str(item) for item in exceptions] == [
+        "Exception of Uppercase response required for tom encountered at name",
+        "Exception of Uppercase response required for active encountered at label",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_union_field_validator():
+    class User(BaseModel):
+        name: str
+        label: str
+
+        @async_field_validator("name", "label")
+        def validate_user(self, v: str):
+            if not v.isupper():
+                raise ValueError(f"Uppercase response required for {v}")
+
+    exceptions = await openai_schema(User)(
+        **{"name": "tom", "label": "active"}
+    ).model_async_validate()
 
     assert len(exceptions) == 2
     assert [str(item) for item in exceptions] == [
@@ -158,7 +183,7 @@ async def test_field_validator():
 
 @pytest.mark.asyncio
 async def test_model_validator():
-    class User(OpenAISchema):
+    class User(BaseModel):
         name: str
         label: str
 
@@ -167,7 +192,9 @@ async def test_model_validator():
             if not self.name.isupper() or not self.label.isupper():
                 raise ValueError(f"Uppercase response required")
 
-    exceptions = await User(name="tom", label="active").model_async_validate()
+    exceptions = await openai_schema(User)(
+        **{"name": "tom", "label": "active"}
+    ).model_async_validate()
 
     assert len(exceptions) == 1
     assert [str(item) for item in exceptions] == [
@@ -177,14 +204,11 @@ async def test_model_validator():
 
 @pytest.mark.asyncio
 async def test_parsing_nested_field():
-    class Users(OpenAISchema):
+    class Users(BaseModel):
         users: list[UserExtractValidated]
 
-    exceptions = await Users(
-        users=[
-            UserExtractValidated(name="thomas", age=22),
-            UserExtractValidated(name="vincent", age=24),
-        ]
+    exceptions = await openai_schema(Users)(
+        **{"users": [{"name": "thomas", "age": 27}, {"name": "vincent", "age": 24}]}
     ).model_async_validate()
 
     assert len(exceptions) == 2
@@ -196,18 +220,18 @@ async def test_parsing_nested_field():
 
 @pytest.mark.asyncio
 async def test_context_passing_in_nested_model():
-    class ModelValidationCheck(OpenAISchema):
+    class ModelValidationCheck(BaseModel):
         user_names: list[str]
 
         @async_model_validator()
         def validate_model(self, info: ValidationInfo):
             raise ValueError(f"Invalid Error but with {info.context}!")
 
-    class ModelValidationWrapper(OpenAISchema):
+    class ModelValidationWrapper(BaseModel):
         model: ModelValidationCheck
 
-    res = await ModelValidationWrapper(
-        model=ModelValidationCheck(user_names=["Jack", "Thomas", "Ben"])
+    res = await openai_schema(ModelValidationWrapper)(
+        **{"model": {"user_names": ["Jack", "Thomas", "Ben"]}}
     ).model_async_validate(validation_context={"abcdef": "123"})
 
     assert len(res) == 1
@@ -219,7 +243,7 @@ async def test_context_passing_in_nested_model():
 
 @pytest.mark.asyncio
 async def test_context_passing_in_nested_field_validator():
-    class ModelValidationCheck(OpenAISchema):
+    class ModelValidationCheck(BaseModel):
         user_names: list[str]
 
         @async_field_validator("user_names")
@@ -227,11 +251,11 @@ async def test_context_passing_in_nested_field_validator():
             assert len(v) > 0
             raise ValueError(f"Invalid Error but with {info.context}!")
 
-    class ModelValidationWrapper(OpenAISchema):
+    class ModelValidationWrapper(BaseModel):
         model: ModelValidationCheck
 
-    res = await ModelValidationWrapper(
-        model=ModelValidationCheck(user_names=["Jack", "Thomas", "Ben"])
+    res = await openai_schema(ModelValidationWrapper)(
+        **{"model": {"user_names": ["Jack", "Thomas", "Ben"]}}
     ).model_async_validate(validation_context={"abcdef": "123"})
 
     assert len(res) == 1
@@ -241,8 +265,50 @@ async def test_context_passing_in_nested_field_validator():
     )
 
 
-from typing import Literal
-from pydantic import BaseModel, Field
+@pytest.mark.asyncio
+async def test_openai_schema_parser():
+    class AdminUser(BaseModel):
+        name: str
+        age: int
+        email: str
+
+        @async_field_validator("name")
+        def validate_name_admin(cls, v: str) -> str:
+            if not v.isupper():
+                raise ValueError(
+                    f"All Letters in the name must be uppercased. {v} is not a valid response. Eg JASON, TOM not jason, tom"
+                )
+            return v
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+        @async_field_validator("name")
+        def validate_name_user(cls, v: str) -> str:
+            if not v.isupper():
+                raise ValueError(
+                    f"All Letters in the name must be uppercased. {v} is not a valid response. Eg JASON, TOM not jason, tom"
+                )
+            return v
+
+    class Users(BaseModel):
+        users: list[Union[User, AdminUser]]
+
+    resp = openai_schema(Users)(
+        **{
+            "users": [
+                {
+                    "name": "thomas",
+                    "age": 27,
+                },
+                {"name": "vincent", "age": 24, "email": "vincent@gmail.com"},
+            ]
+        }
+    )
+    coros = await resp.get_model_coroutines()  # type: ignore
+    # We should extract out two separate coros to show that we've handled a union type well
+    assert len(coros) == 2
 
 
 class User(BaseModel):
@@ -326,7 +392,7 @@ def test_nested_class_with_multiple_async_decorators():
 
 
 def test_has_async_validators():
-    class UserWithAsyncValidators(OpenAISchema):
+    class UserWithAsyncValidators(BaseModel):
         name: str
         age: int
 
@@ -342,25 +408,76 @@ def test_has_async_validators():
                 raise ValueError("Age must be non-negative")
             return self
 
-    class UserWithoutAsyncValidators(OpenAISchema):
+    class UserWithoutAsyncValidators(BaseModel):
         name: str
         age: int
 
-    user_with = UserWithAsyncValidators(name="John", age=30)
-    user_without = UserWithoutAsyncValidators(name="Jane", age=25)
+    user_with = openai_schema(UserWithAsyncValidators)(name="John", age=30)
+    user_without = openai_schema(UserWithoutAsyncValidators)(name="Jane", age=25)
 
     assert user_with.has_async_validators() == True
     assert user_without.has_async_validators() == False
 
-    class NestedUsers(OpenAISchema):
+    class NestedUsers(BaseModel):
         user_with: UserWithAsyncValidators
         user_without: UserWithoutAsyncValidators
 
-    nested_users = NestedUsers(user_with=user_with, user_without=user_without)
+    nested_users = openai_schema(NestedUsers)(
+        **{
+            "user_with": {"name": "John", "age": 30},
+            "user_without": {"name": "Jane", "age": 25},
+        }
+    )
+
     assert nested_users.has_async_validators() == True
 
-    class AllWithoutValidators(OpenAISchema):
+    class AllWithoutValidators(BaseModel):
         users: list[UserWithoutAsyncValidators]
 
-    all_without = AllWithoutValidators(users=[user_without, user_without])
+    all_without = openai_schema(AllWithoutValidators)(
+        **{
+            "users": [
+                {"name": "Jane", "age": 25},
+                {"name": "Jane", "age": 25},
+            ]
+        }
+    )
     assert all_without.has_async_validators() == False
+
+
+def test_schema_optional_and_enum():
+    class QueryType(str, Enum):
+        DOCUMENT_CONTENT = "document_content"
+        LAST_MODIFIED = "last_modified"
+        ACCESS_PERMISSIONS = "access_permissions"
+        RELATED_DOCUMENTS = "related_documents"
+
+    # Define the structure for query responses
+    class QueryResponse(BaseModel):
+        query_type: QueryType
+        response: str
+        additional_info: Optional[str] = None
+
+    assert (
+        openai_schema(QueryResponse).model_json_schema()
+        == QueryResponse.model_json_schema()
+    )
+
+
+def test_schema_union():
+    class Search(BaseModel):
+        search_query: str
+
+    class CalendarInvite(BaseModel):
+        date: str
+
+    # Define the structure for query responses
+    class QueryResponse(BaseModel):
+        query_type: Union[Search, CalendarInvite]
+        response: str
+        additional_info: Optional[str] = None
+
+    assert (
+        openai_schema(QueryResponse).model_json_schema()
+        == QueryResponse.model_json_schema()
+    )
