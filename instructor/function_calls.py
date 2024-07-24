@@ -2,7 +2,8 @@
 import json
 import logging
 from functools import wraps
-from typing import Annotated, Any, Optional, TypeVar, cast, get_origin, Literal
+from typing import Annotated, Any, Optional, TypeVar, cast, get_origin, Literal, Union
+from enum import Enum
 import asyncio
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
@@ -13,7 +14,6 @@ from pydantic import (
     TypeAdapter,
     create_model,
 )
-
 
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
@@ -276,13 +276,13 @@ class OpenAISchema(BaseModel):
     @classmethod
     def parse_cohere_json_schema(
         cls: type[BaseModel],
-        completion: Any,
+        completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ):
-        from cohere import NonStreamedChatResponse
-
-        assert isinstance(completion, NonStreamedChatResponse)
+        assert hasattr(
+            completion, "text"
+        ), "Completion is not of type NonStreamedChatResponse"
         return cls.model_validate_json(
             completion.text, context=validation_context, strict=strict
         )
@@ -459,10 +459,10 @@ def openai_schema_helper(cls: T) -> T:
     if origin is list:
         return list[openai_schema_helper(cls.__args__[0])]
 
-    if origin is Literal:
+    if origin is Literal or origin is Union:
         return cls
 
-    if issubclass(cls, (str, int, bool, float, bytes)):
+    if issubclass(cls, (str, int, bool, float, bytes, Enum)):
         return cls
 
     if isinstance(cls, type) and issubclass(cls, BaseModel):
