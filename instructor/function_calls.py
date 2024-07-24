@@ -470,7 +470,7 @@ def openai_schema_helper(cls: T) -> T:
     if origin is Literal:
         return cls
 
-    # Support for Union[cls, None] and Python 3.10+ stye cls | None
+    # Support for Optional[cls]/Union[cls, None] and Python 3.10+ stye cls | None
     if get_origin(cls) is Union or isinstance(cls, UnionType):
         non_none_args = [arg for arg in get_args(cls) if arg is not type(None)]
         if non_none_args:
