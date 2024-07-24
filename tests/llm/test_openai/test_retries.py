@@ -39,7 +39,6 @@ async def test_upper_case_async(model, mode, aclient):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
-@pytest.mark.skip()
 async def test_upper_case_tenacity_async(model, mode, aclient):
     client = instructor.patch(aclient, mode=mode)
     from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
@@ -61,7 +60,6 @@ async def test_upper_case_tenacity_async(model, mode, aclient):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-@pytest.mark.skip()
 def test_upper_case(model, mode, client):
     client = instructor.patch(client, mode=mode)
     response = client.chat.completions.create(
@@ -76,7 +74,6 @@ def test_upper_case(model, mode, client):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-@pytest.mark.skip()
 def test_upper_case_tenacity(model, mode, client):
     client = instructor.patch(client, mode=mode)
     from tenacity import Retrying, stop_after_attempt, wait_fixed
@@ -123,6 +120,7 @@ def test_custom_retry_response_error(model, mode, client):
             response_model=UserDetail,
         )
     except InstructorRetryException as e:
+        print(f"Exception chain: {e.__cause__}, {e.__cause__.__cause__}")
         assert isinstance(e.__cause__.__cause__, AuthenticationError)
         assert e.last_completion is None
     finally:
