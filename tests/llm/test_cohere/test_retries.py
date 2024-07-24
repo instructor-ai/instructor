@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field, field_validator
-from tenacity import retry, stop_after_attempt, retry_if_exception_type
 from instructor import from_cohere
 from instructor.exceptions import InstructorRetryException
 import pytest
@@ -10,7 +9,7 @@ class User(BaseModel):
     age: int = Field(..., ge=18)
 
     @field_validator("name")
-    def name_must_be_bob(cls, v: str) -> str:
+    def name_must_be_bob(cls, v: str) -> str:  # noqa: ARG002
         raise ValueError("Name must be Bob")
 
 
