@@ -7,7 +7,6 @@ from instructor import from_openai
 from ..util import models, modes
 from instructor import async_field_validator, async_model_validator
 from instructor.function_calls import openai_schema
-from instructor.function_calls import OpenAISchema
 from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional, Union, Literal
