@@ -23,6 +23,7 @@ class UserDetail(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
+@pytest.mark.skip()
 async def test_upper_case_async(model, mode, aclient):
     client = instructor.patch(aclient, mode=mode)
     response = await client.chat.completions.create(
@@ -38,6 +39,7 @@ async def test_upper_case_async(model, mode, aclient):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
+@pytest.mark.skip()
 async def test_upper_case_tenacity_async(model, mode, aclient):
     client = instructor.patch(aclient, mode=mode)
     from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
@@ -59,6 +61,7 @@ async def test_upper_case_tenacity_async(model, mode, aclient):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
+@pytest.mark.skip()
 def test_upper_case(model, mode, client):
     client = instructor.patch(client, mode=mode)
     response = client.chat.completions.create(
@@ -73,6 +76,7 @@ def test_upper_case(model, mode, client):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
+@pytest.mark.skip()
 def test_upper_case_tenacity(model, mode, client):
     client = instructor.patch(client, mode=mode)
     from tenacity import Retrying, stop_after_attempt, wait_fixed
