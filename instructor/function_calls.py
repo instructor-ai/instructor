@@ -472,8 +472,10 @@ def openai_schema_helper(cls: T) -> T:
 
     # Support for Union[cls, None] and Python 3.10+ stye cls | None
     if get_origin(cls) is Union or isinstance(cls, UnionType):
-        for arg in get_args(cls):
-            return openai_schema_helper(arg)
+        non_none_args = [arg for arg in get_args(cls) if arg is not type(None)]
+        if non_none_args:
+            return openai_schema_helper(non_none_args[0])
+        return cls
 
     if issubclass(cls, (str, int, bool, float, bytes)):
         return cls
