@@ -1,6 +1,7 @@
 from typing import TypeVar
 
 import pytest
+import sys
 from anthropic.types import Message, Usage
 from openai.types.chat.chat_completion import ChatCompletion
 from pydantic import BaseModel, ValidationError
@@ -104,6 +105,18 @@ def test_openai_schema_supports_optional_none() -> None:
         """
 
         attr: Union[str, None]  # In python 3.10+ this is written as `attr: str | None`
+
+
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="Requires Python 3.10 or higher")
+def test_openai_schema_supports_optional_none_310():
+    @openai_schema
+    class DummyWithOptionalNone(BaseModel):  # type: ignore[misc]
+        """
+        Class with a single attribute that can be a string or None.
+        Validates support of UnionType in schema generation.
+        """
+
+        attr: str | None
 
 
 def test_openai_schema_raises_error() -> None:
