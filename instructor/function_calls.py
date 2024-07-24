@@ -2,7 +2,18 @@
 import json
 import logging
 from functools import wraps
-from typing import Annotated, Any, Optional, TypeVar, cast, get_origin, Literal
+from typing import (
+    Annotated,
+    Any,
+    Optional,
+    TypeVar,
+    cast,
+    get_origin,
+    Literal,
+    get_args,
+    Union,
+)
+from types import UnionType
 import asyncio
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
@@ -458,6 +469,11 @@ def openai_schema_helper(cls: T) -> T:
 
     if origin is Literal:
         return cls
+
+    # Support for Union[cls, None] and Python 3.10+ stye cls | None
+    if get_origin(cls) is Union or isinstance(cls, UnionType):
+        for arg in get_args(cls):
+            return openai_schema_helper(arg)
 
     if issubclass(cls, (str, int, bool, float, bytes)):
         return cls
