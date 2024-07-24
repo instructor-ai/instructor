@@ -459,8 +459,11 @@ def openai_schema_helper(cls: T) -> T:
     if origin is list:
         return list[openai_schema_helper(cls.__args__[0])]
 
-    if origin is Literal or origin is Union:
+    if origin is Literal:
         return cls
+
+    if origin is Union:
+        return Union[tuple(openai_schema_helper(arg) for arg in cls.__args__)]
 
     if issubclass(cls, (str, int, bool, float, bytes, Enum)):
         return cls
@@ -480,6 +483,10 @@ def openai_schema_helper(cls: T) -> T:
             )
         )
         return cast(OpenAISchema, schema)
+
+    # None Type
+    if not origin:
+        return cls
 
     raise ValueError(f"Unsupported Class of {cls}!")
 
