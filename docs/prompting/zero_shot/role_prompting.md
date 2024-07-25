@@ -1,71 +1,70 @@
 ---
-description: "Role prompting is a technique where we assign a specific role to a LLM. We can do so by using the format"
+title: "Role Prompting"
+description: "Role prompting, or persona prompting, assigns a role to the model."
 ---
 
-By assigning a specific role to the model, we can improve the performance of the model. This can be done by using the format below.
+How can we increase a model's performance on open-ended tasks?
 
-!!! example "Role Prompting Template"
+Role prompting, or persona prompting, assigns a role to the model. Roles can be:
+ 
+ - specific to the query: *You are a talented writer. Write me a poem.*
+ - general social role: *You are a helpful AI assistant. Write me a poem.*
 
-    You are a **[ role ]**. You **[ description of task ]**. **[ Reiterate instructions ]**.
+!!! info
+    To read about a systematic approach to choosing roles, check out [RoleLLM](https://arxiv.org/abs/2310.00746).
 
-We can implement this using `instructor` as seen below.
+    For more examples of social roles, check out [this](https://arxiv.org/abs/2311.10054) paper.
 
-```python hl_lines="23-26"
+    To read about using more than one role, check out [Multi-Persona Self-Collaboration](https://arxiv.org/abs/2307.05300).
+
+## Implementation
+
+```python hl_lines="19"
 import openai
 import instructor
-from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 client = instructor.from_openai(openai.OpenAI())
 
 
-class Label(BaseModel):
-    label: Literal["TECHNICAL", "PRODUCT", "BILLING"] = Field(
-        ...,
-        description="A label that best desscribes the support ticket",
-    )
+class Response(BaseModel):
+    poem: str
 
 
-def classify(support_ticket_title: str):
+def role_prompting(query, role):
     return client.chat.completions.create(
         model="gpt-4o",
-        response_model=Label,
+        response_model=Response,
         messages=[
             {
                 "role": "system",
-                "content": """You are a support agent at a tech company.
-                You will be assigned a support ticket to classify.
-                Make sure to only select the label that applies to
-                the support ticket.""",
-            },
-            {
-                "role": "user",
-                "content": f"Classify this ticket: {support_ticket_title}",
+                "content": f"{role} {query}",
             },
         ],
     )
 
 
 if __name__ == "__main__":
-    label_prediction = classify(
-        "My account is locked and I can't access my billing info"
-    )
-    print(label_prediction.label)
-    #> BILLING
+    query = "Write me a short poem about coffee."
+    role = "You are a renowned poet."
+
+    response = role_prompting(query, role)
+    print(response.poem)
+    """
+    In the morning's gentle light,
+    A brew of warmth, dark and bright.
+    Awakening dreams, so sweet,
+    In every sip, the day we greet.
+
+    Through the steam, stories spin,
+    A liquid muse, caffeine within.
+    Moments pause, thoughts unfold,
+    In coffee's embrace, we find our gold.
+    """
 ```
 
-!!! note "This is an example of Role Based Prompting"
-
-    - **Role**: You are a support agent at a tech company
-    - **Task** : You will be assigned a support ticket to classify
-    - **Reminder**: Make sure to only select the label that applies to the support ticket
-
-### References
+## References
 
 <sup id="ref-1">1</sup>: [RoleLLM: Benchmarking, Eliciting, and Enhancing Role-Playing Abilities of Large Lanuage Models](https://arxiv.org/abs/2310.00746)  
 <sup id="ref-2">2</sup>: [Is "A Helpful Assistant" the Best Role for Large Language Models? A Systematic Evaluation of Social Roles in System Prompts ](https://arxiv.org/abs/2311.10054)  
-<sup id="ref-3">3</sup>: [Douglas C. Schmidt, Jesse Spencer-Smith, Quchen Fu, and Jules White. 2023. Cataloging prompt patterns to enhance the discipline of prompt engineering. Dept. of Computer Science, Vanderbilt University.](https://www.dre.vanderbilt.edu/~schmidt/PDF/ADA_Europe_Position_Paper.pdf)  
-<sup id="ref-4">4</sup>: [Unleashing the Emergent Cognitive Synergy in Large Lanuage Models: A Task-Solving Agent through Multi-Persona Self-Collaboration ](https://arxiv.org/abs/2307.05300)  
-<sup id="ref-5">5</sup>: [Prompt Programming for Large Language Models: Beyond the Few-Shot Paradigm](https://dl.acm.org/doi/10.1145/3411763.3451760)
-
-<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
+<sup id="ref-4">3</sup>: [Unleashing the Emergent Cognitive Synergy in Large Lanuage Models: A Task-Solving Agent through Multi-Persona Self-Collaboration ](https://arxiv.org/abs/2307.05300)  

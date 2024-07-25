@@ -18,7 +18,7 @@ How do we increase the performance of our model without any examples?
 5. [Simulate a Perspective](zero_shot/simtom.md)
 6. [Clarify Ambiguous Information](zero_shot/rar.md)
 7. [Ask Model To Repeat Query](zero_shot/re2.md)
-8. [Generate Follow-Up Questions](zero_shot/self-ask.md)
+8. [Generate Follow-Up Questions](zero_shot/self_ask.md)
 
 ## Few-Shot
 

@@ -12,7 +12,7 @@ Adding phrases with emotional significance to humans can help enhance the perfor
 - Are you sure?
 
 !!! info
-    For more examples of emotional stimuli to use in prompts, look into EmotionPrompt<sup><a href="https://arxiv.org/abs/2307.11760">1</a></sup> -- a set of prompts inspired by well-established human psychological phenomena.
+    For more examples of emotional stimuli to use in prompts, look into [EmotionPrompt](https://arxiv.org/abs/2307.11760)-- a set of prompts inspired by well-established human psychological phenomena.
 
 ## Implementation
 ```python hl_lines="34"
