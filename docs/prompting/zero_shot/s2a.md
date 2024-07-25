@@ -1,11 +1,11 @@
 ---
 title: "System 2 Attention (S2A)"
-description: "System 2 Attention (S2A) is a two-step prompting technique that removes irrelevant information from the prompt."
+description: "The S2A (System 2 Attention) technique auto-refines a prompt by asking the model to rewrite the prompt to include only relevant information."
 ---
 
 How do we remove irrelevant information from the prompt?
 
-The S2A (System 2 Attention) technique auto-refines a prompt by asking the model to remove irrelevant information from the prompt. We implement this in two steps:
+The S2A (System 2 Attention) technique auto-refines a prompt by asking the model to rewrite the prompt to include only *relevant* information. We implement this in two steps:
 
 1. Ask the model to rewrite the prompt
 2. Pass the rewritten prompt back to the model
