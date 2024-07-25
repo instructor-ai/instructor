@@ -61,7 +61,7 @@ if __name__ == "__main__":
     """
 ```
 
-1. This prompt template comes from this<sup><a href="https://arxiv.org/abs/2311.04205">1</a></sup> paper.
+1. This prompt template comes from [this](https://arxiv.org/abs/2311.04205) paper.
 
 This can also be implemented as two-step RaR:
 

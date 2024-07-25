@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
 !!! info "More Stylistic Constraints"
 
-    To see even more examples of these stylistic constraints and additional constraints (**characterization**, **pacing**, and **plot**), check out this<sup><a href="https://arxiv.org/abs/2302.09185">1</a></sup> paper.
+    To see even more examples of these stylistic constraints and additional constraints (**characterization**, **pacing**, and **plot**), check out [this](https://arxiv.org/abs/2302.09185) paper.
 
 ## References
 

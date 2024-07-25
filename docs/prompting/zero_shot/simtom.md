@@ -25,21 +25,21 @@ This is implemented in two steps. Given an entity:
 ```python hl_lines="24-25"
 import openai
 import instructor
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Iterable
 
 client = instructor.from_openai(openai.OpenAI())
 
 
 class KnownFact(BaseModel):
-    fact: str
+    fact: str = Field(description="A fact that the given entity would know")
 
 
 class Response(BaseModel):
     location: str
 
 
-def generate_known_facts(entity: str) -> Iterable[KnownFact]:
+def generate_known_facts(entity, context, query) -> Iterable[KnownFact]:
     return client.chat.completions.create(
         model="gpt-4o",
         response_model=Iterable[KnownFact],
@@ -50,10 +50,8 @@ def generate_known_facts(entity: str) -> Iterable[KnownFact]:
                 the facts that {entity} would know:
 
                 Context:
-                Alice puts the book on the table.
-                Alice leaves the room.
-                Bob moves the book to the shelf.
-                Where does {entity} think the book is?
+                {context}
+                {query}
 
                 List only the facts relevant to {entity}.
                 """,
@@ -62,9 +60,7 @@ def generate_known_facts(entity: str) -> Iterable[KnownFact]:
     )
 
 
-def answer_question_based_on_facts(
-    entity: str, known_facts: Iterable[KnownFact]
-) -> Response:
+def answer_question_based_on_facts(entity, query, known_facts) -> Response:
     return client.chat.completions.create(
         model="gpt-4o",
         response_model=Response,
@@ -77,15 +73,22 @@ def answer_question_based_on_facts(
             },
             {
                 "role": "user",
-                "content": f"Question: Where does {entity} think the book is?",
+                "content": f"Question: {query}",
             },
         ],
     )
 
 
 if __name__ == "__main__":
-    known_facts = generate_known_facts("Alice")
-    response = answer_question_based_on_facts("Alice", known_facts)
+    entity = "Alice"
+    context = """Alice puts the book on the table.
+        Alice leaves the room.
+        Bob moves the book to the shelf.
+        """
+    query = f"Where does {entity} think the book is?"
+
+    known_facts = generate_known_facts(entity, context, query)
+    response = answer_question_based_on_facts(entity, query, known_facts)
 
     for fact in known_facts:
         print(fact)

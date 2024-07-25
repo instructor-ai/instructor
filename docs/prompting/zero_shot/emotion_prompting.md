@@ -12,7 +12,7 @@ Adding phrases with emotional significance to humans can help enhance the perfor
 - Are you sure?
 
 !!! info
-    For more examples of emotional stimuli to use in prompts, look into [EmotionPrompt](https://arxiv.org/abs/2307.11760)-- a set of prompts inspired by well-established human psychological phenomena.
+    For more examples of emotional stimuli to use in prompts, look into [EmotionPrompt](https://arxiv.org/abs/2307.11760) -- a set of prompts inspired by well-established human psychological phenomena.
 
 ## Implementation
 ```python hl_lines="34"
@@ -31,7 +31,7 @@ class Album(BaseModel):
 client = instructor.from_openai(openai.OpenAI())
 
 
-def emotion_prompt(query, stimuli):
+def emotion_prompting(query, stimuli):
     return client.chat.completions.create(
         model="gpt-4o",
         response_model=Iterable[Album],
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     query = "Provide me with a list of 3 musical albums from the 2000s."
     stimuli = "This is very important to my career."  # (1)!
 
-    albums = emotion_prompt(query, stimuli)
+    albums = emotion_prompting(query, stimuli)
 
     for album in albums:
         print(album)

@@ -7,19 +7,12 @@ How can we increase a model's performance on open-ended tasks?
 
 Role prompting, or persona prompting, assigns a role to the model. Roles can be:
  
- - specific to the query: *You are a talented writer. Write me a poem.*
- - general social role: *You are a helpful AI assistant. Write me a poem.*
-
-!!! info
-    To read about a systematic approach to choosing roles, check out [RoleLLM](https://arxiv.org/abs/2310.00746).
-
-    For more examples of social roles, check out [this](https://arxiv.org/abs/2311.10054) paper.
-
-    To read about using more than one role, check out [Multi-Persona Self-Collaboration](https://arxiv.org/abs/2307.05300).
+ - **specific to the query**: *You are a talented writer. Write me a poem.*
+ - **general/social**: *You are a helpful AI assistant. Write me a poem.*
 
 ## Implementation
 
-```python hl_lines="19"
+```python hl_lines="27"
 import openai
 import instructor
 from pydantic import BaseModel
@@ -62,6 +55,13 @@ if __name__ == "__main__":
     In coffee's embrace, we find our gold.
     """
 ```
+
+!!! info
+    To read about a systematic approach to choosing roles, check out [RoleLLM](https://arxiv.org/abs/2310.00746).
+
+    For more examples of social roles, check out [this](https://arxiv.org/abs/2311.10054) evaluation of social roles in system prompts..
+
+    To read about using more than one role, check out [Multi-Persona Self-Collaboration](https://arxiv.org/abs/2307.05300).
 
 ## References
 

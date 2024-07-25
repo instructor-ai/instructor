@@ -88,7 +88,7 @@ if __name__ == "__main__":
     #> 25
 ```
 
-1. This prompt template comes from this<sup><a href="https://arxiv.org/abs/2311.11829">1</a></sup> paper.
+1. This prompt template comes from [this](https://arxiv.org/abs/2311.11829) paper.
 
 ## References
 
