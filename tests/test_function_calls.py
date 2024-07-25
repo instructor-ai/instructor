@@ -143,7 +143,7 @@ def test_incomplete_output_exception_raise(
     test_model: type[OpenAISchema], mock_completion: ChatCompletion
 ) -> None:
     with pytest.raises(IncompleteOutputException):
-        test_model.from_response(mock_completion, mode=instructor.Mode.FUNCTIONS)
+        test_model.from_response(mock_completion, mode=instructor.Mode.TOOLS)
 
 
 def test_anthropic_no_exception(
@@ -201,3 +201,9 @@ def test_pylance_url_config() -> None:
         Model(**data)  # type: ignore
     except ValidationError as e:
         assert "https://errors.pydantic.dev" not in str(e)
+
+
+def test_mode_functions_deprecation_warning() -> None:
+    from openai import OpenAI
+    with pytest.warns(DeprecationWarning, match="The FUNCTIONS mode is deprecated and will be removed in future versions"):
+        _ = instructor.from_openai(OpenAI(), mode=instructor.Mode.FUNCTIONS)

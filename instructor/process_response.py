@@ -3,15 +3,16 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from textwrap import dedent
+from instructor.mode import Mode
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
+from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, create_model
-
 import json
 import inspect
 import logging
@@ -56,7 +57,6 @@ async def process_response_async(
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
-
     logger.debug(
         f"Instructor Raw Response: {response}",
     )
@@ -80,6 +80,11 @@ async def process_response_async(
         strict=strict,
         mode=mode,
     )
+
+    if isinstance(model, OpenAISchema):
+        validation_errors = await model.model_async_validate(validation_context)
+        if validation_errors:
+            raise AsyncValidationError(f"Validation errors: {validation_errors}")
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
@@ -148,6 +153,12 @@ def process_response(
         mode=mode,
     )
 
+    if isinstance(model, OpenAISchema):
+        if model.has_async_validators():
+            logging.warning(
+                "Async Validators will not run in a synchronous client. Please make sure to use an Async client"
+            )
+
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
@@ -194,6 +205,7 @@ def handle_response_model(
         Union[Type[OpenAISchema], dict]: The response model to use for parsing the response
     """
     new_kwargs = kwargs.copy()
+
     if response_model is not None:
         # Handles the case where the response_model is a simple type
         # Literal, Annotated, Union, str, int, float, bool, Enum
@@ -234,6 +246,7 @@ def handle_response_model(
             )
 
         if mode == Mode.FUNCTIONS:
+            Mode.warn_mode_functions_deprecation()
             new_kwargs["functions"] = [response_model.openai_schema]
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
@@ -368,6 +381,27 @@ def handle_response_model(
             # the messages array must be alternating roles of user and assistant, we must merge
             # consecutive user messages into a single message
             new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
+        elif mode == Mode.COHERE_JSON_SCHEMA:
+            messages = new_kwargs.pop("messages", [])
+            chat_history = []
+            for message in messages[:-1]:
+                # format in Cohere's ChatMessage format
+                chat_history.append(
+                    {
+                        "role": message["role"],
+                        "message": message["content"],
+                    }
+                )
+            new_kwargs["message"] = messages[-1]["content"]
+
+            new_kwargs["chat_history"] = chat_history
+            new_kwargs["response_format"] = {
+                "type": "json_object",
+                "schema": response_model.model_json_schema(),
+            }
+
+            if "strict" in new_kwargs:
+                del new_kwargs["strict"]
 
         elif mode == Mode.COHERE_TOOLS:
             instruction = f"""\
@@ -392,6 +426,9 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 )
             new_kwargs["message"] = instruction
             new_kwargs["chat_history"] = chat_history
+
+            if "strict" in new_kwargs:
+                del new_kwargs["strict"]
         elif mode == Mode.GEMINI_JSON:
             assert (
                 "model" not in new_kwargs
@@ -474,6 +511,28 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             new_kwargs["generation_config"] = generation_config
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
+
+    # Handle Cohere Response Model Case
+    elif response_model is None and mode in {
+        Mode.COHERE_JSON_SCHEMA,
+        Mode.COHERE_TOOLS,
+    }:
+        messages = new_kwargs.pop("messages", [])
+        chat_history = []
+        for message in messages[:-1]:
+            # format in Cohere's ChatMessage format
+            chat_history.append(
+                {
+                    "role": message["role"],
+                    "message": message["content"],
+                }
+            )
+        new_kwargs["message"] = messages[-1]["content"]
+
+        new_kwargs["chat_history"] = chat_history
+        if "model_name" in new_kwargs and "model" not in new_kwargs:
+            new_kwargs["model"] = new_kwargs.pop("model_name")
+        new_kwargs.pop("strict", None)
 
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",

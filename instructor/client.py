@@ -39,6 +39,8 @@ class Instructor:
         self.client = client
         self.create_fn = create
         self.mode = mode
+        if mode == instructor.Mode.FUNCTIONS:
+            instructor.Mode.warn_mode_functions_deprecation()
         self.kwargs = kwargs
         self.provider = provider
 
@@ -78,16 +80,37 @@ class Instructor:
     ) -> T:
         ...
 
-    # TODO: we should overload a case where response_model is None
+    @overload
     def create(
-        self,
-        response_model: type[T],
+        self: AsyncInstructor,
+        response_model: None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> T | Awaitable[T]:
+    ) -> Awaitable[Any]: ...
+
+    @overload
+    def create(
+        self: Self,
+        response_model: None,
+        messages: list[ChatCompletionMessageParam],
+        max_retries: int = 3,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Any: ...
+
+    def create(
+        self,
+        response_model: type[T] | None,
+        messages: list[ChatCompletionMessageParam],
+        max_retries: int = 3,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> T | Any | Awaitable[T] | Awaitable[Any]:
         kwargs = self.handle_kwargs(kwargs)
 
         return self.create_fn(
@@ -266,13 +289,13 @@ class AsyncInstructor(Instructor):
 
     async def create(
         self,
-        response_model: type[T],
+        response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> T:
+    ) -> T | Any:
         kwargs = self.handle_kwargs(kwargs)
         return await self.create_fn(
             response_model=response_model,
