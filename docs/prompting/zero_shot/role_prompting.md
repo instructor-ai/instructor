@@ -56,7 +56,7 @@ if __name__ == "__main__":
     """
 ```
 
-!!! info
+!!! info "More Role Prompting"
     To read about a systematic approach to choosing roles, check out [RoleLLM](https://arxiv.org/abs/2310.00746).
 
     For more examples of social roles, check out [this](https://arxiv.org/abs/2311.10054) evaluation of social roles in system prompts..
