@@ -1,5 +1,5 @@
 ---
-description: "Rephrase and Respond aims to reduce prompt ambiguity and align the question more closely with the LLM's existing frame"
+description: "To help the model better infer human intention from ambigious prompts, we can ask the model to rephrase and respond (RaR)."
 ---
 
 How can we identify and clarify ambigious information in the prompt?
