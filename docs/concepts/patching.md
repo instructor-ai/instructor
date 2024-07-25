@@ -58,7 +58,7 @@ Note that function calling is soon to be deprecated in favor of TOOL mode for Op
 import instructor
 from openai import OpenAI
 
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.FUNCTIONS)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
 ```
 
 ## JSON Mode
@@ -95,7 +95,6 @@ LOCATION = 'LOCATION'
 base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
 client = instructor.from_openai(OpenAI(base_url=base_url, api_key=creds.token),mode=instructor.Mode.JSON)
 ```
-
 
 ### Gemini JSON Mode
 

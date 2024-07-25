@@ -16,7 +16,7 @@ from instructor.exceptions import InstructorRetryException
 from openai.types.completion_usage import CompletionUsage
 from pydantic import ValidationError
 from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
-
+from instructor.validators import AsyncValidationError
 
 from json import JSONDecodeError
 from pydantic import BaseModel
@@ -77,11 +77,8 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.content[0].text}""",
         }
         return
-    if mode == Mode.COHERE_TOOLS:
-        yield {
-            "role": "user",
-            "message": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-        }
+    if mode == Mode.COHERE_TOOLS or mode == Mode.COHERE_JSON_SCHEMA:
+        yield f"Correct the following JSON response, based on the errors given below:\n\nJSON:\n{response.text}\n\nExceptions:\n{exception}"
         return
     if mode == Mode.GEMINI_JSON:
         yield {
@@ -152,7 +149,6 @@ def retry_sync(
         logger.debug(f"max_retries: {max_retries}")
         max_retries = Retrying(
             stop=stop_after_attempt(max_retries),
-            reraise=True,
         )
     if not isinstance(max_retries, (Retrying, AsyncRetrying)):
         raise ValueError("max_retries must be an int or a `tenacity.Retrying` object")
@@ -181,8 +177,13 @@ def retry_sync(
                         Mode.VERTEXAI_JSON,
                     }:
                         kwargs["contents"].extend(reask_messages(response, mode, e))
-                    elif mode in {Mode.COHERE_TOOLS}:
-                        kwargs["chat_history"].extend(reask_messages(response, mode, e))
+                    elif mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
+                        if attempt.retry_state.attempt_number == 1:
+                            kwargs["chat_history"].extend(
+                                [{"role": "user", "message": kwargs.get("message")}]
+                            )
+                        kwargs["message"] = next(reask_messages(response, mode, e))
+
                     else:
                         kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
@@ -195,7 +196,9 @@ def retry_sync(
             e,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
-            messages=kwargs.get("messages", kwargs.get("contents")),
+            messages=kwargs.get(
+                "messages", kwargs.get("contents", kwargs.get("chat_history", []))
+            ),
             total_usage=total_usage,
         ) from e
 
@@ -221,7 +224,6 @@ async def retry_async(
         logger.debug(f"max_retries: {max_retries}")
         max_retries = AsyncRetrying(
             stop=stop_after_attempt(max_retries),
-            reraise=True,
         )
     if not isinstance(max_retries, (AsyncRetrying, Retrying)):
         raise ValueError(
@@ -245,9 +247,16 @@ async def retry_async(
                         strict=strict,
                         mode=mode,
                     )
-                except (ValidationError, JSONDecodeError) as e:
+                except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
                     logger.debug(f"Error response: {response}", e)
-                    kwargs["messages"].extend(reask_messages(response, mode, e))
+                    if mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
+                        if attempt.retry_state.attempt_number == 1:
+                            kwargs["chat_history"].extend(
+                                [{"role": "user", "message": kwargs.get("message")}]
+                            )
+                        kwargs["message"] = next(reask_messages(response, mode, e))
+                    else:
+                        kwargs["messages"].extend(reask_messages(response, mode, e))
                     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
                         kwargs["messages"] = merge_consecutive_messages(
                             kwargs["messages"]
@@ -259,6 +268,8 @@ async def retry_async(
             e,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
-            messages=kwargs["messages"],
+            messages=kwargs.get(
+                "messages", kwargs.get("contents", kwargs.get("chat_history", []))
+            ),
             total_usage=total_usage,
         ) from e

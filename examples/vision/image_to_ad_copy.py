@@ -103,7 +103,7 @@ client_image = instructor.from_openai(
     OpenAI(api_key=os.getenv("OPENAI_API_KEY")), mode=instructor.Mode.MD_JSON
 )
 client_copy = instructor.from_openai(
-    OpenAI(api_key=os.getenv("OPENAI_API_KEY")), mode=instructor.Mode.FUNCTIONS
+    OpenAI(api_key=os.getenv("OPENAI_API_KEY")), mode=instructor.Mode.TOOLS
 )
 
 

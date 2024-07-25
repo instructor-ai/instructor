@@ -27,7 +27,7 @@ user = client.chat.completions.create(
 """ 
 DEBUG:httpx:load_ssl_context verify=True cert=None trust_env=True http2=False
 DEBUG:httpx:load_verify_locations cafile='/Users/jasonliu/dev/instructor/.venv/lib/python3.11/site-packages/certifi/cacert.pem'
-DEBUG:instructor:Patching `client.chat.completions.create` with mode=<Mode.FUNCTIONS: 'function_call'>
+DEBUG:instructor:Patching `client.chat.completions.create` with mode=<Mode.TOOLS: 'tool_call'>
 DEBUG:instructor:max_retries: 1
 DEBUG:openai._base_client:Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'json_data': {'messages': [{'role': 'user', 'content': 'Extract Jason is 25 years old'}], 'model': 'gpt-3.5-turbo', 'function_call': {'name': 'UserDetail'}, 'functions': [{'name': 'UserDetail', 'description': 'Correctly extracted `UserDetail` with all the required parameters with correct types', 'parameters': {'properties': {'name': {'title': 'Name', 'type': 'string'}, 'age': {'title': 'Age', 'type': 'integer'}}, 'required': ['age', 'name'], 'type': 'object'}}]}}
 DEBUG:httpcore.connection:connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None

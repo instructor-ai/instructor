@@ -2,8 +2,9 @@
 import json
 import logging
 from functools import wraps
-from typing import Annotated, Any, Optional, TypeVar, cast
-
+from typing import Annotated, Any, Optional, TypeVar, cast, get_origin, Literal, Union
+from enum import Enum
+import asyncio
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (
@@ -17,6 +18,11 @@ from pydantic import (
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import classproperty, extract_json_from_codeblock
+from instructor.validators import (
+    ASYNC_VALIDATOR_KEY,
+    AsyncValidationContext,
+    ASYNC_MODEL_VALIDATOR_KEY,
+)
 
 T = TypeVar("T")
 
@@ -77,6 +83,140 @@ class OpenAISchema(BaseModel):
             "input_schema": cls.model_json_schema(),
         }
 
+    def has_async_validators(self):
+        has_validators = (
+            len(self.__class__.get_async_validators()) > 0
+            or len(self.get_async_model_validators()) > 0
+        )
+
+        for _, attribute_value in self.__dict__.items():
+            if isinstance(attribute_value, OpenAISchema):
+                has_validators = (
+                    has_validators or attribute_value.has_async_validators()
+                )
+
+                # List of items too
+            if isinstance(attribute_value, (list, set, tuple)):
+                for item in attribute_value:
+                    if isinstance(item, OpenAISchema):
+                        has_validators = has_validators or item.has_async_validators()
+
+        return has_validators
+
+    @classmethod
+    def get_async_validators(cls):
+        validators = [
+            getattr(cls, name)
+            for name in dir(cls)
+            if hasattr(getattr(cls, name), ASYNC_VALIDATOR_KEY)
+        ]
+        return validators
+
+    @classmethod
+    def get_async_model_validators(cls):
+        validators = [
+            getattr(cls, name)
+            for name in dir(cls)
+            if hasattr(getattr(cls, name), ASYNC_MODEL_VALIDATOR_KEY)
+        ]
+        return validators
+
+    async def execute_field_validator(
+        self,
+        func: Any,
+        value: Any,
+        context: Optional[AsyncValidationContext] = None,
+        prefix=[],
+    ):
+        try:
+            if not context:
+                await func(self, value)
+            else:
+                await func(self, value, context)
+
+        except Exception as e:
+            prefix_path = f" at {'.'.join(prefix)}" if prefix else ""
+            return ValueError(f"Exception of {e} encountered{prefix_path}")
+
+    async def execute_model_validator(
+        self, func: Any, context: Optional[AsyncValidationContext] = None, prefix=[]
+    ):
+        try:
+            if not context:
+                await func(self)
+            else:
+                await func(self, context)
+
+        except Exception as e:
+            prefix_path = f" at {'.'.join(prefix)}" if prefix else ""
+            return ValueError(f"Exception of {e} encountered{prefix_path}")
+
+    async def get_model_coroutines(
+        self, validation_context: dict[str, Any] = {}, prefix=[]
+    ):
+        values = dict(self)
+        validators = self.__class__.get_async_validators()
+        model_validators = self.get_async_model_validators()
+        coros: list[Awaitable[Any]] = []
+        for validator in validators + model_validators:
+            # Model Validator
+            if not hasattr(validator, ASYNC_VALIDATOR_KEY):
+                validation_func, requires_validation_context = getattr(
+                    validator, ASYNC_MODEL_VALIDATOR_KEY
+                )
+                coros.append(
+                    self.execute_model_validator(
+                        validation_func,
+                        AsyncValidationContext(context=validation_context)
+                        if requires_validation_context
+                        else None,
+                        prefix,
+                    )
+                )
+            else:
+                fields, validation_func, requires_validation_context = getattr(
+                    validator, ASYNC_VALIDATOR_KEY
+                )
+                for field in fields:
+                    if field not in values:
+                        raise ValueError(f"Invalid Field of {field} provided")
+
+                    coros.append(
+                        self.execute_field_validator(
+                            validation_func,
+                            values[field],
+                            AsyncValidationContext(context=validation_context)
+                            if requires_validation_context
+                            else None,
+                            prefix=prefix + [field],
+                        )
+                    )
+
+        for attribute_name, attribute_value in self.__dict__.items():
+            # Supporting Sub Array
+            if isinstance(attribute_value, OpenAISchema):
+                coros.extend(
+                    await attribute_value.get_model_coroutines(
+                        validation_context, prefix=prefix + [attribute_name]
+                    )
+                )
+
+            # List of items too
+            if isinstance(attribute_value, (list, set, tuple)):
+                for item in attribute_value:
+                    if isinstance(item, OpenAISchema):
+                        coros.extend(
+                            await item.get_model_coroutines(
+                                validation_context, prefix=prefix + [attribute_name]
+                            )
+                        )
+
+        return coros
+
+    async def model_async_validate(self, validation_context: dict[str, Any] = {}):
+        coros = await self.get_model_coroutines(validation_context)
+        return [item for item in await asyncio.gather(*coros) if item]
+
     @classmethod
     def from_response(
         cls,
@@ -115,10 +255,14 @@ class OpenAISchema(BaseModel):
         if mode == Mode.GEMINI_JSON:
             return cls.parse_gemini_json(completion, validation_context, strict)
 
+        if mode == Mode.COHERE_JSON_SCHEMA:
+            return cls.parse_cohere_json_schema(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
         if mode == Mode.FUNCTIONS:
+            Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
         if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
@@ -128,6 +272,20 @@ class OpenAISchema(BaseModel):
             return cls.parse_json(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
+
+    @classmethod
+    def parse_cohere_json_schema(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ):
+        assert hasattr(
+            completion, "text"
+        ), "Completion is not of type NonStreamedChatResponse"
+        return cls.model_validate_json(
+            completion.text, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_anthropic_tools(
@@ -295,14 +453,46 @@ class OpenAISchema(BaseModel):
         )
 
 
+def openai_schema_helper(cls: T) -> T:
+    origin = get_origin(cls)
+
+    if origin is list:
+        return list[openai_schema_helper(cls.__args__[0])]
+
+    if origin is Literal:
+        return cls
+
+    if origin is Union:
+        return Union[tuple(openai_schema_helper(arg) for arg in cls.__args__)]
+
+    if issubclass(cls, (str, int, bool, float, bytes, Enum)):
+        return cls
+
+    if isinstance(cls, type) and issubclass(cls, BaseModel):
+        new_types = {}
+        for field_name, field_info in cls.model_fields.items():
+            field_type = field_info.annotation
+            new_field_type = openai_schema_helper(field_type)
+            new_types[field_name] = (new_field_type, field_info)
+
+        schema = wraps(cls, updated=())(
+            create_model(
+                cls.__name__ if hasattr(cls, "__name__") else str(cls),
+                __base__=(cls, OpenAISchema),
+                **new_types,
+            )
+        )
+        return cast(OpenAISchema, schema)
+
+    # None Type
+    if not origin:
+        return cls
+
+    raise ValueError(f"Unsupported Class of {cls}!")
+
+
 def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
-    shema = wraps(cls, updated=())(
-        create_model(
-            cls.__name__ if hasattr(cls, "__name__") else str(cls),
-            __base__=(cls, OpenAISchema),
-        )
-    )
-    return cast(OpenAISchema, shema)
+    return openai_schema_helper(cls)
