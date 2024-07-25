@@ -2,98 +2,71 @@
 description: "Rephrase and Respond aims to reduce prompt ambiguity and align the question more closely with the LLM's existing frame"
 ---
 
-We can improve performance of our LLM by getting the model to rewrite the prompt<sup><a href="https://arxiv.org/pdf/2311.04205">1</a></sup> such that is is less ambigious.
+How can we identify and clarify ambigious information in the prompt?
 
-This could look something like this
+Let's say we are given the query: *Was Ed Sheeran born on an odd month?*
 
-!!! example "Rephrase and Respond Example"
+There are many ways a model might interpret an *odd month*:
+    
+- Februray is *odd* because of an irregular number of days.
+- A month is *odd* if it has an odd number of days.
+- A month is *odd* if its numberical order in the year is odd (i.e. Janurary is the 1st month).
 
-    **User**: Take the last letters of the words in 'Edgar Bob' and concatenate them.
+!!! note
 
-    **Rephrased Question**: Could you please form a new string or series of characters by joining together the final letters from each word in the phrase "Edgar Bob"?
+    Ambiguities might not always be so obvious!
 
-    **Assistant**: The last letters in the words "Edgar" and "Bob" are "r" and "b", hence when concatenated, it forms "rb".
+To help the model better infer human intention from ambigious prompts, we can ask the model to rephrase and respond (RaR).
 
-We can implement this using `instructor` as seen below.
+## Implementation
 
-```python hl_lines="26-27"
-from pydantic import BaseModel, Field
+```python hl_lines="19"
+from pydantic import BaseModel
 import instructor
 from openai import OpenAI
 
 client = instructor.from_openai(OpenAI())
 
 
-class ImprovedQuestion(BaseModel):
-    rewritten_question: str = Field(
-        ...,
-        description="""An improved, more specific
-        version of the original question""",
-    )
-
-
-class FinalResponse(BaseModel):
+class Response(BaseModel):
+    rephrased_question: str
     answer: str
 
 
-def rewrite_question(question: str):
+def rephrase_and_respond(query):
     return client.chat.completions.create(
         model="gpt-4o",
         messages=[
             {
-                "role": "system",
-                "content": """You excel at making questions clearer
-                and more specific.""",
-            },
-            {"role": "user", "content": f"The question is {question}"},
+                "role": "user",
+                "content": f"""{query}\nRephrase and expand the question, and respond.""", # (1)!
+            }
         ],
-        response_model=ImprovedQuestion,
+        response_model=Response,
     )
-
-
-def answer_question(question: str):
-    return client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": question}],
-        max_tokens=1000,
-        response_model=FinalResponse,
-    )
-
 
 if __name__ == "__main__":
-    rewritten_query = rewrite_question(
-        "Take the last letters of the words in 'Elon Musk' and concatenate them"
-    )
-    print(rewritten_query.model_dump_json(indent=2))
-    """
-    {
-      "rewritten_question": "What are the last letters of each word in 'Elon Musk',
-      and how would they look when concatenated together?"
-    }
-    """
+    query = "Take the last letters of the words in 'Edgar Bob' and concatinate them."
 
-    response = answer_question(rewritten_query.rewritten_question)
-    print(response.model_dump_json(indent=2))
+    response = rephrase_and_respond(query)
+
+    print(response.rephrased_question)
     """
-    {
-      "answer": "The last letters of the words 'Elon Musk' are 'n' and 'k'. When
-      concatenated together, they look like 'nk'."
-    }
+    What are the last letters of each word in the name 'Edgar Bob', and what do you get when you concatenate them?
+    """
+    print(response.answer)
+    """
+    To find the last letters of each word in the name 'Edgar Bob', we look at 'Edgar' and 'Bob'. The last letter of 'Edgar' is 'r' and the last letter of 'Bob' is 'b'. Concatenating these letters gives us 'rb'.
     """
 ```
 
-We can also achieve the same benefits by **using a better model to generate the question** before we prompt a weaker model - this is known as a two-step RaR.
+1. This prompt template comes from this<sup><a href="https://arxiv.org/abs/2311.04205">1</a></sup> paper.
 
-## Useful Tips
+This can also be implemented as two-step RaR:
 
-Here are some phrases that you can add to your prompt to refine the question before you generate a response
+1. Ask the model to rephrase the question.
+2. Pass the rephrased question back to the model to generate the final response.
 
-- Reword and elaborate on the inquiry, then provide an answer.
-- Reframe the question with additional context and detail, then provide an answer.
-- Modify the original question for clarity and detail, then offer an answer.
-- Restate and elaborate on the inquiry before proceeding with a response.
-- Given the above question, rephrase and expand it to help you do better answering. Maintain all information in the original question.
+## References
 
-### References
-
-<sup id="ref-1">1</sup>: [Rephrase and Respond: Let Large Language Models Ask Better Questions for Themselves](https://arxiv.org/pdf/2311.04205)
+<sup id="ref-1">1</sup>: [Rephrase and Respond: Let Large Language Models Ask Better Questions for Themselves](https://arxiv.org/abs/2311.04205)

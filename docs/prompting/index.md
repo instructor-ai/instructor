@@ -16,7 +16,7 @@ How do we increase the performance of our model without any examples?
 3. [Define a Style](zero_shot/style_prompting.md)
 4. [Auto-Refine The Prompt](zero_shot/s2a.md)
 5. [Simulate a Perspective](zero_shot/simtom.md)
-6. [Auto-Clarify The Prompt](zero_shot/rar.md)
+6. [Clarify Ambiguous Information](zero_shot/rar.md)
 7. [Ask Model To Repeat The Query](zero_shot/re2.md)
 8. [Generate Follow-Up Questions](zero_shot/self-ask.md)
 
