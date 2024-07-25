@@ -39,11 +39,12 @@ def rephrase_and_respond(query):
         messages=[
             {
                 "role": "user",
-                "content": f"""{query}\nRephrase and expand the question, and respond.""", # (1)!
+                "content": f"""{query}\nRephrase and expand the question, and respond.""",  # (1)!
             }
         ],
         response_model=Response,
     )
+
 
 if __name__ == "__main__":
     query = "Take the last letters of the words in 'Edgar Bob' and concatinate them."

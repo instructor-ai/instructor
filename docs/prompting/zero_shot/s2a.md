@@ -29,7 +29,7 @@ class Step2(BaseModel):
     answer: int
 
 
-def rewrite_prompt():
+def rewrite_prompt(query):
     rewritten_prompt = client.chat.completions.create(
         model="gpt-4o",
         response_model=Step1,
@@ -43,11 +43,8 @@ def rewrite_prompt():
                     is asking.
 
                     Text by user:
-                    Mary has 3 times as much candy as Megan. Mary then
-                    adds 10 more pieces of candy to her collection. Max
-                    is 5 years older than Mary. If Megan has 5 pieces of
-                    candy, how many does Mary have in total?
-                    """, # (1)!
+                    {query}
+                    """,  # (1)!
             }
         ],
     )
@@ -70,13 +67,17 @@ def generate_final_response(rewritten_prompt):
 
 
 if __name__ == "__main__":
+    query = """Mary has 3 times as much candy as Megan.
+        Mary then adds 10 more pieces of candy to her collection.
+        Max is 5 years older than Mary.
+        If Megan has 5 pieces of candy, how many does Mary have in total?
+        """
+
     # Step 1: Rewrite the prompt
-    rewritten_prompt = rewrite_prompt()
+    rewritten_prompt = rewrite_prompt(query)
     print(rewritten_prompt.relevant_context)
     """
-    Mary has 3 times as much candy as Megan.
-    Mary then adds 10 more pieces of candy to her collection.
-    If Megan has 5 pieces of candy, how many does Mary have in total?
+    Mary has 3 times as much candy as Megan. Mary then adds 10 more pieces of candy to her collection. If Megan has 5 pieces of candy, how many does Mary have in total?
     """
     print(rewritten_prompt.user_query)
     #> how many does Mary have in total?

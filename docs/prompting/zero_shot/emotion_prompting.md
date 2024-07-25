@@ -15,7 +15,7 @@ Adding phrases with emotional significance to humans can help enhance the perfor
     For more examples of emotional stimuli to use in prompts, look into EmotionPrompt<sup><a href="https://arxiv.org/abs/2307.11760">1</a></sup> -- a set of prompts inspired by well-established human psychological phenomena.
 
 ## Implementation
-```python hl_lines="25"
+```python hl_lines="34"
 import openai
 import instructor
 from pydantic import BaseModel
@@ -31,32 +31,36 @@ class Album(BaseModel):
 client = instructor.from_openai(openai.OpenAI())
 
 
-def get_albums():
+def emotion_prompt(query, stimuli):
     return client.chat.completions.create(
         model="gpt-4o",
         response_model=Iterable[Album],
         messages=[
             {
                 "role": "user",
-                "content": """
-                Provide me a list of 3 musical albums from the 2000s.
-                This is very important to my career.
-                """,  # (1)!
+                "content": f"""
+                {query}
+                {stimuli}
+                """,
             }
         ],
     )
 
 
 if __name__ == "__main__":
-    albums = get_albums()
+    query = "Provide me with a list of 3 musical albums from the 2000s."
+    stimuli = "This is very important to my career."  # (1)!
+
+    albums = emotion_prompt(query, stimuli)
+
     for album in albums:
         print(album)
         #> name='Kid A' artist='Radiohead' year=2000
-        #> name='Stankonia' artist='OutKast' year=2000
-        #> name='The Blueprint' artist='Jay-Z' year=2001
+        #> name='The Marshall Mathers LP' artist='Eminem' year=2000
+        #> name='The College Dropout' artist='Kanye West' year=2004
 ```
 
-1.  The phrase `This is very important to my career` is used as emotional stimuli in this prompt.
+1.  The phrase `This is very important to my career` is used as emotional stimuli in the prompt.
 
 ## References
 
