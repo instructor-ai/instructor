@@ -93,7 +93,9 @@ PROJECT = 'PROJECT_ID'
 LOCATION = 'LOCATION'
 
 base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
-client = instructor.from_openai(OpenAI(base_url=base_url, api_key=creds.token),mode=instructor.Mode.JSON)
+client = instructor.from_openai(
+    OpenAI(base_url=base_url, api_key=creds.token), mode=instructor.Mode.JSON
+)
 ```
 
 ### Gemini JSON Mode
