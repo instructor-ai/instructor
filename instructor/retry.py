@@ -233,7 +233,7 @@ async def retry_async(
     try:
         response = None
         async for attempt in max_retries:
-            logger.debug(f"Retrying, attempt: {attempt}")
+            logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
             with attempt:
                 try:
                     response: ChatCompletion = await func(*args, **kwargs)
