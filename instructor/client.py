@@ -59,32 +59,30 @@ class Instructor:
     @overload
     def create(
         self: AsyncInstructor,
-        response_model: type[T],
         messages: list[ChatCompletionMessageParam],
+        response_model: type[T],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[T]:
-        ...
+    ) -> Awaitable[T]: ...
 
     @overload
     def create(
         self: Self,
-        response_model: type[T],
         messages: list[ChatCompletionMessageParam],
+        response_model: type[T],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> T:
-        ...
+    ) -> T: ...
 
     @overload
     def create(
         self: AsyncInstructor,
-        response_model: None,
         messages: list[ChatCompletionMessageParam],
+        response_model: None = None,
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -94,8 +92,8 @@ class Instructor:
     @overload
     def create(
         self: Self,
-        response_model: None,
         messages: list[ChatCompletionMessageParam],
+        response_model: None = None,
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -104,8 +102,8 @@ class Instructor:
 
     def create(
         self,
-        response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
+        response_model: type[T] | None = None,
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -131,8 +129,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]:
-        ...
+    ) -> AsyncGenerator[T, None]: ...
 
     @overload
     def create_partial(
@@ -143,8 +140,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Generator[T, None, None]:
-        ...
+    ) -> Generator[T, None, None]: ...
 
     def create_partial(
         self,
@@ -178,8 +174,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]:
-        ...
+    ) -> AsyncGenerator[T, None]: ...
 
     @overload
     def create_iterable(
@@ -190,8 +185,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Generator[T, None, None]:
-        ...
+    ) -> Generator[T, None, None]: ...
 
     def create_iterable(
         self,
@@ -224,8 +218,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[tuple[T, Any]]:
-        ...
+    ) -> Awaitable[tuple[T, Any]]: ...
 
     @overload
     def create_with_completion(
@@ -236,8 +229,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> tuple[T, Any]:
-        ...
+    ) -> tuple[T, Any]: ...
 
     def create_with_completion(
         self,
@@ -451,8 +443,7 @@ def from_litellm(
     completion: Callable[..., Any],
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
-) -> Instructor:
-    ...
+) -> Instructor: ...
 
 
 @overload
@@ -485,3 +476,23 @@ def from_litellm(
             mode=mode,
             **kwargs,
         )
+
+
+if __name__ == "__main__":
+    from openai import OpenAI
+
+    client = OpenAI()
+    client = from_openai(client)
+
+    resp = client.create(
+        messages=[{"role": "user", "content": "Hello!"}], response_model=None
+    )
+
+    from pydantic import BaseModel
+
+    class Response(BaseModel):
+        content: str
+
+    resp = client.create(
+        messages=[{"role": "user", "content": "Hello!"}], response_model=Response
+    )
