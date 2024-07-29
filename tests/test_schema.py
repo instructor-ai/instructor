@@ -36,10 +36,14 @@ class AdminUser(BaseModel):
 
 
 def test_new_union_types():
-    class Users(BaseModel):
-        users: list[AdminUser | User]
+    import sys
 
-    assert openai_schema(Users).model_json_schema() == Users.model_json_schema()
+    if sys.version_info >= (3, 10):
+
+        class Users(BaseModel):
+            users: list[AdminUser | User]
+
+        assert openai_schema(Users).model_json_schema() == Users.model_json_schema()
 
 
 def test_old_union_type():
