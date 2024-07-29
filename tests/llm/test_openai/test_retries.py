@@ -9,7 +9,7 @@ from .util import models, modes
 def uppercase_validator(v: str):
     if not v.isupper():
         raise ValueError(
-            f"All letters in the name should be in uppercase (e.g., TOM, JONES) instead of tom, jones"
+            "All letters in the name should be in uppercase (e.g., TOM, JONES) instead of tom, jones"
         )
     return v.strip()
 
