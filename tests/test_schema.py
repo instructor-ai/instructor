@@ -1,6 +1,5 @@
 from typing import TypeVar
 
-import pytest
 
 from datetime import datetime, date, time
 from pydantic import BaseModel
