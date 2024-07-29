@@ -28,7 +28,7 @@ T = TypeVar("T")
 logger = logging.getLogger("instructor")
 
 
-class OpenAISchema(BaseModel):
+class InstructModel(BaseModel):
     # Ignore classproperty, since Pydantic doesn't understand it like it would a normal property.
     model_config = ConfigDict(ignored_types=(classproperty,))
 
@@ -89,7 +89,7 @@ class OpenAISchema(BaseModel):
         )
 
         for _, attribute_value in self.__dict__.items():
-            if isinstance(attribute_value, OpenAISchema):
+            if isinstance(attribute_value, InstructModel):
                 has_validators = (
                     has_validators or attribute_value.has_async_validators()
                 )
@@ -97,7 +97,7 @@ class OpenAISchema(BaseModel):
                 # List of items too
             if isinstance(attribute_value, (list, set, tuple)):
                 for item in attribute_value:
-                    if isinstance(item, OpenAISchema):
+                    if isinstance(item, InstructModel):
                         has_validators = has_validators or item.has_async_validators()
 
         return has_validators
@@ -193,7 +193,7 @@ class OpenAISchema(BaseModel):
 
         for attribute_name, attribute_value in self.__dict__.items():
             # Supporting Sub Array
-            if isinstance(attribute_value, OpenAISchema):
+            if isinstance(attribute_value, InstructModel):
                 coros.extend(
                     await attribute_value.get_model_coroutines(
                         validation_context, prefix=prefix + [attribute_name]
@@ -203,7 +203,7 @@ class OpenAISchema(BaseModel):
             # List of items too
             if isinstance(attribute_value, (list, set, tuple)):
                 for item in attribute_value:
-                    if isinstance(item, OpenAISchema):
+                    if isinstance(item, InstructModel):
                         coros.extend(
                             await item.get_model_coroutines(
                                 validation_context, prefix=prefix + [attribute_name]
@@ -460,14 +460,14 @@ class OpenAISchema(BaseModel):
         )
 
 
-def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
+def openai_schema(cls: type[BaseModel]) -> InstructModel:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
     shema = wraps(cls, updated=())(
         create_model(
             cls.__name__ if hasattr(cls, "__name__") else str(cls),
-            __base__=(cls, OpenAISchema),
+            __base__=(cls, InstructModel),
         )
     )
-    return cast(OpenAISchema, shema)
+    return cast(InstructModel, shema)

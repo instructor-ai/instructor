@@ -6,7 +6,7 @@ from enum import Enum
 
 
 from instructor.dsl.partial import Partial
-from instructor.function_calls import OpenAISchema
+from instructor.function_calls import InstructModel
 
 
 T = typing.TypeVar("T")
@@ -27,7 +27,7 @@ class ModelAdapter(typing.Generic[T]):
             "Response",
             content=(response_model, ...),
             __doc__="Correctly Formated and Extracted Response.",
-            __base__=(AdapterBase, OpenAISchema),
+            __base__=(AdapterBase, InstructModel),
         )
 
 

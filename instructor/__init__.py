@@ -11,7 +11,7 @@ from .dsl import (
     llm_validator,
     openai_moderation,
 )
-from .function_calls import OpenAISchema, openai_schema
+from .function_calls import InstructModel, openai_schema
 from .patch import apatch, patch
 from .process_response import handle_parallel_model
 from .client import (
@@ -29,7 +29,7 @@ __all__ = [
     "from_litellm",
     "AsyncInstructor",
     "Provider",
-    "OpenAISchema",
+    "InstructModel",
     "CitationMixin",
     "IterableModel",
     "Maybe",

@@ -3,7 +3,7 @@ from collections.abc import AsyncGenerator, Generator, Iterable
 
 from pydantic import BaseModel, Field, create_model
 
-from instructor.function_calls import OpenAISchema
+from instructor.function_calls import InstructModel
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
@@ -214,7 +214,7 @@ def IterableModel(
         ),
     )
 
-    base_models = cast(tuple[type[BaseModel], ...], (OpenAISchema, IterableBase))
+    base_models = cast(tuple[type[BaseModel], ...], (InstructModel, IterableBase))
     new_cls = create_model(
         name,
         tasks=list_tasks,
@@ -231,6 +231,6 @@ def IterableModel(
         else description
     )
     assert issubclass(
-        new_cls, OpenAISchema
+        new_cls, InstructModel
     ), "The new class should be a subclass of OpenAISchema"
     return new_cls

@@ -3,11 +3,11 @@ from typing import Callable, Optional
 from openai import OpenAI
 from pydantic import Field
 
-from instructor.function_calls import OpenAISchema
+from instructor.function_calls import InstructModel
 from instructor.client import Instructor
 
 
-class Validator(OpenAISchema):
+class Validator(InstructModel):
     """
     Validate if an attribute is correct and if not,
     return a new value with an error message

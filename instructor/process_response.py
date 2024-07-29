@@ -8,7 +8,7 @@ from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
-from instructor.function_calls import OpenAISchema, openai_schema
+from instructor.function_calls import InstructModel, openai_schema
 from instructor.utils import merge_consecutive_messages
 from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
@@ -40,7 +40,7 @@ T = TypeVar("T")
 async def process_response_async(
     response: ChatCompletion,
     *,
-    response_model: type[T_Model | OpenAISchema | BaseModel] | None,
+    response_model: type[T_Model | InstructModel | BaseModel] | None,
     stream: bool = False,
     validation_context: dict[str, Any] | None = None,
     strict: bool | None = None,
@@ -81,7 +81,7 @@ async def process_response_async(
         mode=mode,
     )
 
-    if isinstance(model, OpenAISchema):
+    if isinstance(model, InstructModel):
         validation_errors = await model.model_async_validate(validation_context)
         if validation_errors:
             raise AsyncValidationError(f"Validation errors: {validation_errors}")
@@ -107,7 +107,7 @@ async def process_response_async(
 def process_response(
     response: T_Model,
     *,
-    response_model: type[OpenAISchema | BaseModel],
+    response_model: type[InstructModel | BaseModel],
     stream: bool,
     validation_context: dict | None = None,
     strict=None,
@@ -153,7 +153,7 @@ def process_response(
         mode=mode,
     )
 
-    if isinstance(model, OpenAISchema):
+    if isinstance(model, InstructModel):
         if model.has_async_validators():
             logging.warning(
                 "Async Validators will not run in a synchronous client. Please make sure to use an Async client"
@@ -235,7 +235,7 @@ def handle_response_model(
         if get_origin(response_model) is Iterable:
             iterable_element_class = get_args(response_model)[0]
             response_model = IterableModel(iterable_element_class)
-        if not issubclass(response_model, OpenAISchema):
+        if not issubclass(response_model, InstructModel):
             response_model = openai_schema(response_model)  # type: ignore
 
         if new_kwargs.get("stream", False) and not issubclass(

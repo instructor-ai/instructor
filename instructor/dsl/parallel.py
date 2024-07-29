@@ -9,16 +9,16 @@ from typing import (
 )
 from collections.abc import Generator
 from pydantic import BaseModel
-from instructor.function_calls import OpenAISchema, openai_schema
+from instructor.function_calls import InstructModel, openai_schema
 from collections.abc import Iterable
 
 from instructor.mode import Mode
 
-T = TypeVar("T", bound=OpenAISchema)
+T = TypeVar("T", bound=InstructModel)
 
 
 class ParallelBase:
-    def __init__(self, *models: type[OpenAISchema]):
+    def __init__(self, *models: type[InstructModel]):
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models
