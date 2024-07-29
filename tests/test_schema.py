@@ -205,3 +205,29 @@ def test_literal_type():
         openai_schema(LiteralTypeModel).model_json_schema()
         == LiteralTypeModel.model_json_schema()
     )
+
+
+def test_str_any_dict():
+    import sys
+
+    if sys.version_info >= (3, 10):
+
+        class ChatResponse(BaseModel):
+            action_data: dict[str, Any] | None = Field(
+                default=None,
+                description="The required data for the action that will be performed.",
+            )
+
+        content: str = Field(description="A contextual response to the user's message.")
+    else:
+
+        class ChatResponse(BaseModel):
+            action_data: Union[dict[str, Any], None] = Field(
+                default=None,
+                description="The required data for the action that will be performed.",
+            )
+
+    assert (
+        openai_schema(ChatResponse).model_json_schema()
+        == ChatResponse.model_json_schema()
+    )
