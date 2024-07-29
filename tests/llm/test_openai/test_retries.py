@@ -7,11 +7,11 @@ from .util import models, modes
 
 
 def uppercase_validator(v: str):
-    if v.islower():
+    if not v.isupper():
         raise ValueError(
-            "All letters in the name should be in uppercase (Eg. TOM, JONES ) instead of tom, jones"
+            "All letters in the name should be in uppercase (e.g., TOM, JONES) instead of tom, jones"
         )
-    return v
+    return v.strip()
 
 
 class UserDetail(BaseModel):
