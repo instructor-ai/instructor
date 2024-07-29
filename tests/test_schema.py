@@ -218,7 +218,9 @@ def test_str_any_dict():
                 description="The required data for the action that will be performed.",
             )
 
-        content: str = Field(description="A contextual response to the user's message.")
+            content: str = Field(
+                description="A contextual response to the user's message."
+            )
     else:
 
         class ChatResponse(BaseModel):
