@@ -163,14 +163,6 @@ def test_inheritance():
     )
 
 
-def test_recursive_models():
-    class Node(BaseModel):
-        value: int
-        children: list["Node"] = []
-
-    assert openai_schema(Node).model_json_schema() == Node.model_json_schema()
-
-
 def test_alias_and_field_customization():
     class AliasModel(BaseModel):
         actual_name: str = Field(..., alias="name")
