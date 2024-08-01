@@ -8,7 +8,7 @@ modes = [Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS]
 
 
 class User(BaseModel):
-    name: str = Field("User's first name")
+    name: str
     age: int
 
 
