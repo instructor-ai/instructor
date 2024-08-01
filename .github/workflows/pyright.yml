@@ -46,4 +46,4 @@ jobs:
 
       - uses: jakebailey/pyright-action@v2
         with:
-          version: 1.1.373
+          version: 1.1.374
