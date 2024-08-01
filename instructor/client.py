@@ -58,18 +58,42 @@ class Instructor:
 
     @overload
     def create(
-        self,
+        self: AsyncInstructor,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> T: ...
+    ) -> Awaitable[T]:
+        ...
 
     @overload
     def create(
-        self,
+        self: Self,
+        response_model: type[T],
+        messages: list[ChatCompletionMessageParam],
+        max_retries: int = 3,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> T:
+        ...
+
+    @overload
+    def create(
+        self: AsyncInstructor,
+        response_model: None,
+        messages: list[ChatCompletionMessageParam],
+        max_retries: int = 3,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Awaitable[Any]: ...
+
+    @overload
+    def create(
+        self: Self,
         response_model: None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
@@ -86,7 +110,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> T | Any:
+    ) -> T | Any | Awaitable[T] | Awaitable[Any]:
         kwargs = self.handle_kwargs(kwargs)
 
         return self.create_fn(
@@ -107,7 +131,8 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]: ...
+    ) -> AsyncGenerator[T, None]:
+        ...
 
     @overload
     def create_partial(
@@ -118,7 +143,8 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Generator[T, None, None]: ...
+    ) -> Generator[T, None, None]:
+        ...
 
     def create_partial(
         self,
@@ -152,7 +178,8 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]: ...
+    ) -> AsyncGenerator[T, None]:
+        ...
 
     @overload
     def create_iterable(
@@ -163,7 +190,8 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Generator[T, None, None]: ...
+    ) -> Generator[T, None, None]:
+        ...
 
     def create_iterable(
         self,
@@ -196,7 +224,8 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[tuple[T, Any]]: ...
+    ) -> Awaitable[tuple[T, Any]]:
+        ...
 
     @overload
     def create_with_completion(
@@ -207,7 +236,8 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> tuple[T, Any]: ...
+    ) -> tuple[T, Any]:
+        ...
 
     def create_with_completion(
         self,
@@ -257,28 +287,6 @@ class AsyncInstructor(Instructor):
         self.kwargs = kwargs
         self.provider = provider
 
-    @overload
-    async def create(
-        self,
-        response_model: type[T],
-        messages: list[ChatCompletionMessageParam],
-        max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> Awaitable[T]: ...
-
-    @overload
-    async def create(
-        self,
-        response_model: None,
-        messages: list[ChatCompletionMessageParam],
-        max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> Awaitable[Any]: ...
-
     async def create(
         self,
         response_model: type[T] | None,
@@ -287,7 +295,7 @@ class AsyncInstructor(Instructor):
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[T] | Awaitable[Any]:
+    ) -> T | Any:
         kwargs = self.handle_kwargs(kwargs)
         return await self.create_fn(
             response_model=response_model,
@@ -443,7 +451,8 @@ def from_litellm(
     completion: Callable[..., Any],
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
-) -> Instructor: ...
+) -> Instructor:
+    ...
 
 
 @overload
