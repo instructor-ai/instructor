@@ -1,10 +1,6 @@
-from pydantic import BaseModel, ValidationInfo
+from pydantic import BaseModel
 from instructor import async_field_validator, AsyncInstructMixin
-from instructor.exceptions import InstructorRetryException
-from ..util import models, modes
 import pytest
-import instructor
-from itertools import product
 import asyncio
 
 
