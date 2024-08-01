@@ -3,7 +3,6 @@ import json
 import logging
 from functools import wraps
 from typing import Annotated, Any, Optional, TypeVar, cast
-import asyncio
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (

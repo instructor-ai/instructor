@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from textwrap import dedent
 from instructor.mode import Mode
+from instructor.validators import AsyncInstructMixin
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
@@ -81,7 +82,7 @@ async def process_response_async(
         mode=mode,
     )
 
-    if isinstance(model, OpenAISchema):
+    if isinstance(model, AsyncInstructMixin):
         validation_errors = await model.model_async_validate(validation_context)
         if validation_errors:
             raise AsyncValidationError(f"Validation errors: {validation_errors}")
@@ -153,7 +154,7 @@ def process_response(
         mode=mode,
     )
 
-    if isinstance(model, OpenAISchema):
+    if isinstance(model, AsyncInstructMixin):
         if model.has_async_validators():
             logging.warning(
                 "Async Validators will not run in a synchronous client. Please make sure to use an Async client"

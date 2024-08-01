@@ -40,7 +40,7 @@ class ExtractedContent(BaseModel, AsyncInstructMixin):
     relevant_question: str
 
     @async_field_validator("relevant_question")
-    async def validate_relevant_question(cls, v: str, info: ValidationInfo) -> str:
+    async def validate_relevant_question(cls, v: str, info: ValidationInfo):  # noqa: ARG002
         if info.context and "content" in info.context:
             raise ValueError(f"Invalid context of {info.context['content']}")
 
