@@ -58,18 +58,7 @@ class Instructor:
 
     @overload
     def create(
-        self: AsyncInstructor,
-        response_model: type[T],
-        messages: list[ChatCompletionMessageParam],
-        max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> Awaitable[T]: ...
-
-    @overload
-    def create(
-        self: Self,
+        self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
@@ -80,18 +69,7 @@ class Instructor:
 
     @overload
     def create(
-        self: AsyncInstructor,
-        response_model: None,
-        messages: list[ChatCompletionMessageParam],
-        max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
-        strict: bool = True,
-        **kwargs: Any,
-    ) -> Awaitable[Any]: ...
-
-    @overload
-    def create(
-        self: Self,
+        self,
         response_model: None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
@@ -108,7 +86,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> T | Any | Awaitable[T] | Awaitable[Any]:
+    ) -> T | Any:
         kwargs = self.handle_kwargs(kwargs)
 
         return self.create_fn(
@@ -121,7 +99,7 @@ class Instructor:
         )
 
     @overload
-    def create_partial(  # type:ignore
+    def create_partial(
         self: AsyncInstructor,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
@@ -166,7 +144,7 @@ class Instructor:
         )
 
     @overload
-    def create_iterable(  # type:ignore
+    def create_iterable(
         self: AsyncInstructor,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
@@ -210,7 +188,7 @@ class Instructor:
         )
 
     @overload
-    def create_with_completion(  # type:ignore
+    def create_with_completion(
         self: AsyncInstructor,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
@@ -279,7 +257,29 @@ class AsyncInstructor(Instructor):
         self.kwargs = kwargs
         self.provider = provider
 
-    async def create(  # type:ignore
+    @overload
+    async def create(
+        self,
+        response_model: type[T],
+        messages: list[ChatCompletionMessageParam],
+        max_retries: int = 3,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Awaitable[T]: ...
+
+    @overload
+    async def create(
+        self,
+        response_model: None,
+        messages: list[ChatCompletionMessageParam],
+        max_retries: int = 3,
+        validation_context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs: Any,
+    ) -> Awaitable[Any]: ...
+
+    async def create(
         self,
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
@@ -287,7 +287,7 @@ class AsyncInstructor(Instructor):
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> T | Any:
+    ) -> Awaitable[T] | Awaitable[Any]:
         kwargs = self.handle_kwargs(kwargs)
         return await self.create_fn(
             response_model=response_model,
@@ -298,7 +298,7 @@ class AsyncInstructor(Instructor):
             **kwargs,
         )
 
-    async def create_partial(  # type:ignore
+    async def create_partial(
         self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
@@ -319,7 +319,7 @@ class AsyncInstructor(Instructor):
         ):
             yield item
 
-    async def create_iterable(  # type:ignore
+    async def create_iterable(
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
@@ -340,7 +340,7 @@ class AsyncInstructor(Instructor):
         ):
             yield item
 
-    async def create_with_completion(  # type:ignore
+    async def create_with_completion(
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
