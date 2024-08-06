@@ -472,24 +472,25 @@ def openai_schema_helper(cls: T) -> T:
     if origin is Union:
         return Union[tuple(openai_schema_helper(arg) for arg in cls.__args__)]
 
-    if issubclass(cls, (str, int, bool, float, bytes, Enum)):
-        return cls
+    if isinstance(cls, type):
+        if issubclass(cls, (str, int, bool, float, bytes, Enum)):
+            return cls
 
-    if isinstance(cls, type) and issubclass(cls, BaseModel):
-        new_types = {}
-        for field_name, field_info in cls.model_fields.items():
-            field_type = field_info.annotation
-            new_field_type = openai_schema_helper(field_type)
-            new_types[field_name] = (new_field_type, field_info)
+        if issubclass(cls, BaseModel):
+            new_types = {}
+            for field_name, field_info in cls.model_fields.items():
+                field_type = field_info.annotation
+                new_field_type = openai_schema_helper(field_type)
+                new_types[field_name] = (new_field_type, field_info)
 
-        schema = wraps(cls, updated=())(
-            create_model(
-                cls.__name__ if hasattr(cls, "__name__") else str(cls),
-                __base__=(cls, OpenAISchema),
-                **new_types,
+            schema = wraps(cls, updated=())(
+                create_model(
+                    cls.__name__ if hasattr(cls, "__name__") else str(cls),
+                    __base__=(cls, OpenAISchema),
+                    **new_types,
+                )
             )
-        )
-        return cast(OpenAISchema, schema)
+            return cast(OpenAISchema, schema)
 
     # None Type
     if not origin:
