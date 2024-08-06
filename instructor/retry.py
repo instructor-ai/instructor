@@ -158,6 +158,7 @@ def retry_sync(
         for attempt in max_retries:
             with attempt:
                 try:
+                    logger.debug(f"sync llm input: {args=}, {kwargs=}")
                     response = func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
@@ -236,6 +237,7 @@ async def retry_async(
             logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
             with attempt:
                 try:
+                    logger.debug(f"async llm input: {args=}, {kwargs=}")
                     response: ChatCompletion = await func(*args, **kwargs)
                     stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
