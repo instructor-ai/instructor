@@ -265,7 +265,6 @@ def handle_response_model(
                 }
         elif mode in {Mode.STRUCTURED_OUTPUTS}:
             new_kwargs["response_format"] = response_model
-            new_kwargs["parallel_tool_calls"] = False
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
