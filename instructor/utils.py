@@ -19,8 +19,6 @@ from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
-    ChatCompletionContentPartTextParam,
-    ChatCompletionContentPartRefusalParam,
 )
 
 if TYPE_CHECKING:
