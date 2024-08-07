@@ -106,6 +106,17 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
         )
         return
 
+    if mode == Mode.STRUCTURED_OUTPUTS:
+        message = dump_message(response.choices[0].message)
+        if "tool_calls" in message:
+            del message["tool_calls"]
+        yield message
+        yield {
+            "role": "user",
+            "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{message['content']}",
+        }
+        return
+
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration
     if mode == Mode.TOOLS:
