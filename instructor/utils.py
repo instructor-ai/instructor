@@ -171,9 +171,9 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
         if not isinstance(ret["content"], str):
             response_message: str = ""
             for content_message in ret["content"]:
-                if isinstance(content_message, ChatCompletionContentPartTextParam):
+                if "text" in content_message:
                     response_message += content_message["text"]
-                elif isinstance(content_message, ChatCompletionContentPartRefusalParam):
+                elif "refusal" in content_message:
                     response_message += content_message["refusal"]
             ret["content"] = response_message
 
