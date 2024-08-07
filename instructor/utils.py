@@ -19,6 +19,8 @@ from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
+    ChatCompletionContentPartTextParam,
+    ChatCompletionContentPartRefusalParam,
 )
 
 if TYPE_CHECKING:
@@ -167,7 +169,14 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
         and ret["content"]
     ):
         if not isinstance(ret["content"], str):
-            ret["content"] = str(ret["content"])
+            response_message: str = ""
+            for content_message in ret["content"]:
+                if isinstance(content_message, ChatCompletionContentPartTextParam):
+                    response_message += content_message["text"]
+                elif isinstance(content_message, ChatCompletionContentPartRefusalParam):
+                    response_message += content_message["refusal"]
+            ret["content"] = response_message
+
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
 
