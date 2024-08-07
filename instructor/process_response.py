@@ -263,6 +263,12 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
+        elif mode in {Mode.STRUCTURED_OUTPUTS}:
+            assert (
+                kwargs["model"] == "gpt-4o-2024-08-06"
+            ), "Structured Outputs are only supported for the gpt-4o-2024-08-06 model for now"
+
+            new_kwargs["response_format"] = response_model
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
