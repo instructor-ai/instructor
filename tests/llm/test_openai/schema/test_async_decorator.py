@@ -1,6 +1,4 @@
-from pydantic import ValidationInfo
-import pytest
-from instructor import async_field_validator, async_model_validator, AsyncInstructMixin
+from instructor import async_field_validator, AsyncInstructMixin
 from instructor.function_calls import openai_schema
 from pydantic import BaseModel, Field
 from enum import Enum
