@@ -284,7 +284,7 @@ assert resp.name == "IVAN"
 assert resp.occupation == "SOFTWARE ENGINEER"
 ```
 
-1. This will run the validator on the entire model. You can access any of the fields in this manner and it will be propogated up on a model level
+1. This will run the validator on the entire model. You can access any of the fields in this manner and it will be propagated up on a model level
 
 ### Nested Pydantic Objects
 
