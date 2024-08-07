@@ -434,7 +434,7 @@ def from_openai(
             create=instructor.patch(
                 create=client.chat.completions.create
                 if mode != instructor.Mode.STRUCTURED_OUTPUTS
-                else client.beta.chat.completions.parse,
+                else client.beta.chat.completions.parse,  # type: ignore
                 mode=mode,
             ),
             mode=mode,
@@ -448,7 +448,7 @@ def from_openai(
             create=instructor.patch(
                 create=client.chat.completions.create
                 if mode != instructor.Mode.STRUCTURED_OUTPUTS
-                else client.beta.chat.completions.parse,
+                else client.beta.chat.completions.parse,  # type: ignore
                 mode=mode,
             ),
             mode=mode,
