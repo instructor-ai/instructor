@@ -87,7 +87,7 @@ async def test_async_validator(model, mode, aclient):
 
     Groups of citizens blocking tanks with their bodies. Everyone from students to retirees teachers turned soldiers defending their homeland.
 
-    In this struggle as President Zelenskyy said in his speech to the European Parliament “Light will win over darkness.” The Ukrainian Ambassador to the United States is here tonight. 
+    In this struggle as President Zelenskyy said in his speech to the European Parliament “Light will win over darkness.” The Ukrainian Ambassador to the United States is here tonight.
 
     Let each of us here tonight in this Chamber send an unmistakable signal to Ukraine and to the world. 
 
