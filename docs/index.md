@@ -19,6 +19,7 @@ It stands out for its simplicity, transparency, and user-centric design, built o
   - [Ruby](https://ruby.useinstructor.com)
   - [Go](https://go.useinstructor.com)
   - [Elixir](https://hex.pm/packages/instructor)
+  - [Rust](https://rust.useinstructor.com/)
 
 ## Want your logo on our website?
 
