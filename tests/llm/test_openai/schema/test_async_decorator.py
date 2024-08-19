@@ -5,7 +5,7 @@ import instructor
 from openai import AsyncOpenAI
 from instructor import from_openai
 from ..util import models, modes
-from instructor import async_field_validator, async_model_validator
+from instructor.validators import async_field_validator, async_model_validator
 from instructor.function_calls import openai_schema
 from pydantic import BaseModel, Field
 from enum import Enum
