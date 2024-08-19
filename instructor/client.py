@@ -224,7 +224,8 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[tuple[T, Any]]: ...
+     ) -> Awaitable[tuple[T, Any]]:
+        ...
 
     @overload
     def create_with_completion(
@@ -235,7 +236,8 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> tuple[T, Any]: ...
+    ) -> tuple[T, Any]:
+        ...
 
     def create_with_completion(
         self,
