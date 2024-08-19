@@ -15,7 +15,12 @@ class UserExtract(BaseModel):
 
 @pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
 def test_iterable_model(model, mode, stream, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
+
+    # TODO: Remove this once we support streaming for structured outputs
+    if mode == instructor.Mode.STRUCTURED_OUTPUTS:
+        pytest.skip("Skipping test for structured outputs mode")
+
     model = client.chat.completions.create(
         model=model,
         response_model=Iterable[UserExtract],
@@ -32,7 +37,12 @@ def test_iterable_model(model, mode, stream, client):
 @pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
 @pytest.mark.asyncio
 async def test_iterable_model_async(model, mode, stream, aclient):
-    aclient = instructor.patch(aclient, mode=mode)
+    aclient = instructor.from_openai(aclient, mode=mode)
+
+    # TODO: Remove this once we support streaming for structured outputs
+    if mode == instructor.Mode.STRUCTURED_OUTPUTS:
+        pytest.skip("Skipping test for structured outputs mode")
+
     model = await aclient.chat.completions.create(
         model=model,
         response_model=Iterable[UserExtract],
@@ -53,6 +63,11 @@ async def test_iterable_model_async(model, mode, stream, aclient):
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_partial_model(model, mode, client):
     client = instructor.patch(client, mode=mode)
+
+    # TODO: Remove this once we support streaming for structured outputs
+    if mode == instructor.Mode.STRUCTURED_OUTPUTS:
+        pytest.skip("Skipping test for structured outputs mode")
+
     model = client.chat.completions.create(
         model=model,
         response_model=Partial[UserExtract],
@@ -70,6 +85,11 @@ def test_partial_model(model, mode, client):
 @pytest.mark.asyncio
 async def test_partial_model_async(model, mode, aclient):
     aclient = instructor.patch(aclient, mode=mode)
+
+    # TODO: Remove this once we support streaming for structured outputs
+    if mode == instructor.Mode.STRUCTURED_OUTPUTS:
+        pytest.skip("Skipping test for structured outputs mode")
+
     model = await aclient.chat.completions.create(
         model=model,
         response_model=Partial[UserExtract],
