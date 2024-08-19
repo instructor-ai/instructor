@@ -224,7 +224,7 @@ class Instructor:
         validation_context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-     ) -> Awaitable[tuple[T, Any]]:
+    ) -> Awaitable[tuple[T, Any]]:
         ...
 
     @overload
