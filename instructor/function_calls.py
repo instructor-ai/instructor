@@ -3,7 +3,6 @@ import json
 import logging
 from functools import wraps
 from typing import Annotated, Any, Optional, TypeVar, cast
-import asyncio
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (
@@ -17,11 +16,7 @@ from pydantic import (
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import classproperty, extract_json_from_codeblock
-from instructor.validators import (
-    ASYNC_VALIDATOR_KEY,
-    AsyncValidationContext,
-    ASYNC_MODEL_VALIDATOR_KEY,
-)
+
 
 T = TypeVar("T")
 
