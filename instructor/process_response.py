@@ -12,6 +12,7 @@ from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
 from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
+from openai import pydantic_function_tool
 from pydantic import BaseModel, create_model
 import json
 import inspect
@@ -250,18 +251,13 @@ def handle_response_model(
             new_kwargs["functions"] = [response_model.openai_schema]
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
         elif mode in {Mode.STRUCTURED_OUTPUTS}:
-            function_response_model = response_model.openai_schema
-            function_response_model["strict"] = True
+            response_model_schema = pydantic_function_tool(response_model)
+            response_model_schema["function"]["strict"] = True
+            new_kwargs["tools"] = [response_model_schema]
 
-            new_kwargs["tools"] = [
-                {
-                    "type": "function",
-                    "function": function_response_model,
-                }
-            ]
             new_kwargs["tool_choice"] = {
                 "type": "function",
-                "function": {"name": function_response_model["name"]},
+                "function": {"name": response_model_schema["function"]["name"]},
             }
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
