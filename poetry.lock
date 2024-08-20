@@ -3772,19 +3772,19 @@ testing = ["coverage (>=6.2)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "mypy 
 
 [[package]]
 name = "pytest-examples"
-version = "0.0.10"
+version = "0.0.13"
 description = "Pytest plugin for testing examples in docstrings and markdown files."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest_examples-0.0.10-py3-none-any.whl", hash = "sha256:3d0b52424e454846beed8621a12b85db88c6c17049f65c2f417211372c20dc9e"},
-    {file = "pytest_examples-0.0.10.tar.gz", hash = "sha256:5d34d22e689aca2bbad8dd6b7cdcc9d0107e2942853b3154f3a3c68d145d91c5"},
+    {file = "pytest_examples-0.0.13-py3-none-any.whl", hash = "sha256:8c05cc66459199963c7970ff417300ae7e5b7b4c9d5bd859f1e74a35db75555b"},
+    {file = "pytest_examples-0.0.13.tar.gz", hash = "sha256:4d6fd78154953e84444f58f193eb6cc8d853bca7f0ee9f44ea75db043a2c19b5"},
 ]
 
 [package.dependencies]
 black = ">=23"
 pytest = ">=7"
-ruff = ">=0.0.258"
+ruff = ">=0.5.0"
 
 [[package]]
 name = "python-dateutil"
@@ -5140,4 +5140,4 @@ vertexai = ["google-cloud-aiplatform", "jsonref"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f70115062fafd906fffe636f43ac7a4e822e0432f69836b661fd86b33373fac7"
+content-hash = "d81bf9796f9d339add45cded1259a092285d1278a724ca09e21f7ac759480a7d"
