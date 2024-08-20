@@ -19,6 +19,7 @@ class Mode(enum.Enum):
     VERTEXAI_JSON = "vertexai_json"
     GEMINI_JSON = "gemini_json"
     COHERE_JSON_SCHEMA = "json_object"
+    STRUCTURED_OUTPUTS = "structured_output"
 
     @classmethod
     def warn_mode_functions_deprecation(cls):
