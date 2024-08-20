@@ -108,7 +108,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
 
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration
-    if mode == Mode.TOOLS:
+    if mode == Mode.TOOLS or mode == Mode.STRUCTURED_OUTPUTS:
         for tool_call in response.choices[0].message.tool_calls:
             yield {
                 "role": "tool",
