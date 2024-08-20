@@ -264,7 +264,7 @@ class OpenAISchema(BaseModel):
             Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
-        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
+        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.STRUCTURED_OUTPUTS}:
             return cls.parse_tools(completion, validation_context, strict)
 
         if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
