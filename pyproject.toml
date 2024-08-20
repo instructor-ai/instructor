@@ -74,7 +74,7 @@ mkdocs = "^1.4.3"
 mkdocs-material = { extras = ["imaging"], version = "^9.5.9" }
 mkdocstrings = "^0.22.0"
 mkdocstrings-python = "^1.1.2"
-pytest-examples = "^0.0.13"
+pytest-examples = "^0.0.10"
 mkdocs-jupyter = "^0.24.6"
 mkdocs-rss-plugin = "^1.12.0"
 mkdocs-minify-plugin = "^0.8.0"
