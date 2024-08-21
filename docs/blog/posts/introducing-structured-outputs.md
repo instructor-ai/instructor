@@ -1,54 +1,34 @@
 ---
 draft: False
 date: 2024-08-20
-slug: is-instructor-dead
+slug: should-i-be-using-structured-outputs
 tags:
   - OpenAI
 authors:
   - ivanleomk
 ---
 
-# Is Instructor Dead?
+# Should I Be Using Structured Outputs?
 
-## What's Open AI's Structured Output mode all about?
+OpenAI recently announced Structured Outputs which ensures that generated responses match any arbitrary provided JSON Schema. In their [announcement article](https://openai.com/index/introducing-structured-outputs-in-the-api/), they acknowledged that it had been inspired by libraries such as `instructor`.
 
-OpenAI's new Structured Output mode is a huge step change for developers building complex workflows. Given an arbitrary JSON Schema, Structured Output ensures that the response matches the schema exactly.
+## Main Challenges
 
-Here's a basic example.
+If you're building complex LLM workflows, you've likely considered OpenAI's Structured Outputs as a potential replacement for `instructor`.
 
-```python
-import openai
-from pydantic import BaseModel
+But before you do so, three key challenges remain:
 
+1. **Limited Validation And Retry Logic**: Schema Adherence ensure correct data structure, but not useful content. You might get perfectly formatted, yet unhelpful responses.
+2. **Streaming Challenges**: Parsing raw JSON objects from streamed responses with the sdk is error-prone and inefficient.
+3. **Unpredictable Latency Issues** : The Structured Outputs Mode suffers from random latency spikes that might result in an almost 20x increase in response time
 
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = openai.OpenAI()
-resp = client.beta.chat.completions.parse(
-    response_format=User,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract the following user: Jason is 25 years old.",
-        },
-    ],
-    model="gpt-4o-mini",
-)
-
-print(resp.choices[0].message.parsed)
-#> name='Jason' age=25
-```
-
-With guaranteed schema adherence, outputs always conform to your defined Pydantic model, eliminating type mismatches and missing fields. However, while Structured Outputs solve many common issues, two key challenges emerge when building more sophisticated applications - that of Validation and Streaming.
+In this article, we'll show how `instructor` addresses many of these challenges with features such as automatic reasking when validation fails, automatic support for validated streaming data and more.
 
 <!-- more -->
 
-### Limited Validation Feedback
+### Limited Validation and Retry Logic
 
-Validation is crucial for allowing models to correct their mistakes and improve their responses. Let's see a simple example where we want to extract a user's name in all uppercase.
+Validation is crucial for building reliable and effective applications. We want to catch errors in real time using `Pydantic` [validators](/concepts/reask_validation/) in order to allow our LLM to correct its responses on the fly. Let's see an example of a simple validator below which ensures user names are always in uppercase.
 
 ```python
 import openai
@@ -88,13 +68,15 @@ except Exception as e:
     """
 ```
 
-When validation fails, we lose the original completion, making it challenging to implement retry logic or provide specific prompts for correction. This limitation hinders our ability to offer detailed feedback to the model, ultimately impacting our capacity to improve its performance over time.
+We can see that we lose the original completion when validation fails. This leaves developers without the means to implement retry logic so that the LLM can provide a targetted correction and regenerate its response.
 
-### Streaming
+Without robust validation, applications risk producing inconsistent outputs and losing valuable context for error correction. This leads to degraded user experience and missed opportunities for targeted improvements in LLM responses.
 
-Streaming with Structured Outputs is supported but a challenging endeavour. There's no built-in partial validation and you need to manually parse the generated response while simultaneously having to now use a context manager to access the generated values.
+### Streaming Challenges
 
-In short, making it work well in practice requires a good amount of effort with their current `beta.chat.completions.stream` implementation.
+Streaming with Structured Outputs is complex. It requires manual parsing, lacks partial validation, and needs a context manager to be used with. Effective implementation with the `beta.chat.completions.stream` method demands significant effort.
+
+Let's see an example below.
 
 ```python
 import openai
@@ -132,133 +114,30 @@ with client.beta.chat.completions.stream(
             #> {"name":"Jason","age":25}
 ```
 
-## Should you be using Structured Output mode?
+### Unpredictable Latency Spikes
 
-We performed some simple benchmarks on the new Structured Output model and obtained the following results. Note that for Structured Outputs, your schemas are cached and stored on the OpenAI servers. As a result, actual figures might differ slightly depending on your production usage.
+In order to benchmark the two modes, we made 200 identical requests to OpenAI and noted the time taken for each request to complete. The results are summarized in the following table:
 
-??? "How did we perform the benchmarks?"
+| mode               | mean  | min   | max    | std_dev | variance |
+| ------------------ | ----- | ----- | ------ | ------- | -------- |
+| Tool Calling       | 6.84  | 6.21  | 12.84  | 0.69    | 0.47     |
+| Structured Outputs | 28.20 | 14.91 | 136.90 | 9.27    | 86.01    |
 
-    We used the following snippet of code to perform the benchmarks
-
-    ```python
-    import instructor
-    import openai
-    from asyncio import run, Semaphore
-    from tqdm.asyncio import tqdm_asyncio as asyncio
-    from pydantic import BaseModel, field_validator
-    import time
-    import pandas as pd
-    from typing import Union
-
-    modes = [
-        instructor.Mode.STRUCTURED_OUTPUTS,
-        instructor.Mode.TOOLS,
-    ]
-    oai_client = openai.AsyncOpenAI()
-
-
-    class User(BaseModel):
-        name: str
-        age: int
-
-        @field_validator("name")
-        @classmethod
-        def validate_name(cls, v: str) -> str:
-            if not v.isupper():
-                raise ValueError("Name must be uppercase")
-            return v
-
-
-    class Users(BaseModel):
-        users: list[User]
-
-
-    async def run_single_call(
-        client: instructor.client.AsyncInstructor, semaphore: Semaphore
-    ) -> float:
-        start = time.time()
-        async with semaphore:
-            response = await client.chat.completions.create(
-                model="gpt-4o-mini",
-                response_model=Users,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "Extract Out users name and age from the following text: John is 25 years old. Sarah is 32. Mike, who is 41, loves sports. Emma, aged 19, is a student.",
-                    },
-                ],
-            )
-            return time.time() - start
-
-
-    async def generate_responses(
-        client: instructor.client.AsyncInstructor, max_concurrent_calls: int, n_samples: int
-    ) -> list[float]:
-        coros = [
-            run_single_call(client, Semaphore(max_concurrent_calls))
-            for _ in range(n_samples)
-        ]
-        return await asyncio.gather(*coros)
-
-
-    results: list[dict[str, Union[float, str]]] = []
-
-    for mode in modes:
-        client = instructor.from_openai(oai_client, mode=mode)
-
-        response = run(
-            generate_responses(
-                client,
-                10,
-                200,
-            )
-        )
-        mean_response = sum(response) / len(response)
-        min_response = min(response)
-        max_response = max(response)
-        results.append(
-            {
-                "mode": mode.name,
-                "mean": mean_response,
-                "min": min_response,
-                "max": max_response,
-            }
-        )
-
-    df = pd.DataFrame(results)
-    ```
-
-    All generated values were then rounded off to make them easier to compare
-
-### Without Validators
-
-| Sample Size | Mode               | Mean (s) | Min (s) | Max (s) |
-| ----------- | ------------------ | -------- | ------- | ------- |
-| 50          | STRUCTURED_OUTPUTS | 1.9      | 1.4     | 7.3     |
-| 50          | TOOLS              | 1.5      | 1.2     | 3.4     |
-| 200         | STRUCTURED_OUTPUTS | 3.2      | 2.0     | 6.4     |
-| 200         | TOOLS              | 3.0      | 1.9     | 16      |
-
-### With Validators
-
-| Sample Size | Mode               | Mean (s) | Min (s) | Max (s) |
-| ----------- | ------------------ | -------- | ------- | ------- |
-| 50          | STRUCTURED_OUTPUTS | 4.2      | 2.4     | 17      |
-| 50          | TOOLS              | 3.3      | 2.5     | 6.7     |
-| 200         | STRUCTURED_OUTPUTS | 5.5      | 3.8     | 65.2    |
-| 200         | TOOLS              | 6.4      | 4.7     | 18.2    |
+Structured Outputs suffers from unpredictable latency spikes while Tool Calling maintains consistent performance. This could cause users to occasionally experience significant delays in response times, potentially impacting the overall user satisfication and retention rates.
 
 ## Why use `instructor`
 
-In short, while OpenAI's Structured Output mode ensures schema adherence, developers still need to implement a good amount of functionality themselves.
+`instructor` is fully compatible with Structured Outputs and provides three main benefits to developers.
 
-`instructor` solves a lot of these issues with features such as automatically handling retries, streaming of validated inputs and full support for Pydantic validation among many others.
+1. **Automatic Validation and Retries**: Regenerates LLM responses on Pydantic validation failures, ensuring data integrity.
+2. **Real-time Streaming Validation**: Incrementally validates partial JSON against Pydantic models, enabling immediate use of validated properties.
+3. **Provider-Agnostic API**: Switch between LLM providers and models with a single line of code.
 
-Let's see this in action below.
+Let's see this in action below
 
-### Automatic Retries
+### Automatic Validation and Retries
 
-With `instructor`, all it takes is a simple Pydantic Schema and a validator for you to get the extracted name as upper-case
+With `instructor`, all it takes is a simple Pydantic Schema and a validator for you to get the extracted names as an upper case value.
 
 ```python
 import instructor
@@ -277,9 +156,7 @@ class User(BaseModel):
         return v
 
 
-client = instructor.from_openai(
-    openai.OpenAI(), mode=instructor.Mode.STRUCTURED_OUTPUTS
-)
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS_STRICT)
 
 resp = client.chat.completions.create(
     response_model=User,
@@ -296,78 +173,18 @@ print(resp)
 #> name='JASON' age=25
 ```
 
-### Full Pydantic Support
+This built-in retry logic allows for targetted correction to the generated response, ensuring that outputs are not only consistent with your schema but also corect for your use-case. This is invaluable in building reliable LLM systems.
 
-You might also have some runtime information that you cannot encode in a Pydantic Schema. A great example would be citations from a paragraph that you pass in using a Validation Context.
+### Real-time Streaming Validation
 
-Let's see an example below where we try to answer a question with citations.
-
-```python
-import instructor
-import openai
-from pydantic import BaseModel, field_validator, ValidationInfo
-
-
-class Response(BaseModel):
-    answer: str
-    citation: str
-
-    @field_validator("citation")
-    def validate_citation(cls, v: str, info: ValidationInfo) -> str:
-        paragraph = info.context.get("paragraph", "")
-        sentences = [s.strip() for s in paragraph.split(".") if s.strip()]
-        if v not in sentences:
-            raise ValueError(
-                f"Extract out the exact sentence for your citation. {v} is not in the list of sentences  ( {sentences})."
-            )
-        return v
-
-
-client = instructor.from_openai(
-    openai.OpenAI(), mode=instructor.Mode.STRUCTURED_OUTPUTS
-)
-
-paragraph = "Jason is 25 years old. He enjoys playing basketball and reading science fiction novels."
-
-resp = client.chat.completions.create(
-    response_model=Response,
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a helpful assistant that extracts information from a paragraph.",
-        },
-        {
-            "role": "user",
-            "content": "What is Jason's age? Here is some information to refer to -: "
-            + paragraph,
-        },
-    ],
-    model="gpt-4o",
-    validation_context={"paragraph": paragraph},
-)
-
-print(f"Answer: {resp.answer}")
-#> Answer: 25 years old
-print(f"Citation: {resp.citation}")
-#> Citation: Jason is 25 years old
-print(f"Paragraph: {paragraph}")
-"""
-Paragraph: Jason is 25 years old. He enjoys playing basketball and reading science fiction novels.
-"""
-```
-
-### Streaming
-
-A common use-case is to define a single Schema and extract multiple instances of it. With `instructor`, doing this is relatively straightforward by using our `create_iterable` method.
+A common use-case is to define a single schema and extract multiple instances of it. With `instructor`, doing this is relatively straightforward by using [our `create_iterable` method](/concepts/lists/).
 
 ```python
 import instructor
 import openai
 from pydantic import BaseModel
 
-client = instructor.from_openai(
-    openai.OpenAI(), mode=instructor.Mode.STRUCTURED_OUTPUTS
-)
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS_STRICT)
 
 
 class User(BaseModel):
@@ -392,17 +209,16 @@ users = client.chat.completions.create_iterable(
 
 for user in users:
     print(user)
+    #> name='Jason' age=10
+    #> name='John' age=10
 ```
 
-Often times, we might also want to stream out information as it's dynamically generated into some sort of frontend component.
-
-With `instructor`, you'll be able to do just that using the `create_partial` method.
+Other times, we might also want to stream out information as it's dynamically generated into some sort of frontend component With `instructor`, you'll be able to do just that [using the `create_partial` method](/concepts/partial/).
 
 ```python
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
-from typing import List
 from rich.console import Console
 
 client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
@@ -461,8 +277,80 @@ This will output the following
 
 ![Structured Output Extraction](./img/Structured_Output_Extraction.gif)
 
+### Provider-Agnostic API
+
+With `instructor`, switching between different providers is easy due to our unified API.
+
+For example, the swtich from OpenAI to Anthropic requires only three adjustments
+
+1. Import the Anthropic client
+2. Use `from_anthropic` instead of `from_openai`
+3. Update the model name (e.g., from gpt-4o-mini to claude-3-5-sonnet)
+
+This makes it incredibly flexible for users looking to migrate and test different providers for their use cases. Let's see this in action with an example below.
+
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+client = instructor.from_openai(OpenAI())
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+resp = client.chat.completions.create(
+    model="gpt-4o-mini",
+    response_model=User,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract the user from the string belo - Chris is a 27 year old engineer in San Francisco",
+        }
+    ],
+    max_tokens=100,
+)
+
+print(resp)
+#> name='Chris' age=27
+```
+
+Now let's see how we can achieve the same with Anthropic.
+
+```python hl_lines="2 5 14"
+import instructor
+from anthropic import Anthropic  # (1)!
+from pydantic import BaseModel
+
+client = instructor.from_anthropic(Anthropic())  # (2)!
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+resp = client.chat.completions.create(
+    model="claude-3-5-sonnet-20240620",  # (3)!
+    response_model=User,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract the user from the string belo - Chris is a 27 year old engineer in San Francisco",
+        }
+    ],
+    max_tokens=100,
+)
+
+print(resp)
+#> name='Chris' age=27
+```
+
 # Conclusion
 
-In short, OpenAI's Structured Output format mode is promising in helping to ensure more reliable and consistent generations. especially when you pair it with `instructor`.
+While OpenAI's Structured Outputs shows promise, `instructor` takes it one step further by addressing critical limitations with automatic retries, validation of streamed input in real-time and seamless integration across multiple providers.
 
-Give Instructor a try and see how much easier it makes getting valid outputs from LLMs!
+If you haven't already done so, give `instructor` a try today!
