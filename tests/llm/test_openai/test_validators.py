@@ -24,7 +24,7 @@ def test_patch_completes_successfully(client):
 def test_runmodel_validator_error(model, mode, client):
     client = instructor.from_openai(client, mode=mode)
 
-    if mode == instructor.Mode.STRUCTURED_OUTPUTS:
+    if mode == instructor.Mode.TOOLS_STRICT:
         # TODO: Structured outputs currently doesn't support the concept of Validators ( This is Pydantic specific ) so perhaps come back to this later
         pytest.skip("Skipping test for structured output")
 

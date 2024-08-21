@@ -250,7 +250,7 @@ def handle_response_model(
             Mode.warn_mode_functions_deprecation()
             new_kwargs["functions"] = [response_model.openai_schema]
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
-        elif mode in {Mode.STRUCTURED_OUTPUTS}:
+        elif mode == Mode.TOOLS_STRICT:
             response_model_schema = pydantic_function_tool(response_model)
             response_model_schema["function"]["strict"] = True
             new_kwargs["tools"] = [response_model_schema]

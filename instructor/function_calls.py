@@ -264,7 +264,7 @@ class OpenAISchema(BaseModel):
             Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
-        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.STRUCTURED_OUTPUTS}:
+        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.TOOLS_STRICT}:
             return cls.parse_tools(completion, validation_context, strict)
 
         if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
@@ -294,7 +294,8 @@ class OpenAISchema(BaseModel):
         strict: Optional[bool] = None,
     ) -> BaseModel:
         from anthropic.types import Message
-        if isinstance(completion, Message) and completion.stop_reason == 'max_tokens':
+
+        if isinstance(completion, Message) and completion.stop_reason == "max_tokens":
             raise IncompleteOutputException(last_completion=completion)
 
         # Anthropic returns arguments as a dict, dump to json for model validation below
@@ -322,7 +323,7 @@ class OpenAISchema(BaseModel):
 
         assert isinstance(completion, Message)
 
-        if completion.stop_reason == 'max_tokens':
+        if completion.stop_reason == "max_tokens":
             raise IncompleteOutputException(last_completion=completion)
 
         text = completion.content[0].text

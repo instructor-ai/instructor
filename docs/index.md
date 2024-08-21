@@ -62,7 +62,7 @@ Now, let's see Instructor in action with a simple example:
     from instructor import from_openai, Mode
     from pydantic import BaseModel
 
-    client = from_openai(OpenAI(), mode=Mode.STRUCTURED_OUTPUTS)
+    client = from_openai(OpenAI(), mode=Mode.TOOLS_STRICT)
 
 
     class User(BaseModel):
