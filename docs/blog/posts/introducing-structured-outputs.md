@@ -18,9 +18,9 @@ If you're building complex LLM workflows, you've likely considered OpenAI's Stru
 
 But before you do so, three key challenges remain:
 
-1. **Limited Validation And Retry Logic**: Schema Adherence ensure correct data structure, but not useful content. You might get perfectly formatted, yet unhelpful responses.
-2. **Streaming Challenges**: Parsing raw JSON objects from streamed responses with the sdk is error-prone and inefficient.
-3. **Unpredictable Latency Issues** : The Structured Outputs Mode suffers from random latency spikes that might result in an almost 20x increase in response time
+1. **Limited Validation And Retry Logic**: Structured Outputs ensure adherence to the schema but not useful content. You might get perfectly formatted yet unhelpful responses
+2. **Streaming Challenges**: Parsing raw JSON objects from streamed responses with the sdk is error-prone and inefficient
+3. **Unpredictable Latency Issues** : Structured Outputs suffers from random latency spikes that might result in an almost 20x increase in response time
 
 In this article, we'll show how `instructor` addresses many of these challenges with features such as automatic reasking when validation fails, automatic support for validated streaming data and more.
 
@@ -28,7 +28,9 @@ In this article, we'll show how `instructor` addresses many of these challenges 
 
 ### Limited Validation and Retry Logic
 
-Validation is crucial for building reliable and effective applications. We want to catch errors in real time using `Pydantic` [validators](/concepts/reask_validation/) in order to allow our LLM to correct its responses on the fly. Let's see an example of a simple validator below which ensures user names are always in uppercase.
+Validation is crucial for building reliable and effective applications. We want to catch errors in real time using `Pydantic` [validators](/concepts/reask_validation/) in order to allow our LLM to correct its responses on the fly.
+
+Let's see an example of a simple validator below which ensures user names are always in uppercase.
 
 ```python
 import openai
@@ -348,6 +350,10 @@ resp = client.chat.completions.create(
 print(resp)
 #> name='Chris' age=27
 ```
+
+1.  Import the Anthropic client
+2.  Use `from_anthropic` instead of `from_openai`
+3.  Update the model name to `claude-3-5-sonnet-20240620`
 
 # Conclusion
 
