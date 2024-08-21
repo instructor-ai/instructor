@@ -263,19 +263,30 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
-        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA, Mode.LLAMA3_JSON}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
-            message = dedent(
-                f"""
-                As a genius expert, your task is to understand the content and provide
-                the parsed objects in json that match the following json_schema:\n
+            if mode == Mode.LLAMA3_JSON:
+                message = dedent(
+                    f"""
+                    Given the following functions, please respond with a JSON for a function call with its proper arguments that best answers the given prompt.
 
-                {json.dumps(response_model.model_json_schema(), indent=2)}
+                    Respond in the format {"name": function name, "parameters": dictionary of argument name and its value}. Do not use variables.
 
-                Make sure to return an instance of the JSON, not the schema itself
-                """
-            )
+                    {json.dumps(response_model.openai_schema, indent=2)}
+                    """
+                )
+            else:
+                message = dedent(
+                    f"""
+                    As a genius expert, your task is to understand the content and provide
+                    the parsed objects in json that match the following json_schema:\n
+
+                    {json.dumps(response_model.model_json_schema(), indent=2)}
+
+                    Make sure to return an instance of the JSON, not the schema itself
+                    """
+                )
 
             if mode == Mode.JSON:
                 new_kwargs["response_format"] = {"type": "json_object"}
@@ -298,6 +309,25 @@ def handle_response_model(
                 new_kwargs["messages"] = merge_consecutive_messages(
                     new_kwargs["messages"]
                 )
+
+            if mode == Mode.LLAMA3_JSON:
+                system_message = dedent("""
+                    When you receive a tool call response, use the output to format an answer to the orginal user question.
+
+                    You are a helpful assistant with tool calling capabilities.""")
+                new_kwargs["messages"].append(
+                    {
+                        "role": "user",
+                        "content": message,
+                    },
+                )
+                # For some providers, the messages array must be alternating roles of user and assistant, we must merge
+                # consecutive user messages into a single message
+                new_kwargs["messages"] = merge_consecutive_messages(
+                    new_kwargs["messages"]
+                )
+            else:
+                system_message = message
             # check that the first message is a system message
             # if it is not, add a system message to the beginning
             if new_kwargs["messages"][0]["role"] != "system":
@@ -305,12 +335,13 @@ def handle_response_model(
                     0,
                     {
                         "role": "system",
-                        "content": message,
+                        "content": system_message,
                     },
                 )
             # if it is, system append the schema to the end
             else:
-                new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+                new_kwargs["messages"][0]["content"] += f"\n\n{system_message}"
+
         elif mode == Mode.ANTHROPIC_TOOLS:
             tool_descriptions = response_model.anthropic_schema
             new_kwargs["tools"] = [tool_descriptions]

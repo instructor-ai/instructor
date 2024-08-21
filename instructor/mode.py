@@ -11,6 +11,7 @@ class Mode(enum.Enum):
     MISTRAL_TOOLS = "mistral_tools"
     JSON = "json_mode"
     MD_JSON = "markdown_json_mode"
+    LLAMA3_JSON = "llama3_json_mode"
     JSON_SCHEMA = "json_schema_mode"
     ANTHROPIC_TOOLS = "anthropic_tools"
     ANTHROPIC_JSON = "anthropic_json"

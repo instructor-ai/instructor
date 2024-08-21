@@ -17,7 +17,7 @@ class IterableBase:
     ) -> Generator[BaseModel, None, None]:  # noqa: ARG003
         json_chunks = cls.extract_json(completion, mode)
 
-        if mode == Mode.MD_JSON:
+        if mode == Mode.MD_JSON or mode == Mode.LLAMA3_JSON:
             json_chunks = extract_json_from_stream(json_chunks)
 
         yield from cls.tasks_from_chunks(json_chunks, **kwargs)
@@ -28,7 +28,7 @@ class IterableBase:
     ) -> AsyncGenerator[BaseModel, None]:
         json_chunks = cls.extract_json_async(completion, mode)
 
-        if mode == Mode.MD_JSON:
+        if mode == Mode.MD_JSON or mode == Mode.LLAMA3_JSON:
             json_chunks = extract_json_from_stream_async(json_chunks)
 
         return cls.tasks_from_chunks_async(json_chunks, **kwargs)
@@ -91,7 +91,7 @@ class IterableBase:
                         Mode.warn_mode_functions_deprecation()
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
-                    elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+                    elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA, Mode.LLAMA3_JSON}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
                     elif mode == Mode.TOOLS:
@@ -120,7 +120,7 @@ class IterableBase:
                         Mode.warn_mode_functions_deprecation()
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
-                    elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+                    elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA, Mode.LLAMA3_JSON}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
                     elif mode == Mode.TOOLS:
