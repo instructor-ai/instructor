@@ -227,7 +227,7 @@ from openai import OpenAI
 from pydantic import BaseModel
 from rich.console import Console
 
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS_STRICT)
 
 text_block = """
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -259,7 +259,7 @@ class MeetingInfo(BaseModel):
 
 
 extraction_stream = client.chat.completions.create_partial(
-    model="gpt-4",
+    model="gpt-4o-mini",
     response_model=MeetingInfo,
     messages=[
         {
@@ -277,6 +277,7 @@ for extraction in extraction_stream:
     obj = extraction.model_dump()
     console.clear()
     console.print(obj)
+
 ```
 
 This will output the following
