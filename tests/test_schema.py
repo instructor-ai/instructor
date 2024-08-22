@@ -2,7 +2,6 @@ from typing import TypeVar
 
 
 from datetime import datetime, date, time
-from pydantic import BaseModel
 from instructor import openai_schema
 from decimal import Decimal
 from uuid import UUID
