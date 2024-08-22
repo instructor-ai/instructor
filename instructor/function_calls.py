@@ -3,7 +3,6 @@ import json
 import logging
 from functools import wraps
 from typing import Annotated, Any, Optional, TypeVar, cast
-import asyncio
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (
@@ -17,11 +16,7 @@ from pydantic import (
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import classproperty, extract_json_from_codeblock
-from instructor.validators import (
-    ASYNC_VALIDATOR_KEY,
-    AsyncValidationContext,
-    ASYNC_MODEL_VALIDATOR_KEY,
-)
+
 
 T = TypeVar("T")
 
@@ -103,120 +98,6 @@ class OpenAISchema(BaseModel):
         return has_validators
 
     @classmethod
-    def get_async_validators(cls):
-        validators = [
-            getattr(cls, name)
-            for name in dir(cls)
-            if hasattr(getattr(cls, name), ASYNC_VALIDATOR_KEY)
-        ]
-        return validators
-
-    @classmethod
-    def get_async_model_validators(cls):
-        validators = [
-            getattr(cls, name)
-            for name in dir(cls)
-            if hasattr(getattr(cls, name), ASYNC_MODEL_VALIDATOR_KEY)
-        ]
-        return validators
-
-    async def execute_field_validator(
-        self,
-        func: Any,
-        value: Any,
-        context: Optional[AsyncValidationContext] = None,
-        prefix=[],
-    ):
-        try:
-            if not context:
-                await func(self, value)
-            else:
-                await func(self, value, context)
-
-        except Exception as e:
-            prefix_path = f" at {'.'.join(prefix)}" if prefix else ""
-            return ValueError(f"Exception of {e} encountered{prefix_path}")
-
-    async def execute_model_validator(
-        self, func: Any, context: Optional[AsyncValidationContext] = None, prefix=[]
-    ):
-        try:
-            if not context:
-                await func(self)
-            else:
-                await func(self, context)
-
-        except Exception as e:
-            prefix_path = f" at {'.'.join(prefix)}" if prefix else ""
-            return ValueError(f"Exception of {e} encountered{prefix_path}")
-
-    async def get_model_coroutines(
-        self, validation_context: dict[str, Any] = {}, prefix=[]
-    ):
-        values = dict(self)
-        validators = self.__class__.get_async_validators()
-        model_validators = self.get_async_model_validators()
-        coros: list[Awaitable[Any]] = []
-        for validator in validators + model_validators:
-            # Model Validator
-            if not hasattr(validator, ASYNC_VALIDATOR_KEY):
-                validation_func, requires_validation_context = getattr(
-                    validator, ASYNC_MODEL_VALIDATOR_KEY
-                )
-                coros.append(
-                    self.execute_model_validator(
-                        validation_func,
-                        AsyncValidationContext(context=validation_context)
-                        if requires_validation_context
-                        else None,
-                        prefix,
-                    )
-                )
-            else:
-                fields, validation_func, requires_validation_context = getattr(
-                    validator, ASYNC_VALIDATOR_KEY
-                )
-                for field in fields:
-                    if field not in values:
-                        raise ValueError(f"Invalid Field of {field} provided")
-
-                    coros.append(
-                        self.execute_field_validator(
-                            validation_func,
-                            values[field],
-                            AsyncValidationContext(context=validation_context)
-                            if requires_validation_context
-                            else None,
-                            prefix=prefix + [field],
-                        )
-                    )
-
-        for attribute_name, attribute_value in self.__dict__.items():
-            # Supporting Sub Array
-            if isinstance(attribute_value, OpenAISchema):
-                coros.extend(
-                    await attribute_value.get_model_coroutines(
-                        validation_context, prefix=prefix + [attribute_name]
-                    )
-                )
-
-            # List of items too
-            if isinstance(attribute_value, (list, set, tuple)):
-                for item in attribute_value:
-                    if isinstance(item, OpenAISchema):
-                        coros.extend(
-                            await item.get_model_coroutines(
-                                validation_context, prefix=prefix + [attribute_name]
-                            )
-                        )
-
-        return coros
-
-    async def model_async_validate(self, validation_context: dict[str, Any] = {}):
-        coros = await self.get_model_coroutines(validation_context)
-        return [item for item in await asyncio.gather(*coros) if item]
-
-    @classmethod
     def from_response(
         cls,
         completion: ChatCompletion,
@@ -264,7 +145,7 @@ class OpenAISchema(BaseModel):
             Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
-        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
+        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.TOOLS_STRICT}:
             return cls.parse_tools(completion, validation_context, strict)
 
         if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
@@ -294,7 +175,8 @@ class OpenAISchema(BaseModel):
         strict: Optional[bool] = None,
     ) -> BaseModel:
         from anthropic.types import Message
-        if isinstance(completion, Message) and completion.stop_reason == 'max_tokens':
+
+        if isinstance(completion, Message) and completion.stop_reason == "max_tokens":
             raise IncompleteOutputException(last_completion=completion)
 
         # Anthropic returns arguments as a dict, dump to json for model validation below
@@ -322,7 +204,7 @@ class OpenAISchema(BaseModel):
 
         assert isinstance(completion, Message)
 
-        if completion.stop_reason == 'max_tokens':
+        if completion.stop_reason == "max_tokens":
             raise IncompleteOutputException(last_completion=completion)
 
         text = completion.content[0].text
@@ -432,6 +314,9 @@ class OpenAISchema(BaseModel):
         assert (
             len(message.tool_calls or []) == 1
         ), "Instructor does not support multiple tool calls, use List[Model] instead."
+        assert (
+            message.refusal is None
+        ), f"Unable to generate a response due to {message.refusal}"
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]

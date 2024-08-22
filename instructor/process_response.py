@@ -10,8 +10,8 @@ from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
-from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
+from openai import pydantic_function_tool
 from pydantic import BaseModel, create_model
 import json
 import inspect
@@ -81,11 +81,6 @@ async def process_response_async(
         mode=mode,
     )
 
-    if isinstance(model, OpenAISchema):
-        validation_errors = await model.model_async_validate(validation_context)
-        if validation_errors:
-            raise AsyncValidationError(f"Validation errors: {validation_errors}")
-
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
@@ -152,12 +147,6 @@ def process_response(
         strict=strict,
         mode=mode,
     )
-
-    if isinstance(model, OpenAISchema):
-        if model.has_async_validators():
-            logging.warning(
-                "Async Validators will not run in a synchronous client. Please make sure to use an Async client"
-            )
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
@@ -249,6 +238,15 @@ def handle_response_model(
             Mode.warn_mode_functions_deprecation()
             new_kwargs["functions"] = [response_model.openai_schema]
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
+        elif mode == Mode.TOOLS_STRICT:
+            response_model_schema = pydantic_function_tool(response_model)
+            response_model_schema["function"]["strict"] = True
+            new_kwargs["tools"] = [response_model_schema]
+
+            new_kwargs["tool_choice"] = {
+                "type": "function",
+                "function": {"name": response_model_schema["function"]["name"]},
+            }
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
@@ -263,6 +261,7 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
+
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format

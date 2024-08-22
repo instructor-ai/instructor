@@ -53,6 +53,35 @@ Now, let's see Instructor in action with a simple example:
 
 ### Using OpenAI
 
+??? info "Want to use OpenAI's Structured Output Response?"
+
+    We've added support for OpenAI's structured output response. With this, you'll get all the benefits of instructor you like with the constrained sampling from OpenAI.
+
+    ```python
+    from openai import OpenAI
+    from instructor import from_openai, Mode
+    from pydantic import BaseModel
+
+    client = from_openai(OpenAI(), mode=Mode.TOOLS_STRICT)
+
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+
+    resp = client.chat.completions.create(
+        response_model=User,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+        model="gpt-4o",
+    )
+    ```
+
 ```python
 import instructor
 from pydantic import BaseModel

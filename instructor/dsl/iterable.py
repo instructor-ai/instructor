@@ -94,7 +94,7 @@ class IterableBase:
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode == Mode.TOOLS:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             yield json_chunk[0].function.arguments
                     else:
@@ -123,7 +123,7 @@ class IterableBase:
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode == Mode.TOOLS:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             yield json_chunk[0].function.arguments
                     else:
