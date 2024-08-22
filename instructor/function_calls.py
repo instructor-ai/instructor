@@ -145,7 +145,7 @@ class OpenAISchema(BaseModel):
             Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
-        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
+        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.TOOLS_STRICT}:
             return cls.parse_tools(completion, validation_context, strict)
 
         if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
@@ -314,6 +314,9 @@ class OpenAISchema(BaseModel):
         assert (
             len(message.tool_calls or []) == 1
         ), "Instructor does not support multiple tool calls, use List[Model] instead."
+        assert (
+            message.refusal is None
+        ), f"Unable to generate a response due to {message.refusal}"
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
