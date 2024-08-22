@@ -22,6 +22,10 @@ But before you do so, three key challenges remain:
 2. **Streaming Challenges**: Parsing raw JSON objects from streamed responses with the sdk is error-prone and inefficient
 3. **Unpredictable Latency Issues** : Structured Outputs suffers from random latency spikes that might result in an almost 20x increase in response time
 
+Additionally, adopting Structured Outputs locks you into OpenAI's ecosystem, limiting your ability to experiment with diverse models or providers that might better suit specific use-cases.
+
+This vendor lock-in increases vulnerability to provider outages, potentially causing application downtime and SLA violations, which can damage user trust and impact your business reputation.
+
 In this article, we'll show how `instructor` addresses many of these challenges with features such as automatic reasking when validation fails, automatic support for validated streaming data and more.
 
 <!-- more -->
