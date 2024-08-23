@@ -33,7 +33,7 @@ def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
 
 
 def vertexai_message_parser(
-    message: dict[str, str | list[str | gm.Part]],
+    message: dict[str, str | gm.Part | list[str | gm.Part]],
 ) -> gm.Content:
     if isinstance(message["content"], str):
         return gm.Content(
@@ -54,7 +54,7 @@ def vertexai_message_parser(
 
 
 def _vertexai_message_list_parser(
-    messages: list[dict[str, str | list[str | gm.Part]]],
+    messages: list[dict[str, str | gm.Part | list[str | gm.Part]]],
 ) -> list[gm.Content]:
     contents = [
         vertexai_message_parser(message) if isinstance(message, dict) else message
