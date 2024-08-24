@@ -130,7 +130,7 @@ class PartialBase(Generic[T_Model]):
         for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
-                (potential_object or "{}").encode(), partial_mode="trailing-strings"
+                (potential_object or "{}").encode(), partial_mode="on"
             )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
@@ -144,7 +144,7 @@ class PartialBase(Generic[T_Model]):
         async for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
-                (potential_object or "{}").encode(), partial_mode="trailing-strings"
+                (potential_object or "{}").encode(), partial_mode="on"
             )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
