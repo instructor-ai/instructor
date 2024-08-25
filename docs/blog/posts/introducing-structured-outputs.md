@@ -360,8 +360,10 @@ print(resp)
 2.  Use `from_anthropic` instead of `from_openai`
 3.  Update the model name to `claude-3-5-sonnet-20240620`
 
-# Conclusion
+## Conclusion
 
-While OpenAI's Structured Outputs shows promise, `instructor` takes it one step further by addressing critical limitations with automatic retries, validation of streamed input in real-time and seamless integration across multiple providers.
+While OpenAI's Structured Outputs shows promise, it has key limitations. The system lacks support for extra JSON fields to provide output examples, default value factories, and pattern matching in defined schemas. These constraints limit developers' ability to express complex return types, potentially impacting application performance and flexibility.
 
-If you haven't already done so, give `instructor` a try today!
+If you're interested in Structured Outputs, `instructor` addresses these critical issues. It provides automatic retries, real-time input validation, and multi-provider integration, allowing developers to more effectively implement Structured Outputs in their AI projects.
+
+if you haven't given `instructor` a shot, try it today!
