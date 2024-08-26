@@ -3,7 +3,7 @@ import pytest
 import enum
 import vertexai.generative_models as gm  # type: ignore
 from itertools import product
-from typing import Literal, Union
+from typing import Literal
 
 from .util import models, modes
 

@@ -2,7 +2,7 @@ import instructor
 import enum
 
 import google.generativeai as genai
-from typing import Literal, Union
+from typing import Literal
 
 
 def test_literal():
