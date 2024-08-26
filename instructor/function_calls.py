@@ -202,12 +202,17 @@ class OpenAISchema(BaseModel):
     ) -> BaseModel:
         from anthropic.types import Message
 
-        assert isinstance(completion, Message)
+        if hasattr(completion, "choices"):
+            completion = completion.choices[0]
+            if completion.finish_reason == "length":
+                raise IncompleteOutputException(last_completion=completion)
+            text = completion.message.content
+        else:
+            assert isinstance(completion, Message)
+            if completion.stop_reason == "max_tokens":
+                raise IncompleteOutputException(last_completion=completion)
+            text = completion.content[0].text
 
-        if completion.stop_reason == "max_tokens":
-            raise IncompleteOutputException(last_completion=completion)
-
-        text = completion.content[0].text
         extra_text = extract_json_from_codeblock(text)
 
         if strict:
