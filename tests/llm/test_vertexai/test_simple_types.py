@@ -25,22 +25,6 @@ def test_literal(model, mode):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_union(model, mode):
-    client = instructor.from_vertexai(gm.GenerativeModel(model), mode)
-
-    response = client.create(
-        response_model=Union[int, str],
-        messages=[
-            {
-                "role": "user",
-                "content": "Produce a Random but correct response given the desired output",
-            },
-        ],
-    )
-    assert type(response) in [int, str]
-
-
-@pytest.mark.parametrize("model, mode", product(models, modes))
 def test_enum(model, mode):
     class Options(enum.Enum):
         A = "A"

@@ -270,8 +270,9 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        model = json.loads(completion.text)
-        return cls.model_validate(model, context=validation_context, strict=strict)
+        return cls.model_validate_json(
+            completion.text, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_cohere_tools(
