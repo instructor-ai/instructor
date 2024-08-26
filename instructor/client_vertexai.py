@@ -15,6 +15,9 @@ def _create_gemini_json_schema(model: BaseModel):
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],
         "properties": schema_without_refs["properties"],
+        "required": schema_without_refs["required"]
+        if "required" in schema_without_refs
+        else [],  # TODO: Temporary Fix for Iterables which throw an error when their tasks field is specified in the required field
     }
     return gemini_schema
 
