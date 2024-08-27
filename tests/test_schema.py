@@ -2,13 +2,13 @@ from typing import TypeVar
 
 
 from datetime import datetime, date, time
-from pydantic import BaseModel
 from instructor import openai_schema
 from decimal import Decimal
 from uuid import UUID
 from typing import Annotated, Union, Optional, Literal, Any
 from collections import OrderedDict
-
+import pytest
+import sys
 from pydantic import BaseModel, Field
 
 T = TypeVar("T")
@@ -107,7 +107,7 @@ def test_openai_schema_ordered_dict_mapping():
 
     assert openai_schema(TestModel).model_json_schema() == TestModel.model_json_schema()
 
-
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="requires python3.10 or higher")
 def test_openai_schema_supports_optional_none_310():
     class DummyWithOptionalNone(BaseModel):
         """

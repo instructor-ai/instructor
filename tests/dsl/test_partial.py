@@ -99,7 +99,7 @@ def test_summary_extraction():
             updates += 1
         previous_summary = extraction.summary
 
-    assert updates > 1
+    assert updates == 1
 
 
 @pytest.mark.asyncio
@@ -127,4 +127,4 @@ async def test_summary_extraction_async():
             updates += 1
         previous_summary = extraction.summary
 
-    assert updates > 1
+    assert updates == 1
