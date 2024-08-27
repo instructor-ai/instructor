@@ -21,6 +21,8 @@ By the end of this article, you'll be able to build an application as per the vi
 
 ![](../../hub/img/youtube.gif)
 
+<!-- more -->
+
 Let's first install the required packages.
 
 ```bash

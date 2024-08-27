@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from textwrap import dedent
+from instructor.mode import Mode
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
@@ -10,8 +11,8 @@ from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
 from openai.types.chat import ChatCompletion
+from openai import pydantic_function_tool
 from pydantic import BaseModel, create_model
-
 import json
 import inspect
 import logging
@@ -55,7 +56,6 @@ async def process_response_async(
         validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
         strict (bool, optional): Whether to use strict json parsing. Defaults to None.
     """
-
     logger.debug(
         f"Instructor Raw Response: {response}",
     )
@@ -193,6 +193,7 @@ def handle_response_model(
         Union[Type[OpenAISchema], dict]: The response model to use for parsing the response
     """
     new_kwargs = kwargs.copy()
+
     if response_model is not None:
         # Handles the case where the response_model is a simple type
         # Literal, Annotated, Union, str, int, float, bool, Enum
@@ -233,8 +234,18 @@ def handle_response_model(
             )
 
         if mode == Mode.FUNCTIONS:
+            Mode.warn_mode_functions_deprecation()
             new_kwargs["functions"] = [response_model.openai_schema]
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
+        elif mode == Mode.TOOLS_STRICT:
+            response_model_schema = pydantic_function_tool(response_model)
+            response_model_schema["function"]["strict"] = True
+            new_kwargs["tools"] = [response_model_schema]
+
+            new_kwargs["tool_choice"] = {
+                "type": "function",
+                "function": {"name": response_model_schema["function"]["name"]},
+            }
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
@@ -249,6 +260,7 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
+
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
@@ -342,7 +354,7 @@ def handle_response_model(
                 )
 
                 new_kwargs["system"] += f"""
-                You must only responsd in JSON format that adheres to the following schema:
+                You must only respond in JSON format that adheres to the following schema:
 
                 <JSON_SCHEMA>
                 {json.dumps(response_model.model_json_schema(), indent=2)}
@@ -351,7 +363,7 @@ def handle_response_model(
                 new_kwargs["system"] = dedent(new_kwargs["system"])
             else:
                 new_kwargs["system"] += dedent(f"""
-                You must only responsd in JSON format that adheres to the following schema:
+                You must only respond in JSON format that adheres to the following schema:
 
                 <JSON_SCHEMA>
                 {json.dumps(response_model.model_json_schema(), indent=2)}
@@ -367,6 +379,27 @@ def handle_response_model(
             # the messages array must be alternating roles of user and assistant, we must merge
             # consecutive user messages into a single message
             new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
+        elif mode == Mode.COHERE_JSON_SCHEMA:
+            messages = new_kwargs.pop("messages", [])
+            chat_history = []
+            for message in messages[:-1]:
+                # format in Cohere's ChatMessage format
+                chat_history.append(
+                    {
+                        "role": message["role"],
+                        "message": message["content"],
+                    }
+                )
+            new_kwargs["message"] = messages[-1]["content"]
+
+            new_kwargs["chat_history"] = chat_history
+            new_kwargs["response_format"] = {
+                "type": "json_object",
+                "schema": response_model.model_json_schema(),
+            }
+
+            if "strict" in new_kwargs:
+                del new_kwargs["strict"]
 
         elif mode == Mode.COHERE_TOOLS:
             instruction = f"""\
@@ -391,6 +424,9 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 )
             new_kwargs["message"] = instruction
             new_kwargs["chat_history"] = chat_history
+
+            if "strict" in new_kwargs:
+                del new_kwargs["strict"]
         elif mode == Mode.GEMINI_JSON:
             assert (
                 "model" not in new_kwargs
@@ -464,6 +500,28 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             new_kwargs["generation_config"] = generation_config
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
+
+    # Handle Cohere Response Model Case
+    elif response_model is None and mode in {
+        Mode.COHERE_JSON_SCHEMA,
+        Mode.COHERE_TOOLS,
+    }:
+        messages = new_kwargs.pop("messages", [])
+        chat_history = []
+        for message in messages[:-1]:
+            # format in Cohere's ChatMessage format
+            chat_history.append(
+                {
+                    "role": message["role"],
+                    "message": message["content"],
+                }
+            )
+        new_kwargs["message"] = messages[-1]["content"]
+
+        new_kwargs["chat_history"] = chat_history
+        if "model_name" in new_kwargs and "model" not in new_kwargs:
+            new_kwargs["model"] = new_kwargs.pop("model_name")
+        new_kwargs.pop("strict", None)
 
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",

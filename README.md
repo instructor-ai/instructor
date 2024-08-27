@@ -178,14 +178,21 @@ creds.refresh(auth_req)
 
 # Pass the Vertex endpoint and authentication to the OpenAI SDK
 PROJECT = 'PROJECT_ID'
-LOCATION = 'LOCATION' # https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations
+LOCATION = (
+    'LOCATION'  # https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations
+)
 base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
 
-client = instructor.from_openai(OpenAI(base_url=base_url, api_key=creds.token), mode=instructor.Mode.JSON)
+client = instructor.from_openai(
+    OpenAI(base_url=base_url, api_key=creds.token), mode=instructor.Mode.JSON
+)
+
+
 # JSON mode is req'd
 class User(BaseModel):
     name: str
     age: int
+
 
 resp = client.chat.completions.create(
     model="google/gemini-1.5-flash-001",

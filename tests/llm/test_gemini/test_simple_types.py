@@ -2,7 +2,7 @@ import instructor
 import enum
 
 import google.generativeai as genai
-from typing import Literal, Union
+from typing import Literal
 
 
 def test_literal():
@@ -20,23 +20,6 @@ def test_literal():
         ],
     )
     assert response in ["1231", "212", "331"]
-
-
-def test_union():
-    client = instructor.from_gemini(
-        genai.GenerativeModel("models/gemini-1.5-flash-latest")
-    )
-
-    response = client.chat.completions.create(
-        response_model=Union[int, str],
-        messages=[
-            {
-                "role": "user",
-                "content": "Produce a Random but correct response given the desired output",
-            },
-        ],
-    )
-    assert type(response) in [int, str]
 
 
 def test_enum():

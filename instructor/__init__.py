@@ -22,7 +22,6 @@ from .client import (
     Provider,
 )
 
-
 __all__ = [
     "Instructor",
     "from_openai",
