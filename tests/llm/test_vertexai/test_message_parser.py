@@ -5,8 +5,7 @@ from instructor.client_vertexai import vertexai_message_parser
 from .util import models, modes
 
 
-@pytest.mark.parametrize("model, mode", [(models[0], modes[0])])
-def test_vertexai_message_parser_string_content(model, mode):
+def test_vertexai_message_parser_string_content():
     message = {"role": "user", "content": "Hello, world!"}
     result = vertexai_message_parser(message)
 
@@ -17,8 +16,7 @@ def test_vertexai_message_parser_string_content(model, mode):
     assert result.parts[0].text == "Hello, world!"
 
 
-@pytest.mark.parametrize("model, mode", [(models[0], modes[0])])
-def test_vertexai_message_parser_list_content(model, mode):
+def test_vertexai_message_parser_list_content():
     message = {
         "role": "user",
         "content": [
@@ -40,16 +38,14 @@ def test_vertexai_message_parser_list_content(model, mode):
     assert result.parts[2].text == " How are you?"
 
 
-@pytest.mark.parametrize("model, mode", [(models[0], modes[0])])
-def test_vertexai_message_parser_invalid_content(model, mode):
+def test_vertexai_message_parser_invalid_content():
     message = {"role": "user", "content": 123}  # Invalid content type
 
     with pytest.raises(ValueError, match="Unsupported message content type"):
         vertexai_message_parser(message)
 
 
-@pytest.mark.parametrize("model, mode", [(models[0], modes[0])])
-def test_vertexai_message_parser_invalid_list_item(model, mode):
+def test_vertexai_message_parser_invalid_list_item():
     message = {"role": "user", "content": ["Hello", 123, gm.Part.from_text("world!")]}
 
     with pytest.raises(ValueError, match="Unsupported content type in list"):
