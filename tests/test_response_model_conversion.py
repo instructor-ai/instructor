@@ -7,7 +7,6 @@ modes = [
     instructor.Mode.ANTHROPIC_JSON,
     instructor.Mode.JSON,
     instructor.Mode.MD_JSON,
-    instructor.Mode.JSON,
     instructor.Mode.GEMINI_JSON,
     instructor.Mode.VERTEXAI_JSON,
 ]
