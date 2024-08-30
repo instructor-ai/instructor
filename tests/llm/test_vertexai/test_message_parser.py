@@ -2,8 +2,6 @@ import pytest
 import vertexai.generative_models as gm
 from instructor.client_vertexai import vertexai_message_parser
 
-from .util import models, modes
-
 
 def test_vertexai_message_parser_string_content():
     message = {"role": "user", "content": "Hello, world!"}
