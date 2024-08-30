@@ -3,7 +3,6 @@ import json
 import logging
 from functools import wraps
 from typing import Annotated, Any, Optional, TypeVar, cast
-
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (
@@ -17,6 +16,7 @@ from pydantic import (
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import classproperty, extract_json_from_codeblock
+
 
 T = TypeVar("T")
 
@@ -77,6 +77,26 @@ class OpenAISchema(BaseModel):
             "input_schema": cls.model_json_schema(),
         }
 
+    def has_async_validators(self):
+        has_validators = (
+            len(self.__class__.get_async_validators()) > 0
+            or len(self.get_async_model_validators()) > 0
+        )
+
+        for _, attribute_value in self.__dict__.items():
+            if isinstance(attribute_value, OpenAISchema):
+                has_validators = (
+                    has_validators or attribute_value.has_async_validators()
+                )
+
+                # List of items too
+            if isinstance(attribute_value, (list, set, tuple)):
+                for item in attribute_value:
+                    if isinstance(item, OpenAISchema):
+                        has_validators = has_validators or item.has_async_validators()
+
+        return has_validators
+
     @classmethod
     def from_response(
         cls,
@@ -115,13 +135,17 @@ class OpenAISchema(BaseModel):
         if mode == Mode.GEMINI_JSON:
             return cls.parse_gemini_json(completion, validation_context, strict)
 
+        if mode == Mode.COHERE_JSON_SCHEMA:
+            return cls.parse_cohere_json_schema(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
         if mode == Mode.FUNCTIONS:
+            Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
-        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
+        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.TOOLS_STRICT}:
             return cls.parse_tools(completion, validation_context, strict)
 
         if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
@@ -130,16 +154,35 @@ class OpenAISchema(BaseModel):
         raise ValueError(f"Invalid patch mode: {mode}")
 
     @classmethod
+    def parse_cohere_json_schema(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ):
+        assert hasattr(
+            completion, "text"
+        ), "Completion is not of type NonStreamedChatResponse"
+        return cls.model_validate_json(
+            completion.text, context=validation_context, strict=strict
+        )
+
+    @classmethod
     def parse_anthropic_tools(
         cls: type[BaseModel],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
+        from anthropic.types import Message
+
+        if isinstance(completion, Message) and completion.stop_reason == "max_tokens":
+            raise IncompleteOutputException(last_completion=completion)
+
         # Anthropic returns arguments as a dict, dump to json for model validation below
         tool_calls = [
             json.dumps(c.input) for c in completion.content if c.type == "tool_use"
-        ]  # type: ignore - TODO update with anthropic specific types
+        ]  # TODO update with anthropic specific types
 
         tool_calls_validator = TypeAdapter(
             Annotated[list[Any], Field(min_length=1, max_length=1)]
@@ -160,6 +203,9 @@ class OpenAISchema(BaseModel):
         from anthropic.types import Message
 
         assert isinstance(completion, Message)
+
+        if completion.stop_reason == "max_tokens":
+            raise IncompleteOutputException(last_completion=completion)
 
         text = completion.content[0].text
         extra_text = extract_json_from_codeblock(text)
@@ -224,8 +270,9 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        model = json.loads(completion.text)
-        return cls.model_validate(model, context=validation_context, strict=strict)
+        return cls.model_validate_json(
+            completion.text, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_cohere_tools(
@@ -268,6 +315,9 @@ class OpenAISchema(BaseModel):
         assert (
             len(message.tool_calls or []) == 1
         ), "Instructor does not support multiple tool calls, use List[Model] instead."
+        assert (
+            message.refusal is None
+        ), f"Unable to generate a response due to {message.refusal}"
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
@@ -299,10 +349,10 @@ def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
-    shema = wraps(cls, updated=())(
+    schema = wraps(cls, updated=())(
         create_model(
             cls.__name__ if hasattr(cls, "__name__") else str(cls),
             __base__=(cls, OpenAISchema),
         )
     )
-    return cast(OpenAISchema, shema)
+    return cast(OpenAISchema, schema)

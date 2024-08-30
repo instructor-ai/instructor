@@ -1,23 +1,19 @@
 ---
-description: "We can see a small improvement of <4% in different models by just appending the phrase - Read The Question Again."
+description: "Re2 (Re-Reading) is a technique that asks the model to read the question again."
 ---
 
-# Read the Prompt Again
+How can we enhance a model's understanding of a query?
 
-By appending the phrase "Read the question again", you can improve the reasoning abilities of Large Langauge Models <sup><a href="https://arxiv.org/pdf/2309.06275">1</a></sup>
+Re2 (**Re** - **R** eading) is a technique that asks the model to read the question again.
 
-This could look something like this
+!!! example "Re-Reading Prompting"
+    **Prompt Template**: Read the question again: <*query*> <*critical thinking prompt*><sup><a href="https://arxiv.org/abs/2309.06275">1</a></sup>
+    
+    A common critical thinking prompt is: "Let's think step by step."
 
-!!! example "Re-Reading Template"
+## Implementation
 
-    **[ Input Query ]**
-    Read the question again: **[ Input Query ]**
-
-    **[ Critical Thinking Prompt  ]**
-
-We can implement this using `instructor` as seen below.
-
-```python hl_lines="20-21"
+```python hl_lines="20"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
@@ -26,39 +22,36 @@ from pydantic import BaseModel
 client = instructor.from_openai(OpenAI())
 
 
-class Solution(BaseModel):
-    final_answer: int
+class Response(BaseModel):
+    answer: int
 
 
-def solve_question(question: str) -> int:
-    response = client.chat.completions.create(
+def re2(query, thinking_prompt):
+    return client.chat.completions.create(
         model="gpt-4o",
-        response_model=Solution,
+        response_model=Response,
         messages=[
             {
                 "role": "system",
-                "content": f"""{question}. Read the question
-                again. {question}. Adhere to the provided
-                format when responding to the problem and
-                make sure to think through this step by
-                step.""",
+                "content": f"Read the question again: {query} {thinking_prompt}",
             },
         ],
     )
-    return response.final_answer
 
 
-# Example usage
 if __name__ == "__main__":
-    question = """Roger has 5 tennis balls. He buys 2 more cans of tennis
-    balls. Each can has 3 tennis balls. How many tennis balls
-    does he have now?"""
+    query = """Roger has 5 tennis balls.
+        He buys 2 more cans of tennis balls.
+        Each can has 3 tennis balls.
+        How many tennis balls does he have now?
+        """
+    thinking_prompt = "Let's think step by step."
 
-    answer = solve_question(question)
-    print(answer)
+    response = re2(query=query, thinking_prompt=thinking_prompt)
+    print(response.answer)
     #> 11
 ```
 
-### References
+## References
 
-<sup id="ref-1">1</sup>: [Re-Reading Improves Reasoning in Large Language Models](https://arxiv.org/pdf/2309.06275)
+<sup id="ref-1">1</sup>: [Re-Reading Improves Reasoning in Large Language Models](https://arxiv.org/abs/2309.06275)

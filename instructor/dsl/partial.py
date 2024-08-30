@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 from jiter import from_json
-from pydantic import BaseModel, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 from typing import (
     Any,
@@ -96,8 +96,8 @@ class PartialBase(Generic[T_Model]):
             **{
                 field_name: _make_field_optional(field_info)
                 for field_name, field_info in cls.model_fields.items()
-            },
-        )  # type: ignore[all]
+            },  # type: ignore[all]
+        )
 
     @classmethod
     def from_streaming_response(
@@ -130,7 +130,7 @@ class PartialBase(Generic[T_Model]):
         for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
-                (potential_object or "{}").encode(), partial_mode="trailing-strings"
+                (potential_object or "{}").encode(), partial_mode="on"
             )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
@@ -144,7 +144,7 @@ class PartialBase(Generic[T_Model]):
         async for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
-                (potential_object or "{}").encode(), partial_mode="trailing-strings"
+                (potential_object or "{}").encode(), partial_mode="on"
             )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
@@ -164,12 +164,13 @@ class PartialBase(Generic[T_Model]):
                     yield chunk.text
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode == Mode.TOOLS:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             yield json_chunk[0].function.arguments
                     else:
@@ -192,12 +193,13 @@ class PartialBase(Generic[T_Model]):
                     yield chunk.delta.partial_json
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode == Mode.TOOLS:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             yield json_chunk[0].function.arguments
                     else:
@@ -299,7 +301,7 @@ class Partial(Generic[T_Model]):
 
         return create_model(
             model_name,
-            __base__=(wrapped_class, PartialBase),
+            __base__=(wrapped_class, PartialBase),  # type: ignore
             __module__=wrapped_class.__module__,
             **{
                 field_name: (
@@ -308,5 +310,5 @@ class Partial(Generic[T_Model]):
                     else _wrap_models(field_info)
                 )
                 for field_name, field_info in wrapped_class.model_fields.items()
-            },
-        )  # type: ignore
+            },  # type: ignore
+        )

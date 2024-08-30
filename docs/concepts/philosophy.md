@@ -23,7 +23,7 @@ The instructor values [simplicity](https://eugeneyan.com/writing/simplicity/) an
 
 Maintain the flexibility and power of Python, without unnecessary constraints.
 
-Begin with a function and a return type hint – simplicity is key. With my experience maintaining a large enterprize framework at my previous job over many years I've learned that the goal of a making a useful framework is minimizing regret, both for the author and hopefully for the user.
+Begin with a function and a return type hint – simplicity is key. With my experience maintaining a large enterprise framework at my previous job over many years I've learned that the goal of making a useful framework is minimizing regret, both for the author and hopefully for the user.
 
 1. Define a Schema `#!python class StructuredData(BaseModel):`
 2. Define validators and methods on your schema.

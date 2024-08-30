@@ -9,8 +9,6 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GPT](https://img.shields.io/badge/docs-InstructorGPT-blue)](https://chat.openai.com/g/g-EvZweRWrE-instructor-gpt)
 
-
-
 Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
 
 It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
@@ -21,6 +19,7 @@ It stands out for its simplicity, transparency, and user-centric design, built o
   - [Ruby](https://ruby.useinstructor.com)
   - [Go](https://go.useinstructor.com)
   - [Elixir](https://hex.pm/packages/instructor)
+  - [Rust](https://rust.useinstructor.com/)
 
 ## Want your logo on our website?
 
@@ -53,6 +52,35 @@ You can also check out our [cookbooks](./examples/index.md) and [concepts](./con
 Now, let's see Instructor in action with a simple example:
 
 ### Using OpenAI
+
+??? info "Want to use OpenAI's Structured Output Response?"
+
+    We've added support for OpenAI's structured output response. With this, you'll get all the benefits of instructor you like with the constrained sampling from OpenAI.
+
+    ```python
+    from openai import OpenAI
+    from instructor import from_openai, Mode
+    from pydantic import BaseModel
+
+    client = from_openai(OpenAI(), mode=Mode.TOOLS_STRICT)
+
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+
+    resp = client.chat.completions.create(
+        response_model=User,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+        model="gpt-4o",
+    )
+    ```
 
 ```python
 import instructor
@@ -220,6 +248,56 @@ resp = client.chat.completions.create(
 )
 
 assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
+### Using Cohere
+
+We also support users who want to use the Cohere models using the `from_cohere` method.
+
+??? info "Want to get the original Cohere response?"
+
+    If you want to get the original response object from the LLM instead of a structured output, you can pass `response_model=None` to the `create` method. This will return the raw response from the underlying API.
+
+    ```python
+    # This will return the original Cohere response object
+    raw_response = client.chat.completions.create(
+        response_model=None,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+    )
+    ```
+
+    This can be useful when you need access to additional metadata or want to handle the raw response yourself.
+
+```python
+import instructor
+from pydantic import BaseModel
+from cohere import Client
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_cohere(Client())
+
+resp = client.chat.completions.create(
+    response_model=User,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+)
+
 assert resp.name == "Jason"
 assert resp.age == 25
 ```

@@ -1,7 +1,7 @@
 from typing import Any, Optional, cast, ClassVar
 from collections.abc import AsyncGenerator, Generator, Iterable
 
-from pydantic import BaseModel, Field, create_model  # type: ignore - remove once Pydantic is updated
+from pydantic import BaseModel, Field, create_model
 
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
@@ -88,12 +88,13 @@ class IterableBase:
                     yield chunk.text
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode == Mode.TOOLS:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             yield json_chunk[0].function.arguments
                     else:
@@ -116,12 +117,13 @@ class IterableBase:
                     yield chunk.delta.partial_json
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
                         if json_chunk := chunk.choices[0].delta.function_call.arguments:
                             yield json_chunk
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode == Mode.TOOLS:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             yield json_chunk[0].function.arguments
                     else:

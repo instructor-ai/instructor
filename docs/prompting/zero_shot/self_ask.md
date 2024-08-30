@@ -1,84 +1,79 @@
 ---
-description: "Self-Ask is a prompting technique that enhances language model performance by encouraging the model to generate and answer follow-up questions before tackling the main query, leading to more accurate and comprehensive responses."
+title: "Self-Ask"
+description: "Self-Ask is a technique which use a single prompt to encourage a model to use the answers to sub-problems to correctly generate the overall solution."
 ---
 
-By encouraging our model to generate and answer clarifying questions before tackling the main query, we can obtain more accurate and comprehensive responses. This is known as Self-Ask <sup><a href="http://users.umiacs.umd.edu/~jbg/docs/2023_findings_more.pdf">1</a></sup>.
+Models can sometimes correctly answer sub-problems but incorrectly answer the overall query. This is known as the *compositionality gap*<sup><a href="https://arxiv.org/abs/2210.03350">1</a></sup>.
 
-We can implement this using `instructor` as seen below.
+How can we encourage a model to use the answers to sub-problems to correctly generate the overall solution?
 
-```python hl_lines="35-37"
+Self-Ask is a technique which use a single prompt to:
+
+ - decide if follow-up questions are required
+ - generate the follow-up questions
+ - answer the follow-up questions
+ - answer the main query
+
+## Implementation
+
+```python hl_lines="26-29"
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-
 client = instructor.from_openai(OpenAI())
 
 
-class FollowupQuestion(BaseModel):
-    question: str = Field(
-        description="Question to be answered",
-    )
-    answer: str
-
-class SelfAskResponse(BaseModel):
-    follow_up_questions: list[FollowupQuestion] = Field(
-        description="""A list of question and
-            answer pairs that are required to be
-            answered in order to answer the original
-            question.""",
-        default_factory=list,
-    )
-    answer:str
+class FollowUp(BaseModel):
+    question: str = Field(description="The follow-up question")
+    answer: str = Field(description="The answer to the follow-up question")
 
 
-def generate_questions_and_response(query):
+class Response(BaseModel):
+    follow_ups_required: bool
+    follow_ups: list[FollowUp]
+    final_answer: str
+
+
+def self_ask(query):
     return client.chat.completions.create(
         model="gpt-4o",
-        response_model=SelfAskResponse,
+        response_model=Response,
         messages=[
             {
                 "role": "system",
-                "content": """You are a helpful assistant
-                which is able to accurately answer user
-                queries. Generate a list of follow up
-                questions and responses before answering
-                the user's question below.""",
-            },
-            {
-                "role": "user",
-                "content": query,
+                "content": f"""Query: {query}
+                        Are follow-up questions needed?
+                        If so, generate follow-up questions, their answers, and then the final answer to the query.
+                        """,  # !(1)
             },
         ],
     )
 
 
 if __name__ == "__main__":
-    query = """Who was president of the U.S.
-    when superconductivity was discovered?"""
+    query = "Who was president of the U.S. when superconductivity was discovered?"
 
-    response = generate_questions_and_response(query)
-    print(response.model_dump_json(indent=2))
+    response = self_ask(query)
+
+    print(response.follow_ups_required)
+    #> True
+    for follow_up in response.follow_ups:
+        print(follow_up)
+        """
+        question='When was superconductivity discovered?' answer='Superconductivity was discovered in April 1911.'
+        """
+        """
+        question='Who was president of the U.S. in April 1911?' answer='William Howard Taft was the President of the United States in April 1911.'
+        """
+    print(response.final_answer)
     """
-    {
-      "follow_up_questions": [
-        {
-          "question": "When was superconductivity discovered?",
-          "answer": "Superconductivity was discovered in 1911 by
-          Heike Kamerlingh Onnes."
-        },
-        {
-          "question": "Who was president of the U.S. in 1911?",
-          "answer": "The president of the U.S. in 1911 was William
-          Howard Taft."
-        }
-      ],
-      "answer": "The president of the U.S. when superconductivity was
-      discovered in 1911 was William Howard Taft."
-    }
+    William Howard Taft was president of the U.S. when superconductivity was discovered.
     """
 ```
 
-### References
+1. Without `instructor`, this prompt would generally be implemented as a one-shot or few-shot prompt<sup><a href="https://arxiv.org/abs/2210.03350">1</a></sup> to encourage thinking through follow-up questions. With `instructor`, we use a zero-shot prompt!
 
-<sup id="ref-1">1</sup>: [Getting MoRE out of Mixture of Language Model Reasoning Experts](http://users.umiacs.umd.edu/~jbg/docs/2023_findings_more.pdf)
+## References
+
+<sup id="ref-1">1</sup>: [Measuring and Narrowing the Compositionality Gap in Language Models](https://arxiv.org/abs/2210.03350)

@@ -7,11 +7,11 @@ from .util import models, modes
 
 
 def uppercase_validator(v: str):
-    if v.islower():
+    if not v.isupper():
         raise ValueError(
-            "All letters in the name should be in uppercase (Eg. TOM, JONES ) instead of tom, jones"
+            "All letters in the name should be in uppercase (e.g., TOM, JONES) instead of tom, jones"
         )
-    return v
+    return v.strip()
 
 
 class UserDetail(BaseModel):
@@ -22,7 +22,7 @@ class UserDetail(BaseModel):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_upper_case_async(model, mode, aclient):
     client = instructor.patch(aclient, mode=mode)
     response = await client.chat.completions.create(
@@ -37,7 +37,7 @@ async def test_upper_case_async(model, mode, aclient):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_upper_case_tenacity_async(model, mode, aclient):
     client = instructor.patch(aclient, mode=mode)
     from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
@@ -119,7 +119,11 @@ def test_custom_retry_response_error(model, mode, client):
             response_model=UserDetail,
         )
     except InstructorRetryException as e:
-        assert isinstance(e.__cause__.__cause__, AuthenticationError)
+        root_cause = e
+        while root_cause.__cause__ is not None:
+            root_cause = root_cause.__cause__
+
+        assert isinstance(root_cause, AuthenticationError)
         assert e.last_completion is None
     finally:
         client.api_key = original_key

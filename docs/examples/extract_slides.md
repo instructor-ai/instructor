@@ -57,7 +57,7 @@ from openai import OpenAI
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.from_openai(
-    OpenAI(), mode=instructor.Mode.MD_JSON
+    OpenAI()
 )
 
 # Define functions
@@ -66,7 +66,7 @@ def read_images(image_urls: List[str]) -> Competition:
     Given a list of image URLs, identify the competitors in the images.
     """
     return client.chat.completions.create(
-        model="gpt-4-vision-preview",
+        model="gpt-4o",
         response_model=Competition,
         max_tokens=2048,
         temperature=0,
