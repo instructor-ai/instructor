@@ -39,10 +39,11 @@ def vertexai_message_parser(
 ) -> gm.Content:
     if isinstance(message["content"], str):
         return gm.Content(
-            role=message["role"], parts=[gm.Part.from_text(message["content"])]
+            role=message["role"],  # type:ignore
+            parts=[gm.Part.from_text(message["content"])],
         )
     elif isinstance(message["content"], list):
-        parts = []
+        parts: list[gm.Part] = []
         for item in message["content"]:
             if isinstance(item, str):
                 parts.append(gm.Part.from_text(item))
@@ -50,7 +51,10 @@ def vertexai_message_parser(
                 parts.append(item)
             else:
                 raise ValueError(f"Unsupported content type in list: {type(item)}")
-        return gm.Content(role=message["role"], parts=parts)
+        return gm.Content(
+            role=message["role"],  # type:ignore
+            parts=parts,
+        )
     else:
         raise ValueError("Unsupported message content type")
 
