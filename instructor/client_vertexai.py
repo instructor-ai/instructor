@@ -86,7 +86,7 @@ def vertexai_function_response_parser(
 
 def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
-    contents = _vertexai_message_list_parser(messages)
+    contents = _vertexai_message_list_parser(messages)  # type: ignore
 
     tool = _create_vertexai_tool(model=model)
 
@@ -100,7 +100,7 @@ def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
 
 def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
-    contents = _vertexai_message_list_parser(messages)
+    contents = _vertexai_message_list_parser(messages)  # type: ignore
 
     config: dict[str, Any] | None = _kwargs.pop("generation_config", None)
 
