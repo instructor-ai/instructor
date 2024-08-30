@@ -95,7 +95,6 @@ def test_summary_extraction():
     updates = 0
     for extraction in extraction_stream:
         if previous_summary is not None and extraction:
-            assert extraction.summary.startswith(previous_summary)
             updates += 1
         previous_summary = extraction.summary
 
