@@ -220,6 +220,96 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+??? info "Want to use Gemini's multi-part formats?"
+
+    Instructor supports both the gemini and the vertexai libraries. We've most recently added support for multi-part file formats using google's `gm.Part` objects. This allows you to pass in additional information to the LLM about the data you'd like to see.
+
+    Here are two examples of how to use multi-part formats with Instructor.
+
+    We can combine multiple `gm.Part` objects into a single list and combine them into a single message to be sent to the LLM. Under the hood, we'll convert them into the appropriate format for Gemini.
+
+    ```python
+    import instructor
+    import vertexai.generative_models as gm  # type: ignore
+    from pydantic import BaseModel, Field
+    import requests
+
+    client = instructor.from_vertexai(gm.GenerativeModel("gemini-1.5-pro-001"))
+    content = [
+        "Order Details:",
+        gm.Part.from_text("Customer: Alice"),
+        gm.Part.from_text("Items:"),
+        "Name: Laptop, Price: 999.99",
+        "Name: Mouse, Price: 29.99",
+    ]
+
+
+    class Item(BaseModel):
+        name: str
+        price: float
+
+
+    class Order(BaseModel):
+        items: list[Item] = Field(..., default_factory=list)
+        customer: str
+
+
+    resp = client.create(
+        response_model=Order,
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+    )
+
+    print(resp)
+    #> items=[Item(name='Laptop', price=999.99), Item(name='Mouse', price=29.99)] customer='Alice'
+    ```
+
+    This is also the same for multi-modal responses when we want to work with images. In this example, we'll ask the LLM to describe an image and pass in the image as a `gm.Part` object.
+
+    ```python
+    import instructor
+    import vertexai.generative_models as gm  # type: ignore
+    from pydantic import BaseModel
+    import requests
+
+    client = instructor.from_vertexai(
+        gm.GenerativeModel("gemini-1.5-pro-001"), mode=instructor.Mode.VERTEXAI_JSON
+    )
+    content = [
+        gm.Part.from_text("Count the number of objects in the image."),
+        gm.Part.from_data(
+            bytes(
+                requests.get(
+                    "https://img.taste.com.au/Oq97xT-Q/taste/2016/11/blueberry-scones-75492-1.jpeg"
+                ).content
+            ),
+            "image/jpeg",
+        ),
+    ]
+
+
+    class Description(BaseModel):
+        description: str
+
+
+    resp = client.create(
+        response_model=Description,
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+    )
+
+    print(resp)
+    #> description='Seven blueberry scones sit inside a metal pie plate.'
+    ```
+
 ### Using Litellm
 
 ```python
