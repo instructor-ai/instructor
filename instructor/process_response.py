@@ -475,6 +475,7 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             new_kwargs["tool_config"] = {
                 "function_calling_config": {
                     "mode": "ANY",
+                    "allowed_function_names": [response_model.__name__],
                 },
             }
 

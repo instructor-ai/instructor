@@ -118,8 +118,8 @@ class OpenAISchema(BaseModel):
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
 
-        if mode == Mode.VERTEXAI_TOOLS:
-            return cls.parse_vertexai_tools(completion, validation_context, strict)
+        if mode in {Mode.VERTEXAI_TOOLS, Mode.GEMINI_TOOLS}:
+            return cls.parse_vertexai_tools(completion, validation_context)
 
         if mode == Mode.VERTEXAI_JSON:
             return cls.parse_vertexai_json(completion, validation_context, strict)
@@ -248,34 +248,17 @@ class OpenAISchema(BaseModel):
             return cls.model_validate(parsed, context=validation_context, strict=False)
 
     @classmethod
-    def parse_gemini_tools(
-        cls: type[BaseModel],
-        completion: ChatCompletion,
-        validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
-    ) -> BaseModel:
-        tool_call = completion.parts[0].function_call
-        assert (
-            tool_call.name == cls.openai_schema["name"]  # type: ignore[index]
-        ), "Tool name does not match"
-        # reference https://ai.google.dev/gemini-api/tutorials/extract_structured_data
-        response = type(tool_call).to_dict(tool_call)["args"]
-
-        return cls.model_validate(response, context=validation_context, strict=strict)
-
-    @classmethod
     def parse_vertexai_tools(
         cls: type[BaseModel],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
     ) -> BaseModel:
-        strict = False
         tool_call = completion.candidates[0].content.parts[0].function_call.args  # type: ignore
         model = {}
         for field in tool_call:  # type: ignore
             model[field] = tool_call[field]
-        return cls.model_validate(model, context=validation_context, strict=strict)
+        # We enable strict=False because the conversion from protobuf -> dict often results in types like ints being cast to floats, as a result in order for model.validate to work we need to disable strict mode.
+        return cls.model_validate(model, context=validation_context, strict=False)
 
     @classmethod
     def parse_vertexai_json(
