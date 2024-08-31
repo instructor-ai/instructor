@@ -51,14 +51,14 @@ You can also check out our [cookbooks](./examples/index.md) and [concepts](./con
 
 ??? info "Make sure you've installed the dependencies for your specific client"
 
-    To keep the bundle size small, `instructor` only ships with the OpenAI client. You can install the rest with the following:
+    To keep the bundle size small, `instructor` only ships with the OpenAI client. Before using the other clients and their respective `from_xx` method, make sure you've installed the dependencies following the instructions below.
 
-    1. Anthropic : `pip install instructor[anthropic]`
-    2. Google Generative AI: `pip install instructor[google-generativeai]`
-    3. Vertex AI: `pip install instructor[vertexai]`
-    4. Cohere: `pip install instructor[cohere]`
-    5. Litellm: `pip install instructor[litellm]`
-    6. Mistral: `pip install instructor[mistralai]`
+    1. Anthropic : `pip install "instructor[anthropic]"`
+    2. Google Generative AI: `pip install "instructor[google-generativeai]"`
+    3. Vertex AI: `pip install "instructor[vertexai]"`
+    4. Cohere: `pip install "instructor[cohere]"`
+    5. Litellm: `pip install "instructor[litellm]"`
+    6. Mistral: `pip install "instructor[mistralai]"`
 
 Now, let's see Instructor in action with a simple example:
 
