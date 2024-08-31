@@ -35,7 +35,7 @@ def from_gemini(
     assert mode in {
         instructor.Mode.GEMINI_JSON,
         instructor.Mode.GEMINI_TOOLS,
-    }, "Mode be one of {instructor.Mode.GEMINI_JSON, instructor.Mode.GEMINI_TOOLS}"
+    }, "Mode must be one of {instructor.Mode.GEMINI_JSON, instructor.Mode.GEMINI_TOOLS}"
 
     assert isinstance(
         client,
