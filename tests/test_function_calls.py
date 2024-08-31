@@ -238,7 +238,7 @@ def test_refusal_attribute(test_model: type[OpenAISchema]):
         assert "Unable to generate a response due to test_refusal" in str(e)
 
 
-def test_no_refusal_attribute(test_model: type[OpenAISchema]):
+def test_successful_response_with_null_refusal(test_model: type[OpenAISchema]):
     completion = ChatCompletion(
         id="test_id",
         created=1234567890,
