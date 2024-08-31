@@ -237,6 +237,42 @@ def test_refusal_attribute(test_model: type[OpenAISchema]):
     except Exception as e:
         assert "Unable to generate a response due to test_refusal" in str(e)
 
+
+def test_no_refusal_attribute(test_model: type[OpenAISchema]):
+    completion = ChatCompletion(
+        id="test_id",
+        created=1234567890,
+        model="gpt-3.5-turbo",
+        object="chat.completion",
+        choices=[
+            Choice(
+                index=0,
+                message=ChatCompletionMessage(
+                    content="test_content",
+                    refusal=None,
+                    role="assistant",
+                    tool_calls=[
+                        ChatCompletionMessageToolCall(
+                            id="test_id",
+                            function=Function(
+                                name="TestModel",
+                                arguments='{"data": "test_data", "name": "TestModel"}',
+                            ),
+                            type="function",
+                        )
+                    ],
+                ),
+                finish_reason="stop",
+                logprobs=None,
+            )
+        ],
+    )
+
+    resp = test_model.from_response(completion, mode=instructor.Mode.TOOLS)
+    assert resp.data == "test_data"
+    assert resp.name == "TestModel"
+
+
 def test_missing_refusal_attribute(test_model: type[OpenAISchema]):
     message_without_refusal_attribute = ChatCompletionMessage(
         content="test_content",
@@ -246,7 +282,8 @@ def test_missing_refusal_attribute(test_model: type[OpenAISchema]):
             ChatCompletionMessageToolCall(
                 id="test_id",
                 function=Function(
-                    name="TestModel", arguments='{"data": "test_data", "name": "TestModel"}'
+                    name="TestModel",
+                    arguments='{"data": "test_data", "name": "TestModel"}',
                 ),
                 type="function",
             )
@@ -270,13 +307,7 @@ def test_missing_refusal_attribute(test_model: type[OpenAISchema]):
             )
         ],
     )
-    
+
     resp = test_model.from_response(completion, mode=instructor.Mode.TOOLS)
     assert resp.data == "test_data"
     assert resp.name == "TestModel"
-
-
-# class User(BaseModel):
-#     name: str
-#     age: int
-#schema = openai_schema(User)
