@@ -2,7 +2,9 @@ from typing import TypeVar
 
 import pytest
 from anthropic.types import Message, Usage
-from openai.types.chat.chat_completion import ChatCompletion
+from openai.types.chat.chat_completion import ChatCompletion, Choice
+from openai.types.chat.chat_completion_message import ChatCompletionMessage
+from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall,  Function
 from pydantic import BaseModel, ValidationError
 
 import instructor
@@ -207,3 +209,74 @@ def test_mode_functions_deprecation_warning() -> None:
     from openai import OpenAI
     with pytest.warns(DeprecationWarning, match="The FUNCTIONS mode is deprecated and will be removed in future versions"):
         _ = instructor.from_openai(OpenAI(), mode=instructor.Mode.FUNCTIONS)
+
+def test_refusal_attribute(test_model: type[OpenAISchema]):
+    completion = ChatCompletion(
+        id="test_id",
+        created=1234567890,
+        model="gpt-3.5-turbo",
+        object="chat.completion",
+        choices=[
+            Choice(
+                index=0,
+                message=ChatCompletionMessage(
+                    content="test_content",
+                    refusal="test_refusal",
+                    role="assistant",
+                    tool_calls=[],
+                ),
+                finish_reason="stop",
+                logprobs=None,
+            )
+        ],
+    )
+
+    try:
+        
+        test_model.from_response(completion, mode=instructor.Mode.TOOLS)
+    except Exception as e:
+        assert "Unable to generate a response due to test_refusal" in str(e)
+
+def test_missing_refusal_attribute(test_model: type[OpenAISchema]):
+    message_without_refusal_attribute = ChatCompletionMessage(
+        content="test_content",
+        refusal="test_refusal",
+        role="assistant",
+        tool_calls=[
+            ChatCompletionMessageToolCall(
+                id="test_id",
+                function=Function(
+                    name="TestModel", arguments='{"data": "test_data", "name": "TestModel"}'
+                ),
+                type="function",
+            )
+        ],
+    )
+
+    del message_without_refusal_attribute.refusal
+    assert not hasattr(message_without_refusal_attribute, "refusal")
+
+    completion = ChatCompletion(
+        id="test_id",
+        created=1234567890,
+        model="gpt-3.5-turbo",
+        object="chat.completion",
+        choices=[
+            Choice(
+                index=0,
+                message=message_without_refusal_attribute,
+                finish_reason="stop",
+                logprobs=None,
+            )
+        ],
+    )
+    
+    resp = test_model.from_response(completion, mode=instructor.Mode.TOOLS)
+    assert resp.data == "test_data"
+    assert resp.name == "TestModel"
+
+
+# class User(BaseModel):
+#     name: str
+#     age: int
+#schema = openai_schema(User)
