@@ -39,10 +39,11 @@ def vertexai_message_parser(
 ) -> gm.Content:
     if isinstance(message["content"], str):
         return gm.Content(
-            role=message["role"], parts=[gm.Part.from_text(message["content"])]
+            role=message["role"],  # type:ignore
+            parts=[gm.Part.from_text(message["content"])],
         )
     elif isinstance(message["content"], list):
-        parts = []
+        parts: list[gm.Part] = []
         for item in message["content"]:
             if isinstance(item, str):
                 parts.append(gm.Part.from_text(item))
@@ -50,7 +51,10 @@ def vertexai_message_parser(
                 parts.append(item)
             else:
                 raise ValueError(f"Unsupported content type in list: {type(item)}")
-        return gm.Content(role=message["role"], parts=parts)
+        return gm.Content(
+            role=message["role"],  # type:ignore
+            parts=parts,
+        )
     else:
         raise ValueError("Unsupported message content type")
 
@@ -82,7 +86,7 @@ def vertexai_function_response_parser(
 
 def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
-    contents = _vertexai_message_list_parser(messages)
+    contents = _vertexai_message_list_parser(messages)  # type: ignore
 
     tool = _create_vertexai_tool(model=model)
 
@@ -96,7 +100,7 @@ def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
 
 def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
-    contents = _vertexai_message_list_parser(messages)
+    contents = _vertexai_message_list_parser(messages)  # type: ignore
 
     config: dict[str, Any] | None = _kwargs.pop("generation_config", None)
 
