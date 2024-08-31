@@ -309,15 +309,15 @@ class OpenAISchema(BaseModel):
         strict: Optional[bool] = None,
     ) -> BaseModel:
         message = completion.choices[0].message
-        assert (
-            len(message.tool_calls or []) == 1
-        ), "Instructor does not support multiple tool calls, use List[Model] instead."
         # this field seems to be missing when using instructor with some other tools (e.g. litellm)
         # trying to fix this by adding a check
         if hasattr(message, "refusal"):
             assert (
                 message.refusal is None
             ), f"Unable to generate a response due to {message.refusal}"
+        assert (
+            len(message.tool_calls or []) == 1
+        ), "Instructor does not support multiple tool calls, use List[Model] instead."
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
