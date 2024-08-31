@@ -26,7 +26,6 @@ def test_upper_case(model, mode):
     client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
     response = client.chat.completions.create(
         response_model=UserDetail,
-        strict=False,
         messages=[
             {"role": "user", "content": "Extract `jason is 12`"},
         ],
@@ -47,7 +46,6 @@ def test_upper_case_tenacity(model, mode):
 
     response = client.chat.completions.create(
         response_model=UserDetail,
-        strict=False,
         messages=[
             {"role": "user", "content": "Extract `jason is 12`"},
         ],

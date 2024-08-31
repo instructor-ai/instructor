@@ -33,7 +33,6 @@ def test_nested(model, mode):
 
     resp = client.chat.completions.create(
         response_model=Order,
-        strict=False,
         messages=[
             {
                 "role": "user",

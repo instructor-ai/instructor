@@ -41,7 +41,6 @@ def test_sentiment_analysis(model, data, mode):
 
     response = client.chat.completions.create(
         response_model=SentimentAnalysis,
-        strict=False,
         messages=[
             {
                 "role": "system",
