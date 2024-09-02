@@ -24,7 +24,8 @@ def from_mistral(
 
 
 def from_mistral(
-    client: mistralai.client.MistralClient | mistralaiasynccli.MistralAsyncClient,
+    # deprecated from MistralClient, MistralAsyncClient to Mistral (https://github.com/mistralai/client-python/blob/main/MIGRATION.md)
+    client: mistralai.client.Mistral | mistralaiasynccli.Mistral,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
