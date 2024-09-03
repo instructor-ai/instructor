@@ -5106,4 +5106,4 @@ vertexai = ["google-cloud-aiplatform", "jsonref"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "7bf0d63c8870f4afc08d790adc388c6b7a198be4eab390f74401bc317c66b37d"
+content-hash = "6e2e8d57292a65b038dc51f6e8b7f0920fd6874573589fa886bb7fab6db9c28c"
