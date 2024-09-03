@@ -36,10 +36,10 @@ class UserExtractValidated(BaseModel):
 
     @field_validator("name")
     @classmethod
-    def validate_name(cls, v):
-        if v.upper() != v:
+    def validate_name(cls, v: str) -> str:
+        if not v.isupper():
             raise ValueError(
-                "Name should be uppercase, make sure to use the `uppercase` version of the name"
+                "Name should be uppercase, make sure to use the `uppercase` version of the name (eg. TOM, JERRICK, ANNABETH)"
             )
         return v
 
