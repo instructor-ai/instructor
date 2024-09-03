@@ -78,7 +78,7 @@ We can achieve a similar thing with the VertexAI SDk. For this to work, you'll n
 There are some instructions [here](https://cloud.google.com/vertex-ai/docs/authentication) but the easiest way I found was to simply download the GCloud cli and run `gcloud auth application-default login`.
 
 ```python
-iimport instructor
+import instructor
 import vertexai  # type: ignore
 from vertexai.generative_models import GenerativeModel  # type: ignore
 from pydantic import BaseModel
