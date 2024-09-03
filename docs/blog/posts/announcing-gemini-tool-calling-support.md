@@ -108,6 +108,7 @@ resp = client.chat.completions.create(
 )
 
 print(resp)
+#> name='Jason' age=25
 ```
 
 1. Current Gemini models that support tool calling are `gemini-1.5-flash-latest` and `gemini-1.5-pro-latest`.
