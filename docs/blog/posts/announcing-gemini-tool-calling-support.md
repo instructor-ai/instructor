@@ -113,4 +113,4 @@ print(resp)
 
 1. Current Gemini models that support tool calling are `gemini-1.5-flash-latest` and `gemini-1.5-pro-latest`.
 
-2. Make sure to set the `mode` to `instructor.Mode.GEMINI_TOOLS` in order to use Gemini Tool Calling
+2. Make sure to set the `mode` to `instructor.Mode.VERTEXAI_TOOLS` in order to use VertexAI Tool Calling
