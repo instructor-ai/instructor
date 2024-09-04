@@ -7,7 +7,7 @@ authors:
 
 # Announcing Gemini and VertexAI Tool Calling Support
 
-We've excited to announce that Instructor now supports tool calling for both the Gemini SDK and the VertexAI SDk.
+We're excited to announce that `instructor` now supports tool calling for both the Gemini SDK and the VertexAI SDK.
 
 A special shoutout to [Sonal](https://x.com/sonalsaldanha) for his contributions to the Gemini Tool Calling support.
 
@@ -15,25 +15,25 @@ Let's walk through a simple example of how to use these new features
 
 ## Installation
 
-To get started, install the latest version of Instructor. Depending on whether you're using Gemini or VertexAI, you should install the following:
+To get started, install the latest version of `instructor`. Depending on whether you're using Gemini or VertexAI, you should install the following:
 
 === "Gemini"
 
     ```bash
-    uv pip install "instructor[gemini]"
+    pip install "instructor[gemini]"
     ```
 
 === "VertexAI"
 
     ```bash
-    uv pip install "instructor[vertexai]"
+    pip install "instructor[vertexai]"
     ```
 
-This ensures that you have the necessary dependencies to use the Gemini or VertexAI SDKs wtih instructor.
+This ensures that you have the necessary dependencies to use the Gemini or VertexAI SDKs with instructor.
 
 ## Getting Started
 
-With our provider agnostric API, you can use the same interface to interact with the gemini API, the only thing that changes here is how we initialise the client itself.
+With our provider agnostic API, you can use the same interface to interact with both SDKs, the only thing that changes here is how we initialise the client itself.
 
 Before running the following code, you'll need to make sure that you have your Gemini API Key set in your shell under the alias `GOOGLE_API_KEY`.
 
@@ -73,7 +73,7 @@ print(resp)
 
 2. Make sure to set the `mode` to `instructor.Mode.GEMINI_TOOLS` in order to use Gemini Tool Calling
 
-We can achieve a similar thing with the VertexAI SDk. For this to work, you'll need to authenticate to VertexAI.
+We can achieve a similar thing with the VertexAI SDK. For this to work, you'll need to authenticate to VertexAI.
 
 There are some instructions [here](https://cloud.google.com/vertex-ai/docs/authentication) but the easiest way I found was to simply download the GCloud cli and run `gcloud auth application-default login`.
 
