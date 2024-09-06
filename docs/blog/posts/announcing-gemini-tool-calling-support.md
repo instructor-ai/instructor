@@ -5,7 +5,7 @@ authors:
   - ivanleomk
 ---
 
-# Instructor Now Supports Structured Outputs with Gemini and Vertex AI
+# Structured Outputs for Gemini now supported
 
 We're excited to announce that `instructor` now supports structured outputs using tool calling for both the Gemini SDK and the VertexAI SDK.
 
