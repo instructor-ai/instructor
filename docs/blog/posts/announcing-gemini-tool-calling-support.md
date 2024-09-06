@@ -20,7 +20,7 @@ To get started, install the latest version of `instructor`. Depending on whether
 === "Gemini"
 
     ```bash
-    pip install "instructor[gemini]"
+    pip install "instructor[google-generativeai]"
     ```
 
 === "VertexAI"
