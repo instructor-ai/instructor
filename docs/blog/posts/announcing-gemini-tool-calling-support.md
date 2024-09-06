@@ -5,7 +5,7 @@ authors:
   - ivanleomk
 ---
 
-# Announcing Gemini and VertexAI Tool Calling Support
+# Instructor Now Supports Structured Outputs with Gemini and Vertex AI
 
 We're excited to announce that `instructor` now supports structured outputs using tool calling for both the Gemini SDK and the VertexAI SDK.
 
@@ -31,6 +31,11 @@ To get started, install the latest version of `instructor`. Depending on whether
 
 This ensures that you have the necessary dependencies to use the Gemini or VertexAI SDKs with instructor.
 
+We recommend using the Gemini SDK over the VertexAI SDK for two main reasons.
+
+1. Compared to the VertexAI SDK, the Gemini SDK comes with a free daily quota of 1.5 billion tokens to use for developers.
+2. The Gemini SDK is significantly easier to setup, all you need is a `GOOGLE_API_KEY` that you can generate in your GCP console. THe VertexAI SDK on the other hand requires a credentials.json file or an OAuth integration to use.
+
 ## Getting Started
 
 With our provider agnostic API, you can use the same interface to interact with both SDKs, the only thing that changes here is how we initialise the client itself.
@@ -51,8 +56,7 @@ class User(BaseModel):
 client = instructor.from_gemini(
     client=genai.GenerativeModel(
         model_name="models/gemini-1.5-flash-latest", # (1)!
-    ),
-    mode=instructor.Mode.GEMINI_TOOLS, # (2)!
+    )
 )
 
 resp = client.chat.completions.create(
@@ -70,8 +74,6 @@ print(resp)
 ```
 
 1. Current Gemini models that support tool calling are `gemini-1.5-flash-latest` and `gemini-1.5-pro-latest`.
-
-2. Make sure to set the `mode` to `instructor.Mode.GEMINI_TOOLS` in order to use Gemini Tool Calling
 
 We can achieve a similar thing with the VertexAI SDK. For this to work, you'll need to authenticate to VertexAI.
 
@@ -93,7 +95,6 @@ class User(BaseModel):
 
 client = instructor.from_vertexai(
     client=GenerativeModel("gemini-1.5-pro-preview-0409"), # (1)!
-    mode=instructor.Mode.VERTEXAI_TOOLS,# (2)!
 )
 
 
@@ -112,5 +113,3 @@ print(resp)
 ```
 
 1. Current Gemini models that support tool calling are `gemini-1.5-flash-latest` and `gemini-1.5-pro-latest`.
-
-2. Make sure to set the `mode` to `instructor.Mode.VERTEXAI_TOOLS` in order to use VertexAI Tool Calling
