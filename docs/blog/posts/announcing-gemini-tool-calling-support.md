@@ -7,7 +7,7 @@ authors:
 
 # Announcing Gemini and VertexAI Tool Calling Support
 
-We're excited to announce that `instructor` now supports tool calling for both the Gemini SDK and the VertexAI SDK.
+We're excited to announce that `instructor` now supports structured outputs using tool calling for both the Gemini SDK and the VertexAI SDK.
 
 A special shoutout to [Sonal](https://x.com/sonalsaldanha) for his contributions to the Gemini Tool Calling support.
 
