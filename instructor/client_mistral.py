@@ -36,7 +36,7 @@ def from_mistral(
     }, "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
 
     assert isinstance(
-        client, (Mistral)
+        client, Mistral
     ), "Client must be an instance of mistralai.Mistral"
 
     if not use_async:
