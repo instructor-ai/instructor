@@ -269,7 +269,7 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     Note that `enum` requires specific `format` setting
     """
 
-    import jsonref  # type: ignore
+    import jsonref
 
     class FunctionSchema(BaseModel):
         description: str | None = None
