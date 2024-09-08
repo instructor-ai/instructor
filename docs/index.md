@@ -1,4 +1,4 @@
-# Instructor, Generating Structure from LLMs
+# Instructor, Generating Structured Outputs with LLMs
 
 _Structured outputs powered by llms. Designed for simplicity, transparency, and control._
 
@@ -13,27 +13,49 @@ Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5
 
 It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
-- Instructor provides support for a wide range of programming languages, including:
-  - [Python](https://python.useinstructor.com)
-  - [TypeScript](https://js.useinstructor.com)
-  - [Ruby](https://ruby.useinstructor.com)
-  - [Go](https://go.useinstructor.com)
-  - [Elixir](https://hex.pm/packages/instructor)
-  - [Rust](https://rust.useinstructor.com/)
-
-## Want your logo on our website?
-
-If your company use instructor a lot, we'd love to have your logo on our website! Please fill out [this form](https://q7gjsgfstrp.typeform.com/to/wluQlVVQ)
+[:material-star: Star the Repo](https://github.com/jxnl/instructor){: .md-button .md-button--primary } [:material-book-open-variant: Cookbooks](./examples/index.md){: .md-button } [:material-lightbulb: Prompting Guide](./prompting/index.md){: .md-button }
 
 ## Why use Instructor?
 
-The question of using Instructor is fundamentally a question of why to use Pydantic.
+<div class="grid cards" markdown>
 
-1. **Powered by type hints** — Instructor is powered by Pydantic, which is powered by type hints. Schema validation, prompting is controlled by type annotations; less to learn, less code to write, and integrates with your IDE.
+-   :material-code-tags: __Simple API with Full Prompt Control__
 
-2. **Customizable** — Pydantic is highly customizable. You can define your own validators, custom error messages, and more.
+    Instructor provides a straightforward API that gives you complete ownership and control over your prompts. This allows for fine-tuned customization and optimization of your LLM interactions.
 
-3. **Ecosystem** Pydantic is the most widely used data validation library for Python with over 100M downloads a month. It's used by FastAPI, Typer, and many other popular libraries.
+    [:octicons-arrow-right-16: Explore Concepts](./concepts/models.md)
+
+-   :material-translate: __Multi-Language Support__
+
+    Simplify structured data extraction from LLMs with type hints and validation.
+
+    [:simple-python: Python](https://python.useinstructor.com) · [:simple-typescript: TypeScript](https://js.useinstructor.com) · [:simple-ruby: Ruby](https://ruby.useinstructor.com) · [:simple-go: Go](https://go.useinstructor.com) · [:simple-elixir: Elixir](https://hex.pm/packages/instructor) · [:simple-rust: Rust](https://rust.useinstructor.com)
+
+-   :material-refresh: __Reasking and Validation__
+
+    Automatically reask the model when validation fails, ensuring high-quality outputs. Leverage Pydantic's validation for robust error handling.
+
+    [:octicons-arrow-right-16: Learn about Reasking](./concepts/reask_validation.md)
+
+-   :material-repeat-variant: __Streaming Support__
+
+    Stream partial results and iterables with ease, allowing for real-time processing and improved responsiveness in your applications.
+
+    [:octicons-arrow-right-16: Learn about Streaming](./concepts/partial.md)
+
+-   :material-code-braces: __Powered by Type Hints__
+
+    Leverage Pydantic for schema validation, prompting control, less code, and IDE integration. 
+    
+    [:octicons-arrow-right-16: Learn more](https://docs.pydantic.dev/)
+
+-   :material-lightning-bolt: __Simplified LLM Interactions__
+
+    Support for [OpenAI](./hub/openai.md), [Anthropic](./hub/anthropic.md), [Google](./hub/google.md), [Vertex AI](./hub/vertexai.md), [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), [llama-cpp-python](./hub/llama-cpp-python.md), [Cohere](./hub/cohere.md), [LiteLLM](./hub/litellm.md). 
+    
+    [:octicons-arrow-right-16: See Hub](./hub/index.md)
+
+</div>
 
 ## Getting Started
 
@@ -49,9 +71,49 @@ instructor docs [QUERY]
 
 You can also check out our [cookbooks](./examples/index.md) and [concepts](./concepts/models.md) to learn more about how to use Instructor.
 
+??? info "Make sure you've installed the dependencies for your specific client"
+
+    To keep the bundle size small, `instructor` only ships with the OpenAI client. Before using the other clients and their respective `from_xx` method, make sure you've installed the dependencies following the instructions below.
+
+    1. Anthropic : `pip install "instructor[anthropic]"`
+    2. Google Generative AI: `pip install "instructor[google-generativeai]"`
+    3. Vertex AI: `pip install "instructor[vertexai]"`
+    4. Cohere: `pip install "instructor[cohere]"`
+    5. Litellm: `pip install "instructor[litellm]"`
+    6. Mistral: `pip install "instructor[mistralai]"`
+
 Now, let's see Instructor in action with a simple example:
 
 ### Using OpenAI
+
+??? info "Want to use OpenAI's Structured Output Response?"
+
+    We've added support for OpenAI's structured output response. With this, you'll get all the benefits of instructor you like with the constrained sampling from OpenAI.
+
+    ```python
+    from openai import OpenAI
+    from instructor import from_openai, Mode
+    from pydantic import BaseModel
+
+    client = from_openai(OpenAI(), mode=Mode.TOOLS_STRICT)
+
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+
+    resp = client.chat.completions.create(
+        response_model=User,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+        model="gpt-4o",
+    )
+    ```
 
 ```python
 import instructor
@@ -190,6 +252,96 @@ assert isinstance(resp, User)
 assert resp.name == "Jason"
 assert resp.age == 25
 ```
+
+??? info "Want to use Gemini's multi-part formats?"
+
+    Instructor supports both the gemini and the vertexai libraries. We've most recently added support for multi-part file formats using google's `gm.Part` objects. This allows you to pass in additional information to the LLM about the data you'd like to see.
+
+    Here are two examples of how to use multi-part formats with Instructor.
+
+    We can combine multiple `gm.Part` objects into a single list and combine them into a single message to be sent to the LLM. Under the hood, we'll convert them into the appropriate format for Gemini.
+
+    ```python
+    import instructor
+    import vertexai.generative_models as gm  # type: ignore
+    from pydantic import BaseModel, Field
+    import requests
+
+    client = instructor.from_vertexai(gm.GenerativeModel("gemini-1.5-pro-001"))
+    content = [
+        "Order Details:",
+        gm.Part.from_text("Customer: Alice"),
+        gm.Part.from_text("Items:"),
+        "Name: Laptop, Price: 999.99",
+        "Name: Mouse, Price: 29.99",
+    ]
+
+
+    class Item(BaseModel):
+        name: str
+        price: float
+
+
+    class Order(BaseModel):
+        items: list[Item] = Field(..., default_factory=list)
+        customer: str
+
+
+    resp = client.create(
+        response_model=Order,
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+    )
+
+    print(resp)
+    #> items=[Item(name='Laptop', price=999.99), Item(name='Mouse', price=29.99)] customer='Alice'
+    ```
+
+    This is also the same for multi-modal responses when we want to work with images. In this example, we'll ask the LLM to describe an image and pass in the image as a `gm.Part` object.
+
+    ```python
+    import instructor
+    import vertexai.generative_models as gm  # type: ignore
+    from pydantic import BaseModel
+    import requests
+
+    client = instructor.from_vertexai(
+        gm.GenerativeModel("gemini-1.5-pro-001"), mode=instructor.Mode.VERTEXAI_JSON
+    )
+    content = [
+        gm.Part.from_text("Count the number of objects in the image."),
+        gm.Part.from_data(
+            bytes(
+                requests.get(
+                    "https://img.taste.com.au/Oq97xT-Q/taste/2016/11/blueberry-scones-75492-1.jpeg"
+                ).content
+            ),
+            "image/jpeg",
+        ),
+    ]
+
+
+    class Description(BaseModel):
+        description: str
+
+
+    resp = client.create(
+        response_model=Description,
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+    )
+
+    print(resp)
+    #> description='Seven blueberry scones sit inside a metal pie plate.'
+    ```
 
 ### Using Litellm
 

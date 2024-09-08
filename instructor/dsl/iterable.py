@@ -17,7 +17,7 @@ class IterableBase:
     ) -> Generator[BaseModel, None, None]:  # noqa: ARG003
         json_chunks = cls.extract_json(completion, mode)
 
-        if mode == Mode.MD_JSON:
+        if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream(json_chunks)
 
         yield from cls.tasks_from_chunks(json_chunks, **kwargs)
@@ -86,6 +86,13 @@ class IterableBase:
                     yield chunk.delta.partial_json
                 if mode == Mode.GEMINI_JSON:
                     yield chunk.text
+                if mode == Mode.GEMINI_TOOLS:
+                    # Gemini seems to return the entire function_call and not a chunk?
+                    import json
+
+                    resp = chunk.candidates[0].content.parts[0].function_call
+
+                    yield json.dumps(type(resp).to_dict(resp)["args"])  # type:ignore
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()
@@ -94,7 +101,7 @@ class IterableBase:
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode == Mode.TOOLS:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             yield json_chunk[0].function.arguments
                     else:
@@ -123,7 +130,7 @@ class IterableBase:
                     elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode == Mode.TOOLS:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             yield json_chunk[0].function.arguments
                     else:

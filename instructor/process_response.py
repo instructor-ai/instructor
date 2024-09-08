@@ -10,8 +10,8 @@ from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
-from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
+from openai import pydantic_function_tool
 from pydantic import BaseModel, create_model
 import json
 import inspect
@@ -27,7 +27,6 @@ from typing_extensions import ParamSpec
 
 from instructor.mode import Mode
 
-from .utils import transform_to_gemini_prompt
 
 logger = logging.getLogger("instructor")
 
@@ -80,11 +79,6 @@ async def process_response_async(
         strict=strict,
         mode=mode,
     )
-
-    if isinstance(model, OpenAISchema):
-        validation_errors = await model.model_async_validate(validation_context)
-        if validation_errors:
-            raise AsyncValidationError(f"Validation errors: {validation_errors}")
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
@@ -152,12 +146,6 @@ def process_response(
         strict=strict,
         mode=mode,
     )
-
-    if isinstance(model, OpenAISchema):
-        if model.has_async_validators():
-            logging.warning(
-                "Async Validators will not run in a synchronous client. Please make sure to use an Async client"
-            )
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
@@ -249,6 +237,15 @@ def handle_response_model(
             Mode.warn_mode_functions_deprecation()
             new_kwargs["functions"] = [response_model.openai_schema]
             new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
+        elif mode == Mode.TOOLS_STRICT:
+            response_model_schema = pydantic_function_tool(response_model)
+            response_model_schema["function"]["strict"] = True
+            new_kwargs["tools"] = [response_model_schema]
+
+            new_kwargs["tool_choice"] = {
+                "type": "function",
+                "function": {"name": response_model_schema["function"]["name"]},
+            }
         elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
             new_kwargs["tools"] = [
                 {
@@ -263,6 +260,7 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
+
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
@@ -271,7 +269,7 @@ def handle_response_model(
                 As a genius expert, your task is to understand the content and provide
                 the parsed objects in json that match the following json_schema:\n
 
-                {json.dumps(response_model.model_json_schema(), indent=2)}
+                {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
 
                 Make sure to return an instance of the JSON, not the schema itself
                 """
@@ -356,19 +354,18 @@ def handle_response_model(
                 )
 
                 new_kwargs["system"] += f"""
-                You must only responsd in JSON format that adheres to the following schema:
+                You must only respond in JSON format that adheres to the following schema:
 
                 <JSON_SCHEMA>
-                {json.dumps(response_model.model_json_schema(), indent=2)}
+                {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
                 </JSON_SCHEMA>
                 """
                 new_kwargs["system"] = dedent(new_kwargs["system"])
             else:
                 new_kwargs["system"] += dedent(f"""
-                You must only responsd in JSON format that adheres to the following schema:
-
+                You must only respond in JSON format that adheres to the following schema:
                 <JSON_SCHEMA>
-                {json.dumps(response_model.model_json_schema(), indent=2)}
+                 {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
                 </JSON_SCHEMA>
                 """)
 
@@ -433,12 +430,15 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             assert (
                 "model" not in new_kwargs
             ), "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+
+            from .utils import update_gemini_kwargs
+
             message = dedent(
                 f"""
                 As a genius expert, your task is to understand the content and provide
                 the parsed objects in json that match the following json_schema:\n
 
-                {json.dumps(response_model.model_json_schema(), indent=2)}
+                {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
 
                 Make sure to return an instance of the JSON, not the schema itself
                 """
@@ -462,34 +462,23 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
                 "generation_config", {}
             ) | {"response_mime_type": "application/json"}
 
-            map_openai_args_to_gemini = {
-                "max_tokens": "max_output_tokens",
-                "temperature": "temperature",
-                "n": "candidate_count",
-                "top_p": "top_p",
-                "stop": "stop_sequences",
+            new_kwargs = update_gemini_kwargs(new_kwargs)
+
+        elif mode == Mode.GEMINI_TOOLS:
+            assert (
+                "model" not in new_kwargs
+            ), "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+            from .utils import update_gemini_kwargs
+
+            new_kwargs["tools"] = [response_model.gemini_schema]
+            new_kwargs["tool_config"] = {
+                "function_calling_config": {
+                    "mode": "ANY",
+                    "allowed_function_names": [response_model.__name__],
+                },
             }
 
-            # update gemini config if any params are set
-            for k, v in map_openai_args_to_gemini.items():
-                val = new_kwargs.pop(k, None)
-                if val == None:
-                    continue
-                new_kwargs["generation_config"][v] = val
-
-            # gemini has a different prompt format and params from other providers
-            new_kwargs["contents"] = transform_to_gemini_prompt(
-                new_kwargs.pop("messages")
-            )
-
-            # minimize gemini safety related errors - model is highly prone to false alarms
-            from google.generativeai.types import HarmCategory, HarmBlockThreshold
-
-            new_kwargs["safety_settings"] = new_kwargs.get("safety_settings", {}) | {
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-            }
+            new_kwargs = update_gemini_kwargs(new_kwargs)
         elif mode == Mode.VERTEXAI_TOOLS:
             from instructor.client_vertexai import vertexai_process_response
 

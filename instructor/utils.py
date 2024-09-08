@@ -12,6 +12,7 @@ from typing import (
     Protocol,
     TypeVar,
 )
+from pydantic import BaseModel
 import os
 
 from openai.types import CompletionUsage as OpenAIUsage
@@ -166,6 +167,14 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
         and message.function_call is not None
         and ret["content"]
     ):
+        if not isinstance(ret["content"], str):
+            response_message: str = ""
+            for content_message in ret["content"]:
+                if "text" in content_message:
+                    response_message += content_message["text"]
+                elif "refusal" in content_message:
+                    response_message += content_message["refusal"]
+            ret["content"] = response_message
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret
 
@@ -250,6 +259,78 @@ def transform_to_gemini_prompt(
         messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
 
     return messages_gemini
+
+
+def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
+    """
+    Map OpenAPI schema to Gemini properties: gemini function call schemas
+
+    Ref - https://ai.google.dev/api/python/google/generativeai/protos/Schema,
+    Note that `enum` requires specific `format` setting
+    """
+
+    import jsonref  # type: ignore
+
+    class FunctionSchema(BaseModel):
+        description: str | None = None
+        enum: list[str] | None = None
+        example: Any | None = None
+        format: str | None = None
+        nullable: bool | None = None
+        items: FunctionSchema | None = None
+        required: list[str] | None = None
+        type: str
+        properties: dict[str, FunctionSchema] | None = None
+
+    schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)  # type: ignore
+    schema.pop("$defs", "")
+
+    def add_enum_format(obj: dict[str, Any]) -> dict[str, Any]:
+        if isinstance(obj, dict):
+            new_dict: dict[str, Any] = {}
+            for key, value in obj.items():
+                new_dict[key] = add_enum_format(value)
+                if key == "enum":
+                    new_dict["format"] = "enum"
+            return new_dict
+        else:
+            return obj
+
+    schema = add_enum_format(schema)
+
+    return FunctionSchema(**schema).model_dump(exclude_none=True, exclude_unset=True)
+
+
+def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    if "generation_config" in kwargs:
+        map_openai_args_to_gemini = {
+            "max_tokens": "max_output_tokens",
+            "temperature": "temperature",
+            "n": "candidate_count",
+            "top_p": "top_p",
+            "stop": "stop_sequences",
+        }
+
+        # update gemini config if any params are set
+        for k, v in map_openai_args_to_gemini.items():
+            val = kwargs["generation_config"].pop(k, None)
+            if val == None:
+                continue
+            kwargs["generation_config"][v] = val
+
+    # gemini has a different prompt format and params from other providers
+    kwargs["contents"] = transform_to_gemini_prompt(kwargs.pop("messages"))
+
+    # minimize gemini safety related errors - model is highly prone to false alarms
+    from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
+
+    kwargs["safety_settings"] = kwargs.get("safety_settings", {}) | {
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    }
+
+    return kwargs
 
 
 def disable_pydantic_error_url():

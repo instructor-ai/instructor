@@ -92,3 +92,30 @@ def test_complex_nested_model(model, mode):
     assert {book.author for book in resp.books} == {"Jane Doe", "John Smith"}
     assert {book.genre for book in resp.books} == {"Fantasy", "Non-Fiction"}
     assert {book.isbn for book in resp.books} == {"1234567890", "0987654321"}
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_mixed_content_types(model, mode):
+    client = instructor.from_vertexai(gm.GenerativeModel(model), mode)
+    content = [
+        "Order Details:",
+        gm.Part.from_text("Customer: Alice"),
+        gm.Part.from_text("Items:"),
+        "Name: Laptop, Price: 999.99",
+        "Name: Mouse, Price: 29.99",
+    ]
+
+    resp = client.create(
+        response_model=Order,
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+    )
+
+    assert len(resp.items) == 2
+    assert {x.name.lower() for x in resp.items} == {"laptop", "mouse"}
+    assert {x.price for x in resp.items} == {999.99, 29.99}
+    assert resp.customer.lower() == "alice"
