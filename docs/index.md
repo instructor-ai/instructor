@@ -1,4 +1,4 @@
-# Instructor, Generating Structure from LLMs
+# Instructor, Generating Structured Outputs with LLMs
 
 _Structured outputs powered by llms. Designed for simplicity, transparency, and control._
 
