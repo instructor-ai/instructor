@@ -260,6 +260,29 @@ def handle_response_model(
                     "type": "function",
                     "function": {"name": response_model.openai_schema["name"]},
                 }
+        elif mode in {Mode.JSON_O1}:
+            # O1 doesn't accept system messages so you'll need to assert that
+            roles = [message["role"] for message in new_kwargs.get("messages", [])]
+            if "system" in roles:
+                raise ValueError("System messages are not supported For the O1 models")
+
+            message = dedent(
+                f"""
+                Understand the content and provide
+                the parsed objects in json that match the following json_schema:\n
+
+                {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+                Make sure to return an instance of the JSON, not the schema itself
+                """
+            )
+
+            new_kwargs["messages"].append(
+                {
+                    "role": "user",
+                    "content": message,
+                },
+            )
 
         elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
             # If its a JSON Mode we need to massage the prompt a bit
