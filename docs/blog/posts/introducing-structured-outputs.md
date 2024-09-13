@@ -179,7 +179,7 @@ print(resp)
 #> name='JASON' age=25
 ```
 
-This built-in retry logic allows for targetted correction to the generated response, ensuring that outputs are not only consistent with your schema but also corect for your use-case. This is invaluable in building reliable LLM systems.
+This built-in retry logic allows for targetted correction to the generated response, ensuring that outputs are not only consistent with your schema but also correct for your use-case. This is invaluable in building reliable LLM systems.
 
 ### Real-time Streaming Validation
 
