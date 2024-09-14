@@ -9,10 +9,10 @@ authors:
 
 Developers often face two key challenges when working with large context - Slow response times and high costs. This is especially true when we're making multiple of these calls over time, severely impacting the cost and latency of our applications. With Anthropic's new prompt caching feature, we can easily solve both of these issues.
 
-Since the new feature is still in beta, we'll need to perform a slight bit of modification to our usual code to make it work. We'll do a few things in this walkthrough.
+Since the new feature is still in beta, we'll need to perform a slight bit of modification to our usual code to make it work. We'll do a few things in this walkthrough
 
 1. We'll create a new Anthropic client that uses the new `beta.prompt_caching` method to handle prompt caching
-2. We'll then load in a large corpus of text from the Pride and Prejudice novel
+2. We'll then load in an excerpt from the Pride and Prejudice novel
 3. We'll then show you how to validate that you're using prompt caching accurately
 
 At the end of this article, you'll have a working example of the prompt caching feature and a better understanding of how it can be used to improve the cost and latency of your applications.
