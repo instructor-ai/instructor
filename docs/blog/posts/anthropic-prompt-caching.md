@@ -257,7 +257,6 @@ This is the entire code for the example above.
 from instructor import Instructor, Mode, patch
 from anthropic import Anthropic
 from pydantic import BaseModel
-import time
 
 client = Instructor(
     client=Anthropic(),
