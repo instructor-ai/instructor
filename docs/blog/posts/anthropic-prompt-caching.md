@@ -9,13 +9,9 @@ authors:
 
 Developers often face two key challenges when working with large context - Slow response times and high costs. This is especially true when we're making multiple of these calls over time, severely impacting the cost and latency of our applications. With Anthropic's new prompt caching feature, we can easily solve both of these issues.
 
-Since the new feature is still in beta, we'll need to perform a slight bit of modification to our usual code to make it work. We'll do a few things in this walkthrough
+Since the new feature is still in beta, we're going to wait for it to be generally avaliable before we integrate it into instructor. In the meantime, we've put together a quickstart guide on how to use the feature in your own applications.
 
-1. We'll create a new Anthropic client that uses the new `beta.prompt_caching` method to handle prompt caching
-2. We'll then load in an excerpt from the Pride and Prejudice novel
-3. We'll then show you how to validate that you're using prompt caching accurately
-
-At the end of this article, you'll have a working example of the prompt caching feature and a better understanding of how it can be used to improve the cost and latency of your applications.
+<!-- more -->
 
 !!! warning "Caching Limitations"
 
@@ -24,6 +20,8 @@ At the end of this article, you'll have a working example of the prompt caching 
     - **Minimum cache size**: For Claude Haiku, your cached content needs to be a minimum of 2048 tokens. For Claude Sonnet, the minimum is 1024 tokens.
 
     - **Tool definitions**: Currently, tool definitions cannot be cached. However, support for caching tool definitions is planned for a future update.
+
+    - **Upgrade Anthropic**: You must upgrade to Anthropic version `0.34.0` or later to use prompt caching. Make sure that you're using the latest version of the Anthropic SDK.
 
     Keep these limitations in mind when implementing prompt caching in your applications.
 
@@ -242,14 +240,39 @@ You'll notice that the usage information is different than what we've seen befor
 When we run this, you'll notice that we get the following output.
 
 ```bash
-PromptCachingBetaUsage(cache_creation_input_tokens=2856, cache_read_input_tokens=0, input_tokens=30, output_tokens=126)
-name='Elizabeth Bennet' description="Elizabeth Bennet is the protagonist of Jane Austen's novel Pride and Prejudice. She is described as having a lively wit and independent spirit, and goes through a gradual transformation from initial prejudice against Mr. Darcy to eventually falling in love with him. Elizabeth is considered one of Austen's most iconic and well-developed characters."
+PromptCachingBetaUsage(
+    cache_creation_input_tokens=2856,
+    cache_read_input_tokens=0,
+    input_tokens=30,
+    output_tokens=119
+)
 
-PromptCachingBetaUsage(cache_creation_input_tokens=0, cache_read_input_tokens=2856, input_tokens=30, output_tokens=79)
-name='Elizabeth Bennet' description='The protagonist of the novel Pride and Prejudice, described as being characterized by her "wit, intelligence, and strength of character".
+Character(
+    name='Elizabeth Bennet',
+    description="The protagonist of Jane Austen's novel Pride and Prejudice, who
+undergoes a transformation from initially disliking Mr. Darcy to eventually falling
+in love with him. The passage describes Elizabeth as a complex, nuanced character,
+noting how her feelings towards Darcy evolve naturally over the course of the story."
+)
+
+PromptCachingBetaUsage(
+    cache_creation_input_tokens=0,
+    cache_read_input_tokens=2856,
+    input_tokens=30,
+    output_tokens=93
+)
+
+Character(
+    name='Mrs. Norris',
+    description='A character from Jane Austen\'s novel Mansfield Park, described as
+having "matchless" scenes and being one of the characters that has secured a
+considerable party of admirers for the novel.'
+)
 ```
 
-You'll notice that in the first request, we created `2856` tokens and in the second request, we read `2856` tokens. This is because the book content was cached after the first request and reused in the second request. When you have a larger context window, this can save you a significant amount of money and time because your requests will return a lot faster too.
+You'll notice that in the first request, we created `2856` tokens and in the second request, we read `2856` tokens.
+
+In other words, `book_content` was cached after the first request and reused in the second request. When you have a larger context window, this can save you a significant amount of money and time because your requests will return a lot faster too.
 
 This is the entire code for the example above.
 
