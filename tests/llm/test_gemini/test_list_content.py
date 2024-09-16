@@ -1,9 +1,6 @@
-from itertools import product
-import pytest
 import instructor
 import google.generativeai as genai
 from pydantic import BaseModel
-from .util import models, modes
 
 
 class User(BaseModel):
