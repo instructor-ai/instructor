@@ -1,12 +1,28 @@
 # Structured Outputs with Ollama
 
-Open-source LLMS are gaining popularity, and with the release of Ollama's OpenAI compatibility layer, it has become possible to obtain structured outputs using JSON schema.
+Open-source Large Language Models (LLMs) are rapidly gaining popularity in the AI community. With the recent release of Ollama's OpenAI compatibility layer, it has become possible to obtain structured outputs using JSON schema from these open-source models. This development opens up exciting possibilities for developers and researchers alike.
 
-By the end of this blog post, you will learn how to effectively utilize instructor with Ollama. But before we proceed, let's first explore the concept of patching.
+In this blog post, we'll explore how to effectively utilize the Instructor library with Ollama to harness the power of structured outputs with [Pydantic models](../concepts/models.md). We'll cover everything from setup to implementation, providing you with practical insights and code examples.
+
+## Why use Instructor?
+
+Instructor offers several key benefits:
+
+- :material-code-tags: **Simple API with Full Prompt Control**: Instructor provides a straightforward API that gives you complete ownership and control over your prompts. This allows for fine-tuned customization and optimization of your LLM interactions. [:octicons-arrow-right-16: Explore Concepts](../concepts/models.md)
+
+- :material-refresh: **Reasking and Validation**: Automatically reask the model when validation fails, ensuring high-quality outputs. Leverage Pydantic's validation for robust error handling. [:octicons-arrow-right-16: Learn about Reasking](../concepts/reask_validation.md)
+
+- :material-repeat-variant: **Streaming Support**: Stream partial results and iterables with ease, allowing for real-time processing and improved responsiveness in your applications. [:octicons-arrow-right-16: Learn about Streaming](../concepts/partial.md)
+
+- :material-code-braces: **Powered by Type Hints**: Leverage Pydantic for schema validation, prompting control, less code, and IDE integration. [:octicons-arrow-right-16: Learn more](https://docs.pydantic.dev/)
+
+- :material-lightning-bolt: **Simplified LLM Interactions**: Support for various LLM providers including OpenAI, Anthropic, Google, Vertex AI, Mistral/Mixtral, Anyscale, Ollama, llama-cpp-python, Cohere, and LiteLLM. [:octicons-arrow-right-16: See Hub](../hub/index.md)
+
+For more details on these features, check out the [Concepts](../concepts/models.md) section of the documentation.
 
 ## Patching
 
-Instructor's patch enhances an openai api with the following features:
+Instructor's [patch](../concepts/patching.md) enhances an openai api with the following features:
 
 - `response_model` in `create` calls that returns a pydantic model
 - `max_retries` in `create` calls that retries the call if it fails by using a backoff strategy
@@ -75,3 +91,21 @@ print(resp.model_dump_json(indent=2))
 }
 """
 ```
+
+This example demonstrates how to use Instructor with Ollama, a local LLM server, to generate structured outputs. By leveraging Instructor's capabilities, we can easily extract structured information from the LLM's responses, making it simpler to work with the generated data in our applications.
+
+## Further Reading
+
+To explore more about Instructor and its various applications, consider checking out the following resources:
+
+1. [Why use Instructor?](../why.md) - Learn about the benefits and use cases of Instructor.
+
+2. [Concepts](../concepts/models.md) - Dive deeper into the core concepts of Instructor, including models, retrying, and validation.
+
+3. [Hub](../hub/index.md) - Explore the Instructor Hub for more examples and integrations with various LLM providers.
+
+4. [Tutorials](../tutorials/1-introduction.ipynb) - Step-by-step tutorials to help you get started with Instructor.
+
+5. [Learn Prompting](../prompting/index.md) - Techniques and strategies for effective prompt engineering with Instructor.
+
+By exploring these resources, you'll gain a comprehensive understanding of Instructor's capabilities and how to leverage them in your projects.
