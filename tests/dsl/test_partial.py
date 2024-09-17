@@ -71,10 +71,31 @@ def test_partial():
         "type": "object",
     }, "Partial model JSON schema has changed"
 
-    # Handle any leading whitespace from the model
-    for model in partial.model_from_chunks(['\n', '\t', ' ', '{"b": {"b": 1}}']):
-        assert model.model_dump() == {"a": None, "b": {"b": 1}}
+    
 
+def test_partial_with_whitespace():
+    partial = Partial[SamplePartial]
+    final_model = None
+    # Handle any leading whitespace from the model
+    for model in partial.model_from_chunks(["\n", "\t", " ", '{"b": {"b": 1}}']):
+        final_model = model
+
+    assert final_model.model_dump() == {"a": None, "b": {"b": 1}}
+
+@pytest.mark.asyncio
+async def test_async_partial_with_whitespace():
+    partial = Partial[SamplePartial]
+    final_model = None
+    # Handle any leading whitespace from the model
+    async def async_generator():
+        for chunk in ["\n", "\t", " ", '{"b": {"b": 1}}']:
+            yield chunk
+
+    async for model in partial.model_from_chunks_async(async_generator()):
+        final_model = model
+
+    assert final_model.model_dump() == {"a": None, "b": {"b": 1}}
+    
 
 def test_summary_extraction():
     class Summary(BaseModel):
