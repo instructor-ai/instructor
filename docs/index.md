@@ -222,7 +222,9 @@ assert resp.age == 25
 
     The `google.generativeai` library has a different API than the `vertexai` library. But, using `instructor`, working with multi-modal data is easy. Here's a quick example of how to use an Audio file with `google-generativeai`. We've used this [recording](https://storage.googleapis.com/generativeai-downloads/data/State_of_the_Union_Address_30_January_1961.mp3) that's taken from the [Google Generative AI cookbook](https://github.com/google-gemini/cookbook/blob/main/quickstarts/Audio.ipynb)
 
-    Let's see a complete example of how to upload the audio file with `google-generativeai` and then pass it to Gemini .
+    We'll show you how to do by demonstrating three different examples of working with audio files with `instructor`.
+
+    Firstly, we can upload the entire audio file and pass it into the LLM as a normal message.
 
     ```python
     import instructor
@@ -275,7 +277,8 @@ assert resp.age == 25
     2. Use `genai.upload_file` to upload your file. If you've already uploaded the file, you can get it by using `genai.get_file`
     3. Pass in the file object as any normal user message
 
-    We also support passing in these as inline objects. Here's an example of how to do that with a audio segment snippet from the same recording.
+
+    Secondly, we can also pass in a audio segment as a normal message as an inline object as shown below. Here's an example of how to do that with a audio segment snippet from the same recording.
 
     ```python
     import instructor
@@ -337,6 +340,57 @@ assert resp.age == 25
     1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
     2. Use `AudioSegment.from_mp3` to load your audio file.
     3. Pass in the audio data as bytes to the `data` field using the content as a dictionary with the right content `mime_type`  and `data` as bytes
+
+    We also support passing in these as a single list as per the documentation for `google-generativeai`. Here's how to do so with a audio segment snippet from the same recording.
+
+    ```python
+    import instructor
+    import google.generativeai as genai
+    from pydantic import BaseModel
+
+
+    client = instructor.from_gemini(
+        client=genai.GenerativeModel(
+            model_name="models/gemini-1.5-flash-latest",
+        ),
+        mode=instructor.Mode.GEMINI_JSON,  # (1)!
+    )
+
+    mp3_file = genai.upload_file("./sample.mp3")  # (2)!
+
+
+    class Description(BaseModel):
+        description: str
+
+
+    content = [
+        "Summarize what's happening in this audio file and who the main speaker is",
+        mp3_file,  # (3)!
+    ]
+
+    resp = client.create(
+        response_model=Description,
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            }
+        ],
+    )
+
+    print(resp)
+    # > description='President John F. Kennedy delivers State of the Union Address to \
+    # > Congress. He outlines national challenges: economic struggles, debt concerns, \
+    # > communism threat, Cold War. Proposes solutions: increased military spending, \
+    # > new economic programs, expanded foreign aid. Calls for active U.S. role in \
+    # > international affairs. Emphasizes facing challenges, avoiding panic, and \
+    # > working together for a better future.'
+
+    ```
+
+    1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
+    2. Upload the file using `genai.upload_file` or get the file using `genai.get_file`
+    3. Pass in the content as a list containing the normal user message and the file object.
 
 #### Vertex AI
 
