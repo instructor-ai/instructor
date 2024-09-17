@@ -10,13 +10,15 @@ This tutorial showcases how to implement text classification tasks—specificall
 
 ### Defining the Structures
 
-For single-label classification, we define a Pydantic model with a Literal field for the possible labels.
+For single-label classification, we define a Pydantic model with a [Literal](../concepts/prompting.md#literals) field for the possible labels.
 
 !!! note "Literals vs Enums"
     We prefer using `Literal` types over `enum` for classification labels. Literals provide better type checking and are more straightforward to use with Pydantic models.
 
 !!! important "Few-Shot Examples"
     Including few-shot examples in the model's docstring is crucial for improving the model's classification accuracy. These examples guide the AI in understanding the task and expected outputs.
+
+    If you want to learn more prompting tips check out our [prompting guide](../prompting/index.md)
 
 ```python
 from pydantic import BaseModel, Field
