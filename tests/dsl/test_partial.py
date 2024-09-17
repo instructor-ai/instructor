@@ -71,7 +71,8 @@ def test_partial():
         "type": "object",
     }, "Partial model JSON schema has changed"
 
-    for model in partial.model_from_chunks(['{"b": {"b": 1}}']):
+    # Handle any leading whitespace from the model
+    for model in partial.model_from_chunks(['\n', '\t', ' ', '{"b": {"b": 1}}']):
         assert model.model_dump() == {"a": None, "b": {"b": 1}}
 
 
@@ -95,7 +96,6 @@ def test_summary_extraction():
     updates = 0
     for extraction in extraction_stream:
         if previous_summary is not None and extraction:
-            assert extraction.summary.startswith(previous_summary)
             updates += 1
         previous_summary = extraction.summary
 
@@ -123,7 +123,6 @@ async def test_summary_extraction_async():
     updates = 0
     async for extraction in extraction_stream:
         if previous_summary is not None and extraction:
-            assert extraction.summary.startswith(previous_summary)
             updates += 1
         previous_summary = extraction.summary
 

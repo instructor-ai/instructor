@@ -105,7 +105,7 @@ class PartialBase(Generic[T_Model]):
     ) -> Generator[T_Model, None, None]:
         json_chunks = cls.extract_json(completion, mode)
 
-        if mode == Mode.MD_JSON:
+        if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream(json_chunks)
 
         yield from cls.model_from_chunks(json_chunks, **kwargs)
@@ -129,9 +129,7 @@ class PartialBase(Generic[T_Model]):
         partial_model = cls.get_partial_model()
         for chunk in json_chunks:
             potential_object += chunk
-            obj = from_json(
-                (potential_object or "{}").encode(), partial_mode="on"
-            )
+            obj = from_json((potential_object.strip() or "{}").encode(), partial_mode="on")
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
@@ -143,9 +141,7 @@ class PartialBase(Generic[T_Model]):
         partial_model = cls.get_partial_model()
         async for chunk in json_chunks:
             potential_object += chunk
-            obj = from_json(
-                (potential_object or "{}").encode(), partial_mode="on"
-            )
+            obj = from_json((potential_object.strip() or "{}").encode(), partial_mode="on")
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
@@ -162,6 +158,12 @@ class PartialBase(Generic[T_Model]):
                     yield chunk.delta.partial_json
                 if mode == Mode.GEMINI_JSON:
                     yield chunk.text
+                if mode == Mode.GEMINI_TOOLS:
+                    # Gemini seems to return the entire function_call and not a chunk?
+                    import json
+
+                    resp = chunk.candidates[0].content.parts[0].function_call
+                    yield json.dumps(type(resp).to_dict(resp)["args"])  # type:ignore
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()

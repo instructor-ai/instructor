@@ -15,7 +15,11 @@ from pydantic import (
 
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
-from instructor.utils import classproperty, extract_json_from_codeblock
+from instructor.utils import (
+    classproperty,
+    extract_json_from_codeblock,
+    map_to_gemini_function_schema,
+)
 
 
 T = TypeVar("T")
@@ -77,25 +81,16 @@ class OpenAISchema(BaseModel):
             "input_schema": cls.model_json_schema(),
         }
 
-    def has_async_validators(self):
-        has_validators = (
-            len(self.__class__.get_async_validators()) > 0
-            or len(self.get_async_model_validators()) > 0
+    @classproperty
+    def gemini_schema(cls) -> Any:
+        import google.generativeai.types as genai_types
+
+        function = genai_types.FunctionDeclaration(
+            name=cls.openai_schema["name"],
+            description=cls.openai_schema["description"],
+            parameters=map_to_gemini_function_schema(cls.openai_schema["parameters"]),
         )
-
-        for _, attribute_value in self.__dict__.items():
-            if isinstance(attribute_value, OpenAISchema):
-                has_validators = (
-                    has_validators or attribute_value.has_async_validators()
-                )
-
-                # List of items too
-            if isinstance(attribute_value, (list, set, tuple)):
-                for item in attribute_value:
-                    if isinstance(item, OpenAISchema):
-                        has_validators = has_validators or item.has_async_validators()
-
-        return has_validators
+        return function
 
     @classmethod
     def from_response(
@@ -123,8 +118,8 @@ class OpenAISchema(BaseModel):
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
 
-        if mode == Mode.VERTEXAI_TOOLS:
-            return cls.parse_vertexai_tools(completion, validation_context, strict)
+        if mode in {Mode.VERTEXAI_TOOLS, Mode.GEMINI_TOOLS}:
+            return cls.parse_vertexai_tools(completion, validation_context)
 
         if mode == Mode.VERTEXAI_JSON:
             return cls.parse_vertexai_json(completion, validation_context, strict)
@@ -134,6 +129,9 @@ class OpenAISchema(BaseModel):
 
         if mode == Mode.GEMINI_JSON:
             return cls.parse_gemini_json(completion, validation_context, strict)
+
+        if mode == Mode.GEMINI_TOOLS:
+            return cls.parse_gemini_tools(completion, validation_context, strict)
 
         if mode == Mode.COHERE_JSON_SCHEMA:
             return cls.parse_cohere_json_schema(completion, validation_context, strict)
@@ -148,7 +146,7 @@ class OpenAISchema(BaseModel):
         if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.TOOLS_STRICT}:
             return cls.parse_tools(completion, validation_context, strict)
 
-        if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
+        if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.JSON_O1}:
             return cls.parse_json(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
@@ -259,14 +257,13 @@ class OpenAISchema(BaseModel):
         cls: type[BaseModel],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
     ) -> BaseModel:
-        strict = False
         tool_call = completion.candidates[0].content.parts[0].function_call.args  # type: ignore
         model = {}
         for field in tool_call:  # type: ignore
             model[field] = tool_call[field]
-        return cls.model_validate(model, context=validation_context, strict=strict)
+        # We enable strict=False because the conversion from protobuf -> dict often results in types like ints being cast to floats, as a result in order for model.validate to work we need to disable strict mode.
+        return cls.model_validate(model, context=validation_context, strict=False)
 
     @classmethod
     def parse_vertexai_json(
@@ -317,12 +314,15 @@ class OpenAISchema(BaseModel):
         strict: Optional[bool] = None,
     ) -> BaseModel:
         message = completion.choices[0].message
+        # this field seems to be missing when using instructor with some other tools (e.g. litellm)
+        # trying to fix this by adding a check
+        if hasattr(message, "refusal"):
+            assert (
+                message.refusal is None
+            ), f"Unable to generate a response due to {message.refusal}"
         assert (
             len(message.tool_calls or []) == 1
         ), "Instructor does not support multiple tool calls, use List[Model] instead."
-        assert (
-            message.refusal is None
-        ), f"Unable to generate a response due to {message.refusal}"
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]

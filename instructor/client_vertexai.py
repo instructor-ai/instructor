@@ -34,13 +34,34 @@ def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
     return tool
 
 
-def vertexai_message_parser(message: dict[str, str]) -> gm.Content:
-    return gm.Content(
-        role=message["role"], parts=[gm.Part.from_text(message["content"])]
-    )
+def vertexai_message_parser(
+    message: dict[str, str | gm.Part | list[str | gm.Part]],
+) -> gm.Content:
+    if isinstance(message["content"], str):
+        return gm.Content(
+            role=message["role"],  # type:ignore
+            parts=[gm.Part.from_text(message["content"])],
+        )
+    elif isinstance(message["content"], list):
+        parts: list[gm.Part] = []
+        for item in message["content"]:
+            if isinstance(item, str):
+                parts.append(gm.Part.from_text(item))
+            elif isinstance(item, gm.Part):
+                parts.append(item)
+            else:
+                raise ValueError(f"Unsupported content type in list: {type(item)}")
+        return gm.Content(
+            role=message["role"],  # type:ignore
+            parts=parts,
+        )
+    else:
+        raise ValueError("Unsupported message content type")
 
 
-def _vertexai_message_list_parser(messages: list[dict[str, str]]) -> list[gm.Content]:
+def _vertexai_message_list_parser(
+    messages: list[dict[str, str | gm.Part | list[str | gm.Part]]],
+) -> list[gm.Content]:
     contents = [
         vertexai_message_parser(message) if isinstance(message, dict) else message
         for message in messages
@@ -65,7 +86,7 @@ def vertexai_function_response_parser(
 
 def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
-    contents = _vertexai_message_list_parser(messages)
+    contents = _vertexai_message_list_parser(messages)  # type: ignore
 
     tool = _create_vertexai_tool(model=model)
 
@@ -79,7 +100,7 @@ def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
 
 def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
-    contents = _vertexai_message_list_parser(messages)
+    contents = _vertexai_message_list_parser(messages)  # type: ignore
 
     config: dict[str, Any] | None = _kwargs.pop("generation_config", None)
 
