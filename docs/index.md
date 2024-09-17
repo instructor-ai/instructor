@@ -19,6 +19,48 @@ It stands out for its simplicity, transparency, and user-centric design, built o
 
 <div class="grid cards" markdown>
 
+-   :material-code-tags: __Simple API with Full Prompt Control__
+
+    Instructor provides a straightforward API that gives you complete ownership and control over your prompts. This allows for fine-tuned customization and optimization of your LLM interactions.
+
+    [:octicons-arrow-right-16: Explore Concepts](./concepts/models.md)
+
+-   :material-translate: __Multi-Language Support__
+
+    Simplify structured data extraction from LLMs with type hints and validation.
+
+    [:simple-python: Python](https://python.useinstructor.com) · [:simple-typescript: TypeScript](https://js.useinstructor.com) · [:simple-ruby: Ruby](https://ruby.useinstructor.com) · [:simple-go: Go](https://go.useinstructor.com) · [:simple-elixir: Elixir](https://hex.pm/packages/instructor) · [:simple-rust: Rust](https://rust.useinstructor.com)
+
+-   :material-refresh: __Reasking and Validation__
+
+    Automatically reask the model when validation fails, ensuring high-quality outputs. Leverage Pydantic's validation for robust error handling.
+
+    [:octicons-arrow-right-16: Learn about Reasking](./concepts/reask_validation.md)
+
+-   :material-repeat-variant: __Streaming Support__
+
+    Stream partial results and iterables with ease, allowing for real-time processing and improved responsiveness in your applications.
+
+    [:octicons-arrow-right-16: Learn about Streaming](./concepts/partial.md)
+
+-   :material-code-braces: __Powered by Type Hints__
+
+    Leverage Pydantic for schema validation, prompting control, less code, and IDE integration. 
+    
+    [:octicons-arrow-right-16: Learn more](https://docs.pydantic.dev/)
+
+-   :material-lightning-bolt: __Simplified LLM Interactions__
+
+    Support for [OpenAI](./hub/openai.md), [Anthropic](./hub/anthropic.md), [Google](./hub/google.md), [Vertex AI](./hub/vertexai.md), [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), [llama-cpp-python](./hub/llama-cpp-python.md), [Cohere](./hub/cohere.md), [LiteLLM](./hub/litellm.md). 
+    
+    [:octicons-arrow-right-16: See Hub](./hub/index.md)
+
+</div>
+
+## Getting Started
+
+<div class="grid cards" markdown>
+
 - :material-code-tags: **Simple API with Full Prompt Control**
 
   Instructor provides a straightforward API that gives you complete ownership and control over your prompts. This allows for fine-tuned customization and optimization of your LLM interactions.
