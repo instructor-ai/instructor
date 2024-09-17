@@ -239,15 +239,16 @@ class classproperty(Generic[R_co]):
         return self.cproperty(cls)
 
 
-def get_message_content(message: ChatCompletionMessageParam) -> list[str]:
+def get_message_content(message: ChatCompletionMessageParam) -> list[Any]:
+    content = message.get("content", "")
     try:
-        if isinstance(message["content"], list):
-            return message["content"]
+        if isinstance(content, list):
+            return content
         else:
-            return [message["content"]]
+            return [content]
     except Exception as e:
         logging.debug(f"Error getting message content: {e}")
-        return [message["content"]]
+        return [content]
 
 
 def transform_to_gemini_prompt(
