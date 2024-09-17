@@ -13,12 +13,18 @@ This tutorial showcases how to implement text classification tasks—specificall
 For single-label classification, we define a Pydantic model with a [Literal](../concepts/prompting.md#literals) field for the possible labels.
 
 !!! note "Literals vs Enums"
+
     We prefer using `Literal` types over `enum` for classification labels. Literals provide better type checking and are more straightforward to use with Pydantic models.
 
 !!! important "Few-Shot Examples"
+
     Including few-shot examples in the model's docstring is crucial for improving the model's classification accuracy. These examples guide the AI in understanding the task and expected outputs.
 
     If you want to learn more prompting tips check out our [prompting guide](../prompting/index.md)
+
+!!! note "Chain of Thought"
+
+    Using [Chain of Thought](../concepts/prompting.md#chain-of-thought) has been shown to improve the quality of the predictions by ~ 10%
 
 ```python
 from pydantic import BaseModel, Field
@@ -43,6 +49,10 @@ class ClassificationResponse(BaseModel):
     - "Increase your followers by 10000 overnight!": SPAM
     """
 
+    chain_of_thought: str = Field(
+        ...,
+        description="The chain of thought that led to the prediction.",
+    )
     label: Literal["SPAM", "NOT_SPAM"] = Field(
         ...,
         description="The predicted class label.",
@@ -105,6 +115,11 @@ class MultiClassPrediction(BaseModel):
     - "When do you close for holidays?": ["GENERAL_QUERY"]
     - "My payment didn't go through and now I can't log in": ["BILLING", "TECH_ISSUE"]
     """
+
+    chain_of_thought: str = Field(
+        ...,
+        description="The chain of thought that led to the prediction.",
+    )
 
     class_labels: List[Literal["TECH_ISSUE", "BILLING", "GENERAL_QUERY"]] = Field(
         ...,
