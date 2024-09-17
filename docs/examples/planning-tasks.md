@@ -1,6 +1,6 @@
-# Example: Planning and Executing a Query Plan
+# Planning and Executing a Query Plan
 
-This example demonstrates how to use the OpenAI Function Call ChatCompletion model to plan and execute a query plan in a question-answering system. By breaking down a complex question into smaller sub-questions with defined dependencies, the system can systematically gather the necessary information to answer the main question.
+This example demonstrates how to use the OpenAI Function Call ChatCompletion model to plan and execute a query plan in a question-answering system. By breaking down a complex question into smaller sub-questions with defined dependencies using [lists](../concepts/lists.md), the system can systematically gather the necessary information to answer the main question similar to [knowledge graph extraction](../examples/knowledge_graph.md).
 
 !!! tips "Motivation"
 
@@ -25,13 +25,6 @@ from typing import List
 from pydantic import Field, BaseModel
 
 
-class QueryType(str, enum.Enum):
-    """Enumeration representing the types of queries that can be asked to a question answer system."""
-
-    SINGLE_QUESTION = "SINGLE"
-    MERGE_MULTIPLE_RESPONSES = "MERGE_MULTIPLE_RESPONSES"
-
-
 class Query(BaseModel):
     """Class representing a single question in a query plan."""
 
@@ -44,8 +37,8 @@ class Query(BaseModel):
         default_factory=list,
         description="List of sub questions that need to be answered before asking this question",
     )
-    node_type: QueryType = Field(
-        default=QueryType.SINGLE_QUESTION,
+    node_type: Literal["SINGLE", "MERGE_MULTIPLE_RESPONSES"] = Field(
+        default="SINGLE",
         description="Type of question, either a single question or a multi-question merge",
     )
 
@@ -149,11 +142,15 @@ In the above code, we define a `query_planner` function that takes a question as
 
 ## Conclusion
 
-In this example, we demonstrated how to use the OpenAI Function Call `ChatCompletion` model to plan and execute a query plan using a question-answering system. We defined the necessary structures using Pydantic, created a query planner function.
+In this example, we demonstrated how to use the OpenAI Function Call `ChatCompletion` model to plan a query using a question-answering system. We defined the necessary structures using Pydantic and created a query planner function that generates a structured plan for answering complex questions.
 
-If you want to see multiple versions of this style of code, please visit:
+The query planner breaks down the main question into smaller, manageable sub-questions, establishing dependencies between them. This approach allows for a systematic and organized way to tackle multi-step queries.
 
-1. [query planning example](https://github.com/jxnl/instructor/blob/main/examples/query_planner_execution/query_planner_execution.py)
-2. [task planning with topo sort](https://github.com/jxnl/instructor/blob/main/examples/task_planner/task_planner_topological_sort.py)
+For more advanced implementations and variations of this concept, you can explore:
 
-Feel free to modify the code to fit your specific use case and explore other possibilities of using the OpenAI Function Call model to plan and execute complex workflows.
+1. [Query planning and execution example](https://github.com/jxnl/instructor/blob/main/examples/query_planner_execution/query_planner_execution.py)
+2. [Task planning with topological sort](https://github.com/jxnl/instructor/blob/main/examples/task_planner/task_planner_topological_sort.py)
+
+These examples provide additional insights into how you can leverage structured outputs for complex query planning and task management.
+
+Feel free to adapt this code to your specific use cases and explore the possibilities of using OpenAI Function Calls to plan and structure complex workflows in your applications.
