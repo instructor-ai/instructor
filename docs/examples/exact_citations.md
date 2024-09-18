@@ -1,10 +1,11 @@
 # Example: Answering Questions with Validated Citations
 
-For the full code example check out [examples/citation_fuzzy_match.py](https://github.com/jxnl/instructor/blob/main/examples/citation_with_extraction/citation_fuzzy_match.py)
+For the full code example, check out [examples/citation_fuzzy_match.py](https://github.com/jxnl/instructor/blob/main/examples/citation_with_extraction/citation_fuzzy_match.py)
 
 ## Overview
 
-This example shows how to use Instructor with validators to not only add citations to answers generated but also prevent hallucinations by ensuring that every statement made by the LLM is backed up by a direct quote from the context provided, and that those quotes exist!.Two Python classes, `Fact` and `QuestionAnswer`, are defined to encapsulate the information of individual facts and the entire answer, respectively.
+This example shows how to use Instructor with validators to not only add citations to answers generated but also prevent hallucinations by ensuring that every statement made by the LLM is backed up by a direct quote from the context provided, and that those quotes exist!  
+Two Python classes, `Fact` and `QuestionAnswer`, are defined to encapsulate the information of individual facts and the entire answer, respectively.
 
 ## Data Structures
 
