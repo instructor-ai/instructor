@@ -32,7 +32,7 @@ anthropic = { version = "^0.34.0", optional = true }
 xmltodict = { version = "^0.13.0", optional = true }
 groq = { version = "^0.4.2", optional = true }
 cohere = { version = "^5.1.8", optional = true }
-mistralai = { version = "^0.1.8", optional = true }
+mistralai = { version = "^1.0.3", optional = true }
 google-generativeai = { version = "^0.5.4", optional = true }
 google-cloud-aiplatform = { version = "^1.53.0", optional = true }
 jsonref = { version = "^1.1.0", optional = true }
@@ -96,7 +96,7 @@ xmltodict = "^0.13.0"
 groq = "^0.4.2"
 phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
-mistralai = "^0.1.8"
+mistralai = "^1.0.3"
 
 [tool.poetry.group.litellm.dependencies]
 litellm = "^1.35.31"

@@ -6,7 +6,7 @@ from vertexai.preview.generative_models import ToolConfig  # type: ignore
 import vertexai.generative_models as gm  # type: ignore
 from pydantic import BaseModel
 import instructor
-import jsonref  # type: ignore
+import jsonref
 
 
 def _create_gemini_json_schema(model: BaseModel):
