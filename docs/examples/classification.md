@@ -1,6 +1,6 @@
-# Example: Text Classification using OpenAI and Pydantic
+# Text Classification using OpenAI and Pydantic
 
-This tutorial showcases how to implement text classification tasks—specifically, single-label and multi-label classifications—using the OpenAI API, Python's **`enum`** module, and Pydantic models.
+This tutorial showcases how to implement text classification tasks—specifically, single-label and multi-label classifications—using the OpenAI API and Pydantic models. If you want to see full examples check out the hub examples for [single classification](../hub/single_classification.md) and [multi classification](../hub/multiple_classification.md)
 
 !!! tips "Motivation"
 
@@ -10,33 +10,25 @@ This tutorial showcases how to implement text classification tasks—specificall
 
 ### Defining the Structures
 
-For single-label classification, we first define an **`enum`** for possible labels and a Pydantic model for the output.
+For single-label classification, we define a Pydantic model with a [Literal](../concepts/prompting.md#literals) field for the possible labels.
+
+!!! note "Literals vs Enums"
+
+    We prefer using `Literal` types over `enum` for classification labels. Literals provide better type checking and are more straightforward to use with Pydantic models.
+
+!!! important "Few-Shot Examples"
+
+    Including few-shot examples in the model's docstring is crucial for improving the model's classification accuracy. These examples guide the AI in understanding the task and expected outputs.
+
+    If you want to learn more prompting tips check out our [prompting guide](../prompting/index.md)
+
+!!! note "Chain of Thought"
+
+    Using [Chain of Thought](../concepts/prompting.md#chain-of-thought) has been shown to improve the quality of the predictions by ~ 10%
 
 ```python
-import enum
-from pydantic import BaseModel
-
-
-class Labels(str, enum.Enum):
-    """Enumeration for single-label text classification."""
-
-    SPAM = "spam"
-    NOT_SPAM = "not_spam"
-
-
-class SinglePrediction(BaseModel):
-    """
-    Class for a single class label prediction.
-    """
-
-    class_label: Labels
-```
-
-### Classifying Text
-
-The function **`classify`** will perform the single-label classification.
-
-```python
+from pydantic import BaseModel, Field
+from typing import Literal
 from openai import OpenAI
 import instructor
 
@@ -45,54 +37,94 @@ import instructor
 client = instructor.from_openai(OpenAI())
 
 
-def classify(data: str) -> SinglePrediction:
+class ClassificationResponse(BaseModel):
+    """
+    A few-shot example of text classification:
+    
+    Examples:
+    - "Buy cheap watches now!": SPAM
+    - "Meeting at 3 PM in the conference room": NOT_SPAM
+    - "You've won a free iPhone! Click here": SPAM
+    - "Can you pick up some milk on your way home?": NOT_SPAM
+    - "Increase your followers by 10000 overnight!": SPAM
+    """
+
+    chain_of_thought: str = Field(
+        ...,
+        description="The chain of thought that led to the prediction.",
+    )
+    label: Literal["SPAM", "NOT_SPAM"] = Field(
+        ...,
+        description="The predicted class label.",
+    )
+```
+
+### Classifying Text
+
+The function **`classify`** will perform the single-label classification.
+
+```python
+def classify(data: str) -> ClassificationResponse:
     """Perform single-label classification on the input text."""
     return client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
-        response_model=SinglePrediction,
+        model="gpt-4o-mini",
+        response_model=ClassificationResponse,
         messages=[
             {
                 "role": "user",
-                "content": f"Classify the following text: {data}",
+                "content": f"Classify the following text: <text>{data}</text>",
             },
         ],
-    )  # type: ignore
+    )
 ```
 
 ### Testing and Evaluation
 
-Let's run an example to see if it correctly identifies a spam message.
+Let's run examples to see if it correctly identifies spam and non-spam messages.
 
 ```python
-# Test single-label classification
-prediction = classify("Hello there I'm a Nigerian prince and I want to give you money")
-assert prediction.class_label == Labels.SPAM
+if __name__ == "__main__":
+    for text, label in [
+        ("Hey Jason! You're awesome", "NOT_SPAM"),
+        ("I am a nigerian prince and I need your help.", "SPAM"),
+    ]:
+        prediction = classify(text)
+        assert prediction.label == label
+        print(f"Text: {text}, Predicted Label: {prediction.label}")
+        #> Text: Hey Jason! You're awesome, Predicted Label: NOT_SPAM
+        #> Text: I am a nigerian prince and I need your help., Predicted Label: SPAM
 ```
 
 ## Multi-Label Classification
 
 ### Defining the Structures
 
-For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.
+For multi-label classification, we'll update our approach to use Literals instead of enums, and include few-shot examples in the model's docstring.
 
 ```python
 from typing import List
-import enum
+from pydantic import BaseModel, Field
 
-# Define Enum class for multiple labels
-class MultiLabels(str, enum.Enum):
-    TECH_ISSUE = "tech_issue"
-    BILLING = "billing"
-    GENERAL_QUERY = "general_query"
-
-
-# Define the multi-class prediction model
 class MultiClassPrediction(BaseModel):
     """
     Class for a multi-class label prediction.
+    
+    Examples:
+    - "My account is locked": ["TECH_ISSUE"]
+    - "I can't access my billing info": ["TECH_ISSUE", "BILLING"]
+    - "When do you close for holidays?": ["GENERAL_QUERY"]
+    - "My payment didn't go through and now I can't log in": ["BILLING", "TECH_ISSUE"]
     """
 
-    class_labels: List[MultiLabels]
+    chain_of_thought: str = Field(
+        ...,
+        description="The chain of thought that led to the prediction.",
+    )
+
+    class_labels: List[Literal["TECH_ISSUE", "BILLING", "GENERAL_QUERY"]] = Field(
+        ...,
+        description="The predicted class labels for the support ticket.",
+    )
 ```
 
 ### Classifying Text
@@ -103,15 +135,15 @@ The function **`multi_classify`** is responsible for multi-label classification.
 def multi_classify(data: str) -> MultiClassPrediction:
     """Perform multi-label classification on the input text."""
     return client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4o-mini",
         response_model=MultiClassPrediction,
         messages=[
             {
                 "role": "user",
-                "content": f"Classify the following support ticket: {data}",
+                "content": f"Classify the following support ticket: <ticket>{data}</ticket>",
             },
         ],
-    )  # type: ignore
+    )
 ```
 
 ### Testing and Evaluation
@@ -122,6 +154,12 @@ Finally, we test the multi-label classification function using a sample support 
 # Test multi-label classification
 ticket = "My account is locked and I can't access my billing info."
 prediction = multi_classify(ticket)
-assert MultiLabels.TECH_ISSUE in prediction.class_labels
-assert MultiLabels.BILLING in prediction.class_labels
+assert "TECH_ISSUE" in prediction.class_labels
+assert "BILLING" in prediction.class_labels
+print(f"Ticket: {ticket}")
+print(f"Predicted Labels: {prediction.class_labels}")
+#> Ticket: My account is locked and I can't access my billing info.
+#> Predicted Labels: ['TECH_ISSUE', 'BILLING']
 ```
+
+By using Literals and including few-shot examples, we've improved both the single-label and multi-label classification implementations. These changes enhance type safety and provide better guidance for the AI model, potentially leading to more accurate classifications.

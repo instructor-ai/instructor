@@ -21,6 +21,16 @@ LABELS = Literal["ACCOUNT", "BILLING", "GENERAL_QUERY"]
 
 
 class MultiClassPrediction(BaseModel):
+    """
+    A few-shot example of multi-label classification:
+    
+    Examples:
+    - "My account is locked and I can't access my billing info.": ACCOUNT, BILLING
+    - "I need help with my subscription.": ACCOUNT
+    - "How do I change my payment method?": BILLING
+    - "Can you tell me the status of my order?": BILLING
+    - "I have a question about the product features.": GENERAL_QUERY
+    """
     labels: List[LABELS] = Field(
         ...,
         description="Only select the labels that apply to the support ticket.",
@@ -29,7 +39,7 @@ class MultiClassPrediction(BaseModel):
 
 def multi_classify(data: str) -> MultiClassPrediction:
     return client.chat.completions.create(
-        model="gpt-4-turbo-preview",  # gpt-3.5-turbo fails
+        model="gpt-4o-mini",
         response_model=MultiClassPrediction,
         messages=[
             {
@@ -38,7 +48,7 @@ def multi_classify(data: str) -> MultiClassPrediction:
             },
             {
                 "role": "user",
-                "content": f"Classify the following support ticket: {data}",
+                "content": f"Classify the following support ticket: <text>{data}</text>",
             },
         ],
     )  # type: ignore
