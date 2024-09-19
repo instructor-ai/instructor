@@ -267,8 +267,12 @@ def transform_to_gemini_prompt(
             messages_gemini.append(
                 {"role": "model", "parts": get_message_content(message)}
             )
+
     if system_prompt:
-        messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
+        if messages_gemini:
+            messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
+        else:
+            messages_gemini.append({"role": "user", "parts": [f"*{system_prompt}*"]})
 
     return messages_gemini
 
