@@ -1,24 +1,31 @@
 # Cookbooks: Leveraging Structured Outputs
 
+Welcome to our collection of cookbooks showcasing the power of structured outputs in AI applications. These examples demonstrate how to effectively use instructor with various models and APIs to solve real-world problems.
+
+Our cookbooks cover a wide range of topics, from basic classification tasks to complex entity resolution and knowledge graph generation. Whether you're new to AI or an experienced developer, you'll find valuable insights and practical code samples to enhance your projects.
+
+Each cookbook provides step-by-step guidance and code snippets, making it easy to adapt these solutions to your specific needs. Dive in and discover how structured outputs can revolutionize your AI workflows!
+
 ## Quick Links
 
-1. [How are single and multi-label classifications done using enums?](classification.md)
-2. [How is AI self-assessment implemented with `llm_validator`?](self_critique.md)
-3. [How to do classification in batch from user provided classes.](batch_classification.md)
-4. [How are exact citations retrieved using regular expressions and smart prompting?](exact_citations.md)
-5. [How are search queries segmented through function calling and multi-task definitions?](search.md)
-6. [How are knowledge graphs generated from questions?](knowledge_graph.md)
-7. [How are complex queries decomposed into subqueries in a single request?](planning-tasks.md)
-8. [How are entities extracted and resolved from documents?](entity_resolution.md)
-9. [How is Personally Identifiable Information sanitized from documents?](pii.md)
-10. [How are action items and dependencies generated from transcripts?](../hub/action_items.md)
-11. [How to enable OpenAI's moderation](moderation.md)
-12. [How to extract tables using GPT-Vision?](extracting_tables.md)
-13. [How to generate advertising copy from image inputs](image_to_ad_copy.md)
-14. [How to use local models from Ollama](ollama.md)
-15. [How to store responses in a database with SQLModel](sqlmodel.md)
-16. [How to use groqcloud api](groq.md)
-17. [How to do document segmentation using LLMs?](document_segmentation.md)
-18. [How to save 50% of API costs with OpenAI's Batch API using Instructor](batch_job_oai.md)
+1. [Classifying using enums](classification.md)
+2. [Implementing AI self-assessment](self_critique.md)
+3. [Classifying in batch](batch_classification.md)
+4. [Retrieving exact citations](exact_citations.md)
+5. [Segmenting search queries](search.md)
+6. [Generating knowledge graphs](knowledge_graph.md)
+7. [Decomposing complex queries](planning-tasks.md)
+8. [Extracting and resolving entities](entity_resolution.md)
+9. [Sanitizing Personally Identifiable Information](pii.md)
+10. [Generating action items and dependencies](../hub/action_items.md)
+11. [Enabling OpenAI's moderation](moderation.md)
+12. [Extracting tables using GPT-Vision](extracting_tables.md)
+13. [Generating advertising copy from images](image_to_ad_copy.md)
+14. [Using local models from Ollama](ollama.md)
+15. [Storing responses in a database](sqlmodel.md)
+17. [Segmenting documents using LLMs](document_segmentation.md)
+18. [Saving API costs with OpenAI's Batch API](batch_job_oai.md)
+19. [Using groqcloud api](groq.md)
+20. [Using Mistral/Mixtral](mistral.md)
 
 Explore more!
