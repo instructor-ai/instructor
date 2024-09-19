@@ -239,6 +239,18 @@ class classproperty(Generic[R_co]):
         return self.cproperty(cls)
 
 
+def get_message_content(message: ChatCompletionMessageParam) -> list[Any]:
+    content = message.get("content", "")
+    try:
+        if isinstance(content, list):
+            return content
+        else:
+            return [content]
+    except Exception as e:
+        logging.debug(f"Error getting message content: {e}")
+        return [content]
+
+
 def transform_to_gemini_prompt(
     messages_chatgpt: list[ChatCompletionMessageParam],
 ) -> list[dict[str, Any]]:
@@ -249,14 +261,18 @@ def transform_to_gemini_prompt(
             system_prompt = message["content"]
         elif message["role"] == "user":
             messages_gemini.append(
-                {"role": "user", "parts": [message.get("content", "")]}
+                {"role": "user", "parts": get_message_content(message)}
             )
         elif message["role"] == "assistant":
             messages_gemini.append(
-                {"role": "model", "parts": [message.get("content", "")]}
+                {"role": "model", "parts": get_message_content(message)}
             )
+
     if system_prompt:
-        messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
+        if messages_gemini:
+            messages_gemini[0]["parts"].insert(0, f"*{system_prompt}*")
+        else:
+            messages_gemini.append({"role": "user", "parts": [f"*{system_prompt}*"]})
 
     return messages_gemini
 
