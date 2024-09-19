@@ -19,41 +19,41 @@ It stands out for its simplicity, transparency, and user-centric design, built o
 
 <div class="grid cards" markdown>
 
--   :material-code-tags: __Simple API with Full Prompt Control__
+- :material-code-tags: **Simple API with Full Prompt Control**
 
-    Instructor provides a straightforward API that gives you complete ownership and control over your prompts. This allows for fine-tuned customization and optimization of your LLM interactions.
+  Instructor provides a straightforward API that gives you complete ownership and control over your prompts. This allows for fine-tuned customization and optimization of your LLM interactions.
 
-    [:octicons-arrow-right-16: Explore Concepts](./concepts/models.md)
+  [:octicons-arrow-right-16: Explore Concepts](./concepts/models.md)
 
--   :material-translate: __Multi-Language Support__
+- :material-translate: **Multi-Language Support**
 
-    Simplify structured data extraction from LLMs with type hints and validation.
+  Simplify structured data extraction from LLMs with type hints and validation.
 
-    [:simple-python: Python](https://python.useinstructor.com) · [:simple-typescript: TypeScript](https://js.useinstructor.com) · [:simple-ruby: Ruby](https://ruby.useinstructor.com) · [:simple-go: Go](https://go.useinstructor.com) · [:simple-elixir: Elixir](https://hex.pm/packages/instructor) · [:simple-rust: Rust](https://rust.useinstructor.com)
+  [:simple-python: Python](https://python.useinstructor.com) · [:simple-typescript: TypeScript](https://js.useinstructor.com) · [:simple-ruby: Ruby](https://ruby.useinstructor.com) · [:simple-go: Go](https://go.useinstructor.com) · [:simple-elixir: Elixir](https://hex.pm/packages/instructor) · [:simple-rust: Rust](https://rust.useinstructor.com)
 
--   :material-refresh: __Reasking and Validation__
+- :material-refresh: **Reasking and Validation**
 
-    Automatically reask the model when validation fails, ensuring high-quality outputs. Leverage Pydantic's validation for robust error handling.
+  Automatically reask the model when validation fails, ensuring high-quality outputs. Leverage Pydantic's validation for robust error handling.
 
-    [:octicons-arrow-right-16: Learn about Reasking](./concepts/reask_validation.md)
+  [:octicons-arrow-right-16: Learn about Reasking](./concepts/reask_validation.md)
 
--   :material-repeat-variant: __Streaming Support__
+- :material-repeat-variant: **Streaming Support**
 
-    Stream partial results and iterables with ease, allowing for real-time processing and improved responsiveness in your applications.
+  Stream partial results and iterables with ease, allowing for real-time processing and improved responsiveness in your applications.
 
-    [:octicons-arrow-right-16: Learn about Streaming](./concepts/partial.md)
+  [:octicons-arrow-right-16: Learn about Streaming](./concepts/partial.md)
 
--   :material-code-braces: __Powered by Type Hints__
+- :material-code-braces: **Powered by Type Hints**
 
-    Leverage Pydantic for schema validation, prompting control, less code, and IDE integration. 
-    
-    [:octicons-arrow-right-16: Learn more](https://docs.pydantic.dev/)
+  Leverage Pydantic for schema validation, prompting control, less code, and IDE integration.
 
--   :material-lightning-bolt: __Simplified LLM Interactions__
+  [:octicons-arrow-right-16: Learn more](https://docs.pydantic.dev/)
 
-    Support for [OpenAI](./hub/openai.md), [Anthropic](./hub/anthropic.md), [Google](./hub/google.md), [Vertex AI](./hub/vertexai.md), [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), [llama-cpp-python](./hub/llama-cpp-python.md), [Cohere](./hub/cohere.md), [LiteLLM](./hub/litellm.md). 
-    
-    [:octicons-arrow-right-16: See Hub](./hub/index.md)
+- :material-lightning-bolt: **Simplified LLM Interactions**
+
+  Support for [OpenAI](./hub/openai.md), [Anthropic](./hub/anthropic.md), [Google](./hub/google.md), [Vertex AI](./hub/vertexai.md), [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), [llama-cpp-python](./hub/llama-cpp-python.md), [Cohere](./hub/cohere.md), [LiteLLM](./hub/litellm.md).
+
+  [:octicons-arrow-right-16: See Hub](./hub/index.md)
 
 </div>
 
@@ -220,11 +220,12 @@ assert resp.age == 25
 
 ??? info "Using Gemini's multi-modal capabilities with `google-generativeai`"
 
-    The `google.generativeai` library has a different API than the `vertexai` library. But, using `instructor`, working with multi-modal data is easy. Here's a quick example of how to use an Audio file with `google-generativeai`. We've used this [recording](https://storage.googleapis.com/generativeai-downloads/data/State_of_the_Union_Address_30_January_1961.mp3) that's taken from the [Google Generative AI cookbook](https://github.com/google-gemini/cookbook/blob/main/quickstarts/Audio.ipynb)
+    The `google.generativeai` library has a different API than the `vertexai` library. But, using `instructor`, working with multi-modal data is easy.
 
-    We'll show you how to do by demonstrating three different examples of working with audio files with `instructor`.
+    Here's a quick example of how to use an Audio file with `google-generativeai`. We've used this [recording](https://storage.googleapis.com/generativeai-downloads/data/State_of_the_Union_Address_30_January_1961.mp3) that's taken from the [Google Generative AI cookbook](https://github.com/google-gemini/cookbook/blob/main/quickstarts/Audio.ipynb)
 
-    Firstly, we can upload the entire audio file and pass it into the LLM as a normal message.
+    For a more in-depth example, you can check out our guide to working with Gemini using the `google-generativeai` package [here](./examples/multi_modal_gemini.md).
+
 
     ```python
     import instructor
@@ -276,121 +277,6 @@ assert resp.age == 25
     1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
     2. Use `genai.upload_file` to upload your file. If you've already uploaded the file, you can get it by using `genai.get_file`
     3. Pass in the file object as any normal user message
-
-
-    Secondly, we can also pass in a audio segment as a normal message as an inline object as shown below. Here's an example of how to do that with a audio segment snippet from the same recording.
-
-    ```python
-    import instructor
-    import google.generativeai as genai
-    from pydantic import BaseModel
-    from pydub import AudioSegment
-
-    client = instructor.from_gemini(
-        client=genai.GenerativeModel(
-            model_name="models/gemini-1.5-flash-latest",
-        ),
-        mode=instructor.Mode.GEMINI_JSON,  # (1)!
-    )
-
-
-    sound = AudioSegment.from_mp3("sample.mp3")  # (2)!
-    sound = sound[:60000]
-
-
-    class Transcription(BaseModel):
-        summary: str
-        exact_transcription: str
-
-
-    resp = client.create(
-        response_model=Transcription,
-        messages=[
-            {
-                "role": "user",
-                "content": "Please transcribe this recording",
-            },
-            {
-                "role": "user",
-                "content": {
-                    "mime_type": "audio/mp3",
-                    "data": sound.export().read(),  # (3)!
-                },
-            },
-        ],
-    )
-
-    print(resp)
-
-    # > summary='President delivers a speech to a joint session of Congress,
-    # > highlighting his history in the House of Representatives and thanking
-    # > the members of Congress for their guidance.',
-    # >
-    # > exact_transcription="The President's State of the Union address to a
-    # > joint session of the Congress from the rostrum of the House of
-    # > Representatives, Washington DC, January 30th 1961. Mr. Speaker, Mr.
-    # > Vice-President, members of the Congress, it is a pleasure to return
-    # > from whence I came. You are among my oldest friends in Washington,
-    # > and this house is my oldest home. It was here that I first took the
-    # > oath of federal office. It was here for 14 years that I gained both
-    # > knowledge and inspiration from members of both"
-
-    ```
-
-    1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
-    2. Use `AudioSegment.from_mp3` to load your audio file.
-    3. Pass in the audio data as bytes to the `data` field using the content as a dictionary with the right content `mime_type`  and `data` as bytes
-
-    We also support passing in these as a single list as per the documentation for `google-generativeai`. Here's how to do so with a audio segment snippet from the same recording.
-
-    ```python
-    import instructor
-    import google.generativeai as genai
-    from pydantic import BaseModel
-
-
-    client = instructor.from_gemini(
-        client=genai.GenerativeModel(
-            model_name="models/gemini-1.5-flash-latest",
-        ),
-        mode=instructor.Mode.GEMINI_JSON,  # (1)!
-    )
-
-    mp3_file = genai.upload_file("./sample.mp3")  # (2)!
-
-
-    class Description(BaseModel):
-        description: str
-
-
-    content = [
-        "Summarize what's happening in this audio file and who the main speaker is",
-        mp3_file,  # (3)!
-    ]
-
-    resp = client.create(
-        response_model=Description,
-        messages=[
-            {
-                "role": "user",
-                "content": content,
-            }
-        ],
-    )
-
-    print(resp)
-    # > description='President John F. Kennedy delivers State of the Union Address to \
-    # > Congress. He outlines national challenges: economic struggles, debt concerns, \
-    # > communism threat, Cold War. Proposes solutions: increased military spending, \
-    # > new economic programs, expanded foreign aid. Calls for active U.S. role in \
-    # > international affairs. Emphasizes facing challenges, avoiding panic, and \
-    # > working together for a better future.'
-
-    ```
-
-    1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
-    2. Upload the file using `genai.upload_file` or get the file using `genai.get_file`
-    3. Pass in the content as a list containing the normal user message and the file object.
 
 #### Vertex AI
 

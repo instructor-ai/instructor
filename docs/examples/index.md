@@ -23,9 +23,9 @@ Each cookbook provides step-by-step guidance and code snippets, making it easy t
 13. [Generating advertising copy from images](image_to_ad_copy.md)
 14. [Using local models from Ollama](ollama.md)
 15. [Storing responses in a database](sqlmodel.md)
-17. [Segmenting documents using LLMs](document_segmentation.md)
-18. [Saving API costs with OpenAI's Batch API](batch_job_oai.md)
-19. [Using groqcloud api](groq.md)
-20. [Using Mistral/Mixtral](mistral.md)
+16. [Segmenting documents using LLMs](document_segmentation.md)
+17. [Saving API costs with OpenAI's Batch API](batch_job_oai.md)
+18. [Using groqcloud api](groq.md)
+19. [Using Mistral/Mixtral](mistral.md)
 
 Explore more!

@@ -139,6 +139,7 @@ nav:
     - Text Classification: 'examples/classification.md'
     - Local Classification: 'examples/local_classification.md'
     - Ollama: 'examples/ollama.md'
+    - Using Gemini for Multimodal Data: 'examples/multi_modal_gemini.md'
     - Citing Sources (RAG): 'examples/exact_citations.md'
     - Extracting Knowledge Graphs: 'examples/knowledge_graph.md'
     - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
