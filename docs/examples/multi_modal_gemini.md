@@ -1,4 +1,4 @@
-# Using Gemini with Instructor
+# Using Gemini with Multi Modal Data
 
 This tutorial shows how to use `instructor` with `google-generativeai` to work with multi-modal data. In this example, we'll demonstrate three ways to work with audio files.
 

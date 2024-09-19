@@ -27,5 +27,6 @@ Each cookbook provides step-by-step guidance and code snippets, making it easy t
 17. [Saving API costs with OpenAI's Batch API](batch_job_oai.md)
 18. [Using groqcloud api](groq.md)
 19. [Using Mistral/Mixtral](mistral.md)
+20. [Working with Multi-Modal data with Gemini](multi_modal_gemini.md)
 
 Explore more!
