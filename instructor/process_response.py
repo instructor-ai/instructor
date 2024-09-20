@@ -104,7 +104,7 @@ def process_response(
     response_model: type[OpenAISchema | BaseModel] | None = None,
     stream: bool,
     validation_context: dict[str, Any] | None = None,
-    strict: bool | None = None,
+    strict=None,
     mode: Mode = Mode.TOOLS,
 ):
     """Processes a OpenAI response with the response model, if available.
