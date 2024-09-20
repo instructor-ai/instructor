@@ -44,8 +44,8 @@ class AsyncInstructorChatCompletionCreate(Protocol):
     async def __call__(
         self,
         response_model: type[T_Model] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
-        validation_context: dict[str, Any] | None = None,
         max_retries: int = 1,
         *args: Any,
         **kwargs: Any,
@@ -76,6 +76,59 @@ def handle_context(
         )
         context = validation_context
     return context
+
+
+def handle_templating(
+    messages: list[dict[str, Any]], context: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
+    """
+    Handle templating for messages using the provided context.
+
+    This function processes a list of messages, applying Jinja2 templating to their content
+    using the provided context. It supports both standard OpenAI message format and
+    Anthropic's format with parts.
+
+    Args:
+        messages (list[dict[str, Any]]): A list of message dictionaries to process.
+        context (dict[str, Any] | None, optional): A dictionary of variables to use in templating.
+            Defaults to None.
+
+    Returns:
+        list[dict[str, Any]]: The processed list of messages with templated content.
+
+    Note:
+        - If no context is provided, the original messages are returned unchanged.
+        - For OpenAI format, the 'content' field is processed if it's a string.
+        - For Anthropic format, each 'text' part within the 'content' list is processed.
+        - The function uses Jinja2 for templating and applies textwrap.dedent for formatting.
+
+    TODO: Gemini, Cohere, formats are missing here.
+    """
+    if context is None:
+        return messages
+
+    from jinja2 import Template
+    from textwrap import dedent
+
+    for message in messages:
+        # Handle OpenAI format
+        if isinstance(message.get("content"), str):
+            message["content"] = dedent(Template(message["content"]).render(**context))
+            continue
+
+        # Handle Anthropic format
+        if isinstance(message.get("content"), list):
+            for part in message["content"]:
+                if (
+                    isinstance(part, dict)
+                    and part.get("type") == "text"
+                    and isinstance(part.get("text"), str)
+                ):
+                    part["text"] = dedent(Template(part["text"]).render(**context))
+
+        # TODO: Add handling for Gemini and Cohere formats
+
+    return messages
 
 
 @overload
@@ -149,6 +202,8 @@ def patch(  # type: ignore
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
+        new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
+
         response = await retry_async(
             func=func,  # type: ignore
             response_model=response_model,
@@ -177,6 +232,7 @@ def patch(  # type: ignore
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
+        new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
         response = retry_sync(
             func=func,  # type: ignore
             response_model=response_model,
