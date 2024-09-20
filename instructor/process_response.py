@@ -22,7 +22,6 @@ from typing import (
     TypeVar,
     Any,
 )
-from collections.abc import Generator
 from typing_extensions import ParamSpec
 
 from instructor.mode import Mode

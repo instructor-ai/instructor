@@ -5,7 +5,6 @@ from typing import (
     Callable,
     Protocol,
     TypeVar,
-    Union,
     overload,
 )
 from collections.abc import Awaitable
@@ -160,10 +159,10 @@ def patch(
 
 
 def patch(  # type: ignore
-    client: Union[OpenAI, AsyncOpenAI] | None = None,
+    client: OpenAI | AsyncOpenAI | None = None,
     create: Callable[T_ParamSpec, T_Retval] | None = None,
     mode: Mode = Mode.TOOLS,
-) -> Union[OpenAI, AsyncOpenAI]:
+) -> OpenAI | AsyncOpenAI:
     """
     Patch the `client.chat.completions.create` method
 
