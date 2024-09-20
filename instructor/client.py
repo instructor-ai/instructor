@@ -63,10 +63,10 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[T]:
-        ...
+    ) -> Awaitable[T]: ...
 
     @overload
     def create(
@@ -75,10 +75,10 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         **kwargs: Any,
-    ) -> T:
-        ...
+    ) -> T: ...
 
     @overload
     def create(
@@ -87,6 +87,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         **kwargs: Any,
     ) -> Awaitable[Any]: ...
@@ -98,6 +99,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         **kwargs: Any,
     ) -> Any: ...
@@ -108,6 +110,7 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> T | Any | Awaitable[T] | Awaitable[Any]:
@@ -118,6 +121,7 @@ class Instructor:
             messages=messages,
             max_retries=max_retries,
             validation_context=validation_context,
+            context=context,
             strict=strict,
             **kwargs,
         )
@@ -129,10 +133,10 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
         validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]:
-        ...
+    ) -> AsyncGenerator[T, None]: ...
 
     @overload
     def create_partial(
@@ -140,18 +144,19 @@ class Instructor:
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Generator[T, None, None]:
-        ...
+    ) -> Generator[T, None, None]: ...
 
     def create_partial(
         self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> Generator[T, None, None] | AsyncGenerator[T, None]:
@@ -165,6 +170,7 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
+            context=context,
             strict=strict,
             **kwargs,
         )
@@ -175,11 +181,11 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> AsyncGenerator[T, None]:
-        ...
+    ) -> AsyncGenerator[T, None]: ...
 
     @overload
     def create_iterable(
@@ -187,18 +193,19 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Generator[T, None, None]:
-        ...
+    ) -> Generator[T, None, None]: ...
 
     def create_iterable(
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> Generator[T, None, None] | AsyncGenerator[T, None]:
@@ -211,6 +218,7 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
+            context=context,
             strict=strict,
             **kwargs,
         )
@@ -221,11 +229,11 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> Awaitable[tuple[T, Any]]:
-        ...
+    ) -> Awaitable[tuple[T, Any]]: ...
 
     @overload
     def create_with_completion(
@@ -233,18 +241,19 @@ class Instructor:
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
-    ) -> tuple[T, Any]:
-        ...
+    ) -> tuple[T, Any]: ...
 
     def create_with_completion(
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> tuple[T, Any] | Awaitable[tuple[T, Any]]:
@@ -254,6 +263,7 @@ class Instructor:
             response_model=response_model,
             max_retries=max_retries,
             validation_context=validation_context,
+            context=context,
             strict=strict,
             **kwargs,
         )
@@ -292,7 +302,8 @@ class AsyncInstructor(Instructor):
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> T | Any:
@@ -300,6 +311,7 @@ class AsyncInstructor(Instructor):
         return await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
+            context=context,
             max_retries=max_retries,
             messages=messages,
             strict=strict,
@@ -311,7 +323,8 @@ class AsyncInstructor(Instructor):
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> AsyncGenerator[T, None]:
@@ -320,6 +333,7 @@ class AsyncInstructor(Instructor):
         async for item in await self.create_fn(
             response_model=instructor.Partial[response_model],  # type: ignore
             validation_context=validation_context,
+            context=context,
             max_retries=max_retries,
             messages=messages,
             strict=strict,
@@ -332,7 +346,8 @@ class AsyncInstructor(Instructor):
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> AsyncGenerator[T, None]:
@@ -341,6 +356,7 @@ class AsyncInstructor(Instructor):
         async for item in await self.create_fn(
             response_model=Iterable[response_model],
             validation_context=validation_context,
+            context=context,
             max_retries=max_retries,
             messages=messages,
             strict=strict,
@@ -353,7 +369,8 @@ class AsyncInstructor(Instructor):
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
         max_retries: int = 3,
-        validation_context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs: Any,
     ) -> tuple[T, Any]:
@@ -361,6 +378,7 @@ class AsyncInstructor(Instructor):
         response = await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
+            context=context,
             max_retries=max_retries,
             messages=messages,
             strict=strict,
@@ -453,8 +471,7 @@ def from_litellm(
     completion: Callable[..., Any],
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
-) -> Instructor:
-    ...
+) -> Instructor: ...
 
 
 @overload

@@ -150,13 +150,13 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
     response_model: type[T_Model],
-    validation_context: dict,
-    args,
-    kwargs,
+    args: Any,
+    kwargs: Any,
+    context: dict[str, Any] | None = None,
     max_retries: int | Retrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model:
+) -> T_Model | None:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
         from anthropic.types import Usage as AnthropicUsage
@@ -184,7 +184,7 @@ def retry_sync(
                         response,
                         response_model=response_model,
                         stream=stream,
-                        validation_context=validation_context,
+                        validation_context=context,
                         strict=strict,
                         mode=mode,
                     )
@@ -213,7 +213,7 @@ def retry_sync(
                     raise e
     except RetryError as e:
         raise InstructorRetryException(
-            e,
+            e.last_attempt._exception,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             messages=kwargs.get(
@@ -226,7 +226,7 @@ def retry_sync(
 async def retry_async(
     func: Callable[T_ParamSpec, T_Retval],
     response_model: type[T] | None,
-    validation_context: dict[str, Any] | None,
+    context: dict[str, Any] | None,
     args: Any,
     kwargs: Any,
     max_retries: int | AsyncRetrying = 1,
@@ -263,7 +263,7 @@ async def retry_async(
                         response,
                         response_model=response_model,
                         stream=stream,
-                        validation_context=validation_context,
+                        validation_context=context,
                         strict=strict,
                         mode=mode,
                     )
@@ -285,7 +285,7 @@ async def retry_async(
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
         raise InstructorRetryException(
-            e,
+            e.last_attempt._exception,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             messages=kwargs.get(

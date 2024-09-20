@@ -122,9 +122,13 @@ async def extract_json_from_stream_async(
 
 
 def update_total_usage(
-    response: T_Model,
+    response: T_Model | None,
     total_usage: OpenAIUsage | AnthropicUsage,
-) -> T_Model | ChatCompletion:
+) -> T_Model | ChatCompletion | None:
+
+    if response is None:
+        return None
+
     response_usage = getattr(response, "usage", None)
     if isinstance(response_usage, OpenAIUsage) and isinstance(total_usage, OpenAIUsage):
         total_usage.completion_tokens += response_usage.completion_tokens or 0

@@ -101,12 +101,12 @@ async def process_response_async(
 def process_response(
     response: T_Model,
     *,
-    response_model: type[OpenAISchema | BaseModel],
+    response_model: type[OpenAISchema | BaseModel] | None = None,
     stream: bool,
-    validation_context: dict | None = None,
-    strict=None,
+    validation_context: dict[str, Any] | None = None,
+    strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model | Generator[T_Model, None, None] | ChatCompletion:
+):
     """Processes a OpenAI response with the response model, if available.
 
     Args:
@@ -376,7 +376,9 @@ def handle_response_model(
                     + "\n\n".join(openai_system_messages)
                 )
 
-                new_kwargs["system"] += f"""
+                new_kwargs[
+                    "system"
+                ] += f"""
                 You must only respond in JSON format that adheres to the following schema:
 
                 <JSON_SCHEMA>
@@ -385,12 +387,14 @@ def handle_response_model(
                 """
                 new_kwargs["system"] = dedent(new_kwargs["system"])
             else:
-                new_kwargs["system"] += dedent(f"""
+                new_kwargs["system"] += dedent(
+                    f"""
                 You must only respond in JSON format that adheres to the following schema:
                 <JSON_SCHEMA>
                  {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
                 </JSON_SCHEMA>
-                """)
+                """
+                )
 
             new_kwargs["messages"] = [
                 message

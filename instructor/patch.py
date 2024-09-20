@@ -1,6 +1,7 @@
-# type: ignore[all]
+from __future__ import annotations
 from functools import wraps
 from typing import (
+    Any,
     Callable,
     Protocol,
     TypeVar,
@@ -30,23 +31,51 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 class InstructorChatCompletionCreate(Protocol):
     def __call__(
         self,
-        response_model: type[T_Model] = None,
-        validation_context: dict = None,
+        response_model: type[T_Model] | None = None,
+        validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
+        context: dict[str, Any] | None = None,
         max_retries: int = 1,
-        *args: T_ParamSpec.args,
-        **kwargs: T_ParamSpec.kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> T_Model: ...
 
 
 class AsyncInstructorChatCompletionCreate(Protocol):
     async def __call__(
         self,
-        response_model: type[T_Model] = None,
-        validation_context: dict = None,
+        response_model: type[T_Model] | None = None,
+        context: dict[str, Any] | None = None,
+        validation_context: dict[str, Any] | None = None,
         max_retries: int = 1,
-        *args: T_ParamSpec.args,
-        **kwargs: T_ParamSpec.kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> T_Model: ...
+
+
+def handle_context(
+    context: dict[str, Any] | None = None,
+    validation_context: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """
+    Handle the context and validation_context parameters.
+    If both are provided, raise an error.
+    If validation_context is provided, issue a deprecation warning and use it as context.
+    If neither is provided, return None.
+    """
+    if context is not None and validation_context is not None:
+        raise ValueError(
+            "Cannot provide both 'context' and 'validation_context'. Use 'context' instead."
+        )
+    if validation_context is not None and context is None:
+        import warnings
+
+        warnings.warn(
+            "'validation_context' is deprecated. Use 'context' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        context = validation_context
+    return context
 
 
 @overload
@@ -77,9 +106,9 @@ def patch(
 ) -> InstructorChatCompletionCreate: ...
 
 
-def patch(
-    client: Union[OpenAI, AsyncOpenAI] = None,
-    create: Callable[T_ParamSpec, T_Retval] = None,
+def patch(  # type: ignore
+    client: Union[OpenAI, AsyncOpenAI] | None = None,
+    create: Callable[T_ParamSpec, T_Retval] | None = None,
     mode: Mode = Mode.TOOLS,
 ) -> Union[OpenAI, AsyncOpenAI]:
     """
@@ -104,22 +133,26 @@ def patch(
 
     func_is_async = is_async(func)
 
-    @wraps(func)
+    @wraps(func)  # type: ignore
     async def new_create_async(
-        response_model: type[T_Model] = None,
-        validation_context: dict = None,
+        response_model: type[T_Model] | None = None,
+        validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
         max_retries: int = 1,
         strict: bool = True,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
+
+        context = handle_context(context, validation_context)
+
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
         response = await retry_async(
-            func=func,
+            func=func,  # type: ignore
             response_model=response_model,
-            validation_context=validation_context,
+            context=context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
@@ -128,22 +161,26 @@ def patch(
         )
         return response
 
-    @wraps(func)
+    @wraps(func)  # type: ignore
     def new_create_sync(
-        response_model: type[T_Model] = None,
-        validation_context: dict = None,
+        response_model: type[T_Model] | None = None,
+        validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
         max_retries: int = 1,
         strict: bool = True,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
+
+        context = handle_context(context, validation_context)
+
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
         response = retry_sync(
-            func=func,
+            func=func,  # type: ignore
             response_model=response_model,
-            validation_context=validation_context,
+            context=context,
             max_retries=max_retries,
             args=args,
             strict=strict,
@@ -155,10 +192,10 @@ def patch(
     new_create = new_create_async if func_is_async else new_create_sync
 
     if client is not None:
-        client.chat.completions.create = new_create
+        client.chat.completions.create = new_create  # type: ignore
         return client
     else:
-        return new_create
+        return new_create  # type: ignore
 
 
 def apatch(client: AsyncOpenAI, mode: Mode = Mode.TOOLS) -> AsyncOpenAI:
