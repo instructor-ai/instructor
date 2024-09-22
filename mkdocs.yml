@@ -131,6 +131,7 @@ nav:
     - Welcome To Instructor: 'index.md'
     - Why use Instructor?: 'why.md'
     - Help with Instructor: 'help.md'
+    - Newsletter: 'newsletter.md'
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
     - Philosophy: 'concepts/philosophy.md'
