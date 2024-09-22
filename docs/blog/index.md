@@ -1,6 +1,8 @@
-# Welcome to the Instructor Blog
+# Subscribe to our Newsletter for Updates and Tips
 
-The goal of the blog is to capture some content that does not neatly fit within documentation or the cookbooks. I also want to share some of my thoughts and experiences with the community. If you want to check out my personal blog, you can [here](https://jxnl.co/writing)
+If you want to get updates on new features and tips on how to use Instructor, you can subscribe to our newsletter below to get notified when we publish new content.
+
+<iframe src="https://embeds.beehiiv.com/2faf420d-8480-4b6e-8d6f-9c5a105f917a?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
 
 ## Advanced Topics
 
