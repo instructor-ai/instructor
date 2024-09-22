@@ -1,10 +1,6 @@
-# Cookbooks: Leveraging Structured Outputs
+# Cookbooks
 
 Welcome to our collection of cookbooks showcasing the power of structured outputs in AI applications. These examples demonstrate how to effectively use instructor with various models and APIs to solve real-world problems.
-
-Our cookbooks cover a wide range of topics, from basic classification tasks to complex entity resolution and knowledge graph generation. Whether you're new to AI or an experienced developer, you'll find valuable insights and practical code samples to enhance your projects.
-
-Each cookbook provides step-by-step guidance and code snippets, making it easy to adapt these solutions to your specific needs. Dive in and discover how structured outputs can revolutionize your AI workflows!
 
 ## Quick Links
 
@@ -29,4 +25,8 @@ Each cookbook provides step-by-step guidance and code snippets, making it easy t
 19. [Using Mistral/Mixtral](mistral.md)
 20. [Working with Multi-Modal data with Gemini](multi_modal_gemini.md)
 
-Explore more!
+## Subscribe to our Newsletter for Updates and Tips
+
+If you want to get updates on new features and tips on how to use Instructor, you can subscribe to our newsletter below to get notified when we publish new content.
+
+<iframe src="https://embeds.beehiiv.com/2faf420d-8480-4b6e-8d6f-9c5a105f917a?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>

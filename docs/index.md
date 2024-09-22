@@ -15,45 +15,49 @@ It stands out for its simplicity, transparency, and user-centric design, built o
 
 [:material-star: Star the Repo](https://github.com/jxnl/instructor){: .md-button .md-button--primary } [:material-book-open-variant: Cookbooks](./examples/index.md){: .md-button } [:material-lightbulb: Prompting Guide](./prompting/index.md){: .md-button }
 
+## Subscribe to our Newsletter for Updates and Tips
+
+<iframe src="https://embeds.beehiiv.com/2faf420d-8480-4b6e-8d6f-9c5a105f917a?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
+
 ## Why use Instructor?
 
 <div class="grid cards" markdown>
 
 - :material-code-tags: **Simple API with Full Prompt Control**
 
-  Instructor provides a straightforward API that gives you complete ownership and control over your prompts. This allows for fine-tuned customization and optimization of your LLM interactions.
+    Instructor provides a straightforward API that gives you complete ownership and control over your prompts. This allows for fine-tuned customization and optimization of your LLM interactions.
 
-  [:octicons-arrow-right-16: Explore Concepts](./concepts/models.md)
+    [:octicons-arrow-right-16: Explore Concepts](./concepts/models.md)
 
 - :material-translate: **Multi-Language Support**
 
-  Simplify structured data extraction from LLMs with type hints and validation.
+    Simplify structured data extraction from LLMs with type hints and validation.
 
-  [:simple-python: Python](https://python.useinstructor.com) · [:simple-typescript: TypeScript](https://js.useinstructor.com) · [:simple-ruby: Ruby](https://ruby.useinstructor.com) · [:simple-go: Go](https://go.useinstructor.com) · [:simple-elixir: Elixir](https://hex.pm/packages/instructor) · [:simple-rust: Rust](https://rust.useinstructor.com)
+    [:simple-python: Python](https://python.useinstructor.com) · [:simple-typescript: TypeScript](https://js.useinstructor.com) · [:simple-ruby: Ruby](https://ruby.useinstructor.com) · [:simple-go: Go](https://go.useinstructor.com) · [:simple-elixir: Elixir](https://hex.pm/packages/instructor) · [:simple-rust: Rust](https://rust.useinstructor.com)
 
 - :material-refresh: **Reasking and Validation**
 
-  Automatically reask the model when validation fails, ensuring high-quality outputs. Leverage Pydantic's validation for robust error handling.
+    Automatically reask the model when validation fails, ensuring high-quality outputs. Leverage Pydantic's validation for robust error handling.
 
-  [:octicons-arrow-right-16: Learn about Reasking](./concepts/reask_validation.md)
+    [:octicons-arrow-right-16: Learn about Reasking](./concepts/reask_validation.md)
 
 - :material-repeat-variant: **Streaming Support**
 
-  Stream partial results and iterables with ease, allowing for real-time processing and improved responsiveness in your applications.
+    Stream partial results and iterables with ease, allowing for real-time processing and improved responsiveness in your applications.
 
-  [:octicons-arrow-right-16: Learn about Streaming](./concepts/partial.md)
+    [:octicons-arrow-right-16: Learn about Streaming](./concepts/partial.md)
 
 - :material-code-braces: **Powered by Type Hints**
 
-  Leverage Pydantic for schema validation, prompting control, less code, and IDE integration.
+    Leverage Pydantic for schema validation, prompting control, less code, and IDE integration.
 
-  [:octicons-arrow-right-16: Learn more](https://docs.pydantic.dev/)
+    [:octicons-arrow-right-16: Learn more](https://docs.pydantic.dev/)
 
 - :material-lightning-bolt: **Simplified LLM Interactions**
 
-  Support for [OpenAI](./hub/openai.md), [Anthropic](./hub/anthropic.md), [Google](./hub/google.md), [Vertex AI](./hub/vertexai.md), [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), [llama-cpp-python](./hub/llama-cpp-python.md), [Cohere](./hub/cohere.md), [LiteLLM](./hub/litellm.md).
+    Support for [OpenAI](./hub/openai.md), [Anthropic](./hub/anthropic.md), [Google](./hub/google.md), [Vertex AI](./hub/vertexai.md), [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), [llama-cpp-python](./hub/llama-cpp-python.md), [Cohere](./hub/cohere.md), [LiteLLM](./hub/litellm.md).
 
-  [:octicons-arrow-right-16: See Hub](./hub/index.md)
+    [:octicons-arrow-right-16: See Hub](./hub/index.md)
 
 </div>
 
