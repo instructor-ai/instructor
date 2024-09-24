@@ -242,7 +242,7 @@ def patch(  # type: ignore
             kwargs=new_kwargs,
             mode=mode,
         )
-        return response
+        return response  # type: ignore
 
     new_create = new_create_async if func_is_async else new_create_sync
 
