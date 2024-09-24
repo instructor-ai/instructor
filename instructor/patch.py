@@ -120,10 +120,10 @@ def handle_templating(
             for part in message["content"]:
                 if (
                     isinstance(part, dict)
-                    and part.get("type") == "text"
-                    and isinstance(part.get("text"), str)
+                    and part.get("type") == "text"  # type:ignore
+                    and isinstance(part.get("text"), str)  # type:ignore
                 ):
-                    part["text"] = dedent(Template(part["text"]).render(**context))
+                    part["text"] = dedent(Template(part["text"]).render(**context))  # type:ignore
 
         # TODO: Add handling for Gemini and Cohere formats
 
