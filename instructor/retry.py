@@ -71,10 +71,15 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
     if mode == Mode.ANTHROPIC_JSON:
         from anthropic.types import Message
 
-        assert isinstance(response, Message)
+        if hasattr(response, "choices"):
+            response_text = response.choices[0].message.content
+        else:
+            assert isinstance(response, Message)
+            response_text = response.content[0].text
+
         yield {
             "role": "user",
-            "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.content[0].text}""",
+            "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response_text}""",
         }
         return
     if mode == Mode.COHERE_TOOLS or mode == Mode.COHERE_JSON_SCHEMA:

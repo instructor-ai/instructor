@@ -329,8 +329,14 @@ def handle_response_model(
                     },
                 )
             # if it is, system append the schema to the end
-            else:
+            elif isinstance(new_kwargs["messages"][0]["content"], str):
                 new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+            elif isinstance(new_kwargs["messages"][0]["content"], list):
+                new_kwargs["messages"][0]["content"][0]["text"] += f"\n\n{message}"
+            else:
+                raise ValueError(
+                    "Invalid message format, must be a string or a list of messages"
+                )
         elif mode == Mode.ANTHROPIC_TOOLS:
             tool_descriptions = response_model.anthropic_schema
             new_kwargs["tools"] = [tool_descriptions]

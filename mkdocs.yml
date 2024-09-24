@@ -131,6 +131,7 @@ nav:
     - Welcome To Instructor: 'index.md'
     - Why use Instructor?: 'why.md'
     - Help with Instructor: 'help.md'
+    - Newsletter: 'newsletter.md'
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
     - Philosophy: 'concepts/philosophy.md'
@@ -177,6 +178,7 @@ nav:
     - Raw Response: 'concepts/raw_response.md'
     - FastAPI: 'concepts/fastapi.md'
     - Caching: 'concepts/caching.md'
+    - Prompt Caching: 'concepts/prompt_caching.md'
     - Logging: 'concepts/logging.md'
     - Distillation: "concepts/distillation.md"
     - Union: 'concepts/union.md'
