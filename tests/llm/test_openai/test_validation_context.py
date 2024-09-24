@@ -30,7 +30,7 @@ def test_banned_words_validation(model: str, mode: instructor.Mode, client):
     client = instructor.patch(client, mode=mode)
 
     # Test with content containing a banned word
-    with pytest.raises(Exception):
+    with pytest.raises(Exception):  # noqa: B017
         response = client.chat.completions.create(
             model=model,
             response_model=Message,
@@ -50,7 +50,7 @@ def test_banned_words_validation_old(model: str, mode: instructor.Mode, client):
     client = instructor.patch(client, mode=mode)
 
     # Test with content containing a banned word
-    with pytest.raises(Exception):
+    with pytest.raises(Exception):  # noqa: B017
         response = client.chat.completions.create(
             model=model,
             response_model=Message,

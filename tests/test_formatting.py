@@ -1,8 +1,5 @@
-import pytest
 from textwrap import dedent
 from instructor.patch import handle_templating
-from jinja2 import Template
-
 
 def test_handle_templating_with_context():
     messages = [{"role": "user", "content": "Hello {{ name }}!"}]
