@@ -30,6 +30,25 @@ def test_parse_user_sync(client, mode):
     assert resp.age == 27
 
 
+@pytest.mark.parametrize("mode", modes)
+def test_parse_user_sync_jinja(client, mode):
+    client = instructor.from_cohere(client, mode=mode)
+
+    resp = client.chat.completions.create(
+        response_model=User,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract user data from this sentence - {{ name }} is a {{ age }} year old developer from Singapore",
+            }
+        ],
+        context={"name": "Ivan", "age": 27},
+    )
+
+    assert resp.name == "Ivan"
+    assert resp.age == 27
+
+
 class ValidatedUser(BaseModel):
     name: str = Field("User's first name")
     age: int
@@ -77,6 +96,28 @@ async def test_parse_user_async(aclient, mode):
             }
         ],
         max_retries=4,
+    )
+
+    assert resp.name == "IVAN"
+    assert resp.age == 27
+
+
+@pytest.mark.parametrize("mode", modes)
+@pytest.mark.asyncio
+async def test_parse_user_async_jinja(aclient, mode):
+    client = instructor.from_cohere(aclient, mode=mode)
+
+    resp = await client.chat.completions.create(
+        response_model=ValidatedUser,
+        model="command-r-plus",
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract user data from this sentence - {{ name }} is a {{ age }} year old developer from Singapore",
+            }
+        ],
+        max_retries=4,
+        context={"name": "Ivan", "age": 27},
     )
 
     assert resp.name == "IVAN"

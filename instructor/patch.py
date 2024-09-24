@@ -77,6 +77,24 @@ def handle_context(
     return context
 
 
+def handle_cohere_templating(
+    new_kwargs: dict[str, Any], context: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    if not context:
+        return new_kwargs
+
+    from textwrap import dedent
+    from jinja2 import Template
+
+    new_kwargs["message"] = (
+        dedent(Template(new_kwargs["message"]).render(**context))
+        if context
+        else new_kwargs["message"]
+    )
+    new_kwargs["chat_history"] = handle_templating(new_kwargs["chat_history"], context)
+    return new_kwargs
+
+
 def handle_templating(
     messages: list[dict[str, Any]], context: dict[str, Any] | None = None
 ) -> list[dict[str, Any]]:
@@ -110,6 +128,9 @@ def handle_templating(
     from textwrap import dedent
 
     for message in messages:
+        if isinstance(message.get("message"), str):
+            message["message"] = dedent(Template(message["message"]).render(**context))
+            continue
         # Handle OpenAI format
         if isinstance(message.get("content"), str):
             message["content"] = dedent(Template(message["content"]).render(**context))
@@ -225,13 +246,17 @@ def patch(  # type: ignore
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
-
         context = handle_context(context, validation_context)
 
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
-        new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
+
+        if "messages" in new_kwargs:
+            new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
+        elif "message" in new_kwargs and "chat_history" in new_kwargs:
+            new_kwargs = handle_cohere_templating(new_kwargs, context)
+
         response = retry_sync(
             func=func,  # type: ignore
             response_model=response_model,
