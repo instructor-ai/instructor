@@ -42,6 +42,7 @@ class RequestBody(BaseModel):
     model: Union[openai_models, str]
     messages: list[dict[str, Any]]
     max_tokens: int = Field(default=1000)
+    temperature: float = Field(default=1.0)
     tools: list[Tool]
     tool_choice: dict[str, Any]
 
