@@ -10,6 +10,7 @@ from typing import (
 from typing import Any
 from typing_extensions import ParamSpec
 from pydantic import BaseModel
+from instructor.patch import handle_cohere_templating, handle_context
 from instructor.process_response import handle_response_model
 from instructor.retry import retry_async
 
@@ -62,6 +63,7 @@ def from_cohere(
         response_model: type[T_Model] | None = None,
         validation_context: dict[str, Any] | None = None,
         max_retries: int = 1,
+        context: dict[str, Any] | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -71,10 +73,13 @@ def from_cohere(
             **kwargs,
         )
 
+        context = handle_context(context, validation_context)
+        new_kwargs = handle_cohere_templating(new_kwargs, context)
+
         response = await retry_async(
             func=client.chat,
             response_model=prepared_response_model,
-            validation_context=validation_context,
+            context=context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
