@@ -89,6 +89,7 @@ class BatchJob:
         response_model: type[BaseModel],
         file_path: str,
         max_tokens: int = 1000,
+        temperature: float = 1.0,
     ):
         _, kwargs = handle_response_model(response_model=response_model)
 
@@ -103,6 +104,7 @@ class BatchJob:
                             model=model,
                             max_tokens=max_tokens,
                             messages=messages,
+                            temperature=temperature,
                             **kwargs,
                         ),
                     ).model_dump_json()
