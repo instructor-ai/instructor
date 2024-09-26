@@ -12,11 +12,15 @@ authors:
 
 You might be leaving up to 60% performance gains on the table with the wrong response model. Response Models impact model performance massively with Claude and GPT-4o, irregardless of you’re using JSON mode or Tool Calling.
 
-In short, by benchmarking Claude and GPT-4o on the GSM8k dataset, we found that
+Using the right response model can help ensure [your models respond in the right language](../posts/matching-language.md) or prevent [hallucinations when extracting video timestamps](../posts/timestamp.md).
+
+We decided to investigate this by benchmarking Claude and GPT-4o on the GSM8k dataset and found that
 
 1. **Field Naming drastically impacts performance** - Changing a single field name from `final_choice` to `answer` improved model accuracy from 4.5% to 95%. The way we structure and name fields in our response models can fundamentally alter how the model interprets and responds to queries.
 2. **Chain Of Thought significantly boosts performance** - Adding a `reasoning` field increased model accuracy by 60% on the GSM8k dataset. Models perform significantly better when they explain their logic step-by-step.
-3. **Be careful with JSON mode -** JSON mode exhibited 50% more performance variation than Tool Calling when renaming fields. Different response models showed varying levels of performance between JSON mode and Tool Calling, indicating that JSON mode requires more careful optimisation.
+3. **Be careful with JSON mode** - JSON mode exhibited 50% more performance variation than Tool Calling when renaming fields. Different response models showed varying levels of performance between JSON mode and Tool Calling, indicating that JSON mode requires more careful optimisation.
+
+<!-- more -->
 
 We’ll do so in the following steps
 
@@ -324,6 +328,8 @@ class Equations(BaseModel):
 ```
 
 This allows us to combine a LLM’s expressiveness with the performance of a deterministic system, in this case a python interpreter. As we continue to implement more complex systems wiht these models, the key isn’t going to be just toggling JSON mode and praying for the best. Instead, we need robust evaluation sets for testing the impact of different response models, prompt changes and other permutations.
+
+## Try Instructor Today
 
 `instructor` makes it easy to get structured data from LLMs and is built on top of Pydantic. This makes it an indispensable tool to quickly prototype and find the right response models for your specific application.
 
