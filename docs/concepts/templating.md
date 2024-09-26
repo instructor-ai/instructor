@@ -2,7 +2,11 @@
 
 Instructor uses Jinja to provide templating support for prompts - this allows us to separate our prompt from the data we pass in, make prompts easier to manage and res-use and most importantly, have rendering and validation logic expressed within the prompt itself.
 
-## Using `context
+!!! note
+
+    Currently templating only works for OpenAI, Cohere and Anthropic models. We're working on adding support for other providers like Gemini soon.
+
+## Using `context`
 
 The `context` parameter is a dictionary that is passed to the templating engine. It is used to pass in the relevant variables to the templating engine. This single `context` parameter will be passed to jinja to render out the final prompt.
 
