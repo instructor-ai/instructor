@@ -131,7 +131,7 @@ def handle_templating(
         if hasattr(message, "parts"):
             # VertexAI Support
             if isinstance(message.parts, list):  # type: ignore
-                import vertexai.generative_models as gm
+                import vertexai.generative_models as gm  # type: ignore
 
                 return gm.Content(
                     role=message.role,  # type: ignore
