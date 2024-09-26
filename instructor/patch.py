@@ -247,8 +247,10 @@ def patch(  # type: ignore
         )
         if "messages" in new_kwargs:
             new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
+
         elif "contents" in new_kwargs:
             new_kwargs["contents"] = handle_templating(new_kwargs["contents"], context)
+
 
         response = await retry_async(
             func=func,  # type: ignore
