@@ -128,6 +128,22 @@ def handle_templating(
     from textwrap import dedent
 
     for message in messages:
+        if hasattr(message, "parts"):
+            # VertexAI Support
+            if isinstance(message.parts, list):  # type: ignore
+                import vertexai.generative_models as gm  # type: ignore
+
+                return gm.Content(
+                    role=message.role,  # type: ignore
+                    parts=[
+                        gm.Part.from_text(dedent(Template(part.text).render(**context)))  # type: ignore
+                        if hasattr(part, "text")  # type: ignore
+                        else part
+                        for part in message.parts  # type: ignore
+                    ],
+                )
+            return message  # type: ignore
+
         if isinstance(message.get("message"), str):
             message["message"] = dedent(Template(message["message"]).render(**context))
             continue
@@ -146,7 +162,15 @@ def handle_templating(
                 ):
                     part["text"] = dedent(Template(part["text"]).render(**context))  # type:ignore
 
-        # TODO: Add handling for Gemini and Cohere formats
+        # Gemini Support
+        if isinstance(message.get("parts"), list):
+            new_parts = []
+            for part in message["parts"]:
+                if isinstance(part, str):
+                    new_parts.append(dedent(Template(part).render(**context)))  # type: ignore
+                else:
+                    new_parts.append(part)  # type: ignore
+            message["parts"] = new_parts
 
     return messages
 
@@ -216,7 +240,6 @@ def patch(  # type: ignore
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
-
         context = handle_context(context, validation_context)
 
         response_model, new_kwargs = handle_response_model(
@@ -224,6 +247,10 @@ def patch(  # type: ignore
         )
         if "messages" in new_kwargs:
             new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
+
+        elif "contents" in new_kwargs:
+            new_kwargs["contents"] = handle_templating(new_kwargs["contents"], context)
+
 
         response = await retry_async(
             func=func,  # type: ignore
@@ -257,6 +284,9 @@ def patch(  # type: ignore
             new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
         elif "message" in new_kwargs and "chat_history" in new_kwargs:
             new_kwargs = handle_cohere_templating(new_kwargs, context)
+
+        elif "contents" in new_kwargs:
+            new_kwargs["contents"] = handle_templating(new_kwargs["contents"], context)
 
         response = retry_sync(
             func=func,  # type: ignore
