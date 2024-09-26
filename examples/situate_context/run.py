@@ -69,12 +69,11 @@ async def situate_context(doc: str, chunk: str) -> SituatedContext:
     return response
 
 
-from typing import List
 
 
 def chunking_function(
     doc: str, chunk_size: int = 1000, overlap: int = 200
-) -> List[str]:
+) -> list[str]:
     """
     Chunk the document into `chunk_size` character segments with `overlap` overlap.
     """
@@ -88,10 +87,9 @@ def chunking_function(
 
 
 import asyncio
-from typing import List, Dict
 
 
-async def process_chunk(doc: str, chunk: str) -> Dict[str, str]:
+async def process_chunk(doc: str, chunk: str) -> dict[str, str]:
     """
     Process a single chunk by situating it within the context of the full document.
 
@@ -108,7 +106,7 @@ async def process_chunk(doc: str, chunk: str) -> Dict[str, str]:
 
 async def process(
     doc: str, chunk_size: int = 1000, overlap: int = 200
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """
     Process the document by chunking it and situating each chunk within the context of the full document.
     Uses asyncio.gather for concurrent processing.
