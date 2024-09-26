@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, model_validator
-from typing import Literal, Self
+from typing import Literal
 
 
 # Turns out this doesn't work well. since longer videos will be HH:MM:SS
