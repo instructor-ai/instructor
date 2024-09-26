@@ -1,8 +1,22 @@
-# Templating
+# Prompt Templating
 
-Instructor uses Jinja to provide templating support for prompts - this allows us to separate our prompt from the data we pass in, make prompts easier to manage and res-use and most importantly, have rendering and validation logic expressed within the prompt itself.
 
-## Using `context`
+With Instructor's Jinja templating, you can:
+
+- Dynamically adapt prompts to any context
+- Easily manage and version your prompts better
+- Integrate seamlessly with validation processes
+- Handle sensitive information securely
+
+Our solution offers:
+
+- Separation of prompt structure and content
+- Complex logic implementation within prompts
+- Template reusability across scenarios
+- Enhanced prompt versioning and logging
+- Pydantic integration for validation and type safety
+
+## Context is available to the templating engine
 
 The `context` parameter is a dictionary that is passed to the templating engine. It is used to pass in the relevant variables to the templating engine. This single `context` parameter will be passed to jinja to render out the final prompt.
 
@@ -21,13 +35,12 @@ resp = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": """Extract the information from the
-        following text: {{ name }} is {{ age }} years old""" # (1)!
+        following text: `{{ data }}`""" # (1)!
         },
     ],
     response_model=User,
     context = { # (2)!
-        "name": "John Doe",
-        "age": 30,
+        "data": "John Doe is thirty years old"
     }
 )
 
@@ -35,48 +48,67 @@ print(resp)
 #> User(name='John Doe', age=30)
 ```
 
-1. Declare jinja template variables inside the prompt itself (e.g. `{{ name }}`)
+1. Declare jinja style template variables inside the prompt itself (e.g. `{{ name }}`)
 2. Pass in the variables to be used in the `context` parameter
 
-### Integration with Pydantic
+### Context is available to Pydantic validators
 
-We can use the `context` with our normal Pydantic validators.
+In this example, we demonstrate how to leverage the `context` parameter with Pydantic validators to enhance our validation and data processing capabilities. By passing the `context` to the validators, we can implement dynamic validation rules and data transformations based on the input context. This approach allows for flexible and context-aware validation, such as checking for banned words or applying redaction patterns to sensitive information.
 
 ```python hl_lines="15-16 26-30"
 import openai
 import instructor
 from pydantic import BaseModel, ValidationInfo, field_validator
+import re
 
 client = instructor.from_openai(openai.OpenAI())
 
-class User(BaseModel):
-    name: str
-    age: int
+class Response(BaseModel):
+    text: str
 
-    @field_validator("name")
-    def validate_name(cls, v:str, info:ValidationInfo)-> str:
+    @field_validator('text')
+    @classmethod
+    def redact_regex(cls, v: str, info: ValidationInfo):
         context = info.context
+        if context:
+            redact_patterns = context.get('redact_patterns', [])
+            for pattern in redact_patterns:
+                v = re.sub(pattern, '****', v)
+        return v
 
-        if context["awesome_people"] and v in context["awesome_people"]: # (1)!
-            raise ValueError(f"{context['awesome_people']} should have their names fully capitalized with a star emoji. Make the edits")
-
-        return v.upper()
-
-resp = client.chat.completions.create(
-    model="gpt-4o-mini",
+response = client.create(
+    model="gpt-4o",
+    response_model=Response,
     messages=[
-        {"role": "user", "content": "Extract the information from the following text: {{ name }} is {{ age }} years old"},
+        {
+            "role": "user", 
+            "content": """
+                Write about a {{ topic }}
+
+                {% if banned_words %}
+                You must not use the following banned words:
+
+                <banned_words>
+                {% for word in banned_words %}
+                * {{ word }}
+                {% endfor %}
+                </banned_words>
+                {% endif %}
+              """
+        },
     ],
-    response_model=User,
-    context = { # (2)!
-        "name": "Chris",
-        "age": 27,
-        "awesome_people": ["Chris"]
-    }
+    context={
+        "topic": "jason and now his phone number is 123-456-7890",
+        "redact_patterns": [
+            r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b",  # Phone number pattern
+            r"\b\d{3}-\d{2}-\d{4}\b",          # SSN pattern
+        ],
+    },
+    max_retries=3,
 )
 
-print(resp)
-# name='CHRIS ⭐' age=27
+print(response.text)
+# > While i can't say his name anymore, his phone number is ****
 ```
 
 1. Access the variables passed into the `context` variable inside your Pydantic validator
@@ -85,7 +117,7 @@ print(resp)
 
 ### Jinja Syntax
 
-Because we're using jinja to render the prompts, we can use all of the familiar jinja syntax that you're used to. This makes it easy to render list of items, conditionals and more. This is incredibly useful because we can even call specific functions and methods within Jinja itself!
+Jinja is used to render the prompts, allowing the use of familiar Jinja syntax. This enables rendering of lists, conditionals, and more. It also allows calling functions and methods within Jinja.
 
 This makes formatting of prompts and rendering logic extremely easy.
 
