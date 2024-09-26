@@ -52,3 +52,46 @@ def test_upper_case_tenacity(model, mode):
         max_retries=retries,
     )
     assert response.name == "JASON"
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+@pytest.mark.asyncio(scope="session")
+async def test_upper_case_async(model, mode):
+    client = instructor.from_gemini(
+        genai.GenerativeModel(model),
+        mode=mode,
+        use_async=True,
+    )
+    response = await client.chat.completions.create(
+        response_model=UserDetail,
+        messages=[
+            {"role": "user", "content": "Extract `jason is 12`"},
+        ],
+        max_retries=3,
+    )
+    assert response.name == "JASON"
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+@pytest.mark.asyncio(scope="session")
+async def test_upper_case_async_tenacity(model, mode):
+    client = instructor.from_gemini(
+        genai.GenerativeModel(model),
+        mode=mode,
+        use_async=True,
+    )
+    from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
+
+    retries = AsyncRetrying(
+        stop=stop_after_attempt(2),
+        wait=wait_fixed(3),
+    )
+
+    response = await client.chat.completions.create(
+        response_model=UserDetail,
+        messages=[
+            {"role": "user", "content": "Extract `jason is 12`"},
+        ],
+        max_retries=retries,
+    )
+    assert response.name == "JASON"

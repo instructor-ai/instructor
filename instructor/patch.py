@@ -216,13 +216,15 @@ def patch(  # type: ignore
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
-
         context = handle_context(context, validation_context)
 
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )
-        new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
+        if "messages" in new_kwargs:
+            new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
+
+        # TODO: Add support for Gemini here
 
         response = await retry_async(
             func=func,  # type: ignore

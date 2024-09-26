@@ -64,7 +64,7 @@ instructor = "instructor.cli.cli:app"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
-pytest-asyncio = "^0.21.1"
+pytest-asyncio = "^0.23.0"
 coverage = "^7.3.2"
 pyright = "^1.1.360"
 jsonref = "^1.1.0"
