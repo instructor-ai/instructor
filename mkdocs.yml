@@ -185,6 +185,7 @@ nav:
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
+    - Templating: 'concepts/templating.md'
   - Hub:
     - Introducing Instructor Hub: 'hub/index.md'
     - Single Classification Model: 'hub/single_classification.md'
