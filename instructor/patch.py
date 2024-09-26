@@ -130,19 +130,19 @@ def handle_templating(
     for message in messages:
         if hasattr(message, "parts"):
             # VertexAI Support
-            if isinstance(message.parts, list):
+            if isinstance(message.parts, list):  # type: ignore
                 import vertexai.generative_models as gm
 
                 return gm.Content(
-                    role=message.role,
+                    role=message.role,  # type: ignore
                     parts=[
-                        gm.Part.from_text(dedent(Template(part.text).render(**context)))
-                        if hasattr(part, "text")
+                        gm.Part.from_text(dedent(Template(part.text).render(**context)))  # type: ignore
+                        if hasattr(part, "text")  # type: ignore
                         else part
-                        for part in message.parts
+                        for part in message.parts  # type: ignore
                     ],
                 )
-            return message
+            return message  # type: ignore
 
         if isinstance(message.get("message"), str):
             message["message"] = dedent(Template(message["message"]).render(**context))
@@ -167,9 +167,9 @@ def handle_templating(
             new_parts = []
             for part in message["parts"]:
                 if isinstance(part, str):
-                    new_parts.append(dedent(Template(part).render(**context)))
+                    new_parts.append(dedent(Template(part).render(**context)))  # type: ignore
                 else:
-                    new_parts.append(part)
+                    new_parts.append(part)  # type: ignore
             message["parts"] = new_parts
 
     return messages
