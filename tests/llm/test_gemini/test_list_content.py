@@ -18,18 +18,35 @@ def test_list_of_strings():
         mode=instructor.Mode.GEMINI_JSON,
     )
 
-    content = [
-        "Extract a list of users from the following text",
-        "Jason is 25 years old",
-        "Elizabeth is 12 years old",
-        "Chris is 27 years old",
+    users = [
+        {
+            "name": "Jason",
+            "age": 25,
+        },
+        {
+            "name": "Elizabeth",
+            "age": 12,
+        },
+        {
+            "name": "Chris",
+            "age": 27,
+        }
     ]
+
+    prompt = """
+    Extract a list of users from the following text:
+
+    {% for user in users %}
+    - Name: {{ user.name }}, Age: {{ user.age }}
+    {% endfor %}
+    """
 
     result = client.chat.completions.create(
         response_model=UserList,
         messages=[
-            {"role": "user", "content": content},
+            {"role": "user", "content": prompt},
         ],
+        context={"users": users},
     )
 
     assert isinstance(result, UserList), "Result should be an instance of UserList"
@@ -40,3 +57,4 @@ def test_list_of_strings():
     assert "JASON" in names, "'JASON' should be in the list"
     assert "ELIZABETH" in names, "'ELIZABETH' should be in the list"
     assert "CHRIS" in names, "'CHRIS' should be in the list"
+
