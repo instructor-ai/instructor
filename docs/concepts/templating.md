@@ -195,4 +195,12 @@ This allows you to preserve your sensitive information while still using it in y
 
 ## Different Clients
 
-We
+Templating support currently works for OpenAI, Anthropic, Gemini and VertexAI clients. See below for examples for each of these clients.
+
+### OpenAI
+
+### Anthropic
+
+### Gemini
+
+### VertexAI
