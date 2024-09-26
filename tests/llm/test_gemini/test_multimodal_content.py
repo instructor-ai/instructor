@@ -1,11 +1,16 @@
 import instructor
 import google.generativeai as genai
 from pydantic import BaseModel
+import os
 
 
 class Description(BaseModel):
     relevant_speakers: list[str]
     summary: str
+
+
+curr_file = os.path.dirname(__file__)
+file_path = os.path.join(curr_file, "./test_files/sample.mp3")
 
 
 def test_audio_compatability_list():
@@ -18,7 +23,7 @@ def test_audio_compatability_list():
     file_names = [file.display_name for file in files]
 
     if "sample.mp3" not in file_names:
-        file = genai.upload_file("./test_files/sample.mp3")
+        file = genai.upload_file(file_path)
     else:
         print("File already uploaded, extracting file obj now")
         file = [file for file in files if file.display_name == "sample.mp3"][0]
@@ -47,7 +52,7 @@ def test_audio_compatability_multiple_messages():
     file_names = [file.display_name for file in files]
 
     if "sample.mp3" not in file_names:
-        file = genai.upload_file("./test_files/sample.mp3")
+        file = genai.upload_file(file_path)
     else:
         print("File already uploaded, extracting file obj now")
         file = [file for file in files if file.display_name == "sample.mp3"][0]
