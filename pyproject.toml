@@ -72,8 +72,8 @@ jsonref = "^1.1.0"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
 mkdocs-material = { extras = ["imaging"], version = "^9.5.9" }
-mkdocstrings = "^0.26.1"
-mkdocstrings-python = "^1.11.1"
+mkdocstrings = "^0.22.0"
+mkdocstrings-python = "^1.1.2"
 pytest-examples = "^0.0.10"
 mkdocs-jupyter = "^0.24.6"
 mkdocs-rss-plugin = "^1.12.0"
