@@ -680,6 +680,10 @@ for user in users:
 
 ![iterable](./blog/posts/img/iterable.png)
 
+## Templating
+
+Instructor also ships with [Jinja](https://palletsprojects.com/p/jinja/) templating support. Check out our docs on [templating](./concepts/templating.md) to learn about how to use it to its full potential.
+
 ## Validation
 
 You can also use Pydantic to validate your outputs and get the llm to retry on failure. Check out our docs on [retrying](./concepts/retrying.md) and [validation context](./concepts/reask_validation.md).
