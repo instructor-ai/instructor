@@ -13,29 +13,32 @@ authors:
   - jxnl
 ---
 
-# Structured Output for Open Source and Local LLMS 
+# Structured Output for Open Source and Local LLMs 
 
-Originally, Instructor facilitated API interactions solely via the OpenAI SDK, with an emphasis on function call by incorporating [Pydantic](https://pydantic-docs.helpmanual.io/) for structured data validation and serialization. 
+Instructor has expanded its capabilities for language models. It started with API interactions via the OpenAI SDK, using [Pydantic](https://pydantic-docs.helpmanual.io/) for structured data validation. Now, Instructor supports multiple models and platforms.
 
+The integration of [JSON mode](../../concepts/patching.md#json-mode) improved adaptability to vision models and open source alternatives. This allows support for models from [GPT](https://openai.com/api/) and [Mistral](https://mistral.ai) to models on [Ollama](https://ollama.ai) and [Hugging Face](https://huggingface.co/models), using [llama-cpp-python](../../hub/llama-cpp-python.md).
 
-As the year progressed, we expanded our toolkit by integrating [JSON mode](../../concepts/patching.md#json-mode), thus enhancing our adaptability to vision models and open source models. This advancement now enables us to support an extensive range of models, from [GPT](https://openai.com/api/) and [Mistral](https://mistral.ai) to virtually any model accessible through [Ollama](https://ollama.ai) and [Hugging Face](https://huggingface.co/models), facilitated by [llama-cpp-python](../../hub/llama-cpp-python.md). For more insights into leveraging JSON mode with various models, refer back to our detailed guide on [Patching](../../concepts/patching.md).
+Instructor now works with cloud-based APIs and local models for structured data extraction. Developers can refer to our guide on [Patching](../../concepts/patching.md) for information on using JSON mode with different models.
 
-If you want to check out a course on how to use Instructor with Pydantic, check out our course on [Steering language models towards structured outputs.](https://www.wandb.courses/courses/steering-language-models).
+For learning about Instructor and Pydantic, we offer a course on [Steering language models towards structured outputs](https://www.wandb.courses/courses/steering-language-models).
+
+The following sections show examples of Instructor's integration with platforms and local setups for structured outputs in AI projects.
 
 <!-- more -->
 
 
 ## Exploring Different OpenAI Clients with Instructor
 
-The landscape of OpenAI clients is diverse, each offering unique functionalities tailored to different needs. Below, we explore some of the notable clients integrated with Instructor, providing structured outputs and enhanced capabilities, complete with examples of how to initialize and patch each client.
+OpenAI clients offer functionalities for different needs. We explore clients integrated with Instructor, providing structured outputs and capabilities. Examples show how to initialize and patch each client.
 
 ## Local Models
 
 ### Ollama: A New Frontier for Local Models
 
-Ollama's introduction significantly impacts the open-source community, offering a way to merge structured outputs with local models via JSON schema, as detailed in our [Ollama documentation](../../hub/ollama.md).
+Ollama enables structured outputs with local models using JSON schema. See our [Ollama documentation](../../hub/ollama.md) for details.
 
-For an in-depth exploration of Ollama, including setup and advanced features, refer to the documentation. The [Ollama official website](https://ollama.ai/download) also provides essential resources, model downloads, and community support for newcomers.
+For setup and features, refer to the documentation. The [Ollama website](https://ollama.ai/download) provides resources, models, and support.
 
 ```
 ollama run llama2
@@ -78,9 +81,9 @@ print(user)
 
 ### llama-cpp-python
 
-Open-source LLMS are gaining popularity, and llama-cpp-python has made the `llama-cpp` model available to obtain structured outputs using JSON schema via a mixture of [constrained sampling](https://llama-cpp-python.readthedocs.io/en/latest/#json-schema-mode) and [speculative decoding](https://llama-cpp-python.readthedocs.io/en/latest/#speculative-decoding). They also support a [OpenAI compatible client](https://llama-cpp-python.readthedocs.io/en/latest/#openai-compatible-web-server), which can be used to obtain structured output as an in-process mechanism to avoid any network dependency.
+llama-cpp-python provides the `llama-cpp` model for structured outputs using JSON schema. It uses [constrained sampling](https://llama-cpp-python.readthedocs.io/en/latest/#json-schema-mode) and [speculative decoding](https://llama-cpp-python.readthedocs.io/en/latest/#speculative-decoding). An [OpenAI compatible client](https://llama-cpp-python.readthedocs.io/en/latest/#openai-compatible-web-server) allows in-process structured output without network dependency.
 
-For those interested in leveraging the power of llama-cpp-python for structured outputs, here's a quick example:
+Example of using llama-cpp-python for structured outputs:
 
 
 ```python
@@ -124,6 +127,7 @@ user = create(
 
 print(user)
 #> name='Jason' age=30
+"""
 ```
 
 ## Alternative Providers

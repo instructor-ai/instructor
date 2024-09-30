@@ -274,7 +274,14 @@ async def retry_async(
                     )
                 except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
                     logger.debug(f"Error response: {response}")
-                    if mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
+                    if mode in {
+                        Mode.GEMINI_JSON,
+                        Mode.GEMINI_TOOLS,
+                        Mode.VERTEXAI_TOOLS,
+                        Mode.VERTEXAI_JSON,
+                    }:
+                        kwargs["contents"].extend(reask_messages(response, mode, e))
+                    elif mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
                         if attempt.retry_state.attempt_number == 1:
                             kwargs["chat_history"].extend(
                                 [{"role": "user", "message": kwargs.get("message")}]

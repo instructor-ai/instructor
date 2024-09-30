@@ -37,8 +37,16 @@ def test_partial_model(model, mode):
         max_retries=2,
         stream=True,
         messages=[
-            {"role": "user", "content": "Jason Liu is 12 years old"},
+            {"role": "user", "content": "{{ name }} is {{ age }} years old"},
         ],
+        context={"name": "Jason", "age": 12},
     )
+    final_model = None
     for m in model:
         assert isinstance(m, UserExtract)
+        final_model = m
+    
+    assert final_model.age == 12
+    assert final_model.name == "Jason"
+
+
