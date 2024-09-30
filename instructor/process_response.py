@@ -528,6 +528,22 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
 def handle_response_model(
     response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
 ) -> tuple[type[T] | None, dict[str, Any]]:
+    """
+    Handles the response model based on the specified mode and prepares the kwargs for the API call.
+
+    Args:
+        response_model (type[T] | None): The response model to be used for parsing the API response.
+        mode (Mode): The mode to use for handling the response model. Defaults to Mode.TOOLS.
+        **kwargs: Additional keyword arguments to be passed to the API call.
+
+    Returns:
+        tuple[type[T] | None, dict[str, Any]]: A tuple containing the processed response model and the updated kwargs.
+
+    This function prepares the response model and modifies the kwargs based on the specified mode.
+    It handles various modes like TOOLS, JSON, FUNCTIONS, etc., and applies the appropriate
+    transformations to the response model and kwargs.
+    """
+
     new_kwargs = kwargs.copy()
 
     if response_model is None:
