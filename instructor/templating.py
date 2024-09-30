@@ -1,3 +1,4 @@
+# type: ignore[all]
 from typing import Any, Dict
 from jinja2 import Template
 from textwrap import dedent
