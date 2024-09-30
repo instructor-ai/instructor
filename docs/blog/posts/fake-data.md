@@ -55,7 +55,7 @@ We might want to set examples as part of the prompt by leveraging Pydantics conf
 
 ```python
 from typing import Iterable
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import instructor
 from openai import OpenAI
 
