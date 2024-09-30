@@ -40,17 +40,24 @@ async def process_response_async(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
 ) -> T_Model | ChatCompletion:
-    """Processes a OpenAI response with the response model, if available.
-    It can use `validation_context` and `strict` to validate the response
-    via the pydantic model
+    """
+    Asynchronously processes the response from the OpenAI API.
 
     Args:
-        response (ChatCompletion): The response from OpenAI's API
-        response_model (BaseModel): The response model to use for parsing the response
-        stream (bool): Whether the response is a stream
-        validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
-        strict (bool, optional): Whether to use strict json parsing. Defaults to None.
+        response (ChatCompletion): The raw response from the OpenAI API.
+        response_model (type[T_Model | OpenAISchema | BaseModel] | None): The expected model type for the response.
+        stream (bool): Whether the response is streamed.
+        validation_context (dict[str, Any] | None): Additional context for validation.
+        strict (bool | None): Whether to apply strict validation.
+        mode (Mode): The processing mode to use.
+
+    Returns:
+        T_Model | ChatCompletion: The processed response, either as the specified model type or the raw ChatCompletion.
+
+    This function handles various response types, including streaming responses and different model bases.
+    It applies the appropriate processing based on the response_model and mode provided.
     """
+
     logger.debug(
         f"Instructor Raw Response: {response}",
     )
@@ -102,20 +109,28 @@ def process_response(
     strict=None,
     mode: Mode = Mode.TOOLS,
 ):
-    """Processes a OpenAI response with the response model, if available.
+    """
+    Process the response from the API call and convert it to the specified response model.
 
     Args:
-        response (T): The response from OpenAI's API
-        response_model (Type[T_Model]): The response model to use for parsing the response
-        stream (bool): Whether the response is a stream
-        validation_context (dict, optional): The validation context to use for validating the response. Defaults to None.
-        strict (_type_, optional): Whether to use strict json parsing. Defaults to None.
-        mode (Mode, optional): The openai completion mode. Defaults to Mode.FUNCTIONS.
+        response (T_Model): The raw response from the API call.
+        response_model (type[OpenAISchema | BaseModel] | None): The model to convert the response to.
+        stream (bool): Whether the response is a streaming response.
+        validation_context (dict[str, Any] | None): Additional context for validation.
+        strict (bool | None): Whether to use strict validation.
+        mode (Mode): The mode used for processing the response.
 
     Returns:
-        Union[T_Model, T]: The parsed response, if a response model is available, otherwise the response as is from the SDK
-    """
+        The processed response, which could be:
+        - The raw response if no response_model is specified
+        - An instance of the response_model
+        - A list of tasks if the model is an IterableBase
+        - The content of the model if it's an AdapterBase
 
+    This function handles various types of responses and models, including streaming
+    responses, iterable models, parallel models, and adapter models. It also attaches
+    the raw response to the processed model when applicable.
+    """
     logger.debug(
         f"Instructor Raw Response: {response}",
     )
@@ -503,6 +518,22 @@ def is_typed_dict(cls) -> bool:
 
 
 def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
+    """
+    Prepares the response model for use in the API call.
+
+    This function performs several transformations on the input response_model:
+    1. If the response_model is None, it returns None.
+    2. If it's a simple type, it wraps it in a ModelAdapter.
+    3. If it's a TypedDict, it converts it to a Pydantic BaseModel.
+    4. If it's an Iterable, it wraps the element type in an IterableModel.
+    5. If it's not already a subclass of OpenAISchema, it applies the openai_schema decorator.
+
+    Args:
+        response_model (type[T] | None): The input response model to be prepared.
+
+    Returns:
+        type[T] | None: The prepared response model, or None if the input was None.
+    """
     if response_model is None:
         return None
 
