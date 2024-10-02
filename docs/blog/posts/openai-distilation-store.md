@@ -93,7 +93,6 @@ The diagram highlights:
 This visual representation helps to clarify the flow and benefits of using API Model Distillation in conjunction with Instructor's capabilities.
 
 
-
 ## Benefits of Using Instructor with API Model Distillation
 
 1. **Structured Output**: Instructor's use of [Pydantic](https://docs.pydantic.dev/) models ensures that your distilled model produces structured, validated output.
@@ -103,7 +102,7 @@ This visual representation helps to clarify the flow and benefits of using API M
 
 ## Conclusion
 
-API Model Distillation, combined with Instructor's structured output capabilities, offers a powerful way to create efficient, specialized models. By leveraging Instructor's seamless integration with OpenAI's API, you can easily incorporate this feature into your existing workflows, improving both performance and cost-effectiveness of your AI-powered applications.
+API Model Distillation with Instructor's structured output creates efficient, specialized models. Instructor's integration with OpenAI's API allows you to incorporate this feature into workflows, improving performance and cost-effectiveness of AI applications.
 
 Remember to check [OpenAI's documentation](https://platform.openai.com/docs) for the latest information on API Model Distillation and best practices for creating and using distilled models.
 
