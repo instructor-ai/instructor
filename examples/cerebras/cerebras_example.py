@@ -2,7 +2,6 @@ import instructor
 
 from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
-import openai 
 from typing import List
 
 # Define your desired output structure
