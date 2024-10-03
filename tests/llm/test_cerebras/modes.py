@@ -147,7 +147,7 @@ def test_cerebras_json_streaming():
 
 
 @pytest.mark.asyncio
-async def test_cerebras_json_streaming():
+async def test_cerebras_json_async_streaming():
     class User(BaseModel):
         name: str
         age: int
