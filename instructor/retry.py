@@ -140,6 +140,12 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
                 "name": tool_call.function.name,
                 "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
             }
+    elif mode == Mode.CEREBRAS_TOOLS:
+        for tool_call in response.choices[0].message.tool_calls:
+            yield {
+                "role": "user",
+                "content": f"Validation Error found:\n{exception}\n. Make sure to call {tool_call.function.name} with the correct arguments that takes into account the validation errors found. Regenerate the response from the function call only.",
+            }
     elif mode == Mode.MD_JSON:
         yield {
             "role": "user",
