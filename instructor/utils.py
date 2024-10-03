@@ -48,6 +48,7 @@ class Provider(Enum):
     COHERE = "cohere"
     GEMINI = "gemini"
     DATABRICKS = "databricks"
+    CEREBRAS = "cerebras"
     UNKNOWN = "unknown"
 
 

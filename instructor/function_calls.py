@@ -143,10 +143,21 @@ class OpenAISchema(BaseModel):
             Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
-        if mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.TOOLS_STRICT}:
+        if mode in {
+            Mode.TOOLS,
+            Mode.MISTRAL_TOOLS,
+            Mode.TOOLS_STRICT,
+            Mode.CEREBRAS_TOOLS,
+        }:
             return cls.parse_tools(completion, validation_context, strict)
 
-        if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON, Mode.JSON_O1}:
+        if mode in {
+            Mode.JSON,
+            Mode.JSON_SCHEMA,
+            Mode.MD_JSON,
+            Mode.JSON_O1,
+            Mode.CEREBRAS_JSON,
+        }:
             return cls.parse_json(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
@@ -316,13 +327,14 @@ class OpenAISchema(BaseModel):
         message = completion.choices[0].message
         # this field seems to be missing when using instructor with some other tools (e.g. litellm)
         # trying to fix this by adding a check
+
         if hasattr(message, "refusal"):
             assert (
                 message.refusal is None
             ), f"Unable to generate a response due to {message.refusal}"
         assert (
             len(message.tool_calls or []) == 1
-        ), "Instructor does not support multiple tool calls, use List[Model] instead."
+        ), f"Instructor does not support multiple tool calls, use List[Model] instead, {message.tool_calls}"
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]

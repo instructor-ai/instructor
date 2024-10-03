@@ -245,13 +245,19 @@ def handle_response_model(
                 "type": "function",
                 "function": {"name": response_model_schema["function"]["name"]},
             }
-        elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS}:
+        elif mode in {Mode.TOOLS, Mode.MISTRAL_TOOLS, Mode.CEREBRAS_TOOLS}:
             new_kwargs["tools"] = [
                 {
                     "type": "function",
                     "function": response_model.openai_schema,
                 }
             ]
+            
+            if mode == Mode.CEREBRAS_TOOLS and new_kwargs.get("stream", False):
+                raise ValueError(
+                    "Cerebras does not support streaming for tools at the moment"
+                )
+
             if mode == Mode.MISTRAL_TOOLS:
                 new_kwargs["tool_choice"] = "any"
             else:
@@ -282,8 +288,7 @@ def handle_response_model(
                     "content": message,
                 },
             )
-
-        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA}:
+        elif mode in {Mode.JSON, Mode.MD_JSON, Mode.JSON_SCHEMA, Mode.CEREBRAS_JSON}:
             # If its a JSON Mode we need to massage the prompt a bit
             # in order to get the response we want in a json format
             message = dedent(

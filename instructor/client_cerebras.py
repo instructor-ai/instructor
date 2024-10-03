@@ -12,7 +12,7 @@ from cerebras.cloud.sdk import Cerebras, AsyncCerebras
 @overload
 def from_cerebras(
     client: Cerebras,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     use_async: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -21,7 +21,7 @@ def from_cerebras(
 @overload
 def from_cerebras(
     client: AsyncCerebras,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     use_async: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -29,14 +29,17 @@ def from_cerebras(
 
 def from_cerebras(
     client: Cerebras | AsyncCerebras,
-    mode: instructor.Mode = instructor.Mode.TOOLS,
+    mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     use_async: bool = False,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    assert mode in {
-        instructor.Mode.TOOLS,
-        instructor.Mode.JSON,
-    }, "Mode must be one of {instructor.Mode.TOOLS, instructor.Mode.JSON}"
+    assert (
+        mode
+        in {
+            instructor.Mode.CEREBRAS_TOOLS,
+            instructor.Mode.CEREBRAS_JSON,
+        }
+    ), "Mode must be one of {instructor.Mode.CEREBRAS_TOOLS, instructor.Mode.CEREBRAS_JSON}"
 
     assert isinstance(
         client, (Cerebras, AsyncCerebras)
