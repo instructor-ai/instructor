@@ -1,6 +1,7 @@
 import instructor
 from cerebras.cloud.sdk import Cerebras, AsyncCerebras
 from pydantic import BaseModel, field_validator
+from collections.abc import Iterable
 import pytest
 
 modes = [
@@ -120,8 +121,6 @@ async def test_async_cerebras_retries(mode: instructor.Mode):
 
 
 def test_cerebras_json_streaming():
-    from typing import Iterable
-
     class User(BaseModel):
         name: str
         age: int
@@ -149,8 +148,6 @@ def test_cerebras_json_streaming():
 
 @pytest.mark.asyncio
 async def test_cerebras_json_streaming():
-    from typing import Iterable
-
     class User(BaseModel):
         name: str
         age: int
@@ -176,8 +173,6 @@ async def test_cerebras_json_streaming():
 
 
 def test_cerebras_tool_error():
-    from typing import Iterable
-
     class User(BaseModel):
         name: str
         age: int
