@@ -471,7 +471,7 @@ test = ["flake8", "isort", "pytest"]
 name = "cerebras-cloud-sdk"
 version = "1.5.0"
 description = "The official Python library for the cerebras API"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "cerebras_cloud_sdk-1.5.0-py3-none-any.whl", hash = "sha256:fd114e24a32462e208e120a2ee5548288da5a8886063f106c23831fd3e4b7efe"},
@@ -5387,4 +5387,4 @@ vertexai = ["google-cloud-aiplatform", "jsonref"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "3c191f7b83b721bb43b052d4a0080ac48d252fce3b2e4da3b07b699150cf828d"
+content-hash = "a71ed1eaff14cddc204f64c73a6c3b29e19726fbb8242d6d059c5a354568033c"
