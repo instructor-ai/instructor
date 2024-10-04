@@ -86,10 +86,9 @@ def test_sync_parallel_tools_one(client):
 
 
 @pytest.mark.asyncio
-async def test_async_parallel_tools_one():
-    from openai import AsyncOpenAI
+async def test_async_parallel_tools_one(aclient):
+    client = instructor.from_openai(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
 
-    client = instructor.patch(AsyncOpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
     resp = await client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[

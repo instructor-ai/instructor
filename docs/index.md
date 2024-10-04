@@ -501,6 +501,42 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+### Using Cerebras
+
+For those who want to use the Cerebras models, you can use the `from_cerebras` method to patch the client. You can see their list of models [here](https://inference-docs.cerebras.ai/api-reference/models).
+
+```python
+from cerebras.cloud.sdk import Cerebras
+import instructor
+from pydantic import BaseModel
+import os
+
+client = Cerebras(
+    api_key=os.environ.get("CEREBRAS_API_KEY"),
+)
+client = instructor.from_cerebras(client)
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+resp = client.chat.completions.create(
+    model="llama3.1-70b",
+    response_model=User,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+)
+
+print(resp)
+# > name='Jason' age=25
+```
+
 ## Correct Typing
 
 This was the dream of instructor but due to the patching of openai, it wasnt possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
