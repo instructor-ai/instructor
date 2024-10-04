@@ -1,5 +1,5 @@
 from typing import TypeVar
-
+import os
 import pytest
 from anthropic.types import Message, Usage
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -191,6 +191,7 @@ def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
 
 
+@pytest.mark.isolated
 def test_pylance_url_config() -> None:
     class Model(BaseModel):
         list_of_ints: list[int]
