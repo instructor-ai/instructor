@@ -64,6 +64,7 @@ def test_runmodel_validator(model, mode):
         messages=[
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
+        max_retries=5,
     )
     assert isinstance(model, UserExtractValidated), "Should be instance of UserExtract"
     assert model.name == "JASON"
