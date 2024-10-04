@@ -1,0 +1,1927 @@
+.pytest_cache/README.md:
+  hash: 7cc7f8d7cb2f2f6ea48da17c4b42c097
+  summary: The pytest cache directory is an essential component of the pytest framework's
+    cache plugin, which supports features like the `--lf` (last failed) and `--ff`
+    (failed first) options, as well as the `cache` fixture. It is crucial not to commit
+    this directory to version control, as it contains transient data that aids in
+    optimizing test execution. For comprehensive guidance and best practices, refer
+    to the [pytest cache documentation](https://docs.pytest.org/en/stable/how-to/cache.html).
+    Key terms include pytest, cache directory, cache plugin, `--lf`, `--ff`, cache
+    fixture, and version control.
+api.md:
+  hash: eb98fb7f83415f27d1f4ac914e88f7a5
+  summary: The API Reference guide provides detailed documentation for a range of
+    features including `instructor.from_openai`, which likely facilitates interaction
+    with OpenAI models. It also covers `instructor.dsl.validators`, `iterable`, `partial`,
+    `parallel`, and `maybe`, suggesting a focus on facilitating and validating data
+    operations, handling iterative processes, partial functions, parallel processing,
+    and optional operations. Additionally, `instructor.function_calls` suggests guidance
+    on executing and managing function calls. This technical documentation is essential
+    for developers looking to implement efficient coding practices using these APIs.
+    Key terms include API Reference, OpenAI, data operations, function calls, parallel
+    processing, and validation.
+blog/index.md:
+  hash: 10fbf1928e67e5f5278955322f96c013
+  summary: 'Subscribe to our newsletter for updates on new features and tips for using
+    Instructor, a tool that enhances AI query understanding, validation, and model
+    optimization. Explore advanced topics such as achieving GPT-4 level summaries
+    with GPT-3.5, understanding guardrails in AI, and validating AI-generated citations.
+    Enhance your Python skills with guidance on caching functions, batch processing
+    with async, and streaming models for improved latency. Learn about integrations
+    with Ollama, llama-cpp-python, Anyscale, and Together Compute. Access educational
+    resources, including a course on structured outputs and a keynote on Pydantic.
+    These insights are ideal for those eager to optimize AI models and improve Python
+    programming efficiency. Keywords: AI query understanding, GPT-4 summaries, Python
+    caching, AI model optimization, Instructor updates.'
+blog/posts/aisummit-2023.md:
+  hash: 94a032207a2c663c0d9bf722f7d93d6e
+  summary: In this AI Engineer Keynote, delivered at the AI Engineer Summit, the speaker,
+    identified as jxnl, explores how [Pydantic](https://docs.pydantic.dev/latest/)
+    can be a powerful tool for prompt engineering in Python. The talk delves into
+    the documentation and insights provided by standard blog posts about Pydantic's
+    applications in developing more efficient AI systems. The speaker invites feedback
+    to further refine these concepts. Key themes include Python programming, Pydantic
+    usage, prompt engineering techniques, and advancements in AI development. Watch
+    the full talk [here](https://www.youtube.com/watch?v=yj-wSRJwrrc) for more detailed
+    insights.
+blog/posts/announcing-gemini-tool-calling-support.md:
+  hash: 7f7358c04cd1e161b5006f496392ab51
+  summary: The announcement highlights the new support for structured outputs using
+    tool calling in the `instructor` platform, compatible with both Gemini SDK and
+    VertexAI SDK. It emphasizes the ease of setup and the generous free token quota
+    of the Gemini SDK, recommending it over VertexAI, which requires more complex
+    authentication. The article provides installation instructions, a usage example
+    with Python code, and compares both SDKs, noting the models that currently support
+    tool calling are `gemini-1.5-flash-latest` and `gemini-1.5-pro-latest`. It also
+    credits Sonal for contributing to the Gemini Tool Calling support. Key terms include
+    Gemini SDK, VertexAI SDK, tool calling, structured outputs, and API integration.
+blog/posts/anthropic-prompt-caching.md:
+  hash: 3512680e4297a460ee9540c8174efdc8
+  summary: The article introduces Anthropic's new prompt caching feature, aimed at
+    tackling the challenges of slow response times and high costs developers face
+    when handling large contexts in language models. This feature, still in beta,
+    reduces costs and latency by caching frequently used text, thus avoiding repeated
+    processing. Key limitations include a minimum cache size requirement (2048 tokens
+    for Claude Haiku and 1024 for Claude Sonnet) and the current inability to cache
+    tool definitions, though future updates are expected to address this. The article
+    provides a practical example using Jane Austen's "Pride and Prejudice" to illustrate
+    how prompt caching can optimize API calls. Important keywords include prompt caching,
+    Anthropic, large context, response times, and high costs.
+blog/posts/anthropic.md:
+  hash: a2e9176359f6abf16ce62975b978ed41
+  summary: 'The announcement introduces support for the Anthropic client in the instructor
+    package, highlighting new features except for streaming support. Users can experiment
+    by patching the client with `ANTHROPIC_JSON` to leverage enhanced capabilities.
+    The integration allows creating models with specific attributes using the `anthropic`
+    client and `pydantic` for data validation. Key topics include missing partial
+    streaming features, improving re-asking support for XML, and community feedback
+    for handling nested data types. Keywords: Anthropic support, streaming, `instructor`
+    package, `pydantic`, model creation, community feedback.'
+blog/posts/bad-schemas-could-break-llms.md:
+  hash: 83ebd7f74900e32e79a3edbb825d4f4f
+  summary: The article discusses how bad schemas can dramatically impact the structured
+    outputs of LLMs like Claude and GPT-4o, potentially leaving 60% performance gains
+    on the table. Key points include how field naming, such as changing from `final_choice`
+    to `answer`, and implementing a Chain of Thought can significantly boost model
+    accuracy. The article highlights JSON mode's sensitivity compared to Tool Calling,
+    emphasizing the need for careful optimization and robust evaluation. It also underscores
+    the importance of choosing effective response models and the influence of naming
+    conventions on model performance. The GSM8k dataset is used for benchmarking,
+    revealing insights into response model optimization.
+blog/posts/best_framework.md:
+  hash: 7a7b2ee06935e41b65ae4b528d4b26fa
+  summary: The Instructor library is an innovative tool for generating structured
+    outputs from large language models (LLMs) like GPTs using Python type annotations.
+    It seamlessly integrates with the OpenAI Python SDK via a simple patch, allowing
+    users to define structured data models with Pydantic, which eliminates the complexities
+    of handling open-ended text outputs. Key features include Pydantic model validation,
+    retry logic with Tenacity, and support for parallel tool calling, making Instructor
+    adaptable across platforms like Anyscale and Ollama. Its low abstraction makes
+    it easy to integrate into existing OpenAI-based applications, facilitating structured,
+    type-safe, and validated data extraction from LLMs.
+blog/posts/caching.md:
+  hash: 4f1c410b7594f24b628860780b654088
+  summary: This article provides a comprehensive guide to caching in Python with a
+    focus on optimizing computationally expensive tasks, particularly when working
+    with Pydantic models. It discusses the use of `functools.cache` for simple in-memory
+    caching ideal for applications with immutable arguments, introduces `diskcache`
+    for persistent, large data caching suitable for longer-term data reuse, and covers
+    `redis` for distributed systems requiring scalable in-memory data storage. The
+    article provides detailed implementation examples, highlighting the benefits and
+    use cases for each caching strategy. Core ideas include enhancing performance,
+    reducing computation time, and addressing caching challenges with Pydantic models.
+    Key details emphasize persistent caching, distributed systems, and handling complex
+    data structures.
+blog/posts/chain-of-density.md:
+  hash: c7852c03e42587934e4954cc0999a1b1
+  summary: 'The article, titled "Smarter Summaries w/ Finetuning GPT-3.5 and Chain
+    of Density," explores how to condense complex text summarization processes into
+    efficient AI models using fine-tuning techniques. It highlights a method called
+    Chain Of Density, which produces entity-dense summaries comparable to those generated
+    by humans, using iterative refinement. By fine-tuning GPT-3.5 models with aids
+    like the Instructor library, the article details a method that rivals GPT-4 in
+    summarization capability while achieving a 20x decrease in latency and a 50x reduction
+    in cost. The process involves data modeling with Pydantic, generating concise
+    summaries, and benchmarking against GPT-4, illustrating significant cost and performance
+    improvements. Keywords: Chain Of Density, GPT-3.5, GPT-4, summarization, fine-tuning,
+    Pydantic, Instructor library, entity density, AI validation, cost-efficiency.'
+blog/posts/citations.md:
+  hash: f5a6b8ec79cb6648eaf5bb4caba54a00
+  summary: This blog post explores how to ensure the accuracy of information through
+    citation verification using Pydantic and OpenAI's large language models (LLMs).
+    The article demonstrates several methods, starting with a basic substring check
+    in Pydantic to verify if citations exist in text chunks. It then progresses to
+    leveraging OpenAI's LLMs to perform more sophisticated citation validation and
+    ensure that answers are aligned with citations and context. The post highlights
+    the potential of these techniques for generating accurate datasets and improving
+    model performance, emphasizing key concepts such as LLM citation verification,
+    data validation with Pydantic, and AI-driven data accuracy. Keywords include Pydantic,
+    validation, citations, OpenAI, LLM, data accuracy, and fine-tuning.
+blog/posts/course.md:
+  hash: 189a78e4ca8a61e1208c24e418d546ac
+  summary: Explore a free, comprehensive course on Weights and Biases, designed to
+    enhance your understanding of steering language models. Released by the author
+    "jxnl," this course is based on detailed material from their introductory tutorial.
+    Accessible to everyone, the course is available on [wandb.courses](https://www.wandb.courses/courses/steering-language-models)
+    and offers a brief yet insightful learning experience, being just under an hour
+    long. Key topics include open source, language model steering, and practical applications
+    of Weights and Biases. Perfect for those eager to deepen their knowledge in machine
+    learning and AI.
+blog/posts/distilation-part1.md:
+  hash: 8bd4605b66d7b473b5b07425435a743e
+  summary: "This article introduces the `Instructor` library, designed to streamline\
+    \ the fine-tuning of task-specific language models using Python functions. It\
+    \ highlights how `Instructor` simplifies complex machine learning pipelines by\
+    \ auto-generating datasets for fine-tuning and allows for easy function implementation\
+    \ swaps while maintaining backward compatibility. The guide includes a quick start\
+    \ example for using `Instructor\u2019s` distillation feature, demonstrating efficient\
+    \ integration of traditional machine learning with language models. Key points\
+    \ include the benefits of `Instructor`, essential commands for running a fine-tuning,\
+    \ and a future outlook on enhancing Python functions with fine-tuned models. For\
+    \ more information, users are encouraged to explore resources on GitHub and participate\
+    \ in feedback through a survey at useinstructor.com."
+blog/posts/fake-data.md:
+  hash: 477a1d7b1ffdd545ff31c5cef793e907
+  summary: "The article discusses techniques for generating synthetic data using AI\
+    \ models, specifically through the integration of Pydantic, OpenAI, and the Instructor\
+    \ library. It highlights the process of creating realistic user data by defining\
+    \ models, such as `UserDetail`, and incorporating example data at different levels\u2014\
+    attribute, model, and descriptive text fields. Core strategies include leveraging\
+    \ celebrity names, complex examples from improved models like \"gpt-4-turbo-preview,\"\
+    \ and refining data output with detailed descriptions, such as \"Fancy French\
+    \ sounding names.\" These methods provide nuanced control over the synthetic data\
+    \ generation process, making it application-specific and diverse. Key concepts\
+    \ include AI-generated data, Pydantic examples, OpenAI GPT models, and synthetic\
+    \ user data creation."
+blog/posts/full-fastapi-visibility.md:
+  hash: 6292081adfb17d0f262598bea28343c8
+  summary: The article discusses integrating Logfire, a new observability tool, with
+    FastAPI and OpenAI's Instructor to enhance application performance monitoring
+    using OpenTelemetry. It highlights Logfire's compatibility with Pydantic and FastAPI,
+    providing comprehensive logging capabilities that improve visibility and error
+    reproduction. The tutorial includes code examples demonstrating data extraction
+    from user queries, parallel processing with `asyncio`, and streaming data with
+    `Iterable`. Key benefits include streamlined application profiling, efficient
+    parallel processing, and real-time streaming, appealing to developers using FastAPI
+    and Instructor. Core keywords include Logfire, FastAPI, Pydantic, OpenTelemetry,
+    asyncio, streaming, and application observability.
+blog/posts/generator.md:
+  hash: 7eb1ba5b594739e284e7be0703af86b9
+  summary: "The article explores Python generators and their significant role in enhancing\
+    \ performance and efficiency through data streaming, particularly in latency-sensitive\
+    \ applications like eCommerce and chat interfaces, such as ChatGPT. It details\
+    \ how generators allow for lazy evaluation, maintaining state, and reducing memory\
+    \ usage by yielding one item at a time instead of loading entire datasets. Furthermore,\
+    \ the piece introduces LLM (Large Language Model) streaming with generators, enabling\
+    \ real-time processing of data streams, exemplified through a product ranking\
+    \ use case in e-commerce using the Instructor library. Key topics include Python\
+    \ generators, LLM streaming, memory efficiency, and real-time data extraction\u2014\
+    vital for improving user experience and application responsiveness."
+blog/posts/introducing-cerebras-support.md:
+  hash: 1c3a2368c3de632e9b70eb13bbdae88c
+  summary: The article introduces Cerebras support for the Instructor platform, highlighting
+    the integration of a new AI chip designed specifically for efficiency and performance
+    with large language models. Users can now leverage Cerebras inference using the
+    `from_cerebras` method, allowing for up to 550 tokens per second. Key steps include
+    installing the Cerebras SDK and using Python code to create and validate responses
+    with a Pydantic model. It also covers the setup for synchronous and asynchronous
+    client operations, as well as streaming capabilities with the `CEREBRAS_JSON`
+    mode. This integration aims to enhance AI model deployment with greater speed
+    and precision in processing queries. Keywords include Cerebras, Instructor platform,
+    AI chip, language models, Pydantic model, API, and streaming.
+blog/posts/introducing-structured-outputs.md:
+  hash: 4e238316604c63c010b6315458624416
+  summary: The article discusses OpenAI's Structured Outputs, which ensure generated
+    responses match a provided JSON schema, highlighting key challenges such as limited
+    validation, streaming complexities, and unpredictable latency. It mentions the
+    vendor lock-in issue associated with adopting Structured Outputs and introduces
+    the `instructor` library as a solution. `Instructor` offers automatic validation
+    with retry logic, real-time streaming validation, and a provider-agnostic API,
+    allowing developers to switch between LLM providers easily. It addresses the limitations
+    of OpenAI's system and enhances output consistency and flexibility in AI projects.
+    Key terms include OpenAI, Structured Outputs, validation, streaming, latency,
+    vendor lock-in, and `instructor`.
+blog/posts/introduction.md:
+  hash: e0b2504459dd6e4c052998017f25d079
+  summary: This post explores simplifying interactions with Language Learning Models
+    (LLMs) using Instructor and Pydantic, a widely adopted Python tool. It addresses
+    the complexity of existing LLM frameworks and highlights how Pydantic facilitates
+    model definitions and validations, providing widespread framework compatibility.
+    Examples of modular schema composition, validation, and using enums illustrate
+    Pydantic's capabilities. The approach treats language models as microservices,
+    similar to FastAPI, allowing developers to write Python functions utilizing Pydantic
+    objects, eliminating complex prompt chains. The post promotes Instructor as a
+    tool enhancing ease of use for LLM integrations, targeting both experienced and
+    novice developers. Key terms include Pydantic, LLMs, JSON Schema, OpenAI, and
+    FastAPI.
+blog/posts/jinja-proposal.md:
+  hash: 9c8fa69a918d69c3c44842dee754524f
+  summary: This proposal introduces the integration of Jinja templating into the Instructor
+    platform to enhance its prompt formatting, validation, and versioning capabilities.
+    By leveraging Jinja's advanced formatting features such as list iteration and
+    conditional implementation, Instructor can handle complex prompt structures while
+    facilitating version control and better logging of prompt templates and variables.
+    Additionally, the use of Pydantic models for validation ensures secure handling
+    of sensitive information and enhances type safety. This integration aims to streamline
+    the creation of dynamic and reusable prompt templates, differentiate Instructor
+    from standard libraries, and improve the overall robustness and flexibility of
+    the platform. Key concepts include Jinja templating, prompt formatting, validation
+    with Pydantic, version control, secure logging, and dynamic content rendering.
+blog/posts/langsmith.md:
+  hash: ebc5ab599dbacfd1c0e4472daacc9d66
+  summary: This blog post explores the versatile DevOps platform LangSmith, a component
+    of LangChain, which is often mistakenly thought to work only with LangChain models.
+    The article demonstrates how LangSmith can enhance the OpenAI client by enabling
+    seamless support for observability and monitoring in LLM applications. Key steps
+    include setting up the LangSmith API key, installing necessary SDKs, and employing
+    the `wrap_openai` function to integrate LangSmith with OpenAI. The post provides
+    a Python example utilizing LangSmith and the `instructor` tool to classify questions
+    asynchronously with an OpenAI client, showcasing its capabilities for developing,
+    testing, and monitoring AI applications. This post is ideal for readers interested
+    in AI, LangChain, OpenAI applications, and DevOps for machine learning.
+blog/posts/learn-async.md:
+  hash: a3e52ba98ab41811317e720aea62f460
+  summary: The article explores the use of `asyncio` in Python for concurrent data
+    processing, specifically focusing on batch processing with the `AsyncOpenAI()`
+    class and instructor library. It compares several methods for running asynchronous
+    tasks, including `asyncio.gather` and `asyncio.as_completed`, discussing the pros
+    and cons of each. The article highlights the importance of rate limiting using
+    `asyncio.Semaphore` to manage concurrent requests to a server and avoid overload.
+    Key points include the use of `async` and `await` keywords, understanding concurrency
+    in Python, and the performance benefits of handling tasks asynchronously. The
+    results illustrate significant speed improvements for async processing compared
+    to sequential execution. The post finishes with practical implications of async
+    processing and considerations for choosing an approach based on task nature and
+    resource management.
+blog/posts/logfire.md:
+  hash: 5fd5debd53d1b913db672a141e95b870
+  summary: The article introduces Logfire, a new observability platform from the creators
+    of Pydantic, which integrates seamlessly with libraries like Pydantic, HTTPx,
+    and Instructor. It guides users through examples of using Logfire to enhance application
+    performance visibility, focusing on classifying scam emails, validating content
+    with `llm_validator`, and extracting data from infographics using GPT-4V. The
+    article also provides code examples and emphasizes Logfire's ease of integration,
+    efficient logging, and detailed tracking capabilities. Keywords include Logfire,
+    Pydantic, email classification, data extraction, GPT-4V, observability, and application
+    performance.
+blog/posts/matching-language.md:
+  hash: dde687555d3d1f1dd61e6cd3965e5f4f
+  summary: The article addresses the challenge of ensuring that language model-generated
+    summaries match the language of the source text, highlighting a common issue where
+    summaries default to English due to English-based instructions. To combat this,
+    the author explores techniques involving Pydantic for data validation and the
+    `langdetect` library for language detection. The article provides examples and
+    results, demonstrating that reiterating instructions to specify language can significantly
+    improve accuracy. By incorporating a language detection attribute in the prompt,
+    the model achieves consistent language matching, enhancing multilingual summarization
+    performance. Key topics include multilingual summarization, language models, language
+    detection, and OpenAI's GPT-3.5.
+blog/posts/open_source.md:
+  hash: 3555f28a7e8fc62cff97b61c93a84aa5
+  summary: The article explores the integration of structured output capabilities
+    using JSON schema with various open-source and local language models through Instructor.
+    It highlights the use of Pydantic for structured data validation and discusses
+    support for platforms like OpenAI, Mistral, and Ollama. Key solutions include
+    Ollama's local model implementation, llama-cpp-python's structured outputs, Anyscale's
+    Mistral model, and platforms like Groq and Together AI. The guide provides examples
+    and instructions for leveraging these tools to enhance AI projects with structured
+    data outputs, emphasizing keywords such as "structured output," "local models,"
+    "open source," "JSON schema," and specific platforms like "Mistral," "Ollama,"
+    and "llama-cpp-python."
+blog/posts/openai-distilation-store.md:
+  hash: 837becb03daf90bf500b66a573ef6619
+  summary: OpenAI has launched a new feature, API Model Distillation, enabling developers
+    to create custom, efficient models tailored to specific use cases. This is further
+    enhanced by integration with Instructor, which offers structured output capabilities
+    through Pydantic models. The process involves generating smaller, focused models
+    from the inputs and outputs of larger models, ensuring high performance while
+    reducing costs and latency. The integration allows seamless use of OpenAI API
+    parameters and enhances metadata handling, promoting efficient and organized API
+    calls. This combination leads to consistent, optimized AI solutions for specialized
+    tasks, enhancing performance and cost-effectiveness for AI applications. For detailed
+    guidance, refer to OpenAI's documentation and the Instructor GitHub repository.
+blog/posts/parea.md:
+  hash: b98fad29342cb154cbf4387faf9a2259
+  summary: This article introduces [Parea](https://www.parea.ai), a platform that
+    enhances the integration of `instructor` with OpenAI clients by providing features
+    for monitoring, collaboration, testing, and labeling of LLM applications. Key
+    functionalities include grouping LLM call retries under a single trace, tracking
+    validation errors automatically, and offering a user interface for labeling JSON
+    responses. The article demonstrates using Parea to create emails containing URLs
+    from instructor docs with a Pydantic model for validation. It highlights Parea's
+    capabilities in validation error tracking and response labeling to improve fine-tuning
+    processes. With Parea's annotation queue and Form Mode, non-developers can safely
+    label data for fine-tuning, improving ease of use and accuracy.
+blog/posts/pydantic-is-still-all-you-need.md:
+  hash: 59888fa5461b08df2296ab2188415d6f
+  summary: 'The article titled "Pydantic is Still All You Need: Reflections on a Year
+    of Structured Outputs" emphasizes the importance of using structured outputs with
+    language models, highlighting Pydantic''s capabilities in enhancing data validation
+    and system reliability. It discusses the benefits of Pydantic, such as modular
+    structures with nested objects, validators for error handling, and streaming with
+    structured outputs, which improve compatibility and maintainability. The article
+    also addresses real-world applications like generation, extraction, and complex
+    search queries. It reinforces how structured outputs facilitate a classical programming
+    approach compatible with existing software ecosystems. Key developments include
+    Pydantic''s expansion to multiple programming languages and tools, such as Rust
+    and popular AI models.'
+blog/posts/rag-and-beyond.md:
+  hash: c5e2f50a36e691eb2ec5714a1c790979
+  summary: This article explores advanced strategies for enhancing Retrieval Augmented
+    Generation (RAG) beyond simple embedding search. It critiques the limitations
+    of basic RAG models, such as query-document mismatch and monolithic search backends,
+    and introduces improved techniques using query understanding. Examples from Metaphor
+    Systems and personal assistant applications demonstrate how structured query models
+    can integrate multiple search backends, offering more precise and contextually
+    enriched search results. The piece highlights the use of instructor, a tool that
+    employs Pydantic to model complex queries, facilitating seamless interactions
+    between language models and search backends. This approach emphasizes the potential
+    of combining Large Language Models (LLMs) with advanced information retrieval
+    and query understanding techniques to optimize search processes.
+blog/posts/rag-timelines.md:
+  hash: 0522d54c9bb90793695e34f84ebd616b
+  summary: The article discusses enhancing Retrieval-Augmented Generation (RAG) systems
+    using time filters with the Instructor Python library. It emphasizes the importance
+    of handling time-based constraints like "last week" or "previous month" for queries.
+    The post outlines using Pydantic models to represent time ranges and integrate
+    large language models (LLMs) to generate accurate search queries. Key considerations
+    include managing nuances in dates and timezones, calculating relative time periods,
+    and normalizing user inputs. By doing so, RAG systems can improve their accuracy
+    and relevance in information retrieval within specified time frames. Keywords
+    include RAG, time filters, LLMs, Pydantic, and Instructor library.
+blog/posts/situate-context.md:
+  hash: 1d2cfa41fd490ac9856438c4cf7861bc
+  summary: The article discusses implementing Anthropic's Contextual Retrieval technique
+    to improve Retrieval-Augmented Generation (RAG) systems by adding explanatory
+    context to document chunks to prevent loss of information. It highlights the use
+    of async processing for efficiency, outlines a sample implementation using Python
+    and async libraries, and provides performance metrics demonstrating significant
+    reductions in retrieval failure rates. Key features include the use of Claude
+    for generating context, structured output with Pydantic models, and prompt caching
+    for efficiency. It also suggests experimentation with chunk sizing, embedding
+    models, and employing reranking for enhanced results.
+blog/posts/timestamp.md:
+  hash: 0285bfdee4ff7fdb0b23f8a046bcb7fe
+  summary: 'The article discusses a method to ensure consistent timestamp formats
+    in language model outputs, addressing common issues in video content workflows.
+    It highlights the challenge of inconsistent timestamp formats, such as HH:MM:SS
+    and MM:SS, which can lead to parsing errors. The solution involves using Pydantic
+    for data validation and a custom parser to normalize timestamps, maintaining consistency
+    across video segments. The approach combines schema validation with context-aware
+    processing for reliable timestamp handling. Key terms: timestamp formats, Pydantic,
+    normalization, language models, video content workflows, data validation.'
+blog/posts/using_json.md:
+  hash: d709a4205f18e43c377112effb7947a2
+  summary: The article discusses how the Instructor library enhances the process of
+    obtaining well-structured JSON data from Large Language Models (LLMs) using Python
+    type annotations and Pydantic models. It highlights Instructor's integration with
+    various LLMs like GPT-3.5 and GPT-4 and its compatibility with multiple programming
+    languages, including Python, TypeScript, Ruby, Go, and Elixir. The key benefits
+    of Instructor include seamless integration with OpenAI SDK, type validation, field
+    requirements, default values, and advanced types like URLs and lists with Pydantic
+    models. Instructor allows for a zero-overhead adoption path, making it a user-friendly
+    tool for developers to extract and validate JSON outputs from LLMs efficiently.
+blog/posts/validation-part1.md:
+  hash: 1cda1e712a5d000abc087c1fab1af700
+  summary: "The article \"Good LLM Validation is Just Good Validation\" discusses\
+    \ incorporating dynamic, machine-learning-driven validation into software using\
+    \ Python libraries like Pydantic and Instructor. It highlights the evolution from\
+    \ static, rule-based methods to adaptive validations using large language models\
+    \ (LLMs). The post emphasizes the importance of reliable validation, introduces\
+    \ tools like Instructor for OpenAI\u2019s function call API, and provides examples\
+    \ of validating user inputs and complex data structures. Key topics include the\
+    \ use of field validators, model validators, context-based validation, and automatic\
+    \ retries for invalid responses. The approach aims to enhance validation processes\
+    \ in AI systems without introducing new concepts. Keywords: LLM validation, machine\
+    \ learning, Pydantic, Instructor, OpenAI, dynamic validation, AI systems, Python\
+    \ libraries, software development."
+blog/posts/version-1.md:
+  hash: 8a7d049bb50978209bd429cc28753cd8
+  summary: The announcement of the release of `instructor=1.0.0` introduces a refined
+    API for the `instructor` package, designed for easier integration and removal
+    while maintaining compatibility with OpenAI and other AI models. Over the past
+    10 months, the package has grown significantly, amassing over 4,000 GitHub stars
+    and 120k monthly downloads. The updates in version 1.0.0 focus on improved typing
+    and usability, introducing new methods like `create_iterable` and `create_partial`
+    for better handling of data streams. Key features include seamless integration
+    with existing clients, enhanced type inference, and support for asynchronous operations.
+    The release also highlights support across multiple languages, including JavaScript,
+    Elixir, and PHP, reinforcing its core philosophy of "easy to try, easy to delete."
+blog/posts/youtube-transcripts.md:
+  hash: 8e478f24910f76825861938cb418efa7
+  summary: This article guides readers through analyzing YouTube transcripts to create
+    structured chapters, using tools like `instructor`, OpenAI, and `youtube-transcript-api`.
+    It includes step-by-step instructions for extracting chapters from a video's transcript
+    and outlines how to configure a Pydantic model for structured data output. Key
+    objectives include summarizing YouTube transcripts into distinct chapters and
+    exploring alternative applications like study notes, content summarization, and
+    quiz generation. By leveraging these models, users can transform video content
+    into various engaging formats. Keywords include YouTube transcript analysis, Pydantic
+    model, chapter extraction, video content, and OpenAI integration.
+cli/batch.md:
+  hash: f061f50334b5b07fdacfa5900532828a
+  summary: The guide provides an overview of using the Command Line Interface (CLI)
+    for managing OpenAI batch jobs with the `instructor` tool. It details how to list,
+    create, and cancel batch jobs. Key functionalities include viewing all existing
+    jobs with options for limiting the results, creating jobs from `.jsonl` files
+    using a Python script with Pydantic and the `BatchJob` object, and canceling outstanding
+    jobs. Essential commands like `list`, `create-from-file`, and `cancel` are explained,
+    along with their respective options. Keywords include CLI, batch jobs, OpenAI,
+    Python, `instructor`, `.jsonl`, and Pydantic.
+cli/finetune.md:
+  hash: 450817623f555045064ffc818f5abf69
+  summary: The article discusses the Command Line Interface (CLI) for managing fine-tuning
+    jobs on OpenAI using the "instructor" tool. It emphasizes that the CLI is still
+    under development and lacks full feature support, inviting contributions to enhance
+    its functionality. The guide provides detailed instructions on creating fine-tuning
+    jobs either from a file or an existing ID, with customizable options such as model
+    selection, epochs, batch size, and learning rate. It also covers viewing job statuses
+    and file management within the system. The CLI aims to serve as a light wrapper
+    around the API, and contributions can be made via the [jxnl/instructor GitHub
+    repository](https://www.github.com/jxnl/instructor). Key points include fine-tuning,
+    model training, job monitoring, and community contributions.
+cli/index.md:
+  hash: 87b74ae56ba5174d89eae8f50657b251
+  summary: The Instructor CLI is a command-line tool designed to streamline interactions
+    with the OpenAI API, assisting with API usage monitoring and model fine-tuning.
+    To get started, users need to set the OpenAI API key as an environment variable
+    and install the tool via pip. Key features include tracking API usage, such as
+    token counts and requests, and optimizing models through a fine-tuning app. For
+    additional support or contributions, users can access the GitHub repository. Keywords
+    include OpenAI API, command-line tool, API usage monitoring, model fine-tuning,
+    and installation.
+cli/usage.md:
+  hash: 92bfb660828a7fa5972ea7aabd497e06
+  summary: The OpenAI API Usage CLI tool is designed to help users monitor their OpenAI
+    API usage, providing breakdowns by model, date, and cost. The tool offers command-line
+    options to view usage data, including a command to list API usage for the past
+    N days or specifically for today. Usage is presented in a detailed table format,
+    showcasing metrics like total requests and total cost. The tool aims to act as
+    a lightweight wrapper around the API, and contributions from the community are
+    welcome through issues or pull requests on the GitHub repository. Key features
+    include usage monitoring, API metrics display, and community contribution support.
+concepts/alias.md:
+  hash: 482721ff5d70a566a37fda716899070d
+  summary: This page is currently under development and focuses on providing information
+    about Pydantic, a Python library used for data validation and settings management.
+    The page highlights the concept of using aliases in Pydantic models to customize
+    field names, a feature that enhances code readability and integration with external
+    systems. For comprehensive guidance, readers are encouraged to visit the official
+    [Pydantic documentation](https://docs.pydantic.dev/latest/concepts/alias/). Key
+    terms include Pydantic, data validation, Python, aliases, and settings management.
+concepts/caching.md:
+  hash: 7aa2bfb9e02fec6ea810d0ea908c5063
+  summary: The blog post explores various caching techniques in Python, focusing on
+    improving application performance through effective data management. Key topics
+    include the use of `functools.cache` for simple in-memory caching, ideal for functions
+    with immutable arguments in small to medium-sized applications. It also covers
+    `diskcache` for persistent, large data caching, suitable for applications needing
+    cache persistence between sessions. Additionally, the post details Redis caching
+    for distributed systems, which is recommended for scenarios requiring fast read/write
+    access and handling complex data structures. Throughout, examples demonstrate
+    how caching can optimize computational efficiency and data retrieval. Key phrases
+    include "caching techniques," "in-memory caching," "persistent data caching,"
+    "Redis caching," and "distributed systems caching."
+concepts/distillation.md:
+  hash: 5cadbe7476df7904182424644270dcd6
+  summary: The article discusses the use of the Instructor library to simplify fine-tuning
+    language models, such as `gpt-3.5-turbo`, to replicate Python function behavior.
+    By leveraging Pydantic type hints and `Instructions`, developers can make language
+    models backward compatible with existing Python functions and streamline the creation
+    of a fine-tuning dataset using automatic data logging and structured output. This
+    approach not only conserves tokens by eliminating schema transmission but also
+    facilitates seamless integration of classical machine learning with language models.
+    The library's features enhance efficiency by distilling function requirements
+    into model weights and simple code, making it a game-changer in the field of AI
+    function replication and fine-tuning.
+concepts/enums.md:
+  hash: bb4f52ad0b29468955a1d468a884fcd7
+  summary: The text discusses the use of Enums in Python to prevent data misalignment
+    by standardizing fields in data models. By including an "Other" option in Enums,
+    uncertainty in data can be captured effectively. It provides an example using
+    Python's Pydantic BaseModel to define user roles such as "PRINCIPAL," "TEACHER,"
+    "STUDENT," and "OTHER." As an alternative to Enums, the use of the `Literal` type
+    is suggested for defining the same roles. Key concepts include the importance
+    of standardized data representation, the flexibility of Enums and Literals, and
+    effective error handling in data models.
+concepts/fastapi.md:
+  hash: 235362431dbee08aa1e18c2e41514916
+  summary: This guide provides an overview of integrating Pydantic models with FastAPI,
+    a modern, high-performance Python web framework known for automatic OpenAPI documentation
+    and AsyncIO support. It demonstrates setting up a FastAPI app with a POST endpoint
+    that uses Pydantic to define and validate data structures seamlessly. The snippet
+    showcases handling synchronous and streaming responses, beneficial for managing
+    large data from language models like GPT-3. The guide also highlights FastAPI's
+    capability to automatically generate interactive documentation pages, enhancing
+    development convenience and API testing. Key terms include FastAPI, Pydantic,
+    OpenAPI, JSON Schema, asynchronous programming, and StreamingResponse.
+concepts/fields.md:
+  hash: 9de5e9cfabe9014e5cb7497d60766874
+  summary: The article provides an overview of using Pydantic's `Field` function to
+    customize and add metadata to fields in models, highlighting its role in default
+    value assignment and JSON schema customization. Key features include setting default
+    and factory defaults for field values, using the `Annotated` type for field annotations,
+    and controlling field exclusion from models with parameters like `exclude` and
+    `SkipJsonSchema`. It also outlines methods for enhancing JSON schemas with additional
+    information such as title, description, and examples, relevant for prompt engineering.
+    The article emphasizes the significance of these customization options in JSON
+    schema generation, which supports more precise and efficient model validations
+    and prompting for language models.
+concepts/lists.md:
+  hash: 08e70ce9877857c9a8d2cafc494b83c5
+  summary: The content discusses structured data extraction using Python's Pydantic
+    library, focusing on defining schema classes for tasks like extracting user information.
+    It highlights methods for multi-task extraction using `Iterable[T]`, enabling
+    dynamic creation of classes with adaptable features for streaming tasks. Various
+    examples demonstrate extracting user entities with GPT models like "gpt-3.5-turbo"
+    and "gpt-4," showing synchronous and asynchronous streaming capabilities. Key
+    concepts include task extraction, streaming data processing, and asynchronous
+    programming, all facilitated by the `instructor` and `openai` libraries. This
+    approach enhances efficiency in handling dynamic data structures and real-time
+    data processing in AI applications.
+concepts/logging.md:
+  hash: fa370d49da298dfb7beb120b6929aa34
+  summary: 'This Python code snippet demonstrates how to set logging to DEBUG to track
+    and view requests and responses made to OpenAI''s API, which is useful for debugging.
+    It utilizes the `instructor` and `openai` libraries along with `pydantic` for
+    defining data models. By setting the logging level, developers can gain insights
+    into the interactions between their application and OpenAI, specifically when
+    creating chat completions. The example includes a setup for extracting user details
+    using the `instructor` library, with key functionality and parameters outlined
+    for effective API integration. Keywords: OpenAI, API, logging, debugging, Python,
+    chat completions, pydantic, data models.'
+concepts/maybe.md:
+  hash: cefcf24ec71e524b675b339d464f9d9c
+  summary: The article discusses the `Maybe` pattern, a functional programming concept
+    used for error handling, particularly in handling missing data or errors without
+    raising exceptions. It showcases using this pattern in API calls to language models
+    to minimize hallucinations. The approach involves defining Pydantic models, `UserDetail`
+    and `MaybeUser`, to encapsulate both successful results and errors. The `extract`
+    function, using the `MaybeUser` model, processes content through a language model,
+    and returns structured data, handling cases where data extraction is unsuccessful.
+    Highlighted keywords include Maybe pattern, Pydantic, error handling, language
+    models, missing data, functional programming, and API calls.
+concepts/models.md:
+  hash: 26dece5991f1bb057e255e3038598a4b
+  summary: The article discusses defining LLM (Large Language Model) output schemas
+    in Pydantic using `pydantic.BaseModel`. It explains how to use Pydantic models
+    as a `response_model` in client `create` calls to OpenAI, detailing how they define
+    schemas, validate API responses, and return Pydantic model instances. The guide
+    covers using docstrings and field annotations for prompting, handling optional
+    values, dynamic model creation with `create_model`, and adding custom methods
+    to enhance model behavior. The text emphasizes the adaptability of Pydantic for
+    generating prompts and shaping model responses dynamically based on runtime information
+    or user-specific descriptions. Key concepts include response modeling, schema
+    validation, and leveraging Python for dynamic language model interactions.
+concepts/parallel.md:
+  hash: 1971dd00762d1c3220755f225145ace1
+  summary: OpenAI has introduced an experimental feature called parallel function
+    calling, available in the `gpt-4-turbo-preview` model, aimed at reducing application
+    latency by enabling multiple function calls in a single request. This feature
+    allows developers to streamline processes without complex schema manipulation.
+    By setting the mode to `PARALLEL_TOOLS`, users can execute parallel function calls
+    using response models defined as `Iterable` types. This technique is particularly
+    useful for applications requiring rapid responses, such as retrieving weather
+    data for multiple locations or conducting quick Google searches. Developers should
+    note that this feature is in preview and may undergo changes.
+concepts/partial.md:
+  hash: 02119bfd49a4e03e1f80a64746464f9d
+  summary: The article discusses the concept of streaming partial responses using
+    field-level streaming to provide real-time updates and incremental snapshots for
+    response models, especially useful in UI component rendering. By leveraging the
+    `create_partial` feature in the `instructor` library, developers can dynamically
+    generate response models with optional fields. This allows for partial parsing
+    of data as soon as it becomes available. The article provides examples, including
+    synchronous and asynchronous streaming methods, demonstrating how these updates
+    can be processed in real-time using tools like OpenAI's API and Pydantic BaseModel.
+    Key terms include partial responses, incremental updates, real-time streaming,
+    `create_partial`, and the `instructor` library.
+concepts/patching.md:
+  hash: 3a4352e86fdf1d39268b8c43be0fb4fa
+  summary: The article discusses enhancements to client functionality with new keywords
+    like `response_model`, `max_retries`, and `validation_context` for backward compatibility.
+    It emphasizes the use of TOOL mode for structured output, especially with OpenAI
+    clients, noting that function calling is being deprecated. It highlights various
+    modes for structured data extraction, including Gemini Tool Calling, JSON Mode,
+    and Parallel Tool Calling, while noting limitations and compatibility issues.
+    Additionally, it covers Gemini Vertex AI Tool Calling and mentions experimental
+    Markdown JSON Mode for Databricks and vision models. Key terms include OpenAI,
+    TOOL mode, JSON format, Gemini, Vertex AI, and Databricks.
+concepts/philosophy.md:
+  hash: cbc5ee756e57727843031bb140d5da54
+  summary: The philosophy of the instructor library emphasizes simplicity, transparency,
+    and flexibility for leveraging language models (LLMs) in Python. It aims to streamline
+    structured outputs with minimal dependencies, utilizing Pydantic for complex tasks.
+    Key features include the use of `response_model` and `patch` to simplify user
+    experience, maintaining transparency by limiting hidden prompts, and easy integration
+    with existing OpenAI systems. The framework encourages defining schemas, validators,
+    and encapsulated logic within Python functions to minimize complexity and regret.
+    The library and its documentation are designed to enhance Python programming skills,
+    focusing on maintaining a simple, adaptable, and easily debuggable codebase without
+    unnecessary abstractions.
+concepts/prompt_caching.md:
+  hash: 741469d18862d9a489fa1046f7c54285
+  summary: Prompt Caching is a feature designed to enhance the efficiency of API calls
+    by storing and reusing shared prompt portions, especially beneficial for applications
+    making multiple calls with similar context. OpenAI's automatic prompt caching
+    for models like gpt-4o and o1-preview reduces processing redundancy without additional
+    fees, while Anthropic offers a beta feature that allows manual caching via `anthropic.beta.prompt_caching.messages.create`.
+    Key for optimizing language model interactions, prompt caching lowers costs and
+    speeds up response times, with minimal cache sizes required for certain models.
+    This method helps manage large contexts more effectively, making it a valuable
+    tool for applications using OpenAI or Anthropic models.
+concepts/prompting.md:
+  hash: 59442ff85a0e7b35d68b5827c457a836
+  summary: The document provides comprehensive tips on prompt engineering, emphasizing
+    the use of Instructor and Pydantic to create self-descriptive, modular, and flexible
+    models. Key principles include modularity, self-description using Pydantic's `Field`,
+    optional attributes using Python's `Optional` type, and standardization via Enums
+    for fixed value fields. It also covers error handling through the Maybe pattern,
+    managing arbitrary properties and list lengths, and defining relationships between
+    entities. Additionally, it highlights the reuse of components in different contexts,
+    employing a "chain of thought" for added logic. These techniques ensure data integrity
+    and ease of use, making them ideal for developers seeking structured and efficient
+    prompt engineering solutions.
+concepts/raw_response.md:
+  hash: 172d21ce233868b4a78bc28b46b0e79c
+  summary: This guide demonstrates using the instructor package to create and handle
+    AI chat completions, leveraging the OpenAI API and pydantic for structured data
+    processing. It presents a code example featuring a custom client setup to extract
+    user details like name and age from a conversation, highlighting the use of models
+    such as `gpt-3.5-turbo` to achieve accurate data extraction and response handling.
+    Key concepts include the creation of chat completions, use of the `UserExtract`
+    model for structured response modeling, and inspection of detailed completion
+    metadata. This process underscores powerful AI capabilities in structured data
+    extraction and natural language understanding.
+concepts/reask_validation.md:
+  hash: 8045c90edc12d2158dd87fc737ddb810
+  summary: The content discusses leveraging Pydantic's validation framework for both
+    code-based and LLM-based validation, highlighting the integration of error messages
+    as a means for AI self-correction. It outlines how Pydantic can enforce rules
+    through validators, providing examples of both code and LLM-based validations.
+    The text also introduces the concept of a reasking mechanism to improve LLM outputs
+    by setting `max_retries` for validation errors. Additional insights include advanced
+    validation techniques, optimizing token usage by removing unnecessary URLs in
+    error messages, and ensuring better reliability of LLM-generated content. Key
+    topics include Pydantic, AI self-reflection, validation errors, LLM-based validation,
+    and optimizing token usage.
+concepts/retrying.md:
+  hash: e159f64b0b1002b7cb66e898c8916d71
+  summary: 'This article explores how to effectively use Pydantic validators and Tenacity
+    for implementing retry logic in Python applications. It starts with a simple example
+    of a validator that ensures a name is in uppercase using Pydantic''s validation
+    tools. The piece highlights setting up basic retry mechanisms with parameters
+    like `max_retries` and catching retry exceptions. For advanced control, the article
+    introduces using the Tenacity library, offering customizable retry logic such
+    as back-offs, asynchronous retries, and retry callbacks. Key points also include
+    Tenacity''s various features, such as stopping after a set number of attempts
+    or a delay, and the ability to add retry callbacks for logging or debugging. Keywords:
+    Pydantic, validators, Tenacity, retry logic, Python, back-offs, asynchronous retries,
+    retry exceptions.'
+concepts/templating.md:
+  hash: e1f4e1b93670fa5e5176540276dcb68f
+  summary: Instructor's Jinja templating provides a dynamic and efficient way to adapt
+    and manage prompts, integrating seamlessly with validation processes and handling
+    sensitive information securely. The solution offers separation of prompt structure
+    and content, allowing for complex logic implementation and template reusability.
+    Enhanced prompt versioning and logging are supported through Pydantic integration,
+    ensuring validation and type safety. Key features include context-aware prompt
+    rendering with Jinja syntax, dynamic validation with Pydantic, and secure handling
+    of sensitive data using `SecretStr`. This approach is ideal for applications requiring
+    adaptable prompts, such as chatbots, where user context and data security are
+    paramount.
+concepts/typeadapter.md:
+  hash: e264c774c4e9ea2ce505091092b9f827
+  summary: This page is a work in progress and provides an overview of Pydantic's
+    Type Adapter, a feature used for data validation and parsing in Python applications.
+    For more comprehensive information, visit Pydantic's official documentation. Key
+    topics include data validation, Python data models, and improved data handling
+    processes.
+concepts/typeddicts.md:
+  hash: 67996f828a2f30c25aefa973f2df34d5
+  summary: This content introduces the use of TypedDicts in Python, specifically demonstrating
+    integration with OpenAI's API through a library called "instructor." It highlights
+    how to define a TypedDict class, `User`, with specific fields like `name` and
+    `age`, to type-check API responses against expected data structures. The example
+    involves creating a chat completion request using the OpenAI model "gpt-3.5-turbo,"
+    which is expected to return data conforming to the `User` TypedDict format. Key
+    points include Python TypedDicts, OpenAI integration, response validation, and
+    TypedDicts for structured data handling.
+concepts/types.md:
+  hash: 5c4f474578740ebe82ac906cadfb324d
+  summary: This document provides an overview of how the Instructor library supports
+    simple types like `str`, `int`, `float`, `bool`, `Union`, `Literal`, and advanced
+    data types such as `Annotated`, `Enum`, `List`, and `Union` out-of-the-box. It
+    demonstrates how these types can be directly used in response models, drawing
+    on the power of `pydantic.BaseModel` for validation and schema creation. Key examples
+    cover configurations for openai API responses, including handling complex data
+    structures like `pandas.DataFrame`, and using advanced type annotations and schemas.
+    The document emphasizes the flexibility and extensibility of Instructor in managing
+    both primitive and complex data types within Python applications. Keywords include
+    Pydantic, Python type annotations, Instructor library, OpenAI integration, and
+    data validation.
+concepts/union.md:
+  hash: 3f8f5dfa16758a160bb5243f95aa22e7
+  summary: This text discusses the use of `Union` types in Pydantic models, which
+    are employed to represent values that can be one of several types. The example
+    provided illustrates how to create _agents_ that dynamically choose actions by
+    selecting an output class, such as in search and lookup functions where different
+    actions like executing another search or lookup can be determined. The code snippet
+    demonstrates defining `Search` and `Lookup` classes with an `execute` method,
+    and an `Action` class that utilizes a `Union` type to execute one of these actions.
+    For further details, reference is made to 'examples/union/run.py'. Key points
+    include the flexibility and dynamic functionality provided by `Union` types in
+    creating adaptable and efficient operations, especially relevant in Python application
+    development.
+concepts/usage.md:
+  hash: a7199c1ee62fb9189bda5ad0dceda5ff
+  summary: The text provides a guide on handling non-streaming requests using the
+    OpenAI API and the `instructor` Python library. It demonstrates how to access
+    usage data for these requests, highlighting a method to retrieve token details
+    such as completion tokens, prompt tokens, and total tokens. Additionally, it discusses
+    how to handle exceptions like `IncompleteOutputException` when the context length
+    is exceeded, suggesting to adjust the prompt accordingly. Key topics include using
+    the OpenAI GPT-3.5-turbo model, handling Pydantic models, and managing API responses.
+    Essential keywords include OpenAI API, token usage, error handling, Python, and
+    Pydantic.
+contributing.md:
+  hash: 9f2e20be2b0d0c1e3f592893aca7272a
+  summary: Contribute to the `Instructor` project by creating evals using pytest to
+    assess OpenAI models and the instructor library. Participation involves monitoring
+    model quality with weekly tests, filing issues for bugs with detailed examples,
+    and submitting pull requests, particularly for issues labeled "help wanted" or
+    "good first issue." Use tools like `Grit` for code checks, and explore MkDocs
+    features like `mkdocs serve`, `hl_lines` in code blocks, and admonitions for documentation
+    improvements. Enhance SEO by emphasizing keywords such as "pytest evals," "OpenAI
+    model quality," "bug filing and issue tracking," "pull requests," and "MkDocs
+    documentation."
+examples/batch_job_oai.md:
+  hash: 0fd755b51960cb08d63186828ca59809
+  summary: This tutorial provides a comprehensive guide on using OpenAI's Batch API
+    for large-scale synthetic data generation, focusing on creating synthetic questions
+    using the `ms-marco` dataset. It highlights the cost-effectiveness, higher rate
+    limits, and model compatibility benefits of the Batch API compared to standard
+    API calls. The guide includes a step-by-step process to generate question-answer
+    pairs using the `instructor` library, create compatible `.jsonl` files, and manage
+    batch jobs via a CLI command. It also covers parsing the generated responses using
+    Pydantic models, ensuring efficient use of AI for non-time-sensitive tasks that
+    require processing large data volumes. Key elements include use cases for the
+    Batch API, command-line interfaces, batch job management, and synthetic data generation.
+examples/bulk_classification.md:
+  hash: debc068b30a32f46f4ac46fcb8425a58
+  summary: This tutorial provides a comprehensive guide on bulk classification using
+    user-provided tags, highlighting its application in tasks like document classification
+    within RAG applications. It emphasizes defining a structured schema to store tags,
+    such as tag ID, name, and description, in a database. The process involves implementing
+    models using Pydantic to ensure accurate validation and minimize errors like hallucinations
+    during classification with an `AsyncOpenAI` client. Key steps include setting
+    up a tagging system with FastAPI endpoints and making asynchronous predictions
+    using OpenAI's GPT model. Additionally, it suggests improvements like incorporating
+    confidence scores and multi-class classification to enhance robustness. Core keywords
+    include classification, user-provided tags, Pydantic, OpenAI, AsyncOpenAI, FastAPI,
+    schema, and multi-class classification.
+examples/classification.md:
+  hash: 2b631e2ac4984e33c8aa426e83f04321
+  summary: This tutorial demonstrates how to implement text classification tasks,
+    including single-label and multi-label classifications, using the OpenAI API and
+    Pydantic models. It emphasizes the use of Literal types instead of enums for improved
+    type checking, and the inclusion of few-shot examples to enhance classification
+    accuracy. The tutorial covers the definition of Pydantic structures for different
+    classification tasks, and the development of functions that utilize these structures
+    for categorizing text as SPAM or NOT_SPAM, and support tickets into categories
+    like TECH_ISSUE, BILLING, and GENERAL_QUERY. Key strategies like providing chain
+    of thought explanations and leveraging prompting techniques are also highlighted
+    to refine the model's prediction capabilities.
+examples/document_segmentation.md:
+  hash: 51a4ec944b26fe523f81a04af3ef2958
+  summary: This guide explains how to perform document segmentation using Cohere's
+    command-r-plus LLM, which accommodates a 128k context length. By defining structured
+    data models, such as `Section` and `StructuredDocument`, and using a systematic
+    preprocessing method that enumerates the document lines, users can leverage LLMs
+    to split complex documents into meaningful sections centered around single concepts.
+    The guide also presents an example using a tutorial on the Transformer architecture
+    by Sebastian Raschka. Key terms include document segmentation, LLM, Transformer
+    architecture, structured output, and multi-head attention. This method offers
+    an efficient way to handle documents with varying content types, such as code
+    snippets or equations, without relying on simplistic text-splitting rules.
+examples/entity_resolution.md:
+  hash: a245a0fa35ec48ea6e1dc8e505a9a3f1
+  summary: 'The guide on "Entity Resolution and Visualization for Legal Documents"
+    demonstrates how to extract and resolve entities from legal contracts using AI,
+    specifically OpenAI''s API, and visualize them as an entity graph. Core components
+    include defining data structures with `Entity` and `Property` classes and utilizing
+    the `DocumentExtraction` model. The process involves extracting entities, resolving
+    dependencies, and visualizing these as an interactive graph using Graphviz. This
+    method aids in understanding complex legal documents, highlighting intricate details
+    and interconnected clauses. Keywords: entity resolution, legal contracts, visualization,
+    AI, OpenAI API, Graphviz, data structures, document extraction, entity graph.'
+examples/exact_citations.md:
+  hash: 01fae6ee2e6505a4dbca84443ff2f89a
+  summary: This article explains an example of using the Instructor framework with
+    validators to ensure that AI-generated answers are backed by direct quotes from
+    the context, thereby preventing misinformation or hallucinations. It introduces
+    two main data structures, the `Fact` and `QuestionAnswer` classes, which encapsulate
+    statements and their supporting context quotes. The example uses Python and OpenAI's
+    API to validate answers by checking that each fact has corresponding valid quotes.
+    This method enhances answer reliability by only including facts with verifiable
+    sources, making it valuable for applications requiring precise citations. Key
+    terms include validated citations, fact verification, AI-generated answers, OpenAI
+    API, and context-based validation.
+examples/examples.md:
+  hash: 93b8e3ebe40d4bc57d4c474a5dd82cad
+  summary: The content provides guidance on enhancing Pydantic models by incorporating
+    examples directly into the JSON schema extra, which enhances clarity and usability.
+    It features Python code that demonstrates how to define a Pydantic model, `SyntheticQA`,
+    with a set of example questions and answers embedded in the schema. The code also
+    includes a function, `get_synthetic_data()`, that uses OpenAI's API to generate
+    synthetic examples based on a prompt. Key concepts include integrating practical
+    examples into code schemas, using Pydantic for data validation, and leveraging
+    OpenAI's API for generating synthetic data. Keywords include Pydantic, JSON schema,
+    Python, OpenAI, synthetic data, and model examples.
+examples/extract_slides.md:
+  hash: d2372bf70450ea0bf7de4447c1dc9b10
+  summary: This guide provides a comprehensive approach to extracting data from slides,
+    emphasizing the need to not only isolate text but also consider images that might
+    contain crucial information. The focus is on creating a structured data model
+    using Pydantic, which categorizes competitors by industry, facilitating their
+    identification and analysis. A function is defined to read images from URLs and
+    extract relevant competitor information using AI, specifically leveraging OpenAI's
+    capabilities. The process is demonstrated with a sample execution, showcasing
+    the extraction of competitor details and features from images. Key concepts include
+    data extraction, competitor analysis, AI integration, and image processing.
+examples/extracting_receipts.md:
+  hash: 581d01ba20ae695f6949198019dc1a88
+  summary: This post demonstrates the use of Python's Pydantic library and OpenAI's
+    GPT-4 model for extracting and validating receipt data from images, ideal for
+    automating expense tracking and financial analysis tasks. It defines `Item` and
+    `Receipt` classes to structure data, and uses a custom validation function to
+    ensure that the total amount matches the sum of item prices. The `extract_receipt`
+    function processes image URLs using OpenAI's tools to extract receipt information.
+    Key steps include defining data models, implementing validation, and utilizing
+    GPT-4 for image analysis. This method enhances accuracy in financial data extraction
+    and automation.
+examples/extracting_tables.md:
+  hash: e57703d6aa37be746110157fa77356e2
+  summary: 'This post demonstrates how to extract tables from images using Python
+    and OpenAI''s advanced vision model. By leveraging custom type annotations in
+    Python, such as `MarkdownDataFrame`, and the `pydantic` and `pandas` libraries,
+    it efficiently converts tables into markdown format for easier data analysis and
+    automation. The provided code, available on GitHub, outlines the setup of a `Table`
+    class for organizing extracted data and a function to extract tables using the
+    `OpenAI` client, patched with the `instructor` library. The method effectively
+    handles tables from complex images, such as an example showcasing the top-grossing
+    apps in Ireland, and is ideal for tasks requiring structured data output. Key
+    terms: table extraction, OpenAI vision model, Python programming, markdown conversion,
+    data automation.'
+examples/groq.md:
+  hash: d42d7fae7d25e63956811a3601dac868
+  summary: This guide introduces the use of Groq for AI inference, highlighting the
+    transition from traditional platforms like OpenAI and Anthropic to Groq using
+    the mixtral-8x7b model. The document outlines the steps to access Groq's API by
+    creating an API key on [groqcloud](https://console.groq.com). It provides installation
+    instructions for necessary Python packages such as `instructor`, `groq`, `pydantic`,
+    `openai`, and `anthropic`, and explains how to set up the Groq API key environment
+    variable. An example Python script demonstrates how to use Groq for structured
+    data output, particularly showcasing a model that provides information about subjects,
+    such as facts about the company Tesla in the demonstrated output. Additionally,
+    the content references another useful script, `groq_example2.py`, available in
+    the repository. Key terms include Groq, API key, mixtral-8x7b model, structured
+    outputs, GroqCloud, and Python integration.
+examples/image_to_ad_copy.md:
+  hash: 8a1d68f85eaf52fd3348a081c047eb45
+  summary: This post outlines how to utilize the GPT-4 Vision API and Chat API to
+    automate the creation of advertising copy from product images, an innovative solution
+    beneficial for marketing teams and e-commerce platforms. The process involves
+    building models to identify and describe products from images, using the Vision
+    API for product detection, and employing Chat API to generate engaging advertising
+    copy. Key components include defining Python models using Pydantic to ensure data
+    consistency, and deploying functions for product detection and ad copy generation.
+    Core ideas include automation, AI-driven marketing solutions, and product image
+    analysis, highlighting key features, descriptions, and advertising strategies.
+examples/index.md:
+  hash: 275769f86bdff0c1ba527ea9a0830aef
+  summary: "Discover a comprehensive collection of cookbooks designed to showcase\
+    \ the power of structured outputs in AI applications. This resource offers practical\
+    \ examples and guides on various AI techniques, including classifying using enums,\
+    \ AI self-assessment, batch classification, extracting tables with GPT-Vision,\
+    \ entity resolution, and more. Learn how to implement advanced AI strategies,\
+    \ such as generating knowledge graphs, segmenting documents, and using multi-modal\
+    \ data with tools like OpenAI\u2019s APIs, local models from Ollama, and Mistral/Mixtral.\
+    \ Maximize efficiency and cost-effectiveness with insights on saving API costs\
+    \ and storing responses in databases. Ideal for developers and AI enthusiasts\
+    \ looking to solve real-world problems with structured AI outputs. Subscribe to\
+    \ our newsletter for updates and tips on enhancing AI applications. Key topics:\
+    \ AI applications, structured outputs, instructor models, classification, entity\
+    \ extraction, GPT-Vision, multi-modal data, OpenAI APIs."
+examples/knowledge_graph.md:
+  hash: 99f0d0e7707d598cf3f85562c2c59b59
+  summary: This guide explores how to effectively visualize knowledge graphs for complex
+    topics using the Instructor library, Pydantic, and Graphviz. It explains the creation
+    and structuring of knowledge graphs with `Node` and `Edge` objects, generated
+    through OpenAI's API, and how these can be visualized using Graphviz. Additionally,
+    it covers an iterative approach to updating and expanding knowledge graphs by
+    continuously integrating new information, demonstrated with an example of generating
+    a comprehensive graph from multiple textual inputs. This automated process simplifies
+    understanding of intricate subjects like quantum mechanics, enhancing learning
+    and retention. Key points emphasize on modeling, API usage, visualization, iterative
+    updates, and the integration with open-source libraries.
+examples/local_classification.md:
+  hash: ac2f251e89cb575947a5bddddbf87cc8
+  summary: This article guides users on how to use Llama-cpp-python with the `instructor`
+    library for classifying confidential data securely on local infrastructure. By
+    employing models like `Mistral-7B-Instruct-v0.2-GGUF`, users can handle queries
+    about document content, last modified dates, access permissions, and related documents
+    without data leaving their system. It covers setup instructions, including necessary
+    installations and configurations for systems with and without GPUs, ensuring data
+    privacy and security. Additionally, it demonstrates integrating the solution with
+    Python, highlighting the ability to perform complex document-related AI tasks
+    locally. Key terms include "local models," "confidential data," "data privacy,"
+    "llama-cpp-python," "AI document classification," and "secure processing."
+examples/mistral.md:
+  hash: 1117552d2bc7fc47ae3b6ea7844107ec
+  summary: This guide provides an overview of using MistralAI models, specifically
+    the mistral-large-latest, for structured outputs in Python applications. It details
+    the steps required to obtain a Mistral API key from the MistralAI website and
+    showcases an example using the MistralClient for inference. Important aspects
+    include installing necessary packages like `instructor`, `mistralai`, and `pydantic`,
+    and setting up the API key for authentication. The example demonstrates using
+    a custom data model with Pydantic to structure outputs with MistralAI, highlighting
+    the integration of tools for improved data handling and response formatting. Keywords
+    include MistralAI, MistralClient, structured outputs, API key, Pydantic, and Python
+    integration.
+examples/moderation.md:
+  hash: 7c7c016150aba8d8eb2605ce1953a654
+  summary: This text introduces OpenAI's moderation endpoint, a tool designed to ensure
+    content compliance with OpenAI's usage policies by identifying and filtering harmful
+    content. The moderation model categorizes flagged content into areas such as hate,
+    harassment, self-harm, sexual content, and violence, each with subcategories for
+    detailed classification. The text outlines how to incorporate this moderation
+    tool to monitor API inputs and outputs using an example code snippet with Python
+    and Pydantic. Keywords include OpenAI, moderation, content compliance, harmful
+    content, categorization, monitoring, API, and validation.
+examples/multi_modal_gemini.md:
+  hash: 38fccdafc78b0e980571a9ce79738642
+  summary: 'This tutorial demonstrates how to use `instructor` with `google-generativeai`
+    for handling multi-modal data, specifically focusing on integration with audio
+    files. It provides three methods: uploading an entire audio file for analysis,
+    using inline audio segments with the `pydub` library, and handling lists containing
+    various content types. The tutorial uses an example of a State of the Union address
+    by President John F. Kennedy. Key points include setting the mode to `GEMINI_JSON`
+    for multi-modal input handling, using `genai.upload_file` for file uploads, and
+    ensuring that large files respect payload size limitations. These strategies facilitate
+    audio transcription, file management, and efficient LLM interaction with audio
+    data. Core ideas emphasize seamless integration with multi-modal audio data and
+    leveraging Google''s generative AI for audio analysis. Keywords: multi-modal data,
+    audio files, generative AI, LLM, transcription, Google Gemini, audio integration,
+    State of the Union Address.'
+examples/ollama.md:
+  hash: 3dd1e7df7c09c23ba733763afb755f2e
+  summary: This blog post explores how to leverage Ollama's OpenAI compatibility layer
+    to generate structured outputs using JSON schema from open-source Large Language
+    Models (LLMs). By integrating the Instructor library with Ollama, developers can
+    utilize Pydantic models for schema validation and prompt control, enabling streamlined
+    and robust interactions with LLMs. Key features include a simple API, reasking
+    and validation, streaming support, and compatibility with various LLM providers.
+    The post provides practical insights, code examples, and encourages further exploration
+    of Instructor's benefits and applications in AI development. Key topics include
+    Instructor, Ollama, JSON schema, LLMs, and Pydantic validation.
+examples/open_source.md:
+  hash: ee91fff15fc87a19a7d211e6b2c2fc2e
+  summary: Instructor partners with open source model providers to support the OpenAI
+    API chat endpoint, offering resources and examples for optimal utilization. The
+    platform showcases tested providers like OpenRouter, Perplexity, and RunPod TheBloke
+    LLMs, the latter utilizing a text-generation-webui with an OpenAI plugin. These
+    collaborations aim to enhance accessibility and functionality of open source models
+    in AI applications, making it an essential tool for developers seeking robust
+    AI integration. Key terms include OpenAI API, open source models, OpenRouter,
+    Perplexity, and RunPod TheBloke LLMs.
+examples/pii.md:
+  hash: adcc0ba7cb0b0b34bb465ae77b1b1599
+  summary: This article showcases the use of OpenAI's ChatCompletion model for the
+    extraction and scrubbing of Personally Identifiable Information (PII) from documents.
+    By employing Pydantic models, it defines structures for managing PII data and
+    outlines methods for both extraction and sanitation. The detailed example demonstrates
+    the use of a hypothetical API client to detect PII such as dates, social security
+    numbers, emails, phone numbers, and addresses, and replace them with placeholders
+    using a `scrub_data` method. Keywords include PII data extraction, data scrubbing,
+    OpenAI ChatCompletion, Pydantic models, and document sanitization.
+examples/planning-tasks.md:
+  hash: d593ace48cd771c19d579e77f5fe7e73
+  summary: This content demonstrates how to use the OpenAI Function Call ChatCompletion
+    model to plan and execute a query plan within a question-answering system. By
+    breaking down complex questions into smaller sub-questions with defined dependencies,
+    the system effectively gathers necessary information similar to knowledge graph
+    extraction. The article outlines the use of structured Pydantic models to represent
+    query plans and details a step-by-step process for leveraging the OpenAI API to
+    generate these plans. Key concepts include complex question answering, iterative
+    information gathering, workflow automation, and process optimization. The text
+    concludes with potential applications and further exploration of query planning
+    and task management strategies using OpenAI technologies.
+examples/search.md:
+  hash: b35100180bf424436e53446dfa45cbfe
+  summary: This article demonstrates how to utilize OpenAI's Function Call, `MultiTask`,
+    and `enum.Enum` features to effectively segment and execute search queries using
+    Pydantic models and `asyncio`. It highlights the structure and purpose of the
+    `Search` class, which includes fields for `query`, `type`, and an `execute` method
+    tailored for searching relevant content. By breaking down complex tasks into multiple
+    actionable sub-queries, the process can enhance applications like virtual assistants,
+    improving user intent understanding and task execution. Key concepts covered include
+    parallel query execution, search query segmentation, and leveraging OpenAI's language
+    models for efficient task management.
+examples/self_critique.md:
+  hash: f2ced7ff262fab4b33f332e5cf23d62a
+  summary: This guide explores the use of `llm_validator` for implementing self-correction
+    in AI models. It demonstrates how to integrate this tool with the OpenAI client
+    to validate and correct responses, focusing on resolving objectionable content.
+    The guide initially shows the creation of a model using Pydantic's validators
+    for custom validation, highlighting errors before and after validation. By using
+    a validation error message, the model identifies and corrects objectionable content,
+    ensuring appropriate output. The article emphasizes retrying requests with corrections
+    through the `max_retries` parameter to achieve a valid, non-objectionable response.
+    Key concepts include self-healing, validation, error message correction, AI model,
+    and OpenAI integration.
+examples/sqlmodel.md:
+  hash: 9e2ee3759e726fdf73d801a29359287f
+  summary: The article discusses integrating the SQLModel library with OpenAI's Instructor
+    for interacting with SQL databases using Python. SQLModel, built on Pydantic and
+    SQLAlchemy, facilitates seamless integration with FastAPI and aims to reduce code
+    duplication while enhancing developer experience. The example provided includes
+    defining a model that serves as a table for a database, generating a record using
+    OpenAI's API, and inserting the response into the database using SQLModel. This
+    integration enables the use of unified models for both database operations and
+    AI interactions. Key concepts include Python, SQLAlchemy, FastAPI, SQL databases,
+    data modeling, and database integration.
+examples/watsonx.md:
+  hash: e87422a8be90d70e502c4f21b775c7f4
+  summary: The article provides a guide on using IBM watsonx.ai for structured output
+    generation with LiteLLM. It outlines prerequisites like having an IBM Cloud Account,
+    an API Key, and a Project ID. The installation uses `poetry` to set up the environment
+    with LiteLLM, and a coding example demonstrates how to extract information using
+    the IBM watsonx.ai API. The process involves defining a data model with Pydantic,
+    setting environment variables for API access, and creating a structured data object,
+    exemplified by extracting details about IBM's founding year. Key points include
+    API integration, structured data extraction, and using Pydantic for data modeling,
+    targeting keywords such as IBM watsonx.ai, LiteLLM, structured outputs, and API
+    integration.
+help.md:
+  hash: 25701f06b56a52f1fe5efcfde00af9d0
+  summary: If you're looking for assistance with Instructor, a variety of resources
+    are available. The **Discord community** provides a platform for questions and
+    peer support. The **Concepts section** offers a detailed explanation of Instructor's
+    core principles and model prompting techniques. For practical guidance, explore
+    the **Cookbooks**, which contain diverse use-case examples, and the **Blog**,
+    featuring articles on advanced usage. Engage in **GitHub Discussions** for community
+    Q&A and report any bugs or request features via **GitHub Issues**. You can also
+    connect for insights and updates on **Twitter**. These resources aim to enhance
+    user experience and deepen understanding of Instructor's functionalities.
+hub/action_items.md:
+  hash: 2e8c9dc0fb4d9560a6f384cea4e504ae
+  summary: 'This guide details the process of extracting action items from meeting
+    transcripts using OpenAI''s API and Pydantic, streamlining project management
+    tasks such as task assignment and priority setting. Key components include the
+    development of a `Ticket` model representing action items with subtasks, and a
+    `generate` function that leverages OpenAI''s GPT-4 to process meeting transcripts.
+    The process ensures crucial tasks aren''t overlooked, improving efficiency by
+    modeling action items with priorities, assignees, subtasks, and dependencies.
+    Automating these tasks with AI reduces the time spent in meetings and enhances
+    project management effectiveness. Keywords: action items, meeting transcripts,
+    OpenAI API, Pydantic, project management, task automation, GPT-4, task prioritization.'
+hub/anthropic.md:
+  hash: efdc5bdb227efff19ae3a14b5045168e
+  summary: "The content discusses the integration of the Anthropic client with an\
+    \ instructor client to enhance its capabilities for making requests, specifically\
+    \ for creating user models with detailed attributes. By utilizing Python and the\
+    \ Pydantic library to define structured data models, such as the `User` class\
+    \ with nested properties, users can efficiently generate chat completions with\
+    \ the Anthropic API. The example demonstrates how to set up and execute a request\
+    \ using a specific language model, \"claude-3-haiku-20240307\", while highlighting\
+    \ the current challenges with handling deeply nested data types. The call to action\
+    \ invites the community to test the system and offer feedback, aiming to improve\
+    \ the client\u2019s functionality. Keywords: Anthropic client, instructor client,\
+    \ Pydantic, user model, chat completions, deeply nested types."
+hub/anyscale.md:
+  hash: 6ece9b2ea29ac2e248280c28dcdb70ce
+  summary: The blog post introduces the concept of structured outputs using Anyscale's
+    Mistral model, highlighting its ability to leverage JSON schema for efficient
+    data extraction from open-source large language models (LLMs). It emphasizes the
+    benefits of using JSON schemas over extensive prompt engineering to achieve structured
+    outputs and details how to implement this using the `instructor` package for enhanced
+    OpenAI API functionalities, including Pydantic models and retry mechanisms. The
+    post includes a Python example demonstrating entity extraction using Anyscale's
+    models, and it guides readers on accessing these tools, with links to further
+    resources. Key terms include Anyscale, open-source LLMs, JSON schema, structured
+    outputs, and instructor patching.
+hub/batch_classification_langsmith.md:
+  hash: 3126dc9543de790954cc0fdc469b2fd0
+  summary: This blog post dispels the misconception that LangChain's LangSmith is
+    limited to LangChain's models, highlighting its role as a versatile DevOps platform
+    for developing, collaborating, testing, deploying, and monitoring LLM applications.
+    It demonstrates how LangSmith can be integrated with the OpenAI client to enhance
+    functionality using the `instructor` tool. Key steps include setting the LangSmith
+    API key, installing necessary SDKs, and using asyncio for efficient question classification.
+    The focus is on using LangSmith's observability features with OpenAI, combined
+    with `instructor` for added capabilities. The tutorial provides code examples
+    for wrapping the OpenAI client with LangSmith, resulting in improved classification
+    of questions into categories like SUMMARY, EMAIL, and DOCUMENT_SEARCH.
+hub/cohere.md:
+  hash: 1c88e00b45d966cf63fc7e9c4b3d0bda
+  summary: The provided content is a guide on leveraging Cohere's command models using
+    the `instructor` library to generate structured data outputs. It offers a step-by-step
+    setup that includes installing `cohere` Python package and patching the Cohere
+    client with `instructor` for enhanced functionality. The example demonstrates
+    constructing a structured `Group` object using Python's Pydantic library, specifically
+    extracting details about "The Beatles" band from a given text. Key components
+    include the requirement of a Cohere API key for model access, utilizing specific
+    model commands like "command-r-plus," and formatting structured data with Pydantic
+    classes. Keywords include Cohere, structured outputs, API key, instructor library,
+    Pydantic, and The Beatles.
+hub/extract_contact_info.md:
+  hash: 2f18d9354f8603b65dafc4331e254ff8
+  summary: "This guide outlines how to automate customer lead information extraction\
+    \ using OpenAI's API and Pydantic, focusing on capturing user details like names\
+    \ and phone numbers from messages. It explains the creation of a `Lead` model\
+    \ with Pydantic, utilizing its PhoneNumber type for validation. The core function,\
+    \ `parse_lead_from_message`, integrates OpenAI\u2019s Instructor to process user\
+    \ messages and return extracted lead data, demonstrating its effectiveness with\
+    \ examples and error handling for validation issues. Key points include automation,\
+    \ data extraction, and machine learning validation, improving efficiency in collecting\
+    \ customer information."
+hub/groq.md:
+  hash: c0476fde5d5626c9a3424d5aef180b40
+  summary: "The blog post introduces Groq AI and explains how to use its structured\
+    \ output capabilities with Python, alongside support for other languages like\
+    \ Javascript, Elixir, and PHP. The content highlights how to enhance the OpenAI\
+    \ API using Instructor\u2019s patch, which includes features like `response_model`\
+    \ for returning Pydantic models and `max_retries` for handling failed calls. Although\
+    \ Groq AI doesn't support direct function calling, the TOOLS mode can be utilized\
+    \ for structured data extraction. An example is provided using a Pydantic model\
+    \ to extract structured data from a text input, demonstrating the integration\
+    \ of Groq with Pydantic for improved API responses. Key concepts include structured\
+    \ outputs, Groq AI, Instructor API, and Pydantic models."
+hub/index.md:
+  hash: bce517ed6e053d2329ee6fe0407c8a2b
+  summary: "Instructor Hub is a comprehensive platform designed to provide tutorials\
+    \ and examples for utilizing the `instructor` tool effectively. Users are encouraged\
+    \ to keep their software updated with the command `pip install -U instructor`.\
+    \ The platform supports contributions, requiring new examples to be a single file,\
+    \ referenced in `mkdocs.yml`, and unit tested, with testing facilitated through\
+    \ `pytest_examples`. Instructor Hub\u2019s CLI allows users to list, search, read,\
+    \ and pull tutorials and code examples directly from the terminal, enhancing workflow\
+    \ efficiency. The project seeks contributions, specifically in areas like validator\
+    \ examples, data extraction, and batch data processing. Keywords: `instructor`,\
+    \ CLI, tutorials, examples, code testing, open-source contributions."
+hub/knowledge_graph.md:
+  hash: d897ff6202c4334b12e26f70ee99cfa8
+  summary: This tutorial offers a comprehensive guide to building knowledge graphs
+    from textual data using OpenAI's API and the Pydantic library. It emphasizes automating
+    the extraction of structured information from unstructured text, transforming
+    it into a detailed knowledge graph. The article includes a practical implementation
+    example, where users can experiment with the `instructor hub` tool. The tutorial
+    demonstrates a function that converts input text into a knowledge graph by identifying
+    nodes and edges, with the OpenAI model "gpt-3.5-turbo" generating the graph content.
+    Key concepts include knowledge graphs, structured information, OpenAI API, Pydantic,
+    and unstructured text conversion.
+hub/llama-cpp-python.md:
+  hash: f53ba3449cb3eeb0181fa7567f86731b
+  summary: The article highlights the use of "llama-cpp-python" for generating structured
+    outputs with open-source LLMS by leveraging JSON schema mode through constrained
+    sampling and speculative decoding. It discusses how this method can simplify prompt
+    engineering and produce structured outputs efficiently. The example provided demonstrates
+    advanced use cases of JSON_SCHEMA mode, incorporating partial streaming via the
+    llama-cpp-python's LlamaPromptLookupDecoding model. Additionally, the piece showcases
+    features of the Instructor's patch, such as enhanced `create` calls with `response_model`
+    and `max_retries`, and emphasizes the advantages of using Pydantic for structured
+    data handling. Key terms include llama-cpp-python, JSON schema, structured outputs,
+    speculative decoding, and Pydantic.
+hub/mistral.md:
+  hash: 0cc0ca572de2b869b691090d85eeed88
+  summary: The blog post introduces "Mistral Large," the flagship model from Mistral
+    AI, which supports 32k context windows and offers functional calling capabilities
+    to generate structured outputs using JSON schema. It demonstrates how to use the
+    Instructor framework with Mistral Large to enhance API functionality, such as
+    using `response_model` for structured responses and `max_retries` for reliability
+    through a backoff strategy. The post highlights the differences in the Mistral
+    client compared to others like OpenAI and provides code examples for implementing
+    these features using Python's Pydantic library. Keywords include Mistral Large,
+    structured outputs, JSON schema, Instructor framework, Mistral AI, and Pydantic
+    integration.
+hub/multiple_classification.md:
+  hash: b2fe6a225a4bb16d2dd038d315dde9ad
+  summary: 'This document provides a guide to implementing multi-label classification
+    using the `instructor hub` with Python and the Pydantic library. It describes
+    how to set up an environment to handle multiple support ticket classifications,
+    such as "ACCOUNT," "BILLING," and "GENERAL_QUERY," through a new enum class and
+    Pydantic model. The example leverages OpenAI''s GPT-4o-mini model, showcasing
+    a few-shot approach to classify support tickets based on relevant labels. Key
+    steps include modifying the OpenAI client with `instructor.from_openai` to enable
+    response models and writing a function using a system and user message format
+    to interact with the chat API. This content is valuable for developers interested
+    in natural language processing, automated support ticket classification, and AI-enhanced
+    customer support solutions. Keywords: multi-label classification, Pydantic, OpenAI,
+    GPT-4o-mini, support tickets, instructor hub, Python, natural language processing.'
+hub/ollama.md:
+  hash: 051b7a6ff3584760341a9bf236221a92
+  summary: This blog post introduces using Ollama's open-source, OpenAI-compatible
+    models to generate structured outputs with JSON schema. It showcases the integration
+    of the Instructor library with Ollama to enhance OpenAI API functionalities, including
+    the `response_model` feature for Pydantic models and `max_retries` for reliable
+    API calls. The tutorial provides step-by-step instructions to set up and use these
+    tools, focusing on generating character profiles from models like Llama 2. Key
+    concepts include patching, Pydantic for JSON validation, and leveraging instructor's
+    enhancements for structured data output.
+hub/pandas_df.md:
+  hash: af31551adabf7a952bf6326a976f0e10
+  summary: This guide demonstrates how to extract data directly into a Pandas DataFrame
+    using Python, Pydantic, and OpenAI's GPT-3.5 Turbo. It outlines a method to convert
+    markdown strings into DataFrames with a custom validator, leveraging the `Annotated`
+    type for validation, serialization, and documentation. The code includes functions
+    to extract and format tables of data as well as more complex structures like a
+    titled table. Key topics include Python data extraction, Pandas DataFrame manipulation,
+    Pydantic data modeling, and GPT-3.5 Turbo integration. Use these techniques to
+    efficiently process and manage structured data within your data analysis workflows.
+hub/partial_streaming.md:
+  hash: 6f95234249acc3752927aaf708f65bca
+  summary: The content focuses on "Streaming Partial Responses" through field-level
+    streaming, which offers incremental snapshots of response models for real-time
+    usability, especially in UI rendering. It introduces the `Partial[T]` utility
+    in the "Instructor" tool that treats model fields as "Optional," enabling dynamic
+    class creation. A Python script demonstrates using the Instructor tool with the
+    OpenAI API to extract and stream meeting information, highlighting the integration
+    of `Partial` class capabilities. Key elements include using `instructor`, `Partial`,
+    and OpenAI API for efficient data streaming. The context involves a meeting with
+    details like participants, a tech conference, a budget, and deadlines.
+hub/single_classification.md:
+  hash: cb1321354884389937d9e67324ba3e32
+  summary: This content provides a practical guide for performing single-label text
+    classification using the OpenAI API with the `gpt-3.5-turbo` model to differentiate
+    between `SPAM` and `NOT_SPAM`. It includes a Python script that utilizes Pydantic
+    for data validation and the `instructor` library to modify the OpenAI client for
+    classifying text input based on predefined examples. The script showcases a simple
+    implementation of single-label classification, making it a valuable resource for
+    developers looking to integrate AI for spam detection in their applications. Key
+    features include the use of few-shot examples, structured responses with a response
+    model, and detailed function annotations for effective text classification.
+hub/tables_from_vision.md:
+  hash: 51128523f9dbf77e8c0163ac87c66235
+  summary: 'This article discusses using OpenAI''s GPT-4 Vision model to extract tables
+    from images by implementing a `Table` class in Python that incorporates pandas
+    DataFrames formatted in markdown. The process involves defining a custom type,
+    `MarkdownDataFrame`, to handle the conversion of markdown data into a pandas DataFrame.
+    Essential dependencies include pandas and tabulate, with further use of Pydantic
+    for data validation and serialization. The core functionality involves using OpenAI''s
+    tools to analyze images, generate table headers, and convert identified tables
+    into markdown format. This approach is useful for organizing and structuring data
+    extracted from visual content, ensuring ease of data manipulation and analysis
+    in tabular forms for applications like image-to-table conversion. Key topics:
+    GPT-4 Vision model, table extraction, markdown, pandas DataFrame, image analysis,
+    OpenAI.'
+hub/together.md:
+  hash: f497d47a5a03d9d8812f4192da99e5cb
+  summary: The blog post discusses the use of Together AI's open-source large language
+    models (LLMs) for generating structured outputs through function calling models.
+    It introduces the concept of patching with the Instructor library, which enhances
+    the OpenAI API with features like `response_model` and `max_retries`, allowing
+    seamless integration with Together AI's models. The article includes a Python
+    example of extracting structured data using Together AI's API and Pydantic models,
+    demonstrating practical application. It also highlights the availability of cross-language
+    support for JavaScript, Elixir, and PHP, and provides links to more detailed resources
+    and documentation. Key points include the benefits of structured outputs, integration
+    processes, and the versatility of using Together AI with open-source models.
+hub/vertexai.md:
+  hash: ac331508afee2435680dbc489a833afc
+  summary: The blog post titled "Structured Outputs with Vertex AI" guides users on
+    deploying the Gemini family of models using Vertex AI, emphasizing their large
+    context window of 1 million tokens and native multimodality across files, video,
+    and audio. It introduces an Instructor patch that enhances the Gemini API for
+    structured outputs, explaining the use of `response_model` and `max_retries` features
+    with Pydantic models for JSON parsing. The post also covers patching differences
+    between Vertex AI and OpenAI clients and outlines limitations such as unsupported
+    Pydantic attributes, providing workarounds for handling optional fields and value
+    range restrictions in models. Ultimately, the tutorial helps users leverage the
+    Vertex AI SDK to effectively use Gemini models in production, accommodating known
+    limitations with practical solutions.
+hub/youtube_clips.md:
+  hash: 101ce7883baf7589c4a7f56d2943ba7e
+  summary: 'This guide provides a comprehensive method for creating concise YouTube
+    video clips using the `instructor` library and OpenAI''s models. It focuses on
+    extracting key segments from video transcripts and converting them into smaller,
+    standalone clips with informative titles and descriptions. The process involves
+    utilizing the `youtube_transcript_api` to fetch video transcripts, and through
+    the use of Python''s `pydantic` and `instructor`, it generates segments for recutting.
+    This approach ensures video clips are proportional to the original content and
+    corrects any transcript errors. Key components include using AI for transcript
+    analysis, automated clip creation, and producing detailed metadata for video optimization.
+    Keywords: YouTube clips, transcript analysis, OpenAI, video segmentation, `instructor`
+    library.'
+index.md:
+  hash: 1f83e333d9e7cfc5791d3734d275cdb5
+  summary: '"Instructor" is a tool for extracting structured data like JSON from large
+    language models (LLMs) such as GPT-3.5, GPT-4, and various open-source models.
+    Built on Pydantic, it offers a straightforward API enabling users to maintain
+    control over prompts, while managing data validation, retries, and streaming.
+    With multi-language support and integration capabilities with platforms like OpenAI
+    and Anthropic, Instructor simplifies interactions with LLMs. It also includes
+    features such as reasking for validation, Jinja templating, and typing correctness
+    for seamless IDE integration. The tool is ideal for developers seeking efficient
+    and controlled structured data extraction from AI models.'
+installation.md:
+  hash: b112e68f763a90e19d54de5df1cdb8ea
+  summary: To install the Instructor package, simply execute the command `pip install
+    instructor`. Instructor is compatible with Python 3.9+ and relies on several key
+    dependencies for enhanced functionality. These include the `openai` Python client,
+    `typer` for building command-line interfaces, `docstring-parser` for parsing Python
+    docstrings, and `pydantic` for data validation and settings management. Ensure
+    that you have `pip` installed to easily add Instructor to your Python environment.
+jobs.md:
+  hash: d41d8cd98f00b204e9800998ecf8427e
+  summary: Of course! Please provide the text that you would like me to summarize,
+    and I'll be happy to assist you.
+newsletter.md:
+  hash: 6caf6d1ea505301627a2afbccc405363
+  summary: The Instructor Newsletter provides updates on new features, releases, and
+    AI development skills related to the Instructor platform. It includes blog posts
+    focusing on AI and structured outputs, along with tips and tricks from the community
+    and the latest research in large language models (LLMs). Subscribers will receive
+    valuable insights to enhance their use of Instructor in various projects. Key
+    topics include AI development, structured outputs, and LLM research.
+prompting/decomposition/decomp.md:
+  hash: dd1d49ee871acabb8d368a16ea3150fe
+  summary: 'Decomposed Prompting leverages a Language Model (LLM) to break down complex
+    tasks into manageable sub-tasks, streamlining the problem-solving process. By
+    implementing a system of data models and functions, such as `Split`, `StrPos`,
+    and `Merge`, this approach enables systematic handling of intricate problems.
+    The `derive_action_plan` function orchestrates action plans using specified functions,
+    executed step-by-step to achieve the task goals. This modular method optimizes
+    LLM performance for challenging tasks, demonstrating effective AI-driven automation
+    and problem decomposition. Key terms: Decomposed Prompting, Language Model (LLM),
+    task decomposition, AI automation, action plan, modular approach.'
+prompting/decomposition/faithful_cot.md:
+  hash: f5dd3db43b8242151bac111cab990918
+  summary: 'The concept of "Faithful Chain of Thought" in language models focuses
+    on enhancing the accuracy of reasoning by dividing the process into two stages:
+    Translation and Problem Solving. In the Translation stage, a user query is broken
+    down into executable reasoning steps, which are task-specific and deterministically
+    executed in the Problem Solving stage, ensuring consistency in the derived answer.
+    Examples include converting math word problems into executable Python code, using
+    multi-step reasoning in Multi-Hop QA with Python and Datalog, and generating plans
+    with symbolic goals through a PDDL Planner. The approach aims to improve the faithfulness
+    and effectiveness of language models in problem-solving tasks.'
+prompting/decomposition/least_to_most.md:
+  hash: 0fda6e18516932d774fbd45486e19af2
+  summary: The article discusses the "Least-to-Most" prompting technique for large
+    language models (LLMs), which involves breaking down complex problems into a sequence
+    of increasingly complex subproblems to facilitate systematic problem-solving.
+    It provides an example of this approach using the age problem of Adam and Mary,
+    demonstrating how solving simpler subproblems sequentially can aid in answering
+    the original complex question. The content includes Python code that outlines
+    how to implement this technique using the OpenAI API, including decomposing a
+    question into subquestions and solving them one by one. Key ideas include systematic
+    decomposition, structured prompting, sequential problem-solving, and application
+    to LLMs. The article aims to enhance LLMs' reasoning capabilities by adopting
+    this structured methodological approach.
+prompting/decomposition/plan_and_solve.md:
+  hash: 7efc5f74390a69beeaf130c9b6c31583
+  summary: "The \"Plan and Solve\" method enhances Zero-Shot Chain of Thought (CoT)\
+    \ prompting for large language models, offering improved reasoning capabilities\
+    \ across multiple datasets. This method uses a structured two-step process: first,\
+    \ generating reasoning by devising a complete plan to solve a problem; second,\
+    \ extracting the answer from the model\u2019s reasoning. By focusing on detailed\
+    \ instructions and attention to numerical calculations and commonsense logic,\
+    \ \"Plan and Solve\" ensures more accurate and robust responses. The approach\
+    \ integrates with tools like Python's `instructor` library and OpenAI's model\
+    \ configurations, demonstrating precise implementation for complex problem-solving\
+    \ queries. Key concepts include Zero-Shot CoT, enhanced prompting techniques,\
+    \ and superior accuracy in reasoning processes."
+prompting/decomposition/program_of_thought.md:
+  hash: c7daac38c0953ffaa32ff567f61ec11c
+  summary: The "Program of Thought" is designed to enhance mathematical and programming
+    task performance by using an external Python interpreter to generate intermediate
+    reasoning steps. This method grounds final responses in deterministic code, ensuring
+    more accurate computations. Key features include implementing a `solver()` function,
+    leveraging OpenAI's `gpt-4o` model, and creating a systematic approach to problem-solving
+    through executable Python programs. The program executes given code snippets to
+    derive answers and validate against predefined conditions, ensuring reliable outputs.
+    It also highlights leveraging AI for optimizing problem-solving accuracy and efficiency.
+    Key terms include AI, Python interpreter, deterministic code, and problem-solving.
+prompting/decomposition/recurs_of_thought.md:
+  hash: 5ef001050e89f56ecc769095df6300f4
+  summary: The document appears to be a placeholder or work in progress, as indicated
+    by the lack of content in sections such as title, description, and keywords, with
+    only a "[wip]" note present. To optimize for search engine optimization (SEO)
+    once completed, the document should include detailed content highlighting core
+    ideas, objectives, and key points. Suggested keywords might include "draft," "placeholder
+    content," "work in progress," and "SEO development."
+prompting/decomposition/skeleton_of_thought.md:
+  hash: 74c4eecb832ae81f67b53a4c76336eba
+  summary: 'The "Skeleton-of-Thought" technique for reducing LLM pipeline latency
+    involves prompting a language model to generate a skeleton outline of a response,
+    then expanding each point in parallel. This method leverages parallel API calls
+    or batched decoding to enhance efficiency. An example implementation uses Python
+    and the OpenAI model, demonstrating the creation of a skeleton from a question
+    and expanding each point using asynchronous functions. Core ideas include reducing
+    latency through parallel generation, efficient use of language models, and focusing
+    on key response elements. Keywords: Skeleton-of-Thought, LLM pipeline, latency
+    reduction, parallel generation, asynchronous processing, OpenAI.'
+prompting/decomposition/tree-of-thought.md:
+  hash: 5ef001050e89f56ecc769095df6300f4
+  summary: The content appears to be a placeholder or work-in-progress (WIP) without
+    any available details, title, or description. To optimize for search engines (SEO),
+    ensure to include key concepts, objectives, and important keywords once the content
+    is finalized. Focus on crafting a summary that highlights central themes or topics,
+    such as the purpose of the document, its main points, and any crucial information
+    it aims to convey.
+prompting/ensembling/cosp.md:
+  hash: 4b8eb058102072272fcb938bb8861a5c
+  summary: Consistency Based Self Adaptive Prompting (COSP) is an ensembling technique
+    designed to enhance large language model (LLM) output quality by using high-quality
+    few-shot examples in prompts. It generates reasoning chains from questions lacking
+    ground truth labels, evaluating them with a score combining normalized entropy
+    and repetitiveness. COSP appends selected examples to the prompt to produce multiple
+    reasoning chains, choosing the final result via self-consistency, which uses a
+    majority vote among sampled answers. This approach demonstrates improved zero-shot
+    reasoning in high entropy environments. Key aspects include self-consistency,
+    normalized entropy, and repetitiveness measurements.
+prompting/ensembling/dense.md:
+  hash: 4b90091a3795f75f4fc3162a22bf6ec7
+  summary: "The concept of Demonstration Ensembling (DENSE) involves maximizing the\
+    \ use of examples by creating multiple few-shot prompts with distinct subsets\
+    \ from the training set to generate a final response. This technique iteratively\
+    \ prompts a model, such as GPT-4o, for classification tasks using examples partitioned\
+    \ into equally sized clusters. By aggregating responses, a refined final answer\
+    \ is produced. The method is implemented using Python with libraries like `instructor`\
+    \ and involves asynchronous response generation. DENSE is particularly useful\
+    \ in tasks demanding precise classifications based on user queries\u2014classifying\
+    \ them into categories such as Positive, Negative, or Neutral. Key elements include\
+    \ embedding clustering, prompt engineering, and response aggregation."
+prompting/ensembling/diverse.md:
+  hash: b93329f06d2f82403fdc0efd37b286f3
+  summary: The "Diverse Verifier On Reasoning Step (DiVeRSe)" is a prompting technique
+    designed to enhance AI-generated responses through diverse prompting and verification
+    processes. It creates multiple prompt variations by changing examples used, and
+    employs a finetuned `Deberta-V3-Large` model to score responses, determining the
+    best answer based on aggregated scores. The technique's core idea is to ensure
+    high-quality outputs by scoring individual reasoning steps, although training
+    data for this is challenging to obtain. The implementation can be done using `instructor`
+    with GPT-4o for scoring. Key elements include "Diverse Prompts," "Verification,"
+    "Deberta-V3-Large," and "GPT-4o."
+prompting/ensembling/max_mutual_information.md:
+  hash: 2ec748390bb663e6c289e4ec676cb6f2
+  summary: 'The Max Mutual Information method is a prompting technique designed to
+    optimize the interaction between prompts and language model (LLM) outputs by maximizing
+    mutual information, a measure indicating the reduction in the model''s uncertainty
+    given a prompt. This approach considers the entropy of the probability distribution
+    of token outputs, aiming for lower entropy which reflects higher confidence in
+    predictions. Key steps involve creating multiple prompt templates, calculating
+    mutual information for each by evaluating entropy, and selecting the template
+    that maximizes this metric as the most effective. The technique is demonstrated
+    with a Python implementation that simulates responses and evaluates each based
+    on a defined confidence score. Keywords: Max Mutual Information, language model
+    prompting, entropy, mutual information, confidence score, prompt optimization,
+    LLM, token probability.'
+prompting/ensembling/meta_cot.md:
+  hash: 27a293f554ea18772bbd23fa38de5e2e
+  summary: The document discusses the Meta Chain Of Thought (Meta COT) approach, a
+    technique that enhances the accuracy of responses generated by AI models by decomposing
+    a primary query into multiple sub-queries. Using reasoning chains, this method
+    evaluates various reasoning paths before aggregating results to form a comprehensive
+    answer. A Python implementation is provided using the `instructor` library to
+    structure queries and responses through an asynchronous OpenAI API. The process
+    includes generating sub-questions, reasoning steps, and finally synthesizing a
+    detailed response. This method is particularly useful for complex queries requiring
+    nuanced understanding and accurate information synthesis. Key terms include Meta
+    Chain Of Thought, reasoning chains, query decomposition, and AI accuracy.
+prompting/ensembling/more.md:
+  hash: 1f26fd2b6a81ae83f6db67299dde096c
+  summary: 'The article presents Mixture Of Reasoning Experts (MoRE), a technique
+    designed to improve language models'' responses by combining diverse reasoning
+    experts through specialized prompts for different reasoning types. The MoRE framework
+    employs four experts: Factual, Multihop, Math, and Commonsense, each contributing
+    unique reasoning skills to tackle various question types. Responses are then evaluated
+    using a random forest classifier, and the best answer is selected based on an
+    agreement score. The article also provides a Python implementation example of
+    a simplified MoRE model using OpenAI''s `instructor` library. Key terms include
+    language models, specialized prompts, diverse reasoning, Mixture Of Reasoning
+    Experts, random forest classifier, OpenAI, and Python implementation.'
+prompting/ensembling/prompt_paraphrasing.md:
+  hash: e8f28524643be6affb1b760f6e930184
+  summary: 'This article discusses using Large Language Models (LLMs) to enhance prompt
+    performance through back translation, a technique that generates semantically
+    similar prompts by translating text to another language and back to English. When
+    LLMs are prompted in suboptimal ways, their performance can degrade significantly,
+    even if they have the necessary information. The back translation process, implemented
+    with the `instructor` library and the `AsyncOpenAI` client, aims to improve phrasing
+    by encouraging more diverse rephrasing of prompts. The approach uses language
+    models like GPT-4o to generate permutations of prompts into multiple languages,
+    such as French, Spanish, and Chinese, before back-translating them to English.
+    Keywords: Large Language Models, back translation, prompt performance, semantic
+    similarity, prompt paraphrasing, GPT-4o, multilingual prompts.'
+prompting/ensembling/self_consistency.md:
+  hash: 3c7b13c127020e8196fed2607ec00b8f
+  summary: The document outlines the concept of Self-Consistency in large language
+    models (LLMs), emphasizing how generating multiple candidate responses and selecting
+    the most common answer can enhance accuracy. It provides a Python implementation
+    using the `instructor` library and OpenAI's `AsyncOpenAI` to perform Self-Consistent
+    response generation. Key steps include creating multiple responses, gathering
+    them asynchronously, and using a majority vote to determine the final answer.
+    The example script is designed to calculate profits from selling eggs, showcasing
+    practical application. Important keywords include Self-Consistency, LLM performance,
+    OpenAI, Python, chain-of-thought reasoning, and asynchronous response generation.
+prompting/ensembling/universal_self_consistency.md:
+  hash: 29088c0b3093f4ca36b04b3e5993c2f0
+  summary: 'Universal Self Consistency is an advanced method that leverages Large
+    Language Models (LLMs) to enhance the accuracy and diversity of generated responses
+    by selecting the most consistent answer among multiple candidates. Unlike traditional
+    self-consistency approaches that rely solely on frequency of occurrence, this
+    method utilizes a second LLM model to evaluate individual response quality relative
+    to the prompt. The implementation, demonstrated using the `instructor` library
+    and OpenAI''s API, allows a dynamic assessment of response consistency, offering
+    versatility across various response formats. This results in achieving higher
+    accuracy and supporting diverse outputs. The application involves generating multiple
+    responses and programmatically selecting the one that aligns best with the collective
+    reasoning using consensus among the options. '
+prompting/ensembling/usp.md:
+  hash: 36a088151b6b18f746769b42ee6efd0a
+  summary: 'Universal Self Prompting (USP) is a two-stage technique that enhances
+    large language models (LLMs) by using unlabeled data to generate useful exemplars
+    and applying a sophisticated scoring function to select them. In the first stage,
+    LLMs generate candidate responses from a test dataset, and in the second stage,
+    the best examples are selected to prompt the model for final predictions, leveraging
+    greedy decoding for efficiency. USP supports three task categories: Classification,
+    Short Form Generation, and Long Form Generation, with each category employing
+    task-specific evaluation methods. This approach improves LLM performance across
+    various tasks such as Natural Language Inference, Sentiment Analysis, Question
+    Answering, Text Summarization, and Machine Translation. The implementation involves
+    generating balanced sample predictions to reduce model biases, thereby enhancing
+    accuracy and confidence in final responses. Keywords: Universal Self Prompting,
+    large language models, exemplar generation, task-specific evaluation, greedy decoding,
+    classification, short form generation, long form generation, improved performance.'
+prompting/few_shot/example_generation/sg_icl.md:
+  hash: 9e34f18da03472bbb2e4e7503e1270e1
+  summary: The content explains how to generate examples for prompts using Self-Generated
+    In-Context Learning (SG-ICL) with large language models (LLMs). It introduces
+    a method where an LLM, specifically OpenAI's GPT-4, generates task examples to
+    improve in-context learning. The article provides a Python code example leveraging
+    the `instructor` library to create sentiment analysis reviews, demonstrating how
+    to generate and use multiple examples per sentiment class for prediction. This
+    technique benefits tasks requiring nuanced language understanding by providing
+    context-specific demonstrations, enhancing the AI's predictive accuracy. Keywords
+    include SG-ICL, in-context learning, LLM, sentiment analysis, and OpenAI.
+prompting/few_shot/example_ordering.md:
+  hash: 46fe78ea46e5f89593be648f251c8628
+  summary: 'The article "Example Ordering" discusses the impact of the order of few-shot
+    examples on the outputs of large language models (LLMs) and suggests exploring
+    different permutations to improve results. Key methods for selecting effective
+    examples include manual combinatorics, KATE (k-Nearest Example Tuning), and using
+    an unsupervised retriever to score example relevance based on semantic similarity.
+    These techniques aim to optimize prompt strategies for enhanced performance in
+    few-shot learning scenarios. The article cites several studies supporting these
+    concepts, highlighting the importance of selecting and ordering examples strategically
+    in LLM prompts. Keywords: example ordering, few-shot learning, LLM outputs, KATE,
+    unsupervised retriever, semantic similarity, prompt optimization.'
+prompting/few_shot/exemplar_selection/knn.md:
+  hash: bc532ce3d5875b61d4fe018aa47ae7c2
+  summary: The document outlines a technique for selecting effective in-context examples
+    using K-nearest neighbors (KNN) to optimize responses in a language model (LLM)
+    setting. Core steps involve embedding both query examples and a target query to
+    identify the closest examples, which are then used as context for generating precise
+    and concise responses. It utilizes tools like `instructor`, `pydantic`, and `OpenAI`,
+    showcasing a practical implementation in Python. Key SEO terms include KNN, in-context
+    learning, semantic similarity, query embedding, OpenAI, and language model optimization.
+prompting/few_shot/exemplar_selection/vote_k.md:
+  hash: 5ef001050e89f56ecc769095df6300f4
+  summary: The document appears to be a work in progress with no specific content
+    detailed. For SEO purposes, consider highlighting potential core ideas such as
+    the main topic or industry the content will cover, the objectives it aims to achieve
+    (e.g., educating, informing, or entertaining), and any relevant keywords associated
+    with these elements. Keywords should reflect the anticipated focus areas of the
+    content, like audience demographics, anticipated benefits or outcomes, and any
+    unique features or aspects of the work. Once the content is developed further,
+    this information can be refined to enhance searchability.
+prompting/index.md:
+  hash: f5bc7d2b7a0fec553de67fd741581ac7
+  summary: 'The Prompting Guide is a comprehensive resource detailing 58 techniques
+    to enhance AI model performance through effective prompting. Categories include
+    Zero-Shot and Few-Shot methods, Thought Generation, Ensembling, Self-Criticism,
+    and Decomposition, each offering strategies for generating examples, encouraging
+    reasoning, verifying responses, and breaking down complex problems. Key approaches
+    involve using emotional language, assigning roles, auto-refining prompts, simulating
+    perspectives, generating follow-up questions, and choosing effective examples.
+    This guide serves as a crucial tool for those aiming to optimize AI interaction
+    and results. Keywords: AI model performance, prompting techniques, Zero-Shot,
+    Few-Shot, Thought Generation, Ensembling, Self-Criticism, Decomposition.'
+prompting/self_criticism/chain_of_verification.md:
+  hash: 73ebc5e56042b7f72031c9b68be3dc97
+  summary: 'The Chain of Verification (CoVe) method is designed to improve the accuracy
+    of responses generated by Large Language Models (LLMs). It involves a multi-step
+    process: first, an LLM generates an initial response to a query; then, follow-up
+    questions are created to validate this response; independent answers to these
+    questions are generated next; finally, the initial response is reassessed based
+    on these question-answer pairs. This approach aims to reduce hallucinations in
+    LLM outputs by ensuring the accuracy and reliability of the generated information.
+    Core concepts include LLM response validation, follow-up question generation,
+    independent verification, and enhancing response accuracy. Keywords: Chain of
+    Verification, LLM, response validation, hallucination reduction, accuracy, reliability.'
+prompting/self_criticism/cumulative_reason.md:
+  hash: 5955cf4ff7d10e40b7fb3b41ed577f14
+  summary: 'Cumulative Reasoning is a method that enhances model performance in logical
+    inference and mathematical tasks by dividing the reasoning process into three
+    distinct steps: Propose, Verify, and Report. This approach allows for a thorough
+    examination of reasoning steps, improving the accuracy and reliability of outputs.
+    Implemented using the `instructor` package and OpenAI''s GPT model, this technique
+    leverages First-Order Logic to generate, assess, and finalize logical propositions
+    based on provided premises and hypotheses. By incrementally refining the reasoning
+    process, it effectively filters out invalid steps and enhances the model''s deduction
+    capabilities. Key terms include Cumulative Reasoning, logical inference, First-Order
+    Logic, and AI reasoning.'
+prompting/self_criticism/reversecot.md:
+  hash: 68c9d66c325c88ca8b704116b4be00f8
+  summary: The article discusses the Reverse Chain of Thought (RCoT) method, designed
+    to improve logical consistency in large language models' responses. By reverse-engineering
+    problems based on solutions, RCoT identifies logical inconsistencies, provides
+    feedback, and enhances solution quality. Key steps include reconstructing the
+    original question, identifying inconsistencies, and generating targeted feedback.
+    The process is illustrated through a Python implementation using the OpenAI API,
+    focusing on analyzing, decomposing, and revising responses. Core concepts include
+    logic, language model optimization, feedback mechanisms, and problem-solving techniques.
+prompting/self_criticism/self_calibration.md:
+  hash: 10cd8050ef8c5a0154316edb507747c1
+  summary: Self Calibration is a technique that allows language models to assess their
+    confidence in their predictions by evaluating their responses to prompts. Instead
+    of using a fine-tuned regression head over the model's final output, which requires
+    access to hidden states, this approach substitutes it with a function call to
+    achieve similar results. The method involves prompting the model to analyze if
+    its response is a valid answer through a structured template, as demonstrated
+    with the `instructor` tool using OpenAI's API. This technique helps models identify
+    and reason through their knowledge gaps, enhancing their ability to provide accurate
+    answers and assess the validity of their outputs.
+prompting/self_criticism/self_refine.md:
+  hash: 26954d5fa1eef958210dfcd38b6f1c8a
+  summary: The article discusses the "Self-Refine" approach for improving the responses
+    of large language models (LLMs) using iterative feedback loops. This method involves
+    generating an initial output, providing feedback on that output, and refining
+    it based on the feedback, using the same LLM for all steps until a predefined
+    stopping condition is met. The article includes a Python code example demonstrating
+    this process, highlighting key concepts such as feedback loops, iterative refinement,
+    and coding optimization strategies. Core keywords include "Self-Refine," "LLM,"
+    "feedback loops," "iterative refinement," "Python coding," and "language model
+    improvement."
+prompting/self_criticism/self_verification.md:
+  hash: 77d9f2d4e8bf08216987b11d2bf8679a
+  summary: 'The article discusses a self-verification framework for verifying large
+    language model (LLM) responses by implementing a two-stage process: forward reasoning
+    and backward verification. In forward reasoning, multiple candidate solutions
+    are generated using chain of thought (CoT) methodology. Backward verification
+    involves rewriting the question and solution as a declarative sentence, constructing
+    a new verification question through True-False Item Verification (TFV) or Condition
+    Mask Verification (CMV), and then computing a verification score by querying the
+    LLM multiple times. The framework aims to ensure accuracy and correctness of LLM-generated
+    responses, leveraging techniques like TFV and CMV to select the candidate with
+    the highest verification score as the final, reliable answer. Keywords: self-verification
+    framework, LLM responses, forward reasoning, backward verification, chain of thought,
+    True-False Item Verification, Condition Mask Verification.'
+prompting/thought_generation/chain_of_thought_few_shot/active_prompt.md:
+  hash: ec50ae930bfa92be2db89c937e696404
+  summary: 'Active prompting is a technique to enhance Large Language Model (LLM)
+    performance by selecting effective examples for human annotation. This process
+    involves four main steps: uncertainty estimation, selection, annotation, and inference.
+    The uncertainty estimation step uses metrics like disagreement, entropy, and variance
+    to measure how confident the LLM is in its responses. By querying the LLM multiple
+    times, the differences in responses indicate areas of uncertainty. Selection involves
+    choosing the most uncertain examples for human annotation, which are then used
+    to improve the LLM''s inference capabilities. This method optimizes the use of
+    labeled data to boost LLM accuracy and performance.'
+prompting/thought_generation/chain_of_thought_few_shot/auto_cot.md:
+  hash: aa45163a89881ec54d814f68e369d2df
+  summary: The article discusses improving the performance of few-shot Chain of Thought
+    (CoT) reasoning by automating the selection of diverse examples. The method involves
+    clustering potential examples, sorting them based on distance from cluster centers,
+    and selecting those that meet predefined criteria, such as a maximum of five reasoning
+    steps. This automated approach reduces reasoning errors by ensuring the examples
+    are varied and representative. The implementation includes clustering with KMeans,
+    encoding with Sentence Transformers, and using AI models like GPT-4 for processing.
+    This technique enhances large language models' accuracy by systematically selecting
+    examples for optimal performance. Key terms include few-shot CoT, clustering,
+    diverse examples, reasoning error reduction, and automated example selection.
+prompting/thought_generation/chain_of_thought_few_shot/complexity_based.md:
+  hash: 417ac11d490e1c3ff29c0cab6d429727
+  summary: 'Complexity Based Prompting involves enhancing language model performance
+    by selecting examples with more reasoning steps or longer responses when reasoning
+    steps are unavailable. This approach includes sampling multiple responses and
+    using the top few most complex examples, analyzed through Complexity Based Consistency.
+    The implementation utilizes tools like `instructor` and `AsyncOpenAI` to generate
+    structured reasoning steps and maintain response consistency. Keywords: Complexity
+    Based Prompting, language model performance, reasoning steps, Complexity Based
+    Consistency, `instructor`, `AsyncOpenAI`.'
+prompting/thought_generation/chain_of_thought_few_shot/contrastive.md:
+  hash: 607e1e5586ac745bccb961f0df089c17
+  summary: The document discusses the technique of Contrastive Chain Of Thought (CoT)
+    to enhance language model performance by deliberately including incorrect reasoning
+    examples alongside correct ones during training. This method helps the AI learn
+    from mistakes and improve its response generation. The approach involves using
+    a specific template with correct and incorrect examples to guide the AI in providing
+    accurate answers. An example implementation is provided using Python and the `instructor`
+    package to demonstrate the process. Key concepts include chain-of-thought prompting,
+    incorrect reasoning, language model training, and AI performance enhancement.
+prompting/thought_generation/chain_of_thought_few_shot/memory_of_thought.md:
+  hash: 5ef001050e89f56ecc769095df6300f4
+  summary: It seems like the content is still a work in progress, as indicated by
+    the "[wip]" tag. Since the title, description, and keywords are left empty, more
+    information is needed to provide an accurate SEO summary. To optimize for SEO,
+    consider focusing on the main topic of the content, its objectives, and any unique
+    selling points or important details. Once more details are available, including
+    keywords relevant to the content's subject, an effective summary can be crafted
+    to improve search visibility.
+prompting/thought_generation/chain_of_thought_few_shot/prompt_mining.md:
+  hash: 214b95070291158fec9b154f77370f57
+  summary: 'The article discusses "Prompt Mining," a technique used to enhance the
+    performance of Large Language Models (LLMs) by discovering effective prompt formats
+    from text corpora, such as Wikipedia. The approach aims to identify better prompt
+    structures that allow LLMs to respond more accurately. It contrasts manual prompts
+    with mined prompts, presenting examples of both to illustrate improved prompt
+    efficiency. The document outlines a method using the `instructor` library, demonstrating
+    how to implement Prompt Mining to generate concise and clear prompt templates.
+    Key points include the importance of prompt formatting, the use of placeholder
+    templates, and the effectiveness of automated prompt discovery in improving language
+    model outputs. Keywords: Prompt Mining, Large Language Models, prompt templates,
+    language model performance, automated prompt discovery, `instructor` library.'
+prompting/thought_generation/chain_of_thought_few_shot/uncertainty_routed_cot.md:
+  hash: 3240604db698d89e0df5637024a325ec
+  summary: The "Uncertainty-Routed Chain Of Thought" is a technique detailed in the
+    Gemini paper to enhance the traditional Chain of Thought approach. This method
+    involves generating multiple reasoning chains, either 8 or 32 as described, and
+    selecting the majority answer from these chains if the agreement surpasses a specified
+    threshold. The technique is implemented using Python with OpenAI's AsyncOpenAI
+    and the 'instructor' library. This strategy helps reinforce the reliability of
+    AI-driven decision-making by relying on consensus among multiple AI-generated
+    responses. This innovative approach ensures more accurate results in complex question-answering
+    tasks. Key terms include Uncertainty-Routed Chain of Thought, Gemini Paper, chain
+    of thought reasoning, and AI decision-making.
+prompting/thought_generation/chain_of_thought_zero_shot/analogical_prompting.md:
+  hash: 1fc4cd93e454f5e1b6b69aaf27cd86cc
+  summary: Analogical Prompting is a method designed to enhance the accuracy of large
+    language models (LLMs) by prompting them to generate relevant examples before
+    addressing user queries. By recalling similar problems and their solutions, LLMs
+    can leverage their diverse knowledge from training to improve problem-solving.
+    This technique involves using a structured template to identify and solve the
+    main issue by first examining three comparable problems. The process is illustrated
+    using a Python implementation, which employs the OpenAI and instructor libraries
+    to facilitate this approach. Key terms include analogical reasoning, LLMs, problem-solving,
+    and knowledge recall.
+prompting/thought_generation/chain_of_thought_zero_shot/step_back_prompting.md:
+  hash: 266f50f0729c9faf17ee37f0ee9ef6a2
+  summary: Step-back prompting is a two-step technique utilized with Large Language
+    Models (LLMs) to improve contextual understanding and reasoning capabilities.
+    The method involves first asking a high-level, topic-specific question, known
+    as the "step-back question," to gather broader context. This is followed by "abstracted-grounded
+    reasoning," where the LLM answers the initial query within the context provided
+    by the step-back response. This technique has proven effective in enhancing performance
+    on reasoning benchmarks for models like PaLM-2L and GPT-4. The implementation
+    often involves generating step-back questions with LLM queries to ensure precise
+    abstract questioning.
+prompting/thought_generation/chain_of_thought_zero_shot/tab_cot.md:
+  hash: 9d53b891d95c8c14d3bd15758757e736
+  summary: 'The text discusses the concept of Tabular Chain of Thought (Tab-CoT),
+    a method to improve the reasoning and output quality of language models by structuring
+    their reasoning in the form of markdown tables. It introduces a process using
+    Python, OpenAI, and the `instructor` library to generate structured reasoning
+    responses. This approach involves defining reasoning steps as objects, breaking
+    down queries into subquestions, and detailing procedures and results, thus enhancing
+    clarity and precision in model outputs. The example provided calculates the remaining
+    loaves of bread at a bakery, showcasing the structured reasoning process. Keywords:
+    Tabular Chain of Thought, Tab-CoT, language models, structured reasoning, markdown
+    tables, Python, OpenAI, reasoning steps.'
+prompting/thought_generation/chain_of_thought_zero_shot/thread_of_thought.md:
+  hash: 2549f9996ba2068ab4cfd1b7f23cb083
+  summary: The article introduces the "Thread of Thought" technique, which enhances
+    AI model responses by systematically focusing on relevant context and ignoring
+    irrelevant information. This method improves reasoning performance and response
+    quality by encouraging models to analyze and summarize information incrementally.
+    The implementation involves using templates in Python with the OpenAI API to assess
+    each piece of context for its significance. Key phrases and approaches are suggested
+    for guiding models through the context effectively. This technique can be particularly
+    useful for complex question-answering tasks that involve large datasets or lengthy
+    documents.
+prompting/zero_shot/emotion_prompting.md:
+  hash: a9ad30ffe419f260e612691bf23edf9f
+  summary: '"Emotion Prompting" explores how incorporating phrases with emotional
+    significance can enhance the performance of language models. These emotionally-charged
+    prompts, such as "This is very important to my career" or "Take pride in your
+    work," leverage human psychological phenomena to improve model responses. The
+    concept, referenced in the EmotionPrompt study, is demonstrated using a code snippet
+    where emotional stimuli are added to a query for retrieving musical albums. Key
+    ideas include the integration of emotional stimuli in AI prompts and its impact
+    on language model efficacy. Keywords: Emotion Prompting, language models, emotional
+    stimuli, AI performance enhancement, EmotionPrompt.'
+prompting/zero_shot/rar.md:
+  hash: 805a3c367401933b2ff8f5d4e29a65ea
+  summary: The content discusses a method called "Rephrase and Respond" (RaR) to help
+    models better interpret ambiguous prompts by rephrasing and then responding to
+    queries. The concept is illustrated with an example question about whether Ed
+    Sheeran was born in an odd month, showcasing different interpretations of "odd
+    month." The approach uses a Python implementation involving an OpenAI client to
+    rephrase ambiguous queries and generate more accurate responses. This method can
+    also be executed in a two-step process, enhancing the model's ability to ask better
+    questions for more precise answers. Core topics include handling ambiguity, RaR
+    implementation, and improving model comprehension.
+prompting/zero_shot/re2.md:
+  hash: 47fa785b3078b3e12127b6a5c135dcc7
+  summary: The article describes the "Re2 (Re-Reading)" technique, which enhances
+    a model's understanding of a query by prompting it to read the question again
+    and use critical thinking. A commonly used prompt is, "Let's think step by step."
+    The implementation involves using an OpenAI language model (e.g., GPT-4o) to provide
+    accurate responses by revisiting the question with an instructional prompt, leading
+    to improved reasoning capabilities. This method is supported by research that
+    demonstrates its efficacy in enhancing reasoning in large language models. Key
+    points include AI query comprehension, critical thinking prompts, and the use
+    of advanced AI models like GPT-4o.
+prompting/zero_shot/role_prompting.md:
+  hash: d42a120d6c34f85fd648775d4a6c88be
+  summary: The document discusses "Role Prompting," a method to enhance a model's
+    performance on open-ended tasks by assigning specific or general roles to the
+    model, such as "talented writer" or "helpful AI assistant." The implementation
+    involves using a Python script with the OpenAI API to generate responses based
+    on these roles, demonstrated with a poetry writing example. The content references
+    research on the systematic approach of choosing roles and the evaluation of social
+    roles in system prompts. Relevant keywords include role prompting, persona prompting,
+    open-ended tasks, language models, AI assistance, and poetry generation.
+prompting/zero_shot/s2a.md:
+  hash: f3b55fc1bf5a617fa1dd82134ecaa495
+  summary: 'The article introduces the System 2 Attention (S2A) technique, which focuses
+    on refining prompts by eliminating irrelevant information and retaining only pertinent
+    details. The process involves two main steps: first, the model rewrites the prompt
+    to capture the relevant context and the user''s query; second, the refined prompt
+    is passed back to the model to generate an accurate response. This implementation
+    is demonstrated with Python code using the OpenAI API to handle automatic prompt
+    refinement. Key terms include prompt refinement, System 2 Attention, OpenAI API,
+    and relevant information extraction.'
+prompting/zero_shot/self_ask.md:
+  hash: f25cf054eea8c90dcca3ab21a56f51b7
+  summary: The document describes "Self-Ask," a technique designed to help language
+    models overcome the compositionality gap by encouraging them to use answers to
+    sub-problems for generating the overall solution. This method employs a single
+    prompt to determine if follow-up questions are required, create these questions,
+    answer them, and then address the main query. The implementation leverages an
+    "instructor" from OpenAI to facilitate this process using a zero-shot prompt approach,
+    as opposed to the traditional one-shot or few-shot methods. This technique aims
+    to enhance model accuracy in complex problem-solving by focusing on compositionality,
+    sub-problems, and iterative questioning.
+prompting/zero_shot/simtom.md:
+  hash: 1979dda66cd9ee3d7d0978978ccc81a5
+  summary: 'SimToM (Simulated Theory of Mind) is a two-step prompting technique designed
+    to enhance a model''s ability to consider specific perspectives. It is particularly
+    useful for addressing complex questions involving multiple entities. The method
+    involves two steps: first, identifying and isolating information relevant to a
+    given entity, and second, having the model respond to a query based on this isolated
+    perspective. This approach can improve the accuracy of model responses by focusing
+    on pertinent information. Implementation involves using a structured approach
+    with OpenAI''s models to simulate an entity''s theory of mind, enhancing the model''s
+    capability to answer questions from a targeted viewpoint. Key concepts include
+    prompting, theory of mind, and structured response generation.'
+prompting/zero_shot/style_prompting.md:
+  hash: b4dae381daec30d638d672456d2de714
+  summary: The content focuses on using prompt-based stylistic constraints to guide
+    model outputs, particularly in text generation tasks. By specifying constraints
+    such as writing style, tone, mood, and genre, users can refine and direct the
+    responses of large language models like GPT-4. The implementation example provided
+    demonstrates how to generate emails with specified tones, showcasing the process
+    through Python code and OpenAI's API. Key concepts include style prompting, prompt
+    constraints, and tailored text generation, with further reading and examples available
+    in referenced academic papers.
+tutorials/index.md:
+  hash: d41d8cd98f00b204e9800998ecf8427e
+  summary: Of course! To generate an effective SEO summary, I'll need the content
+    you want summarized. Please provide the text or specify the topic you're focusing
+    on, and I'll create a concise summary highlighting the core ideas, objectives,
+    important details, and keywords.
+why.md:
+  hash: 8d4e6bb6d10c31bbd83ae23c5da94c65
+  summary: Instructor, created by Jason Liu, builds on Pydantic and OpenAI to streamline
+    data validation and extraction in Python, particularly benefiting OpenAI API users.
+    Pydantic leverages type hints for efficient schema validation, using Rust for
+    speed, JSON Schema integration, and extensive customization, with a strong ecosystem
+    including FastAPI and Django Ninja. Instructor aims to minimize complexity in
+    data modeling, enabling focus on data extraction, supporting both partial streaming
+    and self-correcting validation. It integrates seamlessly with familiar tools,
+    offering ease of installation and flexible response models, making it ideal for
+    varied data extraction tasks. Keywords include Pydantic, OpenAI, data validation,
+    JSON Schema, Instructor, and Python integration.
