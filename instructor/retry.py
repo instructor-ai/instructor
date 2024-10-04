@@ -140,6 +140,13 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
                 "name": tool_call.function.name,
                 "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
             }
+    elif mode == Mode.CEREBRAS_TOOLS:
+        for tool_call in response.choices[0].message.tool_calls:
+            yield {
+                "role": "user",
+                "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors and call the tool {tool_call.function.name} again, taking into account the problems with {tool_call.function.arguments} that was previously generated.",
+            }
+
     elif mode == Mode.MD_JSON:
         yield {
             "role": "user",
@@ -154,14 +161,14 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
 
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
-    response_model: type[T_Model],
-    validation_context: dict,
-    args,
-    kwargs,
+    response_model: type[T_Model] | None,
+    args: Any,
+    kwargs: Any,
+    context: dict[str, Any] | None = None,
     max_retries: int | Retrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model:
+) -> T_Model | None:
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
         from anthropic.types import Usage as AnthropicUsage
@@ -189,7 +196,7 @@ def retry_sync(
                         response,
                         response_model=response_model,
                         stream=stream,
-                        validation_context=validation_context,
+                        validation_context=context,
                         strict=strict,
                         mode=mode,
                     )
@@ -218,7 +225,7 @@ def retry_sync(
                     raise e
     except RetryError as e:
         raise InstructorRetryException(
-            e,
+            e.last_attempt._exception,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             messages=kwargs.get(
@@ -231,7 +238,7 @@ def retry_sync(
 async def retry_async(
     func: Callable[T_ParamSpec, T_Retval],
     response_model: type[T] | None,
-    validation_context: dict[str, Any] | None,
+    context: dict[str, Any] | None,
     args: Any,
     kwargs: Any,
     max_retries: int | AsyncRetrying = 1,
@@ -268,13 +275,20 @@ async def retry_async(
                         response,
                         response_model=response_model,
                         stream=stream,
-                        validation_context=validation_context,
+                        validation_context=context,
                         strict=strict,
                         mode=mode,
                     )
                 except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
                     logger.debug(f"Error response: {response}")
-                    if mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
+                    if mode in {
+                        Mode.GEMINI_JSON,
+                        Mode.GEMINI_TOOLS,
+                        Mode.VERTEXAI_TOOLS,
+                        Mode.VERTEXAI_JSON,
+                    }:
+                        kwargs["contents"].extend(reask_messages(response, mode, e))
+                    elif mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
                         if attempt.retry_state.attempt_number == 1:
                             kwargs["chat_history"].extend(
                                 [{"role": "user", "message": kwargs.get("message")}]
@@ -290,7 +304,7 @@ async def retry_async(
     except RetryError as e:
         logger.exception(f"Failed after retries: {e.last_attempt.exception}")
         raise InstructorRetryException(
-            e,
+            e.last_attempt._exception,
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             messages=kwargs.get(

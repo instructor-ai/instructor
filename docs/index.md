@@ -15,9 +15,19 @@ It stands out for its simplicity, transparency, and user-centric design, built o
 
 [:material-star: Star the Repo](https://github.com/jxnl/instructor){: .md-button .md-button--primary } [:material-book-open-variant: Cookbooks](./examples/index.md){: .md-button } [:material-lightbulb: Prompting Guide](./prompting/index.md){: .md-button }
 
-## Subscribe to our Newsletter for Updates and Tips
+## Newsletter
 
-<iframe src="https://embeds.beehiiv.com/2faf420d-8480-4b6e-8d6f-9c5a105f917a?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
+If you want to be notified of tips, new blog posts, and research, subscribe to our newsletter. Here's what you can expect:
+
+- Updates on Instructor features and releases
+- Blog posts on AI and structured outputs
+- Tips and tricks from our community
+- Research in the field of LLMs and structured outputs
+- Information on AI development skills with Instructor
+
+Subscribe to our newsletter for updates on AI development. We provide content to keep you informed and help you use Instructor in projects.
+
+<iframe src="https://embeds.beehiiv.com/2faf420d-8480-4b6e-8d6f-9c5a105f917a?slim=true" data-test-id="beehiiv-embed" height="52" width="80%" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
 
 ## Why use Instructor?
 
@@ -241,10 +251,10 @@ assert resp.age == 25
         client=genai.GenerativeModel(
             model_name="models/gemini-1.5-flash-latest",
         ),
-        mode=instructor.Mode.GEMINI_JSON, # (1)!
+        mode=instructor.Mode.GEMINI_JSON,  # (1)!
     )
 
-    mp3_file = genai.upload_file("./sample.mp3") #(2)!
+    mp3_file = genai.upload_file("./sample.mp3")  # (2)!
 
 
     class Description(BaseModel):
@@ -260,7 +270,7 @@ assert resp.age == 25
             },
             {
                 "role": "user",
-                "content": mp3_file, # (3)!
+                "content": mp3_file,  # (3)!
             },
         ],
     )
@@ -331,7 +341,6 @@ assert resp.age == 25
     import instructor
     import vertexai.generative_models as gm  # type: ignore
     from pydantic import BaseModel, Field
-    import requests
 
     client = instructor.from_vertexai(gm.GenerativeModel("gemini-1.5-pro-001"))
     content = [
@@ -489,6 +498,42 @@ resp = client.chat.completions.create(
 
 assert resp.name == "Jason"
 assert resp.age == 25
+```
+
+### Using Cerebras
+
+For those who want to use the Cerebras models, you can use the `from_cerebras` method to patch the client. You can see their list of models [here](https://inference-docs.cerebras.ai/api-reference/models).
+
+```python
+from cerebras.cloud.sdk import Cerebras
+import instructor
+from pydantic import BaseModel
+import os
+
+client = Cerebras(
+    api_key=os.environ.get("CEREBRAS_API_KEY"),
+)
+client = instructor.from_cerebras(client)
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+resp = client.chat.completions.create(
+    model="llama3.1-70b",
+    response_model=User,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+)
+
+print(resp)
+#> name='Jason' age=25
 ```
 
 ## Correct Typing
@@ -669,6 +714,10 @@ for user in users:
 ```
 
 ![iterable](./blog/posts/img/iterable.png)
+
+## Templating
+
+Instructor also ships with [Jinja](https://palletsprojects.com/p/jinja/) templating support. Check out our docs on [templating](./concepts/templating.md) to learn about how to use it to its full potential.
 
 ## Validation
 

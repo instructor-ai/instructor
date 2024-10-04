@@ -1,12 +1,21 @@
-# Prompting
+# Prompting Guide
 
-Effective prompting is an art which requires a nuanced understanding of different techniques. When executed well, prompting can significantly enhance model performance.
+Prompting requires understanding of techniques. Prompting enhances model performance.
 
-To help, we've created examples of 58 different prompting techniques<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup> using `instructor` that you can take advantage of today.
+We created examples of 58 prompting techniques<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup> using `instructor`.
 
-The prompting techniques are separated into the following categories - [**Zero Shot**](#zero-shot), [**Few Shot**](#few-shot), [**Thought Generation**](#thought-generation), [**Ensembling**](#ensembling), [**Self-Criticism**](#self-criticism), and [**Decomposition**](#decomposition).
+Prompting techniques are separated into the following categories:
+- [Prompting Guide](#prompting-guide)
+  - [Zero-Shot](#zero-shot)
+  - [Few-Shot](#few-shot)
+  - [Thought Generation](#thought-generation)
+      - [Zero Shot](#zero-shot-1)
+      - [Few Shot](#few-shot-1)
+  - [Ensembling](#ensembling)
+  - [Self-Criticism](#self-criticism)
+  - [Decomposition](#decomposition)
 
-Click on the links to learn more about each method and how to apply them effectively in your prompts.
+Click links to learn about each method and how to apply them in prompts.
 
 ## Zero-Shot
 How do we increase the performance of our model without any examples?

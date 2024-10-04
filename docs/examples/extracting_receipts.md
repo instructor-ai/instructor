@@ -12,6 +12,7 @@ class Item(BaseModel):
     price: float
     quantity: int
 
+
 class Receipt(BaseModel):
     items: list[Item]
     total: float
@@ -46,6 +47,7 @@ client = instructor.from_openai(
     client=OpenAI(),
     mode=instructor.Mode.TOOLS,
 )
+
 
 def extract(url: str) -> Receipt:
     return client.chat.completions.create(
