@@ -471,7 +471,7 @@ test = ["flake8", "isort", "pytest"]
 name = "cerebras-cloud-sdk"
 version = "1.5.0"
 description = "The official Python library for the cerebras API"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "cerebras_cloud_sdk-1.5.0-py3-none-any.whl", hash = "sha256:fd114e24a32462e208e120a2ee5548288da5a8886063f106c23831fd3e4b7efe"},
