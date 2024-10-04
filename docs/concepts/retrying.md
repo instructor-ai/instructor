@@ -8,8 +8,6 @@ This post will mostly describe how to use simple and more complex retry and logi
 
 Before we begin, we'll use a simple example of a validator. One that checks that the name is in all caps. While we could obviously prompt that we want the name in all caps, this serves as an example of how we can build in additional logic without changing our prompts.
 
-To use simple retry, we just need to set `max_retries`` as an integer. In this example.
-
 ```python
 from typing import Annotated
 from pydantic import AfterValidator, BaseModel
@@ -40,7 +38,7 @@ except Exception as e:
 
 ## Simple: Max Retries
 
-The simplest way of defining a retry is just defining the maximum number of retries.
+The simplest way to set up retries is to assign an integer value to `max_retries`.
 
 ```python
 import openai
