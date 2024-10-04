@@ -37,11 +37,12 @@ jobs:
 
       - name: Run tests
         if: matrix.python-version != '3.11'
-        run: poetry run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai'
+        run: poetry run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai' && poetry run pytest tests/llm/test_cohere && poetry run pytest tests/llm/test_gemini
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
       - name: Generate coverage report
         if: matrix.python-version == '3.11'

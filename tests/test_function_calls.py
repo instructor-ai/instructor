@@ -205,7 +205,7 @@ def test_pylance_url_config() -> None:
 
     with pytest.raises(ValidationError) as exc_info:
         Model(**data)  # type: ignore
-    print(os.environ["PYDANTIC_ERRORS_INCLUDE_URL"])
+    
     assert "https://errors.pydantic.dev" not in str(exc_info.value)
 
 
