@@ -494,8 +494,8 @@ def handle_cohere_json_schema(
         "type": "json_object",
         "schema": response_model.model_json_schema(),
     }
+    _, new_kwargs = handle_cohere_modes(new_kwargs)
 
-    new_kwargs.pop("strict", None)
     return response_model, new_kwargs
 
 
@@ -503,9 +503,20 @@ def handle_cohere_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
     _, new_kwargs = handle_cohere_modes(new_kwargs)
-    new_kwargs["tools"] = [response_model.cohere_schema]
 
-    new_kwargs.pop("strict", None)
+    instruction = f"""\
+Extract a valid {response_model.__name__} object based on the chat history and the json schema below.
+{response_model.model_json_schema()}
+The JSON schema was obtained by running:
+```python
+schema = {response_model.__name__}.model_json_schema()
+```
+
+The output must be a valid JSON object that `{response_model.__name__}.model_validate_json()` can successfully parse.
+"""
+    new_kwargs["chat_history"] = [
+        {"role": "user", "message": instruction}
+    ] + new_kwargs["chat_history"]
     return response_model, new_kwargs
 
 
