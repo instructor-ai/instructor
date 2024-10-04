@@ -57,6 +57,7 @@ def test_cerebras_tools_validated(mode: instructor.Mode):
                 "content": "Extract a user from this sentence : Ivan is 27 and lives in Singapore",
             },
         ],
+        max_retries=5,
         response_model=ValidatedUser,
     )
 
@@ -65,7 +66,7 @@ def test_cerebras_tools_validated(mode: instructor.Mode):
 
 
 @pytest.mark.parametrize("mode", modes)
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_async_cerebras(mode: instructor.Mode):
     class User(BaseModel):
         name: str
@@ -89,7 +90,7 @@ async def test_async_cerebras(mode: instructor.Mode):
 
 
 @pytest.mark.parametrize("mode", modes)
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_async_cerebras_retries(mode: instructor.Mode):
     class ValidatedUser(BaseModel):
         name: str
@@ -99,7 +100,7 @@ async def test_async_cerebras_retries(mode: instructor.Mode):
         def name_validator(cls, v: str) -> str:
             if not v.isupper():
                 raise ValueError(
-                    f"All letters in the name must be uppercase (Eg. JOHN, SMITH) - {v} is not a valid example."
+                    f"Make sure to uppercase all letters in the name field. Examples include: JOHN, SMITH, etc. {v} is not a valid example of a name that has all its letters uppercased"
                 )
             return v
 
@@ -114,6 +115,7 @@ async def test_async_cerebras_retries(mode: instructor.Mode):
             },
         ],
         response_model=ValidatedUser,
+        max_retries=5,
     )
 
     assert resp.name == "IVAN"
@@ -166,6 +168,7 @@ async def test_cerebras_json_async_streaming():
         ],
         response_model=Iterable[User],
         stream=True,
+        max_retries=5,
     )
 
     async for user in resp:

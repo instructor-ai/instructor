@@ -499,6 +499,45 @@ def handle_cohere_json_schema(
     return response_model, new_kwargs
 
 
+def handle_cerebras_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    if new_kwargs.get("stream", False):
+        raise ValueError("Stream is not supported for Cerebras Tool Calling")
+    new_kwargs["tools"] = [
+        {
+            "type": "function",
+            "function": response_model.openai_schema,
+        }
+    ]
+    new_kwargs["tool_choice"] = {
+        "type": "function",
+        "function": {"name": response_model.openai_schema["name"]},
+    }
+    return response_model, new_kwargs
+
+
+def handle_cerebras_json(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    instruction = f"""
+You are a helpful assistant that excels at following instructions.Your task is to understand the content and provide the parsed objects in json that match the following json_schema:\n
+
+Here is the relevant JSON schema to adhere to
+
+<schema>
+{response_model.model_json_schema()}
+</schema>
+
+Your response should consist only of a valid JSON object that `{response_model.__name__}.model_validate_json()` can successfully parse.
+"""
+
+    new_kwargs["messages"] = [{"role": "system", "content": instruction}] + new_kwargs[
+        "messages"
+    ]
+    return response_model, new_kwargs
+
+
 def handle_cohere_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
@@ -616,6 +655,8 @@ def handle_response_model(
         Mode.GEMINI_TOOLS: handle_gemini_tools,
         Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
         Mode.VERTEXAI_JSON: handle_vertexai_json,
+        Mode.CEREBRAS_JSON: handle_cerebras_json,
+        Mode.CEREBRAS_TOOLS: handle_cerebras_tools,
     }
 
     if mode in mode_handlers:

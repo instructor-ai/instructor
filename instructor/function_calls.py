@@ -334,7 +334,7 @@ class OpenAISchema(BaseModel):
             ), f"Unable to generate a response due to {message.refusal}"
         assert (
             len(message.tool_calls or []) == 1
-        ), f"Instructor does not support multiple tool calls, use List[Model] instead, {message.tool_calls}"
+        ), f"Instructor does not support multiple tool calls, use List[Model] instead"
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
