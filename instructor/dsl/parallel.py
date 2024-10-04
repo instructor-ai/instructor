@@ -58,8 +58,9 @@ else:
 
 def get_types_array(typehint: type[Iterable[T]]) -> tuple[type[T], ...]:
     should_be_iterable = get_origin(typehint)
+
     if should_be_iterable is not Iterable:
-        raise TypeError(f"Model should be with Iterable instead if {typehint}")
+        raise TypeError(f"Model should be with Iterable instead of {typehint}")
 
     if is_union_type(typehint):
         # works for Iterable[Union[int, str]], Iterable[int | str]

@@ -594,10 +594,12 @@ def handle_response_model(
             return handle_cohere_modes(new_kwargs)
         return None, new_kwargs
 
+    if mode in {Mode.PARALLEL_TOOLS}:
+        return handle_parallel_tools(response_model, new_kwargs)
+
     response_model = prepare_response_model(response_model)
 
     mode_handlers = {  # type: ignore
-        Mode.PARALLEL_TOOLS: handle_parallel_tools,
         Mode.FUNCTIONS: handle_functions,
         Mode.TOOLS_STRICT: handle_tools_strict,
         Mode.TOOLS: handle_tools,
