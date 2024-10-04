@@ -190,6 +190,7 @@ def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
     )
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
 
+@pytest.mark.usefixtures()
 def test_pylance_url_config() -> None:
     class Model(BaseModel):
         list_of_ints: list[int]
@@ -198,7 +199,7 @@ def test_pylance_url_config() -> None:
     disable_pydantic_error_url()
     data = dict(list_of_ints=["1", 2, "bad"], a_float="Not a float")
 
-    try:
+    with pytest.raises(ValidationError) as exc_info:
         Model(**data)  # type: ignore
 
     assert "https://errors.pydantic.dev" not in str(exc_info.value)
