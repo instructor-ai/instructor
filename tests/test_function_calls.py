@@ -1,5 +1,6 @@
 from typing import TypeVar
 import pytest
+import os
 from anthropic.types import Message, Usage
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
@@ -189,18 +190,19 @@ def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
     )
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
 
-@pytest.mark.usefixtures()
+
 def test_pylance_url_config() -> None:
     class Model(BaseModel):
         list_of_ints: list[int]
         a_float: float
 
     disable_pydantic_error_url()
+    print(os.environ["PYDANTIC_ERRORS_INCLUDE_URL"])
     data = dict(list_of_ints=["1", 2, "bad"], a_float="Not a float")
 
     with pytest.raises(ValidationError) as exc_info:
         Model(**data)  # type: ignore
-
+    print(os.environ["PYDANTIC_ERRORS_INCLUDE_URL"])
     assert "https://errors.pydantic.dev" not in str(exc_info.value)
 
 
