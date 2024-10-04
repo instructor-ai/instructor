@@ -105,10 +105,11 @@ For multi-label classification, we'll update our approach to use Literals instea
 from typing import List
 from pydantic import BaseModel, Field
 
+
 class MultiClassPrediction(BaseModel):
     """
     Class for a multi-class label prediction.
-    
+
     Examples:
     - "My account is locked": ["TECH_ISSUE"]
     - "I can't access my billing info": ["TECH_ISSUE", "BILLING"]

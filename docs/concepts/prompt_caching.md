@@ -2,6 +2,24 @@
 
 Prompt Caching is a feature that allows you to cache portions of your prompt, optimizing performance for multiple API calls with shared context. This helps to reduce cost and improve response times.
 
+## Prompt Caching in OpenAI
+
+OpenAI implements a prompt caching mechanism to optimize performance for API requests with similar prompts.
+
+> Prompt Caching works automatically on all your API requests (no code changes required) and has no additional fees associated with it.
+
+This optimization is especially useful for applications making multiple API calls with shared context, minimizing redundant processing and improving overall performance.
+
+Prompt Caching is enabled for the following models:
+
+* gpt-4o
+* gpt-4o-mini
+* o1-preview
+* o1-mini
+
+Caching is based on prefix matching, so if you're using a system prompt that contains a common set of instructions, you're likely to see a cache hit as long as you move all variable parts of the prompt to the end of the message when possible.
+
+
 ## Prompt Caching in Anthropic
 
 The `anthropic.beta.prompt_caching.messages.create` method enables you to:
@@ -163,7 +181,7 @@ from instructor import Instructor, Mode, patch
 from anthropic import Anthropic
 from pydantic import BaseModel
 
-client = Instructor( # (1)!
+client = Instructor(  # (1)!
     client=Anthropic(),
     create=patch(
         create=Anthropic().beta.prompt_caching.messages.create,
@@ -178,7 +196,7 @@ class Character(BaseModel):
     description: str
 
 
-with open("./book.txt", "r") as f:
+with open("./book.txt") as f:
     book = f.read()
 
 resp = client.chat.completions.create(
@@ -190,7 +208,7 @@ resp = client.chat.completions.create(
                 {
                     "type": "text",
                     "text": "<book>" + book + "</book>",
-                    "cache_control": {"type": "ephemeral"}, # (2)!
+                    "cache_control": {"type": "ephemeral"},  # (2)!
                 },
                 {
                     "type": "text",

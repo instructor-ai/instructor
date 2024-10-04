@@ -140,6 +140,13 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
                 "name": tool_call.function.name,
                 "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
             }
+    elif mode == Mode.CEREBRAS_TOOLS:
+        for tool_call in response.choices[0].message.tool_calls:
+            yield {
+                "role": "user",
+                "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors and call the tool {tool_call.function.name} again, taking into account the problems with {tool_call.function.arguments} that was previously generated.",
+            }
+
     elif mode == Mode.MD_JSON:
         yield {
             "role": "user",
@@ -154,7 +161,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
 
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
-    response_model: type[T_Model],
+    response_model: type[T_Model] | None,
     args: Any,
     kwargs: Any,
     context: dict[str, Any] | None = None,

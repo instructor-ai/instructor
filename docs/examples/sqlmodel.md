@@ -14,9 +14,8 @@ First we'll define a model that will serve as a table for our database and the s
 
 ```python
 import instructor
-from openai import OpenAI
 from typing import Optional
-from sqlmodel import Field, SQLModel, create_engine
+from sqlmodel import Field, SQLModel
 
 
 class Hero(SQLModel, instructor.OpenAISchema, table=True):
@@ -32,6 +31,7 @@ The `create_hero` function will query `OpenAI` for a `Hero` record
 
 ```python
 client = instructor.from_openai(OpenAI())
+
 
 def create_hero() -> Hero:
     return client.chat.completions.create(

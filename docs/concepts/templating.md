@@ -27,21 +27,23 @@ from pydantic import BaseModel
 
 client = instructor.from_openai(openai.OpenAI())
 
+
 class User(BaseModel):
     name: str
     age: int
 
+
 resp = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
-        {"role": "user", "content": """Extract the information from the
-        following text: `{{ data }}`""" # (1)!
+        {
+            "role": "user",
+            "content": """Extract the information from the
+        following text: `{{ data }}`""",  # (1)!
         },
     ],
     response_model=User,
-    context = { # (2)!
-        "data": "John Doe is thirty years old"
-    }
+    context={"data": "John Doe is thirty years old"},  # (2)!
 )
 
 print(resp)
@@ -63,6 +65,7 @@ import re
 
 client = instructor.from_openai(openai.OpenAI())
 
+
 class Response(BaseModel):
     text: str
 
@@ -76,12 +79,13 @@ class Response(BaseModel):
                 v = re.sub(pattern, '****', v)
         return v
 
+
 response = client.create(
     model="gpt-4o",
     response_model=Response,
     messages=[
         {
-            "role": "user", 
+            "role": "user",
             "content": """
                 Write about a {{ topic }}
 
@@ -94,21 +98,21 @@ response = client.create(
                 {% endfor %}
                 </banned_words>
                 {% endif %}
-              """
+              """,
         },
     ],
     context={
         "topic": "jason and now his phone number is 123-456-7890",
         "redact_patterns": [
             r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b",  # Phone number pattern
-            r"\b\d{3}-\d{2}-\d{4}\b",          # SSN pattern
+            r"\b\d{3}-\d{2}-\d{4}\b",  # SSN pattern
         ],
     },
     max_retries=3,
 )
 
 print(response.text)
-# > While i can't say his name anymore, his phone number is ****
+#> While i can't say his name anymore, his phone number is ****
 ```
 
 1. Access the variables passed into the `context` variable inside your Pydantic validator
@@ -128,12 +132,15 @@ from pydantic import BaseModel
 
 client = instructor.from_openai(openai.OpenAI())
 
+
 class Citation(BaseModel):
     source_ids: list[int]
     text: str
 
+
 class Response(BaseModel):
     answer: list[Citation]
+
 
 resp = client.chat.completions.create(
     model="gpt-4o-mini",
@@ -165,19 +172,19 @@ resp = client.chat.completions.create(
                   * {{ rule }}
                 {% endfor %}
                 {% endif %}
-            """
+            """,
         },
     ],
     response_model=Response,
-    context = {
+    context={
         "role": "professional educator",
         "question": "What is the capital of France?",
         "context": [
             {"id": 1, "text": "Paris is the capital of France."},
-            {"id": 2, "text": "France is a country in Europe."}
+            {"id": 2, "text": "France is a country in Europe."},
         ],
-        "rules": ["Use markdown."]
-    }
+        "rules": ["Use markdown."],
+    },
 )
 
 print(resp)
@@ -193,15 +200,18 @@ from pydantic import BaseModel, SecretStr
 import instructor
 import openai
 
+
 class UserContext(BaseModel):
     name: str
     address: SecretStr
+
 
 class Address(BaseModel):
     street: SecretStr
     city: str
     state: str
     zipcode: str
+
 
 client = instructor.from_openai(openai.OpenAI())
 context = UserContext(name="scolvin", address="secret address")
@@ -211,16 +221,16 @@ address = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "{{ user.name }} is `{{ user.address.get_secret_value() }}`, normalize it to an address object"
+            "content": "{{ user.name }} is `{{ user.address.get_secret_value() }}`, normalize it to an address object",
         },
     ],
     context={"user": context},
     response_model=Address,
 )
 print(context)
-# > UserContext(username='jliu', address="******")
+#> UserContext(username='jliu', address="******")
 print(address)
-# > Address(street='******', city="Toronto", state="Ontario", zipcode="M5A 0J3")
+#> Address(street='******', city="Toronto", state="Ontario", zipcode="M5A 0J3")
 ```
 
 This allows you to preserve your sensitive information while still using it in your prompts.

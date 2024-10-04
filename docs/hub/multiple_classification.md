@@ -23,7 +23,7 @@ LABELS = Literal["ACCOUNT", "BILLING", "GENERAL_QUERY"]
 class MultiClassPrediction(BaseModel):
     """
     A few-shot example of multi-label classification:
-    
+
     Examples:
     - "My account is locked and I can't access my billing info.": ACCOUNT, BILLING
     - "I need help with my subscription.": ACCOUNT
@@ -31,6 +31,7 @@ class MultiClassPrediction(BaseModel):
     - "Can you tell me the status of my order?": BILLING
     - "I have a question about the product features.": GENERAL_QUERY
     """
+
     labels: List[LABELS] = Field(
         ...,
         description="Only select the labels that apply to the support ticket.",

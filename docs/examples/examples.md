@@ -7,7 +7,7 @@ To enhance the clarity and usability of your model and prompt, incorporating exa
 import openai
 import instructor
 from typing import Iterable
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 client = instructor.from_openai(openai.OpenAI())
 
@@ -54,10 +54,10 @@ def get_synthetic_data() -> Iterable[SyntheticQA]:
 if __name__ == "__main__":
     for example in get_synthetic_data():
         print(example)
+        #> question='What is the capital of France?' answer='Paris'
+        #> question='What is the largest planet in our solar system?' answer='Jupiter'
+        #> question="Who wrote 'To Kill a Mockingbird'?" answer='Harper Lee'
         """
-        question='What is the capital of France?' answer='Paris'
-        question='What is the largest planet in our solar system?' answer='Jupiter'
-        question="Who wrote 'To Kill a Mockingbird'?" answer='Harper Lee'
         question="What element does 'O' represent on the periodic table?" answer='Oxygen'
         """
 ```

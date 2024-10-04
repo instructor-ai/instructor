@@ -16,6 +16,7 @@ Note that it is easy to add [Validators](https://jxnl.github.io/instructor/conce
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
+
 class Product(BaseModel):
     """
     Represents a product extracted from an image using AI.
