@@ -13,7 +13,8 @@ Note that in order to avoid LLM regenerating the content of each section, we can
 
 ```python
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+from typing import List
+
 
 class Section(BaseModel):
     title: str = Field(description="main topic of this section of the document")
@@ -23,6 +24,7 @@ class Section(BaseModel):
 
 class StructuredDocument(BaseModel):
     """obtains meaningful sections, each centered around a single concept/topic"""
+
     sections: List[Section] = Field(description="a list of sections of the document")
 ```
 
@@ -87,13 +89,15 @@ def get_sections_text(structured_doc, line2text):
     for s in structured_doc.sections:
         contents = []
         for line_id in range(s.start_index, s.end_index):
-                contents.append(line2text.get(line_id, ''))
-        segments.append({
-            "title": s.title,
-            "content": "\n".join(contents),
-            "start": s.start_index,
-            "end": s.end_index
-        })
+            contents.append(line2text.get(line_id, ''))
+        segments.append(
+            {
+                "title": s.title,
+                "content": "\n".join(contents),
+                "start": s.start_index,
+                "end": s.end_index,
+            }
+        )
     return segments
 ```
 
@@ -106,7 +110,7 @@ Here's an example of using these classes and functions to segment a tutorial on 
 from trafilatura import fetch_url, extract
 
 
-url='https://sebastianraschka.com/blog/2023/self-attention-from-scratch.html'
+url = 'https://sebastianraschka.com/blog/2023/self-attention-from-scratch.html'
 downloaded = fetch_url(url)
 document = extract(downloaded)
 

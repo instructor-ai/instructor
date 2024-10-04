@@ -48,6 +48,7 @@ class Provider(Enum):
     COHERE = "cohere"
     GEMINI = "gemini"
     DATABRICKS = "databricks"
+    CEREBRAS = "cerebras"
     UNKNOWN = "unknown"
 
 
@@ -58,6 +59,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.TOGETHER
     elif "anthropic" in str(base_url):
         return Provider.ANTHROPIC
+    elif "cerebras" in str(base_url):
+        return Provider.CEREBRAS
     elif "groq" in str(base_url):
         return Provider.GROQ
     elif "openai" in str(base_url):

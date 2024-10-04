@@ -50,16 +50,12 @@ print(user_response.model_dump_json(indent=2))
   "age": 35,
   "properties": [
     {
+      "name": "City",
+      "value": "New York"
+    },
+    {
       "name": "Occupation",
       "value": "Software Engineer"
-    },
-    {
-      "name": "Hobbies",
-      "value": "Reading, Hiking, Cooking"
-    },
-    {
-      "name": "Location",
-      "value": "San Francisco, CA"
     }
   ]
 }

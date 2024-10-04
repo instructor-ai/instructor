@@ -18,10 +18,10 @@ client = instructor.from_gemini(
     client=genai.GenerativeModel(
         model_name="models/gemini-1.5-flash-latest",
     ),
-    mode=instructor.Mode.GEMINI_JSON, # (1)!
+    mode=instructor.Mode.GEMINI_JSON,  # (1)!
 )
 
-mp3_file = genai.upload_file("./sample.mp3") #(2)!
+mp3_file = genai.upload_file("./sample.mp3")  # (2)!
 
 
 class Description(BaseModel):
@@ -37,7 +37,7 @@ resp = client.create(
         },
         {
             "role": "user",
-            "content": mp3_file, # (3)!
+            "content": mp3_file,  # (3)!
         },
     ],
 )
@@ -115,19 +115,18 @@ resp = client.create(
 
 print(resp)
 
-# > summary='President delivers a speech to a joint session of Congress,
-# > highlighting his history in the House of Representatives and thanking
-# > the members of Congress for their guidance.',
+#> summary='President delivers a speech to a joint session of Congress,
+#> highlighting his history in the House of Representatives and thanking
+#> the members of Congress for their guidance.',
 # >
-# > exact_transcription="The President's State of the Union address to a
-# > joint session of the Congress from the rostrum of the House of
-# > Representatives, Washington DC, January 30th 1961. Mr. Speaker, Mr.
-# > Vice-President, members of the Congress, it is a pleasure to return
-# > from whence I came. You are among my oldest friends in Washington,
-# > and this house is my oldest home. It was here that I first took the
-# > oath of federal office. It was here for 14 years that I gained both
-# > knowledge and inspiration from members of both"
-
+#> exact_transcription="The President's State of the Union address to a
+#> joint session of the Congress from the rostrum of the House of
+#> Representatives, Washington DC, January 30th 1961. Mr. Speaker, Mr.
+#> Vice-President, members of the Congress, it is a pleasure to return
+#> from whence I came. You are among my oldest friends in Washington,
+#> and this house is my oldest home. It was here that I first took the
+#> oath of federal office. It was here for 14 years that I gained both
+#> knowledge and inspiration from members of both"
 ```
 
 1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
@@ -176,13 +175,12 @@ resp = client.create(
 )
 
 print(resp)
-# > description='President John F. Kennedy delivers State of the Union Address to \
-# > Congress. He outlines national challenges: economic struggles, debt concerns, \
-# > communism threat, Cold War. Proposes solutions: increased military spending, \
-# > new economic programs, expanded foreign aid. Calls for active U.S. role in \
-# > international affairs. Emphasizes facing challenges, avoiding panic, and \
-# > working together for a better future.'
-
+#> description='President John F. Kennedy delivers State of the Union Address to \
+#> Congress. He outlines national challenges: economic struggles, debt concerns, \
+#> communism threat, Cold War. Proposes solutions: increased military spending, \
+#> new economic programs, expanded foreign aid. Calls for active U.S. role in \
+#> international affairs. Emphasizes facing challenges, avoiding panic, and \
+#> working together for a better future.'
 ```
 
 1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
