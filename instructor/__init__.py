@@ -59,6 +59,11 @@ if (
 
     __all__ += ["from_gemini"]
 
+if importlib.util.find_spec("cerebras") is not None:
+    from .client_cerebras import from_cerebras
+
+    __all__ += ["from_cerebras"]
+
 if importlib.util.find_spec("groq") is not None:
     from .client_groq import from_groq
 

@@ -468,6 +468,25 @@ doc = ["sphinx", "sphinx-rtd-theme"]
 test = ["flake8", "isort", "pytest"]
 
 [[package]]
+name = "cerebras-cloud-sdk"
+version = "1.5.0"
+description = "The official Python library for the cerebras API"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "cerebras_cloud_sdk-1.5.0-py3-none-any.whl", hash = "sha256:fd114e24a32462e208e120a2ee5548288da5a8886063f106c23831fd3e4b7efe"},
+    {file = "cerebras_cloud_sdk-1.5.0.tar.gz", hash = "sha256:f232cc57771d5abe1991a3c0172814905b92eb032a5c49526185462984f7386e"},
+]
+
+[package.dependencies]
+anyio = ">=3.5.0,<5"
+distro = ">=1.7.0,<2"
+httpx = ">=0.23.0,<1"
+pydantic = ">=1.9.0,<3"
+sniffio = "*"
+typing-extensions = ">=4.7,<5"
+
+[[package]]
 name = "certifi"
 version = "2024.8.30"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -5114,6 +5133,7 @@ type = ["pytest-mypy"]
 
 [extras]
 anthropic = ["anthropic", "xmltodict"]
+cerebras-cloud-sdk = ["cerebras_cloud_sdk"]
 cohere = ["cohere"]
 google-generativeai = ["google-generativeai"]
 groq = ["groq"]
@@ -5125,4 +5145,4 @@ vertexai = ["google-cloud-aiplatform", "jsonref"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "ea03adbdf904363f898d8af5d641d9aefb41612498595ca803dc0de5aba6750d"
+content-hash = "84d4da0cf0ba5d9eb905739fcf305950f87e3716dabe5ba0b1eb61b9bc1d8a54"
