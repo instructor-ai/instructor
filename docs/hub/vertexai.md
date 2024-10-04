@@ -78,7 +78,9 @@ If you are not getting good results with tool calling, or prefer this method for
 ```python
 ### rest of the code as above ...
 
-client = gm.GenerativeModel("gemini-1.5-pro-preview-0409", mode=instructor.Mode.VERTEXAI_JSON)
+client = gm.GenerativeModel(
+    "gemini-1.5-pro-preview-0409", mode=instructor.Mode.VERTEXAI_JSON
+)
 
 ## rest of the code as above ...
 ```
@@ -94,9 +96,11 @@ Using a pydantic model with an `Optional` field raise an exception, because the 
 ```python
 from typing import Optional
 
+
 class User(BaseModel):
     name: str
     age: Optional[int]
+
 
 resp = client.create(
     messages=[
@@ -117,9 +121,11 @@ A workaround if to set a certain default value that Gemini can fall back on if t
 ```python
 from pydantic import Field
 
+
 class User(BaseModel):
     name: str
-    age: int = Field(default=0) # or just age: int = 0
+    age: int = Field(default=0)  # or just age: int = 0
+
 
 resp = client.create(
     messages=[
@@ -142,6 +148,7 @@ class User(BaseModel):
     name: str
     age: int
     siblings: list[str] = Field(default_factory=lambda: [])
+
 
 resp = client.create(
     messages=[
@@ -167,6 +174,7 @@ class User(BaseModel):
     name: str
     age: int = Field(gt=0)
 
+
 resp = client.create(
     messages=[
         {
@@ -180,9 +188,11 @@ resp = client.create(
 print(resp)
 # ValueError: Protocol message Schema has no "exclusiveMinimum" field.
 
+
 class User(BaseModel):
     name: str
     age: int = Field(lt=100)
+
 
 resp = client.create(
     messages=[
@@ -203,6 +213,7 @@ A workaround for this is to use pydantic validadors to change these values post 
 ```python
 from pydantic import field_validator
 
+
 class User(BaseModel):
     name: str
     age: int
@@ -214,6 +225,7 @@ class User(BaseModel):
         elif age < 0:
             age = 0
         return age
+
 
 resp = client.create(
     messages=[

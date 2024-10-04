@@ -13,9 +13,9 @@ Let's say we want to extract the competitors from various presentations and cate
 Our data model will have `Industry` which will be a list of `Competitor`'s for a specific industry, and `Competition` which will aggregate the competitors for all the industries.
 
 ```python
-from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import Optional, List
+
 
 class Competitor(BaseModel):
     name: str
@@ -28,16 +28,15 @@ class Industry(BaseModel):
     Represents competitors from a specific industry extracted from an image using AI.
     """
 
-    name: str = Field(
-        description="The name of the industry"
-    )
+    name: str = Field(description="The name of the industry")
     competitor_list: List[Competitor] = Field(
         description="A list of competitors for this industry"
     )
 
+
 class Competition(BaseModel):
     """
-    This class serves as a structured representation of 
+    This class serves as a structured representation of
     competitors and their qualities.
     """
 
@@ -56,9 +55,8 @@ from openai import OpenAI
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(
-    OpenAI()
-)
+client = instructor.from_openai(OpenAI())
+
 
 # Define functions
 def read_images(image_urls: List[str]) -> Competition:
@@ -96,9 +94,9 @@ As we can see, our model extracted the relevant information for each competitor 
 
 ```python
 url = [
-    'https://miro.medium.com/v2/resize:fit:1276/0*h1Rsv-fZWzQUyOkt', 
-    'https://earlygame.vc/wp-content/uploads/2020/06/startup-pitch-deck-5.jpg'
-    ]
+    'https://miro.medium.com/v2/resize:fit:1276/0*h1Rsv-fZWzQUyOkt',
+    'https://earlygame.vc/wp-content/uploads/2020/06/startup-pitch-deck-5.jpg',
+]
 model = read_images(url)
 print(model.model_json_dump(indent=2))
 ```

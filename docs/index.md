@@ -251,10 +251,10 @@ assert resp.age == 25
         client=genai.GenerativeModel(
             model_name="models/gemini-1.5-flash-latest",
         ),
-        mode=instructor.Mode.GEMINI_JSON, # (1)!
+        mode=instructor.Mode.GEMINI_JSON,  # (1)!
     )
 
-    mp3_file = genai.upload_file("./sample.mp3") #(2)!
+    mp3_file = genai.upload_file("./sample.mp3")  # (2)!
 
 
     class Description(BaseModel):
@@ -270,7 +270,7 @@ assert resp.age == 25
             },
             {
                 "role": "user",
-                "content": mp3_file, # (3)!
+                "content": mp3_file,  # (3)!
             },
         ],
     )
@@ -341,7 +341,6 @@ assert resp.age == 25
     import instructor
     import vertexai.generative_models as gm  # type: ignore
     from pydantic import BaseModel, Field
-    import requests
 
     client = instructor.from_vertexai(gm.GenerativeModel("gemini-1.5-pro-001"))
     content = [
@@ -534,7 +533,7 @@ resp = client.chat.completions.create(
 )
 
 print(resp)
-# > name='Jason' age=25
+#> name='Jason' age=25
 ```
 
 ## Correct Typing

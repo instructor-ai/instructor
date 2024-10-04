@@ -181,7 +181,7 @@ from instructor import Instructor, Mode, patch
 from anthropic import Anthropic
 from pydantic import BaseModel
 
-client = Instructor( # (1)!
+client = Instructor(  # (1)!
     client=Anthropic(),
     create=patch(
         create=Anthropic().beta.prompt_caching.messages.create,
@@ -196,7 +196,7 @@ class Character(BaseModel):
     description: str
 
 
-with open("./book.txt", "r") as f:
+with open("./book.txt") as f:
     book = f.read()
 
 resp = client.chat.completions.create(
@@ -208,7 +208,7 @@ resp = client.chat.completions.create(
                 {
                     "type": "text",
                     "text": "<book>" + book + "</book>",
-                    "cache_control": {"type": "ephemeral"}, # (2)!
+                    "cache_control": {"type": "ephemeral"},  # (2)!
                 },
                 {
                     "type": "text",

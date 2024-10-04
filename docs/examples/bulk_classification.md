@@ -56,6 +56,7 @@ This is very helpful because once we use something like FastAPI to create endpoi
 from typing import List
 from pydantic import BaseModel, ValidationInfo, model_validator
 
+
 class Tag(BaseModel):
     id: int
     name: str
