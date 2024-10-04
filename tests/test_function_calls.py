@@ -190,8 +190,6 @@ def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
     )
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
 
-
-@pytest.mark.isolated
 def test_pylance_url_config() -> None:
     class Model(BaseModel):
         list_of_ints: list[int]
@@ -202,8 +200,8 @@ def test_pylance_url_config() -> None:
 
     try:
         Model(**data)  # type: ignore
-    except ValidationError as e:
-        assert "https://errors.pydantic.dev" not in str(e)
+
+    assert "https://errors.pydantic.dev" not in str(exc_info.value)
 
 
 def test_mode_functions_deprecation_warning() -> None:
