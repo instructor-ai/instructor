@@ -14,6 +14,10 @@ from instructor.utils import disable_pydantic_error_url
 
 T = TypeVar("T")
 
+@pytest.fixture(scope="function")
+def set_pydantic_error_url():
+    os.environ["PYDANTIC_ERRORS_INCLUDE_URL"] = "1"
+
 
 @pytest.fixture  # type: ignore[misc]
 def test_model() -> type[OpenAISchema]:
@@ -190,7 +194,7 @@ def test_control_characters_allowed_in_anthropic_json_non_strict_mode(
     )
     assert test_model_instance.data == "Claude likes\ncontrol\ncharacters"
 
-
+@pytest.mark.usefixtures("set_pydantic_error_url")
 def test_pylance_url_config() -> None:
     class Model(BaseModel):
         list_of_ints: list[int]
