@@ -154,7 +154,7 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
 
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
-    response_model: type[T_Model],
+    response_model: type[T_Model] | None,
     args: Any,
     kwargs: Any,
     context: dict[str, Any] | None = None,
