@@ -1,5 +1,4 @@
 from typing import TypeVar
-import os
 import pytest
 from anthropic.types import Message, Usage
 from openai.types.chat.chat_completion import ChatCompletion, Choice
