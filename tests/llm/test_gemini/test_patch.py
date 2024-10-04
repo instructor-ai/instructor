@@ -8,22 +8,28 @@ from .util import models, modes
 
 
 class UserExtract(BaseModel):
-    name: str
+    first_name: str
     age: int
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_runmodel(model, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_gemini(
+        genai.GenerativeModel(
+            model,
+            system_instruction="You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information.",
+        ),
+        mode=mode,
+    )
     model = client.chat.completions.create(
         response_model=UserExtract,
-        max_retries=2,
+        max_retries=3,
         messages=[
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
     assert isinstance(model, UserExtract), "Should be instance of UserExtract"
-    assert model.name.lower() == "jason"
+    assert model.first_name.lower() == "jason"
     assert model.age == 25
     assert hasattr(
         model, "_raw_response"
@@ -46,7 +52,13 @@ class UserExtractValidated(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_runmodel_validator(model, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_gemini(
+        genai.GenerativeModel(
+            model,
+            system_instruction="You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information",
+        ),
+        mode=mode,
+    )
     model = client.chat.completions.create(
         response_model=UserExtractValidated,
         messages=[
