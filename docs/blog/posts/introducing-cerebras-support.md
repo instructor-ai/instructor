@@ -14,7 +14,9 @@ authors:
 
 ## What's Cerebras?
 
-Cerebras offers the fastest inference on the market, 20x faster than on GPUs. Sign up for a Cerebras Inference API key here: [cloud.cerebras.ai](http://cloud.cerebras.ai).
+Cerebras offers the fastest inference on the market, 20x faster than on GPUs.
+
+Sign up for a Cerebras Inference API key here: [cloud.cerebras.ai](http://cloud.cerebras.ai).
 
 ### Basic Usage
 
