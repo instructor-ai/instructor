@@ -8,75 +8,31 @@ The core of multimodal support in Instructor is the `Image` class. This class re
 
 It's important to note that Anthropic and OpenAI have different formats for handling images in their API requests. The `Image` class in Instructor abstracts away these differences, allowing you to work with a unified interface.
 
-### Anthropic Format
+### Usage
 
-Anthropic uses a specific format where images are represented as base64-encoded strings with metadata:
+You can create an `Image` instance from a URL or file path using the `from_url` or `from_path` methods. The `Image` class will automatically convert the image to a base64-encoded string and include it in the API request.
 
-"""python
-anthropic_format = {
-    "type": "image",
-    "source": {
-        "type": "base64",
-        "media_type": "image/jpeg",
-        "data": "<base64_encoded_image_data>"
-    }
-}
-"""
-
-### OpenAI Format
-
-OpenAI, on the other hand, uses a different format where images are represented as URL strings or base64-encoded data:
-
-"""python
-openai_format = {
-    "type": "image_url",
-    "image_url": {
-        "url": "data:image/jpeg;base64,<base64_encoded_image_data>"
-    }
-}
-"""
-
-One of the key advantages of using Instructor's `Image` class is that it allows for seamless model switching without changing your code. This is particularly useful when you want to experiment with different AI providers or models.
-
-## Example
-
-Here's an example demonstrating how you can use the same code structure for both Anthropic and OpenAI, allowing for easy model switching:
-
-"""python
+```python
 import instructor
-from pydantic import BaseModel
+import openai
 
-class ImageAnalyzer(BaseModel):
-    caption: str
-    objects: list[str]
+image1 = instructor.Image.from_url("https://example.com/image.jpg")
+image2 = instructor.Image.from_path("path/to/image.jpg")
 
-def analyze_image_from_path(client, model: str, image_path: str, prompt: str) -> ImageAnalyzer:
-    return client.chat.completions.create(
-            model=model,
-            response_model=ImageAnalyzer,
-            messages=[
-                {"role": "user", "content": [
-                    "What is in this image?",
-                    instructor.Image.from_path(image_path)
-                ]}
-            ]
-        )
+client = instructor.from_openai(openai.OpenAI())
 
-
-def analyze_image_from_url(client, model: str, image_url: str, prompt: str) -> ImageAnalyzer:
-    return client.chat.completions.create(
-            model=model,
-            response_model=ImageAnalyzer,
-            messages=[
-                {"role": "user", "content": [
-                    "What is in this image?",
-                    instructor.Image.from_url(image_url)
-                ]}
-            ]
-        )
-"""
-
-As you can see, we handle the cases of reading from paths and URLs and converting to base64 when appropriate for any given model. This abstraction allows for a consistent interface regardless of the underlying AI provider, making it easier to switch between different models or providers without significant code changes.
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    response_model=ImageAnalyzer,
+    messages=[
+        {"role": "user", "content": [
+            "What is in this two images?",
+            image1,
+            image2
+        ]}
+    ]
+)
+```
 
 The `Image` class takes care of the necessary conversions and formatting, ensuring that your code remains clean and provider-agnostic. This flexibility is particularly valuable when you're experimenting with different models or when you need to switch providers based on specific project requirements.
 
