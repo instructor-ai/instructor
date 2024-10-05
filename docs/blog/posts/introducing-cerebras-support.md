@@ -38,7 +38,7 @@ This ensures that you have the necessary dependencies to use the Cerebras SDK wi
 
 ### Getting Started
 
-Before running the following code, you'll need to make sure that you have your CEREBRAS_API_KEY. Sign up for one here.
+Before running the following code, you'll need to make sure that you have your CEREBRAS_API_KEY. Sign up for one [here](https://cloud.cerebras.ai/).
 
 Make sure to set the `CEREBRAS_API_KEY` as an alias in your shell.
 
@@ -80,7 +80,7 @@ We support both the `AsyncCerebras` and `Cerebras` clients.
 
 ### Streaming
 
-We also support streaming with the Cerebras client with CEREBRAS_JSON mode so that you can take advantage of Cerebras’s inference speeds and process the response as it comes in.
+We also support streaming with the Cerebras client with the `CEREBRAS_JSON` mode so that you can take advantage of Cerebras’s inference speeds and process the response as it comes in.
 
 ```python
 import instructor
