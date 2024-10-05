@@ -14,9 +14,7 @@ authors:
 
 ## What's Cerebras?
 
-Cerebras offers the fastest inference on the market, 20x faster than on GPUs. Cerebras inference runs on the Wafer Scale Engine 3 (WSE3), Cerebras’s custom hardware designed for AI, to unlock the next generation of AI applications. Cerebras Inference currently supports Llama3.1 8B and Llama3.1 70B.
-
-Sign up for a Cerebras Inference API key here: [cloud.cerebras.ai](http://cloud.cerebras.ai).
+Cerebras offers the fastest inference on the market, 20x faster than on GPUs. Sign up for a Cerebras Inference API key here: [cloud.cerebras.ai](http://cloud.cerebras.ai).
 
 ### Basic Usage
 
