@@ -207,7 +207,7 @@ nav:
     - Advanced Usage of Mistral Large: 'hub/mistral.md'
     - Generating Knowledge Graphs with AI: 'hub/knowledge_graph.md'
     - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
-    - Tutorial: Building Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
+    - Building Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
