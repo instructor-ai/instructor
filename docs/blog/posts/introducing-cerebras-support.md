@@ -7,33 +7,46 @@ categories:
   - Cerebras
 authors:
   - ivanleomk
+  - sarahchieng
 ---
 
 # Introducing Cerebras Support
 
 ## What's Cerebras?
 
-Cerebras provides a new AI chip that is purpose-built for large language models. It is a custom chip that is designed to be more efficient and powerful than existing chips. With Cerebras inference, you can get up to 550 tokens/seconds over their API.
+Cerebras offers the fastest inference on the market, 20x faster than on GPUs. Cerebras inference runs on the Wafer Scale Engine 3 (WSE3), Cerebras’s custom hardware designed for AI, to unlock the next generation of AI applications. Cerebras Inference currently supports Llama3.1 8B and Llama3.1 70B.
 
-We're happy to announce that we've added support for Cerebras inference in Instructor using the `from_cerebras` method.
+Sign up for a Cerebras Inference API key here: [cloud.cerebras.ai](http://cloud.cerebras.ai).
 
 ### Basic Usage
 
-To use Cerebras inference, you can use the `from_cerebras` method to create a new Instructor client, define a Pydantic model to pass into the `response_model` parameter and get back a validated response exactly as you would expect.
+To get guaranteed structured outputs with Cerebras Inference, you
 
-<!-- more -->
+1. Create a new Instructor client with the `from_cerebras` method
+2. Define a Pydantic model to pass into the `response_model` parameter
+3. Get back a validated response exactly as you would expect
 
 You'll also need to install the Cerebras SDK to use the client. You can install it with the command below.
+
+<!-- more -->
 
 ```bash
 pip install "instructor[cerebras_cloud_sdk]"
 ```
 
-This ensures that you have the necessary dependencies to use the Gemini or VertexAI SDKs with instructor.
+This ensures that you have the necessary dependencies to use the Cerebras SDK with instructor.
 
 ### Getting Started
 
-Before running the following code, you'll need to make sure that you have your Cerebras API Key set in your shell under the alias `CEREBRAS_API_KEY`.
+Before running the following code, you'll need to make sure that you have your CEREBRAS_API_KEY. Sign up for one here.
+
+Make sure to set the `CEREBRAS_API_KEY` as an alias in your shell.
+
+```bash
+export CEREBRAS_API_KEY=<your-api-key>
+```
+
+Once you've done so, you can use the following code to get started.
 
 ```python
 import instructor
@@ -67,7 +80,7 @@ We support both the `AsyncCerebras` and `Cerebras` clients.
 
 ### Streaming
 
-We also support streaming with the Cerebras client with `CEREBRAS_JSON` mode so that you can take advantage of the speed of Cerebras and process the response as it comes in.
+We also support streaming with the Cerebras client with CEREBRAS_JSON mode so that you can take advantage of Cerebras’s inference speeds and process the response as it comes in.
 
 ```python
 import instructor
@@ -102,4 +115,4 @@ for person in resp:
     # > Person(name='Jessica', age=26)
 ```
 
-We're excited to see what you build with Instructor and Cerebras!
+And that’s it! We're excited to see what you build with Instructor and Cerebras! If you have any questions about Cerebras or need to get off the API key waitlist, please reach out to sarah.chieng@cerebras.net.
