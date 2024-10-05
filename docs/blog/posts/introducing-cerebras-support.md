@@ -10,7 +10,7 @@ authors:
   - sarahchieng
 ---
 
-# Introducing Cerebras Support
+# Introducing structured outputs with Cerebras Inference
 
 ## What's Cerebras?
 
