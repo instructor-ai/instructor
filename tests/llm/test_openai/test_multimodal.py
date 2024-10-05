@@ -16,7 +16,7 @@ def test_multimodal_image_description(model, mode, client):
         colors: list[str] = Field(..., description="The colors in the image")
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",  # Ensure this is a vision-capable model
+        model=model,  # Ensure this is a vision-capable model
         response_model=ImageDescription,
         messages=[
             {
