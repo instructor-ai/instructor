@@ -1,7 +1,7 @@
 ---
 draft: False
 date: 2024-10-15
-slug: introducing-cerebras-support
+slug: introducing-structured-outputs-with-cerebras-inference
 categories:
   - LLM
   - Cerebras
