@@ -1,7 +1,8 @@
 import os
 import asyncio
 import yaml
-from typing import Generator, Tuple, Dict, Optional, List
+from typing import Optional
+from collections.abc import Generator
 from openai import AsyncOpenAI
 import typer
 from rich.console import Console
@@ -15,7 +16,7 @@ console = Console()
 
 def traverse_docs(
     root_dir: str = "docs",
-) -> Generator[Tuple[str, str, str], None, None]:
+) -> Generator[tuple[str, str, str], None, None]:
     """
     Recursively traverse the docs folder and yield the path, content, and content hash of each file.
 
@@ -31,7 +32,7 @@ def traverse_docs(
                 file_path = os.path.join(root, file)
                 relative_path = os.path.relpath(file_path, root_dir)
 
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
 
                 content_hash = hashlib.md5(content.encode()).hexdigest()
@@ -101,16 +102,16 @@ async def generate_sitemap(
     client = AsyncOpenAI(api_key=api_key)
 
     # Load existing sitemap if it exists
-    existing_sitemap: Dict[str, Dict[str, str]] = {}
+    existing_sitemap: dict[str, dict[str, str]] = {}
     if os.path.exists(output_file):
-        with open(output_file, "r", encoding="utf-8") as sitemap_file:
+        with open(output_file, encoding="utf-8") as sitemap_file:
             existing_sitemap = yaml.safe_load(sitemap_file) or {}
 
-    sitemap_data: Dict[str, Dict[str, str]] = {}
+    sitemap_data: dict[str, dict[str, str]] = {}
 
     async def process_file(
         path: str, content: str, content_hash: str
-    ) -> Tuple[str, Dict[str, str]]:
+    ) -> tuple[str, dict[str, str]]:
         if (
             path in existing_sitemap
             and existing_sitemap[path].get("hash") == content_hash
@@ -125,7 +126,7 @@ async def generate_sitemap(
             )
             return path, {"summary": "Failed to generate summary", "hash": content_hash}
 
-    files_to_process: List[Tuple[str, str, str]] = list(traverse_docs(root_dir))
+    files_to_process: list[tuple[str, str, str]] = list(traverse_docs(root_dir))
     total_files = len(files_to_process)
 
     with Progress() as progress:
