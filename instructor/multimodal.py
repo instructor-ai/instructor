@@ -35,7 +35,9 @@ class Image(BaseModel):
 
     def to_anthropic(self) -> dict[str, Any]:
         """Convert the Image instance to Anthropic's API format."""
-        if self.source.startswith(("http://", "https://")):
+        if isinstance(self.source, str) and self.source.startswith(
+            ("http://", "https://")
+        ):
             import requests
 
             response = requests.get(self.source)
@@ -54,7 +56,9 @@ class Image(BaseModel):
 
     def to_openai(self) -> dict[str, Any]:
         """Convert the Image instance to OpenAI's Vision API format."""
-        if self.source.startswith(("http://", "https://")):
+        if isinstance(self.source, str) and self.source.startswith(
+            ("http://", "https://")
+        ):
             return {"type": "image_url", "image_url": {"url": self.source}}
         elif self.data:
             return {
@@ -74,7 +78,7 @@ def convert_contents(
     if isinstance(contents, Image):
         contents = [contents]
 
-    converted_contents = []
+    converted_contents: list[dict[str, str | Image]] = []
     for content in contents:
         if isinstance(content, str):
             converted_contents.append({"type": "text", "text": content})
@@ -99,8 +103,8 @@ def convert_messages(
         role = message["role"]
         content = message["content"]
         if isinstance(content, str):
-            converted_messages.append({"role": role, "content": content})
+            converted_messages.append({"role": role, "content": content})  # type: ignore
         else:
             converted_content = convert_contents(content, mode)
-            converted_messages.append({"role": role, "content": converted_content})
-    return converted_messages
+            converted_messages.append({"role": role, "content": converted_content})  # type: ignore
+    return converted_messages  # type: ignore
