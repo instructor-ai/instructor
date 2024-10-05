@@ -664,7 +664,8 @@ def handle_response_model(
     else:
         raise ValueError(f"Invalid patch mode: {mode}")
 
-    new_kwargs["messages"] = convert_messages(new_kwargs["messages"], mode)
+    if "messages" in new_kwargs:
+        new_kwargs["messages"] = convert_messages(new_kwargs["messages"], mode)
 
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",

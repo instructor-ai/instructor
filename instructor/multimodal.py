@@ -29,6 +29,9 @@ class Image(BaseModel):
         if suffix not in ["jpeg", "jpg", "png"]:
             raise ValueError(f"Unsupported image format: {suffix}")
 
+        if path.stat().st_size == 0:
+            raise ValueError("Image file is empty")
+
         media_type = "image/jpeg" if suffix in ["jpeg", "jpg"] else "image/png"
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), media_type=media_type, data=data)
