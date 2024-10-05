@@ -2,7 +2,6 @@ import pytest
 from instructor.multimodal import Image
 import instructor
 from pydantic import Field, BaseModel
-from typing import List
 from itertools import product
 from .util import models, modes
 
@@ -12,9 +11,9 @@ def test_multimodal_image_description(model, mode, client):
     client = instructor.patch(client, mode=mode)
 
     class ImageDescription(BaseModel):
-        objects: List[str] = Field(..., description="The objects in the image")
+        objects: list[str] = Field(..., description="The objects in the image")
         scene: str = Field(..., description="The scene of the image")
-        colors: List[str] = Field(..., description="The colors in the image")
+        colors: list[str] = Field(..., description="The colors in the image")
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",  # Ensure this is a vision-capable model

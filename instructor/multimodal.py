@@ -1,6 +1,6 @@
 from __future__ import annotations
 import base64
-from typing import Union, Dict, Any, List
+from typing import Any
 from pathlib import Path
 from pydantic import BaseModel, Field
 from .mode import Mode
@@ -9,11 +9,9 @@ from .mode import Mode
 class Image(BaseModel):
     """Represents an image that can be loaded from a URL or file path."""
 
-    source: Union[str, Path] = Field(..., description="URL or file path of the image")
+    source: str | Path = Field(..., description="URL or file path of the image")
     media_type: str = Field(..., description="MIME type of the image")
-    data: Union[str, None] = Field(
-        None, description="Base64 encoded image data", repr=False
-    )
+    data: str | None = Field(None, description="Base64 encoded image data", repr=False)
 
     @classmethod
     def from_url(cls, url: str) -> Image:
@@ -21,7 +19,7 @@ class Image(BaseModel):
         return cls(source=url, media_type="image/jpeg", data=None)
 
     @classmethod
-    def from_path(cls, path: Union[str, Path]) -> Image:
+    def from_path(cls, path: str | Path) -> Image:
         """Create an Image instance from a file path."""
         path = Path(path)
         if not path.is_file():
@@ -35,7 +33,7 @@ class Image(BaseModel):
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), media_type=media_type, data=data)
 
-    def to_anthropic(self) -> Dict[str, Any]:
+    def to_anthropic(self) -> dict[str, Any]:
         """Convert the Image instance to Anthropic's API format."""
         if self.source.startswith(("http://", "https://")):
             import requests
@@ -54,7 +52,7 @@ class Image(BaseModel):
             },
         }
 
-    def to_openai(self) -> Dict[str, Any]:
+    def to_openai(self) -> dict[str, Any]:
         """Convert the Image instance to OpenAI's Vision API format."""
         if self.source.startswith(("http://", "https://")):
             return {"type": "image_url", "image_url": {"url": self.source}}
@@ -68,8 +66,8 @@ class Image(BaseModel):
 
 
 def convert_contents(
-    contents: Union[List[Union[str, Image]], str, Image], mode: Mode
-) -> Union[str, List[Dict[str, Any]]]:
+    contents: list[str | Image] | str | Image, mode: Mode
+) -> str | list[dict[str, Any]]:
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
@@ -93,8 +91,8 @@ def convert_contents(
 
 
 def convert_messages(
-    messages: List[Dict[str, Union[str, List[Union[str, Image]]]]], mode: Mode
-) -> List[Dict[str, Any]]:
+    messages: list[dict[str, str | list[str | Image]]], mode: Mode
+) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
     converted_messages = []
     for message in messages:
