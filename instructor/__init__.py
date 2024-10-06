@@ -3,6 +3,7 @@ import importlib.util
 from .mode import Mode
 from .process_response import handle_response_model
 from .distil import FinetuneFormat, Instructions
+from .multimodal import Image
 from .dsl import (
     CitationMixin,
     Maybe,
@@ -24,6 +25,7 @@ from .client import (
 
 __all__ = [
     "Instructor",
+    "Image",
     "from_openai",
     "from_litellm",
     "AsyncInstructor",
