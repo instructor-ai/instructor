@@ -1,6 +1,6 @@
 from __future__ import annotations
 import base64
-from typing import Any
+from typing import Any, Union
 from pathlib import Path
 from pydantic import BaseModel, Field
 from .mode import Mode
@@ -9,9 +9,11 @@ from .mode import Mode
 class Image(BaseModel):
     """Represents an image that can be loaded from a URL or file path."""
 
-    source: str | Path = Field(..., description="URL or file path of the image")
+    source: Union[str, Path] = Field(..., description="URL or file path of the image")  # noqa: UP007
     media_type: str = Field(..., description="MIME type of the image")
-    data: str | None = Field(None, description="Base64 encoded image data", repr=False)
+    data: Union[str, None] = Field(  # noqa: UP007
+        None, description="Base64 encoded image data", repr=False
+    )
 
     @classmethod
     def from_url(cls, url: str) -> Image:
@@ -73,15 +75,16 @@ class Image(BaseModel):
 
 
 def convert_contents(
-    contents: list[str | Image] | str | Image, mode: Mode
-) -> str | list[dict[str, Any]]:
+    contents: Union[list[Union[str, Image]], str, Image],  # noqa: UP007
+    mode: Mode,
+) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
     if isinstance(contents, Image):
         contents = [contents]
 
-    converted_contents: list[dict[str, str | Image]] = []
+    converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
     for content in contents:
         if isinstance(content, str):
             converted_contents.append({"type": "text", "text": content})
@@ -98,7 +101,8 @@ def convert_contents(
 
 
 def convert_messages(
-    messages: list[dict[str, str | list[str | Image]]], mode: Mode
+    messages: list[dict[str, Union[str, list[Union[str, Image]]]]],  # noqa: UP007
+    mode: Mode,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
     converted_messages = []
