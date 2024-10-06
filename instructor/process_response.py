@@ -21,7 +21,7 @@ from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import merge_consecutive_messages
-
+from instructor.multimodal import convert_messages
 
 logger = logging.getLogger("instructor")
 
@@ -663,6 +663,9 @@ def handle_response_model(
         response_model, new_kwargs = mode_handlers[mode](response_model, new_kwargs)
     else:
         raise ValueError(f"Invalid patch mode: {mode}")
+
+    if "messages" in new_kwargs:
+        new_kwargs["messages"] = convert_messages(new_kwargs["messages"], mode)
 
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
