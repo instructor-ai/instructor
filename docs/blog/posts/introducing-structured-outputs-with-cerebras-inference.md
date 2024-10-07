@@ -1,7 +1,7 @@
 ---
 draft: False
 date: 2024-10-15
-slug: introducing-cerebras-support
+slug: introducing-structured-outputs-with-cerebras-inference
 categories:
   - LLM
   - Cerebras
@@ -10,13 +10,13 @@ authors:
   - sarahchieng
 ---
 
-# Introducing Cerebras Support
+# Introducing structured outputs with Cerebras Inference
 
 ## What's Cerebras?
 
-Cerebras offers the fastest inference on the market, 20x faster than on GPUs. Cerebras inference runs on the Wafer Scale Engine 3 (WSE3), Cerebras’s custom hardware designed for AI, to unlock the next generation of AI applications. Cerebras Inference currently supports Llama3.1 8B and Llama3.1 70B.
+Cerebras offers the fastest inference on the market, 20x faster than on GPUs.
 
-Sign up for a Cerebras Inference API key here: [cloud.cerebras.ai](http://cloud.cerebras.ai).
+Sign up for a Cerebras Inference API key here at [cloud.cerebras.ai](http://cloud.cerebras.ai).
 
 ### Basic Usage
 
@@ -38,7 +38,7 @@ This ensures that you have the necessary dependencies to use the Cerebras SDK wi
 
 ### Getting Started
 
-Before running the following code, you'll need to make sure that you have your CEREBRAS_API_KEY. Sign up for one here.
+Before running the following code, you'll need to make sure that you have your CEREBRAS_API_KEY. Sign up for one [here](https://cloud.cerebras.ai/).
 
 Make sure to set the `CEREBRAS_API_KEY` as an alias in your shell.
 
@@ -80,7 +80,7 @@ We support both the `AsyncCerebras` and `Cerebras` clients.
 
 ### Streaming
 
-We also support streaming with the Cerebras client with CEREBRAS_JSON mode so that you can take advantage of Cerebras’s inference speeds and process the response as it comes in.
+We also support streaming with the Cerebras client with the `CEREBRAS_JSON` mode so that you can take advantage of Cerebras’s inference speeds and process the response as it comes in.
 
 ```python
 import instructor
