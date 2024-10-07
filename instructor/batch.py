@@ -80,6 +80,30 @@ class BatchJob:
             return res, error_objs
 
     @classmethod
+    def parse_from_string(
+        cls, content: str, response_model: type[T]
+    ) -> tuple[list[T], list[dict[Any, Any]]]:
+        res: list[T] = []
+        error_objs: list[dict[Any, Any]] = []
+        lines = content.splitlines()
+        for line in lines:
+            data = json.loads(line)
+            try:
+                res.append(
+                    response_model(
+                        **json.loads(
+                            data["response"]["body"]["choices"][0]["message"][
+                                "tool_calls"
+                            ][0]["function"]["arguments"]
+                        )
+                    )
+                )
+            except Exception:
+                error_objs.append(data)
+
+        return res, error_objs
+
+    @classmethod
     def create_from_messages(
         cls,
         messages_batch: Union[
