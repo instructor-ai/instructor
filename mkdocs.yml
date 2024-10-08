@@ -308,6 +308,8 @@ plugins:
       post_date_format: yyyy/MM/dd
       post_url_format: "{date}/{slug}"
       authors_file: "{blog}/.authors.yml"
+hooks:
+  - docs/hooks/hide_lines.py
 extra:
   analytics:
     provider: google
