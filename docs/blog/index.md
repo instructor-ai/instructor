@@ -6,26 +6,40 @@ If you want to get updates on new features and tips on how to use Instructor, yo
 
 ## Advanced Topics
 
-1. [What is Query Understanding, how does it go beyond embeddings?](posts/rag-and-beyond.md)
-2. [How can one achieve GPT-4 level summaries using GPT-3.5-turbo?](posts/chain-of-density.md)
-3. [What are the basics of Guardrails and Validation in AI models?](posts/validation-part1.md)
-4. [How does one validate citations in AI-generated content?](posts/citations.md)
-5. [What are the methods and benefits of fine-tuning and distillation in AI models?](posts/distilation-part1.md)
+1. [Query Understanding: Beyond Embeddings](posts/rag-and-beyond.md)
+2. [Achieving GPT-4 Level Summaries with GPT-3.5-turbo](posts/chain-of-density.md)
+3. [Basics of Guardrails and Validation in AI Models](posts/validation-part1.md)
+4. [Validating Citations in AI-Generated Content](posts/citations.md)
+5. [Fine-tuning and Distillation in AI Models](posts/distilation-part1.md)
+6. [Enhancing OpenAI Client Observability with LangSmith](posts/langsmith.md)
+7. [Logfire Integration with Pydantic](posts/logfire.md)
 
-## Learning Python
+## AI Development and Optimization
 
-- [How can I effectively cache my functions in Python?](posts/caching.md)
-- [What are the fundamentals of batch processing with async in Python?](posts/learn-async.md)
-- [How can I stream models to improve latency?](posts/generator.md)
+- [Effective Function Caching in Python](posts/caching.md)
+- [Fundamentals of Batch Processing with Async in Python](posts/learn-async.md)
+- [Streaming Models to Improve Latency](posts/generator.md)
+- [Using OpenAI's Batch API for Large-Scale Synthetic Data Generation](../examples/batch_job_oai.md)
+- [Implementing Bulk Classification with User-Provided Tags](../examples/bulk_classification.md)
+- [Utilizing GPT-4 Vision API for Ad Copy from Product Images](../examples/image_to_ad_copy.md)
 
-## Integrations
+## Language Models and Prompting Techniques
 
-- [Ollama](./../hub/ollama.md)
-- [llama-cpp-python](./../hub/llama-cpp-python.md)
-- [Anyscale](./../hub/anyscale.md)
-- [Together Compute](./../hub/together.md)
+- [Least-to-Most Prompting Technique for LLMs](../prompting/decomposition/least_to_most.md)
+- [Chain of Verification (CoVe) Method for Improving LLM Accuracy](../prompting/self_criticism/chain_of_verification.md)
+- [Cumulative Reasoning to Enhance Model Performance](../prompting/self_criticism/cumulative_reason.md)
+- [Reverse Chain of Thought (RCoT) Method for Logical Consistency](../prompting/self_criticism/reversecot.md)
 
-## Media
+## Integrations and Tools
 
-- [Course: Structured Outputs w/ Instructor](https://www.wandb.courses/courses/steering-language-models?x=1)
-- [Keynote: Pydantic is all you need](posts/aisummit-2023.md)
+- [Ollama Integration](../hub/ollama.md)
+- [llama-cpp-python Integration](../hub/llama-cpp-python.md)
+- [Anyscale Integration](../hub/anyscale.md)
+- [Together Compute Integration](../hub/together.md)
+- [Extracting Data into Pandas DataFrame using GPT-3.5 Turbo](../hub/pandas_df.md)
+- [Implementing Streaming Partial Responses with Field-Level Streaming](../hub/partial_streaming.md)
+
+## Media and Resources
+
+- [Course: Structured Outputs with Instructor](https://www.wandb.courses/courses/steering-language-models?x=1)
+- [Keynote: Pydantic is All You Need](posts/aisummit-2023.md)

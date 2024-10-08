@@ -20,7 +20,8 @@ With the OpenAI Function Call model, you can customize the planning process and 
 Let's define the necessary Pydantic models to represent the query plan and the queries.
 
 ```python
-from typing import List
+import enum
+from typing import List, Literal
 from pydantic import Field, BaseModel
 
 
