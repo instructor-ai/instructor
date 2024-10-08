@@ -75,19 +75,21 @@ class Image(BaseModel):
 
 
 def convert_contents(
-    contents: Union[list[Union[str, Image]], str, Image],  # noqa: UP007
+    contents: list[str | dict[str, Any] | Image] | str | dict[str, Any] | Image,  # noqa: UP007
     mode: Mode,
 ) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
-    if isinstance(contents, Image):
+    if isinstance(contents, Image) or isinstance(contents, dict):
         contents = [contents]
 
     converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
     for content in contents:
         if isinstance(content, str):
             converted_contents.append({"type": "text", "text": content})
+        elif isinstance(content, dict):
+            converted_contents.append(content)
         elif isinstance(content, Image):
             if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
                 converted_contents.append(content.to_anthropic())
@@ -101,7 +103,12 @@ def convert_contents(
 
 
 def convert_messages(
-    messages: list[dict[str, Union[str, list[Union[str, Image]]]]],  # noqa: UP007
+    messages: list[
+        dict[
+            str,
+            list[str | dict[str, Any] | Image] | str | dict[str, Any] | Image,
+        ]
+    ],  # noqa: UP007
     mode: Mode,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
