@@ -347,11 +347,22 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     # minimize gemini safety related errors - model is highly prone to false alarms
     from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
 
-    kwargs["safety_settings"] = kwargs.get("safety_settings", {}) | {
+    minimum_safety_settings = {
         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
     }
+
+    existing_safety_settings = kwargs.get("safety_settings", {})
+
+    # Start with existing settings to preserve any additional categories
+    kwargs["safety_settings"] = existing_safety_settings.copy()
+
+    # Update or add defaults, respecting stricter existing settings
+    for category, minimum_threshold in minimum_safety_settings.items():
+        existing_threshold = kwargs["safety_settings"].get(category)
+        if existing_threshold is None or existing_threshold < minimum_threshold:
+            kwargs["safety_settings"][category] = minimum_threshold
 
     return kwargs
 
