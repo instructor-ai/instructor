@@ -1,4 +1,4 @@
-# Instructor, Generating Structured Outputs with LLMs
+# Instructor, The Most Popular Library for Simple Structured Outputs
 
 _Structured outputs powered by llms. Designed for simplicity, transparency, and control._
 
