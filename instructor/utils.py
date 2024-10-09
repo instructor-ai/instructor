@@ -345,7 +345,7 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     kwargs["contents"] = transform_to_gemini_prompt(kwargs.pop("messages"))
 
     # minimize gemini safety related errors - model is highly prone to false alarms
-    from google.generativeai.types import HarmCategory, HarmBlockThreshold
+    from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
 
     minimum_safety_settings = {
         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
