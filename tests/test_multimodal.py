@@ -180,3 +180,13 @@ def test_convert_contents_anthropic_mode():
     assert converted[1]["type"] == "image"
     assert converted[1]["source"]["type"] == "base64"
     assert converted[1]["source"]["media_type"] == "image/png"
+
+
+def test_convert_contents_custom_dict():
+    contents = {
+        "type": "image_url",
+        "image_url": {"url": f"data:image/png;base64,base64_img"},
+    }
+    converted = list(convert_contents(contents, Mode.TOOLS))
+    assert len(converted) == 1
+    assert converted == [contents]
