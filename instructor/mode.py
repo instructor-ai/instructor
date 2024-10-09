@@ -22,6 +22,8 @@ class Mode(enum.Enum):
     GEMINI_TOOLS = "gemini_tools"
     COHERE_JSON_SCHEMA = "json_object"
     TOOLS_STRICT = "tools_strict"
+    CEREBRAS_TOOLS = "cerebras_tools"
+    CEREBRAS_JSON = "cerebras_json"
 
     @classmethod
     def warn_mode_functions_deprecation(cls):

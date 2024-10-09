@@ -84,7 +84,13 @@ The contract can be terminated with a 30-day notice, unless there are outstandin
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_extract(model, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_gemini(
+        genai.GenerativeModel(
+            model,
+            system_instruction="You are a perfect entity resolution system that extracts facts from the document.",
+        ),
+        mode=mode,
+    )
 
     extract = ask_ai(content=content, client=client)
 

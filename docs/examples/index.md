@@ -4,26 +4,32 @@ Welcome to our collection of cookbooks showcasing the power of structured output
 
 ## Quick Links
 
-1. [Classifying using enums](classification.md)
-2. [Implementing AI self-assessment](self_critique.md)
-3. [Classifying in batch](batch_classification.md)
-4. [Retrieving exact citations](exact_citations.md)
-5. [Segmenting search queries](search.md)
-6. [Generating knowledge graphs](knowledge_graph.md)
-7. [Decomposing complex queries](planning-tasks.md)
-8. [Extracting and resolving entities](entity_resolution.md)
-9. [Sanitizing Personally Identifiable Information](pii.md)
-10. [Generating action items and dependencies](../hub/action_items.md)
-11. [Enabling OpenAI's moderation](moderation.md)
-12. [Extracting tables using GPT-Vision](extracting_tables.md)
-13. [Generating advertising copy from images](image_to_ad_copy.md)
-14. [Using local models from Ollama](ollama.md)
-15. [Storing responses in a database](sqlmodel.md)
-16. [Segmenting documents using LLMs](document_segmentation.md)
-17. [Saving API costs with OpenAI's Batch API](batch_job_oai.md)
-18. [Using groqcloud api](groq.md)
-19. [Using Mistral/Mixtral](mistral.md)
-20. [Working with Multi-Modal data with Gemini](multi_modal_gemini.md)
+1. [Enum-Based Classification](classification.md): Implement structured classification using Python enums with AI models.
+2. [AI Self-Assessment and Correction](self_critique.md): Explore techniques for AI models to evaluate and improve their own outputs.
+3. [Efficient Batch Classification](batch_classification.md): Process multiple items simultaneously for improved performance.
+4. [Precise Citation Extraction](exact_citations.md): Accurately retrieve and format citations from text using AI.
+5. [Search Query Segmentation](search.md): Break down complex search queries into structured components for better understanding.
+6. [Dynamic Knowledge Graph Generation](knowledge_graph.md): Create visual representations of information relationships using AI.
+7. [Complex Query Decomposition](planning-tasks.md): Break down intricate queries into manageable subtasks for thorough analysis.
+8. [Entity Extraction and Resolution](entity_resolution.md): Identify and disambiguate named entities in text.
+9. [PII Sanitization](pii.md): Detect and redact sensitive personal information from text data.
+10. [Action Item and Dependency Extraction](../hub/action_items.md): Generate structured task lists and relationships from meeting transcripts.
+11. [OpenAI Content Moderation Integration](moderation.md): Implement content filtering using OpenAI's moderation API.
+12. [Table Extraction with GPT-Vision](extracting_tables.md): Convert image-based tables into structured data using AI vision capabilities.
+13. [AI-Powered Ad Copy Generation from Images](image_to_ad_copy.md): Create compelling advertising text based on visual content.
+14. [Local AI with Ollama Integration](ollama.md): Utilize open-source language models for on-device processing.
+15. [Database Integration with SQLModel](sqlmodel.md): Seamlessly store AI-generated responses in SQL databases.
+16. [LLM-Based Document Segmentation](document_segmentation.md): Intelligently divide long documents into meaningful sections.
+17. [Cost Optimization with OpenAI's Batch API](batch_job_oai.md): Reduce API costs by processing multiple requests efficiently.
+18. [Groq Cloud API Integration](groq.md): Leverage Groq's high-performance AI inference platform.
+19. [Mistral and Mixtral Model Usage](mistral.md): Implement state-of-the-art open-source language models in your projects.
+20. [Multi-Modal AI with Gemini](multi_modal_gemini.md): Process and analyze text, images, and other data types simultaneously.
+21. [IBM watsonx.ai Integration](watsonx.md): Utilize IBM's enterprise AI platform for advanced language processing tasks.
+22. [Receipt Information Extraction with GPT-4 Vision](extracting_receipts.md): Extract structured data from receipt images using advanced AI vision capabilities.
+23. [Slide Content Extraction with GPT-4 Vision](extract_slides.md): Convert presentation slide images into structured, analyzable text data.
+24. [Few-Shot Learning with Examples](examples.md): Improve AI model performance by providing contextual examples in prompts.
+25. [Local Classification without API](local_classification.md): Perform text classification tasks locally without relying on external API calls.
+
 
 ## Subscribe to our Newsletter for Updates and Tips
 

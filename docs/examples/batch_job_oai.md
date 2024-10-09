@@ -60,9 +60,9 @@ The Reserve Bank of Australia (RBA) came into being on 14 January 1960 as Austra
 print(generate_question(text_chunk).model_dump_json(indent=2))
 """
 {
-  "chain_of_thought": "The text mentions that the Reserve Bank of Australia (RBA) came into being on 14 January 1960 as Australia’s central bank and banknote issuing authority.",
-  "question": "When was the Reserve Bank of Australia (RBA) established?",
-  "answer": "14 January 1960"
+  "chain_of_thought": "The text provides information about the Reserve Bank of Australia's establishment, its core functions, its net worth, and the location of its employee base. The net worth is provided as A$101 billion.",
+  "question": "What is the estimated net worth of the Reserve Bank of Australia?",
+  "answer": "A$101 billion."
 }
 """
 ```

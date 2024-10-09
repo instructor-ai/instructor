@@ -13,9 +13,11 @@ import instructor
 # enables response_model keyword
 client = instructor.from_openai(OpenAI())
 
+
 class QuestionAnswer(BaseModel):
     question: str
     answer: str
+
 
 question = "What is the meaning of life?"
 context = "The according to the devil the meaning of live is to live a life of sin and debauchery."
@@ -61,12 +63,15 @@ import instructor
 
 client = instructor.from_openai(OpenAI())
 
+
 class QuestionAnswerNoEvil(BaseModel):
     question: str
     answer: Annotated[
         str,
         BeforeValidator(
-            llm_validator("don't say objectionable things", client=client, allow_override=True)
+            llm_validator(
+                "don't say objectionable things", client=client, allow_override=True
+            )
         ),
     ]
 
@@ -88,6 +93,7 @@ try:
     )
 except Exception as e:
     print(e)
+    #> name 'context' is not defined
 ```
 
 ### Output After Validation

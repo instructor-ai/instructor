@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "instructor"
-version = "1.5.0"
+version = "1.5.2"
 description = "structured outputs for llm"
 authors = ["Jason Liu <jason@jxnl.co>"]
 license = "MIT"
@@ -33,9 +33,10 @@ xmltodict = { version = "^0.13.0", optional = true }
 groq = { version = "^0.4.2", optional = true }
 cohere = { version = "^5.1.8", optional = true }
 mistralai = { version = "^1.0.3", optional = true }
-google-generativeai = { version = "^0.5.4", optional = true }
+google-generativeai = { version = "^0.8.2", optional = true }
 google-cloud-aiplatform = { version = "^1.53.0", optional = true }
 jsonref = { version = "^1.1.0", optional = true }
+cerebras_cloud_sdk = { version = "^1.5.0", optional = true }
 
 [tool.poetry.extras]
 anthropic = ["anthropic", "xmltodict"]
@@ -58,13 +59,14 @@ mistralai = ["mistralai"]
 litellm = ["litellm"]
 google-generativeai = ["google-generativeai"]
 vertexai = ["google-cloud-aiplatform", "jsonref"]
+cerebras_cloud_sdk = ["cerebras_cloud_sdk"]
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
-pytest-asyncio = "^0.21.1"
+pytest = "^8.3.3"
+pytest-asyncio = "^0.24.0"
 coverage = "^7.3.2"
 pyright = "^1.1.360"
 jsonref = "^1.1.0"
@@ -74,7 +76,7 @@ mkdocs = "^1.4.3"
 mkdocs-material = { extras = ["imaging"], version = "^9.5.9" }
 mkdocstrings = "^0.22.0"
 mkdocstrings-python = "^1.1.2"
-pytest-examples = "^0.0.10"
+pytest-examples = "^0.0.13"
 mkdocs-jupyter = "^0.24.6"
 mkdocs-rss-plugin = "^1.12.0"
 mkdocs-minify-plugin = "^0.8.0"
@@ -97,12 +99,13 @@ groq = "^0.4.2"
 phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
 mistralai = "^1.0.3"
+cerebras_cloud_sdk = "^1.5.0"
 
 [tool.poetry.group.litellm.dependencies]
 litellm = "^1.35.31"
 
 [tool.poetry.group.google-generativeai.dependencies]
-google-generativeai = "^0.5.4"
+google-generativeai = "^0.8.2"
 jsonref = "^1.1.0"
 
 [tool.poetry.group.vertexai.dependencies]

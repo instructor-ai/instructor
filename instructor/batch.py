@@ -42,6 +42,7 @@ class RequestBody(BaseModel):
     model: Union[openai_models, str]
     messages: list[dict[str, Any]]
     max_tokens: int = Field(default=1000)
+    temperature: float = Field(default=1.0)
     tools: list[Tool]
     tool_choice: dict[str, Any]
 
@@ -79,6 +80,30 @@ class BatchJob:
             return res, error_objs
 
     @classmethod
+    def parse_from_string(
+        cls, content: str, response_model: type[T]
+    ) -> tuple[list[T], list[dict[Any, Any]]]:
+        res: list[T] = []
+        error_objs: list[dict[Any, Any]] = []
+        lines = content.splitlines()
+        for line in lines:
+            data = json.loads(line)
+            try:
+                res.append(
+                    response_model(
+                        **json.loads(
+                            data["response"]["body"]["choices"][0]["message"][
+                                "tool_calls"
+                            ][0]["function"]["arguments"]
+                        )
+                    )
+                )
+            except Exception:
+                error_objs.append(data)
+
+        return res, error_objs
+
+    @classmethod
     def create_from_messages(
         cls,
         messages_batch: Union[
@@ -88,6 +113,7 @@ class BatchJob:
         response_model: type[BaseModel],
         file_path: str,
         max_tokens: int = 1000,
+        temperature: float = 1.0,
     ):
         _, kwargs = handle_response_model(response_model=response_model)
 
@@ -102,6 +128,7 @@ class BatchJob:
                             model=model,
                             max_tokens=max_tokens,
                             messages=messages,
+                            temperature=temperature,
                             **kwargs,
                         ),
                     ).model_dump_json()

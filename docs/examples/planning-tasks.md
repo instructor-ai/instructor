@@ -21,7 +21,7 @@ Let's define the necessary Pydantic models to represent the query plan and the q
 
 ```python
 import enum
-from typing import List
+from typing import List, Literal
 from pydantic import Field, BaseModel
 
 

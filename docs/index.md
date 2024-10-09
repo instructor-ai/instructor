@@ -251,10 +251,10 @@ assert resp.age == 25
         client=genai.GenerativeModel(
             model_name="models/gemini-1.5-flash-latest",
         ),
-        mode=instructor.Mode.GEMINI_JSON, # (1)!
+        mode=instructor.Mode.GEMINI_JSON,  # (1)!
     )
 
-    mp3_file = genai.upload_file("./sample.mp3") #(2)!
+    mp3_file = genai.upload_file("./sample.mp3")  # (2)!
 
 
     class Description(BaseModel):
@@ -270,7 +270,7 @@ assert resp.age == 25
             },
             {
                 "role": "user",
-                "content": mp3_file, # (3)!
+                "content": mp3_file,  # (3)!
             },
         ],
     )
@@ -341,7 +341,6 @@ assert resp.age == 25
     import instructor
     import vertexai.generative_models as gm  # type: ignore
     from pydantic import BaseModel, Field
-    import requests
 
     client = instructor.from_vertexai(gm.GenerativeModel("gemini-1.5-pro-001"))
     content = [
@@ -499,6 +498,42 @@ resp = client.chat.completions.create(
 
 assert resp.name == "Jason"
 assert resp.age == 25
+```
+
+### Using Cerebras
+
+For those who want to use the Cerebras models, you can use the `from_cerebras` method to patch the client. You can see their list of models [here](https://inference-docs.cerebras.ai/api-reference/models).
+
+```python
+from cerebras.cloud.sdk import Cerebras
+import instructor
+from pydantic import BaseModel
+import os
+
+client = Cerebras(
+    api_key=os.environ.get("CEREBRAS_API_KEY"),
+)
+client = instructor.from_cerebras(client)
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+resp = client.chat.completions.create(
+    model="llama3.1-70b",
+    response_model=User,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+)
+
+print(resp)
+#> name='Jason' age=25
 ```
 
 ## Correct Typing
