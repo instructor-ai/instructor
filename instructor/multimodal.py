@@ -75,7 +75,9 @@ class Image(BaseModel):
 
 
 def convert_contents(
-    contents: list[str | dict[str, Any] | Image] | str | dict[str, Any] | Image,  # noqa: UP007
+    contents: Union[  # noqa: UP007
+        list[Union[str, dict[str, Any], Image]], str, dict[str, Any], Image  # noqa: UP007
+    ],
     mode: Mode,
 ) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
     """Convert content items to the appropriate format based on the specified mode."""
@@ -106,7 +108,7 @@ def convert_messages(
     messages: list[
         dict[
             str,
-            list[str | dict[str, Any] | Image] | str | dict[str, Any] | Image,
+            Union[list[Union[str, dict[str, Any], Image]], str, dict[str, Any], Image],  # noqa: UP007
         ]
     ],  # noqa: UP007
     mode: Mode,
