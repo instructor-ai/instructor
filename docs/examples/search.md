@@ -32,7 +32,7 @@ class Search(BaseModel):
 
 def segment(data: str) -> Search:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4o-mini",
         response_model=Iterable[Search],
         messages=[
             {
@@ -43,17 +43,9 @@ def segment(data: str) -> Search:
         max_tokens=1000,
     )
 
+
 for search in segment("Search for a picture of a cat and a video of a dog"):
     print(search.model_dump_json())
-    """
-    {
-        "query": "a picture of a cat",
-        "type": "image"
-    }
-    {
-        "query": "a video of a dog",
-        "type": "video"
-    }
-    """
-    }
+    #> {"query":"picture of a cat","type":"image"}
+    #> {"query":"video of a dog","type":"video"}
 ```

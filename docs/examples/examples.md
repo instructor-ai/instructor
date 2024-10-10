@@ -1,7 +1,6 @@
-# How should I include examples? 
+# How should I include examples?
 
 To enhance the clarity and usability of your model and prompt, incorporating examples directly into the JSON schema extra of your Pydantic model is highly recommended. This approach not only streamlines the integration of practical examples but also ensures that they are easily accessible and understandable within the context of your model's schema.
-
 
 ```python
 import openai
@@ -39,7 +38,7 @@ class SyntheticQA(BaseModel):
 
 def get_synthetic_data() -> Iterable[SyntheticQA]:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "Generate synthetic examples"},
             {

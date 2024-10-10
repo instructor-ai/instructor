@@ -54,6 +54,44 @@ class Product(BaseModel):
 We also define a class that represents a list of products identified in the images. We also add an error flag and message to indicate if there was an error in the processing of the image.
 
 ```python
+from pydantic import BaseModel, Field
+from typing import Optional, List
+
+
+# <%hide%>
+class Product(BaseModel):
+    """
+    Represents a product extracted from an image using AI.
+
+    The product attributes are dynamically determined based on the content
+    of the image and the AI's interpretation. This class serves as a structured
+    representation of the identified product characteristics.
+    """
+
+    name: str = Field(
+        description="A generic name for the product.", example="Headphones"
+    )
+    key_features: Optional[List[str]] = Field(
+        description="A list of key features of the product that stand out.",
+        default=None,
+    )
+
+    description: Optional[str] = Field(
+        description="A description of the product.",
+        default=None,
+    )
+
+    # Can be customized and automatically generated
+    def generate_prompt(self):
+        prompt = f"Product: {self.name}\n"
+        if self.description:
+            prompt += f"Description: {self.description}\n"
+        if self.key_features:
+            prompt += f"Key Features: {', '.join(self.key_features)}\n"
+        return prompt
+
+
+# <%hide%>
 class IdentifiedProduct(BaseModel):
     """
     Represents a list of products identified in the images.
@@ -80,6 +118,9 @@ class IdentifiedProduct(BaseModel):
 Finally, the `AdCopy` models stores the output in a structured format with a headline and the text.
 
 ```python
+from pydantic import BaseModel, Field
+
+
 class AdCopy(BaseModel):
     """
     Represents a generated ad copy.
@@ -101,7 +142,66 @@ class AdCopy(BaseModel):
 The `read_images` function uses OpenAI's vision model to process a list of image URLs and identify products in each of them. We utilize the `instructor` library to patch the OpenAI client for this purpose.
 
 ```python
-def read_images(image_urls: List[str]) -> IdentifiedProduct:
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import Optional, List
+
+
+class Product(BaseModel):
+    """
+    Represents a product extracted from an image using AI.
+
+    The product attributes are dynamically determined based on the content
+    of the image and the AI's interpretation. This class serves as a structured
+    representation of the identified product characteristics.
+    """
+
+    name: str = Field(
+        description="A generic name for the product.", example="Headphones"
+    )
+    key_features: Optional[List[str]] = Field(
+        description="A list of key features of the product that stand out.",
+        default=None,
+    )
+
+    description: Optional[str] = Field(
+        description="A description of the product.",
+        default=None,
+    )
+
+    # Can be customized and automatically generated
+    def generate_prompt(self):
+        prompt = f"Product: {self.name}\n"
+        if self.description:
+            prompt += f"Description: {self.description}\n"
+        if self.key_features:
+            prompt += f"Key Features: {', '.join(self.key_features)}\n"
+        return prompt
+
+
+class IdentifiedProduct(BaseModel):
+    """
+    Represents a list of products identified in the images.
+    """
+
+    products: Optional[List[Product]] = Field(
+        description="A list of products identified by the AI.",
+        example=[
+            Product(
+                name="Headphones",
+                description="Wireless headphones with noise cancellation.",
+                key_features=["Wireless", "Noise Cancellation"],
+            )
+        ],
+        default=None,
+    )
+
+    error: bool = Field(default=False)
+    message: Optional[str] = Field(default=None)
+
+
+# <%hide%>
+def read_images(image_urls: list[str]) -> IdentifiedProduct:
     """
     Given a list of image URLs, identify the products in the images.
     """
@@ -109,7 +209,7 @@ def read_images(image_urls: List[str]) -> IdentifiedProduct:
     logger.info(f"Identifying products in images... {len(image_urls)} images")
 
     return client_image.chat.completions.create(
-        model="gpt-4-vision-preview",
+        model="gpt-4o-mini",
         response_model=IdentifiedProduct,
         max_tokens=1024,  # can be changed
         temperature=0,
@@ -140,6 +240,58 @@ Then, we can use the `generate_ad_copy` function to generate advertising copy fo
 Two clients are defined for the two different models. This is because the `gpt-4-vision-preview` model is not compatible with the `gpt-4-1106-preview` model in terms of their response format.
 
 ```python
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+
+class Product(BaseModel):
+    """
+    Represents a product extracted from an image using AI.
+
+    The product attributes are dynamically determined based on the content
+    of the image and the AI's interpretation. This class serves as a structured
+    representation of the identified product characteristics.
+    """
+
+    name: str = Field(
+        description="A generic name for the product.", example="Headphones"
+    )
+    key_features: Optional[List[str]] = Field(
+        description="A list of key features of the product that stand out.",
+        default=None,
+    )
+
+    description: Optional[str] = Field(
+        description="A description of the product.",
+        default=None,
+    )
+
+    # Can be customized and automatically generated
+    def generate_prompt(self):
+        prompt = f"Product: {self.name}\n"
+        if self.description:
+            prompt += f"Description: {self.description}\n"
+        if self.key_features:
+            prompt += f"Key Features: {', '.join(self.key_features)}\n"
+        return prompt
+
+
+class AdCopy(BaseModel):
+    """
+    Represents a generated ad copy.
+    """
+
+    headline: str = Field(
+        description="A short, catchy, and memorable headline for the given product. The headline should invoke curiosity and interest in the product.",
+    )
+    ad_copy: str = Field(
+        description="A long-form advertisement copy for the given product. This will be used in campaigns to promote the product with a persuasive message and a call-to-action with the objective of driving sales.",
+    )
+    name: str = Field(description="The name of the product being advertised.")
+
+
+# <%hide%>
 def generate_ad_copy(product: Product) -> AdCopy:
     """
     Given a product, generate an ad copy for the product.
@@ -148,7 +300,7 @@ def generate_ad_copy(product: Product) -> AdCopy:
     logger.info(f"Generating ad copy for product: {product.name}")
 
     return client_copy.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="gpt-4o-mini",
         response_model=AdCopy,
         temperature=0.3,
         messages=[
