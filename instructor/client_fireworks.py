@@ -12,7 +12,7 @@ from fireworks.client.api_client_v2 import Fireworks as FireworksType, AsyncFire
 @overload
 def from_fireworks(
     client: FireworksType,
-    mode: instructor.Mode = instructor.Mode.FIREWORKS_TOOLS,
+    mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     use_async: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -21,7 +21,7 @@ def from_fireworks(
 @overload
 def from_fireworks(
     client: AsyncFireworksType,
-    mode: instructor.Mode = instructor.Mode.FIREWORKS_TOOLS,
+    mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     use_async: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -29,7 +29,7 @@ def from_fireworks(
 
 def from_fireworks(
     client: FireworksType | AsyncFireworksType,
-    mode: instructor.Mode = instructor.Mode.FIREWORKS_TOOLS,
+    mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     use_async: bool = False,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
