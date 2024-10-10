@@ -1,6 +1,6 @@
-# Instructor: Structured LLM Outputs
+# Instructor, The Most Popular Library for Simple Structured Outputs
 
-Instructor is a Python library that makes it a breeze to work with structured outputs from large language models (LLMs). Built on top of Pydantic, it provides a simple, transparent, and user-friendly API to manage validation, retries, and streaming responses. Get ready to supercharge your LLM workflows!
+Instructor is the most popular Python library for working with structured outputs from large language models (LLMs), boasting over 600,000 monthly downloads. Built on top of Pydantic, it provides a simple, transparent, and user-friendly API to manage validation, retries, and streaming responses. Get ready to supercharge your LLM workflows with the community's top choice!
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
