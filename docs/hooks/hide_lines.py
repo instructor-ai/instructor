@@ -1,7 +1,6 @@
 from typing import Any
 import mkdocs.plugins
 from pymdownx import highlight  # type: ignore
-from rich import print
 
 
 @mkdocs.plugins.event_priority(0)

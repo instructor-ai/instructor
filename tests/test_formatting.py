@@ -1,4 +1,3 @@
-from textwrap import dedent
 from instructor.templating import handle_templating
 
 
@@ -133,6 +132,6 @@ def test_handle_templating_raises_error_for_unknown_format():
 
     try:
         handle_templating(kwargs, context)
-        assert False, "Expected ValueError to be raised"
+        raise AssertionError("Expected ValueError to be raised")
     except ValueError as e:
         assert str(e) == "Expected 'message', 'messages' or 'contents' in kwargs"

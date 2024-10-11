@@ -1,16 +1,16 @@
 # type: ignore[all]
 from __future__ import annotations
-from typing import Any, Dict
+from typing import Any
 from jinja2 import Template
 from textwrap import dedent
 
 
-def apply_template(text: str, context: Dict[str, Any]) -> str:
+def apply_template(text: str, context: dict[str, Any]) -> str:
     """Apply Jinja2 template to the given text."""
     return dedent(Template(text).render(**context))
 
 
-def process_message(message: Dict[str, Any], context: Dict[str, Any]) -> None:
+def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
     """Process a single message, applying templates to its content."""
     # VertexAI Support
     if hasattr(message, "parts") and isinstance(message.parts, list):
@@ -56,8 +56,8 @@ def process_message(message: Dict[str, Any], context: Dict[str, Any]) -> None:
 
 
 def handle_templating(
-    kwargs: Dict[str, Any], context: Dict[str, Any] | None = None
-) -> Dict[str, Any]:
+    kwargs: dict[str, Any], context: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """
     Handle templating for messages using the provided context.
 
@@ -88,9 +88,15 @@ def handle_templating(
         )
         return new_kwargs
 
-    messages = new_kwargs.get("messages") or new_kwargs.get("contents")
+    if isinstance(new_kwargs, list):
+        messages = new_kwargs
+        if not messages:
+            return
+    elif isinstance(new_kwargs, dict):
+        messages = new_kwargs.get("messages") or new_kwargs.get("contents")
+
     if not messages:
-        raise ValueError("Expected 'message', 'messages' or 'contents' in kwargs")
+        return
 
     for message in messages:
         process_message(message, context)
