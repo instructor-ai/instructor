@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from instructor.process_response import handle_response_model
 from instructor.retry import retry_async, retry_sync
 from instructor.utils import is_async
-
+from instructor.hooks import Hooks
 from instructor.mode import Mode
 import logging
 
@@ -136,9 +136,11 @@ def handle_templating(
                 return gm.Content(
                     role=message.role,  # type: ignore
                     parts=[
-                        gm.Part.from_text(dedent(Template(part.text).render(**context)))  # type: ignore
-                        if hasattr(part, "text")  # type: ignore
-                        else part
+                        (
+                            gm.Part.from_text(dedent(Template(part.text).render(**context)))  # type: ignore
+                            if hasattr(part, "text")  # type: ignore
+                            else part
+                        )
                         for part in message.parts  # type: ignore
                     ],
                 )
@@ -160,7 +162,9 @@ def handle_templating(
                     and part.get("type") == "text"  # type:ignore
                     and isinstance(part.get("text"), str)  # type:ignore
                 ):
-                    part["text"] = dedent(Template(part["text"]).render(**context))  # type:ignore
+                    part["text"] = dedent(
+                        Template(part["text"]).render(**context)
+                    )  # type:ignore
 
         # Gemini Support
         if isinstance(message.get("parts"), list):
@@ -200,6 +204,7 @@ def patch(
 def patch(
     create: Awaitable[T_Retval],
     mode: Mode = Mode.TOOLS,
+    hooks: Hooks | None = None,
 ) -> InstructorChatCompletionCreate: ...
 
 
@@ -217,6 +222,7 @@ def patch(  # type: ignore
     - `max_retries` parameter to retry the function if the response is not valid
     - `validation_context` parameter to validate the response using the pydantic model
     - `strict` parameter to use strict json parsing
+    - `hooks` parameter to hook into the completion process
     """
 
     logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
@@ -237,6 +243,7 @@ def patch(  # type: ignore
         context: dict[str, Any] | None = None,
         max_retries: int = 1,
         strict: bool = True,
+        hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -251,7 +258,6 @@ def patch(  # type: ignore
         elif "contents" in new_kwargs:
             new_kwargs["contents"] = handle_templating(new_kwargs["contents"], context)
 
-
         response = await retry_async(
             func=func,  # type: ignore
             response_model=response_model,
@@ -261,6 +267,7 @@ def patch(  # type: ignore
             kwargs=new_kwargs,
             strict=strict,
             mode=mode,
+            hooks=hooks,
         )
         return response
 
@@ -271,6 +278,7 @@ def patch(  # type: ignore
         context: dict[str, Any] | None = None,
         max_retries: int = 1,
         strict: bool = True,
+        hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -296,6 +304,7 @@ def patch(  # type: ignore
             args=args,
             strict=strict,
             kwargs=new_kwargs,
+            hooks=hooks,
             mode=mode,
         )
         return response  # type: ignore

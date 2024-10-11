@@ -10,13 +10,14 @@ from typing import (
     Callable,
     overload,
     Union,
+    Literal,
     Any,
 )
 from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator
 from typing_extensions import Self
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
-from instructor.eventemitter import EventEmitter
+from instructor.hooks import Hooks, HookName
 
 
 T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
@@ -28,7 +29,7 @@ class Instructor:
     mode: instructor.Mode
     default_model: str | None = None
     provider: Provider
-    hooks: EventEmitter
+    hooks: Hooks
 
     def __init__(
         self,
@@ -36,6 +37,7 @@ class Instructor:
         create: Callable[..., Any],
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
+        hooks: Hooks | None = None,
         **kwargs: Any,
     ):
         self.client = client
@@ -45,6 +47,23 @@ class Instructor:
             instructor.Mode.warn_mode_functions_deprecation()
         self.kwargs = kwargs
         self.provider = provider
+        self.hooks = hooks or Hooks()
+
+    def on(
+        self,
+        hook_name: (
+            HookName
+            | Literal[
+                "completion:kwargs",
+                "completion:response",
+                "completion:error",
+                "completion:last_attempt",
+                "parse:error",
+            ]
+        ),
+        handler: Callable[[Any], None],
+    ) -> None:
+        self.hooks.on(hook_name, handler)
 
     @property
     def chat(self) -> Self:
@@ -125,6 +144,7 @@ class Instructor:
             validation_context=validation_context,
             context=context,
             strict=strict,
+            hooks=self.hooks,
             **kwargs,
         )
 
@@ -174,6 +194,7 @@ class Instructor:
             validation_context=validation_context,
             context=context,
             strict=strict,
+            hooks=self.hooks,
             **kwargs,
         )
 
@@ -222,6 +243,7 @@ class Instructor:
             validation_context=validation_context,
             context=context,
             strict=strict,
+            hooks=self.hooks,
             **kwargs,
         )
 
@@ -267,6 +289,7 @@ class Instructor:
             validation_context=validation_context,
             context=context,
             strict=strict,
+            hooks=self.hooks,
             **kwargs,
         )
         return model, model._raw_response
@@ -296,6 +319,7 @@ class AsyncInstructor(Instructor):
     mode: instructor.Mode
     default_model: str | None = None
     provider: Provider
+    hooks: Hooks
 
     def __init__(
         self,
@@ -303,6 +327,7 @@ class AsyncInstructor(Instructor):
         create: Callable[..., Any],
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
+        hooks: Hooks | None = None,
         **kwargs: Any,
     ):
         self.client = client
@@ -310,6 +335,7 @@ class AsyncInstructor(Instructor):
         self.mode = mode
         self.kwargs = kwargs
         self.provider = provider
+        self.hooks = hooks or Hooks()
 
     async def create(
         self,
@@ -329,6 +355,7 @@ class AsyncInstructor(Instructor):
             max_retries=max_retries,
             messages=messages,
             strict=strict,
+            hooks=self.hooks,
             **kwargs,
         )
 
@@ -351,6 +378,7 @@ class AsyncInstructor(Instructor):
             max_retries=max_retries,
             messages=messages,
             strict=strict,
+            hooks=self.hooks,
             **kwargs,
         ):
             yield item
@@ -374,6 +402,7 @@ class AsyncInstructor(Instructor):
             max_retries=max_retries,
             messages=messages,
             strict=strict,
+            hooks=self.hooks,
             **kwargs,
         ):
             yield item
@@ -396,6 +425,7 @@ class AsyncInstructor(Instructor):
             max_retries=max_retries,
             messages=messages,
             strict=strict,
+            hooks=self.hooks,
             **kwargs,
         )
         return response, response._raw_response

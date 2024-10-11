@@ -2,25 +2,23 @@
 from __future__ import annotations
 
 import logging
+from json import JSONDecodeError
+from typing import Any, Callable, TypeVar
 
-from openai.types.chat import ChatCompletion
+from instructor.exceptions import InstructorRetryException
+from instructor.hooks import Hooks
 from instructor.mode import Mode
 from instructor.process_response import process_response, process_response_async
 from instructor.utils import (
     dump_message,
-    update_total_usage,
     merge_consecutive_messages,
+    update_total_usage,
 )
-from instructor.exceptions import InstructorRetryException
-
-from openai.types.completion_usage import CompletionUsage
-from pydantic import ValidationError
-from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
 from instructor.validators import AsyncValidationError
-
-from json import JSONDecodeError
-from pydantic import BaseModel
-from typing import Callable, TypeVar, Any
+from openai.types.chat import ChatCompletion
+from openai.types.completion_usage import CompletionUsage
+from pydantic import BaseModel, ValidationError
+from tenacity import AsyncRetrying, RetryError, Retrying, stop_after_attempt
 from typing_extensions import ParamSpec
 
 logger = logging.getLogger("instructor")
@@ -168,7 +166,10 @@ def retry_sync(
     max_retries: int | Retrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
+    hooks: Hooks | None = None,
 ) -> T_Model | None:
+    hooks = hooks or Hooks()
+
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
         from anthropic.types import Usage as AnthropicUsage
@@ -189,7 +190,13 @@ def retry_sync(
         for attempt in max_retries:
             with attempt:
                 try:
-                    response = func(*args, **kwargs)
+                    hooks.emit_completion_arguments(*args, **kwargs)
+                    try:
+                        response = func(*args, **kwargs)
+                    except Exception as e:
+                        hooks.emit_completion_error(e)
+                        raise e
+                    hooks.emit_completion_response(response)
                     stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
                     return process_response(
@@ -201,6 +208,7 @@ def retry_sync(
                         mode=mode,
                     )
                 except (ValidationError, JSONDecodeError) as e:
+                    hooks.emit_parse_error(e)
                     logger.debug(f"Error response: {response}")
                     if mode in {
                         Mode.GEMINI_JSON,
@@ -224,6 +232,7 @@ def retry_sync(
                         )
                     raise e
     except RetryError as e:
+        hooks.emit_completion_last_attempt(e)
         raise InstructorRetryException(
             e.last_attempt._exception,
             last_completion=response,
@@ -244,7 +253,10 @@ async def retry_async(
     max_retries: int | AsyncRetrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
+    hooks: Hooks | None = None,
 ) -> T:
+    hooks = hooks or Hooks()
+
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0)
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
         from anthropic.types import Usage as AnthropicUsage
@@ -268,7 +280,13 @@ async def retry_async(
             logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
             with attempt:
                 try:
-                    response: ChatCompletion = await func(*args, **kwargs)
+                    hooks.emit_completion_arguments(*args, **kwargs)
+                    try:
+                        response: ChatCompletion = await func(*args, **kwargs)
+                    except Exception as e:
+                        hooks.emit_completion_error(e)
+                        raise e
+                    hooks.emit_completion_response(response)
                     stream = kwargs.get("stream", False)
                     response = update_total_usage(response, total_usage)
                     return await process_response_async(
@@ -280,6 +298,7 @@ async def retry_async(
                         mode=mode,
                     )
                 except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
+                    hooks.emit_parse_error(e)
                     logger.debug(f"Error response: {response}")
                     if mode in {
                         Mode.GEMINI_JSON,
@@ -302,7 +321,7 @@ async def retry_async(
                         )
                     raise e
     except RetryError as e:
-        logger.exception(f"Failed after retries: {e.last_attempt.exception}")
+        hooks.emit_completion_last_attempt(e)
         raise InstructorRetryException(
             e.last_attempt._exception,
             last_completion=response,
