@@ -1,8 +1,10 @@
 from __future__ import annotations
 from enum import Enum
 from collections import defaultdict
-from typing import Any, Callable, List, Literal, TypeVar
-from warnings import warn
+from typing import Any, Callable, Literal, TypeVar
+
+import traceback
+import warnings
 
 T = TypeVar("T")
 
@@ -20,36 +22,11 @@ class Hooks:
     Hooks class for handling and emitting events related to completion processes.
 
     This class provides a mechanism to register event handlers and emit events
-    for various stages of the completion process. It supports the following events:
-
-    - COMPLETION_KWARGS (completion:kwargs):
-      Emitted when completion arguments are provided.
-      Arguments: *args, **kwargs (Any arguments passed to the completion function)
-
-    - COMPLETION_RESPONSE (completion:response):
-      Emitted when a completion response is received.
-      Arguments: response (The response object from the completion API)
-
-    - COMPLETION_ERROR (completion:error):
-      Emitted when an error occurs during completion.
-      Arguments: error (The exception object that was raised)
-
-    - COMPLETION_LAST_ATTEMPT (completion:last_attempt):
-      Emitted on the last retry attempt.
-      Arguments: error (RetryError object containing information about the failed attempts)
-
-    - PARSE_ERROR (parse:error):
-      Emitted when a parse error occurs.
-      Arguments: error (The exception object that was raised)
-
-    Usage:
-        hooks = Hooks()
-        hooks.on(HookName.COMPLETION_KWARGS, lambda *args, **kwargs: print("Kwargs:", kwargs))
-        hooks.emit_completion_arguments(model="gpt-3.5-turbo", temperature=0.7)
+    for various stages of the completion process.
     """
 
     def __init__(self) -> None:
-        self._handlers: defaultdict[HookName, List[Callable[[Any], None]]] = (
+        self._handlers: defaultdict[HookName, list[Callable[[Any], None]]] = (
             defaultdict(list)
         )
 
@@ -93,56 +70,63 @@ class Hooks:
         if isinstance(hook_name, str):
             try:
                 hook_name = HookName(hook_name)
-            except ValueError:
-                raise ValueError(f"Invalid hook name: {hook_name}")
-        elif not isinstance(hook_name, HookName):
-            raise ValueError(f"Invalid hook name type: {type(hook_name)}")
+            except ValueError as err:
+                raise ValueError(f"Invalid hook name: {hook_name}") from err
         self._handlers[hook_name].append(handler)
 
     def emit_completion_arguments(self, *args: Any, **kwargs: Any) -> None:
         for handler in self._handlers[HookName.COMPLETION_KWARGS]:
             try:
                 handler(*args, **kwargs)
-            except Exception as e:
-                import warnings
-
-                warnings.warn(f"Error in completion arguments handler: {str(e)}")
+            except Exception:
+                error_traceback = traceback.format_exc()
+                warnings.warn(
+                    f"Error in completion arguments handler:\n{error_traceback}",
+                    stacklevel=2,
+                )
 
     def emit_completion_response(self, response: Any) -> None:
         for handler in self._handlers[HookName.COMPLETION_RESPONSE]:
             try:
                 handler(response)
-            except Exception as e:
-                import warnings
-
-                warnings.warn(f"Error in completion response handler: {str(e)}")
+            except Exception:
+                error_traceback = traceback.format_exc()
+                warnings.warn(
+                    f"Error in completion response handler:\n{error_traceback}",
+                    stacklevel=2,
+                )
 
     def emit_completion_error(self, error: Exception) -> None:
         for handler in self._handlers[HookName.COMPLETION_ERROR]:
             try:
                 handler(error)
-            except Exception as e:
-                import warnings
-
-                warnings.warn(f"Error in completion error handler: {str(e)}")
+            except Exception:
+                error_traceback = traceback.format_exc()
+                warnings.warn(
+                    f"Error in completion error handler:\n{error_traceback}",
+                    stacklevel=2,
+                )
 
     def emit_completion_last_attempt(self, error: Exception) -> None:
         for handler in self._handlers[HookName.COMPLETION_LAST_ATTEMPT]:
             try:
                 handler(error)
-            except Exception as e:
-                import warnings
-
-                warnings.warn(f"Error in completion last attempt handler: {str(e)}")
+            except Exception:
+                error_traceback = traceback.format_exc()
+                warnings.warn(
+                    f"Error in completion last attempt handler:\n{error_traceback}",
+                    stacklevel=2,
+                )
 
     def emit_parse_error(self, error: Exception) -> None:
         for handler in self._handlers[HookName.PARSE_ERROR]:
             try:
                 handler(error)
-            except Exception as e:
-                import warnings
-
-                warnings.warn(f"Error in parse error handler: {str(e)}")
+            except Exception:
+                error_traceback = traceback.format_exc()
+                warnings.warn(
+                    f"Error in parse error handler:\n{error_traceback}", stacklevel=2
+                )
 
     def off(self, hook_name: HookName, handler: Callable[[Any], None]) -> None:
         """
