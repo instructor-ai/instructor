@@ -134,11 +134,6 @@ def log_completion_kwargs(*args, **kwargs) -> None:
                             'properties': {
                                 'name': {'title': 'Name', 'type': 'string'},
                                 'age': {'title': 'Age', 'type': 'integer'},
-                                'error_message': {
-                                    'anyOf': [{'type': 'string'}, {'type': 'null'}],
-                                    'default': None,
-                                    'title': 'Error Message',
-                                },
                             },
                             'required': ['age', 'name'],
                             'type': 'object',
