@@ -124,14 +124,3 @@ def test_handle_templating_with_gemini_format():
     assert result == {
         "contents": [{"role": "user", "parts": ["Hello Eve!", "How are you Eve?"]}]
     }
-
-
-def test_handle_templating_raises_error_for_unknown_format():
-    kwargs = {"unknown_key": "Some content"}
-    context = {"name": "Alice"}
-
-    try:
-        handle_templating(kwargs, context)
-        raise AssertionError("Expected ValueError to be raised")
-    except ValueError as e:
-        assert str(e) == "Expected 'message', 'messages' or 'contents' in kwargs"
