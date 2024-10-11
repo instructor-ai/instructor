@@ -27,8 +27,7 @@ class ChainOfThoughtResponse(BaseModel):
 
 async def generate_response(query: str, options: dict[str, str]):
     formatted_options = "\n".join(
-        [f"{key}:{answer}" for key, answer
-         in options.items()]
+        [f"{key}:{answer}" for key, answer in options.items()]
     )
     return await client.chat.completions.create(
         model="gpt-4o",

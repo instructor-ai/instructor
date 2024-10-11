@@ -128,8 +128,7 @@ if __name__ == "__main__":
     query = """Would Arnold Schwarzenegger have been
     able to deadlift an adult Black rhinoceros at his
     peak strength?"""
-    decomposed_queries = asyncio.run(generate_queries(
-        query))
+    decomposed_queries = asyncio.run(generate_queries(query))
 
     for generated_query in decomposed_queries.queries:
         print(generated_query)
@@ -138,8 +137,7 @@ if __name__ == "__main__":
         #> What is the average weight of an adult Black
         #> rhinoceros?
 
-    chains = asyncio.run(batch_reasoning_chains(
-        decomposed_queries.queries))
+    chains = asyncio.run(batch_reasoning_chains(decomposed_queries.queries))
 
     for chain in chains:
         print(chain.model_dump_json(indent=2))
@@ -178,8 +176,7 @@ if __name__ == "__main__":
         }
         """
 
-    response = asyncio.run(generate_response(query,
-        chains))
+    response = asyncio.run(generate_response(query, chains))
 
     print(response.model_dump_json(indent=2))
     """

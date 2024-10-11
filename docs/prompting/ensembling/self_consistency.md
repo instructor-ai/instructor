@@ -45,10 +45,7 @@ async def generate_self_consistent_response(prompt: str):
 
 
 async def generate_self_consistent_responses(prompt: str, num_responses: int):
-    coros = [
-        generate_self_consistent_response(prompt)
-        for _ in range(num_responses)
-    ]
+    coros = [generate_self_consistent_response(prompt) for _ in range(num_responses)]
     responses = await asyncio.gather(*coros)
     return responses
 
@@ -65,9 +62,7 @@ if __name__ == "__main__":
         """
     )
     responses = asyncio.run(generate_self_consistent_responses(prompt, 5))
-    answer_counts = Counter([
-        response.correct_answer for response in responses
-    ])
+    answer_counts = Counter([response.correct_answer for response in responses])
     most_common_answer, _ = answer_counts.most_common(1)[0]
 
     print(most_common_answer)
