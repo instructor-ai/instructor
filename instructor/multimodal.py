@@ -49,7 +49,7 @@ class Image(BaseModel):
         raise ValueError("Unable to determine image type or unsupported image format")
 
     @classmethod
-    def autodetect_safely(cls, source: str | Path) -> Union[Image, str]:
+    def autodetect_safely(cls, source: str | Path) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
@@ -88,7 +88,7 @@ class Image(BaseModel):
                     return cls(source=data, media_type=media_type, data=data)
             raise ValueError(f"Unsupported image type: {img_type}")
         except Exception as e:
-            raise ValueError(f"Invalid or unsupported base64 image data: {e}")
+            raise ValueError(f"Invalid or unsupported base64 image data") from e
 
     @classmethod
     def from_url(cls, url: str) -> Image:
@@ -103,7 +103,7 @@ class Image(BaseModel):
                 response = requests.head(url, allow_redirects=True)
                 media_type = response.headers.get("Content-Type")
             except requests.RequestException as e:
-                raise ValueError(f"Failed to fetch image from URL: {e}")
+                raise ValueError(f"Failed to fetch image from URL") from e
 
         if media_type not in VALID_MIME_TYPES:
             raise ValueError(f"Unsupported image format: {media_type}")
