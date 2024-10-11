@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from instructor.process_response import handle_response_model
 from instructor.retry import retry_async, retry_sync
 from instructor.utils import is_async
+from instructor.hooks import Hooks
 from instructor.templating import handle_templating
 
 from instructor.mode import Mode
@@ -120,6 +121,7 @@ def patch(  # type: ignore
     - `max_retries` parameter to retry the function if the response is not valid
     - `validation_context` parameter to validate the response using the pydantic model
     - `strict` parameter to use strict json parsing
+    - `hooks` parameter to hook into the completion process
     """
 
     logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
@@ -140,6 +142,7 @@ def patch(  # type: ignore
         context: dict[str, Any] | None = None,
         max_retries: int = 1,
         strict: bool = True,
+        hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -159,6 +162,7 @@ def patch(  # type: ignore
             kwargs=new_kwargs,
             strict=strict,
             mode=mode,
+            hooks=hooks,
         )
         return response
 
@@ -169,6 +173,7 @@ def patch(  # type: ignore
         context: dict[str, Any] | None = None,
         max_retries: int = 1,
         strict: bool = True,
+        hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
@@ -186,6 +191,7 @@ def patch(  # type: ignore
             context=context,
             max_retries=max_retries,
             args=args,
+            hooks=hooks,
             strict=strict,
             kwargs=new_kwargs,
             mode=mode,
