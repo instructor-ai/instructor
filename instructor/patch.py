@@ -17,6 +17,7 @@ from instructor.process_response import handle_response_model
 from instructor.retry import retry_async, retry_sync
 from instructor.utils import is_async
 from instructor.hooks import Hooks
+from instructor.templating import handle_templating
 from instructor.mode import Mode
 import logging
 
@@ -75,25 +76,6 @@ def handle_context(
         )
         context = validation_context
     return context
-
-
-def handle_cohere_templating(
-    new_kwargs: dict[str, Any], context: dict[str, Any] | None = None
-) -> dict[str, Any]:
-    if not context:
-        return new_kwargs
-
-    from textwrap import dedent
-    from jinja2 import Template
-
-    new_kwargs["message"] = (
-        dedent(Template(new_kwargs["message"]).render(**context))
-        if context
-        else new_kwargs["message"]
-    )
-    new_kwargs["chat_history"] = handle_templating(new_kwargs["chat_history"], context)
-    return new_kwargs
-
 
 def handle_templating(
     messages: list[dict[str, Any]], context: dict[str, Any] | None = None
@@ -178,7 +160,6 @@ def handle_templating(
 
     return messages
 
-
 @overload
 def patch(
     client: OpenAI,
@@ -257,6 +238,7 @@ def patch(  # type: ignore
 
         elif "contents" in new_kwargs:
             new_kwargs["contents"] = handle_templating(new_kwargs["contents"], context)
+        new_kwargs = handle_templating(new_kwargs, context)
 
         response = await retry_async(
             func=func,  # type: ignore
@@ -288,13 +270,7 @@ def patch(  # type: ignore
             response_model=response_model, mode=mode, **kwargs
         )
 
-        if "messages" in new_kwargs:
-            new_kwargs["messages"] = handle_templating(new_kwargs["messages"], context)
-        elif "message" in new_kwargs and "chat_history" in new_kwargs:
-            new_kwargs = handle_cohere_templating(new_kwargs, context)
-
-        elif "contents" in new_kwargs:
-            new_kwargs["contents"] = handle_templating(new_kwargs["contents"], context)
+        new_kwargs = handle_templating(new_kwargs, context)
 
         response = retry_sync(
             func=func,  # type: ignore
