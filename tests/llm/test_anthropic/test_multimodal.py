@@ -34,7 +34,7 @@ def test_multimodal_image_description(model, mode, client):
             },
         ],
         temperature=1,
-        max_tokens=1000
+        max_tokens=1000,
     )
 
     # Assertions to validate the response
@@ -67,7 +67,7 @@ def test_multimodal_image_description_autodetect(model, mode, client):
         ],
         max_tokens=1000,
         temperature=1,
-        autodetect_images=True
+        autodetect_images=True,
     )
 
     # Assertions to validate the response

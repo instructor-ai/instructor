@@ -86,6 +86,7 @@ class Image(BaseModel):
                 media_type = f"image/{img_type}"
                 if media_type in VALID_MIME_TYPES:
                     return cls(source=data, media_type=media_type, data=data)
+            raise ValueError(f"Unsupported image type: {img_type}")
         except Exception as e:
             raise ValueError(f"Invalid or unsupported base64 image data: {e}")
 
@@ -151,8 +152,8 @@ class Image(BaseModel):
             and not self.is_base64(self.source)
         ):
             return {"type": "image_url", "image_url": {"url": self.source}}
-        elif self.data or self.is_base64(self.source):
-            data = self.data or self.source.split(",", 1)[1]
+        elif self.data or self.is_base64(str(self.source)):
+            data = self.data or str(self.source).split(",", 1)[1]
             return {
                 "type": "image_url",
                 "image_url": {"url": f"data:{self.media_type};base64,{data}"},
@@ -199,7 +200,7 @@ def convert_messages(
         ]
     ],  # noqa: UP007
     mode: Mode,
-    autodetect_images: bool = False
+    autodetect_images: bool = False,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
     converted_messages = []
@@ -207,7 +208,9 @@ def convert_messages(
         role = message["role"]
         content = message["content"]
         if autodetect_images and isinstance(content, list):
-            content = [Image.autodetect_safely(s) if isinstance(s, str) else s for s in content]
+            content = [
+                Image.autodetect_safely(s) if isinstance(s, str) else s for s in content
+            ]
         if isinstance(content, str):
             converted_messages.append({"role": role, "content": content})  # type: ignore
         else:

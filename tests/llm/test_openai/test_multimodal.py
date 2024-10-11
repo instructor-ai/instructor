@@ -63,7 +63,7 @@ def test_multimodal_image_description_autodetect(model, mode, client):
                 ],
             },
         ],
-        autodetect_images=True
+        autodetect_images=True,
     )
 
     # Assertions to validate the response

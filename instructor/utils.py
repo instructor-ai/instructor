@@ -128,7 +128,6 @@ def update_total_usage(
     response: T_Model | None,
     total_usage: OpenAIUsage | AnthropicUsage,
 ) -> T_Model | ChatCompletion | None:
-
     if response is None:
         return None
 

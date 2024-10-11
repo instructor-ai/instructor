@@ -210,10 +210,7 @@ def test_image_from_base64_url(base64_png):
     assert image.source == base64_png
     assert image.media_type == "image/png"
     assert image.data is not None
-    assert (
-        image.data
-        == base64_png.split(",")[-1]
-    )
+    assert image.data == base64_png.split(",")[-1]
 
 
 def test_image_from_url_with_query_params():
@@ -265,7 +262,7 @@ def test_image_to_anthropic_with_base64_source(base64_png):
         "https://example.com/image.png",
         "https://example.com/image.webp",
         "https://example.com/image.jpg?param=value",
-        "base64_png"
+        "base64_png",
     ],
 )
 def test_image_from_various_urls(url, request):
@@ -350,7 +347,9 @@ def test_image_autodetect(input_data, expected_type, expected_media_type, reques
 
 
 def test_image_autodetect_invalid_input():
-    with pytest.raises(ValueError, match="Invalid or unsupported base64 image data: Incorrect padding"):
+    with pytest.raises(
+        ValueError, match="Invalid or unsupported base64 image data: Incorrect padding"
+    ):
         Image.autodetect("not_an_image_input")
 
     # Test safely converting an invalid image
