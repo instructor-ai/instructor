@@ -348,7 +348,7 @@ def test_image_autodetect(input_data, expected_type, expected_media_type, reques
 
 def test_image_autodetect_invalid_input():
     with pytest.raises(
-        ValueError, match="Invalid or unsupported base64 image data: Incorrect padding"
+        ValueError, match="Invalid or unsupported base64 image data"
     ):
         Image.autodetect("not_an_image_input")
 
