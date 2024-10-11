@@ -1,4 +1,5 @@
 # type: ignore[all]
+from __future__ import annotations
 from typing import Any, Dict
 from jinja2 import Template
 from textwrap import dedent
