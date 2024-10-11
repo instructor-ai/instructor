@@ -228,8 +228,7 @@ if __name__ == "__main__":
     """
 
     feedback = generate_feedback(
-        original_condition_list.conditions,
-        new_condition_list.conditions
+        original_condition_list.conditions, new_condition_list.conditions
     )
     print(feedback.model_dump_json(indent=2))
     """

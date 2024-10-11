@@ -93,9 +93,9 @@ if __name__ == "__main__":
     for fact in known_facts:
         print(fact)
         #> fact='Alice puts the book on the table.'
-        #> fact='Alice leaves the room.'
+        #> fact='Alice leaves the room. Bob moves the book to the shelf.'
     print(response.location)
-    #> on the table
+    #> On the table
 ```
 
 ## References

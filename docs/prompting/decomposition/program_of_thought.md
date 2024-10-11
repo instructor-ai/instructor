@@ -63,8 +63,10 @@ class Prediction(BaseModel):
 
 
 class ProgramExecution(BaseModel):
-    program_code: str = Field(description="""Program Code that
-    once executed contains the final answer""")
+    program_code: str = Field(
+        description="""Program Code that
+    once executed contains the final answer"""
+    )
 
     @field_validator("program_code")
     @classmethod
@@ -153,8 +155,7 @@ if __name__ == "__main__":
     }
     """
 
-    prediction = generate_prediction(reasoning.program_code,
-    options, query)
+    prediction = generate_prediction(reasoning.program_code, options, query)
     print(prediction.model_dump_json(indent=2))
     """
     {

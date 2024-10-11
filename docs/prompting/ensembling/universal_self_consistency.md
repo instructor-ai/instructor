@@ -62,8 +62,8 @@ async def generate_batch_responses(query: str, no_responses: int):
 async def select_consistent_response(responses: list[Response], query: str):
     formatted_responses = "\n".join(
         [
-        f"Response {idx}: {response.chain_of_thought}. {response.answer}"
-        for idx, response in enumerate(responses)
+            f"Response {idx}: {response.chain_of_thought}. {response.answer}"
+            for idx, response in enumerate(responses)
         ]
     )
 
