@@ -16,6 +16,7 @@ from collections.abc import Generator, Iterable, Awaitable, AsyncGenerator
 from typing_extensions import Self
 from pydantic import BaseModel
 from instructor.dsl.partial import Partial
+from instructor.eventemitter import EventEmitter
 
 
 T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
@@ -27,6 +28,7 @@ class Instructor:
     mode: instructor.Mode
     default_model: str | None = None
     provider: Provider
+    hooks: EventEmitter
 
     def __init__(
         self,
@@ -270,6 +272,12 @@ class Instructor:
         return model, model._raw_response
 
     def handle_kwargs(self, kwargs: dict[str, Any]) -> dict[str, Any]:
+        """
+        Handle and process keyword arguments for the API call.
+
+        This method merges the provided kwargs with the default kwargs stored in the instance.
+        It ensures that any kwargs passed to the method call take precedence over the default ones.
+        """
         for key, value in self.kwargs.items():
             if key not in kwargs:
                 kwargs[key] = value
