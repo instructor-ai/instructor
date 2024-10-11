@@ -2,16 +2,15 @@ from rich.console import Console
 from rich.table import Table
 from rich.live import Live
 import typer
-import datetime
 import time
-from typing import Optional, Any, List
+from typing import Any
 
 app = typer.Typer()
 
 console = Console()
 
 
-def generate_table(batch_jobs: List[Any], use_anthropic: bool):
+def generate_table(batch_jobs: list[Any], use_anthropic: bool):
     table = Table(
         title="Anthropic Batch Jobs" if use_anthropic else "OpenAI Batch Jobs",
     )
@@ -100,7 +99,7 @@ def create_from_file(
         with console.status(
             "[bold green]Creating Anthropic batch job...", spinner="dots"
         ):
-            with open(file_path, "r") as file:
+            with open(file_path) as file:
                 requests = [eval(line) for line in file]
 
             batch = client.beta.messages.batches.create(requests=requests)

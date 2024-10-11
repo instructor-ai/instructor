@@ -1,4 +1,4 @@
-from typing import Literal, Any, Union, TypeVar, Optional
+from typing import Any, Union, TypeVar, Optional
 from collections.abc import Iterable
 from pydantic import BaseModel, Field
 from instructor.process_response import handle_response_model
