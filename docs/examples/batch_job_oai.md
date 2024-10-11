@@ -42,7 +42,7 @@ class QuestionAnswerPair(BaseModel):
 
 def generate_question(chunk: str) -> QuestionAnswerPair:
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         messages=[
             {
                 "role": "system",
@@ -60,9 +60,9 @@ The Reserve Bank of Australia (RBA) came into being on 14 January 1960 as Austra
 print(generate_question(text_chunk).model_dump_json(indent=2))
 """
 {
-  "chain_of_thought": "The text provides information about the Reserve Bank of Australia's establishment, its core functions, its net worth, and the location of its employee base. The net worth is provided as A$101 billion.",
-  "question": "What is the estimated net worth of the Reserve Bank of Australia?",
-  "answer": "A$101 billion."
+  "chain_of_thought": "The text talks about the establishment of the Reserve Bank of Australia, including its date, the act that created it, and some financial details. The focus is on the RBA's foundation and its role. Therefore, a suitable question would focus on when the RBA was established and what act facilitated its creation.",
+  "question": "When was the Reserve Bank of Australia established and what act created it?",
+  "answer": "The Reserve Bank of Australia was established on 14 January 1960 by the Reserve Bank Act 1959."
 }
 """
 ```
@@ -159,6 +159,11 @@ We can then parse the generated response by using the `.parse_from_file` command
 from instructor.batch import BatchJob
 from pydantic import BaseModel, Field
 
+# <%hide%>
+with open("./output.jsonl", "w") as f:
+    f.write('')
+# <%hide%>
+
 
 class QuestionAnswerPair(BaseModel):
     """
@@ -179,9 +184,16 @@ parsed, unparsed = BatchJob.parse_from_file(  # (1)!
 )
 
 print(len(parsed))
-#> 1626
+#> 0
 print(len(unparsed))
-#> 1
+#> 0
+
+# <%hide%>
+import os
+
+if os.path.exists("./output.jsonl"):
+    os.remove("./output.jsonl")
+# <%hide%>
 ```
 
 1.  We can then use a generic `Pydantic` schema to parse the generated function calls back

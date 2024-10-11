@@ -20,7 +20,6 @@ With the OpenAI Function Call model, you can customize the planning process and 
 Let's define the necessary Pydantic models to represent the query plan and the queries.
 
 ```python
-import enum
 from typing import List, Literal
 from pydantic import Field, BaseModel
 
@@ -67,13 +66,50 @@ Now, let's demonstrate how to plan and execute a query plan using the defined mo
 import instructor
 from openai import OpenAI
 
+# <%hide%>
+from typing import List, Literal
+from pydantic import Field, BaseModel
+
+
+class Query(BaseModel):
+    """Class representing a single question in a query plan."""
+
+    id: int = Field(..., description="Unique id of the query")
+    question: str = Field(
+        ...,
+        description="Question asked using a question answering system",
+    )
+    dependencies: List[int] = Field(
+        default_factory=list,
+        description="List of sub questions that need to be answered before asking this question",
+    )
+    node_type: Literal["SINGLE", "MERGE_MULTIPLE_RESPONSES"] = Field(
+        default="SINGLE",
+        description="Type of question, either a single question or a multi-question merge",
+    )
+
+
+class QueryPlan(BaseModel):
+    """Container class representing a tree of questions to ask a question answering system."""
+
+    query_graph: List[Query] = Field(
+        ..., description="The query graph representing the plan"
+    )
+
+    def _dependencies(self, ids: List[int]) -> List[Query]:
+        """Returns the dependencies of a query given their ids."""
+        return [q for q in self.query_graph if q.id in ids]
+
+
+# <%hide%>
+
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.from_openai(OpenAI())
 
 
 def query_planner(question: str) -> QueryPlan:
-    PLANNING_MODEL = "gpt-4-0613"
+    PLANNING_MODEL = "gpt-4o-mini"
 
     messages = [
         {
