@@ -13,7 +13,7 @@ The Hooks system in Instructor is based on the `Hooks` class, which manages even
 This hook is emitted when completion arguments are provided. It receives all arguments passed to the completion function. These will contain the `model`, `messages`, `tools`, AFTER any `response_model` or `validation_context` parameters have been converted to their respective values.
 
 ```python
-def handler(*args: Any, **kwargs: Any) -> None: ...
+def handler(*args, **kwargs) -> None: ...
 ```
 
 ### `completion:response`
@@ -21,7 +21,7 @@ def handler(*args: Any, **kwargs: Any) -> None: ...
 This hook is emitted when a completion response is received. It receives the raw response object from the completion API.
 
 ```python
-def handler(response: Any) -> None: ...
+def handler(response) -> None: ...
 ```
 
 ### `completion:error`
@@ -29,7 +29,7 @@ def handler(response: Any) -> None: ...
 This hook is emitted when an error occurs during completion before any retries are attempted and the response is parsed as a pydantic model.
 
 ```python
-def handler(error: Exception) -> None: ...
+def handler(error) -> None: ...
 ```
 
 ### `parse:error`
@@ -37,7 +37,7 @@ def handler(error: Exception) -> None: ...
 This hook is emitted when an error occurs during parsing of the response as a pydantic model. This can happen if the response is not valid or if the pydantic model is not compatible with the response.
 
 ```python
-def handler(error: Exception) -> None: ...
+def handler(error) -> None: ...
 ``` 
 
 ### `completion:last_attempt`
@@ -45,7 +45,7 @@ def handler(error: Exception) -> None: ...
 This hook is emitted when the last retry attempt is made.
 
 ```python
-def handler() -> None: ...
+def handler(error) -> None: ...
 ```
 
 ### Registering Hooks
@@ -72,6 +72,7 @@ resp = client.chat.completions.create(
     response_model=str,
 )
 print(resp)
+#> Hello! How can I assist you today?
 ```
 
 ### Emitting Events
@@ -106,36 +107,217 @@ Here's a comprehensive example demonstrating how to use hooks for logging and de
 import instructor
 import openai
 import pydantic
-from pydantic import field_validator
-import pprint
 
 
-def log_completion_kwargs(*args: Any, **kwargs: Any) -> None:
+def log_completion_kwargs(*args, **kwargs) -> None:
     """Log the completion kwargs."""
     print("## Completion kwargs:")
-    pprint.pprint({"args": args, "kwargs": kwargs})
+    #> ## Completion kwargs:
+    """
+    {
+        'args': (),
+        'kwargs': {
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': "Extract the user name and age from the following text: 'John is -1 years old'",
+                }
+            ],
+            'model': 'gpt-3.5-turbo',
+            'tools': [
+                {
+                    'type': 'function',
+                    'function': {
+                        'name': 'User',
+                        'description': 'Correctly extracted `User` with all the required parameters with correct types',
+                        'parameters': {
+                            'properties': {
+                                'name': {'title': 'Name', 'type': 'string'},
+                                'age': {'title': 'Age', 'type': 'integer'},
+                                'error_message': {
+                                    'anyOf': [{'type': 'string'}, {'type': 'null'}],
+                                    'default': None,
+                                    'title': 'Error Message',
+                                },
+                            },
+                            'required': ['age', 'name'],
+                            'type': 'object',
+                        },
+                    },
+                }
+            ],
+            'tool_choice': {'type': 'function', 'function': {'name': 'User'}},
+        },
+    }
+    """
+    print({"args": args, "kwargs": kwargs})
+    """
+    {
+        'args': (),
+        'kwargs': {
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': "Extract the user name and age from the following text: 'John is -1 years old'",
+                },
+                {
+                    'role': 'assistant',
+                    'content': '',
+                    'tool_calls': [
+                        {
+                            'id': 'call_GamMbnNfWFCHPHGgZy2VxD09',
+                            'function': {
+                                'arguments': '{"name":"John","age":-1}',
+                                'name': 'User',
+                            },
+                            'type': 'function',
+                        }
+                    ],
+                },
+                {
+                    'role': 'tool',
+                    'tool_call_id': 'call_GamMbnNfWFCHPHGgZy2VxD09',
+                    'name': 'User',
+                    'content': 'Validation Error found:\n1 validation error for User\nage\n  Value error, Age cannot be negative [type=value_error, input_value=-1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.8/v/value_error\nRecall the function correctly, fix the errors',
+                },
+            ],
+            'model': 'gpt-3.5-turbo',
+            'tools': [
+                {
+                    'type': 'function',
+                    'function': {
+                        'name': 'User',
+                        'description': 'Correctly extracted `User` with all the required parameters with correct types',
+                        'parameters': {
+                            'properties': {
+                                'name': {'title': 'Name', 'type': 'string'},
+                                'age': {'title': 'Age', 'type': 'integer'},
+                                'error_message': {
+                                    'anyOf': [{'type': 'string'}, {'type': 'null'}],
+                                    'default': None,
+                                    'title': 'Error Message',
+                                },
+                            },
+                            'required': ['age', 'name'],
+                            'type': 'object',
+                        },
+                    },
+                }
+            ],
+            'tool_choice': {'type': 'function', 'function': {'name': 'User'}},
+        },
+    }
+    """
 
 
-def log_completion_response(response: Any) -> None:
-    """Log the completion response."""
+    #> ## Completion response:
+def log_completion_response(response) -> None:
+    """
+    {
+        'id': 'chatcmpl-AH1sl7JTZ37B8RrriiFBjH1n3mNVL',
+        'choices': [
+            {
+                'finish_reason': 'stop',
+                'index': 0,
+                'logprobs': None,
+                'message': {
+                    'content': None,
+                    'refusal': None,
+                    'role': 'assistant',
+                    'function_call': None,
+                    'tool_calls': [
+                        {
+                            'id': 'call_GamMbnNfWFCHPHGgZy2VxD09',
+                            'function': {
+                                'arguments': '{"name":"John","age":-1}',
+                                'name': 'User',
+                            },
+                            'type': 'function',
+                        }
+                    ],
+                },
+            }
+        ],
+        'created': 1728622175,
+        'model': 'gpt-3.5-turbo-0125',
+        'object': 'chat.completion',
+        'service_tier': None,
+        'system_fingerprint': None,
+        'usage': {
+            'completion_tokens': 9,
+            'prompt_tokens': 106,
+            'total_tokens': 115,
+            'completion_tokens_details': {'audio_tokens': None, 'reasoning_tokens': 0},
+            'prompt_tokens_details': {'audio_tokens': None, 'cached_tokens': 0},
+        },
+    }
+    """
     print("## Completion response:")
-    pprint.pprint(response.model_dump())
+    #> ## Completion response:
+    print(response.model_dump())
+    """
+    {
+        'id': 'chatcmpl-AH1smoYP5X5dR7JM83lU78BQemcy1',
+        'choices': [
+            {
+                'finish_reason': 'stop',
+                'index': 0,
+                'logprobs': None,
+                'message': {
+                    'content': None,
+                    'refusal': None,
+                    'role': 'assistant',
+                    'function_call': None,
+                    'tool_calls': [
+                        {
+                            'id': 'call_VlkoWrL5PMcBd4JIR6cdqxu6',
+                            'function': {
+                                'arguments': '{"name":"John","age":1}',
+                                'name': 'User',
+                            },
+                            'type': 'function',
+                        }
+                    ],
+                },
+            }
+        ],
+        'created': 1728622176,
+        'model': 'gpt-3.5-turbo-0125',
+        'object': 'chat.completion',
+        'service_tier': None,
+        'system_fingerprint': None,
+        'usage': {
+            'completion_tokens': 9,
+            'prompt_tokens': 193,
+            'total_tokens': 202,
+            'completion_tokens_details': {'audio_tokens': None, 'reasoning_tokens': 0},
+            'prompt_tokens_details': {'audio_tokens': None, 'cached_tokens': 0},
+        },
+    }
+    """
 
 
-def log_completion_error(error: Exception) -> None:
+def log_completion_error(error) -> None:
     """Log the completion error."""
     print("## Completion error:")
-    pprint.pprint({"error": error})
+    print({"error": error})
 
+    #> ## Parse error:
 
-def log_parse_error(error: Exception) -> None:
+    """
+    {'error': 1 validation error for User
+    age
+      Value error, Age cannot be negative [type=value_error, input_value=-1, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.8/v/value_error}
+    """
+def log_parse_error(error) -> None:
     """Log the parse error."""
     print("## Parse error:")
-    pprint.pprint({"error": error})
+    print({"error": error})
 
 
 # Create an Instructor client
-client = instructor.patch(openai.OpenAI())
+client = instructor.from_openai(openai.OpenAI())
 
 # Register hooks
 client.on("completion:kwargs", log_completion_kwargs)
@@ -149,7 +331,7 @@ class User(pydantic.BaseModel):
     name: str
     age: int
 
-    @field_validator("age")
+    @pydantic.field_validator("age")
     def check_age(cls, v: int) -> int:
         if v < 0:
             raise ValueError("Age cannot be negative")
@@ -169,6 +351,7 @@ user = client.chat.completions.create(
 )
 
 print(user)
+#> name='John' age=1
 ```
 
 This example demonstrates:
