@@ -665,8 +665,9 @@ def handle_response_model(
         raise ValueError(f"Invalid patch mode: {mode}")
 
     if "messages" in new_kwargs:
-        new_kwargs["messages"] = convert_messages(new_kwargs["messages"], mode)
-
+        new_kwargs["messages"] = convert_messages(
+            new_kwargs["messages"], mode, autodetect_images=new_kwargs.pop("autodetect_images", False)
+        )
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
         extra={

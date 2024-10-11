@@ -33,3 +33,21 @@ response = client.chat.completions.create(
 The `Image` class takes care of the necessary conversions and formatting, ensuring that your code remains clean and provider-agnostic. This flexibility is particularly valuable when you're experimenting with different models or when you need to switch providers based on specific project requirements.
 
 By leveraging Instructor's multimodal capabilities, you can focus on building your application logic without worrying about the intricacies of each provider's image handling format. This not only saves development time but also makes your code more maintainable and adaptable to future changes in AI provider APIs.
+
+Alternatively, by passing `autodetect_images=True` to `client.chat.completions.create`, you can pass file paths, URLs, or base64 encoded content directly as strings.
+
+```python
+import instructor
+import openai
+
+client = instructor.from_openai(openai.OpenAI())
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    response_model=ImageAnalyzer,
+    messages=[
+        {"role": "user", "content": ["What is in this two images?", "https://example.com/image.jpg", "path/to/image.jpg"]}
+    ],
+    autodetect_images=True
+)
+```

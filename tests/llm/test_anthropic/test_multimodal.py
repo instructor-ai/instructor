@@ -14,7 +14,7 @@ class ImageDescription(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multimodal_image_description(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_anthropic(client, mode=mode)
     response = client.chat.completions.create(
         model=model,  # Ensure this is a vision-capable model
         response_model=ImageDescription,
@@ -33,6 +33,8 @@ def test_multimodal_image_description(model, mode, client):
                 ],
             },
         ],
+        temperature=1,
+        max_tokens=1000
     )
 
     # Assertions to validate the response
@@ -46,7 +48,7 @@ def test_multimodal_image_description(model, mode, client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multimodal_image_description_autodetect(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_anthropic(client, mode=mode)
     response = client.chat.completions.create(
         model=model,  # Ensure this is a vision-capable model
         response_model=ImageDescription,
@@ -63,6 +65,8 @@ def test_multimodal_image_description_autodetect(model, mode, client):
                 ],
             },
         ],
+        max_tokens=1000,
+        temperature=1,
         autodetect_images=True
     )
 
