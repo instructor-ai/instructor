@@ -58,15 +58,16 @@ if __name__ == "__main__":
     #> Invitation to All-Hands Meeting
     print(email.message)
     """
-    Dear John Smith,
+    Dear Mr. Smith,
 
-    I hope this message finds you well.
+    I hope this message finds you well. I am writing to formally invite you to our upcoming all-hands meeting scheduled for Monday at 6:00 PM. This meeting is an important opportunity for us to come together, discuss key updates, and align on our strategic goals.
 
-    I am writing to formally invite you to our upcoming all-hands meeting scheduled for this Monday at 6:00 PM. Your presence and participation would be greatly valued as we discuss important updates and initiatives.
+    Please confirm your availability at your earliest convenience. Your presence and contributions to the discussion would be greatly valued.
 
-    Please let me know if you have any questions or need further information.
+    Thank you and I look forward to your confirmation.
 
-    Best regards,
+    Warm regards,
+
     Jane Doe
     """
 ```

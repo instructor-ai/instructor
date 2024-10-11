@@ -25,12 +25,8 @@ response = client.chat.completions.create(
     model="gpt-4o-mini",
     response_model=ImageAnalyzer,
     messages=[
-        {"role": "user", "content": [
-            "What is in this two images?",
-            image1,
-            image2
-        ]}
-    ]
+        {"role": "user", "content": ["What is in this two images?", image1, image2]}
+    ],
 )
 ```
 
