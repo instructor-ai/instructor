@@ -65,9 +65,11 @@ def analogical_prompting(query: str):
 
 
 if __name__ == "__main__":
-    query = ("What is the area of the square with the four "
-             "vertices at (-2, 2), (2, -2), (-2, -6), and "
-             "(-6, -2)?")
+    query = (
+        "What is the area of the square with the four "
+        "vertices at (-2, 2), (2, -2), (-2, -6), and "
+        "(-6, -2)?"
+    )
     response = analogical_prompting(query)
     for problem in response.relevant_problems:
         print(problem.model_dump_json(indent=2))
