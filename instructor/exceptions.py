@@ -25,10 +25,12 @@ class InstructorRetryException(Exception):
         messages: list[Any] | None = None,
         n_attempts: int,
         total_usage: int,
+        create_kwargs: dict[str, Any] | None = None,
         **kwargs: dict[str, Any],
     ):
         self.last_completion = last_completion
         self.messages = messages
         self.n_attempts = n_attempts
         self.total_usage = total_usage
+        self.create_kwargs = create_kwargs
         super().__init__(*args, **kwargs)
