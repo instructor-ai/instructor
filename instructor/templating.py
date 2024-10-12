@@ -10,7 +10,7 @@ def apply_template(text: str, context: dict[str, Any]) -> str:
     return dedent(Template(text).render(**context))
 
 
-def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
+def process_message(message: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     """Process a single message, applying templates to its content."""
     # VertexAI Support
     if (
@@ -34,7 +34,7 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
     # OpenAI format
     if isinstance(message.get("content"), str):
         message["content"] = apply_template(message["content"], context)
-        return
+        return message
 
     # Anthropic format
     if isinstance(message.get("content"), list):
@@ -45,7 +45,7 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
                 and isinstance(part.get("text"), str)
             ):
                 part["text"] = apply_template(part["text"], context)
-        return
+        return message
 
     # Gemini Support
     if isinstance(message.get("parts"), list):
@@ -58,6 +58,7 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
     # Cohere format
     if isinstance(message.get("message"), str):
         message["message"] = apply_template(message["message"], context)
+        return message
 
 
 def handle_templating(
@@ -88,8 +89,9 @@ def handle_templating(
     # Handle Cohere's message field
     if "message" in new_kwargs:
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)
-        for message in new_kwargs["chat_history"]:
-            process_message(message, context)
+        new_kwargs["chat_history"] = [
+            process_message(message, context) for message in new_kwargs["chat_history"]
+        ]
 
         return new_kwargs
 
@@ -104,8 +106,9 @@ def handle_templating(
         return
 
     if "messages" in new_kwargs:
-        for message in messages:
-            process_message(message, context)
+        new_kwargs["messages"] = [
+            process_message(message, context) for message in messages
+        ]
 
     elif "contents" in new_kwargs:
         new_kwargs["contents"] = [
