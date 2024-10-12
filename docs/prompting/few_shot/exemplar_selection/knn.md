@@ -128,8 +128,8 @@ if __name__ == "__main__":
 
     for example in k_closest_examples:
         print(example)
-        #> (0.4015450506411443, 'What is the capital of France?')
-        #> (0.4472610680568724, 'What is the capital of Germany?')
+        #> (0.4013468481736857, 'What is the capital of France?')
+        #> (0.4471368596136872, 'What is the capital of Germany?')
 
     # Step 4: Use these examples as in-context examples
     formatted_examples = generate_question_and_answer_pair(

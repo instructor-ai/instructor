@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "instructor"
-version = "1.5.2"
+version = "1.6.0"
 description = "structured outputs for llm"
 authors = ["Jason Liu <jason@jxnl.co>"]
 license = "MIT"
