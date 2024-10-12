@@ -77,3 +77,28 @@ def test_multimodal_image_description_autodetect(model, mode, client):
     assert len(response.colors) > 0
 
     # Additional assertions can be added based on expected content of the sample image
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_multimodal_image_description_autodetect_no_response_model(model, mode, client):
+    client = instructor.from_anthropic(client, mode=mode)
+    response = client.chat.completions.create(
+        response_model=None,
+        model=model,  # Ensure this is a vision-capable model
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that can describe images. "
+                "If looking at an image, reply with 'This is an image' and nothing else.",
+            },
+            {
+                "role": "user",
+                "content": "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+            },
+        ],
+        max_tokens=1000,
+        temperature=1,
+        autodetect_images=True,
+    )
+
+    assert response.content[0].text.startswith("This is an image")

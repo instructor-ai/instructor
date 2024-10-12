@@ -207,10 +207,13 @@ def convert_messages(
     for message in messages:
         role = message["role"]
         content = message["content"]
-        if autodetect_images and isinstance(content, list):
-            content = [
-                Image.autodetect_safely(s) if isinstance(s, str) else s for s in content
-            ]
+        if autodetect_images:
+            if isinstance(content, list):
+                content = [
+                    Image.autodetect_safely(s) if isinstance(s, str) else s for s in content
+                ]
+            elif isinstance(content, str):
+                content = Image.autodetect_safely(content)
         if isinstance(content, str):
             converted_messages.append({"role": role, "content": content})  # type: ignore
         else:

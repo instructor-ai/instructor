@@ -626,11 +626,29 @@ def handle_response_model(
     """
 
     new_kwargs = kwargs.copy()
+    autodetect_images = new_kwargs.pop("autodetect_images", False)
 
     if response_model is None:
         if mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
             # This is cause cohere uses 'message' and 'chat_history' instead of 'messages'
             return handle_cohere_modes(new_kwargs)
+        # Handle images without a response model
+        if autodetect_images and "messages" in new_kwargs:
+            messages = convert_messages(
+                new_kwargs["messages"],
+                mode,
+                autodetect_images=autodetect_images,
+            )
+            if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
+                new_kwargs["messages"] = [
+                    m for m in messages if m["role"] != "system"
+                ]
+                if "system" not in new_kwargs:
+                    new_kwargs["system"] = [
+                        m for m in messages if m["role"] == "system"
+                    ].pop()["content"]
+            else:
+                new_kwargs["messages"] = messages
         return None, new_kwargs
 
     if mode in {Mode.PARALLEL_TOOLS}:
@@ -668,7 +686,7 @@ def handle_response_model(
         new_kwargs["messages"] = convert_messages(
             new_kwargs["messages"],
             mode,
-            autodetect_images=new_kwargs.pop("autodetect_images", False),
+            autodetect_images=autodetect_images,
         )
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
