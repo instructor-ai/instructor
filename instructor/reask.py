@@ -286,4 +286,4 @@ def handle_reask_kwargs(
         Mode.MD_JSON: reask_md_json,
     }
     reask_function = functions.get(mode, reask_default)
-    return reask_function(kwargs=kwargs, response=response, exception=exception)  # type: ignore
+    return reask_function(kwargs=kwargs, response=response, exception=exception)  
