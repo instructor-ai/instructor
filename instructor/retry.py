@@ -8,12 +8,9 @@ from typing import Any, Callable, TypeVar
 from instructor.exceptions import InstructorRetryException
 from instructor.hooks import Hooks
 from instructor.mode import Mode
+from instructor.reask import handle_reask_kwargs
 from instructor.process_response import process_response, process_response_async
-from instructor.utils import (
-    dump_message,
-    merge_consecutive_messages,
-    update_total_usage,
-)
+from instructor.utils import update_total_usage
 from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
 from openai.types.completion_usage import CompletionUsage
@@ -27,134 +24,6 @@ T_Model = TypeVar("T_Model", bound=BaseModel)
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
-
-
-def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
-    if mode == Mode.ANTHROPIC_TOOLS:
-        # The original response
-        assistant_content = []
-        tool_use_id = None
-        for content in response.content:
-            assistant_content.append(content.model_dump())
-            # Assuming exception from single tool invocation
-            if (
-                content.type == "tool_use"
-                and isinstance(exception, ValidationError)
-                and content.name == exception.title
-            ):
-                tool_use_id = content.id
-
-        yield {
-            "role": "assistant",
-            "content": assistant_content,
-        }
-        if tool_use_id is not None:
-            yield {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "tool_result",
-                        "tool_use_id": tool_use_id,
-                        "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-                        "is_error": True,
-                    }
-                ],
-            }
-        else:
-            yield {
-                "role": "user",
-                "content": f"Validation Error due to no tool invocation:\n{exception}\nRecall the function correctly, fix the errors",
-            }
-        return
-    if mode == Mode.ANTHROPIC_JSON:
-        from anthropic.types import Message
-
-        if hasattr(response, "choices"):
-            response_text = response.choices[0].message.content
-        else:
-            assert isinstance(response, Message)
-            response_text = response.content[0].text
-
-        yield {
-            "role": "user",
-            "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response_text}""",
-        }
-        return
-    if mode == Mode.COHERE_TOOLS or mode == Mode.COHERE_JSON_SCHEMA:
-        yield f"Correct the following JSON response, based on the errors given below:\n\nJSON:\n{response.text}\n\nExceptions:\n{exception}"
-        return
-    if mode == Mode.GEMINI_TOOLS:
-        from google.ai import generativelanguage as glm
-
-        yield {
-            "role": "function",
-            "parts": [
-                glm.Part(
-                    function_response=glm.FunctionResponse(
-                        name=response.parts[0].function_call.name,
-                        response={"error": f"Validation Error(s) found:\n{exception}"},
-                    )
-                ),
-            ],
-        }
-        yield {
-            "role": "user",
-            "parts": [f"Recall the function arguments correctly and fix the errors"],
-        }
-        return
-    if mode == Mode.GEMINI_JSON:
-        yield {
-            "role": "user",
-            "parts": [
-                f"Correct the following JSON response, based on the errors given below:\n\nJSON:\n{response.text}\n\nExceptions:\n{exception}"
-            ],
-        }
-        return
-    if mode == Mode.VERTEXAI_TOOLS:
-        from .client_vertexai import vertexai_function_response_parser
-
-        yield response.candidates[0].content
-        yield vertexai_function_response_parser(response, exception)
-        return
-    if mode == Mode.VERTEXAI_JSON:
-        from .client_vertexai import vertexai_message_parser
-
-        yield response.candidates[0].content
-        yield vertexai_message_parser(
-            {
-                "role": "user",
-                "content": f"Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.text}",
-            }
-        )
-        return
-
-    yield dump_message(response.choices[0].message)
-    # TODO: Give users more control on configuration
-    if mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
-        for tool_call in response.choices[0].message.tool_calls:
-            yield {
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "name": tool_call.function.name,
-                "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-            }
-    elif mode == Mode.CEREBRAS_TOOLS:
-        for tool_call in response.choices[0].message.tool_calls:
-            yield {
-                "role": "user",
-                "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors and call the tool {tool_call.function.name} again, taking into account the problems with {tool_call.function.arguments} that was previously generated.",
-            }
-
-    elif mode == Mode.MD_JSON:
-        yield {
-            "role": "user",
-            "content": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
-        }
-    else:
-        yield {
-            "role": "user",
-            "content": f"Recall the function correctly, fix the errors, exceptions found\n{exception}",
-        }
 
 
 def retry_sync(
@@ -210,26 +79,12 @@ def retry_sync(
                 except (ValidationError, JSONDecodeError) as e:
                     hooks.emit_parse_error(e)
                     logger.debug(f"Error response: {response}")
-                    if mode in {
-                        Mode.GEMINI_JSON,
-                        Mode.GEMINI_TOOLS,
-                        Mode.VERTEXAI_TOOLS,
-                        Mode.VERTEXAI_JSON,
-                    }:
-                        kwargs["contents"].extend(reask_messages(response, mode, e))
-                    elif mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
-                        if attempt.retry_state.attempt_number == 1:
-                            kwargs["chat_history"].extend(
-                                [{"role": "user", "message": kwargs.get("message")}]
-                            )
-                        kwargs["message"] = next(reask_messages(response, mode, e))
-
-                    else:
-                        kwargs["messages"].extend(reask_messages(response, mode, e))
-                    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
-                        kwargs["messages"] = merge_consecutive_messages(
-                            kwargs["messages"]
-                        )
+                    kwargs = handle_reask_kwargs(
+                        kwargs=kwargs,
+                        mode=mode,
+                        response=response,
+                        error=e,
+                    )
                     raise e
     except RetryError as e:
         hooks.emit_completion_last_attempt(e)
@@ -299,26 +154,12 @@ async def retry_async(
                     )
                 except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
                     hooks.emit_parse_error(e)
-                    logger.debug(f"Error response: {response}")
-                    if mode in {
-                        Mode.GEMINI_JSON,
-                        Mode.GEMINI_TOOLS,
-                        Mode.VERTEXAI_TOOLS,
-                        Mode.VERTEXAI_JSON,
-                    }:
-                        kwargs["contents"].extend(reask_messages(response, mode, e))
-                    elif mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
-                        if attempt.retry_state.attempt_number == 1:
-                            kwargs["chat_history"].extend(
-                                [{"role": "user", "message": kwargs.get("message")}]
-                            )
-                        kwargs["message"] = next(reask_messages(response, mode, e))
-                    else:
-                        kwargs["messages"].extend(reask_messages(response, mode, e))
-                    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
-                        kwargs["messages"] = merge_consecutive_messages(
-                            kwargs["messages"]
-                        )
+                    kwargs = handle_reask_kwargs(
+                        kwargs=kwargs,
+                        mode=mode,
+                        response=response,
+                        error=e,
+                    )
                     raise e
     except RetryError as e:
         hooks.emit_completion_last_attempt(e)
