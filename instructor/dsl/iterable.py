@@ -91,7 +91,7 @@ class IterableBase:
                     import json
 
                     resp = chunk.candidates[0].content.parts[0].function_call
-                    resp_dict = type(resp).to_dict(resp)
+                    resp_dict = type(resp).to_dict(resp)  # type:ignore
 
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
