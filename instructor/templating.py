@@ -13,18 +13,23 @@ def apply_template(text: str, context: dict[str, Any]) -> str:
 def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
     """Process a single message, applying templates to its content."""
     # VertexAI Support
-    if hasattr(message, "parts") and isinstance(message.parts, list):
+    if (
+        hasattr(message, "parts")
+        and isinstance(message.parts, list)
+        and len(message.parts) > 0
+        and not isinstance(message.parts[0], str)
+    ):
         import vertexai.generative_models as gm
 
-        message.parts = [
-            (
+        return gm.Content(
+            role=message.role,
+            parts=[
                 gm.Part.from_text(apply_template(part.text, context))
                 if hasattr(part, "text")
                 else part
-            )
-            for part in message.parts
-        ]
-        return
+                for part in message.parts
+            ],
+        )
 
     # OpenAI format
     if isinstance(message.get("content"), str):
@@ -48,7 +53,7 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
             apply_template(part, context) if isinstance(part, str) else part
             for part in message["parts"]
         ]
-        return
+        return message
 
     # Cohere format
     if isinstance(message.get("message"), str):
@@ -98,7 +103,13 @@ def handle_templating(
     if not messages:
         return
 
-    for message in messages:
-        process_message(message, context)
+    if "messages" in new_kwargs:
+        for message in messages:
+            process_message(message, context)
+
+    elif "contents" in new_kwargs:
+        new_kwargs["contents"] = [
+            process_message(content, context) for content in new_kwargs["contents"]
+        ]
 
     return new_kwargs
