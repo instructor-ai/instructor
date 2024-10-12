@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from json import JSONDecodeError
-from typing import Any, Callable, TypeVar, Optional, Dict
+from typing import Any, Callable, TypeVar
 
 from instructor.exceptions import InstructorRetryException
 from instructor.hooks import Hooks
@@ -79,7 +79,7 @@ def initialize_usage(mode: Mode) -> CompletionUsage | Any:
     return total_usage
 
 
-def extract_messages(kwargs: Dict[str, Any]) -> Any:
+def extract_messages(kwargs: dict[str, Any]) -> Any:
     """
     Extract messages from kwargs, helps handles the cohere and gemini chat history cases
 
@@ -96,14 +96,14 @@ def extract_messages(kwargs: Dict[str, Any]) -> Any:
 
 def retry_sync(
     func: Callable[T_ParamSpec, T_Retval],
-    response_model: Optional[type[T_Model]],
+    response_model: type[T_Model] | None,
     args: Any,
     kwargs: Any,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     max_retries: int | Retrying = 1,
-    strict: Optional[bool] = None,
+    strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-    hooks: Optional[Hooks] = None,
+    hooks: Hooks | None = None,
 ) -> T_Model | None:
     """
     Retry a synchronous function upon specified exceptions.
@@ -175,14 +175,14 @@ def retry_sync(
 
 async def retry_async(
     func: Callable[T_ParamSpec, T_Retval],
-    response_model: Optional[type[T_Model]],
-    context: Optional[Dict[str, Any]],
+    response_model: type[T_Model] | None,
+    context: dict[str, Any] | None,
     args: Any,
     kwargs: Any,
     max_retries: int | AsyncRetrying = 1,
-    strict: Optional[bool] = None,
+    strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-    hooks: Optional[Hooks] = None,
+    hooks: Hooks | None = None,
 ) -> T_Model | None:
     """
     Retry an asynchronous function upon specified exceptions.
