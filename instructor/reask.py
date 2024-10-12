@@ -83,9 +83,9 @@ def reask_anthropic_json(
 
 def reask_cohere_tools(
     kwargs: dict[str, Any],
-    attempt_number: int,
     response: Any,  # Replace with actual response type for Cohere
     exception: Exception,
+    attempt_number: int = 1,
 ):
     if attempt_number == 1:
         kwargs["chat_history"].extend(
