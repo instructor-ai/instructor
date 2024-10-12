@@ -99,7 +99,6 @@ def retry_sync(
     response_model: type[T_Model] | None,
     args: Any,
     kwargs: Any,
-    context: dict[str, Any] | None = None,
     max_retries: int | Retrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
@@ -176,7 +175,6 @@ def retry_sync(
 async def retry_async(
     func: Callable[T_ParamSpec, T_Retval],
     response_model: type[T_Model] | None,
-    context: dict[str, Any] | None,
     args: Any,
     kwargs: Any,
     max_retries: int | AsyncRetrying = 1,
