@@ -91,8 +91,10 @@ class IterableBase:
                     import json
 
                     resp = chunk.candidates[0].content.parts[0].function_call
+                    resp_dict = type(resp).to_dict(resp)
 
-                    yield json.dumps(type(resp).to_dict(resp)["args"])  # type:ignore
+                    if "args" in resp_dict:
+                        yield json.dumps(resp_dict["args"])
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()
