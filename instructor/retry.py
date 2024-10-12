@@ -99,6 +99,7 @@ def retry_sync(
     response_model: type[T_Model] | None,
     args: Any,
     kwargs: Any,
+    context: dict[str, Any] | None = None,
     max_retries: int | Retrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
@@ -143,6 +144,7 @@ def retry_sync(
                     return process_response(  # type: ignore
                         response=response,
                         response_model=response_model,
+                        validation_context=context,
                         strict=strict,
                         mode=mode,
                         stream=kwargs.get("stream", False),
@@ -150,7 +152,7 @@ def retry_sync(
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Parse error: {e}")
                     hooks.emit_parse_error(e)
-                    kwargs = handle_reask_kwargs(  # type: ignore
+                    kwargs = handle_reask_kwargs(
                         kwargs=kwargs,
                         mode=mode,
                         response=response,
@@ -177,6 +179,7 @@ async def retry_async(
     response_model: type[T_Model] | None,
     args: Any,
     kwargs: Any,
+    context: dict[str, Any] | None = None,
     max_retries: int | AsyncRetrying = 1,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
@@ -222,6 +225,7 @@ async def retry_async(
                     return await process_response_async(
                         response=response,
                         response_model=response_model,
+                        validation_context=context,
                         strict=strict,
                         mode=mode,
                         stream=kwargs.get("stream", False),
