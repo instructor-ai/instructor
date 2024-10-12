@@ -88,6 +88,7 @@ def test_no_banned_words_validation(model: str, mode: instructor.Mode, client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_forced_words_validation(model: str, mode: instructor.Mode, client):
+
     class Response(BaseModel):
         content: str
 

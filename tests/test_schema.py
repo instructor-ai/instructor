@@ -107,7 +107,6 @@ def test_openai_schema_ordered_dict_mapping():
 
     assert openai_schema(TestModel).model_json_schema() == TestModel.model_json_schema()
 
-
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="requires python3.10 or higher")
 def test_openai_schema_supports_optional_none_310():
     class DummyWithOptionalNone(BaseModel):

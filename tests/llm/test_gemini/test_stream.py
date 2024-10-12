@@ -45,6 +45,8 @@ def test_partial_model(model, mode):
     for m in model:
         assert isinstance(m, UserExtract)
         final_model = m
-
+    
     assert final_model.age == 12
     assert final_model.name == "Jason"
+
+
