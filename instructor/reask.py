@@ -85,12 +85,10 @@ def reask_cohere_tools(
     kwargs: dict[str, Any],
     response: Any,  # Replace with actual response type for Cohere
     exception: Exception,
-    attempt_number: int = 1,
 ):
-    if attempt_number == 1:
-        chat_history = kwargs.get("chat_history", [])
-        chat_history.append({"role": "user", "message": kwargs.get("message")})
-        kwargs["chat_history"] = chat_history
+    chat_history = kwargs.get("chat_history", [])
+    chat_history.append({"role": "user", "message": kwargs.get("message")})
+    kwargs["chat_history"] = chat_history
 
     kwargs["message"] = (
         f"Correct the following JSON response, based on the errors given below:\n\n"
@@ -272,11 +270,12 @@ def handle_reask_kwargs(
     exception: Exception,
 ):
     kwargs = kwargs.copy()
+
     functions = {
         Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
         Mode.ANTHROPIC_JSON: reask_anthropic_json,
         Mode.COHERE_TOOLS: reask_cohere_tools,
-        Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,  # Same function for both modes
+        Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,  # Same Function
         Mode.GEMINI_TOOLS: reask_gemini_tools,
         Mode.GEMINI_JSON: reask_gemini_json,
         Mode.VERTEXAI_TOOLS: reask_vertexai_tools,
@@ -287,4 +286,4 @@ def handle_reask_kwargs(
         Mode.MD_JSON: reask_md_json,
     }
     reask_function = functions.get(mode, reask_default)
-    return reask_function(kwargs=kwargs, response=response, exception=exception)  
+    return reask_function(kwargs=kwargs, response=response, exception=exception)
