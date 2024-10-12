@@ -2,7 +2,8 @@ from __future__ import annotations
 from .mode import Mode
 import base64
 import re
-from typing import Any, Union
+from functools import lru_cache, wraps
+from typing import Any, Callable, Union
 from pathlib import Path
 from urllib.parse import urlparse
 import mimetypes
@@ -12,6 +13,38 @@ from pydantic import BaseModel, Field
 # OpenAI source: https://platform.openai.com/docs/guides/vision/what-type-of-files-can-i-upload
 # Anthropic source: https://docs.anthropic.com/en/docs/build-with-claude/vision#ensuring-image-quality
 VALID_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+DEFAULT_CACHE_SIZE = 128
+DEFAULT_CACHE_ENABLED = True
+
+
+class CacheConfig:
+    """Config manager for multimodal cache.
+
+    Caching can be disabled by setting ``instructor.multimodal.CacheConfig.configure(enable=False)``.
+    """
+    use_cache: bool = DEFAULT_CACHE_ENABLED
+    cache_size: int = DEFAULT_CACHE_SIZE
+
+    @classmethod
+    def configure(cls, enable: bool, size: int = DEFAULT_CACHE_SIZE):
+        cls.use_cache = enable
+        cls.cache_size = size
+
+
+def optional_cache(func: Callable) -> Callable:
+    """Decorator to add optional caching."""
+    cached_func = lru_cache(maxsize=None)(func)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if CacheConfig.use_cache:
+            wrapper.cache_info = cached_func.cache_info
+            wrapper.cache_clear = cached_func.cache_clear
+            cached_func.cache_parameters()["maxsize"] = CacheConfig.cache_size
+            return cached_func(*args, **kwargs)
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 class Image(BaseModel):
@@ -24,6 +57,7 @@ class Image(BaseModel):
     )
 
     @classmethod
+    @optional_cache
     def autodetect(cls, source: str | Path) -> Image:
         """Attempt to autodetect an image from a source string or Path.
 
@@ -125,16 +159,23 @@ class Image(BaseModel):
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=path, media_type=media_type, data=data)
 
+    @staticmethod
+    @optional_cache
+    def url_to_base64(url: str) -> tuple[str, str]:
+        """Cachable helper method for getting image url and encoding to base64."""
+        response = requests.get(url)
+        response.raise_for_status()
+        data = base64.b64encode(response.content).decode("utf-8")
+        media_type = response.headers.get("Content-Type")
+        return data, media_type
+
     def to_anthropic(self) -> dict[str, Any]:
         if (
             isinstance(self.source, str)
             and self.source.startswith(("http://", "https://"))
             and not self.data
         ):
-            response = requests.get(self.source)
-            response.raise_for_status()
-            self.data = base64.b64encode(response.content).decode("utf-8")
-            self.media_type = response.headers.get("Content-Type", self.media_type)
+            self.data, self.media_type = self.url_to_base64(self.source)
 
         return {
             "type": "image",
@@ -210,7 +251,8 @@ def convert_messages(
         if autodetect_images:
             if isinstance(content, list):
                 content = [
-                    Image.autodetect_safely(s) if isinstance(s, str) else s for s in content
+                    Image.autodetect_safely(s) if isinstance(s, str) else s
+                    for s in content
                 ]
             elif isinstance(content, str):
                 content = Image.autodetect_safely(content)
