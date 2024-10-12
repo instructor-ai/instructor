@@ -83,9 +83,9 @@ def handle_templating(
     # Handle Cohere's message field
     if "message" in new_kwargs:
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)
-        new_kwargs["chat_history"] = handle_templating(
-            new_kwargs["chat_history"], context
-        )
+        for message in new_kwargs["chat_history"]:
+            process_message(message, context)
+
         return new_kwargs
 
     if isinstance(new_kwargs, list):

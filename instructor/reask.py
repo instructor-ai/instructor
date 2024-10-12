@@ -88,9 +88,10 @@ def reask_cohere_tools(
     attempt_number: int = 1,
 ):
     if attempt_number == 1:
-        kwargs["chat_history"].extend(
-            [{"role": "user", "message": kwargs.get("message")}]
-        )
+        chat_history = kwargs.get("chat_history", [])
+        chat_history.append({"role": "user", "message": kwargs.get("message")})
+        kwargs["chat_history"] = chat_history
+
     kwargs["message"] = (
         f"Correct the following JSON response, based on the errors given below:\n\n"
         f"JSON:\n{response.text}\n\nExceptions:\n{exception}"
