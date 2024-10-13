@@ -45,6 +45,8 @@ def from_fireworks(
     if isinstance(client, AsyncFireworks):
 
         async def async_wrapper(*args: Any, **kwargs: Any):
+            if "stream" in kwargs and kwargs["stream"] is True:
+                return client.chat.completions.acreate(*args, **kwargs)
             return await client.chat.completions.acreate(*args, **kwargs)
 
         return AsyncInstructor(
