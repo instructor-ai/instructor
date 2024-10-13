@@ -166,6 +166,7 @@ nav:
     - Models: 'concepts/models.md'
     - Retrying: 'concepts/retrying.md'
     - Patching: 'concepts/patching.md'
+    - Hooks: 'concepts/hooks.md'
     - Fields: 'concepts/fields.md'
     - Types: 'concepts/types.md'
     - TypedDicts: 'concepts/typeddicts.md'

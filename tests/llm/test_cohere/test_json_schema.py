@@ -118,7 +118,7 @@ async def test_parse_user_async_jinja(aclient, mode):
         ],
         max_retries=4,
         context={"name": "Ivan", "age": 27},
-    )
+    )  # type: ignore
 
     assert resp.name == "IVAN"
     assert resp.age == 27
