@@ -70,17 +70,22 @@ async def test_fireworks_iterables_async(mode: instructor.Mode, model: str):
     assert {user.age for user in users} == {27}
 
 
-def test_fireworks_partial():
+@pytest.mark.parametrize("mode, model", modes)
+def test_fireworks_partial(mode: instructor.Mode, model: str):
     class User(BaseModel):
         name: str
         age: int
 
-    client = instructor.from_fireworks(Fireworks(), mode=instructor.Mode.FIREWORKS_JSON)
+    client = instructor.from_fireworks(Fireworks(), mode=mode)
 
     resp = client.chat.completions.create_partial(
-        model="accounts/fireworks/models/firefunction-v1",
+        model=model,
         response_model=User,
         messages=[
+            {
+                "role": "system",
+                "content": f"You are a helpful assistant that extracts users from a sentence. Make sure to adhere to the desired JSON output format of {User.model_json_schema()} and make sure that your output can be parsed by a JSON parser.",
+            },
             {
                 "role": "user",
                 "content": "Extract a user from this sentence : Ivan is 27 and lives in Singapore",
@@ -97,20 +102,23 @@ def test_fireworks_partial():
     assert user.age == 27
 
 
+@pytest.mark.parametrize("mode, model", modes)
 @pytest.mark.asyncio
-async def test_fireworks_partial_async():
+async def test_fireworks_partial_async(mode: instructor.Mode, model: str):
     class User(BaseModel):
         name: str
         age: int
 
-    client = instructor.from_fireworks(
-        AsyncFireworks(), mode=instructor.Mode.FIREWORKS_JSON
-    )
+    client = instructor.from_fireworks(AsyncFireworks(), mode=mode)
 
     resp = client.chat.completions.create_partial(
-        model="accounts/fireworks/models/firefunction-v1",
+        model=model,
         response_model=User,
         messages=[
+            {
+                "role": "system",
+                "content": f"You are a helpful assistant that extracts users from a sentence. Make sure to adhere to the desired JSON output format of {User.model_json_schema()} and make sure that your output can be parsed by a JSON parser.",
+            },
             {
                 "role": "user",
                 "content": "Extract a user from this sentence : Ivan is 27 and lives in Singapore",

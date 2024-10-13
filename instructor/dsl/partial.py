@@ -180,9 +180,10 @@ class PartialBase(Generic[T_Model]):
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
-                            yield json_chunk[0].function.arguments
+                            if json_chunk[0].function.arguments:
+                                yield json_chunk[0].function.arguments
                     else:
                         raise NotImplementedError(
                             f"Mode {mode} is not supported for MultiTask streaming"
@@ -215,9 +216,10 @@ class PartialBase(Generic[T_Model]):
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
-                            yield json_chunk[0].function.arguments
+                            if json_chunk[0].function.arguments:
+                                yield json_chunk[0].function.arguments
                     else:
                         raise NotImplementedError(
                             f"Mode {mode} is not supported for MultiTask streaming"
