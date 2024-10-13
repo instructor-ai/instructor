@@ -1,36 +1,33 @@
 from __future__ import annotations
 
-from typing import Any, Literal, overload
+from typing import Any, overload
 
 import instructor
 from instructor.client import AsyncInstructor, Instructor
 
 
 from fireworks.client import Fireworks, AsyncFireworks
-from fireworks.client.api_client_v2 import Fireworks as FireworksType, AsyncFireworks as AsyncFireworksType
+
 
 @overload
 def from_fireworks(
-    client: FireworksType,
+    client: Fireworks,
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
-    use_async: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
 
 
 @overload
 def from_fireworks(
-    client: AsyncFireworksType,
+    client: AsyncFireworks,
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
-    use_async: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
 
 def from_fireworks(
-    client: FireworksType | AsyncFireworksType,
+    client: Fireworks | AsyncFireworks,
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
-    use_async: bool = False,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     assert (
@@ -42,24 +39,27 @@ def from_fireworks(
     ), "Mode must be one of {instructor.Mode.FIREWORKS_TOOLS, instructor.Mode.FIREWORKS_JSON}"
 
     assert isinstance(
-        client, (FireworksType, AsyncFireworksType)
+        client, (AsyncFireworks, Fireworks)
     ), "Client must be an instance of Fireworks or AsyncFireworks"
 
-    if use_async:
-        create = client.chat.completions.create
+    if isinstance(client, AsyncFireworks):
+
+        async def async_wrapper(*args: Any, **kwargs: Any):
+            return await client.chat.completions.acreate(*args, **kwargs)
+
         return AsyncInstructor(
             client=client,
-            create=instructor.patch(create=create, mode=mode),
+            create=instructor.patch(create=async_wrapper, mode=mode),
             provider=instructor.Provider.FIREWORKS,
             mode=mode,
             **kwargs,
         )
 
-    create = client.chat.completions.create
-    return Instructor(
-        client=client,
-        create=instructor.patch(create=create, mode=mode),
-        provider=instructor.Provider.FIREWORKS,
-        mode=mode,
-        **kwargs,
-    )
+    if isinstance(client, Fireworks):
+        return Instructor(
+            client=client,
+            create=instructor.patch(create=client.chat.completions.create, mode=mode),  # type: ignore
+            provider=instructor.Provider.FIREWORKS,
+            mode=mode,
+            **kwargs,
+        )

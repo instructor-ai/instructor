@@ -409,6 +409,8 @@ def handle_cohere_modes(new_kwargs: dict[str, Any]) -> tuple[None, dict[str, Any
 def handle_fireworks_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
+    if "stream" not in new_kwargs:
+        new_kwargs["stream"] = False
     new_kwargs["tools"] = [
         {
             "type": "function",
@@ -425,6 +427,9 @@ def handle_fireworks_tools(
 def handle_fireworks_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
+    if "stream" not in new_kwargs:
+        new_kwargs["stream"] = False
+
     new_kwargs["response_format"] = {
         "type": "json_object",
         "schema": response_model.model_json_schema(),
