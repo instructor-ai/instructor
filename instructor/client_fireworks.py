@@ -6,7 +6,7 @@ import instructor
 from instructor.client import AsyncInstructor, Instructor
 
 
-from fireworks.client import Fireworks, AsyncFireworks
+from fireworks.client import Fireworks, AsyncFireworks  # type:ignore
 
 
 @overload
