@@ -1,7 +1,6 @@
 import instructor
 from fireworks.client import Fireworks, AsyncFireworks
 from pydantic import BaseModel, field_validator
-from collections.abc import Iterable
 import pytest
 from .util import modes
 
