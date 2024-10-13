@@ -176,6 +176,7 @@ class PartialBase(Generic[T_Model]):
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
+                        Mode.FIREWORKS_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
@@ -210,6 +211,7 @@ class PartialBase(Generic[T_Model]):
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
+                        Mode.FIREWORKS_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk

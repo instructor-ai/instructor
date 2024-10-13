@@ -68,3 +68,60 @@ async def test_fireworks_iterables_async(mode: instructor.Mode, model: str):
     assert len(users) == 2
     assert {user.name for user in users} == {"Ivan", "Darren"}
     assert {user.age for user in users} == {27}
+
+
+def test_fireworks_partial():
+    class User(BaseModel):
+        name: str
+        age: int
+
+    client = instructor.from_fireworks(Fireworks(), mode=instructor.Mode.FIREWORKS_JSON)
+
+    resp = client.chat.completions.create_partial(
+        model="accounts/fireworks/models/firefunction-v1",
+        response_model=User,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract a user from this sentence : Ivan is 27 and lives in Singapore",
+            },
+        ],
+    )
+
+    user = None
+    for r in resp:
+        user = r
+
+    assert user is not None
+    assert user.name.lower() == "ivan"
+    assert user.age == 27
+
+
+@pytest.mark.asyncio
+async def test_fireworks_partial_async():
+    class User(BaseModel):
+        name: str
+        age: int
+
+    client = instructor.from_fireworks(
+        AsyncFireworks(), mode=instructor.Mode.FIREWORKS_JSON
+    )
+
+    resp = client.chat.completions.create_partial(
+        model="accounts/fireworks/models/firefunction-v1",
+        response_model=User,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract a user from this sentence : Ivan is 27 and lives in Singapore",
+            },
+        ],
+    )
+
+    user = None
+    async for r in resp:
+        user = r
+
+    assert user is not None
+    assert user.name.lower() == "ivan"
+    assert user.age == 27
