@@ -1,10 +1,20 @@
 ---
-draft: False
-date: 2024-07-11
-slug: youtube-transcripts
-comments: true
 authors:
-  - jxnl
+- jxnl
+categories:
+- Data Processing
+comments: true
+date: 2024-07-11
+description: Learn how to extract and summarize YouTube video transcripts into chapters
+  using Python and Pydantic for versatile applications.
+draft: false
+slug: youtube-transcripts
+tags:
+- YouTube
+- transcripts
+- Pydantic
+- Python
+- Data Processing
 ---
 
 # Analyzing Youtube Transcripts with Instructor

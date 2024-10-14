@@ -1,11 +1,19 @@
 ---
-draft: False
-date: 2024-09-26
-tags:
-  - llms
-  - structured-outputs
 authors:
-  - ivanleomk
+- ivanleomk
+categories:
+- LLM Techniques
+comments: true
+date: 2024-09-26
+description: Discover how response models impact LLM performance, focusing on structured
+  outputs for optimal results in GPT-4o and Claude models.
+draft: false
+tags:
+- LLM Performance
+- Response Models
+- Structured Outputs
+- GPT-4o
+- Claude Models
 ---
 
 # Bad Schemas could break your LLM Structured Outputs

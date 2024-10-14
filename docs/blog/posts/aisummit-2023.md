@@ -1,13 +1,19 @@
 ---
-draft: False
-date: 2023-11-02
-tags:
-  - python
-  - talks
-  - prompt engineering
-  - video
 authors:
-  - jxnl
+- jxnl
+categories:
+- Pydantic
+comments: true
+date: 2023-11-02
+description: Explore insights on utilizing Pydantic for effective prompt engineering
+  in this AI Engineer Summit keynote.
+draft: false
+tags:
+- Pydantic
+- Prompt Engineering
+- AI Summit
+- Machine Learning
+- Data Validation
 ---
 
 # AI Engineer Keynote: Pydantic is all you need

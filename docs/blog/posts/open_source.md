@@ -1,16 +1,20 @@
 ---
-draft: False
-date: 2024-03-07
-slug: open-source-local-structured-output-pydantic-json-openai
-categories:
-  - Open Source
-  - Ollama
-  - Anyscale
-  - Groq
-  - Mistral
-  - Ollama
 authors:
-  - jxnl
+- jxnl
+categories:
+- API Development
+comments: true
+date: 2024-03-07
+description: Discover how Instructor integrates with OpenAI and local LLMs for structured
+  outputs using Pydantic and JSON schema.
+draft: false
+slug: open-source-local-structured-output-pydantic-json-openai
+tags:
+- OpenAI
+- Pydantic
+- LLMs
+- Structured Outputs
+- API Integration
 ---
 
 # Structured Output for Open Source and Local LLMs 

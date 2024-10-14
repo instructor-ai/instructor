@@ -1,8 +1,19 @@
 ---
-draft: False
-date: 2023-09-11
 authors:
-  - jxnl
+- jxnl
+categories:
+- Pydantic
+comments: true
+date: 2023-09-11
+description: Learn how Pydantic simplifies working with LLMs and structured JSON outputs
+  in Python, enhancing developer experience and code organization.
+draft: false
+tags:
+- Pydantic
+- LLMs
+- Python
+- OpenAI
+- JSON
 ---
 
 # Generating Structured Output / JSON from LLMs

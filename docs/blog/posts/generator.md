@@ -1,12 +1,21 @@
 ---
-draft: False
-date: 2023-11-26
-slug: python-generators-and-llm-streaming
-categories:
-  - Python
 authors:
-  - jxnl
-  - anmol
+- jxnl
+- anmol
+categories:
+- LLM Techniques
+comments: true
+date: 2023-11-26
+description: Explore Python generators and their role in enhancing LLM streaming for
+  improved latency and user experience in applications.
+draft: false
+slug: python-generators-and-llm-streaming
+tags:
+- Python
+- Generators
+- LLM Streaming
+- Data Processing
+- Performance Optimization
 ---
 
 # Generators and LLM Streaming

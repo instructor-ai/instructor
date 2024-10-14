@@ -1,11 +1,20 @@
 ---
-draft: False
+authors:
+- ivanleomk
+categories:
+- OpenAI
+comments: true
 date: 2024-08-20
+description: Explore the challenges of OpenAI's Structured Outputs and how 'instructor'
+  offers solutions for LLM workflows.
+draft: false
 slug: should-i-be-using-structured-outputs
 tags:
-  - OpenAI
-authors:
-  - ivanleomk
+- OpenAI
+- Structured Outputs
+- Pydantic
+- Data Validation
+- LLM Techniques
 ---
 
 # Should I Be Using Structured Outputs?
