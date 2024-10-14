@@ -1,3 +1,8 @@
+---
+title: Using Union Types in Pydantic Models
+description: Learn how to implement Union types in Pydantic models to handle multiple action types in Python.
+---
+
 Pydantic models also support `Union` types, which are used to represent a value that can be one of several types.
 
 While many libraries support multiple function calls, and tool calls support multiple returns, the goal is to provide only one way to do things.

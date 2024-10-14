@@ -1,3 +1,8 @@
+---
+title: Managing Fine-Tuning Jobs with the Instructor CLI
+description: Learn how to create, view, and manage fine-tuning jobs on OpenAI using the Instructor CLI, with essential commands and options.
+---
+
 # Using the Command Line Interface
 
 The instructor CLI provides functionalities for managing fine-tuning jobs on OpenAI.

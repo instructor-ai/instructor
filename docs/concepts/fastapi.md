@@ -1,3 +1,8 @@
+---
+title: Integrating Pydantic with FastAPI for Efficient APIs
+description: Learn how to leverage Pydantic models with FastAPI for seamless API development and automatic documentation.
+---
+
 # Integrating Pydantic Models with FastAPI
 
 [FastAPI](https://fastapi.tiangolo.com/) is an enjoyable tool for building web applications in Python. It is well known for its integration with `Pydantic` models, which makes defining and validating data structures straightforward and efficient. In this guide, we explore how simple functions that return `Pydantic` models can seamlessly integrate with `FastAPI`.

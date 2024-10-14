@@ -1,3 +1,8 @@
+---
+title: Using IBM watsonx.ai for Inference
+description: Learn how to use IBM watsonx.ai and LiteLLM for structured outputs, including setup, installation, and coding examples.
+---
+
 # Structured Outputs with IBM watsonx.ai
 
 You can use IBM watsonx.ai for inference using [LiteLLM](https://docs.litellm.ai/docs/providers/watsonx).

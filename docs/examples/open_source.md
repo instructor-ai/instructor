@@ -1,3 +1,8 @@
+---
+title: Open Source Model Providers for Chat API
+description: Explore tested open source models compatible with the OpenAI chat API, including OpenRouter, Perplexity, and RunPod LLMs.
+---
+
 # Instructor with open source models
 Instructor works with Open source model providers that support the [OpenAI API chat endpoint](https://platform.openai.com/docs/api-reference/chat)
 

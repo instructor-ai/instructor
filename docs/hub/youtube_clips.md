@@ -1,3 +1,8 @@
+---
+title: Generating YouTube Clips from Transcripts Using Instructor
+description: Learn to create concise YouTube clips from video transcripts with `instructor` and OpenAI, enhancing your content engagement.
+---
+
 # Generating YouTube Clips from Transcripts
 
 This guide demonstrates how to generate concise, informative clips from YouTube video transcripts using the `instructor` library. By leveraging the power of OpenAI's models, we can extract meaningful segments from a video's transcript, which can then be recut into smaller, standalone videos. This process involves identifying key moments within a transcript and summarizing them into clips with specific titles and descriptions.

@@ -1,3 +1,8 @@
+---
+title: Using Enums and Literals in Pydantic for Role Management
+description: Learn how to implement Enums and Literals in Pydantic to manage standardized user roles with a fallback option.
+---
+
 To prevent data misalignment, we can use Enums for standardized fields. Always include an "Other" option as a fallback so the model can signal uncertainty.
 
 ```python hl_lines="7 12"

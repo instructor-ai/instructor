@@ -1,3 +1,8 @@
+---
+title: Creating a Model with OpenAI Completions
+description: Learn how to create a custom model using OpenAI's API to extract user data efficiently with Python.
+---
+
 
 # Creating a model with completions
 

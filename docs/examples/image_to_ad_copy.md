@@ -1,3 +1,8 @@
+---
+title: Automatically Generate Advertising Copy from Product Images Using GPT-4 Vision
+description: Learn how to use GPT-4 Vision API to create engaging advertising copy from product images, ideal for e-commerce and marketing teams.
+---
+
 # Use Vision API to detect products and generate advertising copy
 
 This post demonstrates how to use GPT-4 Vision API and the Chat API to automatically generate advertising copy from product images. This method can be useful for marketing and advertising teams, as well as for e-commerce platforms.

@@ -1,3 +1,8 @@
+---
+title: Subscribe to Our Newsletter for AI Updates and Tips
+description: Join our newsletter for the latest features, tips, and insights on using Instructor effectively.
+---
+
 # Subscribe to our Newsletter for Updates and Tips
 
 If you want to get updates on new features and tips on how to use Instructor, you can subscribe to our newsletter below to get notified when we publish new content.

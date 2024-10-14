@@ -1,3 +1,8 @@
+---
+title: Support for Simple Types in Python with Pydantic
+description: Learn how to use simple types like str, int, float, and more in Python Pydantic models for effective API responses.
+---
+
 # Support for Simple Types
 
 Aside from the recommended `pydantic.BaseModel`, and [Iterable](lists.md), and [Partial](partial.md),

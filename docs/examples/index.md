@@ -1,3 +1,8 @@
+---
+title: Comprehensive AI Cookbook Collection
+description: Explore diverse AI applications with cookbooks showcasing structured techniques for improved performance and efficiency.
+---
+
 # Cookbooks
 
 Welcome to our collection of cookbooks showcasing the power of structured outputs in AI applications. These examples demonstrate how to effectively use instructor with various models and APIs to solve real-world problems.

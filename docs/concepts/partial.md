@@ -1,3 +1,8 @@
+---
+title: Streaming Partial Responses with Instructor and OpenAI
+description: Learn to utilize field-level streaming with Instructor and OpenAI for incremental responses in Python.
+---
+
 # Streaming Partial Responses
 
 Field level streaming provides incremental snapshots of the current state of the response model that are immediately useable. This approach is particularly relevant in contexts like rendering UI components.

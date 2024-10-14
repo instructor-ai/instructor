@@ -1,3 +1,8 @@
+---
+title: Extracting Receipt Data with GPT-4 and Python
+description: Learn how to use Python and GPT-4 to extract and validate receipt data from images for efficient expense tracking.
+---
+
 # Extracting Receipt Data using GPT-4 and Python
 
 This post demonstrates how to use Python's Pydantic library and OpenAI's GPT-4 model to extract receipt data from images and validate the total amount. This method is particularly useful for automating expense tracking and financial analysis tasks.

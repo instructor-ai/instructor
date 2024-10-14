@@ -1,3 +1,8 @@
+---
+title: Incorporating Examples in Pydantic Models
+description: Learn how to enhance Pydantic models with practical examples for clarity and usability in JSON schemas.
+---
+
 # How should I include examples?
 
 To enhance the clarity and usability of your model and prompt, incorporating examples directly into the JSON schema extra of your Pydantic model is highly recommended. This approach not only streamlines the integration of practical examples but also ensures that they are easily accessible and understandable within the context of your model's schema.

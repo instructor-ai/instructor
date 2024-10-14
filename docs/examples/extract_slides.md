@@ -1,3 +1,8 @@
+---
+title: Extracting Competitor Data from Slides Using AI
+description: Learn how to extract competitor data from presentation slides, leveraging AI for comprehensive information gathering.
+---
+
 # Data extraction from slides
 
 In this guide, we demonstrate how to extract data from slides.

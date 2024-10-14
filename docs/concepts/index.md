@@ -1,3 +1,8 @@
+---
+title: Understanding Instructor: Key Concepts for Structured Outputs in AI
+description: Explore essential concepts in Instructor for efficient extraction and validation of structured data from AI models.
+---
+
 # Concepts
 
 Welcome to the Concepts section of Instructor documentation. This section provides an in-depth exploration of key ideas and techniques that form the foundation of working with structured outputs in AI applications using Instructor.
