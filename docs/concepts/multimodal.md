@@ -51,3 +51,45 @@ response = client.chat.completions.create(
     autodetect_images=True
 )
 ```
+
+### Anthropic Prompt Caching
+Instructor supports Anthropic prompt caching with images. To activate prompt caching, you can pass image content as a dictionary of the form
+```python
+{"type": "image", "source": <path_or_url_or_base64_encoding>, "cache_control": True}
+```
+and set `autodetect_images=True`, or flag it within a constructor such as `instructor.Image.from_path("path/to/image.jpg", cache_control=True)`. For example:
+
+```python
+import instructor
+from anthropic import Anthropic
+
+client = instructor.from_anthropic(Anthropic(), enable_caching=True)
+
+response = client.chat.completions.create(
+    model="claude-3-haiku-20240307",
+    response_model=ImageAnalyzer,  # This can be set to `None` to return an Anthropic prompt caching message
+    messages=[
+        {
+            "role": "user", 
+            "content": [
+                "What is in this two images?",
+                {"type": "image", "source": "https://example.com/image.jpg", "cache_control": True}, 
+                {"type": "image", "source": "path/to/image.jpg", "cache_control": True}, 
+            ]
+        }
+    ],
+    autodetect_images=True
+)
+```
+
+### Advanced
+By default, Instructor uses LRU caching (not to be confused with prompt caching) when using images. This avoids needless outbound requests and I/O for repeated Instructor calls and retries by caching `Image`'s in memory. If you'd like to modify the cache size or disable caching altogether, you can run
+```python
+from instructor.multimodal import CacheConfig
+
+# Change cache size (default is 128)
+CacheConfig.configure(size=64)
+
+# Disable caching
+CacheConfig.configure(enable=False)
+```

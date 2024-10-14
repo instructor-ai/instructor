@@ -12,6 +12,7 @@ def from_anthropic(
         anthropic.Anthropic | anthropic.AnthropicBedrock | anthropic.AnthropicVertex
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
+    enable_caching: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor: ...
 
@@ -24,6 +25,7 @@ def from_anthropic(
         | anthropic.AsyncAnthropicVertex
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
+    enable_caching: bool = False,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
 
@@ -38,6 +40,7 @@ def from_anthropic(
         | anthropic.AnthropicVertex
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
+    enable_caching: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
     assert (
@@ -60,7 +63,10 @@ def from_anthropic(
         ),
     ), "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
 
-    create = client.messages.create
+    if enable_caching:
+        create = client.beta.prompt_caching.messages.create
+    else:
+        create = client.messages.create
 
     if isinstance(
         client,

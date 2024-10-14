@@ -3,20 +3,29 @@ from .mode import Mode
 import base64
 import re
 from functools import lru_cache, wraps
-from typing import Any, Callable, Union, TypeVar, cast
+from typing import Any, Callable, Literal, Union, TypedDict, TypeVar, cast
 from pathlib import Path
 from urllib.parse import urlparse
 import mimetypes
 import requests
 from pydantic import BaseModel, Field
 
-F = TypeVar('F', bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Any])
 
 # OpenAI source: https://platform.openai.com/docs/guides/vision/what-type-of-files-can-i-upload
 # Anthropic source: https://docs.anthropic.com/en/docs/build-with-claude/vision#ensuring-image-quality
 VALID_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 DEFAULT_CACHE_SIZE = 128
 DEFAULT_CACHE_ENABLED = True
+
+
+class ImageParamsBase(TypedDict):
+    type: Literal["image"]
+    source: str
+
+
+class ImageParams(ImageParamsBase, total=False):
+    cache_control: bool  # Use bool as only ephemeral caching is supported, and dicts are not hashable
 
 
 class CacheConfig:
@@ -29,25 +38,24 @@ class CacheConfig:
     cache_size: int = DEFAULT_CACHE_SIZE
 
     @classmethod
-    def configure(cls, enable: bool, size: int = DEFAULT_CACHE_SIZE):
+    def configure(cls, enable: bool = DEFAULT_CACHE_ENABLED, size: int = DEFAULT_CACHE_SIZE):
         cls.use_cache = enable
         cls.cache_size = size
 
 
 def optional_cache(func: F) -> F:
     """Decorator to add optional caching."""
-    cached_func = lru_cache(maxsize=None)(func)
+    if CacheConfig.use_cache:
+        cache_size = CacheConfig.cache_size
+        cached_func = lru_cache(maxsize=cache_size)(func)
 
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if CacheConfig.use_cache:
-            wrapper.cache_info = cached_func.cache_info  # type: ignore
-            wrapper.cache_clear = cached_func.cache_clear  # type: ignore
-            cached_func.cache_parameters()["maxsize"] = CacheConfig.cache_size
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return cached_func(*args, **kwargs)
-        return func(*args, **kwargs)
 
-    return cast(F, wrapper)
+        return cast(F, wrapper)
+    else:
+        return func
 
 
 class Image(BaseModel):
@@ -58,14 +66,21 @@ class Image(BaseModel):
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded image data", repr=False
     )
+    cache_control: bool = Field(False, description="Anthropic cache control")
 
     @classmethod
-    @optional_cache
-    def autodetect(cls, source: str | Path) -> Image:
+    def from_image_params(cls, image_params: ImageParams) -> Image:
+        source = image_params["source"]
+        cache_control = image_params.get("cache_control", False)
+        return Image.autodetect(source, cache_control)
+
+    @classmethod
+    def autodetect(cls, source: str | Path, cache_control: bool = False) -> Image:
         """Attempt to autodetect an image from a source string or Path.
 
         Args:
             source (str | Path): The source string or path.
+            cache_control (dict[str, str], optional): Anthropic cache control
         Returns:
             An Image if the source is detected to be a valid image.
         Raises:
@@ -73,30 +88,33 @@ class Image(BaseModel):
         """
         if isinstance(source, str):
             if cls.is_base64(source):
-                return cls.from_base64(source)
+                return cls.from_base64(source, cache_control=cache_control)
             elif source.startswith(("http://", "https://")):
-                return cls.from_url(source)
+                return cls.from_url(source, cache_control=cache_control)
             elif Path(source).is_file():
-                return cls.from_path(source)
+                return cls.from_path(source, cache_control=cache_control)
             else:
-                return cls.from_raw_base64(source)
+                return cls.from_raw_base64(source, cache_control=cache_control)
         elif isinstance(source, Path):
-            return cls.from_path(source)
+            return cls.from_path(source, cache_control=cache_control)
 
         raise ValueError("Unable to determine image type or unsupported image format")
 
     @classmethod
-    def autodetect_safely(cls, source: str | Path) -> Union[Image, str]:  # noqa: UP007
+    def autodetect_safely(
+        cls, source: str | Path, cache_control: bool = False
+    ) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
             source (str | Path): The source string or path.
+            cache_control (dict[str, str], optional): Anthropic cache control
         Returns:
             An Image if the source is detected to be a valid image, otherwise
             the source itself as a string.
         """
         try:
-            return cls.autodetect(source)
+            return cls.autodetect(source, cache_control)
         except ValueError:
             return str(source)
 
@@ -104,16 +122,21 @@ class Image(BaseModel):
     def is_base64(cls, s: str) -> bool:
         return bool(re.match(r"^data:image/[a-zA-Z]+;base64,", s))
 
-    @classmethod
-    def from_base64(cls, data_uri: str) -> Image:
+    @classmethod  # Caching likely unnecessary
+    def from_base64(cls, data_uri: str, cache_control: bool = False) -> Image:
         header, encoded = data_uri.split(",", 1)
         media_type = header.split(":")[1].split(";")[0]
         if media_type not in VALID_MIME_TYPES:
             raise ValueError(f"Unsupported image format: {media_type}")
-        return cls(source=data_uri, media_type=media_type, data=encoded)
+        return cls(
+            source=data_uri,
+            media_type=media_type,
+            data=encoded,
+            cache_control=cache_control,
+        )
 
-    @classmethod
-    def from_raw_base64(cls, data: str) -> Image:
+    @classmethod  # Caching likely unnecessary
+    def from_raw_base64(cls, data: str, cache_control: bool = False) -> Image:
         try:
             decoded = base64.b64decode(data)
             import imghdr
@@ -122,15 +145,21 @@ class Image(BaseModel):
             if img_type:
                 media_type = f"image/{img_type}"
                 if media_type in VALID_MIME_TYPES:
-                    return cls(source=data, media_type=media_type, data=data)
+                    return cls(
+                        source=data,
+                        media_type=media_type,
+                        data=data,
+                        cache_control=cache_control,
+                    )
             raise ValueError(f"Unsupported image type: {img_type}")
         except Exception as e:
             raise ValueError(f"Invalid or unsupported base64 image data") from e
 
     @classmethod
-    def from_url(cls, url: str) -> Image:
+    @optional_cache
+    def from_url(cls, url: str, cache_control: bool = False) -> Image:
         if cls.is_base64(url):
-            return cls.from_base64(url)
+            return cls.from_base64(url, cache_control)
 
         parsed_url = urlparse(url)
         media_type, _ = mimetypes.guess_type(parsed_url.path)
@@ -144,10 +173,13 @@ class Image(BaseModel):
 
         if media_type not in VALID_MIME_TYPES:
             raise ValueError(f"Unsupported image format: {media_type}")
-        return cls(source=url, media_type=media_type, data=None)
+        return cls(
+            source=url, media_type=media_type, data=None, cache_control=cache_control
+        )
 
     @classmethod
-    def from_path(cls, path: str | Path) -> Image:
+    @optional_cache
+    def from_path(cls, path: str | Path, cache_control: bool = False) -> Image:
         path = Path(path)
         if not path.is_file():
             raise FileNotFoundError(f"Image file not found: {path}")
@@ -160,7 +192,9 @@ class Image(BaseModel):
             raise ValueError(f"Unsupported image format: {media_type}")
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
-        return cls(source=path, media_type=media_type, data=data)
+        return cls(
+            source=path, media_type=media_type, data=data, cache_control=cache_control
+        )
 
     @staticmethod
     @optional_cache
@@ -179,7 +213,7 @@ class Image(BaseModel):
         ):
             self.data = self.url_to_base64(self.source)
 
-        return {
+        result = {
             "type": "image",
             "source": {
                 "type": "base64",
@@ -187,6 +221,9 @@ class Image(BaseModel):
                 "data": self.data,
             },
         }
+        if self.cache_control:
+            result["cache_control"] = {"type": "ephemeral"}
+        return result
 
     def to_openai(self) -> dict[str, Any]:
         if (
@@ -247,17 +284,30 @@ def convert_messages(
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
     converted_messages = []
+
+    def is_image_params(x: Any) -> bool:
+        return isinstance(x, dict) and x.get("type") == "image" and "source" in x  # type: ignore
+
     for message in messages:
         role = message["role"]
         content = message["content"]
         if autodetect_images:
             if isinstance(content, list):
-                content = [
-                    Image.autodetect_safely(s) if isinstance(s, str) else s
-                    for s in content
-                ]
+                new_content: list[Union[str, dict[str, Any], Image]] = []  # noqa: UP007
+                for item in content:
+                    if isinstance(item, str):
+                        new_content.append(Image.autodetect_safely(item))
+                    elif is_image_params(item):
+                        new_content.append(
+                            Image.from_image_params(cast(ImageParams, item))
+                        )
+                    else:
+                        new_content.append(item)
+                content = new_content
             elif isinstance(content, str):
                 content = Image.autodetect_safely(content)
+            elif is_image_params(content):
+                content = Image.from_image_params(cast(ImageParams, content))
         if isinstance(content, str):
             converted_messages.append({"role": role, "content": content})  # type: ignore
         else:

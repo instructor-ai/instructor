@@ -34,7 +34,7 @@ def test_multimodal_image_description(model, mode, client):
             },
         ],
         temperature=1,
-        max_tokens=1000
+        max_tokens=1000,
     )
 
     # Assertions to validate the response
@@ -67,7 +67,7 @@ def test_multimodal_image_description_autodetect(model, mode, client):
         ],
         max_tokens=1000,
         temperature=1,
-        autodetect_images=True
+        autodetect_images=True,
     )
 
     # Assertions to validate the response
@@ -77,6 +77,85 @@ def test_multimodal_image_description_autodetect(model, mode, client):
     assert len(response.colors) > 0
 
     # Additional assertions can be added based on expected content of the sample image
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_multimodal_image_description_autodetect_image_params(model, mode, client):
+    client = instructor.from_anthropic(client, mode=mode)
+    response = client.chat.completions.create(
+        model=model,  # Ensure this is a vision-capable model
+        response_model=ImageDescription,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that can describe images",
+            },
+            {
+                "role": "user",
+                "content": [
+                    "What is this?",
+                    {
+                        "type": "image",
+                        "source": "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+                    },
+                ],
+            },
+        ],
+        max_tokens=1000,
+        temperature=1,
+        autodetect_images=True,
+    )
+
+    # Assertions to validate the response
+    assert isinstance(response, ImageDescription)
+    assert len(response.objects) > 0
+    assert response.scene != ""
+    assert len(response.colors) > 0
+
+    # Additional assertions can be added based on expected content of the sample image
+
+
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_multimodal_image_description_autodetect_image_params_cache(
+    model, mode, client
+):
+    client = instructor.from_anthropic(client, mode=mode, enable_caching=True)
+    messages = client.chat.completions.create(
+        model=model,  # Ensure this is a vision-capable model
+        response_model=None,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that can describe images and stuff",
+            },
+            {
+                "role": "user",
+                "content": [
+                    "Describe these images",
+                    # Large images to activate caching
+                    {
+                        "type": "image",
+                        "source": "https://assets.entrepreneur.com/content/3x2/2000/20200429211042-GettyImages-1164615296.jpeg",
+                        "cache_control": True,
+                    },
+                    {
+                        "type": "image",
+                        "source": "https://www.bigbear.com/imager/s3_us-west-1_amazonaws_com/big-bear/images/Scenic-Snow/89xVzXp1_00588cdef1e3d54756582b576359604b.jpeg",
+                        "cache_control": True,
+                    },
+                ],
+            },
+        ],
+        max_tokens=1000,
+        temperature=1,
+        autodetect_images=True,
+    )
+
+    # Assert a cache write or cache hit
+    assert (
+        messages.usage.cache_creation_input_tokens > 0
+        or messages.usage.cache_read_input_tokens > 0
+    )
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
