@@ -10,26 +10,31 @@ def apply_template(text: str, context: dict[str, Any]) -> str:
     return dedent(Template(text).render(**context))
 
 
-def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
+def process_message(message: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     """Process a single message, applying templates to its content."""
     # VertexAI Support
-    if hasattr(message, "parts") and isinstance(message.parts, list):
+    if (
+        hasattr(message, "parts")
+        and isinstance(message.parts, list)
+        and len(message.parts) > 0
+        and not isinstance(message.parts[0], str)
+    ):
         import vertexai.generative_models as gm
 
-        message.parts = [
-            (
+        return gm.Content(
+            role=message.role,
+            parts=[
                 gm.Part.from_text(apply_template(part.text, context))
                 if hasattr(part, "text")
                 else part
-            )
-            for part in message.parts
-        ]
-        return
+                for part in message.parts
+            ],
+        )
 
     # OpenAI format
     if isinstance(message.get("content"), str):
         message["content"] = apply_template(message["content"], context)
-        return
+        return message
 
     # Anthropic format
     if isinstance(message.get("content"), list):
@@ -40,7 +45,7 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
                 and isinstance(part.get("text"), str)
             ):
                 part["text"] = apply_template(part["text"], context)
-        return
+        return message
 
     # Gemini Support
     if isinstance(message.get("parts"), list):
@@ -48,11 +53,12 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> None:
             apply_template(part, context) if isinstance(part, str) else part
             for part in message["parts"]
         ]
-        return
+        return message
 
     # Cohere format
     if isinstance(message.get("message"), str):
         message["message"] = apply_template(message["message"], context)
+        return message
 
 
 def handle_templating(
@@ -83,9 +89,10 @@ def handle_templating(
     # Handle Cohere's message field
     if "message" in new_kwargs:
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)
-        new_kwargs["chat_history"] = handle_templating(
-            new_kwargs["chat_history"], context
-        )
+        new_kwargs["chat_history"] = [
+            process_message(message, context) for message in new_kwargs["chat_history"]
+        ]
+
         return new_kwargs
 
     if isinstance(new_kwargs, list):
@@ -98,7 +105,14 @@ def handle_templating(
     if not messages:
         return
 
-    for message in messages:
-        process_message(message, context)
+    if "messages" in new_kwargs:
+        new_kwargs["messages"] = [
+            process_message(message, context) for message in messages
+        ]
+
+    elif "contents" in new_kwargs:
+        new_kwargs["contents"] = [
+            process_message(content, context) for content in new_kwargs["contents"]
+        ]
 
     return new_kwargs

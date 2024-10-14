@@ -154,7 +154,7 @@ def patch(  # type: ignore
         new_kwargs = handle_templating(new_kwargs, context)
 
         response = await retry_async(
-            func=func,  # type: ignore
+            func=func,  # type:ignore
             response_model=response_model,
             context=context,
             max_retries=max_retries,
@@ -164,7 +164,7 @@ def patch(  # type: ignore
             mode=mode,
             hooks=hooks,
         )
-        return response
+        return response  # type: ignore
 
     @wraps(func)  # type: ignore
     def new_create_sync(
