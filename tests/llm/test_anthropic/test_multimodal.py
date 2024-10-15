@@ -43,8 +43,6 @@ def test_multimodal_image_description(model, mode, client):
     assert response.scene != ""
     assert len(response.colors) > 0
 
-    # Additional assertions can be added based on expected content of the sample image
-
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multimodal_image_description_autodetect(model, mode, client):
@@ -119,7 +117,7 @@ def test_multimodal_image_description_autodetect_image_params(model, mode, clien
 def test_multimodal_image_description_autodetect_image_params_cache(
     model, mode, client
 ):
-    client = instructor.from_anthropic(client, mode=mode, enable_caching=True)
+    client = instructor.from_anthropic(client, mode=mode, enable_prompt_caching=True)
     messages = client.chat.completions.create(
         model=model,  # Ensure this is a vision-capable model
         response_model=None,
@@ -136,12 +134,12 @@ def test_multimodal_image_description_autodetect_image_params_cache(
                     {
                         "type": "image",
                         "source": "https://assets.entrepreneur.com/content/3x2/2000/20200429211042-GettyImages-1164615296.jpeg",
-                        "cache_control": True,
+                        "cache_control": {"type": "ephemeral"},
                     },
                     {
                         "type": "image",
                         "source": "https://www.bigbear.com/imager/s3_us-west-1_amazonaws_com/big-bear/images/Scenic-Snow/89xVzXp1_00588cdef1e3d54756582b576359604b.jpeg",
-                        "cache_control": True,
+                        "cache_control": {"type": "ephemeral"},
                     },
                 ],
             },
@@ -181,3 +179,38 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
     )
 
     assert response.content[0].text.startswith("This is an image")
+
+
+@pytest.mark.parametrize("model, mode, cache_enabled", product(models, modes, [True, False]))
+def test_multimodal_image_description_cache_hits(model, mode, cache_enabled, client):
+    client = instructor.from_anthropic(client, mode=mode)
+
+    # Clear cache and enable / disable
+    instructor.multimodal.CacheConfig.clear()
+    Image.from_url.cache_info.clear()
+    instructor.multimodal.CacheConfig.configure(enable=cache_enabled)
+
+    for _ in range(2):
+        client.chat.completions.create(
+            response_model=None,
+            model=model,  # Ensure this is a vision-capable model
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that can describe images. "
+                    "If looking at an image, reply with 'This is an image' and nothing else.",
+                },
+                {
+                    "role": "user",
+                    "content": "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+                },
+            ],
+            max_tokens=1000,
+            temperature=1,
+            autodetect_images=True,
+        )
+
+    if cache_enabled:
+        assert Image.from_url.cache_info.hits > 0
+    else:
+        assert not Image.from_url.cache_info.hits

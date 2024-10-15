@@ -63,18 +63,19 @@ and set `autodetect_images=True`, or flag it within a constructor such as `instr
 import instructor
 from anthropic import Anthropic
 
-client = instructor.from_anthropic(Anthropic(), enable_caching=True)
+client = instructor.from_anthropic(Anthropic(), enable_prompt_caching=True)
 
+cache_control = {"type": "ephemeral"}
 response = client.chat.completions.create(
     model="claude-3-haiku-20240307",
     response_model=ImageAnalyzer,  # This can be set to `None` to return an Anthropic prompt caching message
     messages=[
         {
-            "role": "user", 
+            "role": "user",
             "content": [
                 "What is in this two images?",
-                {"type": "image", "source": "https://example.com/image.jpg", "cache_control": True}, 
-                {"type": "image", "source": "path/to/image.jpg", "cache_control": True}, 
+                {"type": "image", "source": "https://example.com/image.jpg", "cache_control": cache_control},
+                {"type": "image", "source": "path/to/image.jpg", "cache_control": cache_control},
             ]
         }
     ],
