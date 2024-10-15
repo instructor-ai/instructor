@@ -20,13 +20,13 @@ from pydantic import BaseModel, Field
 from typing import List
 
 
-class Node(BaseModel):
+class Node(BaseModel, frozen=True):
     id: int
     label: str
     color: str
 
 
-class Edge(BaseModel):
+class Edge(BaseModel, frozen=True):
     source: int
     target: int
     label: str
@@ -46,6 +46,31 @@ The **`generate_graph`** function leverages OpenAI's API to generate a knowledge
 from openai import OpenAI
 import instructor
 
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import List
+
+
+class Node(BaseModel, frozen=True):
+    id: int
+    label: str
+    color: str
+
+
+class Edge(BaseModel, frozen=True):
+    source: int
+    target: int
+    label: str
+    color: str = "black"
+
+
+class KnowledgeGraph(BaseModel):
+    nodes: List[Node] = Field(..., default_factory=list)
+    edges: List[Edge] = Field(..., default_factory=list)
+
+
+# <%hide%>
+
 # Adds response_model to ChatCompletion
 # Allows the return of Pydantic model rather than raw JSON
 client = instructor.from_openai(OpenAI())
@@ -53,7 +78,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate_graph(input) -> KnowledgeGraph:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         messages=[
             {
                 "role": "user",
@@ -70,6 +95,49 @@ The **`visualize_knowledge_graph`** function uses the Graphviz library to render
 
 ```python
 from graphviz import Digraph
+
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import List
+from openai import OpenAI
+import instructor
+
+
+class Node(BaseModel, frozen=True):
+    id: int
+    label: str
+    color: str
+
+
+class Edge(BaseModel, frozen=True):
+    source: int
+    target: int
+    label: str
+    color: str = "black"
+
+
+class KnowledgeGraph(BaseModel):
+    nodes: List[Node] = Field(..., default_factory=list)
+    edges: List[Edge] = Field(..., default_factory=list)
+
+
+client = instructor.from_openai(OpenAI())
+
+
+def generate_graph(input) -> KnowledgeGraph:
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": f"Help me understand the following by describing it as a detailed knowledge graph: {input}",
+            }
+        ],
+        response_model=KnowledgeGraph,
+    )  # type: ignore
+
+
+# <%hide%>
 
 
 def visualize_knowledge_graph(kg: KnowledgeGraph):
@@ -117,6 +185,23 @@ To support our new iterative approach, we need to update our data model. We can 
 In the `KnowledgeGraph` class, we have migrated the code from the `visualize_knowledge_graph` method and added new lists for nodes and edges.
 
 ```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+
+class Node(BaseModel, frozen=True):
+    id: int
+    label: str
+    color: str
+
+
+class Edge(BaseModel, frozen=True):
+    source: int
+    target: int
+    label: str
+    color: str = "black"
+
+
 class KnowledgeGraph(BaseModel):
     nodes: Optional[List[Node]] = Field(..., default_factory=list)
     edges: Optional[List[Edge]] = Field(..., default_factory=list)
@@ -147,6 +232,53 @@ class KnowledgeGraph(BaseModel):
 We can modify our `generate_graph` function to now take in a list of strings. At each step, it'll extract out the key insights from the sentences in the form of edges and nodes like we've seen before. We can then combine these new edges and nodes with our existing knowledge graph through iterative updates to our graph before arriving at our final result.
 
 ```python hl_lines="2 21-25 31-32"
+from typing import List
+
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+
+class Node(BaseModel, frozen=True):
+    id: int
+    label: str
+    color: str
+
+
+class Edge(BaseModel, frozen=True):
+    source: int
+    target: int
+    label: str
+    color: str = "black"
+
+
+class KnowledgeGraph(BaseModel):
+    nodes: Optional[List[Node]] = Field(..., default_factory=list)
+    edges: Optional[List[Edge]] = Field(..., default_factory=list)
+
+    def update(self, other: "KnowledgeGraph") -> "KnowledgeGraph":
+        """Updates the current graph with the other graph, deduplicating nodes and edges."""
+        return KnowledgeGraph(
+            nodes=list(set(self.nodes + other.nodes)),
+            edges=list(set(self.edges + other.edges)),
+        )
+
+    def draw(self, prefix: str = None):
+        dot = Digraph(comment="Knowledge Graph")
+
+        for node in self.nodes:  # (1)!
+            dot.node(str(node.id), node.label, color=node.color)
+
+        for edge in self.edges:  # (2)!
+            dot.edge(
+                str(edge.source), str(edge.target), label=edge.label, color=edge.color
+            )
+        dot.render(prefix, format="png", view=True)
+
+
+# <%hide%>
+
+
 def generate_graph(input: List[str]) -> KnowledgeGraph:
     cur_state = KnowledgeGraph()  # (1)!
     num_iterations = len(input)
@@ -191,6 +323,96 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
 Once we've done this, we can now run this new `generate_graph` function with the following two lines.
 
 ```python
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import List, Optional
+import instructor
+from openai import OpenAI
+from graphviz import Digraph
+
+
+class Node(BaseModel, frozen=True):
+    id: int
+    label: str
+    color: str
+
+
+class Edge(BaseModel, frozen=True):
+    source: int
+    target: int
+    label: str
+    color: str = "black"
+
+
+class KnowledgeGraph(BaseModel):
+    nodes: Optional[List[Node]] = Field(..., default_factory=list)
+    edges: Optional[List[Edge]] = Field(..., default_factory=list)
+
+    def update(self, other: "KnowledgeGraph") -> "KnowledgeGraph":
+        """Updates the current graph with the other graph, deduplicating nodes and edges."""
+        return KnowledgeGraph(
+            nodes=list(set(self.nodes + other.nodes)),
+            edges=list(set(self.edges + other.edges)),
+        )
+
+    def draw(self, prefix: str = None):
+        dot = Digraph(comment="Knowledge Graph")
+
+        for node in self.nodes:  # (1)!
+            dot.node(str(node.id), node.label, color=node.color)
+
+        for edge in self.edges:  # (2)!
+            dot.edge(
+                str(edge.source), str(edge.target), label=edge.label, color=edge.color
+            )
+        dot.render(prefix, format="png", view=True)
+
+
+client = instructor.from_openai(OpenAI())
+
+
+def generate_graph(input: List[str]) -> KnowledgeGraph:
+    cur_state = KnowledgeGraph()  # (1)!
+    num_iterations = len(input)
+    for i, inp in enumerate(input):
+        new_updates = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are an iterative knowledge graph builder.
+                    You are given the current state of the graph, and you must append the nodes and edges
+                    to it Do not procide any duplcates and try to reuse nodes as much as possible.""",
+                },
+                {
+                    "role": "user",
+                    "content": f"""Extract any new nodes and edges from the following:
+                    # Part {i}/{num_iterations} of the input:
+
+                    {inp}""",
+                },
+                {
+                    "role": "user",
+                    "content": f"""Here is the current state of the graph:
+                    {cur_state.model_dump_json(indent=2)}""",
+                },  # (2)!
+            ],
+            response_model=KnowledgeGraph,
+        )  # type: ignore
+
+        # Update the current state
+        cur_state = cur_state.update(new_updates)  # (3)!
+        cur_state.draw(prefix=f"iteration_{i}")
+    return cur_state
+
+
+# <%hide%>
+text_chunks = [
+    "Jason knows a lot about quantum mechanics. He is a physicist. He is a professor",
+    "Professors are smart.",
+    "Sarah knows Jason and is a student of his.",
+    "Sarah is a student at the University of Toronto. and UofT is in Canada",
+]
 graph: KnowledgeGraph = generate_graph(text_chunks)
 graph.draw(prefix="final")
 ```
