@@ -3,14 +3,12 @@ from .mode import Mode
 import base64
 import re
 import threading
+from collections.abc import Mapping, Iterable, Hashable
 from functools import wraps
 from typing import (
     Any,
     Callable,
     Literal,
-    Iterable,
-    Hashable,
-    Mapping,
     Optional,
     Union,
     TypedDict,
@@ -35,6 +33,7 @@ VALID_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 DEFAULT_CACHE_SIZE = 128
 DEFAULT_CACHE_ENABLED = True
 CacheControlType = Mapping[str, str]
+OptionalCacheControlType = Optional[CacheControlType]
 
 
 class ImageParamsBase(TypedDict):
@@ -133,7 +132,7 @@ class Image(BaseModel):
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded image data", repr=False
     )
-    cache_control: Optional[CacheControlType] = Field(
+    cache_control: OptionalCacheControlType = Field(
         None, description="Anthropic cache control"
     )
 
@@ -145,7 +144,7 @@ class Image(BaseModel):
 
     @classmethod
     def autodetect(
-        cls, source: str | Path, cache_control: Optional[CacheControlType] = None
+        cls, source: str | Path, cache_control: OptionalCacheControlType = None
     ) -> Image:
         """Attempt to autodetect an image from a source string or Path.
 
@@ -173,7 +172,7 @@ class Image(BaseModel):
 
     @classmethod
     def autodetect_safely(
-        cls, source: str | Path, cache_control: Optional[CacheControlType] = None
+        cls, source: str | Path, cache_control: OptionalCacheControlType = None
     ) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
@@ -195,7 +194,7 @@ class Image(BaseModel):
 
     @classmethod  # Caching likely unnecessary
     def from_base64(
-        cls, data_uri: str, cache_control: Optional[CacheControlType] = None
+        cls, data_uri: str, cache_control: OptionalCacheControlType = None
     ) -> Image:
         header, encoded = data_uri.split(",", 1)
         media_type = header.split(":")[1].split(";")[0]
@@ -210,7 +209,7 @@ class Image(BaseModel):
 
     @classmethod  # Caching likely unnecessary
     def from_raw_base64(
-        cls, data: str, cache_control: Optional[CacheControlType] = None
+        cls, data: str, cache_control: OptionalCacheControlType = None
     ) -> Image:
         try:
             decoded = base64.b64decode(data)
@@ -233,7 +232,7 @@ class Image(BaseModel):
     @classmethod
     @optional_cache
     def from_url(
-        cls, url: str, cache_control: Optional[CacheControlType] = None
+        cls, url: str, cache_control: OptionalCacheControlType = None
     ) -> Image:
         if cls.is_base64(url):
             return cls.from_base64(url, cache_control)
@@ -257,7 +256,7 @@ class Image(BaseModel):
     @classmethod
     @optional_cache
     def from_path(
-        cls, path: str | Path, cache_control: Optional[CacheControlType] = None
+        cls, path: str | Path, cache_control: OptionalCacheControlType = None
     ) -> Image:
         path = Path(path)
         if not path.is_file():
