@@ -1,3 +1,8 @@
+---
+title: Instructor CLI: Your Tool for Managing OpenAI API
+description: Simplify your OpenAI API experience with Instructor CLI for monitoring usage and fine-tuning models. Easy setup and powerful features.
+---
+
 # Instructor CLI
 
 Welcome to the Instructor Command-Line Interface (CLI), a tool designed to ease your experience with the OpenAI API. Whether it's tracking your API usage or fine-tuning your models, Instructor CLI is your go-to utility.

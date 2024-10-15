@@ -1,3 +1,8 @@
+---
+title: Customizing Pydantic Models with Field Metadata
+description: Learn how to enhance Pydantic models with metadata using Field, including default values, JSON schema customization, and more.
+---
+
 The `pydantic.Field` function is used to customize and add metadata to fields of models. To learn more, check out the Pydantic [documentation](https://docs.pydantic.dev/latest/concepts/fields/) as this is a near replica of that documentation that is relevant to prompting.
 
 ## Default values

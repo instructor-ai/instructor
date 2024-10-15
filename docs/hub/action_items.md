@@ -1,3 +1,8 @@
+---
+title: Automating Action Item Extraction from Meeting Transcripts
+description: Learn to extract actionable items from meeting transcripts using OpenAI's API and Pydantic for efficient project management.
+---
+
 # Extracting Action Items from Meeting Transcripts
 
 In this guide, we'll walk through how to extract action items from meeting transcripts using OpenAI's API and Pydantic. This use case is essential for automating project management tasks, such as task assignment and priority setting.

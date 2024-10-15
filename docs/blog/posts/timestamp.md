@@ -1,9 +1,20 @@
 ---
-draft: False
-date: 2024-09-26
-slug: consistent-timestamp-formats
 authors:
-  - jxnl
+- jxnl
+categories:
+- Pydantic
+comments: true
+date: 2024-09-26
+description: Learn how to ensure consistent timestamp formats in video content using
+  Pydantic for effective parsing and validation.
+draft: false
+slug: consistent-timestamp-formats
+tags:
+- timestamp
+- Pydantic
+- data validation
+- video processing
+- NLP
 ---
 
 # Ensuring Consistent Timestamp Formats with Language Models

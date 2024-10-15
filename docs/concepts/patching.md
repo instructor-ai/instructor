@@ -1,3 +1,8 @@
+---
+title: Enhancing OpenAI Client Functionality with New Keywords
+description: Learn how to use new keywords for backward compatibility in the OpenAI client, improving functionality and structured output.
+---
+
 # Patching
 
 Instructor enhances client functionality with three new keywords for backwards compatibility. This allows use of the enhanced client as usual, with structured output benefits.

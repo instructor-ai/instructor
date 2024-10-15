@@ -1,3 +1,8 @@
+---
+title: Contribute to Instructor: Evals, Issues, and Pull Requests
+description: Join us in enhancing the Instructor library with evals, report issues, and submit pull requests on GitHub. Collaborate and contribute!
+---
+
 We would love for you to contribute to `Instructor`.
 
 ## [Evals](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals)

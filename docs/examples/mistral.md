@@ -1,3 +1,8 @@
+---
+title: Using MistralAI for Structured Outputs
+description: Learn how to use MistralAI models for inference, including setup, API key generation, and example code.
+---
+
 # Structured Outputs using Mistral
 You can now also use mistralai models for inference by using from_mistral.
 

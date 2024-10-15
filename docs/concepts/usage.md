@@ -1,3 +1,8 @@
+---
+title: Handling Non-Streaming Requests in OpenAI with Usage Tracking
+description: Learn how to manage non-streaming requests in OpenAI, track token usage, and handle exceptions with Python.
+---
+
 The easiest way to get usage for non streaming requests is to access the raw response.
 
 ```python

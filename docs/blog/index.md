@@ -1,3 +1,18 @@
+---
+categories:
+- OpenAI
+comments: true
+description: Subscribe to our newsletter for AI updates, tips, and insights into the
+  latest features and advancements in AI technology.
+tags:
+- AI Updates
+- Newsletter Subscription
+- Tips
+- AI Features
+- Instructor
+title: Subscribe to Our Newsletter for AI Updates and Tips
+---
+
 # Subscribe to our Newsletter for Updates and Tips
 
 If you want to get updates on new features and tips on how to use Instructor, you can subscribe to our newsletter below to get notified when we publish new content.

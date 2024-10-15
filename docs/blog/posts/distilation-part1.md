@@ -1,10 +1,19 @@
 ---
-draft: False
-date: 2023-10-17
-categories:
-  - Finetuning
 authors:
-  - jxnl
+- jxnl
+categories:
+- LLM Techniques
+comments: true
+date: 2023-10-17
+description: Explore Instructor for fine-tuning language models with Python, simplifying
+  function calls, and enhancing performance.
+draft: false
+tags:
+- Instructor
+- Fine-tuning
+- Python
+- Language Models
+- Distillation
 ---
 
 # Enhancing Python Functions with Instructor: A Guide to Fine-Tuning and Distillation

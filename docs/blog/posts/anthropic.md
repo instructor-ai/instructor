@@ -1,8 +1,19 @@
 ---
-draft: False
-date: 2024-03-20
 authors:
-  - jxnl
+- jxnl
+categories:
+- Anthropic
+comments: true
+date: 2024-03-20
+description: Enhance your projects with the new Anthropic client support, featuring
+  installation guidance and user model creation.
+draft: false
+tags:
+- Anthropic
+- API Development
+- Pydantic
+- Python
+- LLM Techniques
 ---
 
 # Announcing Anthropic Support

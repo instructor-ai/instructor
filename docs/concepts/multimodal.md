@@ -1,3 +1,8 @@
+---
+title: Seamless Multimodal Interactions with Instructor
+description: Learn how the Image class in Instructor enables seamless handling of images and text across different AI models.
+---
+
 # Multimodal
 
 Instructor supports multimodal interactions by providing helper classes that are automatically converted to the correct format for different providers, allowing you to work with both text and images in your prompts and responses. This functionality is implemented in the `multimodal.py` module and provides a seamless way to handle images alongside text for various AI models.

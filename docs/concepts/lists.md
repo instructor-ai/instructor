@@ -1,3 +1,8 @@
+---
+title: Extracting Structured Data with Iterable and Streaming in Python
+description: Learn to use Iterable and streaming for structured data extraction with Pydantic and OpenAI in Python.
+---
+
 # Multi-task and Streaming
 
 A common use case of structured extraction is defining a single schema class and then making another schema to create a list to do multiple extraction

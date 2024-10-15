@@ -1,3 +1,8 @@
+---
+title: Extracting DataFrames from Markdown using Pandas
+description: Learn how to extract and convert Markdown tables directly into Pandas DataFrames in Python.
+---
+
 # Extracting directly to a DataFrame
 
 You can pull this example into your IDE by running the following command:

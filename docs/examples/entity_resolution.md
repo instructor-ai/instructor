@@ -1,3 +1,8 @@
+---
+title: Entity Resolution and Visualization for Legal Documents
+description: Learn how to extract, resolve, and visualize entities from legal contracts for better understanding and analysis.
+---
+
 # Entity Resolution and Visualization for Legal Documents
 
 In this guide, we demonstrate how to extract and resolve entities from a sample legal contract. Then, we visualize these entities and their dependencies as an entity graph. This approach can be invaluable for legal tech applications, aiding in the understanding of complex documents.

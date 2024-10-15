@@ -1,17 +1,21 @@
 ---
-draft: False
+authors:
+- ivanleomk
+- jxnl
+categories:
+- LLM Techniques
+comments: true
 date: 2023-11-05
+description: Learn to implement Chain of Density with GPT-3.5 for improved summarization,
+  achieving 20x latency reduction and 50x cost savings.
+draft: false
 slug: chain-of-density
 tags:
-  - pydantic
-  - validation
-  - chain of density
-  - finetuneing
-  - gpt-3.5-turbo
-  - distillation
-authors:
-  - ivanleomk
-  - jxnl
+- GPT-3.5
+- Chain of Density
+- Summarization
+- LLM Techniques
+- Fine-tuning
 ---
 
 # Smarter Summaries w/ Finetuning GPT-3.5 and Chain of Density

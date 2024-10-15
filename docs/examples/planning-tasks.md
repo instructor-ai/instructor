@@ -1,3 +1,8 @@
+---
+title: Query Planning with OpenAI: A Step-by-Step Guide
+description: Learn how to effectively plan and execute complex query plans using OpenAI's Function Call model for systematic information gathering.
+---
+
 # Planning and Executing a Query Plan
 
 This example demonstrates how to use the OpenAI Function Call ChatCompletion model to plan and execute a query plan in a question-answering system. By breaking down a complex question into smaller sub-questions with defined dependencies using [lists](../concepts/lists.md), the system can systematically gather the necessary information to answer the main question similar to [knowledge graph extraction](../examples/knowledge_graph.md).

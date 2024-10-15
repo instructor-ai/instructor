@@ -1,3 +1,8 @@
+---
+title: OpenAI Moderation Example for Content Compliance
+description: Learn how to use OpenAI's moderation endpoint to filter harmful content and ensure compliance with usage policies.
+---
+
 # OpenAI Moderation
 
 This example uses OpenAI's moderation endpoint to check content compliance with OpenAI's usage policies. It can identify and filter harmful content that violates the policies.

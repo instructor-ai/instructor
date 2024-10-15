@@ -1,3 +1,8 @@
+---
+title: Validating AI Answers with Contextual Citations in Python
+description: Learn to use Python classes to validate AI-generated answers with citations, ensuring accuracy and preventing hallucinations.
+---
+
 # Example: Answering Questions with Validated Citations
 
 For the full code example, check out [examples/citation_fuzzy_match.py](https://github.com/jxnl/instructor/blob/main/examples/citation_with_extraction/citation_fuzzy_match.py)

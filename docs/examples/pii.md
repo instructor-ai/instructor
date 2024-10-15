@@ -1,3 +1,8 @@
+---
+title: Extracting and Scrubbing PII Data with OpenAI
+description: Learn to extract and sanitize Personally Identifiable Information (PII) from documents using OpenAI's ChatCompletion model and Python.
+---
+
 # PII Data Extraction and Scrubbing
 
 ## Overview

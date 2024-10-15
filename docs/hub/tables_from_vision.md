@@ -1,3 +1,8 @@
+---
+title: Extracting Tables from Images Using OpenAI GPT-4
+description: Learn how to convert images into markdown tables using OpenAI's GPT-4 Vision model for data extraction and analysis.
+---
+
 # Extracting Tables from Images with OpenAI's GPT-4 Vision Model
 
 First, we define a custom type, `MarkdownDataFrame`, to handle pandas DataFrames formatted in markdown. This type uses Python's `Annotated` and `InstanceOf` types, along with decorators `BeforeValidator` and `PlainSerializer`, to process and serialize the data.

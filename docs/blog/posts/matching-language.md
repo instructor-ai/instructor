@@ -1,11 +1,20 @@
 ---
-draft: False
-date: 2024-03-28
-slug: matching-language-summaries
-categories:
-  - Summarization
 authors:
-  - jxnl
+- jxnl
+categories:
+- Pydantic
+comments: true
+date: 2024-03-28
+description: Explore techniques to ensure language models generate summaries that
+  match the source text's language using Pydantic and langdetect.
+draft: false
+slug: matching-language-summaries
+tags:
+- multilingual summarization
+- language detection
+- Pydantic
+- langdetect
+- language models
 ---
 
 # Matching Language in Multilingual Summarization Tasks

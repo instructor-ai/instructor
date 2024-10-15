@@ -1,3 +1,8 @@
+---
+title: Classifying Confidential Data with Local AI Models
+description: Learn to classify private documents securely using Llama-cpp-python with instructor while maintaining data privacy and local infrastructure.
+---
+
 # Leveraging Local Models for Classifying Private Data
 
 In this article, we'll show you how to use Llama-cpp-python with instructor for classification. This is a perfect use-case for users who want to ensure that confidential documents are handled securely without ever leaving your own infrastructure.
