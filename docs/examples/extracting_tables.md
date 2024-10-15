@@ -221,14 +221,12 @@ class Table(BaseModel):
     dataframe: MarkdownDataFrame
 
 
-# Apply the patch to the OpenAI client to support response_model
-# Also use MD_JSON mode since the visino model does not support any special structured output mode
-client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+client = instructor.from_openai(OpenAI())
 
 
 def extract_table(url: str) -> Iterable[Table]:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         response_model=Iterable[Table],
         max_tokens=1800,
         messages=[
@@ -246,22 +244,36 @@ def extract_table(url: str) -> Iterable[Table]:
 url = "https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png"
 tables = extract_table(url)
 for table in tables:
-    print(table.caption, end="\n")
-    #> Top 10 grossing Android apps in October 2023 (Ireland)
+    print(table.caption)
+    #> Top 10 grossing apps in October 2023 (Ireland) - Android
+    """
+           App                                       Category
+     Rank
+    1                                     Google One          Productivity
+    2                                        Disney+         Entertainment
+    3                  TikTok - Videos, Music & LIVE         Entertainment
+    4                               Candy Crush Saga                 Games
+    5                 Tinder: Dating, Chat & Friends     Social networking
+    6                                    Coin Master                 Games
+    7                                         Roblox                 Games
+    8                 Bumble - Dating & Make Friends                Dating
+    9                                    Royal Match                 Games
+    10                   Spotify: Music and Podcasts         Music & Audio
+    """
     print(table.dataframe)
     """
-           App Name                         Category
+           App Name                                  Category
      Rank
-    1        Tinder: Dating, Chat & Friends      Social networking
-    2                               Disney+          Entertainment
-    3        YouTube: Watch, Listen, Stream          Entertainment
-    4          Audible: Audio Entertainment          Entertainment
-    5                      Candy Crush Saga                  Games
-    6         TikTok - Videos, Music & LIVE          Entertainment
-    7        Bumble - Dating & Make Friends                 Dating
-    8                                Roblox                  Games
-    9           LinkedIn: Job Search & News               Business
-    10          Duolingo - Language Lessons              Education
+    1                                     Google One         Productivity
+    2                                        Disney+        Entertainment
+    3                  TikTok - Videos, Music & LIVE        Entertainment
+    4                               Candy Crush Saga                Games
+    5                 Tinder: Dating, Chat & Friends    Social networking
+    6                                    Coin Master                Games
+    7                                         Roblox                Games
+    8                 Bumble - Dating & Make Friends               Dating
+    9                                    Royal Match                Games
+    10                   Spotify: Music and Podcasts        Music & Audio
     """
 ```
 
