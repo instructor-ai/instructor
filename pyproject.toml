@@ -104,6 +104,7 @@ graphviz = "^0.20.3"
 sqlmodel = "^0.0.22"
 trafilatura = "^1.12.2"
 pydub = "^0.25.1"
+datasets = "^3.0.1"
 
 
 [tool.poetry.group.litellm.dependencies]
