@@ -143,9 +143,12 @@ MarkdownDataFrame = Annotated[
     ),
 ]
 
+
 class Table(BaseModel):
     caption: str
     dataframe: MarkdownDataFrame
+
+
 # <%hide%>
 
 # Apply the patch to the OpenAI client to support response_model
@@ -239,6 +242,8 @@ def extract_table(url: str) -> Iterable[Table]:
             }
         ],
     )
+
+    
 # <%hide%>
 
 url = "https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png"
