@@ -1,3 +1,7 @@
+---
+description: Explore how Instructor utilizes Pydantic for efficient data validation in OpenAI API applications.
+---
+
 # Why use Instructor?
 
 This is a letter from the author [Jason Liu](https://twitter.com/jxnlco) of Instructor. I'm a big fan of Pydantic and I think it's the best way to handle data validation in Python. I've been using it for years and I'm excited to bring it to the OpenAI API.

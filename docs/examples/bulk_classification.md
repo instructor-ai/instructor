@@ -1,3 +1,8 @@
+---
+title: User-Provided Tag Classification Tutorial
+description: Learn to classify user-provided tags effectively using async functions and FastAPI for parallel processing.
+---
+
 # Bulk Classification from User-Provided Tags.
 
 This tutorial shows how to do classification from user provided tags. This is valuable when you want to provide services that allow users to do some kind of classification.

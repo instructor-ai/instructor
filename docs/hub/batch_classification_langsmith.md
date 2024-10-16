@@ -1,3 +1,8 @@
+---
+title: Enhancing OpenAI Client with LangSmith and Instructor
+description: Discover how to integrate LangSmith with the OpenAI client for improved observability and functionality using instructor.
+---
+
 # Seamless Support with Langsmith
 
 Its a common misconception that LangChain's [LangSmith](https://www.langchain.com/langsmith) is only compatible with LangChain's models. In reality, LangSmith is a unified DevOps platform for developing, collaborating, testing, deploying, and monitoring LLM applications. In this blog we will explore how LangSmith can be used to enhance the OpenAI client alongside `instructor`.

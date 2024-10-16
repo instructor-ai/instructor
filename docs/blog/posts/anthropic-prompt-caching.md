@@ -1,8 +1,19 @@
 ---
-draft: False
-date: 2024-09-14
 authors:
-  - ivanleomk
+- ivanleomk
+categories:
+- Anthropic
+comments: true
+date: 2024-09-14
+description: Discover how prompt caching with Anthropic can improve response times
+  and reduce costs for large context applications.
+draft: false
+tags:
+- prompt caching
+- Anthropic
+- API optimization
+- cost reduction
+- latency improvement
 ---
 
 # Why should I use prompt caching?

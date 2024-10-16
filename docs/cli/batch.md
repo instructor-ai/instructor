@@ -1,3 +1,8 @@
+---
+title: Managing Batch Jobs with OpenAI CLI
+description: Learn how to create, list, and cancel batch jobs using the OpenAI Command Line Interface (CLI) for efficient job management.
+---
+
 # Using the Command Line Interface
 
 The instructor CLI provides functionalities for managing batch jobs on OpenAI

@@ -1,12 +1,22 @@
 ---
-draft: False
-date: 2024-09-26
-categories:
-  - RAG
 authors:
-  - jxnl
+- jxnl
+categories:
+- Anthropic
+- LLM Techniques
+- Python
+comments: true
+date: 2024-09-26
+description: Learn to implement Anthropic's Contextual Retrieval with async processing
+  to enhance RAG systems and preserve crucial context efficiently.
+draft: false
+tags:
+- Contextual Retrieval
+- Async Processing
+- RAG Systems
+- Performance Optimization
+- Document Chunking
 ---
-
 
 # Implementing Anthropic's Contextual Retrieval with Async Processing
 

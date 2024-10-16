@@ -1,3 +1,8 @@
+---
+title: Integrating Instructor with SQLModel in Python
+description: Learn how to integrate Instructor with SQLModel for seamless database interactions and API development in Python.
+---
+
 # Integrating Instructor with SQLModel
 
 [SQLModel](https://sqlmodel.tiangolo.com/) is a library designed for interacting with SQL databases from Python code using Python objects. `SQLModel` is based on `Pydantic` and `SQLAlchemy` and was created by [tiangolo](https://twitter.com/tiangolo) who also developed `FastAPI`. So you can expect seamless integration across all these libraries, reducing code duplicating and improving your developer experience. 
@@ -30,6 +35,8 @@ class Hero(SQLModel, instructor.OpenAISchema, table=True):
 The `create_hero` function will query `OpenAI` for a `Hero` record
 
 ```python
+import instructor
+
 client = instructor.from_openai(OpenAI())
 
 
@@ -51,9 +58,9 @@ SQLModel.metadata.create_all(engine)
 
 hero = create_hero()
 print(hero.model_dump())
-    """
-    {'name': 'SuperNova', 'secret_name': 'Mia Thompson', 'age': 28, 'id': None}
-    """
+"""
+{'name': 'SuperNova', 'secret_name': 'Mia Thompson', 'age': 28, 'id': None}
+"""
 
 with Session(engine) as session:
     session.add(hero)

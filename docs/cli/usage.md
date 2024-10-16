@@ -1,3 +1,8 @@
+---
+title: OpenAI API Usage CLI Guide
+description: Learn how to monitor OpenAI API usage with the CLI tool, including commands for viewing data by model, date, and cost.
+---
+
 # Using the OpenAI API Usage CLI
 
 The OpenAI API Usage CLI tool provides functionalities for monitoring your OpenAI API usage, breaking it down by model, date, and cost.

@@ -1,3 +1,8 @@
+---
+title: Utilizing Gemini for Multi-Modal Data Processing with Audio Files
+description: Learn how to use Gemini with Google Generative AI to process audio files efficiently in multi-modal applications.
+---
+
 # Using Gemini with Multi Modal Data
 
 This tutorial shows how to use `instructor` with `google-generativeai` to work with multi-modal data. In this example, we'll demonstrate three ways to work with audio files.

@@ -1,3 +1,8 @@
+---
+title: Understanding Prompt Caching for API Efficiency
+description: Explore how prompt caching optimizes performance for API calls in OpenAI and Anthropic, enhancing efficiency and reducing costs.
+---
+
 # Prompt Caching
 
 Prompt Caching is a feature that allows you to cache portions of your prompt, optimizing performance for multiple API calls with shared context. This helps to reduce cost and improve response times.

@@ -100,6 +100,12 @@ phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
 mistralai = "^1.0.3"
 cerebras_cloud_sdk = "^1.5.0"
+graphviz = "^0.20.3"
+sqlmodel = "^0.0.22"
+trafilatura = "^1.12.2"
+pydub = "^0.25.1"
+datasets = "^3.0.1"
+
 
 [tool.poetry.group.litellm.dependencies]
 litellm = "^1.35.31"

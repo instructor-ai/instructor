@@ -1,3 +1,8 @@
+---
+title: Implementing the Maybe Pattern for Error Handling in Functional Programming
+description: Learn how to use the Maybe pattern with Pydantic in Python for robust error handling when extracting user details.
+---
+
 # Handling Missing Data
 
 The `Maybe` pattern is a concept in functional programming used for error handling. Instead of raising exceptions or returning `None`, you can use a `Maybe` type to encapsulate both the result and potential errors.

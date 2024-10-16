@@ -1,3 +1,8 @@
+---
+title: Understanding Hooks in the Instructor Library
+description: Learn how to use hooks for event handling in the Instructor library to enhance logging, error handling, and custom behaviors.
+---
+
 # Hooks
 
 Hooks provide a powerful mechanism for intercepting and handling events during the completion and parsing process in the Instructor library. They allow you to add custom behavior, logging, or error handling at various stages of the API interaction.

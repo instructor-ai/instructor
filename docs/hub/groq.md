@@ -1,3 +1,8 @@
+---
+title: Structured Outputs with Groq AI and Pydantic
+description: Learn how to use Groq AI for structured outputs with Pydantic in Python and enhance API interactions.
+---
+
 # Structured Outputs with Groq AI
 
 If you want to try this example using `instructor hub`, you can pull it by running

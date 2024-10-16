@@ -1,3 +1,8 @@
+---
+title: Implementing Self-Correction with LLM Validator
+description: Learn how to use llm_validator for self-healing in NLP applications and improve response accuracy with validation errors.
+---
+
 # Self-Correction with `llm_validator`
 
 ## Introduction

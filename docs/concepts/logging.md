@@ -1,3 +1,8 @@
+---
+title: Debugging OpenAI Requests with Python Logging
+description: Learn how to log OpenAI requests and responses in Python using DEBUG level logging for efficient debugging.
+---
+
 In order to see the requests made to OpenAI and the responses, you can set logging to DEBUG. This will show the requests and responses made to OpenAI. This can be useful for debugging and understanding the requests and responses made to OpenAI. I would love some contributions that make this a lot cleaner, but for now this is the fastest way to see the prompts. 
 
 ```python

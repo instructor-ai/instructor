@@ -1,3 +1,8 @@
+---
+title: Understanding Parallel Function Calling in OpenAI
+description: Learn about OpenAI's experimental parallel function calling to reduce latency and improve application performance.
+---
+
 # Parallel Tools
 
 One of the latest capabilities that OpenAI has recently introduced is parallel function calling.
