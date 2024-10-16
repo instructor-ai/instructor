@@ -31,6 +31,9 @@ class Receipt(BaseModel):
 To ensure the accuracy of the extracted data, we use Pydantic's `model_validator` decorator to define a custom validation function, `check_total`. This function calculates the sum of item prices and compares it to the extracted total amount. If there's a discrepancy, it raises a `ValueError`.
 
 ```python
+from pydantic import model_validator
+
+
 @model_validator(mode="after")
 def check_total(self):
     items = self.items
@@ -130,7 +133,7 @@ class Receipt(BaseModel):
     def check_total(cls, values: "Receipt"):
         items = values.items
         total = values.total
-        calculated_total = sum(item.price * item.quantity for item in items)
+        calculated_total = round(sum(item.price * item.quantity for item in items), 2)
         if calculated_total != total:
             raise ValueError(
                 f"Total {total} does not match the sum of item prices {calculated_total}"
