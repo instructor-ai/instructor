@@ -244,36 +244,23 @@ def extract_table(url: str) -> Iterable[Table]:
 url = "https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png"
 tables = extract_table(url)
 for table in tables:
-    print(table.caption)
-    #> Top 10 grossing apps in October 2023 (Ireland) - Android
-    """
-           App                                       Category
-     Rank
-    1                                     Google One          Productivity
-    2                                        Disney+         Entertainment
-    3                  TikTok - Videos, Music & LIVE         Entertainment
-    4                               Candy Crush Saga                 Games
-    5                 Tinder: Dating, Chat & Friends     Social networking
-    6                                    Coin Master                 Games
-    7                                         Roblox                 Games
-    8                 Bumble - Dating & Make Friends                Dating
-    9                                    Royal Match                 Games
-    10                   Spotify: Music and Podcasts         Music & Audio
-    """
+   
     print(table.dataframe)
     """
-           App Name                                  Category
-     Rank
-    1                                     Google One         Productivity
-    2                                        Disney+        Entertainment
-    3                  TikTok - Videos, Music & LIVE        Entertainment
-    4                               Candy Crush Saga                Games
-    5                 Tinder: Dating, Chat & Friends    Social networking
-    6                                    Coin Master                Games
-    7                                         Roblox                Games
-    8                 Bumble - Dating & Make Friends               Dating
-    9                                    Royal Match                Games
-    10                   Spotify: Music and Podcasts        Music & Audio
+           Android                                      ... Category
+     Rank                                               ...
+    1                                       Google One  ...      Social networking
+    2                                          Disney+  ...          Entertainment
+    3                    TikTok - Videos, Music & LIVE  ...          Entertainment
+    4                                 Candy Crush Saga  ...          Entertainment
+    5                   Tinder: Dating, Chat & Friends  ...                  Games
+    6                                      Coin Master  ...          Entertainment
+    7                                           Roblox  ...                 Dating
+    8                   Bumble - Dating & Make Friends  ...                  Games
+    9                                      Royal Match  ...               Business
+    10                     Spotify: Music and Podcasts  ...              Education
+
+    [10 rows x 4 columns]
     """
 ```
 
