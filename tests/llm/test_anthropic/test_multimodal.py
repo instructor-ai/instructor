@@ -179,38 +179,3 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
     )
 
     assert response.content[0].text.startswith("This is an image")
-
-
-@pytest.mark.parametrize("model, mode, cache_enabled", product(models, modes, [True, False]))
-def test_multimodal_image_description_cache_hits(model, mode, cache_enabled, client):
-    client = instructor.from_anthropic(client, mode=mode)
-
-    # Clear cache and enable / disable
-    instructor.multimodal.CacheConfig.clear()
-    Image.from_url.cache_info.clear()
-    instructor.multimodal.CacheConfig.configure(enable=cache_enabled)
-
-    for _ in range(2):
-        client.chat.completions.create(
-            response_model=None,
-            model=model,  # Ensure this is a vision-capable model
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant that can describe images. "
-                    "If looking at an image, reply with 'This is an image' and nothing else.",
-                },
-                {
-                    "role": "user",
-                    "content": "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
-                },
-            ],
-            max_tokens=1000,
-            temperature=1,
-            autodetect_images=True,
-        )
-
-    if cache_enabled:
-        assert Image.from_url.cache_info.hits > 0
-    else:
-        assert not Image.from_url.cache_info.hits

@@ -87,15 +87,3 @@ response = client.chat.completions.create(
     autodetect_images=True
 )
 ```
-
-### Advanced
-By default, Instructor uses LRU caching (not to be confused with prompt caching) when using images. This avoids needless outbound requests and I/O for repeated Instructor calls and retries by caching `Image`'s in memory. If you'd like to modify the cache size or disable caching altogether, you can run
-```python
-from instructor.multimodal import CacheConfig
-
-# Change cache size (default is 128)
-CacheConfig.configure(size=64)
-
-# Disable caching
-CacheConfig.configure(enable=False)
-```
