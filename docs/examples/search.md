@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field
 # enables response_model keyword
 client = instructor.from_openai(OpenAI())
 
+
 class Search(BaseModel):
     query: str = Field(..., description="Query to search for relevant content")
     type: Literal["web", "image", "video"] = Field(..., description="Type of search")

@@ -14,6 +14,24 @@ We'll be using this [recording](https://storage.googleapis.com/generativeai-down
 The first way to work with audio files is to upload the entire audio file and pass it into the LLM as a normal message. This is the easiest way to get started and doesn't require any special setup.
 
 ```python
+# <%hide%>
+import requests
+from pydub import AudioSegment
+
+# Download the audio file
+url = "https://storage.googleapis.com/generativeai-downloads/data/State_of_the_Union_Address_30_January_1961.mp3"
+response = requests.get(url)
+
+# Save the audio file locally
+with open("sample.mp3", "wb") as file:
+    file.write(response.content)
+
+sound = AudioSegment.from_mp3("sample.mp3")  # (2)!
+sound = sound[:60000]
+sound.export(
+    "sample.mp3", format="mp3"
+)  # Save the processed audio segment as sample.mp3
+# <%hide>
 import instructor
 import google.generativeai as genai
 from pydantic import BaseModel
@@ -48,16 +66,9 @@ resp = client.create(
 )
 
 print(resp)
-#> description="The main speaker is President John F. Kennedy, and he's giving a
-#> State of the Union address to a joint session of Congress. He begins by
-#> acknowledging his fondness for the House of Representatives and his long
-#> history with it. He then goes on to discuss the state of the economy,
-#> highlighting the difficulties faced by Americans, such as unemployment and
-#> low farm incomes. He also touches on the Cold War and the international
-#> balance of payments. He speaks of the need to strengthen the US military,
-#> and he also discusses the importance of international cooperation and the
-#> need to address global issues like hunger and illiteracy. He ends by urging
-#> his audience to work together to face the challenges that lie ahead."
+"""
+description = 'The main speaker is President John F. Kennedy, giving his State of the Union address to a joint session of Congress. He is speaking in the House of Representatives in Washington, D.C. on January 30th, 1961. He is thanking the members of Congress for their knowledge and inspiration.'
+"""
 ```
 
 1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
@@ -119,6 +130,9 @@ resp = client.create(
 )
 
 print(resp)
+"""
+summary='President addresses the joint session of Congress,  reflecting on his first time taking the oath of federal office and the knowledge and inspiration gained.' exact_transcription="The President's state of the union address to a joint session of the Congress from the rostrum of the House of Representatives, Washington D.C. January 30th 1961 Speaker, Mr Vice President members of the Congress It is a pleasure to return from whence I came You are among my oldest friends in Washington And this house is my oldest home It was here it was here more than 14 years ago that I first took the oath of federal office It was here for 14 years that I gained both knowledge and inspiration from members of both"
+"""
 
 #> summary='President delivers a speech to a joint session of Congress,
 #> highlighting his history in the House of Representatives and thanking
@@ -180,12 +194,9 @@ resp = client.create(
 )
 
 print(resp)
-#> description='President John F. Kennedy delivers State of the Union Address to \
-#> Congress. He outlines national challenges: economic struggles, debt concerns, \
-#> communism threat, Cold War. Proposes solutions: increased military spending, \
-#> new economic programs, expanded foreign aid. Calls for active U.S. role in \
-#> international affairs. Emphasizes facing challenges, avoiding panic, and \
-#> working together for a better future.'
+"""
+description = 'President John F. Kennedy delivers his State of the Union address to the Congress on January 30, 1961. The speech was delivered at the rostrum of the House of Representatives in Washington, D.C.'
+"""
 ```
 
 1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.

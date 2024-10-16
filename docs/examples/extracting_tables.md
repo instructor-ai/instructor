@@ -54,6 +54,45 @@ MarkdownDataFrame = Annotated[
 The `Table` class is essential for organizing the extracted data. It includes a caption and a dataframe, processed as a markdown table. Since most of the complexity is handled by the `MarkdownDataFrame` type, the `Table` class is straightforward!
 
 ```python
+from pydantic import BaseModel
+
+# <%hide%>
+from io import StringIO
+from typing import Annotated, Any
+from pydantic import BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
+import pandas as pd
+
+
+def md_to_df(data: Any) -> Any:
+    # Convert markdown to DataFrame
+    if isinstance(data, str):
+        return (
+            pd.read_csv(
+                StringIO(data),  # Process data
+                sep="|",
+                index_col=1,
+            )
+            .dropna(axis=1, how="all")
+            .iloc[1:]
+            .applymap(lambda x: x.strip())
+        )
+    return data
+
+
+MarkdownDataFrame = Annotated[
+    InstanceOf[pd.DataFrame],
+    BeforeValidator(md_to_df),
+    PlainSerializer(lambda df: df.to_markdown()),
+    WithJsonSchema(
+        {
+            "type": "string",
+            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
+        }
+    ),
+]
+# <%hide%>
+
+
 class Table(BaseModel):
     caption: str
     dataframe: MarkdownDataFrame
@@ -66,6 +105,51 @@ The `extract_table` function uses OpenAI's vision model to process an image URL 
 ```python
 import instructor
 from openai import OpenAI
+from typing import Iterable
+
+# <%hide%>
+from pydantic import BaseModel
+from io import StringIO
+from typing import Annotated, Any
+from pydantic import BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
+import pandas as pd
+
+
+def md_to_df(data: Any) -> Any:
+    # Convert markdown to DataFrame
+    if isinstance(data, str):
+        return (
+            pd.read_csv(
+                StringIO(data),  # Process data
+                sep="|",
+                index_col=1,
+            )
+            .dropna(axis=1, how="all")
+            .iloc[1:]
+            .applymap(lambda x: x.strip())
+        )
+    return data
+
+
+MarkdownDataFrame = Annotated[
+    InstanceOf[pd.DataFrame],
+    BeforeValidator(md_to_df),
+    PlainSerializer(lambda df: df.to_markdown()),
+    WithJsonSchema(
+        {
+            "type": "string",
+            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
+        }
+    ),
+]
+
+
+class Table(BaseModel):
+    caption: str
+    dataframe: MarkdownDataFrame
+
+
+# <%hide%>
 
 # Apply the patch to the OpenAI client to support response_model
 # Also use MD_JSON mode since the visino model does not support any special structured output mode
@@ -74,7 +158,7 @@ client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD
 
 def extract_table(url: str) -> Iterable[Table]:
     return client.chat.completions.create(
-        model="gpt-4-vision-preview",
+        model="gpt-4o-mini",
         response_model=Iterable[Table],
         max_tokens=1800,
         messages=[
@@ -94,11 +178,95 @@ def extract_table(url: str) -> Iterable[Table]:
 In this example, we apply the method to extract data from an image showing the top grossing apps in Ireland for October 2023.
 
 ```python
+# <%hide%>
+import instructor
+from openai import OpenAI
+from typing import Iterable
+
+from pydantic import BaseModel
+from io import StringIO
+from typing import Annotated, Any
+from pydantic import BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
+import pandas as pd
+
+
+def md_to_df(data: Any) -> Any:
+    # Convert markdown to DataFrame
+    if isinstance(data, str):
+        return (
+            pd.read_csv(
+                StringIO(data),  # Process data
+                sep="|",
+                index_col=1,
+            )
+            .dropna(axis=1, how="all")
+            .iloc[1:]
+            .applymap(lambda x: x.strip())
+        )
+    return data
+
+
+MarkdownDataFrame = Annotated[
+    InstanceOf[pd.DataFrame],
+    BeforeValidator(md_to_df),
+    PlainSerializer(lambda df: df.to_markdown()),
+    WithJsonSchema(
+        {
+            "type": "string",
+            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
+        }
+    ),
+]
+
+
+class Table(BaseModel):
+    caption: str
+    dataframe: MarkdownDataFrame
+
+
+client = instructor.from_openai(OpenAI())
+
+
+def extract_table(url: str) -> Iterable[Table]:
+    return client.chat.completions.create(
+        model="gpt-4o",
+        response_model=Iterable[Table],
+        max_tokens=1800,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Extract table from image."},
+                    {"type": "image_url", "image_url": {"url": url}},
+                ],
+            }
+        ],
+    )
+
+    
+# <%hide%>
+
 url = "https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png"
 tables = extract_table(url)
 for table in tables:
-    print(table.caption, end="\n")
+   
     print(table.dataframe)
+    """
+           Android                                      ... Category
+     Rank                                               ...
+    1                                       Google One  ...      Social networking
+    2                                          Disney+  ...          Entertainment
+    3                    TikTok - Videos, Music & LIVE  ...          Entertainment
+    4                                 Candy Crush Saga  ...          Entertainment
+    5                   Tinder: Dating, Chat & Friends  ...                  Games
+    6                                      Coin Master  ...          Entertainment
+    7                                           Roblox  ...                 Dating
+    8                   Bumble - Dating & Make Friends  ...                  Games
+    9                                      Royal Match  ...               Business
+    10                     Spotify: Music and Podcasts  ...              Education
+
+    [10 rows x 4 columns]
+    """
 ```
 
 ??? Note "Expand to see the output"
