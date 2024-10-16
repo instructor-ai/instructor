@@ -640,13 +640,15 @@ def handle_response_model(
                 autodetect_images=autodetect_images,
             )
             if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
+                # Handle OpenAI style or Anthropic style messages
                 new_kwargs["messages"] = [
                     m for m in messages if m["role"] != "system"
                 ]
                 if "system" not in new_kwargs:
-                    new_kwargs["system"] = [
-                        m for m in messages if m["role"] == "system"
-                    ].pop()["content"]
+                    system_messages = (m for m in messages if m["role"] == "system")
+                    system_message = next(system_messages, None)
+                    if system_message:
+                        new_kwargs["system"] = system_message["content"]
             else:
                 new_kwargs["messages"] = messages
         return None, new_kwargs
