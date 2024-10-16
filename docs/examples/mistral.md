@@ -27,7 +27,7 @@ An example:
 ```python
 import os
 from pydantic import BaseModel
-from mistralai.client import MistralClient
+from mistralai import Mistral
 from instructor import from_mistral, Mode
 
 
@@ -37,7 +37,7 @@ class UserDetails(BaseModel):
 
 
 # enables `response_model` in chat call
-client = MistralClient(api_key=os.environ.get("MISTRAL_API_KEY"))
+client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 
 instructor_client = from_mistral(
     client=client,
@@ -53,6 +53,7 @@ resp = instructor_client.messages.create(
 )
 
 print(resp)
+#> name='Jason' age=10
 
 # output: UserDetails(name='Jason', age=10)
 ```
