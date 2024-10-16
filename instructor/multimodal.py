@@ -178,7 +178,7 @@ class Image(BaseModel):
         ):
             self.data = self.url_to_base64(self.source)
 
-        result = {
+        return {
             "type": "image",
             "source": {
                 "type": "base64",
@@ -186,7 +186,6 @@ class Image(BaseModel):
                 "data": self.data,
             },
         }
-        return result
 
     def to_openai(self) -> dict[str, Any]:
         if (
