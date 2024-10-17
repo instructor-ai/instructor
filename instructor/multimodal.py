@@ -114,15 +114,15 @@ class Audio(BaseModel):
 
 
 def convert_contents(
-    contents: Union[  # noqa: UP007
-        list[Union[str, dict[str, Any], Image, Audio]],
-        str,
-        dict[str, Any],
-        Image,  # noqa: UP007
-        Audio,  # noqa: UP007
-    ],
+    contents: (
+        str
+        | dict[str, Any]
+        | Image
+        | Audio
+        | list[str | dict[str, Any] | Image | Audio]
+    ),
     mode: Mode,
-) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
+) -> str | list[dict[str, Any]]:
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
