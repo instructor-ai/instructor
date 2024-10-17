@@ -82,7 +82,7 @@ resp = client.chat.completions.create(
     response_model=str,
 )
 print(resp)
-#> Hello, world! This is a response from the assistant.
+#> Hello, world!
 ```
 
 ### Emitting Events
@@ -149,98 +149,109 @@ import openai
 import pydantic
 
 
+def log_completion_kwargs(kwargs) -> None:
+    print("## Completion kwargs:")
+    print(kwargs)
+    """
+    {
+        "messages": [
+            {
+                "role": "user",
+                "content": "Extract the user name and age from the following text: 'John is 20 years old'",
+            }
+        ],
+        "model": "gpt-4o-mini",
+        "tools": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "User",
+                    "description": "Correctly extracted `User` with all the required parameters with correct types",
+                    "parameters": {
+                        "properties": {
+                            "name": {"title": "Name", "type": "string"},
+                            "age": {"title": "Age", "type": "integer"},
+                        },
+                        "required": ["age", "name"],
+                        "type": "object",
+                    },
+                },
+            }
+        ],
+        "tool_choice": {"type": "function", "function": {"name": "User"}},
+    }
+    """
+
+
 def log_completion_response(response) -> None:
-    """Log the completion response."""
     print("## Completion response:")
-    #> ## Completion response:
     print(response.model_dump())
     """
     {
-        'id': 'chatcmpl-AJGx0Lyer4ZeqgXJXwNbNWyeFnlhJ',
-        'choices': [
+        "id": "chatcmpl-AJHKkGTSwkxdmxBuaz69q4yCeqIZK",
+        "choices": [
             {
-                'finish_reason': 'stop',
-                'index': 0,
-                'logprobs': None,
-                'message': {
-                    'content': None,
-                    'refusal': None,
-                    'role': 'assistant',
-                    'function_call': None,
-                    'tool_calls': [
+                "finish_reason": "stop",
+                "index": 0,
+                "logprobs": None,
+                "message": {
+                    "content": None,
+                    "refusal": None,
+                    "role": "assistant",
+                    "function_call": None,
+                    "tool_calls": [
                         {
-                            'id': 'call_2prVmQofcHRZsG1JhDgKKCSZ',
-                            'function': {
-                                'arguments': '{"name":"John","age":-1}',
-                                'name': 'User',
+                            "id": "call_glxG7L23PiVLHWBT2nxvh4Vs",
+                            "function": {
+                                "arguments": '{"name":"John","age":20}',
+                                "name": "User",
                             },
-                            'type': 'function',
+                            "type": "function",
                         }
                     ],
                 },
             }
         ],
-        'created': 1729156754,
-        'model': 'gpt-4o-mini-2024-07-18',
-        'object': 'chat.completion',
-        'service_tier': None,
-        'system_fingerprint': 'fp_e2bde53e6e',
-        'usage': {
-            'completion_tokens': 10,
-            'prompt_tokens': 87,
-            'total_tokens': 97,
-            'completion_tokens_details': {'audio_tokens': None, 'reasoning_tokens': 0},
-            'prompt_tokens_details': {'audio_tokens': None, 'cached_tokens': 0},
+        "created": 1729158226,
+        "model": "gpt-4o-mini-2024-07-18",
+        "object": "chat.completion",
+        "service_tier": None,
+        "system_fingerprint": "fp_e2bde53e6e",
+        "usage": {
+            "completion_tokens": 9,
+            "prompt_tokens": 87,
+            "total_tokens": 96,
+            "completion_tokens_details": {"audio_tokens": None, "reasoning_tokens": 0},
+            "prompt_tokens_details": {"audio_tokens": None, "cached_tokens": 0},
         },
-    }
+    }   
     """
-    print("## Parse error:")
+
+
+def log_completion_error(error) -> None:
+    print("## Completion error:")
     print({"error": error})
 
-    #> ()
 
+def log_parse_error(error) -> None:
+    print("## Parse error:")
+    #> ## Parse error:
+    print(error)
     """
-    {
-        'messages': [
-            {
-                'role': 'user',
-                'content': "Extract the user name and age from the following text: 'John is -1 years old'",
-            }
-        ],
-        'model': 'gpt-4o-mini',
-        'tools': [
-            {
-                'type': 'function',
-                'function': {
-                    'name': 'User',
-                    'description': 'Correctly extracted `User` with all the required parameters with correct types',
-                    'parameters': {
-                        'properties': {
-                            'name': {'title': 'Name', 'type': 'string'},
-                            'age': {'title': 'Age', 'type': 'integer'},
-                        },
-                        'required': ['age', 'name'],
-                        'type': 'object',
-                    },
-                },
-            }
-        ],
-        'tool_choice': {'type': 'function', 'function': {'name': 'User'}},
-    }
+    1 validation error for User
+    age
+    Value error, Age cannot be negative [type=value_error, input_value=-10, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.8/v/value_error
     """
+
+
 # Create an Instructor client
 client = instructor.from_openai(openai.OpenAI())
 
 client.on("completion:kwargs", log_completion_kwargs)
 client.on("completion:response", log_completion_response)
-    #> ## Parse error:
+
 client.on("completion:error", log_completion_error)
-    """
-    {'error': 1 validation error for User
-    age
-      Value error, Age cannot be negative [type=value_error, input_value=-1, input_type=int]
-        For further information visit https://errors.pydantic.dev/2.8/v/value_error}
-    """
 client.on("parse:error", log_parse_error)
 
 
@@ -256,17 +267,22 @@ class User(pydantic.BaseModel):
         return v
 
 
-# Use the client to create a completion
-user = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract the user name and age from the following text: 'John is -1 years old'",
-        }
-    ],
-    response_model=User,
-)
+try:
+    # Use the client to create a completion
+    user = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract the user name and age from the following text: 'John is -1 years old'",
+            }
+        ],
+        response_model=User,
+        max_retries=1,
+    )
+except Exception as e:
+    print(f"Error: {e}")
+
 
 user = client.chat.completions.create(
     model="gpt-4o-mini",
@@ -277,7 +293,7 @@ user = client.chat.completions.create(
         }
     ],
     response_model=User,
-    max_retries=2,
+    max_retries=1,
 )
 print(user)
 #> name='John' age=10
