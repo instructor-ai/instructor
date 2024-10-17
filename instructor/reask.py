@@ -263,6 +263,41 @@ def reask_default(
     return kwargs
 
 
+def reask_fireworks_tools(kwargs: dict[str, Any], response: Any, exception: Exception):
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+    for tool_call in response.choices[0].message.tool_calls:
+        reask_msgs.append(
+            {
+                "role": "tool",  # type: ignore
+                "tool_call_id": tool_call.id,
+                "name": tool_call.function.name,
+                "content": (
+                    f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+                ),
+            }
+        )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def reask_fireworks_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
 def handle_reask_kwargs(
     kwargs: dict[str, Any],
     mode: Mode,
@@ -284,6 +319,8 @@ def handle_reask_kwargs(
         Mode.TOOLS_STRICT: reask_tools,
         Mode.CEREBRAS_TOOLS: reask_cerebras_tools,
         Mode.MD_JSON: reask_md_json,
+        Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
+        Mode.FIREWORKS_JSON: reask_fireworks_json,
     }
     reask_function = functions.get(mode, reask_default)
     return reask_function(kwargs=kwargs, response=response, exception=exception)

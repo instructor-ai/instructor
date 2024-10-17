@@ -105,12 +105,14 @@ class IterableBase:
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
+                        Mode.FIREWORKS_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
-                            yield json_chunk[0].function.arguments
+                            if json_chunk[0].function.arguments is not None:
+                                yield json_chunk[0].function.arguments
                     else:
                         raise NotImplementedError(
                             f"Mode {mode} is not supported for MultiTask streaming"
@@ -139,12 +141,14 @@ class IterableBase:
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
+                        Mode.FIREWORKS_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
-                            yield json_chunk[0].function.arguments
+                            if json_chunk[0].function.arguments is not None:
+                                yield json_chunk[0].function.arguments
                     else:
                         raise NotImplementedError(
                             f"Mode {mode} is not supported for MultiTask streaming"
