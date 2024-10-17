@@ -93,7 +93,7 @@ class Instructor:
                 "parse:error",
             ]
         )
-        | None,
+        | None = None,
     ) -> None:
         self.hooks.clear(hook_name)
 

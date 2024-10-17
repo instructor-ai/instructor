@@ -157,3 +157,22 @@ def test_clear_method(
 
     client.clear(hook_enum)
     assert hook_enum not in client.hooks._handlers
+
+
+@pytest.mark.parametrize("hook_enum", hook_enums)
+@pytest.mark.parametrize("num_functions", [1, 2, 3])
+def test_clear_no_args(
+    client: instructor.Instructor,
+    hook_enum: instructor.hooks.HookName,
+    num_functions: int,
+):
+    functions_to_add = hook_functions[:num_functions]
+
+    for func in functions_to_add:
+        client.on(hook_enum, func)
+
+    assert hook_enum in client.hooks._handlers
+    assert len(client.hooks._handlers[hook_enum]) == num_functions
+
+    client.clear()
+    assert hook_enum not in client.hooks._handlers
