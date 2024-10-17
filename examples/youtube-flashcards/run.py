@@ -11,31 +11,26 @@ from youtube_transcript_api import YouTubeTranscriptApi
 class QuestionAnswer(BaseModel):
     question: str = Field(description="Question about the topic")
     options: list[str] = Field(
-        description="Potential answers to the question.",
-        min_items=3,
-        max_items=5
+        description="Potential answers to the question.", min_items=3, max_items=5
     )
     answer_index: int = Field(
-        description="Index of the correct answer options (starting from 0).",
-        ge=0,
-        lt=5
+        description="Index of the correct answer options (starting from 0).", ge=0, lt=5
     )
     difficulty: int = Field(
         description="Difficulty of this question from 1 to 5, 5 being the most difficult.",
         gt=0,
-        le=5, 
+        le=5,
     )
     youtube_url: SkipJsonSchema[str | None] = None
-    id: uuid.UUID = Field(
-        description="Unique identifier",
-        default_factory=uuid.uuid4
-    )
+    id: uuid.UUID = Field(description="Unique identifier", default_factory=uuid.uuid4)
 
 
 @action(reads=[], writes=["youtube_url"])
 def process_user_input(state: State, user_input: str) -> State:
     """Process user input and update the YouTube URL."""
-    youtube_url = user_input  # In practice, we would have more complex validation logic.
+    youtube_url = (
+        user_input  # In practice, we would have more complex validation logic.
+    )
     return state.update(youtube_url=youtube_url)
 
 
@@ -43,10 +38,10 @@ def process_user_input(state: State, user_input: str) -> State:
 def get_youtube_transcript(state: State) -> State:
     """Get the official YouTube transcript for a video given it's URL"""
     youtube_url = state["youtube_url"]
-    
+
     _, _, video_id = youtube_url.partition("?v=")
     transcript = YouTubeTranscriptApi.get_transcript(video_id)
-    full_transcript = " ".join([entry['text'] for entry in transcript])
+    full_transcript = " ".join([entry["text"] for entry in transcript])
 
     # store the transcript in state
     return state.update(transcript=full_transcript, youtube_url=youtube_url)
@@ -116,3 +111,13 @@ if __name__ == "__main__":
             inputs={"user_input": user_input},
         )
         print(f"{len(state['question_answers'])} question-answer pairs generated")
+
+        print("Preview:\n")
+        count = 0
+        for qna in state["question_answers"]:
+            if count > 3:
+                break
+            print(qna.question)
+            print(qna.options)
+            print()
+            count += 1
