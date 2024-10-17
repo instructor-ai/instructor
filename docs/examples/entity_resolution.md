@@ -1,3 +1,8 @@
+---
+title: Entity Resolution and Visualization for Legal Documents
+description: Learn how to extract, resolve, and visualize entities from legal contracts for better understanding and analysis.
+---
+
 # Entity Resolution and Visualization for Legal Documents
 
 In this guide, we demonstrate how to extract and resolve entities from a sample legal contract. Then, we visualize these entities and their dependencies as an entity graph. This approach can be invaluable for legal tech applications, aiding in the understanding of complex documents.
@@ -58,6 +63,44 @@ from openai import OpenAI
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.from_openai(OpenAI())
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import List
+
+
+class Property(BaseModel):
+    key: str
+    value: str
+    resolved_absolute_value: str
+
+
+class Entity(BaseModel):
+    id: int = Field(
+        ...,
+        description="Unique identifier for the entity, used for deduplication, design a scheme allows multiple entities",
+    )
+    subquote_string: List[str] = Field(
+        ...,
+        description="Correctly resolved value of the entity, if the entity is a reference to another entity, this should be the id of the referenced entity, include a few more words before and after the value to allow for some context to be used in the resolution",
+    )
+    entity_title: str
+    properties: List[Property] = Field(
+        ..., description="List of properties of the entity"
+    )
+    dependencies: List[int] = Field(
+        ...,
+        description="List of entity ids that this entity depends  or relies on to resolve it",
+    )
+
+
+class DocumentExtraction(BaseModel):
+    entities: List[Entity] = Field(
+        ...,
+        description="Body of the answer, each fact should be a separate object with a body and a list of sources",
+    )
+
+
+# <%hide%>
 
 
 def ask_ai(content) -> DocumentExtraction:
@@ -84,7 +127,44 @@ def ask_ai(content) -> DocumentExtraction:
 ```python
 from graphviz import Digraph
 
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import List
 
+
+class Property(BaseModel):
+    key: str
+    value: str
+    resolved_absolute_value: str
+
+
+class Entity(BaseModel):
+    id: int = Field(
+        ...,
+        description="Unique identifier for the entity, used for deduplication, design a scheme allows multiple entities",
+    )
+    subquote_string: List[str] = Field(
+        ...,
+        description="Correctly resolved value of the entity, if the entity is a reference to another entity, this should be the id of the referenced entity, include a few more words before and after the value to allow for some context to be used in the resolution",
+    )
+    entity_title: str
+    properties: List[Property] = Field(
+        ..., description="List of properties of the entity"
+    )
+    dependencies: List[int] = Field(
+        ...,
+        description="List of entity ids that this entity depends  or relies on to resolve it",
+    )
+
+
+class DocumentExtraction(BaseModel):
+    entities: List[Entity] = Field(
+        ...,
+        description="Body of the answer, each fact should be a separate object with a body and a list of sources",
+    )
+
+
+# <%hide%>
 def generate_html_label(entity: Entity) -> str:
     rows = [
         f"<tr><td>{prop.key}</td><td>{prop.resolved_absolute_value}</td></tr>"
@@ -113,6 +193,91 @@ def generate_graph(data: DocumentExtraction):
 Finally, execute the code to visualize the entity graph for the sample legal contract.
 
 ```python
+# <%hide%>
+from pydantic import BaseModel, Field
+from typing import List
+from graphviz import Digraph
+import instructor
+from openai import OpenAI
+
+# Apply the patch to the OpenAI client
+# enables response_model keyword
+client = instructor.from_openai(OpenAI())
+
+
+class Property(BaseModel):
+    key: str
+    value: str
+    resolved_absolute_value: str
+
+
+class Entity(BaseModel):
+    id: int = Field(
+        ...,
+        description="Unique identifier for the entity, used for deduplication, design a scheme allows multiple entities",
+    )
+    subquote_string: List[str] = Field(
+        ...,
+        description="Correctly resolved value of the entity, if the entity is a reference to another entity, this should be the id of the referenced entity, include a few more words before and after the value to allow for some context to be used in the resolution",
+    )
+    entity_title: str
+    properties: List[Property] = Field(
+        ..., description="List of properties of the entity"
+    )
+    dependencies: List[int] = Field(
+        ...,
+        description="List of entity ids that this entity depends  or relies on to resolve it",
+    )
+
+
+class DocumentExtraction(BaseModel):
+    entities: List[Entity] = Field(
+        ...,
+        description="Body of the answer, each fact should be a separate object with a body and a list of sources",
+    )
+
+
+def ask_ai(content) -> DocumentExtraction:
+    return client.chat.completions.create(
+        model="gpt-4",
+        response_model=DocumentExtraction,
+        messages=[
+            {
+                "role": "system",
+                "content": "Extract and resolve a list of entities from the following document:",
+            },
+            {
+                "role": "user",
+                "content": content,
+            },
+        ],
+    )  # type: ignore
+
+
+def generate_html_label(entity: Entity) -> str:
+    rows = [
+        f"<tr><td>{prop.key}</td><td>{prop.resolved_absolute_value}</td></tr>"
+        for prop in entity.properties
+    ]
+    table_rows = "".join(rows)
+    return f"<<table border='0' cellborder='1' cellspacing='0'><tr><td colspan='2'><b>{entity.entity_title}</b></td></tr>{table_rows}</table>>"
+
+
+def generate_graph(data: DocumentExtraction):
+    dot = Digraph(comment="Entity Graph", node_attr={"shape": "plaintext"})
+
+    for entity in data.entities:
+        label = generate_html_label(entity)
+        dot.node(str(entity.id), label)
+
+    for entity in data.entities:
+        for dep_id in entity.dependencies:
+            dot.edge(str(entity.id), str(dep_id))
+
+    dot.render("entity.gv", view=True)
+
+
+# <%hide%>
 content = """
 Sample Legal Contract
 Agreement Contract

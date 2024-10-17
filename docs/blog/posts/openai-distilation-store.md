@@ -1,8 +1,19 @@
 ---
-draft: False
-date: 2024-10-02
 authors:
-  - jxnl
+- jxnl
+categories:
+- OpenAI
+comments: true
+date: 2024-10-02
+description: Learn how to use OpenAI's API Model Distillation with Instructor to create
+  efficient, tailored models for your applications.
+draft: false
+tags:
+- OpenAI
+- API Model Distillation
+- Instructor
+- Machine Learning
+- Data Processing
 ---
 
 # OpenAI API Model Distillation with Instructor

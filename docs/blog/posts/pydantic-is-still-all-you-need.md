@@ -1,10 +1,20 @@
 ---
-draft: False
-date: 2024-09-07
-slug: pydantic-is-still-all-you-need
-comments: True
 authors:
-  - jxnl
+- jxnl
+categories:
+- Pydantic
+comments: true
+date: 2024-09-07
+description: Explore how Pydantic enhances structured outputs in LLM applications,
+  ensuring reliability and improved data management.
+draft: false
+slug: pydantic-is-still-all-you-need
+tags:
+- Pydantic
+- Structured Outputs
+- Data Validation
+- LLM Techniques
+- Performance Optimization
 ---
 
 # Pydantic is Still All You Need: Reflections on a Year of Structured Outputs

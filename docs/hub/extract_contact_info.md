@@ -1,3 +1,8 @@
+---
+title: Automate Customer Lead Information Extraction with OpenAI and Pydantic
+description: Learn to extract customer lead details using OpenAI's API and Pydantic for efficient data automation and validation.
+---
+
 # Customer Information Extraction
 
 In this guide, we'll walk through how to extract customer lead information using OpenAI's API and Pydantic. This use case is essential for seamlessly automating the process of extracting specific information from a context.

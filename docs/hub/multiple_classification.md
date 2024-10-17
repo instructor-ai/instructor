@@ -1,3 +1,8 @@
+---
+title: Multi-Label Classification with OpenAI and Pydantic
+description: Learn how to implement multi-label classification using OpenAI's API and Pydantic for effective support ticket classification.
+---
+
 If you want to try outs via `instructor hub`, you can pull it by running
 
 ```bash

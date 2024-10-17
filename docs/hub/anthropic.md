@@ -1,3 +1,8 @@
+---
+title: Integrating Anthropic with Instructor Client for Enhanced User Modeling
+description: Learn how to combine Anthropic and Instructor clients to create user models with complex properties in Python.
+---
+
 # Anthropic 
 
 Now that we have a [Anthropic](https://www.anthropic.com/) client, we can use it with the `instructor` client to make requests.

@@ -1,11 +1,19 @@
 ---
-draft: False
-date: 2024-02-18
-categories:
-  - LangChain
-  - Observability
 authors:
-  - jxnl
+- jxnl
+categories:
+- LLM Techniques
+comments: true
+date: 2024-02-18
+description: Explore how LangSmith enhances OpenAI clients with seamless LLM observability
+  and the `instructor` package for question classification.
+draft: false
+tags:
+- LangSmith
+- OpenAI
+- LLM
+- Python
+- API Development
 ---
 
 # Seamless Support with Langsmith

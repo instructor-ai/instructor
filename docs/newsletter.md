@@ -1,3 +1,8 @@
+---
+title: Subscribe to Instructor Newsletter for AI Updates
+description: Get notified about AI tips, blog posts, and research. Stay informed with Instructor's latest features and community insights.
+---
+
 # Instructor Newsletter
 
 If you want to be notified of tips, new blog posts, and research, subscribe to our newsletter. Here's what you can expect:

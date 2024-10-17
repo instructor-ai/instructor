@@ -1,3 +1,8 @@
+---
+title: Enhancing AI Validations with Pydantic's Framework
+description: Learn how to improve AI outputs using Pydantic for validation and reasking techniques.
+---
+
 # Validation and Reasking
 
 Instead of framing "self-critique" or "self-reflection" in AI as new concepts, we can view them as validation errors with clear error messages that the system can use to self-correct.

@@ -1,13 +1,21 @@
 ---
-draft: False
-date: 2024-05-03
-slug: fastapi-open-telemetry-and-instructor
-categories:
-    - Python
-    - Observability
 authors:
-  - ivanleomk
-  - jxnl
+- ivanleomk
+- jxnl
+categories:
+- LLM Observability
+comments: true
+date: 2024-05-03
+description: Discover how Logfire enhances FastAPI applications with OpenTelemetry
+  for better visibility and performance tracking.
+draft: false
+slug: fastapi-open-telemetry-and-instructor
+tags:
+- FastAPI
+- Logfire
+- OpenTelemetry
+- Pydantic
+- AsyncIO
 ---
 
 # Why Logfire is a perfect fit for FastAPI + Instructor

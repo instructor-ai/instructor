@@ -1,3 +1,8 @@
+---
+title: Generating Synthetic Data with OpenAI's Batch API
+description: Learn to use OpenAI's Batch API for large-scale synthetic data generation, focusing on question-answer pairs from the ms-marco dataset.
+---
+
 # Bulk Generation of Synthetic Data
 
 This tutorial shows how to use `instructor` to generate large quantities of synthetic data at scale using Open AI's new Batch API. In this example, we'll be generating synthetic questions using the `ms-marco` dataset to evaluate RAG retrieval.
@@ -60,9 +65,9 @@ The Reserve Bank of Australia (RBA) came into being on 14 January 1960 as Austra
 print(generate_question(text_chunk).model_dump_json(indent=2))
 """
 {
-  "chain_of_thought": "The text talks about the establishment of the Reserve Bank of Australia, including its date, the act that created it, and some financial details. The focus is on the RBA's foundation and its role. Therefore, a suitable question would focus on when the RBA was established and what act facilitated its creation.",
-  "question": "When was the Reserve Bank of Australia established and what act created it?",
-  "answer": "The Reserve Bank of Australia was established on 14 January 1960 by the Reserve Bank Act 1959."
+  "chain_of_thought": "The text provides historical information about the Reserve Bank of Australia, including its establishment date and the key functions it took over from the Commonwealth Bank. It also details its assets and employee distribution. A question that captures this information was formulated.",
+  "question": "When was the Reserve Bank of Australia established?",
+  "answer": "14 January 1960."
 }
 """
 ```

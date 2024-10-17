@@ -1,10 +1,19 @@
 ---
-draft: False
-date: 2024-06-06
-categories:
-  - RAG
 authors:
-  - jxnl
+- jxnl
+categories:
+- LLM Techniques
+comments: true
+date: 2024-06-06
+description: Explore enhancing RAG systems with time filters using Instructor and
+  Pydantic for accurate, relevant data retrieval.
+draft: false
+tags:
+- RAG
+- Time Filters
+- Pydantic
+- Instructor
+- LLM Techniques
 ---
 
 # Enhancing RAG with Time Filters Using Instructor

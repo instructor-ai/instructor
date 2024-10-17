@@ -1,3 +1,7 @@
+---
+description: Easily extract structured data like JSON from LLMs with Instructor, designed for simplicity, control, and robust validation.
+---
+
 # Instructor, The Most Popular Library for Simple Structured Outputs
 
 _Structured outputs powered by llms. Designed for simplicity, transparency, and control._

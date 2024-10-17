@@ -1,3 +1,8 @@
+---
+title: Using Pydantic for Dynamic LLM Response Models
+description: Learn how to define and manage LLM output schemas with Pydantic, including dynamic model creation and adding custom behavior.
+---
+
 # Response Model
 
 Defining LLM output schemas in Pydantic is done via `pydantic.BaseModel`. To learn more about models in Pydantic, check out their [documentation](https://docs.pydantic.dev/latest/concepts/models/).

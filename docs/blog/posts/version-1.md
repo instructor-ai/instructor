@@ -1,11 +1,20 @@
 ---
-draft: False
+authors:
+- jxnl
+categories:
+- OpenAI
+comments: true
 date: 2024-04-01
+description: 'Introducing instructor 1.0.0: Simplified API for OpenAI with improved
+  typing support, validation, and streamlined usability.'
+draft: false
 slug: announce-instructor-v1
 tags:
-  - instructor
-authors:
-  - jxnl
+- API Development
+- OpenAI
+- Data Validation
+- Python
+- LLM Techniques
 ---
 
 # Announcing instructor=1.0.0

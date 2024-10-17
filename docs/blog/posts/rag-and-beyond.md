@@ -1,10 +1,19 @@
 ---
-draft: False
-date: 2023-09-17
-categories:
-  - RAG
 authors:
-  - jxnl
+- jxnl
+categories:
+- LLM Techniques
+comments: true
+date: 2023-09-17
+description: 'Explore how to enhance Retrieval Augmented Generation (RAG) with query
+  understanding for smarter search solutions. '
+draft: false
+tags:
+- RAG
+- query understanding
+- LLMs
+- data modeling
+- Pydantic
 ---
 
 # RAG is more than just embedding search

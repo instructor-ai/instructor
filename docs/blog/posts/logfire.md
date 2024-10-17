@@ -1,12 +1,21 @@
 ---
-draft: False
-date: 2024-05-01
-slug: instructor-logfire
-categories:
-  - Observability
 authors:
-  - ivanleomk
-  - jxnl
+- ivanleomk
+- jxnl
+categories:
+- LLM Observability
+comments: true
+date: 2024-05-01
+description: Explore Logfire, an observability platform to enhance application performance
+  tracking with Pydantic, Instructor, and OpenAI integration.
+draft: false
+slug: instructor-logfire
+tags:
+- Logfire
+- Pydantic
+- OpenAI
+- Instructor
+- LLM Observability
 ---
 
 ## Introduction

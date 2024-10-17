@@ -1,3 +1,8 @@
+---
+title: Using Groq for Inference: Setup and Example
+description: Learn how to use Groq for inference with the mixtral-8x7b model, including API setup and a practical Python example.
+---
+
 # Structured Outputs using Groq
 Instead of using openai or antrophic you can now also use groq for inference by using from_groq.
 

@@ -1,8 +1,19 @@
 ---
-draft: False
-date: 2024-09-19
 authors:
-  - jxnl
+- jxnl
+categories:
+- LLM Techniques
+comments: true
+date: 2024-09-19
+description: Explore the integration of Jinja templating in the Instructor for enhanced
+  formatting, validation, versioning, and secure logging.
+draft: false
+tags:
+- Jinja
+- Templating
+- Pydantic
+- API Development
+- Data Validation
 ---
 
 # Instructor Proposal: Integrating Jinja Templating
@@ -223,7 +234,3 @@ This approach offers several advantages:
 1. Secure logging: You can confidently log your template variables without risking the exposure of sensitive information.
 2. Type safety: Pydantic models provide type checking and validation, reducing the risk of errors.
 3. Flexibility: You can easily control how different types of data are displayed or used in templates.
-
-
-
-

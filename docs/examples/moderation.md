@@ -1,3 +1,8 @@
+---
+title: OpenAI Moderation Example for Content Compliance
+description: Learn how to use OpenAI's moderation endpoint to filter harmful content and ensure compliance with usage policies.
+---
+
 # OpenAI Moderation
 
 This example uses OpenAI's moderation endpoint to check content compliance with OpenAI's usage policies. It can identify and filter harmful content that violates the policies.
@@ -34,11 +39,21 @@ try:
     Response(message="I want to make them suffer the consequences")
 except Exception as e:
     print(e)
-    #> 'Instructor' object has no attribute 'moderations'
+    """
+    1 validation error for Response
+    message
+      Value error, `I want to make them suffer the consequences` was flagged for violence [type=value_error, input_value='I want to make them suffer the consequences', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.8/v/value_error
+    """
 
 try:
     Response(message="I want to hurt myself.")
 except Exception as e:
     print(e)
-    #> 'Instructor' object has no attribute 'moderations'
+    """
+    1 validation error for Response
+    message
+      Value error, `I want to hurt myself.` was flagged for self_harm, self_harm_intent, self-harm, self-harm/intent [type=value_error, input_value='I want to hurt myself.', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.8/v/value_error
+    """
 ```

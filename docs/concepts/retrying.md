@@ -1,3 +1,8 @@
+---
+title: Implementing Effective Retry Logic with Pydantic and Tenacity
+description: Learn how to establish simple and advanced retry strategies in Python using Pydantic and Tenacity for robust application behavior.
+---
+
 # Retrying
 
 One of the benefits of having Pydantic is the ease with which we can define validators. We cover this topic in many articles, like [Reasking Validation](./reask_validation.md) and in our blog post [Good LLM validation is just good validation](../blog/posts/validation-part1.md).
