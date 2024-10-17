@@ -1,6 +1,6 @@
 import pytest
 import instructor
-from openai import OpenAI, AsyncOpenAI
+from openai import OpenAI
 import pprint
 
 
