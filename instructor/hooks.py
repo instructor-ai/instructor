@@ -67,12 +67,16 @@ class Hooks:
             >>> hooks.emit_completion_arguments(model="gpt-3.5-turbo", temperature=0.7)
             Completion kwargs: (), {'model': 'gpt-3.5-turbo', 'temperature': 0.7}
         """
+        hook_name = self.get_hook_name(hook_name)
+        self._handlers[hook_name].append(handler)
+
+    def get_hook_name(self, hook_name: HookName | str) -> HookName:
         if isinstance(hook_name, str):
             try:
-                hook_name = HookName(hook_name)
+                return HookName(hook_name)
             except ValueError as err:
                 raise ValueError(f"Invalid hook name: {hook_name}") from err
-        self._handlers[hook_name].append(handler)
+        return hook_name
 
     def emit_completion_arguments(self, *args: Any, **kwargs: Any) -> None:
         for handler in self._handlers[HookName.COMPLETION_KWARGS]:
@@ -128,7 +132,18 @@ class Hooks:
                     f"Error in parse error handler:\n{error_traceback}", stacklevel=2
                 )
 
-    def off(self, hook_name: HookName, handler: Callable[[Any], None]) -> None:
+    def off(
+        self,
+        hook_name: HookName
+        | Literal[
+            "completion:kwargs",
+            "completion:response",
+            "completion:error",
+            "completion:last_attempt",
+            "parse:error",
+        ],
+        handler: Callable[[Any], None],
+    ) -> None:
         """
         Removes a specific handler from an event.
 
@@ -136,12 +151,24 @@ class Hooks:
             hook_name (HookName): The name of the hook.
             handler (Callable[[Any], None]): The handler to remove.
         """
+        hook_name = self.get_hook_name(hook_name)
         if hook_name in self._handlers:
             self._handlers[hook_name].remove(handler)
             if not self._handlers[hook_name]:
                 del self._handlers[hook_name]
 
-    def clear(self, hook_name: HookName | None = None) -> None:
+    def clear(
+        self,
+        hook_name: HookName
+        | Literal[
+            "completion:kwargs",
+            "completion:response",
+            "completion:error",
+            "completion:last_attempt",
+            "parse:error",
+        ]
+        | None = None,
+    ) -> None:
         """
         Clears handlers for a specific event or all events.
 
@@ -149,6 +176,7 @@ class Hooks:
             hook_name (HookName | None): The name of the event to clear handlers for. If None, all handlers are cleared.
         """
         if hook_name is not None:
+            hook_name = self.get_hook_name(hook_name)
             self._handlers.pop(hook_name, None)
         else:
             self._handlers.clear()
