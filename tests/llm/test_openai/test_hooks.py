@@ -33,11 +33,12 @@ def test_on_method_str(
     client: instructor.Instructor, hook_name: str, num_functions: int
 ):
     functions_to_add = hook_functions[:num_functions]
+    hook_enum = hook_object.get_hook_name(hook_name)
+
+    assert hook_enum not in client.hooks._handlers
 
     for func in functions_to_add:
         client.on(hook_name, func)
-
-    hook_enum = hook_object.get_hook_name(hook_name)
 
     assert hook_enum in client.hooks._handlers
     assert len(client.hooks._handlers[hook_enum]) == num_functions
@@ -54,6 +55,7 @@ def test_on_method_enum(
     num_functions: int,
 ):
     functions_to_add = hook_functions[:num_functions]
+    assert hook_enum not in client.hooks._handlers
 
     for func in functions_to_add:
         client.on(hook_enum, func)
@@ -73,11 +75,11 @@ def test_off_method_str(
     num_functions: int,
 ):
     functions_to_add = hook_functions[:num_functions]
+    hook_enum = hook_object.get_hook_name(hook_name)
+    assert hook_enum not in client.hooks._handlers
 
     for func in functions_to_add:
         client.on(hook_name, func)
-
-    hook_enum = hook_object.get_hook_name(hook_name)
 
     assert hook_enum in client.hooks._handlers
     assert len(client.hooks._handlers[hook_enum]) == num_functions
@@ -100,7 +102,7 @@ def test_off_method_enum(
     num_functions: int,
 ):
     functions_to_add = hook_functions[:num_functions]
-
+    assert hook_enum not in client.hooks._handlers
     for func in functions_to_add:
         client.on(hook_enum, func)
 
