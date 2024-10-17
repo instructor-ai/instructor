@@ -9,11 +9,11 @@ from .mode import Mode
 class Image(BaseModel):
     """Represents an image that can be loaded from a URL or file path."""
 
-    source: Union[str, Path] = Field(
+    source: str | Path = Field(
         ..., description="URL or file path of the image"
     )  # noqa: UP007
     media_type: str = Field(..., description="MIME type of the image")
-    data: Union[str, None] = Field(  # noqa: UP007
+    data: str | None = Field(  # noqa: UP007
         None, description="Base64 encoded image data", repr=False
     )
 
@@ -79,10 +79,10 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: Union[str, Path] = Field(
+    source: str | Path = Field(
         ..., description="URL or file path of the audio"
     )  # noqa: UP007
-    data: Union[str, None] = Field(  # noqa: UP007
+    data: str | None = Field(  # noqa: UP007
         None, description="Base64 encoded audio data", repr=False
     )
 
@@ -151,11 +151,13 @@ def convert_messages(
     messages: list[
         dict[
             str,
-            Union[
-                list[Union[str, dict[str, Any], Image]], str, dict[str, Any], Image
-            ],  # noqa: UP007
+            str
+            | dict[str, Any]
+            | Image
+            | Audio
+            | list[str | dict[str, Any] | Image | Audio],
         ]
-    ],  # noqa: UP007
+    ],
     mode: Mode,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
