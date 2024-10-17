@@ -21,7 +21,6 @@ def log_kwargs_2(*args, **kwargs):
     pprint.pprint({"args": args, "kwargs": kwargs})
 
 
-# hook_names = [item.name for item in instructor.hooks.HookName]
 hook_names = [item.value for item in instructor.hooks.HookName]
 hook_enums = [instructor.hooks.HookName(hook_name) for hook_name in hook_names]
 hook_functions = [log_kwargs, log_kwargs_1, log_kwargs_2]
