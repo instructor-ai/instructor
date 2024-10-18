@@ -96,7 +96,7 @@ You'll need to supply a valid .jsonl file in order to be able to create a Batch 
     messages = [
         [
             {
-                "role": "system",
+                "role": "user",
                 "content": f"Classify the following email {email}",
             }
         ]
