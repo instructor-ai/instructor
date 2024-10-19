@@ -5,6 +5,7 @@ Instructor is the most popular Python library for working with structured output
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![](https://img.shields.io/badge/Gurubase-Ask%20Instructor%20Guru-006BFF)](https://gurubase.io/g/instructor)
 
 ## Want your logo on our website?
 
