@@ -46,7 +46,7 @@ jobs:
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
-          poetry run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai"
+          poetry run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks"
           poetry run coverage report
           poetry run coverage html
         env:

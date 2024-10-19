@@ -65,6 +65,38 @@ class Instructor:
     ) -> None:
         self.hooks.on(hook_name, handler)
 
+    def off(
+        self,
+        hook_name: (
+            HookName
+            | Literal[
+                "completion:kwargs",
+                "completion:response",
+                "completion:error",
+                "completion:last_attempt",
+                "parse:error",
+            ]
+        ),
+        handler: Callable[[Any], None],
+    ) -> None:
+        self.hooks.off(hook_name, handler)
+
+    def clear(
+        self,
+        hook_name: (
+            HookName
+            | Literal[
+                "completion:kwargs",
+                "completion:response",
+                "completion:error",
+                "completion:last_attempt",
+                "parse:error",
+            ]
+        )
+        | None = None,
+    ) -> None:
+        self.hooks.clear(hook_name)
+
     @property
     def chat(self) -> Self:
         return self
