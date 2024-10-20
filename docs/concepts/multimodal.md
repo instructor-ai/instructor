@@ -13,10 +13,6 @@ The core of multimodal support in Instructor is the `Image` class. This class re
 
 It's important to note that Anthropic and OpenAI have different formats for handling images in their API requests. The `Image` class in Instructor abstracts away these differences, allowing you to work with a unified interface.
 
-## `Audio`
-
-The `Audio` class represents an audio file that can be loaded from a URL or file path. It provides methods to create `Audio` instances but currently only OpenAI supports it.
-
 ### Usage
 
 You can create an `Image` instance from a URL or file path using the `from_url` or `from_path` methods. The `Image` class will automatically convert the image to a base64-encoded string and include it in the API request.
@@ -40,3 +36,47 @@ response = client.chat.completions.create(
 ```
 
 The `Image` class takes care of the necessary conversions and formatting, ensuring that your code remains clean and provider-agnostic. This flexibility is particularly valuable when you're experimenting with different models or when you need to switch providers based on specific project requirements.
+
+## `Audio`
+
+The `Audio` class represents an audio file that can be loaded from a URL or file path. It provides methods to create `Audio` instances but currently only OpenAI supports it. You can create an instance using the `from_path` and `from_url` methods. The `Audio` class will automatically convert it to a base64-encoded image and include it in the API request.
+
+### Usage
+
+```python
+from openai import OpenAI
+from pydantic import BaseModel
+import instructor
+from instructor.multimodal import Audio
+import base64
+
+client = instructor.from_openai(OpenAI())
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+with open("./output.wav", "rb") as f:
+    encoded_string = base64.b64encode(f.read()).decode("utf-8")
+
+resp = client.chat.completions.create(
+    model="gpt-4o-audio-preview",
+    response_model=User,
+    modalities=["text"],
+    audio={"voice": "alloy", "format": "wav"},
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract the following information from the audio:",
+                Audio.from_path("./output.wav"),
+            ],
+        },
+    ],
+)  # type: ignore
+
+print(resp)
+# > name='Jason' age=20
+```
