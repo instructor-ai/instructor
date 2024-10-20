@@ -4,6 +4,7 @@ from typing import Any, Union
 from pathlib import Path
 from pydantic import BaseModel, Field
 from .mode import Mode
+import requests
 
 
 class Image(BaseModel):
@@ -90,7 +91,10 @@ class Audio(BaseModel):
     def from_url(cls, url: str) -> Audio:
         """Create an Audio instance from a URL."""
         assert url.endswith(".wav"), "Audio must be in WAV format"
-        return cls(source=url, data=None)
+
+        response = requests.get(url)
+        data = base64.b64encode(response.content).decode("utf-8")
+        return cls(source=url, data=data)
 
     @classmethod
     def from_path(cls, path: str | Path) -> Audio:
