@@ -51,11 +51,11 @@ class Image(BaseModel):
     )
 
     @classmethod
-    def autodetect(cls, source: str | Path) -> Image:
+    def autodetect(cls, source: Union[str, Path]) -> Image:  # noqa: UP007
         """Attempt to autodetect an image from a source string or Path.
 
         Args:
-            source (str | Path): The source string or path.
+            source (Union[str,path]): The source string or path.
         Returns:
             An Image if the source is detected to be a valid image.
         Raises:
@@ -76,11 +76,11 @@ class Image(BaseModel):
         raise ValueError("Unable to determine image type or unsupported image format")
 
     @classmethod
-    def autodetect_safely(cls, source: str | Path) -> Union[Image, str]:  # noqa: UP007
+    def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
-            source (str | Path): The source string or path.
+            source (Union[str,path]): The source string or path.
         Returns:
             An Image if the source is detected to be a valid image, otherwise
             the source itself as a string.
@@ -145,8 +145,9 @@ class Image(BaseModel):
             raise ValueError(f"Unsupported image format: {media_type}")
         return cls(source=url, media_type=media_type, data=None)
 
+    @classmethod
     @lru_cache
-    def from_path(cls, path: str | Path) -> Image:
+    def from_path(cls, path: Union[str, Path]) -> Image:  # noqa: UP007
         path = Path(path)
         if not path.is_file():
             raise FileNotFoundError(f"Image file not found: {path}")
@@ -307,11 +308,13 @@ def convert_messages(
     messages: list[
         dict[
             str,
-            str
-            | dict[str, Any]
-            | Image
-            | Audio
-            | list[str | dict[str, Any] | Image | Audio],
+            Union[  # noqa: UP007
+                str,
+                dict[str, Any],
+                Image,
+                Audio,
+                list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
+            ],
         ]
     ],
     mode: Mode,
@@ -333,7 +336,7 @@ def convert_messages(
         content = message["content"]
         if autodetect_images:
             if isinstance(content, list):
-                new_content: list[Union[str, dict[str, Any], Image]] = []  # noqa: UP007
+                new_content: list[Union[str, dict[str, Any], Image, Audio]] = []  # noqa: UP007
                 for item in content:
                     if isinstance(item, str):
                         new_content.append(Image.autodetect_safely(item))
