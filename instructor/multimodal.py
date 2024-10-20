@@ -10,11 +10,9 @@ import requests
 class Image(BaseModel):
     """Represents an image that can be loaded from a URL or file path."""
 
-    source: str | Path = Field(
-        ..., description="URL or file path of the image"
-    )  # noqa: UP007
+    source: Union[str, Path] = Field(..., description="URL or file path of the image")  # noqa: UP007
     media_type: str = Field(..., description="MIME type of the image")
-    data: str | None = Field(  # noqa: UP007
+    data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded image data", repr=False
     )
 
@@ -24,7 +22,7 @@ class Image(BaseModel):
         return cls(source=url, media_type="image/jpeg", data=None)
 
     @classmethod
-    def from_path(cls, path: str | Path) -> Image:
+    def from_path(cls, path: Union[str, Path]) -> Image:  # noqa: UP007
         """Create an Image instance from a file path."""
         path = Path(path)
         if not path.is_file():
@@ -80,10 +78,8 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: str | Path = Field(
-        ..., description="URL or file path of the audio"
-    )  # noqa: UP007
-    data: str | None = Field(  # noqa: UP007
+    source: Union[str, Path] = Field(..., description="URL or file path of the audio")  # noqa: UP007
+    data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded audio data", repr=False
     )
 
@@ -97,7 +93,7 @@ class Audio(BaseModel):
         return cls(source=url, data=data)
 
     @classmethod
-    def from_path(cls, path: str | Path) -> Audio:
+    def from_path(cls, path: Union[str, Path]) -> Audio:  # noqa: UP007
         """Create an Audio instance from a file path."""
         path = Path(path)
         assert path.is_file(), f"Audio file not found: {path}"
@@ -118,15 +114,15 @@ class Audio(BaseModel):
 
 
 def convert_contents(
-    contents: (
-        str
-        | dict[str, Any]
-        | Image
-        | Audio
-        | list[str | dict[str, Any] | Image | Audio]
-    ),
+    contents: Union[  # noqa: UP007
+        str,
+        dict[str, Any],
+        Image,
+        Audio,
+        list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
+    ],
     mode: Mode,
-) -> str | list[dict[str, Any]]:
+) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
