@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "instructor"
-version = "1.6.2"
+version = "1.6.3"
 description = "structured outputs for llm"
 authors = ["Jason Liu <jason@jxnl.co>"]
 license = "MIT"
@@ -10,7 +10,7 @@ repository = "https://github.com/jxnl/instructor"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-openai = "^1.45.0"
+openai = "^1.52.0"
 pydantic = "^2.8.0"
 docstring-parser = "^0.16"
 typer = ">=0.9.0,<1.0.0"
@@ -29,7 +29,7 @@ pandas = { version = "^2.2.0", optional = true }
 tabulate = { version = "^0.9.0", optional = true }
 pydantic_extra_types = { version = "^2.6.0", optional = true }
 litellm = { version = "^1.35.31", optional = true }
-anthropic = { version = "^0.34.0", optional = true }
+anthropic = { version = "^0.36.2", optional = true }
 xmltodict = { version = "^0.13.0", optional = true }
 groq = { version = "^0.4.2", optional = true }
 cohere = { version = "^5.1.8", optional = true }
@@ -86,7 +86,7 @@ mkdocs-minify-plugin = "^0.8.0"
 mkdocs-redirects = "^1.2.1"
 
 [tool.poetry.group.anthropic.dependencies]
-anthropic = "^0.34.0"
+anthropic = "^0.36.2"
 
 [tool.poetry.group.test-docs.dependencies]
 fastapi = "^0.109.2"
@@ -96,7 +96,7 @@ pandas = "^2.2.0"
 tabulate = "^0.9.0"
 pydantic_extra_types = "^2.6.0"
 litellm = "^1.35.31"
-anthropic = "^0.34.0"
+anthropic = "^0.36.2"
 xmltodict = "^0.13.0"
 groq = "^0.4.2"
 phonenumbers = "^8.13.33"

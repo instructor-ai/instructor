@@ -1,9 +1,51 @@
 import pytest
-from instructor.multimodal import Image
+from instructor.multimodal import Image, Audio
 import instructor
 from pydantic import Field, BaseModel
 from itertools import product
 from .util import models, modes
+import requests
+from pathlib import Path
+
+
+audio_url = "https://www2.cs.uic.edu/~i101/SoundFiles/gettysburg.wav"
+
+
+def gettysburg_audio():
+    audio_file = Path("gettysburg.wav")
+    if not audio_file.exists():
+        response = requests.get(audio_url)
+        response.raise_for_status()
+        with open(audio_file, "wb") as f:
+            f.write(response.content)
+    return audio_file
+
+
+@pytest.mark.parametrize(
+    "audio_file",
+    [Audio.from_url(audio_url), Audio.from_path(gettysburg_audio())],
+)
+def test_multimodal_audio_description(audio_file, client):
+    client = instructor.from_openai(client)
+
+    class AudioDescription(BaseModel):
+        source: str
+
+    response = client.chat.completions.create(
+        model="gpt-4o-audio-preview",
+        response_model=AudioDescription,
+        modalities=["text"],
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    "Where's this excerpt from?",
+                    audio_file,
+                ],
+            },
+        ],
+        audio={"voice": "alloy", "format": "wav"},
+    )
 
 
 class ImageDescription(BaseModel):

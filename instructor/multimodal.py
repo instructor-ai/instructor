@@ -19,6 +19,7 @@ from urllib.parse import urlparse
 import mimetypes
 import requests
 from pydantic import BaseModel, Field
+from .mode import Mode
 
 F = TypeVar("F", bound=Callable[..., Any])
 K = TypeVar("K", bound=Hashable)
@@ -50,11 +51,11 @@ class Image(BaseModel):
     )
 
     @classmethod
-    def autodetect(cls, source: str | Path) -> Image:
+    def autodetect(cls, source: Union[str, Path]) -> Image:  # noqa: UP007
         """Attempt to autodetect an image from a source string or Path.
 
         Args:
-            source (str | Path): The source string or path.
+            source (Union[str,path]): The source string or path.
         Returns:
             An Image if the source is detected to be a valid image.
         Raises:
@@ -75,11 +76,11 @@ class Image(BaseModel):
         raise ValueError("Unable to determine image type or unsupported image format")
 
     @classmethod
-    def autodetect_safely(cls, source: str | Path) -> Union[Image, str]:  # noqa: UP007
+    def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
-            source (str | Path): The source string or path.
+            source (Union[str,path]): The source string or path.
         Returns:
             An Image if the source is detected to be a valid image, otherwise
             the source itself as a string.
@@ -146,7 +147,7 @@ class Image(BaseModel):
 
     @classmethod
     @lru_cache
-    def from_path(cls, path: str | Path) -> Image:
+    def from_path(cls, path: Union[str, Path]) -> Image:  # noqa: UP007
         path = Path(path)
         if not path.is_file():
             raise FileNotFoundError(f"Image file not found: {path}")
@@ -204,8 +205,47 @@ class Image(BaseModel):
             raise ValueError("Image data is missing for base64 encoding.")
 
 
+class Audio(BaseModel):
+    """Represents an audio that can be loaded from a URL or file path."""
+
+    source: Union[str, Path] = Field(..., description="URL or file path of the audio")  # noqa: UP007
+    data: Union[str, None] = Field(  # noqa: UP007
+        None, description="Base64 encoded audio data", repr=False
+    )
+
+    @classmethod
+    def from_url(cls, url: str) -> Audio:
+        """Create an Audio instance from a URL."""
+        assert url.endswith(".wav"), "Audio must be in WAV format"
+
+        response = requests.get(url)
+        data = base64.b64encode(response.content).decode("utf-8")
+        return cls(source=url, data=data)
+
+    @classmethod
+    def from_path(cls, path: Union[str, Path]) -> Audio:  # noqa: UP007
+        """Create an Audio instance from a file path."""
+        path = Path(path)
+        assert path.is_file(), f"Audio file not found: {path}"
+        assert path.suffix.lower() == ".wav", "Audio must be in WAV format"
+
+        data = base64.b64encode(path.read_bytes()).decode("utf-8")
+        return cls(source=str(path), data=data)
+
+    def to_openai(self) -> dict[str, Any]:
+        """Convert the Audio instance to OpenAI's API format."""
+        return {
+            "type": "input_audio",
+            "input_audio": {"data": self.data, "format": "wav"},
+        }
+
+    def to_anthropic(self) -> dict[str, Any]:
+        raise NotImplementedError("Anthropic is not supported yet")
+
+
 class ImageWithCacheControl(Image):
     """Image with Anthropic prompt caching support."""
+
     cache_control: OptionalCacheControlType = Field(
         None, description="Optional Anthropic cache control image"
     )
@@ -232,14 +272,18 @@ class ImageWithCacheControl(Image):
 
 def convert_contents(
     contents: Union[  # noqa: UP007
-        list[Union[str, dict[str, Any], Image]], str, dict[str, Any], Image  # noqa: UP007
+        str,
+        dict[str, Any],
+        Image,
+        Audio,
+        list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
     ],
     mode: Mode,
 ) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
-    if isinstance(contents, Image) or isinstance(contents, dict):
+    if isinstance(contents, (Image, Audio)) or isinstance(contents, dict):
         contents = [contents]
 
     converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
@@ -248,7 +292,7 @@ def convert_contents(
             converted_contents.append({"type": "text", "text": content})
         elif isinstance(content, dict):
             converted_contents.append(content)
-        elif isinstance(content, Image):
+        elif isinstance(content, (Image, Audio)):
             if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
                 converted_contents.append(content.to_anthropic())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
@@ -264,9 +308,15 @@ def convert_messages(
     messages: list[
         dict[
             str,
-            Union[list[Union[str, dict[str, Any], Image]], str, dict[str, Any], Image],  # noqa: UP007
+            Union[  # noqa: UP007
+                str,
+                dict[str, Any],
+                Image,
+                Audio,
+                list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
+            ],
         ]
-    ],  # noqa: UP007
+    ],
     mode: Mode,
     autodetect_images: bool = False,
 ) -> list[dict[str, Any]]:
@@ -277,11 +327,16 @@ def convert_messages(
         return isinstance(x, dict) and x.get("type") == "image" and "source" in x  # type: ignore
 
     for message in messages:
+        if "type" in message:
+            if message["type"] in {"audio", "image"}:
+                converted_messages.append(message)  # type: ignore
+            else:
+                raise ValueError(f"Unsupported message type: {message['type']}")
         role = message["role"]
         content = message["content"]
         if autodetect_images:
             if isinstance(content, list):
-                new_content: list[Union[str, dict[str, Any], Image]] = []  # noqa: UP007
+                new_content: list[Union[str, dict[str, Any], Image, Audio]] = []  # noqa: UP007
                 for item in content:
                     if isinstance(item, str):
                         new_content.append(Image.autodetect_safely(item))

@@ -164,6 +164,7 @@ nav:
     - "blog/index.md"
   - Concepts:
     - Models: 'concepts/models.md'
+    - Multimodal : 'concepts/multimodal.md'
     - Retrying: 'concepts/retrying.md'
     - Patching: 'concepts/patching.md'
     - Hooks: 'concepts/hooks.md'

@@ -141,6 +141,7 @@ class BatchJob:
                             messages=messages,
                             max_tokens=max_tokens,
                             temperature=temperature,
+                            **kwargs,
                         ),
                     )
                 else:

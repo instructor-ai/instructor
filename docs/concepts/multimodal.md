@@ -1,6 +1,6 @@
 ---
 title: Seamless Multimodal Interactions with Instructor
-description: Learn how the Image class in Instructor enables seamless handling of images and text across different AI models.
+description: Learn how the Image and Audio class in Instructor enables seamless handling of images, audio and text across different AI models.
 ---
 
 # Multimodal
@@ -86,4 +86,44 @@ response = client.chat.completions.create(
     ],
     autodetect_images=True
 )
+```
+
+## `Audio`
+
+The `Audio` class represents an audio file that can be loaded from a URL or file path. It provides methods to create `Audio` instances but currently only OpenAI supports it. You can create an instance using the `from_path` and `from_url` methods. The `Audio` class will automatically convert it to a base64-encoded image and include it in the API request.
+
+### Usage
+
+```python
+from openai import OpenAI
+from pydantic import BaseModel
+import instructor
+from instructor.multimodal import Audio
+import base64
+
+client = instructor.from_openai(OpenAI())
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+with open("./output.wav", "rb") as f:
+    encoded_string = base64.b64encode(f.read()).decode("utf-8")
+
+resp = client.chat.completions.create(
+    model="gpt-4o-audio-preview",
+    response_model=User,
+    modalities=["text"],
+    audio={"voice": "alloy", "format": "wav"},
+                "Extract the following information from the audio:",
+                Audio.from_path("./output.wav"),
+            ],
+        },
+    ],
+)  # type: ignore
+
+print(resp)
+# > name='Jason' age=20
 ```
