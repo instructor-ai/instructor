@@ -1,10 +1,10 @@
 ---
-description: "Complexity Based Prompting involves choosing examples based on their reasoning steps. If reasoning length isn't avaliable, then we can use proxies such as response length"
+description: "Complexity Based Prompting involves choosing examples based on their reasoning steps. If reasoning length isn't available, then we can use proxies such as response length"
 ---
 
-We can improve the performance of our language models by choosing more complex examples. This refers to examples that have either more reasoning steps or a longer response ( when reasoning steps are not avaliable ).
+We can improve the performance of our language models by choosing more complex examples. This refers to examples that have either more reasoning steps or a longer response ( when reasoning steps are not available ).
 
-In the event that no examples are avaliable, we can sample multiple responses and generate an answer based off the top few most complex examples. We can determine the complexity based on the length of their reasoning step in a process known as Complexity Based Consistency
+In the event that no examples are available, we can sample multiple responses and generate an answer based off the top few most complex examples. We can determine the complexity based on the length of their reasoning step in a process known as Complexity Based Consistency
 <sup><a href="https://arxiv.org/pdf/2210.00720">1</a></sup> .
 
 We can implement Complexity Based Consistency using `instructor` as seen below.
