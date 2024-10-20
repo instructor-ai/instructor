@@ -20,7 +20,6 @@ import mimetypes
 import requests
 from pydantic import BaseModel, Field
 from .mode import Mode
-import requests
 
 F = TypeVar("F", bound=Callable[..., Any])
 K = TypeVar("K", bound=Hashable)
@@ -146,7 +145,6 @@ class Image(BaseModel):
             raise ValueError(f"Unsupported image format: {media_type}")
         return cls(source=url, media_type=media_type, data=None)
 
-
     @lru_cache
     def from_path(cls, path: str | Path) -> Image:
         path = Path(path)
@@ -205,6 +203,7 @@ class Image(BaseModel):
         else:
             raise ValueError("Image data is missing for base64 encoding.")
 
+
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
@@ -242,8 +241,10 @@ class Audio(BaseModel):
     def to_anthropic(self) -> dict[str, Any]:
         raise NotImplementedError("Anthropic is not supported yet")
 
+
 class ImageWithCacheControl(Image):
     """Image with Anthropic prompt caching support."""
+
     cache_control: OptionalCacheControlType = Field(
         None, description="Optional Anthropic cache control image"
     )
