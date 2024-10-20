@@ -1,3 +1,8 @@
+---
+title: Effective Prompt Engineering with Pydantic and Instructor
+description: Discover best practices for prompt engineering using Pydantic and Instructor to enhance modularity, flexibility, and data integrity.
+---
+
 # General Tips for Prompt Engineering
 
 The overarching theme of using Instructor and Pydantic for function calling is to make the models as self-descriptive, modular, and flexible as possible, while maintaining data integrity and ease of use.

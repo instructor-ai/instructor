@@ -1,11 +1,20 @@
 ---
-draft: False
-date: 2023-11-13
-slug: learn-async
-categories:
-  - Python
 authors:
-  - jxnl
+- jxnl
+categories:
+- LLM Techniques
+comments: true
+date: 2023-11-13
+description: Explore async processing with Python's asyncio and OpenAI's Instructor
+  for efficient data extraction and analysis.
+draft: false
+slug: learn-async
+tags:
+- asyncio
+- OpenAI
+- Python
+- data processing
+- async programming
 ---
 
 # Async Processing OpenAI using `asyncio` and `Instructor` with Python

@@ -1,15 +1,20 @@
 ---
-draft: False
+authors:
+- jxnl
+categories:
+- Pydantic
+comments: true
 date: 2023-11-18
+description: Explore how Pydantic enhances LLM citation verification, improving data
+  accuracy and reliability in responses.
+draft: false
 slug: validate-citations
 tags:
-  - pydantic
-  - validation
-  - finetuneing
-  - citations
-  - hallucination
-authors:
-  - jxnl
+- Pydantic
+- LLM
+- Data Accuracy
+- Citation Verification
+- Python
 ---
 
 # Verifying LLM Citations with Pydantic

@@ -1,3 +1,8 @@
+---
+title: Using TypedDicts with OpenAI API
+description: Learn how to utilize TypedDicts in Python with the OpenAI API for structured data responses.
+---
+
 # TypedDicts
 
 We also support typed dicts.

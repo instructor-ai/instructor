@@ -1,3 +1,8 @@
+---
+title: Installing Instructor with Pip
+description: Learn how to install Instructor and its dependencies using pip for Python 3.9+. Simple setup guide included.
+---
+
 Installation is as simple as:
 
 ```bash

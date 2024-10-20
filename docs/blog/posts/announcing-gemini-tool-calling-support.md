@@ -1,8 +1,19 @@
 ---
-draft: False
-date: 2024-09-03
 authors:
-  - ivanleomk
+- ivanleomk
+categories:
+- LLM Techniques
+comments: true
+date: 2024-09-03
+description: Introducing structured outputs for Gemini tool calling support in the
+  instructor library, enhancing interactions with Gemini and VertexAI SDKs.
+draft: false
+tags:
+- Gemini
+- VertexAI
+- Tool Calling
+- Instructor Library
+- AI SDKs
 ---
 
 # Structured Outputs for Gemini now supported

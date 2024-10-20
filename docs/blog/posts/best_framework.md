@@ -1,12 +1,20 @@
 ---
-draft: False
+authors:
+- jxnl
+categories:
+- LLM Techniques
+comments: true
 date: 2024-03-05
+description: Discover how the Instructor library simplifies structured LLM outputs
+  using Python type annotations for seamless data mapping.
+draft: false
 slug: zero-cost-abstractions
 tags:
-  - python
-  - llms
-authors:
-  - jxnl
+- Instructor
+- LLM Outputs
+- Python
+- Pydantic
+- Data Mapping
 ---
 
 # Why Instructor is the Best Library for Structured LLM Outputs

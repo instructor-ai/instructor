@@ -1,3 +1,8 @@
+---
+title: Simplifying AI with Instructor: Flexibility and Transparency in Python Programming
+description: Discover how Instructor empowers Python developers with simplicity, flexibility, and transparent LLM integration for better AI engineering.
+---
+
 # Philosophy
 
 The instructor values [simplicity](https://eugeneyan.com/writing/simplicity/) and flexibility in leveraging language models (LLMs). It offers a streamlined approach for structured output, avoiding unnecessary dependencies or complex abstractions. Let [Pydantic](https://docs.pydantic.dev/latest/) do the heavy lifting.

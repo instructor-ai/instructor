@@ -1,11 +1,22 @@
 ---
-draft: False
-date: 2023-10-23
-categories:
-  - Validation
 authors:
-  - jxnl
-  - ivanleomk
+- jxnl
+- ivanleomk
+categories:
+- Pydantic
+- Data Validation
+- Python
+comments: true
+date: 2023-10-23
+description: Explore dynamic, machine learning-driven validation using Python's Pydantic
+  and Instructor to enhance software reliability.
+draft: false
+tags:
+- LLM Validation
+- Pydantic
+- Python
+- Machine Learning
+- Software Development
 ---
 
 # Good LLM Validation is Just Good Validation

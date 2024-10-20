@@ -1,3 +1,8 @@
+---
+title: Comprehensive Guide to Prompting Techniques
+description: Explore 58 effective prompting techniques categorized for enhanced model performance in AI prompts.
+---
+
 # Prompting Guide
 
 Prompting requires understanding of techniques. Prompting enhances model performance.

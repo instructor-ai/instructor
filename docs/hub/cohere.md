@@ -1,3 +1,8 @@
+---
+title: Using Cohere for Structured Outputs in Python
+description: Learn how to leverage Cohere's command models with Python's instructor library for structured data outputs.
+---
+
 # Structured Outputs with Cohere
 
 If you want to try this example using `instructor hub`, you can pull it by running

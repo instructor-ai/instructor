@@ -57,6 +57,82 @@ print(user_info.age)
 #> 30
 ```
 
+### Using Hooks
+
+Instructor provides a powerful hooks system that allows you to intercept and log various stages of the LLM interaction process. Here's a simple example demonstrating how to use hooks:
+
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+class UserInfo(BaseModel):
+    name: str
+    age: int
+
+# Initialize the OpenAI client with Instructor
+client = instructor.from_openai(OpenAI())
+
+# Define hook functions
+def log_kwargs(**kwargs):
+    print(f"Function called with kwargs: {kwargs}")
+
+def log_exception(exception: Exception):
+    print(f"An exception occurred: {str(exception)}")
+
+client.on("completion:kwargs", log_kwargs)
+client.on("completion:error", log_exception)
+
+user_info = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserInfo,
+    messages=[{"role": "user", "content": "Extract the user name: 'John is 20 years old'"}],
+)
+
+"""
+{
+        'args': (),
+        'kwargs': {
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': "Extract the user name: 'John is 20 years old'",
+                }
+            ],
+            'model': 'gpt-3.5-turbo',
+            'tools': [
+                {
+                    'type': 'function',
+                    'function': {
+                        'name': 'UserInfo',
+                        'description': 'Correctly extracted `UserInfo` with all the required parameters with correct types',
+                        'parameters': {
+                            'properties': {
+                                'name': {'title': 'Name', 'type': 'string'},
+                                'age': {'title': 'Age', 'type': 'integer'},
+                            },
+                            'required': ['age', 'name'],
+                            'type': 'object',
+                        },
+                    },
+                }
+            ],
+            'tool_choice': {'type': 'function', 'function': {'name': 'UserInfo'}},
+        },
+    }
+"""
+
+print(f"Name: {user_info.name}, Age: {user_info.age}")
+#> Name: John, Age: 20
+``` 
+
+This example demonstrates:
+1. A pre-execution hook that logs all kwargs passed to the function.
+2. An exception hook that logs any exceptions that occur during execution.
+
+The hooks provide valuable insights into the function's inputs and any errors,
+enhancing debugging and monitoring capabilities.
+
 ### Using Anthropic Models
 
 ```python

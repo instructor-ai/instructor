@@ -1,12 +1,20 @@
 ---
-draft: False
-date: 2024-07-17
-categories:
-  - Partnerships
-  - Observability
 authors:
-  - jxnl
-  - joschkabraun
+- jxnl
+- joschkabraun
+categories:
+- LLM Observability
+comments: true
+date: 2024-07-17
+description: Explore how Parea enhances the OpenAI instructor, enabling better monitoring,
+  collaboration, and error tracking for LLM applications.
+draft: false
+tags:
+- Parea
+- OpenAI
+- LLM
+- instructor
+- validation
 ---
 
 # Parea for Observing, Testing & Fine-tuning of Instructor

@@ -1,3 +1,8 @@
+---
+title: Document Segmentation with LLMs: A Comprehensive Guide
+description: Learn effective document segmentation techniques using Cohere's LLM, enhancing comprehension of complex texts.
+---
+
 # Document Segmentation
 
 In this guide, we demonstrate how to do document segmentation using structured output from an LLM. We'll be using [command-r-plus](https://docs.cohere.com/docs/command-r-plus) - one of Cohere's latest LLMs with 128k context length and testing the approach on an article explaining the Transformer architecture. Same approach to document segmentation can be applied to any other domain where we need to break down a complex long document into smaller chunks.

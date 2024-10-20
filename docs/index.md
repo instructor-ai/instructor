@@ -1,3 +1,7 @@
+---
+description: Easily extract structured data like JSON from LLMs with Instructor, designed for simplicity, control, and robust validation.
+---
+
 # Instructor, The Most Popular Library for Simple Structured Outputs
 
 _Structured outputs powered by llms. Designed for simplicity, transparency, and control._
@@ -156,6 +160,83 @@ print(user_info.name)
 print(user_info.age)
 #> 30
 ```
+
+
+### Using Hooks
+
+Instructor provides a powerful hooks system that allows you to intercept and log various stages of the LLM interaction process. Here's a simple example demonstrating how to use hooks:
+
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+class UserInfo(BaseModel):
+    name: str
+    age: int
+
+# Initialize the OpenAI client with Instructor
+client = instructor.from_openai(OpenAI())
+
+# Define hook functions
+def log_kwargs(**kwargs):
+    print(f"Function called with kwargs: {kwargs}")
+
+def log_exception(exception: Exception):
+    print(f"An exception occurred: {str(exception)}")
+
+client.on("completion:kwargs", log_kwargs)
+client.on("completion:error", log_exception)
+
+user_info = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=UserInfo,
+    messages=[{"role": "user", "content": "Extract the user name: 'John is 20 years old'"}],
+)
+
+"""
+{
+        'args': (),
+        'kwargs': {
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': "Extract the user name: 'John is 20 years old'",
+                }
+            ],
+            'model': 'gpt-3.5-turbo',
+            'tools': [
+                {
+                    'type': 'function',
+                    'function': {
+                        'name': 'UserInfo',
+                        'description': 'Correctly extracted `UserInfo` with all the required parameters with correct types',
+                        'parameters': {
+                            'properties': {
+                                'name': {'title': 'Name', 'type': 'string'},
+                                'age': {'title': 'Age', 'type': 'integer'},
+                            },
+                            'required': ['age', 'name'],
+                            'type': 'object',
+                        },
+                    },
+                }
+            ],
+            'tool_choice': {'type': 'function', 'function': {'name': 'UserInfo'}},
+        },
+    }
+"""
+
+print(f"Name: {user_info.name}, Age: {user_info.age}")
+#> Name: John, Age: 20
+```
+
+This example demonstrates:
+1. A pre-execution hook that logs all kwargs passed to the function.
+2. An exception hook that logs any exceptions that occur during execution.
+
+The hooks provide valuable insights into the function's inputs and any errors,
+enhancing debugging and monitoring capabilities.
 
 ### Using Anthropic
 
@@ -523,6 +604,42 @@ class User(BaseModel):
 
 resp = client.chat.completions.create(
     model="llama3.1-70b",
+    response_model=User,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+)
+
+print(resp)
+#> name='Jason' age=25
+```
+
+### Using Fireworks
+
+For those who want to use the Fireworks models, you can use the `from_fireworks` method to patch the client. You can see their list of models [here](https://fireworks.ai/models).
+
+```python
+from fireworks.client import Fireworks
+import instructor
+from pydantic import BaseModel
+import os
+
+client = Fireworks(
+    api_key=os.environ.get("FIREWORKS_API_KEY"),
+)
+client = instructor.from_fireworks(client)
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+resp = client.chat.completions.create(
+    model="accounts/fireworks/models/llama-v3p2-1b-instruct",
     response_model=User,
     messages=[
         {

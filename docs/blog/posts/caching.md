@@ -1,15 +1,20 @@
 ---
-draft: False
+authors:
+- jxnl
+categories:
+- Performance Optimization
+comments: true
 date: 2023-11-26
+description: Learn caching techniques in Python using Pydantic models with functools,
+  diskcache, and Redis for improved performance and efficiency.
+draft: false
 slug: python-caching
 tags:
-  - caching
-  - functools
-  - redis
-  - diskcache
-  - python
-authors:
-  - jxnl
+- Python
+- Caching
+- Pydantic
+- Performance Optimization
+- Redis
 ---
 
 # Introduction to Caching in Python

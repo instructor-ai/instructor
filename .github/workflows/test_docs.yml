@@ -15,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz libcairo2-dev xdg-utils
+
       - name: Install Poetry
         uses: snok/install-poetry@v1.3.1
 

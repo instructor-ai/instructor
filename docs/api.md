@@ -1,3 +1,8 @@
+---
+title: API Reference Guide
+description: Explore the comprehensive API reference with details on instructors, validation, iteration, and function calls.
+---
+
 # API Reference
 
 ::: instructor.from_openai

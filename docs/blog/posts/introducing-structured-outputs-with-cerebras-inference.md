@@ -1,13 +1,23 @@
 ---
-draft: False
-date: 2024-10-15
-slug: introducing-structured-outputs-with-cerebras-inference
-categories:
-  - LLM
-  - Cerebras
 authors:
-  - ivanleomk
-  - sarahchieng
+- ivanleomk
+- sarahchieng
+categories:
+- API Development
+- Pydantic
+- Performance Optimization
+comments: true
+date: 2024-10-15
+description: Learn how to use Cerebras Inference for structured outputs, faster model
+  inference, and seamless integration with Pydantic models.
+draft: false
+slug: introducing-structured-outputs-with-cerebras-inference
+tags:
+- Cerebras Inference
+- Pydantic
+- API Integration
+- Fast Inference
+- Structured Outputs
 ---
 
 # Introducing structured outputs with Cerebras Inference

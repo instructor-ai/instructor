@@ -1,3 +1,8 @@
+---
+title: Segmenting Search Queries with OpenAI and Pydantic
+description: Learn to segment search queries into actionable tasks using OpenAI Function Call and Pydantic for efficient execution.
+---
+
 # Example: Segmenting Search Queries
 
 In this example, we will demonstrate how to leverage the `MultiTask` and `enum.Enum` features of OpenAI Function Call to segment search queries. We will define the necessary structures using Pydantic and demonstrate how segment queries into multiple sub queries and execute them in parallel with `asyncio`.
@@ -19,6 +24,7 @@ from pydantic import BaseModel, Field
 # Apply the patch to the OpenAI client
 # enables response_model keyword
 client = instructor.from_openai(OpenAI())
+
 
 class Search(BaseModel):
     query: str = Field(..., description="Query to search for relevant content")

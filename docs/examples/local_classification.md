@@ -1,3 +1,8 @@
+---
+title: Classifying Confidential Data with Local AI Models
+description: Learn to classify private documents securely using Llama-cpp-python with instructor while maintaining data privacy and local infrastructure.
+---
+
 # Leveraging Local Models for Classifying Private Data
 
 In this article, we'll show you how to use Llama-cpp-python with instructor for classification. This is a perfect use-case for users who want to ensure that confidential documents are handled securely without ever leaving your own infrastructure.
@@ -34,23 +39,24 @@ CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python
 
 Here's an example of how to implement a system for handling confidential document queries using local models:
 
-```python hl_lines="7-12 14-16 40-46"
-from llama_cpp import Llama
+```python hl_lines="7-12 14-16 43-52"
+from llama_cpp import Llama  # type: ignore
 import instructor
 from pydantic import BaseModel
 from enum import Enum
 from typing import Optional
 
-llm = Llama.from_pretrained(
-    repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF", # (1)!
+llm = Llama.from_pretrained(  # type: ignore
+    repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",  # (1)!
     filename="*Q4_K_M.gguf",
-    verbose=False, # (2)!
-    n_gpu_layers=-1, # (3)!
+    verbose=False,  # (2)!
+    n_gpu_layers=-1,  # (3)!
 )
 
 create = instructor.patch(
-    create=llm.create_chat_completion_openai_v1, #(4)!
+    create=llm.create_chat_completion_openai_v1,  # type: ignore  # (4)!
 )
+
 
 # Define query types for document-related inquiries
 class QueryType(str, Enum):
@@ -59,11 +65,13 @@ class QueryType(str, Enum):
     ACCESS_PERMISSIONS = "access_permissions"
     RELATED_DOCUMENTS = "related_documents"
 
+
 # Define the structure for query responses
 class QueryResponse(BaseModel):
     query_type: QueryType
     response: str
     additional_info: Optional[str] = None
+
 
 def process_confidential_query(query: str) -> QueryResponse:
     prompt = f"""Analyze the following confidential document query and provide an appropriate response:
@@ -75,9 +83,12 @@ def process_confidential_query(query: str) -> QueryResponse:
     """
 
     return create(
-        response_model=QueryResponse, #(5)!
+        response_model=QueryResponse,  # (5)!
         messages=[
-            {"role": "system", "content": "You are a secure AI assistant trained to handle confidential document queries."},
+            {
+                "role": "system",
+                "content": "You are a secure AI assistant trained to handle confidential document queries.",
+            },
             {"role": "user", "content": prompt},
         ],
     )
@@ -93,8 +104,8 @@ confidential_queries = [
 ]
 
 # Process each query and print the results
-for i, query in enumerate(confidential_queries, 1):
-    response:QueryResponse = process_confidential_query(query)
+for query in confidential_queries:
+    response: QueryResponse = process_confidential_query(query)
     print(f"{query} : {response.query_type}")
     """
     #> What are the key findings in the Q4 financial report? : document_content

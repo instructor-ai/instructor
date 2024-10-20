@@ -1,3 +1,8 @@
+---
+title: Caching Techniques in Python: In-Memory, Disk, and Redis
+description: Explore caching methods in Python with functools, diskcache, and Redis for improved performance in your applications.
+---
+
 If you want to learn more about concepts in caching and how to use them in your own projects, check out our [blog](../blog/posts/caching.md) on the topic.
 
 ## 1. `functools.cache` for Simple In-Memory Caching

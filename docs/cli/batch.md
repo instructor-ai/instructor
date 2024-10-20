@@ -1,4 +1,10 @@
+---
+title: Managing Batch Jobs with OpenAI CLI
+description: Learn how to create, list, and cancel batch jobs using the OpenAI Command Line Interface (CLI) for efficient job management.
+---
+
 # Using the Command Line Interface for Batch Jobs
+
 
 The instructor CLI provides functionalities for managing batch jobs on both OpenAI and Anthropic platforms. This dual support allows users to leverage the strengths of both providers for their batch processing needs.
 
@@ -110,8 +116,6 @@ with open("output.jsonl", "w") as f:
     ):
         f.write(json.dumps(line) + "\n")
 ```
-
-You can then import the .jsonl file using the `instructor batch create-from-file` command:
 
 ```bash
 $ instructor batch create-from-file --help

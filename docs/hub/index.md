@@ -1,3 +1,8 @@
+---
+title: Instructor Hub: Tutorials and Examples for Getting Started with Instructor
+description: Explore the Instructor Hub for tutorials, CLI usage, and examples to enhance your coding experience with the instructor API.
+---
+
 # Instructor Hub
 
 Welcome to instructor hub, the goal of this project is to provide a set of tutorials and examples to help you get started, and allow you to pull in the code you need to get started with `instructor`

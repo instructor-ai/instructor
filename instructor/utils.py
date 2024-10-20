@@ -49,6 +49,7 @@ class Provider(Enum):
     GEMINI = "gemini"
     DATABRICKS = "databricks"
     CEREBRAS = "cerebras"
+    FIREWORKS = "fireworks"
     UNKNOWN = "unknown"
 
 
@@ -61,6 +62,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.ANTHROPIC
     elif "cerebras" in str(base_url):
         return Provider.CEREBRAS
+    elif "fireworks" in str(base_url):
+        return Provider.FIREWORKS
     elif "groq" in str(base_url):
         return Provider.GROQ
     elif "openai" in str(base_url):
@@ -347,11 +350,19 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     # minimize gemini safety related errors - model is highly prone to false alarms
     from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
 
-    kwargs["safety_settings"] = kwargs.get("safety_settings", {}) | {
+    kwargs["safety_settings"] = kwargs.get("safety_settings", {})
+
+    fallback_safety_settings = {
         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
     }
+
+    # Update or add fallback settings, respecting stricter existing ones
+    for category, fallback_threshold in fallback_safety_settings.items():
+        current_threshold = kwargs["safety_settings"].get(category)
+        if current_threshold is None or current_threshold < fallback_threshold:
+            kwargs["safety_settings"][category] = fallback_threshold
 
     return kwargs
 
