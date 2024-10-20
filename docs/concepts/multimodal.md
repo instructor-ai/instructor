@@ -126,3 +126,4 @@ resp = client.chat.completions.create(
 
 print(resp)
 # > name='Jason' age=20
+```
