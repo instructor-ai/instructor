@@ -1,5 +1,5 @@
 import pytest
-from instructor.multimodal import Image
+from instructor.multimodal import Image, Audio
 import instructor
 from pydantic import Field, BaseModel
 from itertools import product
