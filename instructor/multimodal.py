@@ -169,7 +169,7 @@ def convert_messages(
     for message in messages:
         if "type" in message:
             if message["type"] in {"audio", "image"}:
-                converted_messages.append(message)
+                converted_messages.append(message)  # type: ignore
             else:
                 raise ValueError(f"Unsupported message type: {message['type']}")
         role = message["role"]
