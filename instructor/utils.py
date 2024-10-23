@@ -10,7 +10,10 @@ from typing import (
     Callable,
     Generic,
     Protocol,
+    Union,
+    TypedDict,
     TypeVar,
+    cast
 )
 from pydantic import BaseModel
 import os
@@ -131,7 +134,6 @@ def update_total_usage(
     response: T_Model | None,
     total_usage: OpenAIUsage | AnthropicUsage,
 ) -> T_Model | ChatCompletion | None:
-
     if response is None:
         return None
 
@@ -369,3 +371,52 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
 
 def disable_pydantic_error_url():
     os.environ["PYDANTIC_ERRORS_INCLUDE_URL"] = "0"
+
+
+class SystemMessage(TypedDict, total=False):
+    type: str
+    text: str
+    cache_control: dict[str, str]
+
+
+def combine_system_messages(
+    existing_system: Union[str, list[SystemMessage], None],
+    new_system: Union[str, list[SystemMessage]],
+) -> Union[str, list[SystemMessage]]:
+    if existing_system is None:
+        return new_system
+
+    if isinstance(existing_system, str) and isinstance(new_system, str):
+        return f"{existing_system}\n\n{new_system}"
+
+    if isinstance(existing_system, list) and isinstance(new_system, list):
+        return existing_system + new_system
+
+    if isinstance(existing_system, str) and isinstance(new_system, list):
+        return [SystemMessage(type="text", text=existing_system)] + new_system
+
+    if isinstance(existing_system, list) and isinstance(new_system, str):
+        return existing_system + [SystemMessage(type="text", text=new_system)]
+
+    raise ValueError("Unsupported system message type combination")
+
+
+def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:
+    def convert_message(content: Union[str, dict[str, Any]]) -> SystemMessage:
+        if isinstance(content, str):
+            return SystemMessage(type="text", text=content)
+        elif isinstance(content, dict):
+            return SystemMessage(**content)
+        else:
+            raise ValueError(f"Unsupported content type: {type(content)}")
+
+    result: list[SystemMessage] = []
+    for m in messages:
+        if m["role"] == "system":
+            # System message must always be a string or list of dictionaries
+            content = cast(Union[str, list[dict[str, Any]]], m["content"])
+            if isinstance(content, list):
+                result.extend(convert_message(item) for item in content)
+            else:
+                result.append(convert_message(content))
+    return result
