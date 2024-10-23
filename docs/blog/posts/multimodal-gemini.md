@@ -177,3 +177,45 @@ The Gemini model analyzes the video and provides structured recommendations. Her
 This example demonstrates the power of combining multimodal AI with structured output parsing. By using Gemini with Instructor, we can extract rich, structured information from video content, opening up new possibilities for travel recommendation systems, content analysis, and more.
 
 The ability to process video inputs and generate structured data outputs can be applied to various domains beyond travel, such as education, entertainment, and market research. As multimodal AI continues to evolve, we can expect even more sophisticated applications that bridge the gap between visual content and structured data.
+
+## Limitations, Challenges, and Future Directions
+
+While the current approach demonstrates the power of multimodal AI for video analysis, there are several limitations and challenges to consider:
+
+1. **Lack of Temporal Information**: Our current method extracts overall recommendations but doesn't provide timestamps for specific mentions. This limits the ability to link recommendations to exact moments in the video.
+
+2. **Speaker Diarization**: The model doesn't distinguish between different speakers in the video. Implementing speaker diarization could provide valuable context about who is making specific recommendations.
+
+3. **Content Density**: Longer or more complex videos might overwhelm the model, potentially leading to missed information or less accurate extractions.
+
+### Future Explorations
+
+To address these limitations and expand the capabilities of our video analysis system, here are some promising areas to explore:
+
+1. **Timestamp Extraction**: Enhance the model to provide timestamps for each recommendation or point of interest mentioned in the video. This could be achieved by:
+
+   ```python
+   class TimestampedRecommendation(BaseModel):
+       timestamp: str
+       timestamp_format: Literal["HH:MM", "HH:MM:SS"] # Helps with parsing
+       recommendation: str
+
+   class EnhancedRecommendations(BaseModel):
+       destinations: list[TouristDestination]
+       timestamped_mentions: list[TimestampedRecommendation]
+   ```
+
+2. **Speaker Diarization**: Implement speaker recognition to attribute recommendations to specific individuals. This could be particularly useful for videos featuring multiple hosts or interviewees.
+
+3. **Segment-based Analysis**: Process longer videos in segments to maintain accuracy and capture all relevant information. This approach could involve:
+   - Splitting the video into smaller chunks
+   - Analyzing each chunk separately
+   - Aggregating and deduplicating results
+
+4. **Multi-language Support**: Extend the model's capabilities to accurately analyze videos in various languages and capture culturally specific recommendations.
+
+5. **Visual Element Analysis**: Enhance the model to recognize and describe visual elements like landmarks, food dishes, or activities shown in the video, even if not explicitly mentioned in the audio.
+
+6. **Sentiment Analysis**: Incorporate sentiment analysis to gauge the speaker's enthusiasm or reservations about specific recommendations.
+
+By addressing these challenges and exploring these new directions, we can create a more comprehensive and nuanced video analysis system, opening up even more possibilities for applications in travel, education, and beyond.
