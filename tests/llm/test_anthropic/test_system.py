@@ -15,7 +15,7 @@ class User(BaseModel):
 def test_creation(model, mode, client):
     client = instructor.from_anthropic(client, mode=mode)
     response = client.chat.completions.create(
-        model=model,  # Ensure this is a vision-capable model
+        model=model,
         response_model=User,
         messages=[
             {
@@ -43,7 +43,7 @@ def test_creation(model, mode, client):
 def test_creation_with_system_cache(model, mode, client):
     client = instructor.from_anthropic(client, mode=mode, enable_prompt_caching=True)
     response, message = client.chat.completions.create_with_completion(
-        model=model,  # Ensure this is a vision-capable model
+        model=model,
         response_model=User,
         messages=[
             {
@@ -86,7 +86,7 @@ def test_creation_no_response_model(model, mode, client):
     client = instructor.from_anthropic(client, mode=mode)
     response = client.chat.completions.create(
         response_model=None,
-        model=model,  # Ensure this is a vision-capable model
+        model=model,
         messages=[
             {
                 "role": "system",
