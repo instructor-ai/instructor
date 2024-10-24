@@ -507,12 +507,7 @@ def from_openai(
             instructor.Mode.MD_JSON,
         }
 
-    if provider in {Provider.DATABRICKS}:
-        assert mode in {
-            instructor.Mode.MD_JSON
-        }, "Databricks provider only supports `MD_JSON` mode."
-
-    if provider in {Provider.OPENAI}:
+    if provider in {Provider.OPENAI, Provider.DATABRICKS}:
         assert mode in {
             instructor.Mode.TOOLS,
             instructor.Mode.JSON,

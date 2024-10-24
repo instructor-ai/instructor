@@ -6,6 +6,8 @@ from instructor.utils import (
     extract_json_from_stream,
     extract_json_from_stream_async,
     merge_consecutive_messages,
+    extract_system_messages,
+    combine_system_messages,
 )
 
 
@@ -185,3 +187,202 @@ def test_classproperty():
             return cls.clvar
 
     assert MyClass.my_property == 1
+
+
+def test_combine_system_messages_string_string():
+    existing = "Existing message"
+    new = "New message"
+    result = combine_system_messages(existing, new)
+    assert result == "Existing message\n\nNew message"
+
+
+def test_combine_system_messages_list_list():
+    existing = [{"type": "text", "text": "Existing"}]
+    new = [{"type": "text", "text": "New"}]
+    result = combine_system_messages(existing, new)
+    assert result == [
+        {"type": "text", "text": "Existing"},
+        {"type": "text", "text": "New"},
+    ]
+
+
+def test_combine_system_messages_string_list():
+    existing = "Existing"
+    new = [{"type": "text", "text": "New"}]
+    result = combine_system_messages(existing, new)
+    assert result == [
+        {"type": "text", "text": "Existing"},
+        {"type": "text", "text": "New"},
+    ]
+
+
+def test_combine_system_messages_list_string():
+    existing = [{"type": "text", "text": "Existing"}]
+    new = "New"
+    result = combine_system_messages(existing, new)
+    assert result == [
+        {"type": "text", "text": "Existing"},
+        {"type": "text", "text": "New"},
+    ]
+
+
+def test_combine_system_messages_none_string():
+    existing = None
+    new = "New"
+    result = combine_system_messages(existing, new)
+    assert result == "New"
+
+
+def test_combine_system_messages_none_list():
+    existing = None
+    new = [{"type": "text", "text": "New"}]
+    result = combine_system_messages(existing, new)
+    assert result == [{"type": "text", "text": "New"}]
+
+
+def test_combine_system_messages_invalid_type():
+    with pytest.raises(ValueError):
+        combine_system_messages(123, "New")
+
+
+def test_extract_system_messages():
+    messages = [
+        {"role": "system", "content": "System message 1"},
+        {"role": "user", "content": "User message"},
+        {"role": "system", "content": "System message 2"},
+    ]
+    result = extract_system_messages(messages)
+    expected = [
+        {"type": "text", "text": "System message 1"},
+        {"type": "text", "text": "System message 2"},
+    ]
+    assert result == expected
+
+
+def test_extract_system_messages_no_system():
+    messages = [
+        {"role": "user", "content": "User message"},
+        {"role": "assistant", "content": "Assistant message"},
+    ]
+    result = extract_system_messages(messages)
+    assert result == []
+
+
+def test_combine_system_messages_with_cache_control():
+    existing = [
+        {
+            "type": "text",
+            "text": "You are an AI assistant.",
+        },
+        {
+            "type": "text",
+            "text": "This is some context.",
+            "cache_control": {"type": "ephemeral"},
+        },
+    ]
+    new = "Provide insightful analysis."
+    result = combine_system_messages(existing, new)
+    expected = [
+        {
+            "type": "text",
+            "text": "You are an AI assistant.",
+        },
+        {
+            "type": "text",
+            "text": "This is some context.",
+            "cache_control": {"type": "ephemeral"},
+        },
+        {"type": "text", "text": "Provide insightful analysis."},
+    ]
+    assert result == expected
+
+
+def test_combine_system_messages_string_to_cache_control():
+    existing = "You are an AI assistant."
+    new = [
+        {
+            "type": "text",
+            "text": "Analyze this text:",
+            "cache_control": {"type": "ephemeral"},
+        },
+        {"type": "text", "text": "<long text content>"},
+    ]
+    result = combine_system_messages(existing, new)
+    expected = [
+        {"type": "text", "text": "You are an AI assistant."},
+        {
+            "type": "text",
+            "text": "Analyze this text:",
+            "cache_control": {"type": "ephemeral"},
+        },
+        {"type": "text", "text": "<long text content>"},
+    ]
+    assert result == expected
+
+
+def test_extract_system_messages_with_cache_control():
+    messages = [
+        {"role": "system", "content": "You are an AI assistant."},
+        {
+            "role": "system",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Analyze this text:",
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+        },
+        {"role": "user", "content": "User message"},
+        {"role": "system", "content": "<long text content>"},
+    ]
+    result = extract_system_messages(messages)
+    expected = [
+        {"type": "text", "text": "You are an AI assistant."},
+        {
+            "type": "text",
+            "text": "Analyze this text:",
+            "cache_control": {"type": "ephemeral"},
+        },
+        {"type": "text", "text": "<long text content>"},
+    ]
+    assert result == expected
+
+
+def test_combine_system_messages_preserve_cache_control():
+    existing = [
+        {
+            "type": "text",
+            "text": "You are an AI assistant.",
+        },
+        {
+            "type": "text",
+            "text": "This is some context.",
+            "cache_control": {"type": "ephemeral"},
+        },
+    ]
+    new = [
+        {
+            "type": "text",
+            "text": "Additional instruction.",
+            "cache_control": {"type": "ephemeral"},
+        }
+    ]
+    result = combine_system_messages(existing, new)
+    expected = [
+        {
+            "type": "text",
+            "text": "You are an AI assistant.",
+        },
+        {
+            "type": "text",
+            "text": "This is some context.",
+            "cache_control": {"type": "ephemeral"},
+        },
+        {
+            "type": "text",
+            "text": "Additional instruction.",
+            "cache_control": {"type": "ephemeral"},
+        },
+    ]
+    assert result == expected
