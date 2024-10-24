@@ -5,7 +5,7 @@ categories:
 - LLM
 - Pydantic
 comments: true
-date: 2024-10-18
+date: 2024-10-23
 description: Learn how to use Instructor and Pydantic to create an LLM-based reranker for improving search results relevance.
 draft: false
 tags:
