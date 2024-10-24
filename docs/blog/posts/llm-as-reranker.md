@@ -38,7 +38,6 @@ First, let's set up our environment with the necessary imports:
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field, field_validator
-from typing import List
 
 client = instructor.from_openai(OpenAI())
 ```
@@ -63,11 +62,11 @@ class Label(BaseModel):
 
 
 class RerankedResults(BaseModel):
-    labels: List[Label] = Field(description="List of labeled and ranked chunks")
+    labels: list[Label] = Field(description="List of labeled and ranked chunks")
 
     @field_validator("labels")
     @classmethod
-    def model_validate(cls, v: List[Label]) -> List[Label]:
+    def model_validate(cls, v: list[Label]) -> list[Label]:
         return sorted(v, key=lambda x: x.relevancy, reverse=True)
 ```
 
@@ -78,7 +77,7 @@ These models ensure that our LLM's output is structured and includes a list of l
 Next, we'll create a function that uses our LLM to rerank a list of text chunks based on their relevance to a query:
 
 ```python
-def rerank_results(query: str, chunks: List[dict]) -> RerankedResults:
+def rerank_results(query: str, chunks: list[dict]) -> RerankedResults:
     return client.chat.completions.create(
         model="gpt-4o-mini",
         response_model=RerankedResults,
