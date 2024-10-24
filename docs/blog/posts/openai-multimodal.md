@@ -5,7 +5,7 @@ categories:
 - OpenAI
 - Audio
 comments: true
-date: 2025-10-17
+date: 2024-10-17
 description: Explore the new audio capabilities in OpenAI's Chat Completions API using the gpt-4o-audio-preview model.
 draft: false
 tags:
@@ -33,7 +33,7 @@ The new audio support in the Chat Completions API offers several compelling feat
 
 To demonstrate how to use this new functionality, let's look at a simple example using the `instructor` library:
 
-"""python
+```python
 from openai import OpenAI
 from pydantic import BaseModel
 import instructor
@@ -64,7 +64,7 @@ resp = client.chat.completions.create(
 
 print(resp)
 # Expected output: Person(name='Jason', age=20)
-"""
+```
 
 In this example, we're using the `gpt-4o-audio-preview` model to extract information from an audio file. The API processes the audio input and returns structured data (a Person object with name and age) based on the content of the audio.
 
