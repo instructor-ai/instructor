@@ -1,6 +1,6 @@
 import instructor
 from openai import OpenAI
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from typing import List
 
 # Initialize the OpenAI client with Instructor
@@ -8,7 +8,7 @@ client = instructor.from_openai(OpenAI())
 
 
 class Label(BaseModel):
-    chunk_id: int = Field(description="The unique identifier of the text chunk")
+    chunk_id: str = Field(description="The unique identifier of the text chunk")
     chain_of_thought: str = Field(
         description="The reasoning process used to evaluate the relevance"
     )
@@ -17,6 +17,17 @@ class Label(BaseModel):
         ge=0,
         le=10,
     )
+
+    @field_validator("chunk_id")
+    @classmethod
+    def validate_chunk_id(cls, v: int, info: ValidationInfo) -> int:
+        context = info.context
+        chunks = context.get("chunks", [])
+        if v not in [chunk["id"] for chunk in chunks]:
+            raise ValueError(
+                f"Chunk with id {v} not found, must be one of {[chunk['id'] for chunk in chunks]}"
+            )
+        return v
 
 
 class RerankedResults(BaseModel):
@@ -53,7 +64,7 @@ def rerank_results(query: str, chunks: List[dict]) -> RerankedResults:
 
                 <chunks_to_rank>
                 {% for chunk in chunks %}
-                <chunk id="{{ chunk.id }}">
+                <chunk chunk_id="{{ chunk.id }}">
                     {{ chunk.text }}
                 </chunk>
                 {% endfor %}
@@ -72,23 +83,23 @@ def main():
     query = "What are the health benefits of regular exercise?"
     chunks = [
         {
-            "id": 0,
+            "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
             "text": "Regular exercise can improve cardiovascular health and reduce the risk of heart disease.",
         },
         {
-            "id": 1,
+            "id": "b2c3d4e5-f6g7-8901-bcde-fg2345678901",
             "text": "The price of gym memberships varies widely depending on location and facilities.",
         },
         {
-            "id": 2,
+            "id": "c3d4e5f6-g7h8-9012-cdef-gh3456789012",
             "text": "Exercise has been shown to boost mood and reduce symptoms of depression and anxiety.",
         },
         {
-            "id": 3,
+            "id": "d4e5f6g7-h8i9-0123-defg-hi4567890123",
             "text": "Proper nutrition is essential for maintaining a healthy lifestyle.",
         },
         {
-            "id": 4,
+            "id": "e5f6g7h8-i9j0-1234-efgh-ij5678901234",
             "text": "Strength training can increase muscle mass and improve bone density, especially important as we age.",
         },
     ]
@@ -100,7 +111,9 @@ def main():
     print("Reranked results:")
     for label in results.labels:
         print(f"Chunk {label.chunk_id} (Relevancy: {label.relevancy}):")
-        print(f"Text: {chunks[label.chunk_id]}")
+        print(
+            f"Text: {next(chunk['text'] for chunk in chunks if chunk['id'] == label.chunk_id)}"
+        )
         print(f"Reasoning: {label.chain_of_thought}")
         print()
 
