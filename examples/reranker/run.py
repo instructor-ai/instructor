@@ -1,7 +1,6 @@
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field, field_validator, ValidationInfo
-from typing import List
 
 # Initialize the OpenAI client with Instructor
 client = instructor.from_openai(OpenAI())
@@ -20,7 +19,7 @@ class Label(BaseModel):
 
     @field_validator("chunk_id")
     @classmethod
-    def validate_chunk_id(cls, v: int, info: ValidationInfo) -> int:
+    def validate_chunk_id(cls, v: str, info: ValidationInfo) -> str:
         context = info.context
         chunks = context.get("chunks", [])
         if v not in [chunk["id"] for chunk in chunks]:
@@ -31,15 +30,15 @@ class Label(BaseModel):
 
 
 class RerankedResults(BaseModel):
-    labels: List[Label] = Field(description="List of labeled and ranked chunks")
+    labels: list[Label] = Field(description="List of labeled and ranked chunks")
 
     @field_validator("labels")
     @classmethod
-    def model_validate(cls, v: List[Label]) -> List[Label]:
+    def model_validate(cls, v: list[Label]) -> list[Label]:
         return sorted(v, key=lambda x: x.relevancy, reverse=True)
 
 
-def rerank_results(query: str, chunks: List[dict]) -> RerankedResults:
+def rerank_results(query: str, chunks: list[dict]) -> RerankedResults:
     return client.chat.completions.create(
         model="gpt-4o-mini",
         response_model=RerankedResults,
