@@ -46,7 +46,7 @@ client = instructor.from_openai(OpenAI())
 
 # Extract structured data from natural language
 user_info = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4o-mini",
     response_model=UserInfo,
     messages=[{"role": "user", "content": "John Doe is 30 years old."}],
 )
@@ -84,7 +84,7 @@ client.on("completion:kwargs", log_kwargs)
 client.on("completion:error", log_exception)
 
 user_info = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4o-mini",
     response_model=UserInfo,
     messages=[{"role": "user", "content": "Extract the user name: 'John is 20 years old'"}],
 )
@@ -99,7 +99,7 @@ user_info = client.chat.completions.create(
                     'content': "Extract the user name: 'John is 20 years old'",
                 }
             ],
-            'model': 'gpt-3.5-turbo',
+            'model': 'gpt-4o-mini',
             'tools': [
                 {
                     'type': 'function',
