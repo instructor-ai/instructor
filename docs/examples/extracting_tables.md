@@ -138,7 +138,7 @@ MarkdownDataFrame = Annotated[
     WithJsonSchema(
         {
             "type": "string",
-            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
+            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be separate",
         }
     ),
 ]
@@ -152,7 +152,7 @@ class Table(BaseModel):
 # <%hide%>
 
 # Apply the patch to the OpenAI client to support response_model
-# Also use MD_JSON mode since the visino model does not support any special structured output mode
+# Also use MD_JSON mode since the vision model does not support any special structured output mode
 client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
 
 
@@ -213,7 +213,7 @@ MarkdownDataFrame = Annotated[
     WithJsonSchema(
         {
             "type": "string",
-            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
+            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be separate",
         }
     ),
 ]
