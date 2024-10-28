@@ -23,7 +23,7 @@ Flashcards help break down complex topics and learn anything from biology to a n
 language or lines for a play. This blog will show how to use LLMs to generate
 flashcards and kickstart your learning! 
 
-**Instructor** lets us get structured outputs from LLMs reliably, and **Burr** helps
+**Instructor** lets us get structured outputs from LLMs reliably, and [Burr](https://github.com/dagworks-inc/burr) helps
 create an LLM application that's easy to understand and debug. It comes with **Burr UI**,
 a free, open-source, and local-first tool for observability, annotations, and more!
 
