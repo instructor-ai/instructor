@@ -1,6 +1,7 @@
 # conftest.py
 from anthropic import AsyncAnthropic, Anthropic
 import pytest
+import os
 
 try:
     import braintrust
