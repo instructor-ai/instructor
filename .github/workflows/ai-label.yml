@@ -15,6 +15,6 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - uses: jlowin/ai-labeler@v0.2.1
+      - uses: jlowin/ai-labeler@v0.3.0
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
