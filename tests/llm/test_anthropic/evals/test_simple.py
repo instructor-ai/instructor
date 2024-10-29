@@ -20,18 +20,19 @@ def test_simple():
 
         @field_validator("name")
         def name_is_uppercase(cls, v: str):
-            assert v.isupper(), "Name must be uppercase, please fix"
+            assert v.isupper(), f"{v} is not an uppercased string. Note that all characters in {v} must be uppercase (EG. TIM SARAH ADAM)."
             return v
 
     resp = client.messages.create(
         model="claude-3-haiku-20240307",
-        max_tokens=1024,
+        max_tokens=4096,
         max_retries=2,
+        system="Make sure to follow the instructions carefully and return a response object that matches the json schema requested. Age is an integer.",
         messages=[
             {
                 "role": "user",
                 "content": "Extract John is 18 years old.",
-            }
+            },
         ],
         response_model=User,
     )  # type: ignore
@@ -53,7 +54,7 @@ def test_nested_type():
 
     resp = client.messages.create(
         model="claude-3-haiku-20240307",
-        max_tokens=1024,
+        max_tokens=4096,
         max_retries=0,
         messages=[
             {
@@ -83,6 +84,7 @@ def test_list_str():
         model="claude-3-haiku-20240307",
         max_tokens=1024,
         max_retries=0,
+        system="Make sure to follow the instructions carefully and return a response object that matches the json schema requested. Family members here is just asking for a list of names",
         messages=[
             {
                 "role": "user",
@@ -132,7 +134,7 @@ def test_literal():
 
     resp = client.messages.create(
         model="claude-3-haiku-20240307",
-        max_tokens=1024,
+        max_tokens=4096,
         max_retries=2,
         messages=[
             {
@@ -185,7 +187,10 @@ def test_system_messages_allcaps():
         max_tokens=1024,
         max_retries=0,
         messages=[
-            {"role": "system", "content": "EVERYTHING MUST BE IN ALL CAPS"},
+            {
+                "role": "system",
+                "content": "Please make sure to follow the instructions carefully and return a valid response object. All strings must be fully capitalised in all caps. (Eg. THIS IS AN UPPERCASE STRING) and age is an integer.",
+            },
             {
                 "role": "user",
                 "content": "Create a user for a model with a name and age.",

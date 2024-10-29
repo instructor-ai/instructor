@@ -20,7 +20,11 @@ from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
-from instructor.utils import merge_consecutive_messages, extract_system_messages, combine_system_messages
+from instructor.utils import (
+    merge_consecutive_messages,
+    extract_system_messages,
+    combine_system_messages,
+)
 from instructor.multimodal import convert_messages
 
 logger = logging.getLogger("instructor")
@@ -335,9 +339,9 @@ def handle_anthropic_tools(
     system_messages = extract_system_messages(new_kwargs.get("messages", []))
 
     if system_messages:
-        new_kwargs["system"] = combine_system_messages(new_kwargs.get("system"), system_messages)
-    else:
-        new_kwargs["system"] = new_kwargs.get("system")
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
+        )
 
     new_kwargs["messages"] = [
         m for m in new_kwargs.get("messages", []) if m["role"] != "system"
@@ -352,7 +356,9 @@ def handle_anthropic_json(
     system_messages = extract_system_messages(new_kwargs.get("messages", []))
 
     if system_messages:
-        new_kwargs["system"] = combine_system_messages(new_kwargs.get("system"), system_messages)
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
+        )
 
     new_kwargs["messages"] = [
         m for m in new_kwargs.get("messages", []) if m["role"] != "system"
@@ -369,9 +375,12 @@ def handle_anthropic_json(
         """
     )
 
-    new_kwargs["system"] = combine_system_messages(new_kwargs.get("system"), [{"type": "text", "text": json_schema_message}])
+    new_kwargs["system"] = combine_system_messages(
+        new_kwargs.get("system"), [{"type": "text", "text": json_schema_message}]
+    )
 
     return response_model, new_kwargs
+
 
 def handle_cohere_modes(new_kwargs: dict[str, Any]) -> tuple[None, dict[str, Any]]:
     messages = new_kwargs.pop("messages", [])
@@ -657,9 +666,7 @@ def handle_response_model(
             )
             if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
                 # Handle OpenAI style or Anthropic style messages
-                new_kwargs["messages"] = [
-                    m for m in messages if m["role"] != "system"
-                ]
+                new_kwargs["messages"] = [m for m in messages if m["role"] != "system"]
                 if "system" not in new_kwargs:
                     system_message = extract_system_messages(messages)
                     if system_message:
