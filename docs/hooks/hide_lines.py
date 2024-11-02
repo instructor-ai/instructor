@@ -5,9 +5,9 @@ from pymdownx import highlight  # type: ignore
 
 @mkdocs.plugins.event_priority(0)
 # pylint: disable=unused-argument
-def on_startup(command: str, dirty: bool) -> None:
+def on_startup(command: str, dirty: bool) -> None:  # noqa: ARG001
     """Monkey patch Highlight extension to hide lines in code blocks."""
-    original = highlight.Highlight.highlight
+    original = highlight.Highlight.highlight  # type: ignore
 
     def patched(self: Any, src: str, *args: Any, **kwargs: Any) -> Any:
         lines = src.splitlines(keepends=True)
