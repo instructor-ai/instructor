@@ -32,17 +32,16 @@ def from_watsonx(
     assert mode in {
         instructor.Mode.WATSONX_TOOLS,
         instructor.Mode.WATSONX_MD_JSON,
-    }, "Mode be one of {instructor.Mode.WATSONX_TOOLS, WATSONX_MD_JSON}"
+    }, "Mode must be one of {instructor.Mode.WATSONX_TOOLS, WATSONX_MD_JSON}"
 
     assert isinstance(
         client, Watsonx
     ), "Client must be an instance of ibm_watsonx_ai.foundation_models.Model"
 
     if "stream" in kwargs and kwargs["stream"] is True:
-        raise ValueError("Unsupported stream functionality")
+        raise ValueError("The current version of the Watsonx client for Instructor does not yet support stream functionality")
 
     if not use_async:
-        
         return instructor.Instructor(
             client=client,
             create=instructor.patch(create=client.chat, mode=mode),
@@ -51,4 +50,4 @@ def from_watsonx(
             **kwargs,
         )
     else:
-        raise ValueError("Unsupported async functionality")
+        raise ValueError("The current version of the Watsonx client for Instructor does not yet support async functionality")

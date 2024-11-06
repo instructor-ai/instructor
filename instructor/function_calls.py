@@ -323,12 +323,18 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        completion["model"]=completion["model_id"]
-        completion["object"]="chat.completion" 
-        completion= ChatCompletion(**completion)
-        #completion.choices[0].message.content=completion.choices[0].message.content.replace("[TOOL_CALLS]","")
-        message = completion.choices[0].message
+        # Create a shallow copy of the completion dictionary
+        completion_copy = completion.copy()
+        
+        # Modify the copy instead of the original completion
+        completion_copy["model"] = completion["model_id"]
+        completion_copy["object"] = "chat.completion"
+        
+        # Instantiate ChatCompletion with the modified copy
+        new_completion = ChatCompletion(**completion_copy)
+        message = new_completion.choices[0].message
 
+        # The rest of the function logic goes here
         if hasattr(message, "refusal"):
             assert (
                 message.refusal is None
@@ -353,13 +359,20 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        completion["model"]=completion["model_id"]
-        completion["object"]="chat.completion" 
-        completion["text"]="" 
-        completion= ChatCompletion(**completion)
-        message = completion.choices[0].message.content
+        # Create a shallow copy of the completion dictionary
+        completion_copy = completion.copy()
+        
+        # Modify the copy instead of the original completion
+        completion_copy["model"] = completion["model_id"]
+        completion_copy["object"] = "chat.completion"
+        completion["text"]=" " 
+
+        # Instantiate ChatCompletion with the modified copy
+        new_completion = ChatCompletion(**completion_copy)
+        message = new_completion.choices[0].message.content
         message = extract_json_from_codeblock(message)
 
+        # The rest of the function logic goes here
         return cls.model_validate_json(
             message,
             context=validation_context,
