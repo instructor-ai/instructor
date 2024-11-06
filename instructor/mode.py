@@ -9,6 +9,8 @@ class Mode(enum.Enum):
     PARALLEL_TOOLS = "parallel_tool_call"
     TOOLS = "tool_call"
     MISTRAL_TOOLS = "mistral_tools"
+    WATSONX_TOOLS = "watsonx_tools"
+    WATSONX_MD_JSON = "watsonx_markdown_json_mode"
     JSON = "json_mode"
     JSON_O1 = "json_o1"
     MD_JSON = "markdown_json_mode"

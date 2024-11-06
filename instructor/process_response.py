@@ -78,7 +78,7 @@ async def process_response_async(
             mode=mode,
         )
         return model
-
+    
     model = response_model.from_response(
         response,
         validation_context=validation_context,
@@ -153,7 +153,7 @@ def process_response(
             mode=mode,
         )
         return model
-
+    
     model = response_model.from_response(
         response,
         validation_context=validation_context,
@@ -248,6 +248,70 @@ def handle_mistral_tools(
     new_kwargs["tool_choice"] = "any"
     return response_model, new_kwargs
 
+def handle_watsonx_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs["tools"] = [
+        {
+            "type": "function",
+            "function": response_model.openai_schema,
+        }
+    ]
+    new_kwargs["tool_choice"] = {
+        "type": "function",
+        "function": {"name": response_model.watsonx_schema["name"]},
+    }
+    
+    return response_model, new_kwargs
+
+def handle_watsonx_md_json(
+    response_model: type[T], new_kwargs: dict[str, Any], mode: Mode
+) -> tuple[type[T], dict[str, Any]]:
+    message = dedent(
+        f"""
+        As a genius expert, your task is to understand the content and provide
+        the parsed objects in json that match the following json_schema:\n
+
+        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+        Make sure to return an instance of the JSON, not the schema itself
+        """
+    )
+
+    if mode == Mode.JSON:
+        new_kwargs["response_format"] = {"type": "json_object"}
+    elif mode == Mode.JSON_SCHEMA:
+        new_kwargs["response_format"] = {
+            "type": "json_object",
+            "schema": response_model.model_json_schema(),
+        }
+    elif mode == Mode.WATSONX_MD_JSON:
+        new_kwargs["messages"].append(
+            {
+                "role": "user",
+                "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
+            },
+        )
+        new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
+
+    if new_kwargs["messages"][0]["role"] != "system":
+        new_kwargs["messages"].insert(
+            0,
+            {
+                "role": "user",
+                "content": message,
+            },
+        )
+    elif isinstance(new_kwargs["messages"][0]["content"], str):
+        new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+    elif isinstance(new_kwargs["messages"][0]["content"], list):
+        new_kwargs["messages"][0]["content"][0]["text"] += f"\n\n{message}"
+    else:
+        raise ValueError(
+            "Invalid message format, must be a string or a list of messages"
+        )
+
+    return response_model, new_kwargs
 
 def handle_json_o1(
     response_model: type[T], new_kwargs: dict[str, Any]
@@ -685,6 +749,8 @@ def handle_response_model(
         Mode.TOOLS_STRICT: handle_tools_strict,
         Mode.TOOLS: handle_tools,
         Mode.MISTRAL_TOOLS: handle_mistral_tools,
+        Mode.WATSONX_TOOLS: handle_watsonx_tools,
+        Mode.WATSONX_MD_JSON: lambda rm, nk: handle_watsonx_md_json(rm, nk, Mode.WATSONX_MD_JSON),  # type: ignore
         Mode.JSON_O1: handle_json_o1,
         Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON),  # type: ignore
         Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore

@@ -77,6 +77,11 @@ if importlib.util.find_spec("groq") is not None:
 
     __all__ += ["from_groq"]
 
+if importlib.util.find_spec("watsonx") is not None:
+    from .client_watsonx import from_watsonx
+
+    __all__ += ["from_watsonx"]
+
 if importlib.util.find_spec("mistralai") is not None:
     from .client_mistral import from_mistral
 

@@ -1,0 +1,23 @@
+{
+    "tools": [
+        {
+            "type": "function", 
+            "function": {
+                "name": "UserInfo", 
+                "description": "Correctly extracted `UserInfo` with all the required parameters with correct types", 
+                "parameters": {
+                    "properties": {
+                        "name": {"title": "Name", "type": "string"}, 
+                        "age": {"title": "Age", "type": "integer"}
+                    }, 
+                    "required": ["age", "name"], 
+                    "type": "object"
+                }
+            }
+        }
+    ], 
+    "tool_choice": {
+        "type": "function", 
+        "function": {"name": "UserInfo"}
+    }
+}

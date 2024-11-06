@@ -48,6 +48,7 @@ class Provider(Enum):
     TOGETHER = "together"
     GROQ = "groq"
     MISTRAL = "mistral"
+    WATSONX = "watsonx"
     COHERE = "cohere"
     GEMINI = "gemini"
     DATABRICKS = "databricks"
@@ -73,6 +74,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.OPENAI
     elif "mistral" in str(base_url):
         return Provider.MISTRAL
+    elif "watsonx" in str(base_url):
+        return Provider.WATSONX
     elif "cohere" in str(base_url):
         return Provider.COHERE
     elif "gemini" in str(base_url):

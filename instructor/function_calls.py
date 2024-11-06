@@ -91,6 +91,14 @@ class OpenAISchema(BaseModel):
             parameters=map_to_gemini_function_schema(cls.openai_schema["parameters"]),
         )
         return function
+    
+    @classproperty
+    def watsonx_schema(cls) -> dict[str, Any]:
+        return {
+            "name": cls.openai_schema["name"],
+            "description": cls.openai_schema["description"],
+            "parameters": cls.openai_schema["parameters"],
+        }
 
     @classmethod
     def from_response(
@@ -135,7 +143,13 @@ class OpenAISchema(BaseModel):
 
         if mode == Mode.COHERE_JSON_SCHEMA:
             return cls.parse_cohere_json_schema(completion, validation_context, strict)
-
+        
+        if mode == Mode.WATSONX_TOOLS:
+            return cls.parse_watsonx_tools(completion, validation_context, strict)
+        
+        if mode == Mode.WATSONX_MD_JSON:
+            return cls.parse_watsonx_md_json(completion, validation_context, strict)
+        
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
@@ -300,6 +314,56 @@ class OpenAISchema(BaseModel):
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict
+        )
+    
+    @classmethod
+    def parse_watsonx_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        completion["model"]=completion["model_id"]
+        completion["object"]="chat.completion" 
+        completion= ChatCompletion(**completion)
+        #completion.choices[0].message.content=completion.choices[0].message.content.replace("[TOOL_CALLS]","")
+        message = completion.choices[0].message
+
+        if hasattr(message, "refusal"):
+            assert (
+                message.refusal is None
+            ), f"Unable to generate a response due to {message.refusal}"
+        assert (
+            len(message.tool_calls or []) == 1
+        ), f"Instructor does not support multiple tool calls, use List[Model] instead"
+        tool_call = message.tool_calls[0]  # type: ignore
+        assert (
+            tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
+        ), "Tool name does not match"
+        return cls.model_validate_json(
+            tool_call.function.arguments,  # type: ignore
+            context=validation_context,
+            strict=strict,
+        )
+    
+    @classmethod
+    def parse_watsonx_md_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        completion["model"]=completion["model_id"]
+        completion["object"]="chat.completion" 
+        completion["text"]="" 
+        completion= ChatCompletion(**completion)
+        message = completion.choices[0].message.content
+        message = extract_json_from_codeblock(message)
+
+        return cls.model_validate_json(
+            message,
+            context=validation_context,
+            strict=strict,
         )
 
     @classmethod
