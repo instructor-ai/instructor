@@ -145,6 +145,12 @@ def update_total_usage(
         total_usage.completion_tokens += response_usage.completion_tokens or 0
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
         total_usage.total_tokens += response_usage.total_tokens or 0
+        if (rtd := response_usage.completion_tokens_details) and (ttd := total_usage.completion_tokens_details):
+            ttd.audio_tokens = (ttd.audio_tokens or 0) + (rtd.audio_tokens or 0)
+            ttd.reasoning_tokens = (ttd.reasoning_tokens or 0) + (rtd.reasoning_tokens or 0)
+        if (rpd := response_usage.prompt_tokens_details) and (tpd := total_usage.prompt_tokens_details):
+            tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
+            tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
         response.usage = total_usage  # Replace each response usage with the total usage
         return response
 

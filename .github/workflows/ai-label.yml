@@ -1,20 +1,21 @@
 name: AI Labeler
 
 on:
-issues:
+  issues:
     types: [opened, reopened]
-pull_request:
+  pull_request:
     types: [opened, reopened]
 
 jobs:
-ai-labeler:
+  ai-labeler:
     runs-on: ubuntu-latest
     permissions:
-    contents: read
-    issues: write
-    pull-requests: write
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
-    - uses: actions/checkout@v4
-    - uses: jlowin/ai-labeler@v0.2.0
+      - uses: actions/checkout@v4
+      - uses: jlowin/ai-labeler@v0.4.0
         with:
-        openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          include-repo-labels: true
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
