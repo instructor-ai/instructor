@@ -118,7 +118,7 @@ class Instructor:
         self: AsyncInstructor,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
