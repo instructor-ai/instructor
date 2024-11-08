@@ -1,6 +1,6 @@
 # type: ignore[all]
 from pydantic import BaseModel, Field
-from instructor.dsl.partial import Partial
+from instructor.dsl.partial import Partial, LiteralPartialMixin
 import pytest
 import instructor
 from openai import OpenAI, AsyncOpenAI
@@ -116,7 +116,7 @@ async def test_async_partial_with_whitespace():
 
 
 def test_summary_extraction():
-    class Summary(BaseModel):
+    class Summary(BaseModel, LiteralPartialMixin):
         summary: str = Field(description="A detailed summary")
 
     client = OpenAI()
@@ -143,7 +143,7 @@ def test_summary_extraction():
 
 @pytest.mark.asyncio
 async def test_summary_extraction_async():
-    class Summary(BaseModel):
+    class Summary(BaseModel, LiteralPartialMixin):
         summary: str = Field(description="A detailed summary")
 
     client = AsyncOpenAI()
