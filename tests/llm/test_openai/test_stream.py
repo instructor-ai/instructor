@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from pydantic import BaseModel
 import pytest
 import instructor
-from instructor.dsl.partial import Partial, LiteralPartialMixin
+from instructor.dsl.partial import Partial, PartialStringHandlingMixin
 
 from .util import models, modes
 
@@ -85,8 +85,7 @@ async def test_partial_model_async(model, mode, aclient):
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_literal_partial_mixin(model, mode, client):
-    # Test with LiteralPartialMixin
-    class UserWithMixin(BaseModel, LiteralPartialMixin):
+    class UserWithMixin(BaseModel, PartialStringHandlingMixin):
         name: str
         age: int
 
@@ -146,8 +145,7 @@ def test_literal_partial_mixin(model, mode, client):
     @pytest.mark.asyncio
     @pytest.mark.parametrize("model,mode", product(models, modes))
     async def test_literal_partial_mixin_async(model, mode, client):
-        # Test with LiteralPartialMixin
-        class UserWithMixin(BaseModel, LiteralPartialMixin):
+        class UserWithMixin(BaseModel, PartialStringHandlingMixin):
             name: str
             age: int
 

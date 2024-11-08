@@ -34,7 +34,7 @@ class MakeFieldsOptional:
     pass
 
 
-class LiteralPartialMixin:
+class PartialStringHandlingMixin:
     pass
 
 
@@ -132,7 +132,7 @@ class PartialBase(Generic[T_Model]):
         potential_object = ""
         partial_model = cls.get_partial_model()
         partial_mode = (
-            "on" if issubclass(cls, LiteralPartialMixin) else "trailing-strings"
+            "on" if issubclass(cls, PartialStringHandlingMixin) else "trailing-strings"
         )
         for chunk in json_chunks:
             potential_object += chunk
@@ -149,7 +149,7 @@ class PartialBase(Generic[T_Model]):
         potential_object = ""
         partial_model = cls.get_partial_model()
         partial_mode = (
-            "on" if issubclass(cls, LiteralPartialMixin) else "trailing-strings"
+            "on" if issubclass(cls, PartialStringHandlingMixin) else "trailing-strings"
         )
         async for chunk in json_chunks:
             potential_object += chunk
