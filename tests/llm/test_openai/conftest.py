@@ -13,7 +13,7 @@ except ImportError:
         return x
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def client():
     if os.environ.get("BRAINTRUST_API_KEY"):
         yield wrap_openai(

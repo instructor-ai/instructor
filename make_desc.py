@@ -1,5 +1,5 @@
 import os
-from typing import Optional, List, Set, Literal
+from typing import Optional, Literal
 import asyncio
 from openai import AsyncOpenAI
 import typer
@@ -15,7 +15,7 @@ client = instructor.from_openai(AsyncOpenAI())
 
 
 async def generate_ai_frontmatter(
-    client: AsyncOpenAI, title: str, content: str, categories: List[str]
+    client: AsyncOpenAI, title: str, content: str, categories: list[str]
 ):
     """
     Generate a description and categories for the given content using AI.
@@ -35,8 +35,8 @@ async def generate_ai_frontmatter(
         reasoning: str = Field(
             ..., description="The reasoning for the correct categories"
         )
-        tags: List[str]
-        categories: List[
+        tags: list[str]
+        categories: list[
             Literal[
                 "OpenAI",
                 "Anthropic",
@@ -72,7 +72,7 @@ async def generate_ai_frontmatter(
     return response
 
 
-def get_all_categories(root_dir: str) -> Set[str]:
+def get_all_categories(root_dir: str) -> set[str]:
     """
     Read all markdown files and extract unique categories.
 
@@ -113,7 +113,7 @@ def preview_categories(root_dir: str) -> None:
 
 
 async def process_file(
-    client: AsyncOpenAI, file_path: str, categories: List[str], enable_comments: bool
+    client: AsyncOpenAI, file_path: str, categories: list[str], enable_comments: bool
 ) -> None:
     """
     Process a single file, adding or updating the description and categories in the front matter.
@@ -143,7 +143,7 @@ async def process_file(
 
 async def process_files(
     root_dir: str,
-    api_key: Optional[str] = None,
+    api_key: Optional[str] = None,  # noqa: ARG001
     use_categories: bool = False,
     enable_comments: bool = False,
 ) -> None:

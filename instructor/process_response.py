@@ -20,7 +20,11 @@ from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
-from instructor.utils import merge_consecutive_messages
+from instructor.utils import (
+    merge_consecutive_messages,
+    extract_system_messages,
+    combine_system_messages,
+)
 from instructor.multimodal import convert_messages
 
 logger = logging.getLogger("instructor")
@@ -332,20 +336,15 @@ def handle_anthropic_tools(
         "name": response_model.__name__,
     }
 
-    system_messages = [
-        m["content"] for m in new_kwargs["messages"] if m["role"] == "system"
-    ]
+    system_messages = extract_system_messages(new_kwargs.get("messages", []))
 
-    if "system" in new_kwargs and system_messages:
-        raise ValueError(
-            "Only a single system message is supported - either set it as a message in the messages array or use the system parameter"
+    if system_messages:
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
         )
 
-    if "system" not in new_kwargs:
-        new_kwargs["system"] = "\n\n".join(system_messages)
-
     new_kwargs["messages"] = [
-        m for m in new_kwargs["messages"] if m["role"] != "system"
+        m for m in new_kwargs.get("messages", []) if m["role"] != "system"
     ]
 
     return response_model, new_kwargs
@@ -354,25 +353,18 @@ def handle_anthropic_tools(
 def handle_anthropic_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    openai_system_messages = [
-        message["content"]
-        for message in new_kwargs.get("messages", [])
-        if message["role"] == "system"
-    ]
+    system_messages = extract_system_messages(new_kwargs.get("messages", []))
 
-    if "system" in new_kwargs and openai_system_messages:
-        raise ValueError(
-            "Only a single System message is supported - either set it using the system parameter or in the list of messages"
+    if system_messages:
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
         )
 
-    if not "system" in new_kwargs:
-        new_kwargs["system"] = "\n\n".join(openai_system_messages)
-
     new_kwargs["messages"] = [
-        m for m in new_kwargs["messages"] if m["role"] != "system"
+        m for m in new_kwargs.get("messages", []) if m["role"] != "system"
     ]
 
-    message = dedent(
+    json_schema_message = dedent(
         f"""
         As a genius expert, your task is to understand the content and provide
         the parsed objects in json that match the following json_schema:\n
@@ -383,7 +375,9 @@ def handle_anthropic_json(
         """
     )
 
-    new_kwargs["system"] = f"{new_kwargs.get('system', '')}\n\n{message}".strip()
+    new_kwargs["system"] = combine_system_messages(
+        new_kwargs.get("system"), [{"type": "text", "text": json_schema_message}]
+    )
 
     return response_model, new_kwargs
 
@@ -664,7 +658,7 @@ def handle_response_model(
             # This is cause cohere uses 'message' and 'chat_history' instead of 'messages'
             return handle_cohere_modes(new_kwargs)
         # Handle images without a response model
-        if autodetect_images and "messages" in new_kwargs:
+        if "messages" in new_kwargs:
             messages = convert_messages(
                 new_kwargs["messages"],
                 mode,
@@ -672,14 +666,11 @@ def handle_response_model(
             )
             if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
                 # Handle OpenAI style or Anthropic style messages
-                new_kwargs["messages"] = [
-                    m for m in messages if m["role"] != "system"
-                ]
+                new_kwargs["messages"] = [m for m in messages if m["role"] != "system"]
                 if "system" not in new_kwargs:
-                    system_messages = (m for m in messages if m["role"] == "system")
-                    system_message = next(system_messages, None)
+                    system_message = extract_system_messages(messages)
                     if system_message:
-                        new_kwargs["system"] = system_message["content"]
+                        new_kwargs["system"] = system_message
             else:
                 new_kwargs["messages"] = messages
         return None, new_kwargs
