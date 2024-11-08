@@ -68,10 +68,10 @@ def _make_field_optional(
         tmp_field.annotation = Optional[Partial[annotation, MakeFieldsOptional]]  # type: ignore[assignment, valid-type]
         tmp_field.default = {}
     else:
-        tmp_field.annotation = Optional[field.annotation]
+        tmp_field.annotation = Optional[field.annotation]  # type: ignore[assignment]
         tmp_field.default = None
 
-    return tmp_field.annotation, tmp_field
+    return tmp_field.annotation, tmp_field  # type: ignore
 
 
 class PartialBase(Generic[T_Model]):
