@@ -40,7 +40,7 @@ class InstructorChatCompletionCreate(Protocol):
         response_model: type[T_Model] | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
-        max_retries: int | Retrying | AsyncRetrying = 1,
+        max_retries: int | Retrying = 1,
         *args: Any,
         **kwargs: Any,
     ) -> T_Model: ...
@@ -52,7 +52,7 @@ class AsyncInstructorChatCompletionCreate(Protocol):
         response_model: type[T_Model] | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
-        max_retries: int | Retrying | AsyncRetrying = 1,
+        max_retries: int | AsyncRetrying = 1,
         *args: Any,
         **kwargs: Any,
     ) -> T_Model: ...
@@ -145,7 +145,7 @@ def patch(  # type: ignore
         response_model: type[T_Model] | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
-        max_retries: int | Retrying | AsyncRetrying = 1,
+        max_retries: int | AsyncRetrying = 1,
         strict: bool = True,
         hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
@@ -176,7 +176,7 @@ def patch(  # type: ignore
         response_model: type[T_Model] | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
-        max_retries: int | Retrying | AsyncRetrying = 1,
+        max_retries: int | Retrying = 1,
         strict: bool = True,
         hooks: Hooks | None = None,
         *args: T_ParamSpec.args,

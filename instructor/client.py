@@ -130,7 +130,7 @@ class Instructor:
         self: Self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying = 3,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -142,7 +142,7 @@ class Instructor:
         self: AsyncInstructor,
         response_model: None,
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -154,7 +154,7 @@ class Instructor:
         self: Self,
         response_model: None,
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying = 3,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -189,7 +189,7 @@ class Instructor:
         self: AsyncInstructor,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -201,7 +201,7 @@ class Instructor:
         self: Self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -239,7 +239,7 @@ class Instructor:
         self: AsyncInstructor,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -251,7 +251,7 @@ class Instructor:
         self: Self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -288,7 +288,7 @@ class Instructor:
         self: AsyncInstructor,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -300,7 +300,7 @@ class Instructor:
         self: Self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -377,7 +377,7 @@ class AsyncInstructor(Instructor):
         self,
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -399,7 +399,7 @@ class AsyncInstructor(Instructor):
         self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -423,7 +423,7 @@ class AsyncInstructor(Instructor):
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -447,7 +447,7 @@ class AsyncInstructor(Instructor):
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,

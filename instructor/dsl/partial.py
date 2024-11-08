@@ -68,10 +68,10 @@ def _make_field_optional(
         tmp_field.annotation = Optional[Partial[annotation, MakeFieldsOptional]]  # type: ignore[assignment, valid-type]
         tmp_field.default = {}
     else:
-        tmp_field.annotation = Optional[field.annotation]  # type: ignore[assignment]
+        tmp_field.annotation = Optional[field.annotation]
         tmp_field.default = None
 
-    return tmp_field.annotation, tmp_field  # type: ignore
+    return tmp_field.annotation, tmp_field
 
 
 class PartialBase(Generic[T_Model]):
@@ -129,7 +129,9 @@ class PartialBase(Generic[T_Model]):
         partial_model = cls.get_partial_model()
         for chunk in json_chunks:
             potential_object += chunk
-            obj = from_json((potential_object.strip() or "{}").encode(), partial_mode="on")
+            obj = from_json(
+                (potential_object.strip() or "{}").encode(), partial_mode="on"
+            )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
@@ -141,7 +143,9 @@ class PartialBase(Generic[T_Model]):
         partial_model = cls.get_partial_model()
         async for chunk in json_chunks:
             potential_object += chunk
-            obj = from_json((potential_object.strip() or "{}").encode(), partial_mode="on")
+            obj = from_json(
+                (potential_object.strip() or "{}").encode(), partial_mode="on"
+            )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
@@ -163,7 +167,7 @@ class PartialBase(Generic[T_Model]):
                     import json
 
                     resp = chunk.candidates[0].content.parts[0].function_call
-                    resp_dict = type(resp).to_dict(resp) # type:ignore
+                    resp_dict = type(resp).to_dict(resp)  # type:ignore
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
                 elif chunk.choices:
