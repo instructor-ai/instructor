@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from pydantic import BaseModel
 import pytest
 import instructor
-from instructor.dsl.partial import Partial
+from instructor.dsl.partial import Partial, LiteralPartialMixin
 
 from .util import models, modes
 
@@ -81,3 +81,125 @@ async def test_partial_model_async(model, mode, aclient):
     )
     async for m in model:
         assert isinstance(m, UserExtract)
+
+
+@pytest.mark.parametrize("model,mode", product(models, modes))
+def test_literal_partial_mixin(model, mode, client):
+    # Test with LiteralPartialMixin
+    class UserWithMixin(BaseModel, LiteralPartialMixin):
+        name: str
+        age: int
+
+    client = instructor.patch(client, mode=mode)
+    resp = client.chat.completions.create(
+        model=model,
+        response_model=Partial[UserWithMixin],
+        max_retries=2,
+        stream=True,
+        messages=[
+            {"role": "user", "content": "Jason Liu is 12 years old"},
+        ],
+    )
+
+    changes = 0
+    last_name = None
+    last_age = None
+    for m in resp:
+        assert isinstance(m, UserWithMixin)
+        if m.name != last_name:
+            last_name = m.name
+            changes += 1
+        if m.age != last_age:
+            last_age = m.age
+            changes += 1
+
+    assert changes == 2  # Ensure we got at least one field update
+
+    class UserWithoutMixin(BaseModel):
+        name: str
+        age: int
+
+    resp = client.chat.completions.create(
+        model=model,
+        response_model=Partial[UserWithoutMixin],
+        max_retries=2,
+        stream=True,
+        messages=[
+            {"role": "user", "content": "Jason Liu is 12 years old"},
+        ],
+    )
+
+    changes = 0
+    last_name = None
+    last_age = None
+    for m in resp:
+        assert isinstance(m, UserWithoutMixin)
+        if m.name != last_name:
+            last_name = m.name
+            changes += 1
+        if m.age != last_age:
+            last_age = m.age
+            changes += 1
+
+    assert changes > 3
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("model,mode", product(models, modes))
+    async def test_literal_partial_mixin_async(model, mode, client):
+        # Test with LiteralPartialMixin
+        class UserWithMixin(BaseModel, LiteralPartialMixin):
+            name: str
+            age: int
+
+        client = instructor.patch(client, mode=mode)
+        resp = await client.chat.completions.create(
+            model=model,
+            response_model=Partial[UserWithMixin],
+            max_retries=2,
+            stream=True,
+            messages=[
+                {"role": "user", "content": "Jason Liu is 12 years old"},
+            ],
+        )
+
+        changes = 0
+        last_name = None
+        last_age = None
+        async for m in resp:
+            assert isinstance(m, UserWithMixin)
+            if m.name != last_name:
+                last_name = m.name
+                changes += 1
+            if m.age != last_age:
+                last_age = m.age
+                changes += 1
+
+        assert changes == 2  # Ensure we got at least one field update
+
+        class UserWithoutMixin(BaseModel):
+            name: str
+            age: int
+
+        resp = await client.chat.completions.create(
+            model=model,
+            response_model=Partial[UserWithoutMixin],
+            max_retries=2,
+            stream=True,
+            messages=[
+                {"role": "user", "content": "Jason Liu is 12 years old"},
+            ],
+        )
+
+        changes = 0
+        last_name = None
+        last_age = None
+        async for m in resp:
+            assert isinstance(m, UserWithoutMixin)
+            if m.name != last_name:
+                last_name = m.name
+                changes += 1
+            if m.age != last_age:
+                last_age = m.age
+                changes += 1
+
+        assert changes > 3

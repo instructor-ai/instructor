@@ -34,6 +34,10 @@ class MakeFieldsOptional:
     pass
 
 
+class LiteralPartialMixin:
+    pass
+
+
 def _make_field_optional(
     field: FieldInfo,
 ) -> tuple[Any, FieldInfo]:
@@ -127,9 +131,14 @@ class PartialBase(Generic[T_Model]):
     ) -> Generator[T_Model, None, None]:
         potential_object = ""
         partial_model = cls.get_partial_model()
+        partial_mode = (
+            "on" if issubclass(cls, LiteralPartialMixin) else "trailing-strings"
+        )
         for chunk in json_chunks:
             potential_object += chunk
-            obj = from_json((potential_object.strip() or "{}").encode(), partial_mode="on")
+            obj = from_json(
+                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+            )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
@@ -139,9 +148,14 @@ class PartialBase(Generic[T_Model]):
     ) -> AsyncGenerator[T_Model, None]:
         potential_object = ""
         partial_model = cls.get_partial_model()
+        partial_mode = (
+            "on" if issubclass(cls, LiteralPartialMixin) else "trailing-strings"
+        )
         async for chunk in json_chunks:
             potential_object += chunk
-            obj = from_json((potential_object.strip() or "{}").encode(), partial_mode="on")
+            obj = from_json(
+                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+            )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
 
@@ -163,7 +177,7 @@ class PartialBase(Generic[T_Model]):
                     import json
 
                     resp = chunk.candidates[0].content.parts[0].function_call
-                    resp_dict = type(resp).to_dict(resp) # type:ignore
+                    resp_dict = type(resp).to_dict(resp)  # type:ignore
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
                 elif chunk.choices:
