@@ -18,6 +18,8 @@ tags:
 
 # Quick PDF Processing with Gemini and Instructor
 
+In this post, we'll explore how to use Google's Gemini model with Instructor to analyse the [Gemini 1.5 Pro Paper](https://github.com/google-gemini/generative-ai-python/blob/0e5c5f25fe4ce266791fa2afb20d17dee780ca9e/third_party/test.pdf) and extract a structured summary.
+
 ## The Problem
 
 Processing PDFs programmatically has always been painful. The typical approaches all have significant drawbacks:
