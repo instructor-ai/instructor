@@ -46,6 +46,7 @@ import instructor
 import google.generativeai as genai
 from google.ai.generativelanguage_v1beta.types.file import File
 from pydantic import BaseModel
+import time
 
 # Initialize the client
 client = instructor.from_gemini(
