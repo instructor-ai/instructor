@@ -146,6 +146,7 @@ class OpenAISchema(BaseModel):
         if mode in {
             Mode.TOOLS,
             Mode.MISTRAL_TOOLS,
+            Mode.WRITER_TOOLS,
             Mode.TOOLS_STRICT,
             Mode.CEREBRAS_TOOLS,
             Mode.FIREWORKS_TOOLS,
@@ -158,6 +159,7 @@ class OpenAISchema(BaseModel):
             Mode.MD_JSON,
             Mode.JSON_O1,
             Mode.CEREBRAS_JSON,
+            Mode.WRITER_JSON,
             Mode.FIREWORKS_JSON,
         }:
             return cls.parse_json(completion, validation_context, strict)

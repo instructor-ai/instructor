@@ -300,6 +300,20 @@ def reask_fireworks_json(
     return kwargs
 
 
+def reask_writer_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+): ...
+
+
+def reask_writer_json (
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+): ...
+
+
 def handle_reask_kwargs(
     kwargs: dict[str, Any],
     mode: Mode,
@@ -323,6 +337,8 @@ def handle_reask_kwargs(
         Mode.MD_JSON: reask_md_json,
         Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
         Mode.FIREWORKS_JSON: reask_fireworks_json,
+        Mode.WRITER_TOOLS: reask_writer_tools,
+        Mode.WRITER_JSON: reask_writer_json,
     }
     reask_function = functions.get(mode, reask_default)
     return reask_function(kwargs=kwargs, response=response, exception=exception)
