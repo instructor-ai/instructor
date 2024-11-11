@@ -5,7 +5,6 @@ description: Learn to dynamically create prompts using Jinja templating and vali
 
 # Prompt Templating
 
-
 With Instructor's Jinja templating, you can:
 
 - Dynamically adapt prompts to any context
@@ -239,3 +238,9 @@ print(address)
 ```
 
 This allows you to preserve your sensitive information while still using it in your prompts.
+
+## Security
+
+We use the `jinja2.sandbox.SandboxedEnvironment` to prevent security issues with the templating engine. This means that you can't use arbitrary python code in your prompts. But this doesn't mean that you should pass untrusted input to the templating engine, as this could still be abused for things like Denial of Service attacks.
+
+You should [always sanitize](https://jinja.palletsprojects.com/en/stable/sandbox/#security-considerations) any input that you pass to the templating engine.
