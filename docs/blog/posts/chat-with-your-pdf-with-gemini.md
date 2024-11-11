@@ -42,6 +42,7 @@ Then, here's all the code you need:
 ```python
 import instructor
 import google.generativeai as genai
+from google.ai.generativelanguage_v1beta.types.file import File
 from pydantic import BaseModel
 
 # Initialize the client
@@ -56,8 +57,18 @@ client = instructor.from_gemini(
 class Summary(BaseModel):
     summary: str
 
-# Process the PDF
-file = genai.upload_file("path/to/your.pdf")  # [Download sample PDF](sample.pdf)
+# Upload the PDF
+file = genai.upload_file("path/to/your.pdf")
+
+# Wait for file to finish processing
+while file.state != File.State.ACTIVE:
+    time.sleep(1)
+    file = genai.get_file(file.name)
+    print(f"File is still uploading, state: {file.state}")
+
+print(f"File is now active, state: {file.state}")
+print(file)
+
 resp = client.chat.completions.create(
     messages=[
         {"role": "user", "content": ["Summarize the following file", file]},
