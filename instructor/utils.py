@@ -53,6 +53,7 @@ class Provider(Enum):
     DATABRICKS = "databricks"
     CEREBRAS = "cerebras"
     FIREWORKS = "fireworks"
+    WRITER = "writer"
     UNKNOWN = "unknown"
 
 
@@ -81,6 +82,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.DATABRICKS
     elif "vertexai" in str(base_url):
         return Provider.VERTEXAI
+    elif "writer" in str(base_url):
+        return Provider.WRITER
     return Provider.UNKNOWN
 
 

@@ -5725,6 +5725,25 @@ files = [
 ]
 
 [[package]]
+name = "writer-sdk"
+version = "1.2.0"
+description = "The official Python library for the writer API"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "writer_sdk-1.2.0-py3-none-any.whl", hash = "sha256:99c7716393137cd062ec8467ba1cad85f99271f182403b679ebe80743ae5c7a6"},
+    {file = "writer_sdk-1.2.0.tar.gz", hash = "sha256:42262a64cc7d3021616c7c2c7882badaca68ac6bfc448012ead6397a400de02a"},
+]
+
+[package.dependencies]
+anyio = ">=3.5.0,<5"
+distro = ">=1.7.0,<2"
+httpx = ">=0.23.0,<1"
+pydantic = ">=1.9.0,<3"
+sniffio = "*"
+typing-extensions = ">=4.7,<5"
+
+[[package]]
 name = "wsproto"
 version = "1.2.0"
 description = "WebSockets state-machine based protocol implementation"
@@ -6011,4 +6030,4 @@ vertexai = ["google-cloud-aiplatform", "jsonref"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "e1a99439af86fa4689c019b6530664f9b3eb45535eac738e342446bc1c33d849"
+content-hash = "998b8c8ff1c13005c98c15af8530c1f35f871260d400720fa48cdb4ce1823866"

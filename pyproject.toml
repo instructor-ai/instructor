@@ -40,6 +40,7 @@ google-cloud-aiplatform = { version = "^1.53.0", optional = true }
 jsonref = { version = "^1.1.0", optional = true }
 cerebras_cloud_sdk = { version = "^1.5.0", optional = true }
 fireworks-ai = { version = "^0.15.4", optional = true }
+writer-sdk = { version = "^1.2.0", optional = true }
 
 [tool.poetry.extras]
 anthropic = ["anthropic", "xmltodict"]
