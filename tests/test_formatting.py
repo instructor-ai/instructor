@@ -1,4 +1,21 @@
+import pytest
+from jinja2.exceptions import SecurityError
+
 from instructor.templating import handle_templating
+
+
+def test_handle_insecure_template():
+    with pytest.raises(SecurityError):
+        kwargs = {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "{{ self.__init__.__globals__.__builtins__.__import__('os').system('ls') }} {{ variable }}",
+                }
+            ]
+        }
+        context = {"variable": "test"}
+        handle_templating(kwargs, context)
 
 
 def test_handle_templating_with_context():
