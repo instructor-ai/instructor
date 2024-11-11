@@ -51,8 +51,7 @@ from pydantic import BaseModel
 client = instructor.from_gemini(
     client=genai.GenerativeModel(
         model_name="models/gemini-1.5-flash-latest",
-    ),
-    mode=instructor.Mode.GEMINI_JSON,
+    )
 )
 
 # Define your output structure
