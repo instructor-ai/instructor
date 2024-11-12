@@ -159,7 +159,6 @@ class OpenAISchema(BaseModel):
             Mode.MD_JSON,
             Mode.JSON_O1,
             Mode.CEREBRAS_JSON,
-            Mode.WRITER_JSON,
             Mode.FIREWORKS_JSON,
         }:
             return cls.parse_json(completion, validation_context, strict)

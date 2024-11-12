@@ -107,7 +107,7 @@ async def process_response_async(
 def process_response(
     response: T_Model,
     *,
-    response_model: type[OpenAISchema | BaseModel] | None = None,
+    response_model: type[OpenAISchema | BaseModel] | Nprocess_responseone = None,
     stream: bool,
     validation_context: dict[str, Any] | None = None,
     strict=None,
@@ -586,11 +586,15 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
 
 def handle_writer_tools(
         response_model: type[T], new_kwargs: dict[str, Any]
-) -> tuple[type[T], dict[str, Any]]: ...
-
-def handle_writer_json(
-    response_model: type[T], new_kwargs: dict[str, Any]
-) -> tuple[type[T], dict[str, Any]]: ...
+) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs["tools"] = [
+        {
+            "type": "function",
+            "function": response_model.openai_schema,
+        }
+    ]
+    new_kwargs["tool_choice"] = "auto"
+    return response_model, new_kwargs
 
 
 def is_typed_dict(cls) -> bool:
@@ -711,7 +715,6 @@ def handle_response_model(
         Mode.FIREWORKS_JSON: handle_fireworks_json,
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
         Mode.WRITER_TOOLS: handle_writer_tools,
-        Mode.WRITER_JSON: handle_writer_json,
     }
 
     if mode in mode_handlers:

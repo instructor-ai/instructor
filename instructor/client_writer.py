@@ -31,8 +31,7 @@ def from_writer(
 ) -> instructor.Instructor:
     assert mode in {
         instructor.Mode.WRITER_TOOLS,
-        instructor.Mode.WRITER_JSON,
-    }, "Mode must be instructor.Mode.WRITER_TOOLS or instructor.Mode.WRITER_JSON"
+    }, "Mode must be instructor.Mode.WRITER_TOOLS"
 
     assert isinstance(
         client, (Writer, AsyncWriter)
