@@ -356,7 +356,7 @@ def convert_messages(
                     cast(ImageParams, content)
                 )
         if isinstance(content, str):
-            converted_messages.append({"role": role, "content": content})  # type: ignore
+            converted_messages.append(message) # type: ignore
         else:
             converted_content = convert_contents(content, mode)
             converted_messages.append({"role": role, "content": converted_content})  # type: ignore
