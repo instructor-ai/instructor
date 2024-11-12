@@ -18,7 +18,7 @@ rich = "^13.7.0"
 aiohttp = "^3.9.1"
 tenacity = ">=9.0.0,<10.0.0"
 pydantic-core = "^2.18.0"
-jiter = ">=0.5,<0.7"
+jiter = ">=0.5,<0.8"
 jinja2 = "^3.1.4"
 requests = "^2.32.3"
 
@@ -30,9 +30,9 @@ pandas = { version = "^2.2.0", optional = true }
 tabulate = { version = "^0.9.0", optional = true }
 pydantic_extra_types = { version = "^2.6.0", optional = true }
 litellm = { version = "^1.35.31", optional = true }
-anthropic = { version = ">=0.36.2,<0.38.0", optional = true }
+anthropic = { version = ">=0.36.2,<0.40.0", optional = true }
 xmltodict = { version = ">=0.13,<0.15", optional = true }
-groq = { version = ">=0.4.2,<0.12.0", optional = true }
+groq = { version = ">=0.4.2,<0.13.0", optional = true }
 cohere = { version = "^5.1.8", optional = true }
 mistralai = { version = "^1.0.3", optional = true }
 google-generativeai = { version = "^0.8.2", optional = true }
@@ -78,7 +78,7 @@ jsonref = "^1.1.0"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
 mkdocs-material = { extras = ["imaging"], version = "^9.5.9" }
-mkdocstrings = "^0.26.1"
+mkdocstrings = ">=0.26.1,<0.28.0"
 mkdocstrings-python = "^1.11.1"
 pytest-examples = "^0.0.13"
 mkdocs-jupyter = ">=0.24.6,<0.26.0"
@@ -87,7 +87,7 @@ mkdocs-minify-plugin = "^0.8.0"
 mkdocs-redirects = "^1.2.1"
 
 [tool.poetry.group.anthropic.dependencies]
-anthropic = ">=0.36.2,<0.38.0"
+anthropic = ">=0.36.2,<0.40.0"
 
 [tool.poetry.group.test-docs.dependencies]
 fastapi = ">=0.109.2,<0.116.0"
@@ -97,9 +97,9 @@ pandas = "^2.2.0"
 tabulate = "^0.9.0"
 pydantic_extra_types = "^2.6.0"
 litellm = "^1.35.31"
-anthropic = ">=0.36.2,<0.38.0"
+anthropic = ">=0.36.2,<0.40.0"
 xmltodict = ">=0.13,<0.15"
-groq = ">=0.4.2,<0.12.0"
+groq = ">=0.4.2,<0.13.0"
 phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
 mistralai = "^1.0.3"
