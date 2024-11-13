@@ -7,12 +7,12 @@ description: Learn to utilize field-level streaming with Instructor and OpenAI f
 
 !!! info "Literal"
 
-    If the data structure you're using has literal values, you need to make sure to import the `PartialStringHandlingMixin` mixin.
+    If the data structure you're using has literal values, you need to make sure to import the `PartialLiteralMixin` mixin.
 
     ```python
-    from instructor.dsl.partial import PartialStringHandlingMixin
+    from instructor.dsl.partial import PartialLiteralMixin
 
-    class User(BaseModel, PartialStringHandlingMixin):
+    class User(BaseModel, PartialLiteralMixin):
         name: str
         age: int
         category: Literal["admin", "user", "guest"]

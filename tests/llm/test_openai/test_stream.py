@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from pydantic import BaseModel
 import pytest
 import instructor
-from instructor.dsl.partial import Partial, PartialStringHandlingMixin
+from instructor.dsl.partial import Partial, PartialLiteralMixin
 
 from .util import models, modes
 
@@ -85,7 +85,7 @@ async def test_partial_model_async(model, mode, aclient):
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_literal_partial_mixin(model, mode, client):
-    class UserWithMixin(BaseModel, PartialStringHandlingMixin):
+    class UserWithMixin(BaseModel, PartialLiteralMixin):
         name: str
         age: int
 
@@ -142,62 +142,63 @@ def test_literal_partial_mixin(model, mode, client):
 
     assert changes > 3
 
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize("model,mode", product(models, modes))
-    async def test_literal_partial_mixin_async(model, mode, client):
-        class UserWithMixin(BaseModel, PartialStringHandlingMixin):
-            name: str
-            age: int
 
-        client = instructor.patch(client, mode=mode)
-        resp = await client.chat.completions.create(
-            model=model,
-            response_model=Partial[UserWithMixin],
-            max_retries=2,
-            stream=True,
-            messages=[
-                {"role": "user", "content": "Jason Liu is 12 years old"},
-            ],
-        )
+@pytest.mark.asyncio
+@pytest.mark.parametrize("model,mode", product(models, modes))
+async def test_literal_partial_mixin_async(model, mode, client):
+    class UserWithMixin(BaseModel, PartialLiteralMixin):
+        name: str
+        age: int
 
-        changes = 0
-        last_name = None
-        last_age = None
-        async for m in resp:
-            assert isinstance(m, UserWithMixin)
-            if m.name != last_name:
-                last_name = m.name
-                changes += 1
-            if m.age != last_age:
-                last_age = m.age
-                changes += 1
+    client = instructor.patch(client, mode=mode)
+    resp = await client.chat.completions.create(
+        model=model,
+        response_model=Partial[UserWithMixin],
+        max_retries=2,
+        stream=True,
+        messages=[
+            {"role": "user", "content": "Jason Liu is 12 years old"},
+        ],
+    )
 
-        assert changes == 2  # Ensure we got at least one field update
+    changes = 0
+    last_name = None
+    last_age = None
+    async for m in resp:
+        assert isinstance(m, UserWithMixin)
+        if m.name != last_name:
+            last_name = m.name
+            changes += 1
+        if m.age != last_age:
+            last_age = m.age
+            changes += 1
 
-        class UserWithoutMixin(BaseModel):
-            name: str
-            age: int
+    assert changes == 2  # Ensure we got at least one field update
 
-        resp = await client.chat.completions.create(
-            model=model,
-            response_model=Partial[UserWithoutMixin],
-            max_retries=2,
-            stream=True,
-            messages=[
-                {"role": "user", "content": "Jason Liu is 12 years old"},
-            ],
-        )
+    class UserWithoutMixin(BaseModel):
+        name: str
+        age: int
 
-        changes = 0
-        last_name = None
-        last_age = None
-        async for m in resp:
-            assert isinstance(m, UserWithoutMixin)
-            if m.name != last_name:
-                last_name = m.name
-                changes += 1
-            if m.age != last_age:
-                last_age = m.age
-                changes += 1
+    resp = await client.chat.completions.create(
+        model=model,
+        response_model=Partial[UserWithoutMixin],
+        max_retries=2,
+        stream=True,
+        messages=[
+            {"role": "user", "content": "Jason Liu is 12 years old"},
+        ],
+    )
 
-        assert changes > 3
+    changes = 0
+    last_name = None
+    last_age = None
+    async for m in resp:
+        assert isinstance(m, UserWithoutMixin)
+        if m.name != last_name:
+            last_name = m.name
+            changes += 1
+        if m.age != last_age:
+            last_age = m.age
+            changes += 1
+
+    assert changes > 3
