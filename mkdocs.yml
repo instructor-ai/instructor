@@ -128,7 +128,7 @@ extra_css:
   - https://unpkg.com/katex@0/dist/katex.min.css
 nav:
   - Introduction: 
-    - Welcome To Instructor: 'index.md'
+    - Structured Outputs for LLMs: 'index.md'
     - Why use Instructor?: 'why.md'
     - Help with Instructor: 'help.md'
     - Newsletter: 'newsletter.md'
