@@ -5,9 +5,12 @@ description: Explore 58 effective prompting techniques categorized for enhanced 
 
 # Prompting Guide
 
-Prompting requires understanding of techniques. Prompting enhances model performance.
+Prompting requires an understanding of techniques to enhance model performance.
 
-We created examples of 58 prompting techniques<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup> using `instructor`.
+The team at [Learn Prompting](https://learnprompting.org) released The Prompt Report in collaboration with researchers from OpenAI, Microsoft, and Google.
+This report surveys over 1,500 prompting papers and condenses the findings into a list of 58 distinct prompting techniques.
+
+Here are examples of the 58 prompting techniques<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup> using `instructor`.
 
 Prompting techniques are separated into the following categories:
 - [Prompting Guide](#prompting-guide)
