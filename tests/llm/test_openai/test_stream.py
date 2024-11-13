@@ -145,12 +145,12 @@ def test_literal_partial_mixin(model, mode, client):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("model,mode", product(models, modes))
-async def test_literal_partial_mixin_async(model, mode, client):
+async def test_literal_partial_mixin_async(model, mode, aclient):
     class UserWithMixin(BaseModel, PartialLiteralMixin):
         name: str
         age: int
 
-    client = instructor.patch(client, mode=mode)
+    client = instructor.patch(aclient, mode=mode)
     resp = await client.chat.completions.create(
         model=model,
         response_model=Partial[UserWithMixin],
