@@ -93,7 +93,7 @@ The combination of Gemini and Instructor offers several key advantages over trad
 
 **Simple Integration** - Unlike traditional approaches that require complex document processing pipelines, chunking strategies, and embedding databases, you can directly process PDFs with just a few lines of code. This dramatically reduces development time and maintenance overhead.
 
-**Structured Output** - Instructor's Pydantic integration ensures you get exactly the data structure you need. The model's outputs are automatically validated and typed, making it easier to build reliable applications. If the extraction fails, Instructor automatically handles the retries for you with support for [custom retry logic using tenacity].
+**Structured Output** - Instructor's Pydantic integration ensures you get exactly the data structure you need. The model's outputs are automatically validated and typed, making it easier to build reliable applications. If the extraction fails, Instructor automatically handles the retries for you with support for [custom retry logic using tenacity](../../concepts/retrying.md).
 
 **Multimodal Support** - Gemini's multimodal capabilities mean this same approach works for various file types. You can process images, videos, and audio files all in the same api request. Check out our [multimodal processing guide](./multimodal-gemini.md) to see how we extract structured data from travel videos.
 
