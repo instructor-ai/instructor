@@ -129,15 +129,15 @@ def test_cerebras_json_streaming():
 
     client = instructor.from_cerebras(Cerebras(), mode=instructor.Mode.CEREBRAS_JSON)
 
-    resp = client.chat.completions.create(
+    resp = client.chat.completions.create_iterable(
         model="llama3.1-70b",
         messages=[
             {
                 "role": "user",
-                "content": "Extract all users from this sentence : Ivan is 27 and lives in Singapore. Darren is around the same age and lives in the same city. Make sure to adhere to the desired JSON format.",
+                "content": "You're a helpful assistant that extracts users from sentences. Extract all users from this sentence : Ivan is 27 and lives in Singapore. Darren is around the same age and lives in the same city. Make sure to adhere to the desired JSON format.",
             },
         ],
-        response_model=Iterable[User],
+        response_model=User,
         stream=True,
     )
 
@@ -183,7 +183,7 @@ def test_cerebras_tool_error():
     client = instructor.from_cerebras(Cerebras(), mode=instructor.Mode.CEREBRAS_TOOLS)
 
     with pytest.raises(ValueError):
-        resp = client.chat.completions.create(
+        resp = client.chat.completions.create_iterable(
             model="llama3.1-70b",
             messages=[
                 {
@@ -191,6 +191,6 @@ def test_cerebras_tool_error():
                     "content": "Extract all users from this sentence : Ivan is 27 and lives in Singapore. Darren is around the same age and lives in the same city",
                 },
             ],
-            response_model=Iterable[User],
+            response_model=User,
             stream=True,
         )

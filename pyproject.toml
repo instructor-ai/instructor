@@ -38,7 +38,7 @@ mistralai = { version = "^1.0.3", optional = true }
 google-generativeai = { version = "^0.8.2", optional = true }
 google-cloud-aiplatform = { version = "^1.53.0", optional = true }
 jsonref = { version = "^1.1.0", optional = true }
-cerebras_cloud_sdk = { version = "^1.5.0", optional = true }
+cerebras_cloud_sdk = { version = "^1.11.0", optional = true }
 fireworks-ai = { version = "^0.15.4", optional = true }
 
 [tool.poetry.extras]
@@ -103,7 +103,7 @@ groq = ">=0.4.2,<0.12.0"
 phonenumbers = "^8.13.33"
 cohere = "^5.1.8"
 mistralai = "^1.0.3"
-cerebras_cloud_sdk = "^1.5.0"
+cerebras_cloud_sdk = "^1.11.0"
 fireworks-ai = "^0.15.4"
 graphviz = "^0.20.3"
 sqlmodel = "^0.0.22"
