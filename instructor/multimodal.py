@@ -43,9 +43,9 @@ class ImageParams(ImageParamsBase, total=False):
 
 class Image(BaseModel):
     source: Union[str, Path] = Field(  # noqa: UP007
-        ..., description="URL, file path, or base64 data of the image"
+        description="URL, file path, or base64 data of the image"
     )
-    media_type: str = Field(..., description="MIME type of the image")
+    media_type: str = Field(description="MIME type of the image")
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded image data", repr=False
     )
@@ -208,7 +208,7 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: Union[str, Path] = Field(..., description="URL or file path of the audio")  # noqa: UP007
+    source: Union[str, Path] = Field(description="URL or file path of the audio")  # noqa: UP007
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded audio data", repr=False
     )
