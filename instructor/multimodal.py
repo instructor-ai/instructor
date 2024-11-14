@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 import mimetypes
 import requests
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field  # type:ignore
 from .mode import Mode
 
 F = TypeVar("F", bound=Callable[..., Any])
