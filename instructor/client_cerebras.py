@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal, overload
+from typing import Any, overload
 
 import instructor
 from instructor.client import AsyncInstructor, Instructor
