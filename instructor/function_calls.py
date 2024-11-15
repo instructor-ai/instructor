@@ -13,6 +13,7 @@ from pydantic import (
     create_model,
 )
 
+from instructor.client_writer import parse_multiple_writer_tools
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import (
@@ -136,6 +137,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.COHERE_JSON_SCHEMA:
             return cls.parse_cohere_json_schema(completion, validation_context, strict)
 
+        if mode == Mode.WRITER_TOOLS:
+            return cls.parse_writer_tools(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
@@ -146,7 +150,6 @@ class OpenAISchema(BaseModel):
         if mode in {
             Mode.TOOLS,
             Mode.MISTRAL_TOOLS,
-            Mode.WRITER_TOOLS,
             Mode.TOOLS_STRICT,
             Mode.CEREBRAS_TOOLS,
             Mode.FIREWORKS_TOOLS,
@@ -302,6 +305,18 @@ class OpenAISchema(BaseModel):
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict
         )
+
+    @classmethod
+    def parse_writer_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        completion_content = completion.choices[0].message.content
+        if completion_content and "TOOL_CALLS" in completion_content:
+            completion = parse_multiple_writer_tools(completion)
+        return cls.parse_tools(completion, validation_context, strict)
 
     @classmethod
     def parse_functions(

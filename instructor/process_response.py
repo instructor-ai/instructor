@@ -107,7 +107,7 @@ async def process_response_async(
 def process_response(
     response: T_Model,
     *,
-    response_model: type[OpenAISchema | BaseModel] | Nprocess_responseone = None,
+    response_model: type[OpenAISchema | BaseModel] | None = None,
     stream: bool,
     validation_context: dict[str, Any] | None = None,
     strict=None,

@@ -163,7 +163,6 @@ def test_writer_format_list_of_strings(mode: instructor.Mode, model: str):
     - Name: {{ user.name }}, Age: {{ user.age }}
     {% endfor %}
     """
-
     response = client.chat.completions.create(
         model=model,
         response_model=UserList,
@@ -177,7 +176,7 @@ def test_writer_format_list_of_strings(mode: instructor.Mode, model: str):
     assert isinstance(response.items, list), "items should be a list"
     assert len(response.items) == 3, "List should contain 3 items"
 
-    names = [item.name.upper() for item in response.items]
-    assert "JASON" in names, "'JASON' should be in the list"
-    assert "ELIZABETH" in names, "'ELIZABETH' should be in the list"
-    assert "CHRIS" in names, "'CHRIS' should be in the list"
+    names = [item.first_name for item in response.items]
+    assert "Jason" in names, "'Jason' should be in the list"
+    assert "Elizabeth" in names, "'Elizabeth' should be in the list"
+    assert "Chris" in names, "'Chris' should be in the list"
