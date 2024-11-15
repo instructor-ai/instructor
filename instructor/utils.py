@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+import re
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
     TYPE_CHECKING,
@@ -131,6 +132,26 @@ async def extract_json_from_stream_async(
                     break  # Cease yielding upon closing the current JSON object
             elif capturing:
                 yield char
+
+
+def extract_json_from_stream_writer(chunks: Iterable[str]) -> Generator[str, None, None]:
+    summary_chunk_regexp = r"\{.*\}"
+    for chunk in chunks:
+        if not re.search(summary_chunk_regexp, chunk):
+            yield chunk
+        else:
+            yield "}"
+
+
+async def extract_json_from_stream_writer_async(
+        chunks: AsyncGenerator[str, None],
+) -> AsyncGenerator[str, None]:
+    summary_chunk_regexp = r"\{.*\}"
+    async for chunk in chunks:
+        if not re.search(summary_chunk_regexp, chunk):
+            yield chunk
+        else:
+            yield "}"
 
 
 def update_total_usage(

@@ -25,7 +25,8 @@ from copy import deepcopy
 from functools import cache
 
 from instructor.mode import Mode
-from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
+from instructor.utils import extract_json_from_stream, extract_json_from_stream_async, extract_json_from_stream_writer, \
+    extract_json_from_stream_writer_async
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
@@ -107,6 +108,8 @@ class PartialBase(Generic[T_Model]):
 
         if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream(json_chunks)
+        elif mode == Mode.WRITER_TOOLS:
+            json_chunks = extract_json_from_stream_writer(json_chunks)
 
         yield from cls.model_from_chunks(json_chunks, **kwargs)
 
@@ -118,6 +121,8 @@ class PartialBase(Generic[T_Model]):
 
         if mode == Mode.MD_JSON:
             json_chunks = extract_json_from_stream_async(json_chunks)
+        elif mode == Mode.WRITER_TOOLS:
+            json_chunks = extract_json_from_stream_writer_async(json_chunks)
 
         return cls.model_from_chunks_async(json_chunks, **kwargs)
 
@@ -184,7 +189,7 @@ class PartialBase(Generic[T_Model]):
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS}:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS, Mode.WRITER_TOOLS}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             if json_chunk[0].function.arguments:
                                 yield json_chunk[0].function.arguments
@@ -220,7 +225,7 @@ class PartialBase(Generic[T_Model]):
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS}:
+                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS, Mode.WRITER_TOOLS}:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             if json_chunk[0].function.arguments:
                                 yield json_chunk[0].function.arguments
