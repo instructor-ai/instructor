@@ -42,8 +42,9 @@ Then let's import the necessary libraries:
 import instructor
 import google.generativeai as genai
 from google.ai.generativelanguage_v1beta.types.file import File
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import pymupdf
+import time
 ```
 
 ## Defining Our Data Models
