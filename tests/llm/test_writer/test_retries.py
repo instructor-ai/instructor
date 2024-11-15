@@ -31,7 +31,7 @@ def test_upper_case(model: str, mode: instructor.Mode):
         ],
         max_retries=3,
     )
-    assert response.name == "JASON"
+    assert response.first_name == "JASON"
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
@@ -52,4 +52,4 @@ def test_upper_case_tenacity(model: str, mode: instructor.Mode):
         ],
         max_retries=retries,
     )
-    assert response.name == "JASON"
+    assert response.first_name == "JASON"
