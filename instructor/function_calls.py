@@ -13,7 +13,6 @@ from pydantic import (
     create_model,
 )
 
-from instructor.client_writer import parse_multiple_writer_tools
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import (
@@ -313,10 +312,19 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        completion_content = completion.choices[0].message.content
-        if completion_content and "TOOL_CALLS" in completion_content:
-            completion = parse_multiple_writer_tools(completion)
-        return cls.parse_tools(completion, validation_context, strict)
+        message = completion.choices[0].message
+        tool_calls = message.tool_calls
+        assert (
+            len(tool_calls) == 1
+        ), "Instructor does not support multiple tool calls, use List[Model] instead"
+        assert (
+            tool_calls[0].function.name == cls.openai_schema["name"]
+        ), "Tool name does not match"
+        return cls.model_validate_json(
+            tool_calls[0].function.arguments,
+            context=validation_context,
+            strict=strict,
+        )
 
     @classmethod
     def parse_functions(
