@@ -234,14 +234,6 @@ Google offers several Gemini models:
 - Multimodal Processing
 - Complex Reasoning Tasks
 
-## Troubleshooting
-
-Common issues and solutions:
-1. API Authentication
-2. Quota Management
-3. Response Validation
-4. Model Availability
-
 ## Related Resources
 
 - [Google AI Documentation](https://ai.google.dev/)

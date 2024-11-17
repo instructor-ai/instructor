@@ -232,28 +232,6 @@ client = patch(
 - Offline Processing
 - Resource-Constrained Environments
 
-## Troubleshooting
-
-Common issues and solutions:
-
-1. **Slow Inference**
-   - Reduce context window size
-   - Use smaller model variants
-   - Implement appropriate timeouts
-   - Consider alternative clients for production use
-
-2. **Memory Issues**
-   - Reduce batch size
-   - Use quantized models
-   - Monitor and limit concurrent requests
-   - Implement proper cleanup
-
-3. **Extraction Failures**
-   - Verify prompt format
-   - Check context window limits
-   - Implement retry logic
-   - Use simpler model responses
-
 ## Related Resources
 
 - [llama-cpp-python Documentation](https://llama-cpp-python.readthedocs.io/)

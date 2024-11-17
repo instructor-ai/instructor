@@ -259,32 +259,6 @@ Fireworks offers several model options:
 - Research Applications
 - Production Deployments
 
-## Troubleshooting
-
-Common issues and solutions:
-1. API Authentication
-2. Model Selection
-3. Response Validation
-4. Performance Optimization
-5. Streaming Issues
-
-### Streaming-Specific Troubleshooting
-
-1. **Connection Issues**
-   - Implement proper retry logic
-   - Use appropriate timeouts
-   - Monitor connection stability
-
-2. **Model Compatibility**
-   - Verify model streaming support
-   - Test with smaller payloads first
-   - Monitor response patterns
-
-3. **Performance Issues**
-   - Implement proper error handling
-   - Use appropriate batch sizes
-   - Monitor system resources
-
 ## Related Resources
 
 - [Fireworks Documentation](https://docs.fireworks.ai/)

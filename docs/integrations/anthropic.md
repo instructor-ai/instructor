@@ -246,14 +246,6 @@ Anthropic offers several Claude models:
 - Complex Reasoning Tasks
 - Multi-step Processing
 
-## Troubleshooting
-
-Common issues and solutions:
-1. API Authentication
-2. Rate Limiting
-3. Context Length
-4. Response Validation
-
 ## Related Resources
 
 - [Anthropic API Documentation](https://docs.anthropic.com/)

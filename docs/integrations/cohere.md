@@ -209,14 +209,6 @@ Cohere offers several model options:
 - Semantic Search Integration
 - Classification Tasks
 
-## Troubleshooting
-
-Common issues and solutions:
-1. API Authentication
-2. Rate Limiting
-3. Response Validation
-4. Model Selection
-
 ## Related Resources
 
 - [Cohere API Documentation](https://docs.cohere.com/)

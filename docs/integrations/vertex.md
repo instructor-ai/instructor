@@ -212,14 +212,6 @@ Vertex AI offers several model options:
 - Compliance-Aware Processing
 - Large-Scale Deployments
 
-## Troubleshooting
-
-Common issues and solutions:
-1. Authentication Setup
-2. Project Configuration
-3. Quota Management
-4. Response Validation
-
 ## Related Resources
 
 - [Vertex AI Documentation](https://cloud.google.com/vertex-ai/docs)

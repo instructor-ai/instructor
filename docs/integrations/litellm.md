@@ -273,15 +273,6 @@ LiteLLM supports multiple providers:
 - Cross-Provider Testing
 - Unified API Integration
 
-## Troubleshooting
-
-Common issues and solutions:
-1. Provider Authentication
-2. Model Availability
-3. Provider-Specific Errors
-4. Rate Limiting
-5. Streaming Compatibility
-
 ## Related Resources
 
 - [LiteLLM Documentation](https://docs.litellm.ai/)

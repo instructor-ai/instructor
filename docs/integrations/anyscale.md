@@ -279,34 +279,6 @@ Anyscale provides access to various open-source models:
 - API Response Formatting
 - Configuration Generation
 
-## Troubleshooting
-
-Common issues and solutions:
-
-### 1. API Key Issues
-- **Missing API Key**: Ensure `ANYSCALE_API_KEY` environment variable is set
-- **Invalid API Key**: Verify the key is valid and has not expired
-- **Permission Issues**: Check if your API key has access to the required models
-- **Rate Limiting**: Monitor your API usage and implement proper rate limiting
-
-### 2. Streaming Issues
-- **Connection Timeouts**: Implement proper timeout handling
-- **Partial Response Errors**: Handle incomplete responses gracefully
-- **Memory Issues**: Monitor memory usage with large streaming responses
-- **Rate Limits**: Implement backoff strategies for streaming requests
-
-### 3. Model-Specific Issues
-- **Model Access**: Ensure your account has access to required models
-- **Context Length**: Monitor and handle context length limits
-- **Token Usage**: Track token usage to avoid quota issues
-- **Response Format**: Handle model-specific response formats
-
-### 4. Integration Issues
-- **Version Compatibility**: Keep OpenAI and Instructor versions in sync
-- **Type Validation**: Handle validation errors with proper retry logic
-- **Schema Complexity**: Simplify complex schemas if needed
-- **Async/Sync Usage**: Use appropriate client for your use case
-
 ## Related Resources
 
 - [Anyscale Endpoints Documentation](https://docs.endpoints.anyscale.com/)

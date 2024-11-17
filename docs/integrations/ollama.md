@@ -269,78 +269,6 @@ Ollama supports various models:
 - Rapid Prototyping
 - Edge Computing
 
-## Troubleshooting
-
-Common issues and solutions:
-
-### 1. Connection Issues
-- **Server Not Running**: Ensure Ollama server is running (`ollama serve`)
-- **Wrong Endpoint**: Verify base URL is correct (`http://localhost:11434/v1`)
-- **Port Conflicts**: Check if port 11434 is available
-- **Network Issues**: Verify local network connectivity
-
-### 2. Function Calling Errors
-- **Error**: "llama2 does not support tools"
-- **Solution**: Use JSON mode instead of tools mode
-```python
-# Correct way to initialize client
-client = instructor.patch(client, mode=instructor.Mode.JSON)
-```
-
-### 3. Streaming Issues
-- **Error**: "create_partial not available"
-- **Solution**: Use batch processing approach
-```python
-# Instead of streaming, break down into smaller requests
-initial_response = client.chat.completions.create(
-    model="llama2",
-    messages=[{"role": "user", "content": "First part of request"}],
-    response_model=YourModel
-)
-```
-
-### 4. Model Loading Issues
-- **Model Not Found**: Run `ollama pull model_name`
-- **Memory Issues**:
-  - Error: "model requires more system memory than available"
-  - Solutions:
-    1. Use a quantized model (recommended for < 8GB RAM):
-    ```bash
-    # Pull a smaller, quantized model
-    ollama pull mistral-7b-instruct-v0.2-q4
-    ```
-    2. Free up system memory:
-       - Close unnecessary applications
-       - Monitor memory usage with `free -h`
-       - Consider increasing swap space
-- **GPU Issues**: Verify CUDA configuration
-```bash
-# Check available models
-ollama list
-# Pull specific model
-ollama pull mistral-7b-instruct-v0.2-q4  # Smaller, quantized model
-```
-
-### 5. Response Validation
-- **Invalid JSON**: Ensure proper prompt formatting
-- **Schema Mismatch**: Verify model output matches expected schema
-- **Retry Logic**: Implement proper error handling
-```python
-try:
-    response = client.chat.completions.create(
-        model="llama2",
-        messages=[{"role": "user", "content": "Your prompt"}],
-        response_model=YourModel
-    )
-except Exception as e:
-    if "connection refused" in str(e).lower():
-        print("Error: Ollama server not running")
-    elif "model not found" in str(e).lower():
-        print("Error: Model not available. Run 'ollama pull model_name'")
-    else:
-        print(f"Unexpected error: {str(e)}")
-```
-
 ## Related Resources
 
 - [Ollama Documentation](https://ollama.ai/docs)
@@ -350,4 +278,6 @@ except Exception as e:
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with Ollama's OpenAI-compatible endpoints. Check the [changelog](../../CHANGELOG.md) for updates. Note that some Instructor features may not be available due to Ollama's API limitations.
+Instructor maintains compatibility with Ollama's latest releases. Check the [changelog](../../CHANGELOG.md) for updates.
+
+Note: Always verify model-specific features and limitations before implementation.

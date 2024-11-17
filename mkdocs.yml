@@ -202,20 +202,20 @@ nav:
     - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
     - Building Knowledge Graphs with Structured Outputs: 'tutorials/5-knowledge-graphs.ipynb'
   - Integrations:
-    - Structured outputs with Anyscale: 'integrations/anyscale.md'
-    - Structured outputs with Anthropic: 'integrations/anthropic.md'
-    - Structured outputs with Cerebras: 'integrations/cerebras.md'
-    - Structured outputs with Cohere: 'integrations/cohere.md'
-    - Structured outputs with Fireworks: 'integrations/fireworks.md'
-    - Structured outputs with Google: 'integrations/google.md'
-    - Structured outputs with Groq: 'integrations/groq.md'
-    - Structured outputs with LiteLLM: 'integrations/litellm.md'
-    - Structured outputs with llama-cpp-python: 'integrations/llama-cpp-python.md'
-    - Structured outputs with Mistral: 'integrations/mistral.md'
-    - Structured outputs with Ollama: 'integrations/ollama.md'
-    - Structured outputs with OpenAI: 'integrations/openai.md'
-    - Structured outputs with Together: 'integrations/together.md'
-    - Structured outputs with Vertex AI: 'integrations/vertexai.md'
+    - Anyscale: 'integrations/anyscale.md'
+    - Anthropic: 'integrations/anthropic.md'
+    - Cerebras: 'integrations/cerebras.md'
+    - Cohere: 'integrations/cohere.md'
+    - Fireworks: 'integrations/fireworks.md'
+    - Google: 'integrations/google.md'
+    - Groq: 'integrations/groq.md'
+    - LiteLLM: 'integrations/litellm.md'
+    - llama-cpp-python: 'integrations/llama-cpp-python.md'
+    - Mistral: 'integrations/mistral.md'
+    - Ollama: 'integrations/ollama.md'
+    - OpenAI: 'integrations/openai.md'
+    - Together: 'integrations/together.md'
+    - Vertex AI: 'integrations/vertexai.md'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
@@ -293,12 +293,26 @@ plugins:
   - redirects:
       redirect_maps:
          jobs.md: https://jobs.applied-llms.org/
+         'hub/clients/vertexai.md': 'integrations/vertexai.md'
+         'hub/clients/ollama.md': 'integrations/ollama.md'
+         'hub/clients/openai.md': 'integrations/openai.md'
+         'hub/clients/anthropic.md': 'integrations/anthropic.md'
+         'hub/clients/anyscale.md': 'integrations/anyscale.md'
+         'hub/clients/cohere.md': 'integrations/cohere.md'
+         'hub/clients/fireworks.md': 'integrations/fireworks.md'
+         'hub/clients/google.md': 'integrations/google.md'
+         'hub/clients/litellm.md': 'integrations/litellm.md'
+         'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
+         'hub/clients/mistral.md': 'integrations/mistral.md'
+         'hub/clients/cerebras.md': 'integrations/cerebras.md'
+         'hub/clients/groq.md': 'integrations/groq.md'
+         'hub/clients/together.md': 'integrations/together.md'
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
   - social
   - search:
-      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\b)(?=[A-Z][a-z])'
   - minify:
       minify_html: true
   - mkdocstrings:
