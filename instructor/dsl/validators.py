@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
 from openai import OpenAI
-from pydantic import Field
+from pydantic import Field  # type: ignore
 
 from instructor.function_calls import OpenAISchema
 from instructor.client import Instructor

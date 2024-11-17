@@ -1,13 +1,14 @@
 # type: ignore[all]
 from __future__ import annotations
 from typing import Any
-from jinja2 import Template
 from textwrap import dedent
+
+from jinja2.sandbox import SandboxedEnvironment
 
 
 def apply_template(text: str, context: dict[str, Any]) -> str:
     """Apply Jinja2 template to the given text."""
-    return dedent(Template(text).render(**context))
+    return dedent(SandboxedEnvironment().from_string(text).render(**context))
 
 
 def process_message(message: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
