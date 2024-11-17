@@ -6055,9 +6055,9 @@ litellm = ["litellm"]
 mistralai = ["mistralai"]
 test-docs = ["anthropic", "cohere", "diskcache", "fastapi", "groq", "litellm", "mistralai", "pandas", "pydantic_extra_types", "redis", "tabulate"]
 vertexai = ["google-cloud-aiplatform", "jsonref"]
-writer-sdk = ["writer-sdk"]
+writer = ["writer-sdk"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "c70955b7e16e823db6e877dcd833fdebf92d3b880434dae98f92c1ea2c2cb995"
+content-hash = "7daf5ff3c744068cb0282cdb86f11222b2f233b7581b22cf726f9e6e1600199c"
