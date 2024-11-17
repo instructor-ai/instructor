@@ -190,14 +190,6 @@ nav:
     - Templating: 'concepts/templating.md'
   - Hub:
     - Introduction to Instructor Hub: 'hub/index.md'
-    - Structured Outputs with Vertex AI: 'hub/vertexai.md'
-    - Structured Outputs with Ollama: 'hub/ollama.md'
-    - Structured Outputs with llama-cpp-python: 'hub/llama-cpp-python.md'
-    - Structured Outputs with Together: 'hub/together.md'
-    - Structured Outputs with Anyscale: 'hub/anyscale.md'
-    - Structured Outputs with Groq: 'hub/groq.md'
-    - Structured Outputs with Mistral: 'hub/mistral.md'
-    - Structured Outputs with Cohere: 'hub/cohere.md'
     - Classification with Structured Outputs: 'hub/single_classification.md'
     - Bulk Classification with Structured Outputs: 'hub/multiple_classification.md'
     - Extracting Tables with Structured Outputs: 'hub/tables_from_vision.md'
@@ -209,6 +201,21 @@ nav:
     - Generating Knowledge Graphs with Structured Outputs: 'hub/knowledge_graph.md'
     - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
     - Building Knowledge Graphs with Structured Outputs: 'tutorials/5-knowledge-graphs.ipynb'
+  - Integrations:
+    - Structured outputs with Anyscale: 'integrations/anyscale.md'
+    - Structured outputs with Anthropic: 'integrations/anthropic.md'
+    - Structured outputs with Cerebras: 'integrations/cerebras.md'
+    - Structured outputs with Cohere: 'integrations/cohere.md'
+    - Structured outputs with Fireworks: 'integrations/fireworks.md'
+    - Structured outputs with Google: 'integrations/google.md'
+    - Structured outputs with Groq: 'integrations/groq.md'
+    - Structured outputs with LiteLLM: 'integrations/litellm.md'
+    - Structured outputs with llama-cpp-python: 'integrations/llama-cpp-python.md'
+    - Structured outputs with Mistral: 'integrations/mistral.md'
+    - Structured outputs with Ollama: 'integrations/ollama.md'
+    - Structured outputs with OpenAI: 'integrations/openai.md'
+    - Structured outputs with Together: 'integrations/together.md'
+    - Structured outputs with Vertex AI: 'integrations/vertexai.md'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
