@@ -20,9 +20,7 @@ We're excited to announce that `instructor` now supports [Writer](https://writer
 
 ## Getting Started
 
-Using Writer with `instructor` is straightforward
-
-First, install `instructor` with Writer support by running `pip install instructor[writer]` in your terminal. Then, head over to [writer.com](https://writer.com) to sign up for Writer access and get an API key.
+First, install `instructor` with Writer support by running `pip install instructor[writer]` in your terminal. Then, head over to [Writer](https://writer.com) to sign up for Writer access and get an API key.
 
 <!-- more -->
 
@@ -50,6 +48,10 @@ user = client.chat.completions.create(
 print(user)
 #> name='John' age=30
 ```
+
+!!! note
+
+    If you'd like to use the Async version of the Writer client, you can do so by using `instructor.from_writer(Writer())`.
 
 We also support streaming with the Writer client using our `create_partial` method. This allows you to process responses incrementally as they arrive.
 
