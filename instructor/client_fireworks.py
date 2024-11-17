@@ -65,3 +65,5 @@ def from_fireworks(
             mode=mode,
             **kwargs,
         )
+
+    raise ValueError("Client must be an instance of Fireworks or AsyncFireworks")
