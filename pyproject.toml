@@ -112,6 +112,7 @@ sqlmodel = "^0.0.22"
 trafilatura = "^1.12.2"
 pydub = "^0.25.1"
 datasets = "^3.0.1"
+writer-sdk = "^1.2.0"
 
 [tool.poetry.group.litellm.dependencies]
 litellm = "^1.35.31"

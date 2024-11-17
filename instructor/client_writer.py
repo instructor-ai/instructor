@@ -27,7 +27,7 @@ def from_writer(
     client: Writer | AsyncWriter,
     mode: instructor.Mode = instructor.Mode.WRITER_TOOLS,
     **kwargs: Any,
-) -> instructor.Instructor | instructor.AsyncInstructor:
+) -> instructor.client.Instructor | instructor.client.AsyncInstructor:
     assert mode in {
         instructor.Mode.WRITER_TOOLS,
     }, "Mode must be instructor.Mode.WRITER_TOOLS"

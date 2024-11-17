@@ -5757,7 +5757,7 @@ files = [
 name = "writer-sdk"
 version = "1.3.0"
 description = "The official Python library for the writer API"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "writer_sdk-1.3.0-py3-none-any.whl", hash = "sha256:1e74abc704f3b745d33ef8b8bc76ba42c16c33ae56e5ac3676b32c6acbd53868"},
@@ -6060,4 +6060,4 @@ writer = ["writer-sdk"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "7daf5ff3c744068cb0282cdb86f11222b2f233b7581b22cf726f9e6e1600199c"
+content-hash = "55594e906acc55798d17fa990a76b469955554baf8908dc0c0cb6c6c661a2dfd"
