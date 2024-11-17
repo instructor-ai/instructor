@@ -35,6 +35,10 @@ class MakeFieldsOptional:
     pass
 
 
+class PartialLiteralMixin:
+    pass
+
+
 def _make_field_optional(
     field: FieldInfo,
 ) -> tuple[Any, FieldInfo]:
@@ -132,10 +136,13 @@ class PartialBase(Generic[T_Model]):
     ) -> Generator[T_Model, None, None]:
         potential_object = ""
         partial_model = cls.get_partial_model()
+        partial_mode = (
+            "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
+        )
         for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode="on"
+                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
             )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj
@@ -146,10 +153,13 @@ class PartialBase(Generic[T_Model]):
     ) -> AsyncGenerator[T_Model, None]:
         potential_object = ""
         partial_model = cls.get_partial_model()
+        partial_mode = (
+            "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
+        )
         async for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode="on"
+                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
             )
             obj = partial_model.model_validate(obj, strict=None, **kwargs)
             yield obj

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, model_validator, ValidationInfo
+from pydantic import BaseModel, Field, model_validator, ValidationInfo  # type: ignore
 from collections.abc import Generator
 
 
