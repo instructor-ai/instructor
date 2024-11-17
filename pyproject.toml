@@ -65,7 +65,7 @@ google-generativeai = ["google-generativeai"]
 vertexai = ["google-cloud-aiplatform", "jsonref"]
 cerebras_cloud_sdk = ["cerebras_cloud_sdk"]
 fireworks-ai = ["fireworks-ai"]
-writer-sdk = ["writer-sdk"]
+writer = ["writer-sdk"]
 
 [tool.poetry.scripts]
 instructor = "instructor.cli.cli:app"
