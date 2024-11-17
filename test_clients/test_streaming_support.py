@@ -1,8 +1,8 @@
 """Test streaming support for different clients."""
 import asyncio
-from typing import AsyncGenerator, Dict, List, Union, Any, TypeVar, AsyncIterator
+from collections.abc import AsyncGenerator, AsyncIterator
+from typing import Optional, Union, TypeVar
 from pydantic import BaseModel
-import pytest
 from instructor import Instructor
 from instructor.exceptions import InstructorRetryException, IncompleteOutputException
 
@@ -36,7 +36,7 @@ async def test_streaming_support(
     """
     try:
         # Test partial streaming
-        partial_results: List[User] = []
+        partial_results: list[User] = []
         try:
             async for partial in client.chat.completions.create_partial(
                 model=model_name,
@@ -56,7 +56,7 @@ async def test_streaming_support(
             return
 
         # Test iterable streaming
-        iterable_results: List[User] = []
+        iterable_results: list[User] = []
         try:
             users = await client.chat.completions.create_iterable(
                 model=model_name,

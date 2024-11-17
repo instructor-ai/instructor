@@ -2,14 +2,12 @@ import logging
 import time
 import signal
 from pathlib import Path
-from typing import List, Generator, Dict, Any, Union, Type, TypeVar
-from functools import partial
-from concurrent.futures import TimeoutError
+from typing import Generator, Any, TypeVar
+from pydantic import BaseModel
 
 from llama_cpp import Llama
 from instructor import patch
 from instructor.llama_wrapper import LlamaWrapper
-from pydantic import BaseModel
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -19,7 +17,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar('T', bound=BaseModel)
 LlamaType = Llama  # Note: AsyncLlama is not supported in current version
 ClientType = Any  # Type returned by patch()
-ResponseType = Dict[str, Any]
+ResponseType = dict[str, Any]
 
 # Test timeout in seconds
 TEST_TIMEOUT = 60
@@ -46,7 +44,7 @@ class Address(BaseModel):
 class UserWithAddresses(BaseModel):
     name: str
     age: int
-    addresses: List[Address]
+    addresses: list[Address]
 
 def test_sync_example() -> None:
     """Test basic synchronous extraction."""
@@ -86,10 +84,10 @@ def test_sync_example() -> None:
 
     except TimeoutException:
         logger.error("Sync example timed out")
-        assert False, "Test timed out"
+        raise AssertionError("Test timed out")
     except Exception as e:
         logger.error(f"Sync example failed: {str(e)}")
-        assert False, f"Test failed: {str(e)}"
+        raise AssertionError(f"Test failed: {str(e)}")
     finally:
         signal.alarm(0)
 
@@ -134,10 +132,10 @@ def test_nested_example() -> None:
 
     except TimeoutException:
         logger.error("Nested example timed out")
-        assert False, "Test timed out"
+        raise AssertionError("Test timed out")
     except Exception as e:
         logger.error(f"Nested example failed: {str(e)}")
-        assert False, f"Test failed: {str(e)}"
+        raise AssertionError(f"Test failed: {str(e)}")
     finally:
         signal.alarm(0)
 
@@ -177,10 +175,10 @@ def test_streaming_example() -> None:
 
     except TimeoutException:
         logger.error("Streaming example timed out")
-        assert False, "Test timed out"
+        raise AssertionError("Test timed out")
     except Exception as e:
         logger.error(f"Streaming example failed: {str(e)}")
-        assert False, f"Test failed: {str(e)}"
+        raise AssertionError(f"Test failed: {str(e)}")
     finally:
         signal.alarm(0)
 

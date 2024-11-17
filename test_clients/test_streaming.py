@@ -5,11 +5,11 @@ This script tests streaming support and documents limitations.
 
 import os
 import asyncio
-from typing import Optional, AsyncIterator, Dict, Any
+from collections.abc import AsyncIterator
+from typing import Optional
 from pydantic import BaseModel
 import instructor
 from openai import OpenAI, AsyncOpenAI
-from openai.types.chat import ChatCompletion
 from anthropic import Anthropic
 import google.generativeai as genai
 from fireworks.client.openai import OpenAI as FireworksOpenAI
@@ -50,7 +50,7 @@ async def test_openai_streaming() -> StreamingTestResult:
                 response_model=User,
                 stream=True
             )
-            async for chunk in response:
+            async for _ in response:  # Use _ to indicate unused variable
                 pass
             result.full_streaming = True
         except Exception as e:
@@ -116,7 +116,7 @@ async def test_anthropic_streaming() -> StreamingTestResult:
                 response_model=User,
                 stream=True
             )
-            for chunk in response:
+            for _ in response:  # Use _ to indicate unused variable
                 pass
             result.full_streaming = True
         except Exception as e:
@@ -153,7 +153,7 @@ async def test_fireworks_streaming() -> StreamingTestResult:
                 response_model=User,
                 stream=True
             )
-            for chunk in response:
+            for _ in response:  # Use _ to indicate unused variable
                 pass
             result.full_streaming = True
         except Exception as e:
@@ -204,7 +204,7 @@ async def test_google_streaming() -> StreamingTestResult:
                 response_model=User,
                 stream=True
             )
-            for chunk in response:
+            for _ in response:  # Use _ to indicate unused variable
                 pass
             result.full_streaming = True
         except Exception as e:
