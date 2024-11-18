@@ -13,7 +13,7 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 [![GPT](https://img.shields.io/badge/docs-InstructorGPT-blue)](https://chat.openai.com/g/g-EvZweRWrE-instructor-gpt)
 
-Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
+Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./integrations/together.md), [Anyscale](./integrations/anyscale.md), [Ollama](./integrations/ollama.md), and [llama-cpp-python](./integrations/llama-cpp-python.md).
 
 It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
@@ -69,9 +69,9 @@ Subscribe to our newsletter for updates on AI development. We provide content to
 
 - :material-lightning-bolt: **Simplified LLM Interactions**
 
-    Support for [OpenAI](./hub/openai.md), [Anthropic](./hub/anthropic.md), [Google](./hub/google.md), [Vertex AI](./hub/vertexai.md), [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), [llama-cpp-python](./hub/llama-cpp-python.md), [Cohere](./hub/cohere.md), [LiteLLM](./hub/litellm.md).
+    Support for [OpenAI](./integrations/openai.md), [Anthropic](./integrations/anthropic.md), [Google](./integrations/google.md), [Vertex AI](./integrations/vertexai.md), [Mistral/Mixtral](./integrations/together.md), [Anyscale](./integrations/anyscale.md), [Ollama](./integrations/ollama.md), [llama-cpp-python](./integrations/llama-cpp-python.md), [Cohere](./integrations/cohere.md), [LiteLLM](./integrations/litellm.md).
 
-    [:octicons-arrow-right-16: See Hub](./hub/index.md)
+    [:octicons-arrow-right-16: See Hub](./integrations/index.md)
 
 </div>
 

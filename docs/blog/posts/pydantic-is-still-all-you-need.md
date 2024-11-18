@@ -39,7 +39,7 @@ Pydantic, combined with function calling, offers a superior alternative for stru
 - Validators to improve system reliability
 - Cleaner, more maintainable code
 
-For more details on how Pydantic enhances data validation, check out our [Data Validation with Pydantic](../concepts/models.md) guide.
+For more details on how Pydantic enhances data validation, check out our [Data Validation with Pydantic](../../concepts/models.md) guide.
 
 And here's the kicker: nothing's really changed in the past year. The core API is still just:
 
@@ -63,7 +63,7 @@ Since last year:
 - Built a version in Rust
 - Seen 40% month-over-month growth in the Python library
 
-We now support [Ollama](../../hub/ollama.md), [llama-cpp-python](../../hub/llama-cpp-python.md), [Anthropic](../../hub/anthropic.md), [Cohere](../../hub/cohere.md), [Google](../../hub/google.md), [Vertex AI](../../hub/vertexai.md), and more. As long as language models support function calling capabilities, this API will remain standard.
+We now support [Ollama](../../integrations/ollama.md), [llama-cpp-python](../../integrations/llama-cpp-python.md), [Anthropic](../../integrations/anthropic.md), [Cohere](../../integrations/cohere.md), [Google](../../integrations/google.md), [Vertex AI](../../integrations/vertexai.md), and more. As long as language models support function calling capabilities, this API will remain standard.
 
 ## Key Features
 

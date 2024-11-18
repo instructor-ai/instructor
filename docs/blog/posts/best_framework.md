@@ -32,7 +32,7 @@ from pydantic import BaseModel
 import instructor
 
 class User(BaseModel):
-    name: str 
+    name: str
     age: int
 
 client = instructor.from_openai(openai.OpenAI())
@@ -42,7 +42,7 @@ user = client.chat.completions.create(
     response_model=User, # (1)!
     messages=[
         {
-            "role": "user", 
+            "role": "user",
             "content": "Extract the user's name and age from this: John is 25 years old"
         }
     ]
@@ -63,14 +63,14 @@ Other features on instructor, in and out of the llibrary are:
 2. Ability to use [Pydantic's validation context](../../concepts/reask_validation.md)
 3. [Parallel Tool Calling](../../concepts/parallel.md) with correct types
 4. Streaming [Partial](../../concepts/partial.md) and [Iterable](../../concepts/iterable.md) data.
-5. Returning [Primitive](../../concepts/types.md) Types and [Unions](../../concepts/unions.md) as well! 
-6. Lots, and Lots of [Cookbooks](../../examples/index.md), [Tutorials](../../tutorials/1-introduction.ipynb), Documentation and even [instructor hub](../../hub/index.md)
+5. Returning [Primitive](../../concepts/types.md) Types and [Unions](../../concepts/unions.md) as well!
+6. Lots, and Lots of [Cookbooks](../../examples/index.md), [Tutorials](../../tutorials/1-introduction.ipynb), Documentation and even [instructor hub](../../integrations/index.md)
 
 ## Instructor's Broad Applicability
 
 One of the key strengths of Instructor is that it's designed as a lightweight patch over the official OpenAI Python SDK. This means it can be easily integrated not just with OpenAI's hosted API service, but with any provider or platform that exposes an interface compatible with the OpenAI SDK.
 
-For example, providers like [Anyscale](../../hub/anyscale.md), [Together](../../hub/together.md), [Ollama](../../hub/ollama.md), [Groq](../../hub/groq.md), and [llama-cpp-python](../../hub/llama-cpp-python.md) all either use or mimic the OpenAI Python SDK under the hood. With Instructor's zero-overhead patching approach, teams can immediately start deriving structured data outputs from any of these providers. There's no need for custom integration work.
+For example, providers like [Anyscale](../../integrations/anyscale.md), [Together](../../integrations/together.md), [Ollama](../../integrations/ollama.md), [Groq](../../integrations/groq.md), and [llama-cpp-python](../../integrations/llama-cpp-python.md) all either use or mimic the OpenAI Python SDK under the hood. With Instructor's zero-overhead patching approach, teams can immediately start deriving structured data outputs from any of these providers. There's no need for custom integration work.
 
 ## Direct access to the messages array
 

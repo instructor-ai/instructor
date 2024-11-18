@@ -17,11 +17,11 @@ tags:
 - API Integration
 ---
 
-# Structured Output for Open Source and Local LLMs 
+# Structured Output for Open Source and Local LLMs
 
 Instructor has expanded its capabilities for language models. It started with API interactions via the OpenAI SDK, using [Pydantic](https://pydantic-docs.helpmanual.io/) for structured data validation. Now, Instructor supports multiple models and platforms.
 
-The integration of [JSON mode](../../concepts/patching.md#json-mode) improved adaptability to vision models and open source alternatives. This allows support for models from [GPT](https://openai.com/api/) and [Mistral](https://mistral.ai) to models on [Ollama](https://ollama.ai) and [Hugging Face](https://huggingface.co/models), using [llama-cpp-python](../../hub/llama-cpp-python.md).
+The integration of [JSON mode](../../concepts/patching.md#json-mode) improved adaptability to vision models and open source alternatives. This allows support for models from [GPT](https://openai.com/api/) and [Mistral](https://mistral.ai) to models on [Ollama](https://ollama.ai) and [Hugging Face](https://huggingface.co/models), using [llama-cpp-python](../../integrations/llama-cpp-python.md).
 
 Instructor now works with cloud-based APIs and local models for structured data extraction. Developers can refer to our guide on [Patching](../../concepts/patching.md) for information on using JSON mode with different models.
 
@@ -40,7 +40,7 @@ OpenAI clients offer functionalities for different needs. We explore clients int
 
 ### Ollama: A New Frontier for Local Models
 
-Ollama enables structured outputs with local models using JSON schema. See our [Ollama documentation](../../hub/ollama.md) for details.
+Ollama enables structured outputs with local models using JSON schema. See our [Ollama documentation](../../integrations/ollama.md) for details.
 
 For setup and features, refer to the documentation. The [Ollama website](https://ollama.ai/download) provides resources, models, and support.
 
@@ -111,7 +111,7 @@ llama = llama_cpp.Llama(
 
 create = instructor.patch(
     create=llama.create_chat_completion_openai_v1,
-    mode=instructor.Mode.JSON_SCHEMA, 
+    mode=instructor.Mode.JSON_SCHEMA,
 )
 
 class UserDetail(BaseModel):
@@ -138,7 +138,7 @@ print(user)
 
 ### Anyscale
 
-Anyscale's Mistral model, as detailed in our [Anyscale documentation](../../hub/anyscale.md) and on [Anyscale's official documentation](https://docs.anyscale.com/), introduces the ability to obtain structured outputs using JSON schema.
+Anyscale's Mistral model, as detailed in our [Anyscale documentation](../../integrations/anyscale.md) and on [Anyscale's official documentation](https://docs.anyscale.com/), introduces the ability to obtain structured outputs using JSON schema.
 
 ```bash
 export ANYSCALE_API_KEY="your-api-key"
@@ -180,7 +180,7 @@ print(resp)
 
 ### Groq
 
-Groq's platform, detailed further in our [Groq documentation](../../hub/groq.md) and on [Groq's official documentation](https://groq.com/), offers a unique approach to processing with its tensor architecture. This innovation significantly enhances the performance of structured output processing.
+Groq's platform, detailed further in our [Groq documentation](../../integrations/groq.md) and on [Groq's official documentation](https://groq.com/), offers a unique approach to processing with its tensor architecture. This innovation significantly enhances the performance of structured output processing.
 
 ```bash
 export GROQ_API_KEY="your-api-key"
@@ -223,7 +223,7 @@ print(user)
 
 ### Together AI
 
-Together AI, when combined with Instructor, offers a seamless experience for developers looking to leverage structured outputs in their applications. For more details, refer to our [Together AI documentation](../hub/together.md) and explore the [patching guide](../concepts/patching.md) to enhance your applications.
+Together AI, when combined with Instructor, offers a seamless experience for developers looking to leverage structured outputs in their applications. For more details, refer to our [Together AI documentation](../../integrations/together.md) and explore the [patching guide](../../concepts/patching.md) to enhance your applications.
 
 ```bash
 export TOGETHER_API_KEY="your-api-key"
@@ -263,7 +263,7 @@ print(user)
 
 ### Mistral
 
-For those interested in exploring the capabilities of Mistral Large with Instructor, we highly recommend checking out our comprehensive guide on [Mistral Large](../../hub/mistral.md).
+For those interested in exploring the capabilities of Mistral Large with Instructor, we highly recommend checking out our comprehensive guide on [Mistral Large](../../integrations/mistral.md).
 
 ```python
 import instructor
