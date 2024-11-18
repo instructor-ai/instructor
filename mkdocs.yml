@@ -197,6 +197,18 @@ nav:
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
     - Templating: 'concepts/templating.md'
+  - Hub:
+    - Introduction to Instructor Hub: 'hub/index.md'
+    - Classification: 'hub/single_classification.md'
+    - Bulk Classification: 'hub/multiple_classification.md'
+    - Extracting Tables: 'hub/tables_from_vision.md'
+    - Creating Pandas DataFrames: 'hub/pandas_df.md'
+    - Bulk Async Classification with LangSmith: 'hub/batch_classification_langsmith.md'
+    - Extracting Action Items: 'hub/action_items.md'
+    - Implementing Partial Streaming Responses: 'hub/partial_streaming.md'
+    - Extracting Contact Information: 'hub/extract_contact_info.md'
+    - Generating Knowledge Graphs: 'hub/knowledge_graph.md'
+    - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
   - Integrations:
     - Overview: 'integrations/index.md'
     - Anyscale: 'integrations/anyscale.md'
@@ -214,16 +226,6 @@ nav:
     - OpenAI: 'integrations/openai.md'
     - Together: 'integrations/together.md'
     - Vertex AI: 'integrations/vertex.md'
-    - Single Classification: 'integrations/single_classification.md'
-    - Bulk Classification: 'integrations/multiple_classification.md'
-    - Extracting Tables: 'integrations/tables_from_vision.md'
-    - Creating Pandas DataFrames: 'integrations/pandas_df.md'
-    - Bulk Async Classification with LangSmith: 'integrations/batch_classification_langsmith.md'
-    - Extracting Action Items: 'integrations/action_items.md'
-    - Implementing Partial Streaming Responses: 'integrations/partial_streaming.md'
-    - Extracting Contact Information: 'integrations/extract_contact_info.md'
-    - Generating Knowledge Graphs: 'integrations/knowledge_graph.md'
-    - Extracting Relevant Clips from YouTube Videos: "integrations/youtube_clips.md"
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
@@ -304,16 +306,7 @@ plugins:
   - redirects:
       redirect_maps:
          jobs.md: https://jobs.applied-llms.org/
-         hub/single_classification.md: integrations/single_classification.md
-         hub/multiple_classification.md: integrations/multiple_classification.md
-         hub/tables_from_vision.md: integrations/tables_from_vision.md
-         hub/pandas_df.md: integrations/pandas_df.md
-         hub/batch_classification_langsmith.md: integrations/batch_classification_langsmith.md
-         hub/action_items.md: integrations/action_items.md
-         hub/partial_streaming.md: integrations/partial_streaming.md
-         hub/extract_contact_info.md: integrations/extract_contact_info.md
-         hub/knowledge_graph.md: integrations/knowledge_graph.md
-         hub/youtube_clips.md: integrations/youtube_clips.md
+         # Keep LLM client redirects
          hub/ollama.md: integrations/ollama.md
          hub/llama-cpp-python.md: integrations/llama-cpp-python.md
          hub/anyscale.md: integrations/anyscale.md
