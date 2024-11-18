@@ -11,11 +11,11 @@ If you're interested in trying this example using `instructor hub`, you can pull
 
 
 ```bash
-pip install youtube_transcript_api instructor rich 
+pip install youtube_transcript_api instructor rich
 instructor hub pull --slug youtube-clips --py > youtube_clips.py
 ```
 
-![youtube clip streaming](./img/youtube.gif)
+![youtube clip streaming](../img/youtube.gif)
 
 ```python
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -75,11 +75,11 @@ def yield_clips(segments: Iterable[TranscriptSegment]) -> Iterable[YoutubeClips]
         messages=[
             {
                 "role": "system",
-                "content": """You are given a sequence of YouTube transcripts and your job 
-                is to return notable clips that can be recut as smaller videos. Give very 
-                specific titles and descriptions. Make sure the length of clips is proportional 
-                to the length of the video. Note that this is a transcript and so there might 
-                be spelling errors. Note that and correct any spellings. Use the context to 
+                "content": """You are given a sequence of YouTube transcripts and your job
+                is to return notable clips that can be recut as smaller videos. Give very
+                specific titles and descriptions. Make sure the length of clips is proportional
+                to the length of the video. Note that this is a transcript and so there might
+                be spelling errors. Note that and correct any spellings. Use the context to
                 make sure you're spelling things correctly.""",
             },
             {
@@ -127,4 +127,3 @@ if __name__ == "__main__":
                     str(youtube_clip.end),
                 )
             console.print(table)
-```
