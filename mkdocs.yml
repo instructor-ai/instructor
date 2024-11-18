@@ -198,17 +198,17 @@ nav:
     - Type Adapter: 'concepts/typeadapter.md'
     - Templating: 'concepts/templating.md'
   - Hub:
-    - Introduction to Instructor Hub: 'hub/index.md'
-    - Classification with Structured Outputs: 'hub/single_classification.md'
-    - Bulk Classification with Structured Outputs: 'hub/multiple_classification.md'
-    - Extracting Tables with Structured Outputs: 'hub/tables_from_vision.md'
-    - Creating Pandas DataFrames with Structured Outputs: 'hub/pandas_df.md'
-    - Bulk Async Classification with LangSmith: 'hub/batch_classification_langsmith.md'
-    - Extracting Action Items with Structured Outputs: 'hub/action_items.md'
-    - Implementing Partial Streaming Responses: 'hub/partial_streaming.md'
-    - Extracting Contact Information with Structured Outputs: 'hub/extract_contact_info.md'
-    - Generating Knowledge Graphs with Structured Outputs: 'hub/knowledge_graph.md'
-    - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
+    - Introduction to Instructor Hub: 'integrations/index.md'
+    - Classification with Structured Outputs: 'integrations/single_classification.md'
+    - Bulk Classification with Structured Outputs: 'integrations/multiple_classification.md'
+    - Extracting Tables with Structured Outputs: 'integrations/tables_from_vision.md'
+    - Creating Pandas DataFrames with Structured Outputs: 'integrations/pandas_df.md'
+    - Bulk Async Classification with LangSmith: 'integrations/batch_classification_langsmith.md'
+    - Extracting Action Items with Structured Outputs: 'integrations/action_items.md'
+    - Implementing Partial Streaming Responses: 'integrations/partial_streaming.md'
+    - Extracting Contact Information with Structured Outputs: 'integrations/extract_contact_info.md'
+    - Generating Knowledge Graphs with Structured Outputs: 'integrations/knowledge_graph.md'
+    - Extracting Relevant Clips from YouTube Videos: "integrations/youtube_clips.md"
     - Building Knowledge Graphs with Structured Outputs: 'tutorials/5-knowledge-graphs.ipynb'
   - Integrations:
     - Overview: 'integrations/index.md'

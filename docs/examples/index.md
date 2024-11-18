@@ -18,7 +18,7 @@ Welcome to our collection of cookbooks showcasing the power of structured output
 7. [Complex Query Decomposition](planning-tasks.md): Break down intricate queries into manageable subtasks for thorough analysis.
 8. [Entity Extraction and Resolution](entity_resolution.md): Identify and disambiguate named entities in text.
 9. [PII Sanitization](pii.md): Detect and redact sensitive personal information from text data.
-10. [Action Item and Dependency Extraction](../hub/action_items.md): Generate structured task lists and relationships from meeting transcripts.
+10. [Action Item and Dependency Extraction](../integrations/action_items.md): Generate structured task lists and relationships from meeting transcripts.
 11. [OpenAI Content Moderation Integration](moderation.md): Implement content filtering using OpenAI's moderation API.
 12. [Table Extraction with GPT-Vision](extracting_tables.md): Convert image-based tables into structured data using AI vision capabilities.
 13. [AI-Powered Ad Copy Generation from Images](image_to_ad_copy.md): Create compelling advertising text based on visual content.
