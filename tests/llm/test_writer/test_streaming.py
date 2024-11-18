@@ -14,24 +14,24 @@ class UserExtract(BaseModel):
     age: int
 
 
-@pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
-def test_writer_iterable_model(model: str, mode: instructor.Mode, stream: bool):
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_writer_iterable_model(model: str, mode: instructor.Mode):
     client = instructor.from_writer(client=Writer(), mode=mode)
     response = client.chat.completions.create(
         model=model,
         response_model=Iterable[UserExtract],
         max_retries=2,
-        stream=stream,
         messages=[
             {"role": "user", "content": "Make two up people"},
         ],
     )
-    final_model = None
+
+    models = []
     for m in response:
         assert isinstance(m, UserExtract)
-        final_model = m
+        models += [m]
 
-    print(final_model, end=" ")
+    assert len(models) == 2
 
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
@@ -52,37 +52,29 @@ def test_writer_partial_model(model: str, mode: instructor.Mode):
         assert isinstance(m, UserExtract)
         final_model = m
 
-    print(final_model, end=" ")
-
     assert final_model.age == 12
     assert final_model.first_name == "Jason"
 
 
-
-@pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
+@pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
-async def test_writer_iterable_model_async(model: str, mode: instructor.Mode, stream: bool):
+async def test_writer_iterable_model_async(model: str, mode: instructor.Mode):
     client = instructor.from_writer(client=AsyncWriter(), mode=mode)
     response = await client.chat.completions.create(
         model=model,
         response_model=Iterable[UserExtract],
         max_retries=2,
-        stream=stream,
         messages=[
             {"role": "user", "content": "Make two up people"},
         ],
     )
-    final_model = None
-    if stream:
-        async for m in response:
-            assert isinstance(m, UserExtract)
-            final_model = m
-    else:
-        for m in response:
-            assert isinstance(m, UserExtract)
-            final_model = m
 
-    print(final_model, end=" ")
+    models = []
+    for m in response:
+        assert isinstance(m, UserExtract)
+        models += [m]
+
+    assert len(models) == 2
 
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
@@ -103,4 +95,5 @@ async def test_writer_partial_model_async(model: str, mode: instructor.Mode):
         assert isinstance(m, UserExtract)
         final_model = m
 
-    print(final_model, end=" ")
+    assert final_model.age == 12
+    assert final_model.first_name == "Jason"
