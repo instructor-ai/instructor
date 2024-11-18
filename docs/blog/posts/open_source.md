@@ -131,7 +131,6 @@ user = create(
 
 print(user)
 #> name='Jason' age=30
-"""
 ```
 
 ## Alternative Providers
@@ -192,11 +191,12 @@ import instructor
 import groq
 from pydantic import BaseModel
 
-client = qrog.Groq(
+client = groq.Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
 )
 
-# By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods to support the response_model parameter
+# By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods
+# to support the response_model parameter
 client = instructor.from_openai(client, mode=instructor.Mode.MD_JSON)
 
 
@@ -218,7 +218,6 @@ user: UserExtract = client.chat.completions.create(
 assert isinstance(user, UserExtract), "Should be instance of UserExtract"
 print(user)
 #> name='jason' age=25
-"""
 ```
 
 ### Together AI
@@ -273,7 +272,9 @@ from mistralai.client import MistralClient
 
 client = MistralClient()
 
-patched_chat = instructor.from_openai(create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS)
+patched_chat = instructor.from_openai(
+    create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS
+)
 
 class UserDetails(BaseModel):
     name: str
