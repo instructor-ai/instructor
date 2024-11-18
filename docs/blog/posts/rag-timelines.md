@@ -61,21 +61,23 @@ response = client.chat.completions.create(
     response_model=SearchQuery,
     messages=[
         {
-            "role": "system", 
-            "content": "You are a query generator for customer support tickets. The current date is 2024-02-17"},
+            "role": "system",
+            "content": "You are a query generator for customer support tickets. The current date is 2024-02-17",
+        },
         {
-            "role": "user", 
-            "content": "Show me customer support tickets opened in the past week."
+            "role": "user",
+            "content": "Show me customer support tickets opened in the past week.",
         },
     ],
 )
 
+# Example response:
 {
     "query": "Show me customer support tickets opened in the past week.",
     "time_filter": {
         "start_date": "2024-02-10T00:00:00",
-        "end_date": "2024-02-17T00:00:00"
-    }
+        "end_date": "2024-02-17T00:00:00",
+    },
 }
 ```
 
@@ -85,7 +87,7 @@ When working with time-based queries, it's important to consider the nuances of 
 
 To handle this, you'll want to design your `TimeFilter` model to intelligently reason about these relative time periods. This could involve:
 
-- Defaulting to the user's local timezone if available, or using a consistent default like UTC  
+- Defaulting to the user's local timezone if available, or using a consistent default like UTC
 - Defining clear rules for how to calculate the start and end of relative periods like "week" or "month"
   - e.g. does "past week" mean the last 7 days or the previous Sunday-Saturday range?
 - Allowing for flexibility in how users specify dates (exact datetimes, just dates, natural language phrases)
