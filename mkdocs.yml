@@ -197,23 +197,11 @@ nav:
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
     - Templating: 'concepts/templating.md'
-  - Hub:
-    - Introduction to Instructor Hub: 'integrations/index.md'
-    - Classification with Structured Outputs: 'integrations/single_classification.md'
-    - Bulk Classification with Structured Outputs: 'integrations/multiple_classification.md'
-    - Extracting Tables with Structured Outputs: 'integrations/tables_from_vision.md'
-    - Creating Pandas DataFrames with Structured Outputs: 'integrations/pandas_df.md'
-    - Bulk Async Classification with LangSmith: 'integrations/batch_classification_langsmith.md'
-    - Extracting Action Items with Structured Outputs: 'integrations/action_items.md'
-    - Implementing Partial Streaming Responses: 'integrations/partial_streaming.md'
-    - Extracting Contact Information with Structured Outputs: 'integrations/extract_contact_info.md'
-    - Generating Knowledge Graphs with Structured Outputs: 'integrations/knowledge_graph.md'
-    - Extracting Relevant Clips from YouTube Videos: "integrations/youtube_clips.md"
-    - Building Knowledge Graphs with Structured Outputs: 'tutorials/5-knowledge-graphs.ipynb'
   - Integrations:
     - Overview: 'integrations/index.md'
     - Anyscale: 'integrations/anyscale.md'
     - Anthropic: 'integrations/anthropic.md'
+    - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
     - Fireworks: 'integrations/fireworks.md'
@@ -224,9 +212,18 @@ nav:
     - Mistral: 'integrations/mistral.md'
     - Ollama: 'integrations/ollama.md'
     - OpenAI: 'integrations/openai.md'
-    - Azure OpenAI: 'integrations/azure.md'
     - Together: 'integrations/together.md'
     - Vertex AI: 'integrations/vertex.md'
+    - Classification with Structured Outputs: 'integrations/single_classification.md'
+    - Bulk Classification with Structured Outputs: 'integrations/multiple_classification.md'
+    - Extracting Tables with Structured Outputs: 'integrations/tables_from_vision.md'
+    - Creating Pandas DataFrames with Structured Outputs: 'integrations/pandas_df.md'
+    - Bulk Async Classification with LangSmith: 'integrations/batch_classification_langsmith.md'
+    - Extracting Action Items with Structured Outputs: 'integrations/action_items.md'
+    - Implementing Partial Streaming Responses: 'integrations/partial_streaming.md'
+    - Extracting Contact Information with Structured Outputs: 'integrations/extract_contact_info.md'
+    - Generating Knowledge Graphs with Structured Outputs: 'integrations/knowledge_graph.md'
+    - Extracting Relevant Clips from YouTube Videos: "integrations/youtube_clips.md"
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
@@ -306,27 +303,30 @@ plugins:
   - redirects:
       redirect_maps:
          jobs.md: https://jobs.applied-llms.org/
-         'docs/hub/vertexai.md': 'integrations/vertexai.md'
-         'docs/hub/ollama.md': 'integrations/ollama.md'
-         'docs/hub/openai.md': 'integrations/openai.md'
-         'docs/hub/anthropic.md': 'integrations/anthropic.md'
-         'docs/hub/anyscale.md': 'integrations/anyscale.md'
-         'docs/hub/cohere.md': 'integrations/cohere.md'
-         'docs/hub/fireworks.md': 'integrations/fireworks.md'
-         'docs/hub/google.md': 'integrations/google.md'
-         'docs/hub/litellm.md': 'integrations/litellm.md'
-         'docs/hub/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
-         'docs/hub/mistral.md': 'integrations/mistral.md'
-         'docs/hub/cerebras.md': 'integrations/cerebras.md'
-         'docs/hub/groq.md': 'integrations/groq.md'
-         'docs/hub/together.md': 'integrations/together.md'
-         'hub/clients/vertexai.md': 'integrations/vertexai.md'
-         'hub/clients/ollama.md': 'integrations/ollama.md'
-         'hub/clients/openai.md': 'integrations/openai.md'
-         'hub/clients/anthropic.md': 'integrations/anthropic.md'
-         'hub/clients/anyscale.md': 'integrations/anyscale.md'
-         'hub/clients/cohere.md': 'integrations/cohere.md'
-         'hub/clients/fireworks.md': 'integrations/fireworks.md'
+         hub/single_classification.md: integrations/single_classification.md
+         hub/multiple_classification.md: integrations/multiple_classification.md
+         hub/tables_from_vision.md: integrations/tables_from_vision.md
+         hub/pandas_df.md: integrations/pandas_df.md
+         hub/batch_classification_langsmith.md: integrations/batch_classification_langsmith.md
+         hub/action_items.md: integrations/action_items.md
+         hub/partial_streaming.md: integrations/partial_streaming.md
+         hub/extract_contact_info.md: integrations/extract_contact_info.md
+         hub/knowledge_graph.md: integrations/knowledge_graph.md
+         hub/youtube_clips.md: integrations/youtube_clips.md
+         hub/ollama.md: integrations/ollama.md
+         hub/llama-cpp-python.md: integrations/llama-cpp-python.md
+         hub/anyscale.md: integrations/anyscale.md
+         hub/together.md: integrations/together.md
+         hub/vertex.md: integrations/vertex.md
+         hub/litellm.md: integrations/litellm.md
+         hub/cerebras.md: integrations/cerebras.md
+         hub/groq.md: integrations/groq.md
+         hub/openai.md: integrations/openai.md
+         hub/anthropic.md: integrations/anthropic.md
+         hub/cohere.md: integrations/cohere.md
+         hub/fireworks.md: integrations/fireworks.md
+         hub/google.md: integrations/google.md
+         hub/mistral.md: integrations/mistral.md
          'hub/clients/google.md': 'integrations/google.md'
          'hub/clients/litellm.md': 'integrations/litellm.md'
          'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
