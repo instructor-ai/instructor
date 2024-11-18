@@ -1,180 +1,257 @@
-# Structured outputs with Vertex AI, a complete guide w/ instructor
+---
+draft: False
+date: 2024-05-30
+slug: vertexai
+tags:
+  - patching
+authors:
+  - ajac-zero
+---
 
-Vertex AI is Google Cloud's unified ML platform that provides access to various AI models. This guide demonstrates how to use Instructor with Vertex AI for structured outputs.
+# Structured Outputs with Vertex AI
 
-## Installation
+Vertex AI is the recommended way to deploy the Gemini family of models in production. These models support up to 1 million tokens in their context window and boast native multimodality with files, video, and audio. The Vertex AI SDK offers a preview of tool calling that we can use to obtain structured outputs.
 
-```bash
-pip install instructor[vertexai]
-```
+By the end of this blog post, you will learn how to effectively utilize Instructor with the Gemini family of models.
 
-## Quick Start
+<!-- more -->
+
+## Patching
+
+Instructor's patch enhances the gemini api with the following features:
+
+- `response_model` in `create` calls that returns a pydantic model
+- `max_retries` in `create` calls that retries the call if it fails by using a backoff strategy
+
+!!! note "Learn More"
+
+    To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page.
+
+## Vertex AI Client
+
+The Vertex AI client employs a different client than OpenAI, making the patching process slightly different than other examples
+
+!!! note "Getting access"
+
+    If you want to try this out for yourself check out the [Vertex AI](https://cloud.google.com/vertex-ai?hl=en) console. You can get started [here](https://cloud.google.com/vertex-ai/docs/start/introduction-unified-platform).
 
 ```python
-from instructor import patch
-from vertexai.language_models import ChatModel
+import instructor
 
-# Initialize and patch the Vertex AI client
-chat_model = patch(ChatModel.from_pretrained("chat-bison@002"))
-```
-
-## Simple User Example
-
-```python
 from pydantic import BaseModel
+import vertexai.generative_models as gm
+import vertexai
 
-class UserInfo(BaseModel):
+vertexai.init()
+
+client = gm.GenerativeModel("gemini-1.5-pro-preview-0409")
+
+# enables `response_model` in chat call
+client = instructor.from_vertexai(client)
+
+
+if __name__ == "__main__":
+
+    class UserDetails(BaseModel):
+        name: str
+        age: int
+
+    resp = client.create(
+        response_model=UserDetails,
+        messages=[
+            {
+                "role": "user",
+                "content": f'Extract the following entities: "Jason is 20"',
+            },
+        ],
+    )
+    print(resp)
+    #> name='Jason' age=20
+```
+
+### JSON Mode
+
+By default, `instructor.from_vertexai()` uses the mode `instructor.Mode.VERTEXAI_TOOLS`, which means it will use tool calling to create the model response. Alternatively, you can use `instructor.Mode.VERTEXAI_JSON` to use the response_schema parameter provided by the VertexAI SDK. This parameter will prompt Gemini to respond with JSON directly, which can then be parsed into a model response.
+
+If you are not getting good results with tool calling, or prefer this method for any reason, you can switch to this mode:
+
+```python
+### rest of the code as above ...
+
+client = gm.GenerativeModel(
+    "gemini-1.5-pro-preview-0409", mode=instructor.Mode.VERTEXAI_JSON
+)
+
+## rest of the code as above ...
+```
+
+## Limitations
+
+Currently, Vertex AI offers does not support the following attributes from the OpenAPI schema: `optional`, `maximum`, `anyOf`. This means that not all pydantic models will be supported. Below, I'll share some models that could trigger this error and some work-arounds.
+
+### optional / anyOf
+
+Using a pydantic model with an `Optional` field raise an exception, because the Optional type is translated to `"anyOf": [integer , null]` which is not yet supported.
+
+```python
+from typing import Optional
+
+
+class User(BaseModel):
+    name: str
+    age: Optional[int]
+
+
+resp = client.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Anibal is 23 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+print(resp)
+# ValueError: Protocol message Schema has no "anyOf" field.
+```
+
+A workaround if to set a certain default value that Gemini can fall back on if the information is not present:
+
+```python
+from pydantic import Field
+
+
+class User(BaseModel):
+    name: str
+    age: int = Field(default=0)  # or just age: int = 0
+
+
+resp = client.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Anibal is _ years old.",
+        }
+    ],
+    response_model=User,
+)
+
+print(resp)
+# name='Anibal' age=0
+```
+
+This workaround can also work with default_factories:
+
+```python
+class User(BaseModel):
     name: str
     age: int
-    email: str
+    siblings: list[str] = Field(default_factory=lambda: [])
 
-# Synchronous example
-chat = chat_model.start_chat()
-user = chat.send_message(
-    "Extract: John Doe is 30 years old, email: john@example.com",
-    response_model=UserInfo
+
+resp = client.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Anibal is 23 years old.",
+        }
+    ],
+    response_model=User,
 )
+
+print(resp)
+# name='Anibal' age=23 siblings=[]
 ```
 
-## Async Implementation
+### maximum
+
+Using the `lt`(less than) or `gt`(greater than) paramateres in a pydantic field will raise exceptions:
+
 
 ```python
-import asyncio
-from instructor import patch
-from vertexai.language_models import ChatModel
+class User(BaseModel):
+    name: str
+    age: int = Field(gt=0)
 
-async def extract_user_info():
-    chat_model = patch(ChatModel.from_pretrained("chat-bison@002"))
-    chat = chat_model.start_chat()
 
-    user = await chat.send_message_async(
-        "Extract: John Doe is 30 years old, email: john@example.com",
-        response_model=UserInfo
-    )
-    return user
+resp = client.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Anibal is 23 years old.",
+        }
+    ],
+    response_model=User,
+)
 
-# Run async function
-user = asyncio.run(extract_user_info())
+print(resp)
+# ValueError: Protocol message Schema has no "exclusiveMinimum" field.
+
+
+class User(BaseModel):
+    name: str
+    age: int = Field(lt=100)
+
+
+resp = client.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Anibal is _ years old.",
+        }
+    ],
+    response_model=User,
+)
+
+print(resp)
+# ValueError: Protocol message Schema has no "exclusiveMaximum" field
 ```
 
-## Nested Example
+A workaround for this is to use pydantic validadors to change these values post creation
 
 ```python
-from typing import List
-from pydantic import BaseModel
+from pydantic import field_validator
 
-class Address(BaseModel):
-    street: str
-    city: str
-    country: str
 
 class User(BaseModel):
     name: str
     age: int
-    addresses: List[Address]
 
-# Extract nested information
-chat = chat_model.start_chat()
-user = chat.send_message(
-    """
-    Extract: John Doe is 30 years old
-    Addresses:
-    - 123 Main St, New York, USA
-    - 456 Park Ave, London, UK
-    """,
-    response_model=User
+    @field_validator("age")
+    def age_range_limit(cls, age: int) -> int:
+        if age > 100:
+            age = 100
+        elif age < 0:
+            age = 0
+        return age
+
+
+resp = client.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Anibal is 1023 years old.",
+        }
+    ],
+    response_model=User,
 )
+
+print(resp)
+# name='Anibal' age=100
+
+resp = client.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Anibal is -12 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+print(resp)
+# name='Anibal' age=0
 ```
 
-## Streaming Support
-
-Vertex AI supports streaming responses. Here's how to use it with Instructor:
-
-### Partial Streaming Example
-
-```python
-from typing import Optional
-from pydantic import BaseModel
-
-class PartialUser(BaseModel):
-    name: Optional[str] = None
-    age: Optional[int] = None
-    email: Optional[str] = None
-
-# Stream partial responses
-chat = chat_model.start_chat()
-for partial in chat.send_message(
-    "Extract: John Doe is 30 years old, email: john@example.com",
-    response_model=PartialUser,
-    stream=True
-):
-    print(f"Received partial: {partial}")
-```
-
-## Iterable Example
-
-```python
-from typing import Iterator
-from pydantic import BaseModel
-
-class Comment(BaseModel):
-    author: str
-    content: str
-
-def extract_comments(text: str) -> Iterator[Comment]:
-    chat = chat_model.start_chat()
-    return chat.send_message(
-        text,
-        response_model=Iterator[Comment]
-    )
-
-# Use the iterator
-comments = extract_comments("""
-1. @john: Great post!
-2. @sarah: Thanks for sharing
-3. @mike: Very informative
-""")
-
-for comment in comments:
-    print(f"{comment.author}: {comment.content}")
-```
-
-## Instructor Hooks
-
-Instructor hooks can be used with Vertex AI to add custom validation, logging, or transformation logic:
-
-```python
-from instructor import patch
-from vertexai.language_models import ChatModel
-from instructor.hooks import add_hook
-
-# Define a custom hook
-def logging_hook(mode: str, response_model: Any, raw_response: Any, **kwargs):
-    print(f"Mode: {mode}")
-    print(f"Response Model: {response_model}")
-    print(f"Raw Response: {raw_response}")
-
-# Add the hook to the patched model
-chat_model = patch(ChatModel.from_pretrained("chat-bison@002"))
-add_hook(logging_hook)
-```
-
-## Best Practices
-
-1. Choose the appropriate model based on your use case
-2. Implement proper error handling
-3. Use type hints and validation
-4. Consider using async implementations for better performance
-5. Leverage Instructor hooks for debugging and monitoring
-
-## Related Resources
-
-- [Vertex AI Documentation](https://cloud.google.com/vertex-ai/docs)
-- [Instructor Documentation](https://instructor-ai.github.io/instructor/)
-- [Pydantic Documentation](https://docs.pydantic.dev)
-
-## Updates and Compatibility
-
-- Vertex AI API is actively maintained and updated
-- Instructor supports the latest Vertex AI API version
-- Regular updates ensure compatibility with new features
+So by relying on pydantic, we can mitigate some of the current limitations with the Gemini models 😊.

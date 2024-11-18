@@ -1,291 +1,83 @@
 ---
-title: "Structured outputs with Anyscale, a complete guide w/ instructor"
-description: "Complete guide to using Instructor with Anyscale's LLM endpoints. Learn how to generate structured, type-safe outputs with Anyscale's powerful hosted models."
+draft: False
+date: 2023-12-15
+slug: anyscale
+tags:
+  - patching
+  - open source
+authors:
+  - anmol
+  - jxnl
 ---
 
-# Structured outputs with Anyscale, a complete guide w/ instructor
+# Structured Outputs with Anyscale
 
-Anyscale provides hosted endpoints for various open-source models, offering a reliable platform for structured output generation. This guide shows you how to use Instructor with Anyscale's endpoints for type-safe, validated responses.
-
-## Quick Start
-
-Install Instructor with OpenAI compatibility (Anyscale uses OpenAI-compatible endpoints):
+If you want to try this example using `instructor hub`, you can pull it by running
 
 ```bash
-pip install "instructor[openai]"
+instructor hub pull --slug anyscale --py > anyscale_example.py
 ```
 
-⚠️ **Important**: You must set your Anyscale API key before using the client. You can do this in two ways:
+Open-source LLMS are gaining popularity, and the release of Anyscale's Mistral model has made it possible to obtain structured outputs using JSON schema at any scale. Instead of relying on a model's default output mode, you can utilize JSON schema to obtain structured outputs. This approach is a time-saving alternative to extensive prompt engineering.
 
-1. Set the environment variable:
-```bash
-export ANYSCALE_API_KEY='your_anyscale_api_key'
-```
+By the end of this blog post, you will learn how to effectively utilize the instructor at any scale. But before we proceed, let's first explore the concept of patching.
 
-2. Or provide it directly to the client:
+<!-- more -->
+
+## Patching
+
+Instructor's patch enhances a openai api it with the following features:
+
+- `response_model` in `create` calls that returns a pydantic model
+- `max_retries` in `create` calls that retries the call if it fails by using a backoff strategy
+
+!!! note "Learn More"
+
+    To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page.
+
+## Anyscale
+
+The good news is that Anyscale employs the same OpenAI client, and its models support some of these output modes too!
+
+!!! note "Getting access"
+
+    If you want to try this out for yourself check out the [Anyscale](https://anyscale.com/) website. You can get started [here](https://docs.anyscale.com/get-started).
+
+Let's explore one of the models available in Anyscale's extensive collection!
+
 ```python
-import os
 from openai import OpenAI
-
-# Configure OpenAI client with Anyscale endpoint
-client = OpenAI(
-    api_key=os.getenv('ANYSCALE_API_KEY', 'your_anyscale_api_key'),
-    base_url="https://api.endpoints.anyscale.com/v1"
-)
-```
-
-## Simple User Example (Sync)
-
-```python
-import openai
-import instructor
 from pydantic import BaseModel
-
-# Enable instructor patches
-client = instructor.from_openai(client)
-
-class User(BaseModel):
-    name: str
-    age: int
-
-# Create structured output
-user = client.chat.completions.create(
-    model="meta-llama/Llama-2-70b-chat-hf",  # or other available models
-    messages=[
-        {"role": "user", "content": "Extract: Jason is 25 years old"},
-    ],
-    response_model=User,
-)
-
-print(user)  # User(name='Jason', age=25)
-```
-
-## Simple User Example (Async)
-
-```python
-import openai
-import instructor
-from pydantic import BaseModel
-import asyncio
-
-# Configure async OpenAI client with Anyscale endpoint
-client = openai.AsyncOpenAI(
-    api_key="your_anyscale_api_key",
-    base_url="https://api.endpoints.anyscale.com/v1"
-)
-
-# Enable instructor patches
-client = instructor.from_openai(client)
-
-class User(BaseModel):
-    name: str
-    age: int
-
-async def extract_user():
-    user = await client.chat.completions.create(
-        model="meta-llama/Llama-2-70b-chat-hf",
-        messages=[
-            {"role": "user", "content": "Extract: Jason is 25 years old"},
-        ],
-        response_model=User,
-    )
-    return user
-
-# Run async function
-user = asyncio.run(extract_user())
-print(user)  # User(name='Jason', age=25)
-```
-
-## Nested Example
-
-```python
-from pydantic import BaseModel
-from typing import List
-
-class Address(BaseModel):
-    street: str
-    city: str
-    country: str
-
-class User(BaseModel):
-    name: str
-    age: int
-    addresses: List[Address]
-
-# Create structured output with nested objects
-user = client.chat.completions.create(
-    model="meta-llama/Llama-2-70b-chat-hf",
-    messages=[
-        {"role": "user", "content": """
-            Extract: Jason is 25 years old.
-            He lives at 123 Main St, New York, USA
-            and has a summer house at 456 Beach Rd, Miami, USA
-        """},
-    ],
-    response_model=User,
-)
-
-print(user)  # User with nested Address objects
-```
-
-## Streaming Support
-
-Anyscale provides streaming support through their OpenAI-compatible endpoints, with some limitations:
-
-- **Full Streaming**: ✅ Supported
-- **Partial Streaming**: ⚠️ Limited support (may experience inconsistent behavior)
-- **Iterable Streaming**: ✅ Supported
-- **Async Support**: ✅ Supported
-
-### Error Handling for Streaming
-
-```python
-from openai import OpenAIError
 import os
+import instructor
 
-class User(BaseModel):
-    name: str
-    age: int
-    bio: str
 
-try:
-    # Stream partial objects as they're generated
-    for partial_user in client.chat.completions.create_partial(
-        model="meta-llama/Llama-2-70b-chat-hf",
-        messages=[
-            {"role": "user", "content": "Create a user profile for Jason, age 25"},
-        ],
-        response_model=User,
-    ):
-        print(f"Current state: {partial_user}")
-except OpenAIError as e:
-    if "api_key" in str(e).lower():
-        print("Error: Invalid or missing Anyscale API key. Please check your ANYSCALE_API_KEY.")
-    elif "rate_limit" in str(e).lower():
-        print("Error: Rate limit exceeded. Please wait before retrying.")
-    else:
-        print(f"OpenAI API error: {str(e)}")
-except Exception as e:
-    print(f"Unexpected error: {str(e)}")
-```
-
-**Important Notes on Streaming:**
-- Full streaming is supported for complete response generation
-- Partial streaming has limited support and may not work consistently across all models
-- Some models may exhibit slower streaming performance
-- For production use, thoroughly test streaming capabilities with your specific model
-- Consider implementing fallback mechanisms for partial streaming scenarios
-- Monitor streaming performance and implement appropriate error handling
-- Handle API key and rate limit errors appropriately
-
-## Iterable Example
-
-```python
-from typing import List
-
-class User(BaseModel):
+class UserDetails(BaseModel):
     name: str
     age: int
 
-# Extract multiple users from text
-users = client.chat.completions.create_iterable(
-    model="meta-llama/Llama-2-70b-chat-hf",
+
+# enables `response_model` in create call
+client = instructor.from_openai(
+    OpenAI(
+        base_url="https://api.endpoints.anyscale.com/v1",
+        api_key=os.environ["ANYSCALE_API_KEY"],
+    ),
+    # This uses Anyscale's json schema output mode
+    mode=instructor.Mode.JSON_SCHEMA,
+)
+
+resp = client.chat.completions.create(
+    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
     messages=[
-        {"role": "user", "content": """
-            Extract users:
-            1. Jason is 25 years old
-            2. Sarah is 30 years old
-            3. Mike is 28 years old
-        """},
+        {"role": "system", "content": "You are a world class extractor"},
+        {"role": "user", "content": 'Extract the following entities: "Jason is 20"'},
     ],
-    response_model=User,
+    response_model=UserDetails,
 )
-
-for user in users:
-    print(user)  # Prints each user as it's extracted
+print(resp)
+#> name='Jason' age=20
+# # > name='Jason' age=20
 ```
 
-## Instructor Hooks
-
-Instructor provides several hooks to customize behavior:
-
-### Validation Hook
-
-```python
-from instructor import Instructor
-
-def validation_hook(value, retry_count, exception):
-    print(f"Validation failed {retry_count} times: {exception}")
-    return retry_count < 3  # Retry up to 3 times
-
-instructor.patch(client, validation_hook=validation_hook)
-```
-
-### Mode Hooks
-
-```python
-from instructor import Mode
-
-# Use different modes for different scenarios
-client = instructor.patch(client, mode=Mode.JSON)  # JSON mode
-client = instructor.patch(client, mode=Mode.TOOLS)  # Tools mode
-client = instructor.patch(client, mode=Mode.MD_JSON)  # Markdown JSON mode
-```
-
-### Custom Retrying
-
-```python
-from instructor import RetryConfig
-
-client = instructor.patch(
-    client,
-    retry_config=RetryConfig(
-        max_retries=3,
-        on_retry=lambda *args: print("Retrying..."),
-    )
-)
-```
-
-## Available Models
-
-Anyscale provides access to various open-source models:
-- Llama 2 (7B, 13B, 70B variants)
-- CodeLlama
-- Mistral
-- Other open-source models
-
-## Best Practices
-
-1. **Model Selection**
-   - Choose model size based on task complexity
-   - Consider latency requirements
-   - Monitor token usage and costs
-
-2. **Optimization Tips**
-   - Use appropriate batch sizes
-   - Implement caching strategies
-   - Monitor API usage
-
-3. **Error Handling**
-   - Implement proper validation
-   - Handle rate limits gracefully
-   - Monitor model responses
-
-## Common Use Cases
-
-- Data Extraction
-- Content Generation
-- Document Analysis
-- API Response Formatting
-- Configuration Generation
-
-## Related Resources
-
-- [Anyscale Endpoints Documentation](https://docs.endpoints.anyscale.com/)
-- [Instructor Core Concepts](../concepts/index.md)
-- [Type Validation Guide](../concepts/validation.md)
-- [Advanced Usage Examples](../examples/index.md)
-
-## Updates and Compatibility
-
-Instructor maintains compatibility with Anyscale's OpenAI-compatible endpoints. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
+You can find more information about Anyscale's output mode support [here](https://docs.endpoints.anyscale.com/).

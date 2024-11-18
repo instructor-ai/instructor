@@ -11,7 +11,7 @@ Welcome to our collection of cookbooks showcasing the power of structured output
 
 1. [Enum-Based Classification](classification.md): Implement structured classification using Python enums with AI models.
 2. [AI Self-Assessment and Correction](self_critique.md): Explore techniques for AI models to evaluate and improve their own outputs.
-3. [Efficient Batch Classification](batch_classification.md): Process multiple items simultaneously for improved performance.
+3. [Efficient Batch Classification](bulk_classification.md): Process multiple items simultaneously for improved performance.
 4. [Precise Citation Extraction](exact_citations.md): Accurately retrieve and format citations from text using AI.
 5. [Search Query Segmentation](search.md): Break down complex search queries into structured components for better understanding.
 6. [Dynamic Knowledge Graph Generation](knowledge_graph.md): Create visual representations of information relationships using AI.

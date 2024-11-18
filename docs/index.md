@@ -69,7 +69,7 @@ Subscribe to our newsletter for updates on AI development. We provide content to
 
 - :material-lightning-bolt: **Simplified LLM Interactions**
 
-    Support for [OpenAI](./integrations/openai.md), [Anthropic](./integrations/anthropic.md), [Google](./integrations/google.md), [Vertex AI](./integrations/vertexai.md), [Mistral/Mixtral](./integrations/together.md), [Anyscale](./integrations/anyscale.md), [Ollama](./integrations/ollama.md), [llama-cpp-python](./integrations/llama-cpp-python.md), [Cohere](./integrations/cohere.md), [LiteLLM](./integrations/litellm.md).
+    Support for [OpenAI](./integrations/openai.md), [Anthropic](./integrations/anthropic.md), [Google](./integrations/google.md), [Vertex AI](./integrations/vertex.md), [Mistral/Mixtral](./integrations/together.md), [Anyscale](./integrations/anyscale.md), [Ollama](./integrations/ollama.md), [llama-cpp-python](./integrations/llama-cpp-python.md), [Cohere](./integrations/cohere.md), [LiteLLM](./integrations/litellm.md).
 
     [:octicons-arrow-right-16: See Hub](./integrations/index.md)
 
@@ -275,7 +275,7 @@ assert resp.age == 25
 
 The Vertex AI and Gemini Clients have different APIs. When using instructor with these clients, make sure to read the documentation for the specific client you're using to make sure you're using the correct methods.
 
-**Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](../hub/vertexai.md). As of now, you cannot use tool calling with Gemini when you have multi-modal inputs (Eg. Images, Audio, Video), you must use the `JSON` mode equivalent for that client.
+**Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](./integrations/vertex.md). As of now, you cannot use tool calling with Gemini when you have multi-modal inputs (Eg. Images, Audio, Video), you must use the `JSON` mode equivalent for that client.
 
 #### Google AI
 

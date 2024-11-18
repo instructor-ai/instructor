@@ -1,190 +1,98 @@
-# Structured outputs with Together AI, a complete guide w/ instructor
+---
+draft: False
+date: 2024-01-27
+slug: together
+tags:
+  - patching
+  - open source
+authors:
+  - jxnl
+---
 
-Together AI provides access to various open-source models through a unified API. This guide demonstrates how to use Instructor with Together AI for structured outputs.
+# Structured Outputs with Together AI
 
-## Installation
+If you want to try this example using `instructor hub`, you can pull it by running
 
 ```bash
-pip install instructor[together]
+instructor hub pull --slug together --py > together_example.py
 ```
 
-## Quick Start
+Open-source LLMS are gaining popularity, and with the release of Together's Function calling models, its been easier than ever to get structured outputs.
+
+By the end of this blog post, you will learn how to effectively utilize instructor with Together AI. But before we proceed, let's first explore the concept of patching.
+
+!!! note "Other Languages"
+
+    This blog post is written in Python, but the concepts are applicable to other languages as well, as we currently have support for [Javascript](
+        https://instructor-ai.github.io/instructor-js), [Elixir](https://hexdocs.pm/instructor/Instructor.html) and [PHP](https://github.com/cognesy/instructor-php/).
+
+<!-- more -->
+
+## Patching
+
+Instructor's patch enhances the openai api it with the following features:
+
+- `response_model` in `create` calls that returns a pydantic model
+- `max_retries` in `create` calls that retries the call if it fails by using a backoff strategy
+
+!!! note "Learn More"
+
+    To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page.
+
+## Together AI
+
+The good news is that Together employs the same OpenAI client, and its models support some of these output modes too!
+
+!!! note "Getting access"
+
+    If you want to try this out for yourself check out the [Together AI](https://www.together.ai/) website. You can get started [here](http://api.together.ai/).
 
 ```python
-from instructor import patch
-from together import Together
-
-# Initialize and patch the Together client
-client = patch(Together(api_key="your-api-key"))
-```
-
-## Simple User Example
-
-```python
+import os
+import openai
 from pydantic import BaseModel
+import instructor
 
-class UserInfo(BaseModel):
+client = openai.OpenAI(
+    base_url="https://api.together.xyz/v1",
+    api_key=os.environ["TOGETHER_API_KEY"],
+)
+
+
+# By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods to support the response_model parameter
+client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
+
+
+# Now, we can use the response_model parameter using only a base model
+# rather than having to use the OpenAISchema class
+class UserExtract(BaseModel):
     name: str
     age: int
-    email: str
 
-# Synchronous example
-user = client.chat.completions.create(
+
+user: UserExtract = client.chat.completions.create(
     model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-    response_model=UserInfo,
+    response_model=UserExtract,
     messages=[
-        {"role": "user", "content": "Extract: John Doe is 30 years old, email: john@example.com"}
-    ]
-)
-```
-
-## Async Implementation
-
-```python
-import asyncio
-from instructor import patch
-from together import AsyncTogether
-
-async def extract_user_info():
-    client = patch(AsyncTogether(api_key="your-api-key"))
-
-    user = await client.chat.completions.create(
-        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-        response_model=UserInfo,
-        messages=[
-            {"role": "user", "content": "Extract: John Doe is 30 years old, email: john@example.com"}
-        ]
-    )
-    return user
-
-# Run async function
-user = asyncio.run(extract_user_info())
-```
-
-## Nested Example
-
-```python
-from typing import List
-from pydantic import BaseModel
-
-class Address(BaseModel):
-    street: str
-    city: str
-    country: str
-
-class User(BaseModel):
-    name: str
-    age: int
-    addresses: List[Address]
-
-# Extract nested information
-user = client.chat.completions.create(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-    response_model=User,
-    messages=[
-        {"role": "user", "content": """
-        Extract: John Doe is 30 years old
-        Addresses:
-        - 123 Main St, New York, USA
-        - 456 Park Ave, London, UK
-        """}
-    ]
-)
-```
-
-## Streaming Support
-
-Together AI supports streaming responses. Here's how to use it with Instructor:
-
-### Partial Streaming Example
-
-```python
-from typing import Optional
-from pydantic import BaseModel
-
-class PartialUser(BaseModel):
-    name: Optional[str] = None
-    age: Optional[int] = None
-    email: Optional[str] = None
-
-# Stream partial responses
-for partial in client.chat.completions.create(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-    response_model=PartialUser,
-    messages=[
-        {"role": "user", "content": "Extract: John Doe is 30 years old, email: john@example.com"}
+        {"role": "user", "content": "Extract jason is 25 years old"},
     ],
-    stream=True
-):
-    print(f"Received partial: {partial}")
+)
+
+assert isinstance(user, UserExtract), "Should be instance of UserExtract"
+assert user.name.lower() == "jason"
+assert user.age == 25
+
+print(user.model_dump_json(indent=2))
+"""
+{
+  "name": "jason",
+  "age": 25
+}
+"""
+{
+    "name": "Jason",
+    "age": 25,
+}
 ```
 
-## Iterable Example
-
-```python
-from typing import Iterator
-from pydantic import BaseModel
-
-class Comment(BaseModel):
-    author: str
-    content: str
-
-def extract_comments(text: str) -> Iterator[Comment]:
-    return client.chat.completions.create(
-        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-        response_model=Iterator[Comment],
-        messages=[
-            {"role": "user", "content": text}
-        ]
-    )
-
-# Use the iterator
-comments = extract_comments("""
-1. @john: Great post!
-2. @sarah: Thanks for sharing
-3. @mike: Very informative
-""")
-
-for comment in comments:
-    print(f"{comment.author}: {comment.content}")
-```
-
-## Instructor Hooks
-
-Instructor hooks can be used with Together AI to add custom validation, logging, or transformation logic:
-
-```python
-from instructor import patch
-from together import Together
-from instructor.hooks import add_hook
-
-# Define a custom hook
-def logging_hook(mode: str, response_model: Any, raw_response: Any, **kwargs):
-    print(f"Mode: {mode}")
-    print(f"Response Model: {response_model}")
-    print(f"Raw Response: {raw_response}")
-
-# Add the hook to the patched client
-client = patch(Together(api_key="your-api-key"))
-add_hook(logging_hook)
-```
-
-## Best Practices
-
-1. Choose the appropriate model based on your use case
-2. Implement proper error handling
-3. Use type hints and validation
-4. Consider using async implementations for better performance
-5. Leverage Instructor hooks for debugging and monitoring
-
-## Related Resources
-
-- [Together AI Documentation](https://docs.together.ai)
-- [Instructor Documentation](https://instructor-ai.github.io/instructor/)
-- [Pydantic Documentation](https://docs.pydantic.dev)
-
-## Updates and Compatibility
-
-- Together AI API is actively maintained and updated
-- Instructor supports the latest Together AI API version
-- Regular updates ensure compatibility with new features
+You can find more information about Together's function calling support [here](https://docs.together.ai/docs/function-calling).

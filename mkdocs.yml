@@ -127,7 +127,7 @@ extra_javascript:
 extra_css:
   - https://unpkg.com/katex@0/dist/katex.min.css
 nav:
-  - Introduction: 
+  - Introduction:
     - Structured Outputs for LLMs: 'index.md'
     - Why use Instructor?: 'why.md'
     - Help with Instructor: 'help.md'
@@ -135,8 +135,10 @@ nav:
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
     - Philosophy: 'concepts/philosophy.md'
+    - API Reference: 'api.md'
   - Cookbook:
     - Cookbooks: 'examples/index.md'
+    - "Recursive Schema Examples": 'examples/recursive.md'
     - "Enhancing Text Classification": 'examples/classification.md'
     - "Local Classification with Llama-cpp": 'examples/local_classification.md'
     - "Structured Outputs with Ollama": 'examples/ollama.md'
@@ -160,10 +162,15 @@ nav:
     - "Intelligent Document Segmentation": 'examples/document_segmentation.md'
     - "Structured Output with watsonx.ai": 'examples/watsonx.md'
     - "OpenAI Batch Jobs with Instructor": 'examples/batch_job_oai.md'
+    - "Structured Outputs with Groq": 'examples/groq.md'
+    - "Structured Outputs with Mistral": 'examples/mistral.md'
   - Blog:
     - "blog/index.md"
   - Concepts:
+    - Overview: 'concepts/index.md'
     - Models: 'concepts/models.md'
+    - Lists and Arrays: 'concepts/lists.md'
+    - Prompting: 'concepts/prompting.md'
     - Multimodal : 'concepts/multimodal.md'
     - Retrying: 'concepts/retrying.md'
     - Patching: 'concepts/patching.md'
@@ -175,7 +182,7 @@ nav:
     - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
     - Parallel Tools: 'concepts/parallel.md'
-    - Stream Iterable: "concepts/lists.md"
+    - Stream Iterable: "concepts/iterable.md"
     - Stream Partial: "concepts/partial.md"
     - Raw Response: 'concepts/raw_response.md'
     - FastAPI: 'concepts/fastapi.md'
@@ -184,6 +191,8 @@ nav:
     - Logging: 'concepts/logging.md'
     - Distillation: "concepts/distillation.md"
     - Union: 'concepts/union.md'
+    - Unions: 'concepts/unions.md'
+    - Validation: 'concepts/validation.md'
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
@@ -202,6 +211,7 @@ nav:
     - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
     - Building Knowledge Graphs with Structured Outputs: 'tutorials/5-knowledge-graphs.ipynb'
   - Integrations:
+    - Overview: 'integrations/index.md'
     - Anyscale: 'integrations/anyscale.md'
     - Anthropic: 'integrations/anthropic.md'
     - Cerebras: 'integrations/cerebras.md'
@@ -214,6 +224,7 @@ nav:
     - Mistral: 'integrations/mistral.md'
     - Ollama: 'integrations/ollama.md'
     - OpenAI: 'integrations/openai.md'
+    - Azure OpenAI: 'integrations/azure.md'
     - Together: 'integrations/together.md'
     - Vertex AI: 'integrations/vertexai.md'
   - CLI Reference:
@@ -222,11 +233,13 @@ nav:
       - "Usage Tracking": "cli/usage.md"
       - "Batch Jobs": "cli/batch.md"
   - Tutorials:
+    - Overview: 'tutorials/index.md'
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
     - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
     - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
     - Validation: 'tutorials/4-validation.ipynb'
+    - Chain of Density: 'tutorials/6-chain-of-density.ipynb'
     - Synthetic Data Generation: 'tutorials/7-synthetic-data-generation.ipynb'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
@@ -293,6 +306,20 @@ plugins:
   - redirects:
       redirect_maps:
          jobs.md: https://jobs.applied-llms.org/
+         'docs/hub/vertexai.md': 'integrations/vertexai.md'
+         'docs/hub/ollama.md': 'integrations/ollama.md'
+         'docs/hub/openai.md': 'integrations/openai.md'
+         'docs/hub/anthropic.md': 'integrations/anthropic.md'
+         'docs/hub/anyscale.md': 'integrations/anyscale.md'
+         'docs/hub/cohere.md': 'integrations/cohere.md'
+         'docs/hub/fireworks.md': 'integrations/fireworks.md'
+         'docs/hub/google.md': 'integrations/google.md'
+         'docs/hub/litellm.md': 'integrations/litellm.md'
+         'docs/hub/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
+         'docs/hub/mistral.md': 'integrations/mistral.md'
+         'docs/hub/cerebras.md': 'integrations/cerebras.md'
+         'docs/hub/groq.md': 'integrations/groq.md'
+         'docs/hub/together.md': 'integrations/together.md'
          'hub/clients/vertexai.md': 'integrations/vertexai.md'
          'hub/clients/ollama.md': 'integrations/ollama.md'
          'hub/clients/openai.md': 'integrations/openai.md'
@@ -307,6 +334,7 @@ plugins:
          'hub/clients/cerebras.md': 'integrations/cerebras.md'
          'hub/clients/groq.md': 'integrations/groq.md'
          'hub/clients/together.md': 'integrations/together.md'
+  - hide_lines
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
