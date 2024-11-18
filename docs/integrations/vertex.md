@@ -1,5 +1,5 @@
 ---
-title: "Vertex AI Integration with Instructor | Structured Output Guide"
+title: "Vertex AI Integration with Instructor"
 description: "Complete guide to using Instructor with Google Cloud's Vertex AI. Learn how to generate structured, type-safe outputs with enterprise-grade AI capabilities."
 ---
 

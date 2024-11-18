@@ -127,12 +127,11 @@ print(user)  # User with nested Address objects
 
 ## Streaming Support
 
-OpenAI provides comprehensive streaming support through multiple methods, but proper setup and error handling are essential:
+OpenAI provides comprehensive streaming support through multiple methods:
 
 ### Prerequisites
 - Valid OpenAI API key must be set
 - Appropriate model access (GPT-4, GPT-3.5-turbo)
-- Proper error handling implementation
 
 ### Available Streaming Methods
 
@@ -141,69 +140,50 @@ OpenAI provides comprehensive streaming support through multiple methods, but pr
 3. **Iterable Streaming**: ✅ Enables streaming of multiple objects
 4. **Async Streaming**: ✅ Full async/await support
 
-### Error Handling for Streaming
+### Partial Streaming Example
 
 ```python
-from openai import OpenAIError
-import os
-
 class User(BaseModel):
     name: str
     age: int
     bio: str
 
-try:
-    # Stream partial objects as they're generated
-    for partial_user in client.chat.completions.create_partial(
-        model="gpt-4-turbo-preview",
-        messages=[
-            {"role": "user", "content": "Create a user profile for Jason, age 25"},
-        ],
-        response_model=User,
-    ):
-        print(f"Current state: {partial_user}")
-except OpenAIError as e:
-    if "api_key" in str(e).lower():
-        print("Error: Invalid or missing API key. Please check your OPENAI_API_KEY environment variable.")
-    else:
-        print(f"OpenAI API error: {str(e)}")
-except Exception as e:
-    print(f"Unexpected error: {str(e)}")
+# Stream partial objects as they're generated
+for partial_user in client.chat.completions.create_partial(
+    model="gpt-4-turbo-preview",
+    messages=[
+        {"role": "user", "content": "Create a user profile for Jason, age 25"},
+    ],
+    response_model=User,
+):
+    print(f"Current state: {partial_user}")
 ```
 
-### Iterable Example with Error Handling
+### Iterable Example
 
 ```python
 from typing import List
-from openai import OpenAIError
 
 class User(BaseModel):
     name: str
     age: int
 
-try:
-    # Extract multiple users from text
-    users = client.chat.completions.create_iterable(
-        model="gpt-4-turbo-preview",
-        messages=[
-            {"role": "user", "content": """
-                Extract users:
-                1. Jason is 25 years old
-                2. Sarah is 30 years old
-                3. Mike is 28 years old
-            """},
-        ],
-        response_model=User,
-    )
+# Extract multiple users from text
+users = client.chat.completions.create_iterable(
+    model="gpt-4-turbo-preview",
+    messages=[
+        {"role": "user", "content": """
+            Extract users:
+            1. Jason is 25 years old
+            2. Sarah is 30 years old
+            3. Mike is 28 years old
+        """},
+    ],
+    response_model=User,
+)
 
-    for user in users:
-        print(user)  # Prints each user as it's extracted
-except OpenAIError as e:
-    print(f"OpenAI API error: {str(e)}")
-    if "api_key" in str(e).lower():
-        print("Please ensure your API key is set correctly.")
-except Exception as e:
-    print(f"Unexpected error: {str(e)}")
+for user in users:
+    print(user)  # Prints each user as it's extracted
 ```
 
 ## Instructor Hooks
@@ -254,12 +234,7 @@ client = instructor.patch(
    - GPT-3.5-turbo for simpler schemas
    - Always specify temperature=0 for consistent outputs
 
-2. **Error Handling**
-   - Implement proper validation
-   - Use try-except blocks for graceful failure
-   - Monitor validation retries
-
-3. **Performance Optimization**
+2. **Performance Optimization**
    - Use streaming for large responses
    - Implement caching where appropriate
    - Batch requests when possible
@@ -282,11 +257,3 @@ client = instructor.patch(
 ## Updates and Compatibility
 
 Instructor maintains compatibility with the latest OpenAI API versions and models. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
-
-### Environment Setup
-
-For production use, we recommend:
-1. Using environment variables for API keys
-2. Implementing proper error handling
-3. Setting up monitoring for API usage
-4. Regular updates of both OpenAI and Instructor packages
