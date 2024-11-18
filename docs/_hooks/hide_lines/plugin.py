@@ -1,11 +1,10 @@
-from typing import Any, Dict, List
 from mkdocs.config import Config
 from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 from mkdocs.plugins import BasePlugin
 
 class HideLinesPlugin(BasePlugin):
-    def on_page_markdown(self, markdown: str, page: Page, config: Config, files: Files) -> str:
+    def on_page_markdown(self, markdown: str, *, page: Page, config: Config, files: Files) -> str:
         """Process the markdown content to hide specified lines.
 
         Args:
@@ -18,7 +17,7 @@ class HideLinesPlugin(BasePlugin):
             str: The processed markdown content
         """
         lines = markdown.split('\n')
-        result: List[str] = []
+        result: list[str] = []
         skip_next = False
 
         for line in lines:
