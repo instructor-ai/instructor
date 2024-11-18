@@ -1,17 +1,17 @@
-from mkdocs.config import Config
-from mkdocs.structure.files import Files
-from mkdocs.structure.pages import Page
-from mkdocs.plugins import BasePlugin
+from mkdocs.config import Config  # type: ignore
+from mkdocs.structure.files import Files  # type: ignore
+from mkdocs.structure.pages import Page  # type: ignore
+from mkdocs.plugins import BasePlugin  # type: ignore
 
 class HideLinesPlugin(BasePlugin):
-    def on_page_markdown(self, markdown: str, *, page: Page, config: Config, files: Files) -> str:
+    def on_page_markdown(self, markdown: str, *, _page: Page, _config: Config, _files: Files) -> str:
         """Process the markdown content to hide specified lines.
 
         Args:
             markdown: The markdown content of the page
-            page: The page object
-            config: The global configuration object
-            files: The files collection
+            _page: The page object (unused but required by plugin interface)
+            _config: The global configuration object (unused but required by plugin interface)
+            _files: The files collection (unused but required by plugin interface)
 
         Returns:
             str: The processed markdown content
