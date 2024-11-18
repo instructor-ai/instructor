@@ -226,7 +226,7 @@ nav:
     - OpenAI: 'integrations/openai.md'
     - Azure OpenAI: 'integrations/azure.md'
     - Together: 'integrations/together.md'
-    - Vertex AI: 'integrations/vertexai.md'
+    - Vertex AI: 'integrations/vertex.md'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
