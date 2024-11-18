@@ -10,7 +10,7 @@ authors:
   - jxnl
 ---
 
-# Structured Outputs with Anyscale
+# Structured outputs with Anyscale, a complete guide w/ instructor
 
 If you want to try this example using `instructor hub`, you can pull it by running
 

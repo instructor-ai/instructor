@@ -8,7 +8,7 @@ authors:
   - jxnl
 ---
 
-# Structured Outputs with llama-cpp-python
+# Structured outputs with llama-cpp-python, a complete guide w/ instructor
 
 If you want to try this example using `instructor hub`, you can pull it by running
 

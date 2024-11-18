@@ -1,9 +1,9 @@
 ---
-title: "Cerebras Integration with Instructor | Structured Output Guide"
+title: "Structured outputs with Cerebras, a complete guide w/ instructor"
 description: "Complete guide to using Instructor with Cerebras's hardware-accelerated AI models. Learn how to generate structured, type-safe outputs with high-performance computing."
 ---
 
-# Cerebras Integration with Instructor
+# Structured outputs with Cerebras, a complete guide w/ instructor
 
 Cerebras provides hardware-accelerated AI models optimized for high-performance computing environments. This guide shows you how to use Instructor with Cerebras's models for type-safe, validated responses.
 

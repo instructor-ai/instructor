@@ -8,7 +8,7 @@ authors:
   - shanktt
 ---
 
-# Structured Outputs with Mistral Large
+# Structured outputs with Mistral, a complete guide w/ instructor
 
 If you want to try this example using `instructor hub`, you can pull it by running
 
