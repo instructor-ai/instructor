@@ -326,12 +326,20 @@ plugins:
          # Legacy hub/clients/ redirects
          'hub/clients/google.md': 'integrations/google.md'
          'hub/clients/litellm.md': 'integrations/litellm.md'
+         'hub/clients/ollama.md': 'integrations/ollama.md'
          'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
-         'hub/clients/mistral.md': 'integrations/mistral.md'
+         'hub/clients/anyscale.md': 'integrations/anyscale.md'
+         'hub/clients/anthropic.md': 'integrations/anthropic.md'
+         'hub/clients/azure.md': 'integrations/azure.md'
          'hub/clients/cerebras.md': 'integrations/cerebras.md'
+         'hub/clients/cohere.md': 'integrations/cohere.md'
+         'hub/clients/fireworks.md': 'integrations/fireworks.md'
          'hub/clients/groq.md': 'integrations/groq.md'
+         'hub/clients/mistral.md': 'integrations/mistral.md'
+         'hub/clients/openai.md': 'integrations/openai.md'
          'hub/clients/together.md': 'integrations/together.md'
-         'integrations/vertexai.md': 'integrations/vertex.md'
+         'hub/clients/vertex.md': 'integrations/vertex.md'
+         'hub/clients/vertexai.md': 'integrations/vertex.md'
   - hide_lines
   - mkdocs-jupyter:
       ignore_h1_titles: true
