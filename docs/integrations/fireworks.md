@@ -268,6 +268,6 @@ Fireworks offers several model options:
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with Fireworks's latest API versions. Check the [changelog](../../CHANGELOG.md) for updates.
+Instructor maintains compatibility with Fireworks's latest API versions. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
 
 Note: Always verify model-specific features and limitations before implementing streaming functionality in production environments.

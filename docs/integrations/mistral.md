@@ -231,4 +231,4 @@ Mistral AI provides several powerful models:
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with the latest Mistral AI releases. Check the [changelog](../../CHANGELOG.md) for updates.
+Instructor maintains compatibility with the latest Mistral AI releases. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.

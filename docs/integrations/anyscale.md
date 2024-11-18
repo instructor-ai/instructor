@@ -288,4 +288,4 @@ Anyscale provides access to various open-source models:
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with Anyscale's OpenAI-compatible endpoints. Check the [changelog](../../CHANGELOG.md) for updates.
+Instructor maintains compatibility with Anyscale's OpenAI-compatible endpoints. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.

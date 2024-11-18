@@ -282,6 +282,6 @@ LiteLLM supports multiple providers:
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with LiteLLM's latest releases. Check the [changelog](../../CHANGELOG.md) for updates.
+Instructor maintains compatibility with LiteLLM's latest releases. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
 
 Note: Always verify provider-specific features and limitations in their respective documentation before implementation.

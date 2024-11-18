@@ -281,7 +281,7 @@ client = instructor.patch(
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with the latest OpenAI API versions and models. Check the [changelog](../../CHANGELOG.md) for updates.
+Instructor maintains compatibility with the latest OpenAI API versions and models. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
 
 ### Environment Setup
 

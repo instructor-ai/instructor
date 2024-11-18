@@ -241,4 +241,4 @@ client = patch(
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with the latest llama-cpp-python releases. Check the [changelog](../../CHANGELOG.md) for updates.
+Instructor maintains compatibility with the latest llama-cpp-python releases. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.

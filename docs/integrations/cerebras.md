@@ -218,6 +218,6 @@ Cerebras offers several model options:
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with Cerebras's latest API versions. Check the [changelog](../../CHANGELOG.md) for updates.
+Instructor maintains compatibility with Cerebras's latest API versions. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
 
 Note: Some features like partial streaming may not be available due to API limitations. Always check the latest documentation for feature availability.

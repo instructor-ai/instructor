@@ -243,4 +243,4 @@ Google offers several Gemini models:
 
 ## Updates and Compatibility
 
-Instructor maintains compatibility with Google's latest API versions. Check the [changelog](../../CHANGELOG.md) for updates.
+Instructor maintains compatibility with Google's latest API versions. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
