@@ -68,6 +68,7 @@ client = instructor.from_openai(
     mode=instructor.Mode.JSON,
 )
 
+
 user = client.chat.completions.create(
     model="llama2",
     messages=[
@@ -93,7 +94,6 @@ Example of using llama-cpp-python for structured outputs:
 ```python
 import llama_cpp
 import instructor
-
 from llama_cpp.llama_speculative import LlamaPromptLookupDecoding
 from pydantic import BaseModel
 
@@ -113,6 +113,7 @@ create = instructor.patch(
     create=llama.create_chat_completion_openai_v1,
     mode=instructor.Mode.JSON_SCHEMA,
 )
+
 
 class UserDetail(BaseModel):
     name: str
@@ -173,6 +174,7 @@ resp = client.chat.completions.create(
     ],
     response_model=UserDetails,
 )
+
 print(resp)
 #> name='Jason' age=20
 ```
@@ -187,9 +189,11 @@ export GROQ_API_KEY="your-api-key"
 
 ```python
 import os
-import instructor
-import groq
 from pydantic import BaseModel
+
+import groq
+import instructor
+
 
 client = groq.Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
@@ -216,6 +220,7 @@ user: UserExtract = client.chat.completions.create(
 )
 
 assert isinstance(user, UserExtract), "Should be instance of UserExtract"
+
 print(user)
 #> name='jason' age=25
 ```
@@ -230,9 +235,11 @@ export TOGETHER_API_KEY="your-api-key"
 
 ```python
 import os
-import openai
 from pydantic import BaseModel
+
 import instructor
+import openai
+
 
 client = openai.OpenAI(
     base_url="https://api.together.xyz/v1",
@@ -240,6 +247,7 @@ client = openai.OpenAI(
 )
 
 client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
+
 
 class UserExtract(BaseModel):
     name: str
@@ -255,8 +263,8 @@ user: UserExtract = client.chat.completions.create(
 )
 
 assert isinstance(user, UserExtract), "Should be instance of UserExtract"
-print(user)
 
+print(user)
 #> name='jason' age=25
 ```
 
@@ -266,9 +274,9 @@ For those interested in exploring the capabilities of Mistral Large with Instruc
 
 ```python
 import instructor
-
 from pydantic import BaseModel
 from mistralai.client import MistralClient
+
 
 client = MistralClient()
 
@@ -276,9 +284,11 @@ patched_chat = instructor.from_openai(
     create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS
 )
 
+
 class UserDetails(BaseModel):
     name: str
     age: int
+
 
 resp = patched_chat(
     model="mistral-large-latest",
@@ -290,6 +300,7 @@ resp = patched_chat(
         },
     ],
 )
+
 print(resp)
 #> name='Jason' age=20
 ```
