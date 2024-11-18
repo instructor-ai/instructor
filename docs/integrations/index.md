@@ -18,7 +18,7 @@ Instructor supports a wide range of AI model providers, each with their own capa
 ### Cloud AI Providers
 - [Anthropic](./anthropic.md) - Claude and Claude 2 models
 - [Google](./google.md) - PaLM and Gemini models
-- [Vertex AI](./vertexai.md) - Google Cloud's AI platform
+- [Vertex AI](./vertex.md) - Google Cloud's AI platform
 - [Cohere](./cohere.md) - Command and other Cohere models
 - [Anyscale](./anyscale.md) - Hosted open source models
 - [Groq](./groq.md) - High-performance inference platform

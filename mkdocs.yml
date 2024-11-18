@@ -335,6 +335,7 @@ plugins:
          'hub/clients/cerebras.md': 'integrations/cerebras.md'
          'hub/clients/groq.md': 'integrations/groq.md'
          'hub/clients/together.md': 'integrations/together.md'
+         'integrations/vertexai.md': 'integrations/vertex.md'
   - hide_lines
   - mkdocs-jupyter:
       ignore_h1_titles: true

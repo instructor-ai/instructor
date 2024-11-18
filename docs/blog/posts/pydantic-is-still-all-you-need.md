@@ -63,7 +63,7 @@ Since last year:
 - Built a version in Rust
 - Seen 40% month-over-month growth in the Python library
 
-We now support [Ollama](../../integrations/ollama.md), [llama-cpp-python](../../integrations/llama-cpp-python.md), [Anthropic](../../integrations/anthropic.md), [Cohere](../../integrations/cohere.md), [Google](../../integrations/google.md), [Vertex AI](../../integrations/vertexai.md), and more. As long as language models support function calling capabilities, this API will remain standard.
+We now support [Ollama](../../integrations/ollama.md), [llama-cpp-python](../../integrations/llama-cpp-python.md), [Anthropic](../../integrations/anthropic.md), [Cohere](../../integrations/cohere.md), [Google](../../integrations/google.md), [Vertex AI](../../integrations/vertex.md), and more. As long as language models support function calling capabilities, this API will remain standard.
 
 ## Key Features
 
