@@ -306,21 +306,24 @@ plugins:
   - redirects:
       redirect_maps:
          jobs.md: https://jobs.applied-llms.org/
-         # Keep LLM client redirects
+         # LLM client redirects
          hub/ollama.md: integrations/ollama.md
          hub/llama-cpp-python.md: integrations/llama-cpp-python.md
          hub/anyscale.md: integrations/anyscale.md
-         hub/together.md: integrations/together.md
-         hub/vertex.md: integrations/vertex.md
-         hub/litellm.md: integrations/litellm.md
-         hub/cerebras.md: integrations/cerebras.md
-         hub/groq.md: integrations/groq.md
-         hub/openai.md: integrations/openai.md
          hub/anthropic.md: integrations/anthropic.md
+         hub/azure.md: integrations/azure.md
+         hub/cerebras.md: integrations/cerebras.md
          hub/cohere.md: integrations/cohere.md
          hub/fireworks.md: integrations/fireworks.md
          hub/google.md: integrations/google.md
+         hub/groq.md: integrations/groq.md
+         hub/litellm.md: integrations/litellm.md
          hub/mistral.md: integrations/mistral.md
+         hub/openai.md: integrations/openai.md
+         hub/together.md: integrations/together.md
+         hub/vertex.md: integrations/vertex.md
+         hub/vertexai.md: integrations/vertex.md  # Handle old vertexai.md references
+         # Legacy hub/clients/ redirects
          'hub/clients/google.md': 'integrations/google.md'
          'hub/clients/litellm.md': 'integrations/litellm.md'
          'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
