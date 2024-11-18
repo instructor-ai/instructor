@@ -47,14 +47,14 @@ How do we choose effective examples to include in our prompt?
 
 How do we encourage our model to mimic human-like reasoning?
 
-#### Zero Shot
+## Zero Shot {#zero-shot-1}
 
 1. [Auto-Generate Chain-Of-Thought Examples](thought_generation/chain_of_thought_zero_shot/analogical_prompting.md)
 2. [First Ask a Higher-Level Question](thought_generation/chain_of_thought_zero_shot/step_back_prompting.md)
 3. [Encourage Analysis](thought_generation/chain_of_thought_zero_shot/thread_of_thought.md)
 4. [Encourage Structural Reasoning](thought_generation/chain_of_thought_zero_shot/tab_cot.md)
 
-#### Few Shot
+## Few Shot {#few-shot-1}
 5. [Annotate Only Uncertain Examples](thought_generation/chain_of_thought_few_shot/active_prompt.md)
 6. [Choose Diverse Examples](thought_generation/chain_of_thought_few_shot/auto_cot.md)
 7. [Choose Complex Examples](thought_generation/chain_of_thought_few_shot/complexity_based.md)
