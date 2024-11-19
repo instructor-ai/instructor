@@ -124,7 +124,7 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 client = instructor.from_openai(client)
 # Create structured output with nested objects
 user = client.chat.completions.create(
-    model="gpt-4p-mini",
+    model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": """
             Extract: Jason is 25 years old.
@@ -136,7 +136,22 @@ user = client.chat.completions.create(
 )
 
 print(user)
-#> User with nested Address objects
+#> {
+#>     'name': 'Jason',
+#>     'age': 25,
+#>     'addresses': [
+#>         {
+#>             'street': '123 Main St',
+#>             'city': 'New York',
+#>             'country': 'USA'
+#>         },
+#>         {
+#>             'street': '456 Beach Rd',
+#>             'city': 'Miami',
+#>             'country': 'USA'
+#>         }
+#>     ]
+#> }
 ```
 
 ## Streaming Support
@@ -147,8 +162,6 @@ Instructor has two main ways that you can use to stream responses out
 2. **Partial Streaming**: This is useful when you'd like to stream a single object and you'd like to immediately start processing the response as it comes in.
 
 ### Partials
-
-You can use our `create_partial` method to stream a single object. Note that validators should not be declared in the response model when streaming objects because it will break the streaming process.
 
 ```python
 from instructor import from_openai
@@ -164,18 +177,22 @@ class User(BaseModel):
     bio: str
 
 
-# Stream partial objects as they're generated
-for partial_user in client.chat.completions.create_partial(
+user = client.chat.completions.create_partial(
     model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": "Create a user profile for Jason, age 25"},
     ],
     response_model=User,
-):
-    print(f"Current state: {partial_user}")
-    # > Current state: name='Jason' age=None bio=None
-    # > Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is'
-    # > Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is always on the lookout for new challenges and opportunities to grow both personally and professionally.'
+)
+
+for user_partial in user:
+    print(user_partial)
+
+# > name='Jason' age=None bio='None'
+# > name='Jason' age=25 bio='A tech'
+# > name='Jason' age=25 bio='A tech enthusiast'
+# > name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new'
+# > name='Jason' age=25 bio='A tech enthusiast who loves coding, gaming, and exploring new technologies'
 
 ```
 
@@ -205,7 +222,7 @@ users = client.chat.completions.create_iterable(
     response_model=User,
 )
 
-or user in users:
+for user in users:
     print(user)
     #> name='Jason' age=25
     #> name='Sarah' age=30
@@ -224,7 +241,7 @@ We provide several modes to make it easy to work with the different response mod
 6. `instructor.Mode.TOOLS_STRICT` : This uses the new Open AI structured outputs API to return structured outputs to the client using constrained grammar sampling. This restricts users to a subset of the JSON schema.
 7. `instructor.Mode.JSON_O1` : This is a mode for the `O1` model. We created a new mode because `O1` doesn't support any system messages, tool calling or streaming so you need to use this mode to use Instructor with `O1`.
 
-# In general, we recommend using `Mode.Tools` because it's the most flexible and future-proof mode. It has the largest set of features that you can specify your schema in and makes things significantly easier to work with.
+In general, we recommend using `Mode.Tools` because it's the most flexible and future-proof mode. It has the largest set of features that you can specify your schema in and makes things significantly easier to work with.
 
 ## Batch API
 

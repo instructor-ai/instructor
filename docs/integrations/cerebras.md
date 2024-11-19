@@ -12,18 +12,17 @@ Cerebras provides hardware-accelerated AI models optimized for high-performance 
 Install Instructor with Cerebras support:
 
 ```bash
-pip install "instructor[cerebras]"
+pip install "instructor[cerebras_cloud_sdk]"
 ```
 
 ## Simple User Example (Sync)
 
 ```python
-from cerebras.client import Client
 import instructor
+from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 
-# Initialize the client
-client = Client(api_key='your_api_key')
+client = instructor.from_cerebras(Cerebras())
 
 # Enable instructor patches
 client = instructor.from_cerebras(client)
@@ -33,25 +32,31 @@ class User(BaseModel):
     age: int
 
 # Create structured output
-user = client.generate(
-    prompt="Extract: Jason is 25 years old",
-    model='cerebras/btlm-3b-8k',  # or other available models
+resp = client.chat.completions.create(
+    model="llama3.1-70b",
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract the name and age of the person in this sentence: John Smith is 29 years old.",
+        }
+    ],
     response_model=User,
 )
 
-print(user)  # User(name='Jason', age=25)
+print(resp)
+#> User(name='John Smith', age=29)
 ```
 
 ## Simple User Example (Async)
 
 ```python
-from cerebras.client import AsyncClient
+from cerebras.cloud.sdk import AsyncCerebras
 import instructor
 from pydantic import BaseModel
 import asyncio
 
 # Initialize async client
-client = AsyncClient(api_key='your_api_key')
+client = AsyncCerebras()
 
 # Enable instructor patches
 client = instructor.from_cerebras(client)
@@ -61,75 +66,158 @@ class User(BaseModel):
     age: int
 
 async def extract_user():
-    user = await client.generate(
-        prompt="Extract: Jason is 25 years old",
-        model='cerebras/btlm-3b-8k',
+    resp = await client.chat.completions.create(
+        model="llama3.1-70b",
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract the name and age of the person in this sentence: John Smith is 29 years old.",
+            }
+        ],
         response_model=User,
     )
-    return user
+    return resp
 
 # Run async function
-user = asyncio.run(extract_user())
-print(user)  # User(name='Jason', age=25)
+resp = asyncio.run(extract_user())
+print(resp)
+#> User(name='John Smith', age=29)
 ```
 
 ## Nested Example
 
 ```python
 from pydantic import BaseModel
-from typing import List
+import instructor
+from cerebras.cloud.sdk import Cerebras
+
+client = instructor.from_cerebras(Cerebras())
+
 
 class Address(BaseModel):
     street: str
     city: str
     country: str
 
+
 class User(BaseModel):
     name: str
     age: int
-    addresses: List[Address]
+    addresses: list[Address]
+
 
 # Create structured output with nested objects
-user = client.generate(
-    prompt="""
+user = client.chat.completions.create(
+    messages=[
+        {
+            "role": "user",
+            "content": """
         Extract: Jason is 25 years old.
         He lives at 123 Main St, New York, USA
         and has a summer house at 456 Beach Rd, Miami, USA
     """,
-    model='cerebras/btlm-3b-8k',
+        }
+    ],
+    model="llama3.1-70b",
     response_model=User,
 )
 
-print(user)  # User with nested Address objects
+print(user)
+#> {
+#>     'name': 'Jason',
+#>     'age': 25,
+#>     'addresses': [
+#>         {
+#>             'street': '123 Main St',
+#>             'city': 'New York',
+#>             'country': 'USA'
+#>         },
+#>         {
+#>             'street': '456 Beach Rd',
+#>             'city': 'Miami',
+#>             'country': 'USA'
+#>         }
+#>     ]
+#> }
 ```
 
-## Partial Streaming Example
+## Streaming Support
 
-Note: Cerebras's current API does not support partial streaming of structured responses. The streaming functionality returns complete text chunks rather than partial objects. We recommend using the standard synchronous or asynchronous methods for structured output generation.
+Instructor has two main ways that you can use to stream responses out
+
+1. **Iterables**: These are useful when you'd like to stream a list of objects of the same type (Eg. use structured outputs to extract multiple users)
+2. **Partial Streaming**: This is useful when you'd like to stream a single object and you'd like to immediately start processing the response as it comes in.
+
+We currently support partial streaming for Cerebras by parsing the raw text completion. We have not implemented streaming for function calling at this point in time yet. Please make sure you have `mode=instructor.Mode.CEREBRAS_JSON` set when using partial streaming.
+
+```python
+import instructor
+from cerebras.cloud.sdk import Cerebras, AsyncCerebras
+from pydantic import BaseModel
+from typing import Iterable
+
+client = instructor.from_cerebras(Cerebras(), mode=instructor.Mode.CEREBRAS_JSON)
+
+
+class Person(BaseModel):
+    name: str
+    age: int
+
+
+resp = client.chat.completions.create_partial(
+    model="llama3.1-70b",
+    messages=[
+        {
+            "role": "user",
+            "content": "Ivan is 27 and lives in Singapore",
+        }
+    ],
+    response_model=Person,
+    stream=True,
+)
+
+for person in resp:
+    print(person)
+    # > name=None age=None
+    # > name='Ivan' age=None
+    # > name='Ivan' age=27
+
+```
 
 ## Iterable Example
 
 ```python
-from typing import List
+import instructor
+from cerebras.cloud.sdk import Cerebras, AsyncCerebras
+from pydantic import BaseModel
+from typing import Iterable
 
-class User(BaseModel):
+client = instructor.from_cerebras(Cerebras(), mode=instructor.Mode.CEREBRAS_JSON)
+
+
+class Person(BaseModel):
     name: str
     age: int
 
-# Extract multiple users from text
-users = client.generate_iterable(
-    prompt="""
-        Extract users:
-        1. Jason is 25 years old
-        2. Sarah is 30 years old
-        3. Mike is 28 years old
-    """,
-    model='cerebras/btlm-3b-8k',
-    response_model=User,
+
+resp = client.chat.completions.create_iterable(
+    model="llama3.1-70b",
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract all users from this sentence : Chris is 27 and lives in San Francisco, John is 30 and lives in New York while their college roomate Jessica is 26 and lives in London",
+        }
+    ],
+    response_model=Person,
+    stream=True,
 )
 
-for user in users:
-    print(user)  # Prints each user as it's extracted
+for person in resp:
+    print(person)
+    # > Person(name='Chris', age=27)
+    # > Person(name='John', age=30)
+    # > Person(name='Jessica', age=26)
+
 ```
 
 ## Instructor Hooks
@@ -148,76 +236,11 @@ def validation_hook(value, retry_count, exception):
 instructor.patch(client, validation_hook=validation_hook)
 ```
 
-### Mode Hooks
+## Instructor Modes
 
-```python
-from instructor import Mode
+We provide serveral modes to make it easy to work with the different response models that Cerebras Supports
 
-# Use different modes for different scenarios
-client = instructor.patch(client, mode=Mode.JSON)  # JSON mode
-client = instructor.patch(client, mode=Mode.TOOLS)  # Tools mode
-client = instructor.patch(client, mode=Mode.MD_JSON)  # Markdown JSON mode
-```
+1. `instructor.Mode.CEREBRAS_JSON` : This parses the raw completions as a valid JSON object.
+2. `instructor.Mode.CEREBRAS_TOOLS` : This uses Cerebras's tool calling mode to return structured outputs to the client.
 
-### Custom Retrying
-
-```python
-from instructor import RetryConfig
-
-client = instructor.patch(
-    client,
-    retry_config=RetryConfig(
-        max_retries=3,
-        on_retry=lambda *args: print("Retrying..."),
-    )
-)
-```
-
-## Available Models
-
-Cerebras offers several model options:
-- BTLM-3B-8K
-- BTLM-7B-8K
-- Custom-trained models
-- Enterprise deployments
-
-## Best Practices
-
-1. **Model Selection**
-   - Choose model based on performance needs
-   - Consider hardware requirements
-   - Monitor resource usage
-   - Use appropriate model sizes
-
-2. **Optimization Tips**
-   - Leverage hardware acceleration
-   - Optimize batch processing
-   - Implement caching strategies
-   - Monitor system resources
-
-3. **Error Handling**
-   - Implement proper validation
-   - Handle hardware-specific errors
-   - Monitor model responses
-   - Use appropriate timeout settings
-
-## Common Use Cases
-
-- High-Performance Computing
-- Large-Scale Processing
-- Enterprise Deployments
-- Research Applications
-- Batch Processing
-
-## Related Resources
-
-- [Cerebras Documentation](https://docs.cerebras.ai/)
-- [Instructor Core Concepts](../concepts/index.md)
-- [Type Validation Guide](../concepts/validation.md)
-- [Advanced Usage Examples](../examples/index.md)
-
-## Updates and Compatibility
-
-Instructor maintains compatibility with Cerebras's latest API versions. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
-
-Note: Some features like partial streaming may not be available due to API limitations. Always check the latest documentation for feature availability.
+In general, we recommend using `Mode.CEREBRAS_TOOLS` because it's the most flexible and future-proof mode. It has the largest set of features that you can specify your schema in and makes things significantly easier to work with.
