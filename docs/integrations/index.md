@@ -7,15 +7,18 @@ Welcome to the Instructor integrations guide. This section provides detailed inf
 Instructor supports a wide range of AI model providers, each with their own capabilities and features:
 
 ### OpenAI-Compatible Models
+
 - [OpenAI](./openai.md) - GPT-3.5, GPT-4, and other OpenAI models
 - [Azure OpenAI](./azure.md) - Microsoft's Azure-hosted OpenAI models
 
 ### Open Source & Self-Hosted Models
+
 - [Ollama](./ollama.md) - Run open-source models locally
 - [llama-cpp-python](./llama-cpp-python.md) - Python bindings for llama.cpp
 - [Together AI](./together.md) - Host and run open source models
 
 ### Cloud AI Providers
+
 - [Anthropic](./anthropic.md) - Claude and Claude 2 models
 - [Google](./google.md) - PaLM and Gemini models
 - [Vertex AI](./vertex.md) - Google Cloud's AI platform
@@ -26,44 +29,8 @@ Instructor supports a wide range of AI model providers, each with their own capa
 - [Cerebras](./cerebras.md) - AI accelerator platform
 
 ### Model Management
+
 - [LiteLLM](./litellm.md) - Unified interface for multiple providers
-
-## Features Support Matrix
-
-Not all providers support all features. Here's a quick overview:
-
-| Provider | Streaming | Function Calling | Vision | RAG Support |
-|----------|-----------|------------------|---------|-------------|
-| OpenAI | ✅ | ✅ | ✅ | ✅ |
-| Anthropic | ✅ | ✅ | ✅ | ✅ |
-| Google | ✅ | ✅ | ✅ | ✅ |
-| Vertex AI | ✅ | ✅ | ✅ | ✅ |
-| Cohere | ❌ | ✅ | ❌ | ✅ |
-| Ollama | ✅ | ✅ | ✅ | ✅ |
-| llama-cpp | ✅ | ✅ | ❌ | ✅ |
-| Together | ✅ | ✅ | ❌ | ✅ |
-| Groq | ✅ | ✅ | ❌ | ✅ |
-| Mistral | ✅ | ✅ | ❌ | ✅ |
-| Fireworks | ⚠️ | ✅ | ❌ | ✅ |
-| Cerebras | ❌ | ✅ | ❌ | ✅ |
-| LiteLLM | ⚠️ | ✅ | ⚠️ | ✅ |
-
-Legend:
-- ✅ Full support
-- ⚠️ Limited support (provider/model dependent)
-- ❌ Not supported
-
-## Getting Started
-
-To get started with any provider:
-
-1. Install the required dependencies
-2. Set up your API credentials
-3. Initialize the client with Instructor
-4. Define your Pydantic models
-5. Make API calls with structured outputs
-
-For detailed instructions, click on any provider in the list above.
 
 ## Common Concepts
 
