@@ -363,6 +363,8 @@ plugins:
       post_date_format: yyyy/MM/dd
       post_url_format: "{date}/{slug}"
       authors_file: "{blog}/.authors.yml"
+hooks:
+  - docs/hooks/hide_lines.py
 extra:
   analytics:
     provider: google
@@ -386,5 +388,3 @@ extra:
       link: https://twitter.com/jxnlco
     - icon: fontawesome/brands/github
       link: https://github.com/jxnl
-  hooks:
-    - docs/hooks/hide_lines.py
