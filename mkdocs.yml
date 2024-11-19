@@ -340,7 +340,6 @@ plugins:
          'hub/clients/together.md': 'integrations/together.md'
          'hub/clients/vertex.md': 'integrations/vertex.md'
          'hub/clients/vertexai.md': 'integrations/vertex.md'
-  - hide_lines
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
@@ -387,3 +386,5 @@ extra:
       link: https://twitter.com/jxnlco
     - icon: fontawesome/brands/github
       link: https://github.com/jxnl
+  hooks:
+    - docs/hooks/hide_lines.py
