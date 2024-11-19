@@ -49,7 +49,7 @@ client = instructor.from_gemini(
 
 This method allows us to get structured output from Gemini via tool calling with the Vertex AI SDK.
 
-**Note:** Gemini Tool Calling is in preview and there are some limitations, you can learn more in the [Vertex AI examples notebook](../hub/vertexai.md).
+**Note:** Gemini Tool Calling is in preview and there are some limitations, you can learn more in the [Vertex AI examples notebook](../integrations/vertex.md).
 
 ```python
 import instructor

@@ -1,16 +1,16 @@
 site_name: Instructor
 site_author: Jason Liu
-site_description: A lightweight library for structured outputs with LLMs. 
+site_description: A lightweight library for structured outputs with LLMs.
 repo_name: instructor
 repo_url: https://github.com/jxnl/instructor/
-site_url: https://python.useinstructor.com/ 
+site_url: https://python.useinstructor.com/
 edit_uri: edit/main/docs/
-copyright: Copyright &copy; 2024 Jason Liu 
+copyright: Copyright &copy; 2024 Jason Liu
 theme:
   name: material
   icon:
     repo: fontawesome/brands/github
-    edit: material/pencil 
+    edit: material/pencil
     view: material/eye
     theme:
     admonition:
@@ -55,7 +55,7 @@ theme:
     # - toc.integrate
   palette:
       - scheme: default
-        primary: black 
+        primary: black
         accent: indigo
         toggle:
           icon: material/brightness-7
@@ -99,7 +99,7 @@ markdown_extensions:
   - pymdownx.magiclink:
       normalize_issue_symbols: true
       repo_url_shorthand: true
-      user: jxnl 
+      user: jxnl
       repo: instructor
   - pymdownx.mark
   - pymdownx.smartsymbols
@@ -118,7 +118,7 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.arithmatex:
       generic: true
-      
+
 extra_javascript:
   - javascripts/katex.js
   - https://unpkg.com/katex@0/dist/katex.min.js
@@ -127,7 +127,7 @@ extra_javascript:
 extra_css:
   - https://unpkg.com/katex@0/dist/katex.min.css
 nav:
-  - Introduction: 
+  - Introduction:
     - Structured Outputs for LLMs: 'index.md'
     - Why use Instructor?: 'why.md'
     - Help with Instructor: 'help.md'
@@ -135,8 +135,10 @@ nav:
     - Installation: 'installation.md'
     - Contributing: 'contributing.md'
     - Philosophy: 'concepts/philosophy.md'
+    - API Reference: 'api.md'
   - Cookbook:
     - Cookbooks: 'examples/index.md'
+    - "Recursive Schema Examples": 'examples/recursive.md'
     - "Enhancing Text Classification": 'examples/classification.md'
     - "Local Classification with Llama-cpp": 'examples/local_classification.md'
     - "Structured Outputs with Ollama": 'examples/ollama.md'
@@ -160,10 +162,15 @@ nav:
     - "Intelligent Document Segmentation": 'examples/document_segmentation.md'
     - "Structured Output with watsonx.ai": 'examples/watsonx.md'
     - "OpenAI Batch Jobs with Instructor": 'examples/batch_job_oai.md'
+    - "Structured Outputs with Groq": 'examples/groq.md'
+    - "Structured Outputs with Mistral": 'examples/mistral.md'
   - Blog:
     - "blog/index.md"
   - Concepts:
+    - Overview: 'concepts/index.md'
     - Models: 'concepts/models.md'
+    - Lists and Arrays: 'concepts/lists.md'
+    - Prompting: 'concepts/prompting.md'
     - Multimodal : 'concepts/multimodal.md'
     - Retrying: 'concepts/retrying.md'
     - Patching: 'concepts/patching.md'
@@ -175,7 +182,7 @@ nav:
     - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
     - Parallel Tools: 'concepts/parallel.md'
-    - Stream Iterable: "concepts/lists.md"
+    - Stream Iterable: "concepts/iterable.md"
     - Stream Partial: "concepts/partial.md"
     - Raw Response: 'concepts/raw_response.md'
     - FastAPI: 'concepts/fastapi.md'
@@ -184,42 +191,54 @@ nav:
     - Logging: 'concepts/logging.md'
     - Distillation: "concepts/distillation.md"
     - Union: 'concepts/union.md'
+    - Unions: 'concepts/unions.md'
+    - Validation: 'concepts/validation.md'
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
     - Templating: 'concepts/templating.md'
   - Hub:
     - Introduction to Instructor Hub: 'hub/index.md'
-    - Structured Outputs with Vertex AI: 'hub/vertexai.md'
-    - Structured Outputs with Ollama: 'hub/ollama.md'
-    - Structured Outputs with llama-cpp-python: 'hub/llama-cpp-python.md'
-    - Structured Outputs with Together: 'hub/together.md'
-    - Structured Outputs with Anyscale: 'hub/anyscale.md'
-    - Structured Outputs with Groq: 'hub/groq.md'
-    - Structured Outputs with Mistral: 'hub/mistral.md'
-    - Structured Outputs with Cohere: 'hub/cohere.md'
-    - Classification with Structured Outputs: 'hub/single_classification.md'
-    - Bulk Classification with Structured Outputs: 'hub/multiple_classification.md'
-    - Extracting Tables with Structured Outputs: 'hub/tables_from_vision.md'
-    - Creating Pandas DataFrames with Structured Outputs: 'hub/pandas_df.md'
+    - Classification: 'hub/single_classification.md'
+    - Bulk Classification: 'hub/multiple_classification.md'
+    - Extracting Tables: 'hub/tables_from_vision.md'
+    - Creating Pandas DataFrames: 'hub/pandas_df.md'
     - Bulk Async Classification with LangSmith: 'hub/batch_classification_langsmith.md'
-    - Extracting Action Items with Structured Outputs: 'hub/action_items.md'
+    - Extracting Action Items: 'hub/action_items.md'
     - Implementing Partial Streaming Responses: 'hub/partial_streaming.md'
-    - Extracting Contact Information with Structured Outputs: 'hub/extract_contact_info.md'
-    - Generating Knowledge Graphs with Structured Outputs: 'hub/knowledge_graph.md'
+    - Extracting Contact Information: 'hub/extract_contact_info.md'
+    - Generating Knowledge Graphs: 'hub/knowledge_graph.md'
     - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
-    - Building Knowledge Graphs with Structured Outputs: 'tutorials/5-knowledge-graphs.ipynb'
+  - Integrations:
+    - Overview: 'integrations/index.md'
+    - Anthropic: 'integrations/anthropic.md'
+    - Azure OpenAI: 'integrations/azure.md'
+    - Cerebras: 'integrations/cerebras.md'
+    - Cohere: 'integrations/cohere.md'
+    - Fireworks: 'integrations/fireworks.md'
+    - Gemini: 'integrations/google.md'
+    - Groq: 'integrations/groq.md'
+    - LiteLLM: 'integrations/litellm.md'
+    - llama-cpp-python: 'integrations/llama-cpp-python.md'
+    - Mistral: 'integrations/mistral.md'
+    - Ollama: 'integrations/ollama.md'
+    - OpenAI: 'integrations/openai.md'
+    - Together: 'integrations/together.md'
+    - Vertex AI: 'integrations/vertex.md'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
       - "Usage Tracking": "cli/usage.md"
       - "Batch Jobs": "cli/batch.md"
   - Tutorials:
+    - Overview: 'tutorials/index.md'
     - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
     - Tips and Tricks: 'tutorials/2-tips.ipynb'
     - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
     - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
     - Validation: 'tutorials/4-validation.ipynb'
+    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
+    - Chain of Density: 'tutorials/6-chain-of-density.ipynb'
     - Synthetic Data Generation: 'tutorials/7-synthetic-data-generation.ipynb'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
@@ -231,7 +250,7 @@ nav:
       - Define A Style: 'prompting/zero_shot/style_prompting.md'
       - Auto-Refine The Prompt: 'prompting/zero_shot/s2a.md'
       - Simulate A Perspective: 'prompting/zero_shot/simtom.md'
-      - Clarify Ambiguous Information: 'prompting/zero_shot/rar.md' 
+      - Clarify Ambiguous Information: 'prompting/zero_shot/rar.md'
       - Ask Model To Repeat Query: 'prompting/zero_shot/re2.md'
       - Generate Follow-Up Questions: 'prompting/zero_shot/self_ask.md'
     - Few-Shot:
@@ -241,6 +260,7 @@ nav:
       - Exemplar Selection:
         - Select Effective Examples: 'prompting/few_shot/exemplar_selection/knn.md'
         - Vote-K: 'prompting/few_shot/exemplar_selection/vote_k.md'
+        - Consistent Based Examples: 'prompting/few_shot/cosp.md'
     - Thought Generation:
       - Chain-Of-Thought (Zero-Shot):
         - Generate Examples First: 'prompting/thought_generation/chain_of_thought_zero_shot/analogical_prompting.md'
@@ -286,12 +306,44 @@ plugins:
   - redirects:
       redirect_maps:
          jobs.md: https://jobs.applied-llms.org/
+         # LLM client redirects
+         hub/ollama.md: integrations/ollama.md
+         hub/llama-cpp-python.md: integrations/llama-cpp-python.md
+         hub/anthropic.md: integrations/anthropic.md
+         hub/azure.md: integrations/azure.md
+         hub/cerebras.md: integrations/cerebras.md
+         hub/cohere.md: integrations/cohere.md
+         hub/fireworks.md: integrations/fireworks.md
+         hub/google.md: integrations/google.md
+         hub/groq.md: integrations/groq.md
+         hub/litellm.md: integrations/litellm.md
+         hub/mistral.md: integrations/mistral.md
+         hub/openai.md: integrations/openai.md
+         hub/together.md: integrations/together.md
+         hub/vertex.md: integrations/vertex.md
+         hub/vertexai.md: integrations/vertex.md  # Handle old vertexai.md references
+         # Legacy hub/clients/ redirects
+         'hub/clients/google.md': 'integrations/google.md'
+         'hub/clients/litellm.md': 'integrations/litellm.md'
+         'hub/clients/ollama.md': 'integrations/ollama.md'
+         'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
+         'hub/clients/anthropic.md': 'integrations/anthropic.md'
+         'hub/clients/azure.md': 'integrations/azure.md'
+         'hub/clients/cerebras.md': 'integrations/cerebras.md'
+         'hub/clients/cohere.md': 'integrations/cohere.md'
+         'hub/clients/fireworks.md': 'integrations/fireworks.md'
+         'hub/clients/groq.md': 'integrations/groq.md'
+         'hub/clients/mistral.md': 'integrations/mistral.md'
+         'hub/clients/openai.md': 'integrations/openai.md'
+         'hub/clients/together.md': 'integrations/together.md'
+         'hub/clients/vertex.md': 'integrations/vertex.md'
+         'hub/clients/vertexai.md': 'integrations/vertex.md'
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
   - social
   - search:
-      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\b)(?=[A-Z][a-z])'
   - minify:
       minify_html: true
   - mkdocstrings:
@@ -326,7 +378,7 @@ extra:
         - icon: material/emoticon-sad-outline
           name: This page could be improved
           data: 0
-          note: >- 
+          note: >-
             Thanks for your feedback! Help us improve this page by
             using our <a href="https://forms.gle/ijr9Zrcg2QWgKoWs7" target="_blank" rel="noopener">feedback form</a>.
   social:

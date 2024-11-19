@@ -42,7 +42,7 @@ import instructor
 client = instructor.from_openai(openai.OpenAI())
 ```
 
-Except now, any default arguments you want to place into the `create` call will be passed to the client. via kwargs. 
+Except now, any default arguments you want to place into the `create` call will be passed to the client. via kwargs.
 
 IF you know you want to pass in tempurature, seed, or model, you can do so.
 
@@ -52,15 +52,15 @@ import openai
 import instructor
 
 client = instructor.from_openai(
-    openai.OpenAI(), 
-    model="gpt-4-turbo-preview", 
+    openai.OpenAI(),
+    model="gpt-4-turbo-preview",
     temperature=0.2
 )
 ```
 
-Now, whenever you call `client.chat.completions.create` the `model` and `temperature` will be passed to the openai client! 
+Now, whenever you call `client.chat.completions.create` the `model` and `temperature` will be passed to the openai client!
 
-## No new Standards 
+## No new Standards
 
 When I first started working on this project, my goal was to ensure that we weren't introducing any new standards. Instead, our focus was on maintaining compatibility with existing ones. By creating our own client, we can seamlessly proxy OpenAI's `chat.completions.create` and Anthropic's `messages.create` methods. This approach allows us to provide a smooth upgrade path for your client, enabling support for all the latest models and features as they become available. Additionally, this strategy safeguards us against potential downstream changes.
 
@@ -69,6 +69,9 @@ import openai
 import anthropic
 import litellm
 import instructor
+from typing import TypeVar
+
+T = TypeVar("T")
 
 # These are all ways to create a client
 client = instructor.from_openai(openai.OpenAI())
@@ -76,10 +79,10 @@ client = instructor.from_anthropic(anthropic.Anthropic())
 client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
-# allow you to add instructor to try it out, while easily removing it 
-client.create(..., response_model=Type[T]) -> T
-client.chat.completions.create(..., response_model=Type[T]) -> T
-client.messages.create(..., response_model=Type[T]) -> T
+# allow you to add instructor to try it out, while easily removing it
+client.create(model="gpt-4", response_model=type[T]) -> T
+client.chat.completions.create(model="gpt-4", response_model=type[T]) -> T
+client.messages.create(model="gpt-4", response_model=type[T]) -> T
 ```
 
 ## Type are infered correctly
@@ -114,7 +117,7 @@ Now if you use a ID, you can see the type is correctly infered.
 
 ### Handling async: `await create`
 
-This will also work correctly with asynchronous clients. 
+This will also work correctly with asynchronous clients.
 
 ```python
 import openai
@@ -253,7 +256,7 @@ Instructor has always supported validation and error handling. But now, we've ad
 
 If you want to learn more check out the docs on [retrying](../../concepts/retrying.md) and [reasking](../../concepts/reask_validation.md)
 
-## Support in multiple languages 
+## Support in multiple languages
 
 While each flavor is different the core philosophy is the same. Keeping it as close as possible to the common api allows us to support all the same features in all the same languages by hooking into each libraries's popular validation libraries.
 

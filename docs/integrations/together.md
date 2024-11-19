@@ -9,7 +9,7 @@ authors:
   - jxnl
 ---
 
-# Structured Outputs with Together AI
+# Structured outputs with Together AI, a complete guide w/ instructor
 
 If you want to try this example using `instructor hub`, you can pull it by running
 

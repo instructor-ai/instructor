@@ -64,7 +64,7 @@ Next, we'll create a function that uses our LLM to judge the relevance between a
 ```python
 def judge_relevance(question: str, text: str) -> Judgment:
     return client.chat.create(
-        model="gpt-4o-mini",
+        model="gpt-4",
         messages=[
             {
                 "role": "system",
@@ -102,8 +102,7 @@ def judge_relevance(question: str, text: str) -> Judgment:
                     {{text}}
                     </text>
                 """
-            },
-            },
+            }
         ],
         response_model=Judgment,
         context={"question": question, "text": text},
@@ -134,7 +133,7 @@ if __name__ == "__main__":
             score += 1
 
     print(f"Score: {score}/{len(test_pairs)}")
-    # > Score 9/10
+    #> Score 9/10
 ```
 
 This test loop runs the judge on each pair and compares the result to a predetermined similarity value, calculating an overall score.

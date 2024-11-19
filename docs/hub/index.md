@@ -1,6 +1,6 @@
 ---
-title: Instructor Hub: Tutorials and Examples for Getting Started with Instructor
-description: Explore the Instructor Hub for tutorials, CLI usage, and examples to enhance your coding experience with the instructor API.
+title: Instructor Hub
+description: Tutorials and Examples for using Structured Outputs with Instructor
 ---
 
 # Instructor Hub
