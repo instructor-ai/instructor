@@ -2,8 +2,9 @@ import pytest
 from pytest_examples import find_examples, CodeExample, EvalExample
 
 
-@pytest.mark.parametrize("example", find_examples("docs/hub"), ids=str)
+@pytest.mark.skip(reason="Hub functionality is being removed")
 def test_format_blog(example: CodeExample, eval_example: EvalExample):
+    """This test is being skipped as the hub functionality is being removed."""
     excluded_sources = [
         "mistral",
         "ollama",

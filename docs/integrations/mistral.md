@@ -10,11 +10,7 @@ authors:
 
 # Structured outputs with Mistral, a complete guide w/ instructor
 
-If you want to try this example using `instructor hub`, you can pull it by running
-
-```bash
-instructor hub pull --slug mistral --py > mistral_example.py
-```
+This guide demonstrates how to use Mistral with Instructor to generate structured outputs. You'll learn how to use function calling with Mistral Large to create type-safe responses.
 
 Mistral Large is the flagship model from Mistral AI, supporting 32k context windows and functional calling abilities. Mistral Large's addition of [function calling](https://docs.mistral.ai/guides/function-calling/) makes it possible to obtain structured outputs using JSON schema.
 

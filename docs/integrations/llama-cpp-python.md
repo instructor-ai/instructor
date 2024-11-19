@@ -10,11 +10,7 @@ authors:
 
 # Structured outputs with llama-cpp-python, a complete guide w/ instructor
 
-If you want to try this example using `instructor hub`, you can pull it by running
-
-```bash
-instructor hub pull --slug llama-cpp-python --py > llama_cpp_python_example.py
-```
+This guide demonstrates how to use llama-cpp-python with Instructor to generate structured outputs. You'll learn how to use JSON schema mode and speculative decoding to create type-safe responses from local LLMs.
 
 Open-source LLMS are gaining popularity, and llama-cpp-python has made the `llama-cpp` model available to obtain structured outputs using JSON schema via a mixture of [constrained sampling](https://llama-cpp-python.readthedocs.io/en/latest/#json-schema-mode) and [speculative decoding](https://llama-cpp-python.readthedocs.io/en/latest/#speculative-decoding).
 

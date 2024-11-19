@@ -5,11 +5,7 @@ description: Learn how to leverage Cohere's command models with Python's instruc
 
 # Structured outputs with Cohere, a complete guide w/ instructor
 
-If you want to try this example using `instructor hub`, you can pull it by running
-
-```bash
-instructor hub pull --slug cohere --py > cohere_example.py
-```
+This guide demonstrates how to use Cohere with Instructor to generate structured outputs. You'll learn how to use Cohere's command models to create type-safe responses.
 
 You can now use any of the Cohere's [command models](https://docs.cohere.com/docs/models) with the `instructor` library to get structured outputs.
 

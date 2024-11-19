@@ -11,11 +11,7 @@ authors:
 
 # Structured outputs with Ollama, a complete guide w/ instructor
 
-If you want to try this example using `instructor hub`, you can pull it by running
-
-```bash
-instructor hub pull --slug ollama --py > ollama_example.py
-```
+This guide demonstrates how to use Ollama with Instructor to generate structured outputs. You'll learn how to use JSON schema mode with local LLMs to create type-safe responses.
 
 Open-source LLMS are gaining popularity, and the release of Ollama's OpenAI compatibility later it has made it possible to obtain structured outputs using JSON schema.
 

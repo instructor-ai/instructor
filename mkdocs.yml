@@ -326,6 +326,13 @@ plugins:
          'hub/clients/together.md': 'integrations/together.md'
          'hub/clients/vertex.md': 'integrations/vertex.md'
          'hub/clients/vertexai.md': 'integrations/vertex.md'
+         # Additional hub redirects for broken links
+         'hub/pandas_df.md': 'examples/index.md'
+         'hub/partial_streaming.md': 'examples/index.md'
+         'hub/index.md': 'examples/index.md'
+         'hub/action_items.md': 'examples/index.md'
+         'hub/single_classification.md': 'examples/classification.md'
+         'hub/multiple_classification.md': 'examples/classification.md'
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false

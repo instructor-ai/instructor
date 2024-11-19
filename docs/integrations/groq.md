@@ -5,11 +5,7 @@ description: Learn how to use Groq AI for structured outputs with Pydantic in Py
 
 # Structured Outputs with Groq AI
 
-If you want to try this example using `instructor hub`, you can pull it by running
-
-```bash
-instructor hub pull --slug groq --py > groq_example.py
-```
+This guide demonstrates how to use Groq AI with Instructor to generate structured outputs. You'll learn how to use Groq's LLM models to create type-safe responses.
 
 you'll need to sign up for an account and get an API key. You can do that [here](https://console.groq.com/docs/quickstart).
 

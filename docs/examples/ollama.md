@@ -21,7 +21,7 @@ Instructor offers several key benefits:
 
 - :material-code-braces: **Powered by Type Hints**: Leverage Pydantic for schema validation, prompting control, less code, and IDE integration. [:octicons-arrow-right-16: Learn more](https://docs.pydantic.dev/)
 
-- :material-lightning-bolt: **Simplified LLM Interactions**: Support for various LLM providers including OpenAI, Anthropic, Google, Vertex AI, Mistral/Mixtral, Anyscale, Ollama, llama-cpp-python, Cohere, and LiteLLM. [:octicons-arrow-right-16: See Hub](../hub/index.md)
+- :material-lightning-bolt: **Simplified LLM Interactions**: Support for various LLM providers including OpenAI, Anthropic, Google, Vertex AI, Mistral/Mixtral, Anyscale, Ollama, llama-cpp-python, Cohere, and LiteLLM. [:octicons-arrow-right-16: See Examples](../examples/index.md)
 
 For more details on these features, check out the [Concepts](../concepts/models.md) section of the documentation.
 
@@ -107,7 +107,7 @@ To explore more about Instructor and its various applications, consider checking
 
 2. [Concepts](../concepts/models.md) - Dive deeper into the core concepts of Instructor, including models, retrying, and validation.
 
-3. [Hub](../hub/index.md) - Explore the Instructor Hub for more examples and integrations with various LLM providers.
+3. [Examples](../examples/index.md) - Explore our comprehensive collection of examples and integrations with various LLM providers.
 
 4. [Tutorials](../tutorials/1-introduction.ipynb) - Step-by-step tutorials to help you get started with Instructor.
 
