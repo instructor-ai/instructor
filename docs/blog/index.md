@@ -49,7 +49,6 @@ If you want to get updates on new features and tips on how to use Instructor, yo
 
 - [Ollama Integration](../integrations/ollama.md)
 - [llama-cpp-python Integration](../integrations/llama-cpp-python.md)
-- [Anyscale Integration](../integrations/anyscale.md)
 - [Together Compute Integration](../integrations/together.md)
 - [Extracting Data into Pandas DataFrame using GPT-3.5 Turbo](../hub/pandas_df.md)
 - [Implementing Streaming Partial Responses with Field-Level Streaming](../hub/partial_streaming.md)

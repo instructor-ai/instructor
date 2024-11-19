@@ -20,7 +20,6 @@ Instructor supports a wide range of AI model providers, each with their own capa
 - [Google](./google.md) - PaLM and Gemini models
 - [Vertex AI](./vertex.md) - Google Cloud's AI platform
 - [Cohere](./cohere.md) - Command and other Cohere models
-- [Anyscale](./anyscale.md) - Hosted open source models
 - [Groq](./groq.md) - High-performance inference platform
 - [Mistral](./mistral.md) - Mistral's hosted models
 - [Fireworks](./fireworks.md) - High-performance model inference
@@ -43,7 +42,6 @@ Not all providers support all features. Here's a quick overview:
 | Ollama | ✅ | ✅ | ✅ | ✅ |
 | llama-cpp | ✅ | ✅ | ❌ | ✅ |
 | Together | ✅ | ✅ | ❌ | ✅ |
-| Anyscale | ✅ | ✅ | ❌ | ✅ |
 | Groq | ✅ | ✅ | ❌ | ✅ |
 | Mistral | ✅ | ✅ | ❌ | ✅ |
 | Fireworks | ⚠️ | ✅ | ❌ | ✅ |

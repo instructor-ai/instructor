@@ -309,7 +309,6 @@ plugins:
          # LLM client redirects
          hub/ollama.md: integrations/ollama.md
          hub/llama-cpp-python.md: integrations/llama-cpp-python.md
-         hub/anyscale.md: integrations/anyscale.md
          hub/anthropic.md: integrations/anthropic.md
          hub/azure.md: integrations/azure.md
          hub/cerebras.md: integrations/cerebras.md

@@ -136,49 +136,6 @@ print(user)
 
 ## Alternative Providers
 
-### Anyscale
-
-Anyscale's Mistral model, as detailed in our [Anyscale documentation](../../integrations/anyscale.md) and on [Anyscale's official documentation](https://docs.anyscale.com/), introduces the ability to obtain structured outputs using JSON schema.
-
-```bash
-export ANYSCALE_API_KEY="your-api-key"
-```
-
-```python
-import os
-from openai import OpenAI
-from pydantic import BaseModel
-import instructor
-
-
-class UserDetails(BaseModel):
-    name: str
-    age: int
-
-
-# enables `response_model` in create call
-client = instructor.from_openai(
-    OpenAI(
-        base_url="https://api.endpoints.anyscale.com/v1",
-        api_key=os.environ["ANYSCALE_API_KEY"],
-    ),
-    # This uses Anyscale's json schema output mode
-    mode=instructor.Mode.JSON_SCHEMA,
-)
-
-resp = client.chat.completions.create(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-    messages=[
-        {"role": "system", "content": "You are a world class extractor"},
-        {"role": "user", "content": 'Extract the following entities: "Jason is 20"'},
-    ],
-    response_model=UserDetails,
-)
-
-print(resp)
-#> name='Jason' age=20
-```
-
 ### Groq
 
 Groq's platform, detailed further in our [Groq documentation](../../integrations/groq.md) and on [Groq's official documentation](https://groq.com/), offers a unique approach to processing with its tensor architecture. This innovation significantly enhances the performance of structured output processing.
