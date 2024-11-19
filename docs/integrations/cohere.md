@@ -16,10 +16,14 @@ You can now use any of the Cohere's [command models](https://docs.cohere.com/doc
 You'll need a cohere API key which can be obtained by signing up [here](https://dashboard.cohere.com/) and gives you [free](https://cohere.com/pricing), rate-limited usage for learning and prototyping.
 
 ## Setup
+
 ```
-pip install cohere
+pip install "instructor[cohere]"
+
 ```
+
 Export your key:
+
 ```
 export CO_API_KEY=<YOUR_COHERE_API_KEY>
 ```
