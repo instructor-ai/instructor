@@ -9,20 +9,22 @@ OpenAI is the primary integration for Instructor, offering robust support for st
 
 ## Quick Start
 
-Install Instructor with OpenAI support:
+Instructor comes with support for OpenAI out of the box, so you don't need to install anything extra.
 
 ```bash
-pip install "instructor[openai]"
+pip install "instructor"
 ```
 
 ⚠️ **Important**: You must set your OpenAI API key before using the client. You can do this in two ways:
 
 1. Set the environment variable:
+
 ```bash
 export OPENAI_API_KEY='your-api-key-here'
 ```
 
 2. Or provide it directly to the client:
+
 ```python
 import os
 from openai import OpenAI
@@ -49,14 +51,15 @@ class User(BaseModel):
 
 # Create structured output
 user = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
+    model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
     response_model=User,
 )
 
-print(user)  # User(name='Jason', age=25)
+print(user)
+#> User(name='Jason', age=25)
 ```
 
 ## Simple User Example (Async)
@@ -90,7 +93,8 @@ async def extract_user():
 
 # Run async function
 user = asyncio.run(extract_user())
-print(user)  # User(name='Jason', age=25)
+print(user)
+#> User(name='Jason', age=25)
 ```
 
 ## Nested Example
@@ -98,6 +102,10 @@ print(user)  # User(name='Jason', age=25)
 ```python
 from pydantic import BaseModel
 from typing import List
+import os
+from openai import OpenAI
+import instructor
+from pydantic import BaseModel
 
 class Address(BaseModel):
     street: str
@@ -109,9 +117,14 @@ class User(BaseModel):
     age: int
     addresses: List[Address]
 
+# Initialize with API key
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Enable instructor patches for OpenAI client
+client = instructor.from_openai(client)
 # Create structured output with nested objects
 user = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
+    model="gpt-4p-mini",
     messages=[
         {"role": "user", "content": """
             Extract: Jason is 25 years old.
@@ -122,47 +135,57 @@ user = client.chat.completions.create(
     response_model=User,
 )
 
-print(user)  # User with nested Address objects
+print(user)
+#> User with nested Address objects
 ```
 
 ## Streaming Support
 
-OpenAI provides comprehensive streaming support through multiple methods:
+Instructor has two main ways that you can use to stream responses out
 
-### Prerequisites
-- Valid OpenAI API key must be set
-- Appropriate model access (GPT-4, GPT-3.5-turbo)
+1. **Iterables**: These are useful when you'd like to stream a list of objects of the same type (Eg. use structured outputs to extract multiple users)
+2. **Partial Streaming**: This is useful when you'd like to stream a single object and you'd like to immediately start processing the response as it comes in.
 
-### Available Streaming Methods
+### Partials
 
-1. **Full Streaming**: ✅ Available through standard streaming mode
-2. **Partial Streaming**: ✅ Supports field-by-field streaming
-3. **Iterable Streaming**: ✅ Enables streaming of multiple objects
-4. **Async Streaming**: ✅ Full async/await support
-
-### Partial Streaming Example
+You can use our `create_partial` method to stream a single object. Note that validators should not be declared in the response model when streaming objects because it will break the streaming process.
 
 ```python
+from instructor import from_openai
+import openai
+from pydantic import BaseModel
+
+client = from_openai(openai.OpenAI())
+
+
 class User(BaseModel):
     name: str
     age: int
     bio: str
 
+
 # Stream partial objects as they're generated
 for partial_user in client.chat.completions.create_partial(
-    model="gpt-4-turbo-preview",
+    model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": "Create a user profile for Jason, age 25"},
     ],
     response_model=User,
 ):
     print(f"Current state: {partial_user}")
+    # > Current state: name='Jason' age=None bio=None
+    # > Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is'
+    # > Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is always on the lookout for new challenges and opportunities to grow both personally and professionally.'
+
 ```
 
 ### Iterable Example
 
 ```python
-from typing import List
+import os
+from openai import OpenAI
+import instructor
+from pydantic import BaseModel
 
 class User(BaseModel):
     name: str
@@ -170,7 +193,7 @@ class User(BaseModel):
 
 # Extract multiple users from text
 users = client.chat.completions.create_iterable(
-    model="gpt-4-turbo-preview",
+    model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": """
             Extract users:
@@ -182,62 +205,38 @@ users = client.chat.completions.create_iterable(
     response_model=User,
 )
 
-for user in users:
-    print(user)  # Prints each user as it's extracted
+or user in users:
+    print(user)
+    #> name='Jason' age=25
+    #> name='Sarah' age=30
+    #> name='Mike' age=28
 ```
 
-## Instructor Hooks
+## Instructor Modes
 
-Instructor provides several hooks to customize behavior:
+We provide several modes to make it easy to work with the different response models that OpenAI supports
 
-### Validation Hook
+1. `instructor.Mode.TOOLS` : This uses the [tool calling API](https://platform.openai.com/docs/guides/function-calling) to return structured outputs to the client
+2. `instructor.Mode.JSON` : This forces the model to return JSON by using [OpenAI's JSON mode](https://platform.openai.com/docs/guides/structured-outputs#json-mode).
+3. `instructor.Mode.FUNCTIONS` : This uses OpenAI's function calling API to return structured outputs and will be deprecated in the future.
+4. `instructor.Mode.PARALLEL_TOOLS` : This uses the [parallel tool calling API](https://platform.openai.com/docs/guides/function-calling#configuring-parallel-function-calling) to return structured outputs to the client. This allows the model to generate multiple calls in a single response.
+5. `instructor.Mode.MD_JSON` : This makes a simple call to the OpenAI chat completion API and parses the raw response as JSON.
+6. `instructor.Mode.TOOLS_STRICT` : This uses the new Open AI structured outputs API to return structured outputs to the client using constrained grammar sampling. This restricts users to a subset of the JSON schema.
+7. `instructor.Mode.JSON_O1` : This is a mode for the `O1` model. We created a new mode because `O1` doesn't support any system messages, tool calling or streaming so you need to use this mode to use Instructor with `O1`.
 
-```python
-from instructor import Instructor
+# In general, we recommend using `Mode.Tools` because it's the most flexible and future-proof mode. It has the largest set of features that you can specify your schema in and makes things significantly easier to work with.
 
-def validation_hook(value, retry_count, exception):
-    print(f"Validation failed {retry_count} times: {exception}")
-    return retry_count < 3  # Retry up to 3 times
+## Batch API
 
-instructor.patch(client, validation_hook=validation_hook)
-```
+We also support batching requests using the `create_batch` method. This is helpful if your request is not time sensitive because you'll get a 50% discount on the token cost.
 
-### Mode Hooks
-
-```python
-from instructor import Mode
-
-# Use different modes for different scenarios
-client = instructor.patch(client, mode=Mode.JSON)  # JSON mode
-client = instructor.patch(client, mode=Mode.TOOLS)  # Tools mode
-client = instructor.patch(client, mode=Mode.MD_JSON)  # Markdown JSON mode
-```
-
-### Custom Retrying
-
-```python
-from instructor import RetryConfig
-
-client = instructor.patch(
-    client,
-    retry_config=RetryConfig(
-        max_retries=3,
-        on_retry=lambda *args: print("Retrying..."),
-    )
-)
-```
+Read more about how to use it [here](../examples/batch_job_oai.md)
 
 ## Best Practices
 
-1. **Model Selection**
-   - Use GPT-4 for complex structured outputs
-   - GPT-3.5-turbo for simpler schemas
-   - Always specify temperature=0 for consistent outputs
+1. **Model Selection** : We recommend using gpt-4o-mini for simpler use cases because it's cheap and works well with a clearly defined objective for structured outputs. When the task is more ambigious, consider upgrading to `4o` or even `O1` depending on your needs
 
-2. **Performance Optimization**
-   - Use streaming for large responses
-   - Implement caching where appropriate
-   - Batch requests when possible
+2. **Performance Optimization** : Streaming a response model is faster and should be done from the get-go. This is especially true if you're using a simple response model.
 
 ## Common Use Cases
 
