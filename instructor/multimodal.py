@@ -76,7 +76,9 @@ class Image(BaseModel):
         raise ValueError("Unable to determine image type or unsupported image format")
 
     @classmethod
-    def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
+    def autodetect_safely(
+        cls, source: Union[str, Path]
+    ) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
@@ -208,7 +210,9 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: Union[str, Path] = Field(description="URL or file path of the audio")  # noqa: UP007
+    source: Union[str, Path] = Field(
+        description="URL or file path of the audio"
+    )  # noqa: UP007
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded audio data", repr=False
     )
@@ -334,10 +338,14 @@ def convert_messages(
                 raise ValueError(f"Unsupported message type: {message['type']}")
         role = message["role"]
         content = message["content"] or []
-        other_kwargs = {k: v for k, v in message.items() if k not in ["role", "content", "type"]}
+        other_kwargs = {
+            k: v for k, v in message.items() if k not in ["role", "content", "type"]
+        }
         if autodetect_images:
             if isinstance(content, list):
-                new_content: list[Union[str, dict[str, Any], Image, Audio]] = []  # noqa: UP007
+                new_content: list[Union[str, dict[str, Any], Image, Audio]] = (
+                    []
+                )  # noqa: UP007
                 for item in content:
                     if isinstance(item, str):
                         new_content.append(Image.autodetect_safely(item))
