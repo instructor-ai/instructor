@@ -333,7 +333,8 @@ def convert_messages(
             else:
                 raise ValueError(f"Unsupported message type: {message['type']}")
         role = message["role"]
-        content = message["content"]
+        content = message["content"] or []
+        other_kwargs = {k: v for k, v in message.items() if k not in ["role", "content", "type"]}
         if autodetect_images:
             if isinstance(content, list):
                 new_content: list[Union[str, dict[str, Any], Image, Audio]] = []  # noqa: UP007
@@ -356,8 +357,8 @@ def convert_messages(
                     cast(ImageParams, content)
                 )
         if isinstance(content, str):
-            converted_messages.append({"role": role, "content": content})  # type: ignore
+            converted_messages.append({"role": role, "content": content, **other_kwargs})  # type: ignore
         else:
             converted_content = convert_contents(content, mode)
-            converted_messages.append({"role": role, "content": converted_content})  # type: ignore
+            converted_messages.append({"role": role, "content": converted_content, **other_kwargs})  # type: ignore
     return converted_messages  # type: ignore
