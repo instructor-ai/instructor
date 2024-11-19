@@ -1,11 +1,10 @@
 import pytest
-from pytest_examples import find_examples, CodeExample, EvalExample
-
+from pytest_examples import CodeExample, EvalExample
 
 @pytest.mark.skip(reason="Hub functionality is being removed")
-def test_format_blog(example: CodeExample, eval_example: EvalExample):
+def test_format_blog(example: CodeExample, eval_example: EvalExample) -> None:
     """This test is being skipped as the hub functionality is being removed."""
-    excluded_sources = [
+    excluded_sources: list[str] = [
         "mistral",
         "ollama",
         "llama_cpp",

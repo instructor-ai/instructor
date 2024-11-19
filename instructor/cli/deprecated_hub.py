@@ -1,10 +1,8 @@
-from typing import Any
-import typer
-from typer import Typer, Exit, echo
+from typer import Exit, echo, Typer
 
-app: Typer = typer.Typer()
+app: Typer = Typer(help="Instructor Hub CLI (Deprecated)")
 
-@app.command()
+@app.command(name="hub")
 def hub() -> None:
     """
     This command has been deprecated. The instructor hub is no longer available.
