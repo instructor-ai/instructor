@@ -5,7 +5,7 @@ description: "Complete guide to using Instructor with Google's Gemini models. Le
 
 # Structured outputs with Google/Gemini, a complete guide w/ instructor
 
-Instructor supports the VertexAI and the Google.GenerativeAI libraries. This guide will show you how to use Instructor with the Google.GenerativeAI library.
+This guide will show you how to use Instructor with the Google.GenerativeAI library. We recommend this library for most users as it's significantly easier to get started with.
 
 ## Google.GenerativeAI
 

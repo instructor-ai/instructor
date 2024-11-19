@@ -20,54 +20,34 @@ Mistral Large is the flagship model from Mistral AI, supporting 32k context wind
 
 By the end of this blog post, you will learn how to effectively utilize Instructor with Mistral Large.
 
-<!-- more -->
-
-## Patching
-
-Instructor's patch enhances the mistral api with the following features:
-
-- `response_model` in `create` calls that returns a pydantic model
-- `max_retries` in `create` calls that retries the call if it fails by using a backoff strategy
-
-!!! note "Learn More"
-
-    To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page.
-
-## Mistral Client
-
-The Mistral client employs a different client than OpenAI, making the patching process slightly different than other examples
-
-!!! note "Getting access"
-
-    If you want to try this out for yourself check out the [Mistral AI](https://mistral.ai/) website. You can get started [here](https://docs.mistral.ai/).
-
 ```python
-import instructor
-
+import os
 from pydantic import BaseModel
-from mistralai.client import MistralClient
+from mistralai import Mistral
+from instructor import from_mistral, Mode
+
+
+class UserDetails(BaseModel):
+    name: str
+    age: int
+
 
 # enables `response_model` in chat call
-client = MistralClient()
+client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 
-patched_chat = instructor.from_openai(create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS)
+instructor_client = from_mistral(
+    client=client,
+    model="mistral-large-latest",
+    mode=Mode.MISTRAL_TOOLS,
+    max_tokens=1000,
+)
 
-if __name__ == "__main__":
+resp = instructor_client.messages.create(
+    response_model=UserDetails,
+    messages=[{"role": "user", "content": "Jason is 10"}],
+    temperature=0,
+)
 
-    class UserDetails(BaseModel):
-        name: str
-        age: int
+print(resp)
 
-    resp = patched_chat(
-        model="mistral-large-latest",
-        response_model=UserDetails,
-        messages=[
-            {
-                "role": "user",
-                "content": f'Extract the following entities: "Jason is 20"',
-            },
-        ],
-    )
-    print(resp)
-    #> name='Jason' age=20
 ```
