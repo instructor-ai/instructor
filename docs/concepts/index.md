@@ -1,5 +1,5 @@
 ---
-title: Understanding Instructor: Key Concepts for Structured Outputs in AI
+title: Key Concepts of Structured Outputs
 description: Explore essential concepts in Instructor for efficient extraction and validation of structured data from AI models.
 ---
 

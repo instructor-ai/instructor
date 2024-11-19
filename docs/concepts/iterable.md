@@ -1,180 +1,172 @@
-# Working with Iterables in Instructor
+---
+title: Extracting Structured Data with Iterable and Streaming in Python
+description: Learn to use Iterable and streaming for structured data extraction with Pydantic and OpenAI in Python.
+---
 
-This guide explains how to work with iterable outputs in Instructor, allowing you to process lists and sequences of structured data from language models.
+# Multi-task and Streaming
 
-## Basic Iterable Usage
-
-Instructor supports iterating over structured outputs using standard Python list types:
+A common use case of structured extraction is defining a single schema class and then making another schema to create a list to do multiple extraction
 
 ```python
-from pydantic import BaseModel
 from typing import List
-from instructor import patch
-from openai import OpenAI
-
-class Item(BaseModel):
-    name: str
-    quantity: int
-
-class ShoppingList(BaseModel):
-    items: List[Item]
-
-client = patch(OpenAI())
-
-shopping = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=ShoppingList,
-    messages=[{"role": "user", "content": "Create a shopping list: milk, bread, eggs"}]
-)
-
-for item in shopping.items:
-    print(f"Need to buy {item.quantity} {item.name}")
-```
-
-## Streaming Iterables
-
-You can stream iterable responses for real-time processing:
-
-```python
-from instructor import patch
-from openai import OpenAI
-from typing import Iterator
-
-client = patch(OpenAI())
-
-def stream_items() -> Iterator[Item]:
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=Item,
-        stream=True,
-        messages=[{"role": "user", "content": "List grocery items one by one"}]
-    )
-    for item in response:
-        yield item
-
-for item in stream_items():
-    print(f"Received item: {item.name}")
-```
-
-## Nested Iterables
-
-Handle complex nested structures with multiple levels of iteration:
-
-```python
-class Category(BaseModel):
-    name: str
-    items: List[Item]
-
-class Inventory(BaseModel):
-    categories: List[Category]
-
-inventory = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=Inventory,
-    messages=[{"role": "user", "content": "Create a categorized inventory"}]
-)
-
-for category in inventory.categories:
-    print(f"Category: {category.name}")
-    for item in category.items:
-        print(f"  - {item.name}: {item.quantity}")
-```
-
-## Best Practices
-
-1. **Type Hints**: Always use proper type hints (List[T] or list[T])
-2. **Validation**: Add validators for list contents
-3. **Streaming**: Consider streaming for large lists
-4. **Error Handling**: Handle partial results gracefully
-
-## Common Patterns
-
-### List Validation
-```python
-from pydantic import BaseModel, field_validator
-from typing import List
-
-class TeamRoster(BaseModel):
-    members: List[str]
-
-    @field_validator('members')
-    def validate_team_size(cls, v):
-        if len(v) < 2:
-            raise ValueError('Team must have at least 2 members')
-        return v
-```
-
-### Unique Items
-```python
 from pydantic import BaseModel
-from typing import Set
 
-class UniqueItems(BaseModel):
-    tags: Set[str]  # Automatically ensures uniqueness
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+class Users(BaseModel):
+    users: List[User]
+
+
+print(Users.model_json_schema())
+"""
+{
+    '$defs': {
+        'User': {
+            'properties': {
+                'name': {'title': 'Name', 'type': 'string'},
+                'age': {'title': 'Age', 'type': 'integer'},
+            },
+            'required': ['name', 'age'],
+            'title': 'User',
+            'type': 'object',
+        }
+    },
+    'properties': {
+        'users': {'items': {'$ref': '#/$defs/User'}, 'title': 'Users', 'type': 'array'}
+    },
+    'required': ['users'],
+    'title': 'Users',
+    'type': 'object',
+}
+"""
 ```
 
-### Optional Lists
+Defining a task and creating a list of classes is a common enough pattern that we make this convenient by making use of `Iterable[T]`. This lets us dynamically create a new class that:
+
+1. Has dynamic docstrings and class name based on the task
+2. Support streaming by collecting tokens until a task is received back out.
+
+## Extracting Tasks using Iterable
+
+By using `Iterable` you get a very convenient class with prompts and names automatically defined:
+
 ```python
-from typing import Optional, List
-
-class Document(BaseModel):
-    title: str
-    tags: Optional[List[str]] = None
-```
-
-## Integration with Other Features
-
-### Partial Results
-```python
-from instructor import patch
+import instructor
 from openai import OpenAI
+from typing import Iterable
+from pydantic import BaseModel
 
-client = patch(OpenAI())
+client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.JSON)
 
-def stream_partial_list():
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=ShoppingList,
-        stream=True,
-        messages=[{"role": "user", "content": "Create a shopping list"}]
-    )
-    for partial in response:
-        # Access partial results as they arrive
-        if partial.items:
-            print(f"Items so far: {len(partial.items)}")
-```
 
-### Validation Hooks
-```python
-from instructor import patch
-from openai import OpenAI
+class User(BaseModel):
+    name: str
+    age: int
 
-client = patch(OpenAI())
 
-def validate_items(items: List[Item]) -> bool:
-    return all(item.quantity > 0 for item in items)
-
-shopping = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=ShoppingList,
-    validation_hook=validate_items,
-    messages=[{"role": "user", "content": "Create a shopping list"}]
+users = client.chat.completions.create(
+    model="gpt-3.5-turbo-1106",
+    temperature=0.1,
+    response_model=Iterable[User],
+    stream=False,
+    messages=[
+        {
+            "role": "user",
+            "content": "Consider this data: Jason is 10 and John is 30.\
+                         Correctly segment it into entitites\
+                        Make sure the JSON is correct",
+        },
+    ],
 )
+for user in users:
+    print(user)
+    #> name='Jason' age=10
+    #> name='John' age=30
 ```
 
-## Error Handling
+## Streaming Tasks
 
-Handle validation errors for lists:
+We can also generate tasks as the tokens are streamed in by defining an `Iterable[T]` type.
+
+Lets look at an example in action with the same class
+
+```python hl_lines="6 26"
+import instructor
+import openai
+from typing import Iterable
+from pydantic import BaseModel
+
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+users = client.chat.completions.create(
+    model="gpt-4",
+    temperature=0.1,
+    stream=True,
+    response_model=Iterable[User],
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a perfect entity extraction system",
+        },
+        {
+            "role": "user",
+            "content": (f"Extract `Jason is 10 and John is 10`"),
+        },
+    ],
+    max_tokens=1000,
+)
+
+for user in users:
+    print(user)
+    #> name='Jason' age=10
+    #> name='John' age=10
+```
+
+## Asynchronous Streaming
+
+I also just want to call out in this example that `instructor` also supports asynchronous streaming. This is useful when you want to stream a response model and process the results as they come in, but you'll need to use the `async for` syntax to iterate over the results.
 
 ```python
-from pydantic import ValidationError
+import instructor
+import openai
+from typing import Iterable
+from pydantic import BaseModel
 
-try:
-    shopping = ShoppingList(items=[
-        {"name": "milk", "quantity": -1}  # Invalid quantity
-    ])
-except ValidationError as e:
-    print(f"Validation error: {e}")
+client = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+
+async def print_iterable_results():
+    model = await client.chat.completions.create(
+        model="gpt-4",
+        response_model=Iterable[UserExtract],
+        max_retries=2,
+        stream=True,
+        messages=[
+            {"role": "user", "content": "Make two up people"},
+        ],
+    )
+    async for m in model:
+        print(m)
+        #> name='John Doe' age=25
+        #> name='Jane Doe' age=28
+
+
+import asyncio
+
+asyncio.run(print_iterable_results())
 ```
-
-For more information about working with lists and iterables, check out the [Pydantic documentation on containers](https://docs.pydantic.dev/latest/concepts/types/#iterables).
