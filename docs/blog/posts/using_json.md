@@ -21,7 +21,7 @@ tags:
 
 Large Language Models (LLMs) like GPT are incredibly powerful, but getting them to return well-formatted JSON can be challenging. This is where the Instructor library shines. Instructor allows you to easily map LLM outputs to JSON data using Python type annotations and Pydantic models.
 
-Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](../../integrations/together.md), [Anyscale](../../integrations/anyscale.md), [Ollama](../../integrations/ollama.md), and [llama-cpp-python](../../integrations/llama-cpp-python.md).
+Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](../../integrations/together.md), [Ollama](../../integrations/ollama.md), and [llama-cpp-python](../../integrations/llama-cpp-python.md).
 
 It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](../../concepts/reask_validation.md), retries with [Tenacity](../../concepts/retrying.md), and streaming [Lists](../../concepts/lists.md) and [Partial](../../concepts/partial.md) responses.
 

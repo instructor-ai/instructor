@@ -70,7 +70,7 @@ Other features on instructor, in and out of the llibrary are:
 
 One of the key strengths of Instructor is that it's designed as a lightweight patch over the official OpenAI Python SDK. This means it can be easily integrated not just with OpenAI's hosted API service, but with any provider or platform that exposes an interface compatible with the OpenAI SDK.
 
-For example, providers like [Anyscale](../../integrations/anyscale.md), [Together](../../integrations/together.md), [Ollama](../../integrations/ollama.md), [Groq](../../integrations/groq.md), and [llama-cpp-python](../../integrations/llama-cpp-python.md) all either use or mimic the OpenAI Python SDK under the hood. With Instructor's zero-overhead patching approach, teams can immediately start deriving structured data outputs from any of these providers. There's no need for custom integration work.
+For example, providers like [Together](../../integrations/together.md), [Ollama](../../integrations/ollama.md), [Groq](../../integrations/groq.md), and [llama-cpp-python](../../integrations/llama-cpp-python.md) all either use or mimic the OpenAI Python SDK under the hood. With Instructor's zero-overhead patching approach, teams can immediately start deriving structured data outputs from any of these providers. There's no need for custom integration work.
 
 ## Direct access to the messages array
 

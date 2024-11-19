@@ -211,7 +211,6 @@ nav:
     - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
   - Integrations:
     - Overview: 'integrations/index.md'
-    - Anyscale: 'integrations/anyscale.md'
     - Anthropic: 'integrations/anthropic.md'
     - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
@@ -261,6 +260,7 @@ nav:
       - Exemplar Selection:
         - Select Effective Examples: 'prompting/few_shot/exemplar_selection/knn.md'
         - Vote-K: 'prompting/few_shot/exemplar_selection/vote_k.md'
+        - Consistent Based Examples: 'prompting/few_shot/cosp.md'
     - Thought Generation:
       - Chain-Of-Thought (Zero-Shot):
         - Generate Examples First: 'prompting/thought_generation/chain_of_thought_zero_shot/analogical_prompting.md'
@@ -327,7 +327,6 @@ plugins:
          'hub/clients/litellm.md': 'integrations/litellm.md'
          'hub/clients/ollama.md': 'integrations/ollama.md'
          'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
-         'hub/clients/anyscale.md': 'integrations/anyscale.md'
          'hub/clients/anthropic.md': 'integrations/anthropic.md'
          'hub/clients/azure.md': 'integrations/azure.md'
          'hub/clients/cerebras.md': 'integrations/cerebras.md'

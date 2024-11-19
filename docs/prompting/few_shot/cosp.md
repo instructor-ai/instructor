@@ -11,6 +11,7 @@ COSP is a technique that aims to improve few-shot learning by selecting high-qua
 The COSP process involves two main stages:
 
 1. **Example Generation**: Generate multiple responses for potential examples
+
    - Run each example through the model multiple times
    - Collect responses and confidence scores
 
@@ -182,7 +183,7 @@ Now, please respond to: [your query here]
 
 ## Related Techniques
 
-- [Universal Self Prompting (USP)](ensembling/usp.md)
+- [Universal Self Prompting (USP)](../ensembling/usp.md)
 - Chain of Thought Prompting
 - Self-Consistency
 
