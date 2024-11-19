@@ -217,7 +217,7 @@ nav:
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
     - Fireworks: 'integrations/fireworks.md'
-    - Google: 'integrations/google.md'
+    - Gemini: 'integrations/google.md'
     - Groq: 'integrations/groq.md'
     - LiteLLM: 'integrations/litellm.md'
     - llama-cpp-python: 'integrations/llama-cpp-python.md'

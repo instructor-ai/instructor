@@ -12,252 +12,237 @@ Fireworks provides efficient and cost-effective AI models with enterprise-grade 
 Install Instructor with Fireworks support:
 
 ```bash
-pip install "instructor[fireworks]"
+pip install "instructor[fireworks-ai]"
 ```
 
 ## Simple User Example (Sync)
 
 ```python
-from fireworks.client import Client
+from fireworks.client import Fireworks
 import instructor
 from pydantic import BaseModel
 
 # Initialize the client
-client = Client(api_key='your_api_key')
+client = Fireworks()
 
 # Enable instructor patches
 client = instructor.from_fireworks(client)
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 # Create structured output
-user = client.generate(
-    prompt="Extract: Jason is 25 years old",
-    model='accounts/fireworks/models/llama-v2-7b',  # or other available models
+user = client.chat.completions.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract: Jason is 25 years old",
+        }
+    ],
+    model="accounts/fireworks/models/llama-v3-8b-instruct",
     response_model=User,
 )
 
-print(user)  # User(name='Jason', age=25)
+print(user)
+# > User(name='Jason', age=25)
+
 ```
 
 ## Simple User Example (Async)
 
 ```python
-from fireworks.client import AsyncClient
+from fireworks.client import AsyncFireworks
 import instructor
 from pydantic import BaseModel
 import asyncio
 
 # Initialize async client
-client = AsyncClient(api_key='your_api_key')
+client = AsyncFireworks()
 
 # Enable instructor patches
 client = instructor.from_fireworks(client)
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 async def extract_user():
-    user = await client.generate(
-        prompt="Extract: Jason is 25 years old",
-        model='accounts/fireworks/models/llama-v2-7b',
+    user = await client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract: Jason is 25 years old",
+            }
+        ],
+        model="accounts/fireworks/models/llama-v3-8b-instruct",
         response_model=User,
     )
     return user
 
+
 # Run async function
 user = asyncio.run(extract_user())
 print(user)  # User(name='Jason', age=25)
+
 ```
 
 ## Nested Example
 
 ```python
+from fireworks.client import Fireworks
+import instructor
 from pydantic import BaseModel
-from typing import List
+
+
+# Enable instructor patches
+client = instructor.from_fireworks(Fireworks())
+
 
 class Address(BaseModel):
     street: str
     city: str
     country: str
 
+
 class User(BaseModel):
     name: str
     age: int
-    addresses: List[Address]
+    addresses: list[Address]
+
 
 # Create structured output with nested objects
-user = client.generate(
-    prompt="""
-        Extract: Jason is 25 years old.
-        He lives at 123 Main St, New York, USA
-        and has a summer house at 456 Beach Rd, Miami, USA
-    """,
-    model='accounts/fireworks/models/llama-v2-7b',
+user = client.chat.completions.create(
+    messages=[
+        {
+            "role": "user",
+            "content": """
+                Extract: Jason is 25 years old.
+                He lives at 123 Main St, New York, USA
+                and has a summer house at 456 Beach Rd, Miami, USA
+            """,
+        }
+    ],
+    model="accounts/fireworks/models/llama-v3-8b-instruct",
     response_model=User,
 )
 
-print(user)  # User with nested Address objects
+print(user)
+#> {
+#>     'name': 'Jason',
+#>     'age': 25,
+#>     'addresses': [
+#>         {
+#>             'street': '123 Main St',
+#>             'city': 'New York',
+#>             'country': 'USA'
+#>         },
+#>         {
+#>             'street': '456 Beach Rd',
+#>             'city': 'Miami',
+#>             'country': 'USA'
+#>         }
+#>     ]
+#> }
 ```
 
-## Streaming Support and Limitations
+## Streaming Support
 
-Fireworks provides streaming capabilities with some limitations:
+Instructor has two main ways that you can use to stream responses out
 
-- **Full Streaming**: ⚠️ Limited support (model-dependent)
-- **Partial Streaming**: ⚠️ Limited support (may experience inconsistent behavior)
-- **Iterable Streaming**: ✅ Supported
-- **Async Support**: ✅ Supported
+1. **Iterables**: These are useful when you'd like to stream a list of objects of the same type (Eg. use structured outputs to extract multiple users)
+2. **Partial Streaming**: This is useful when you'd like to stream a single object and you'd like to immediately start processing the response as it comes in.
 
 ### Partial Streaming Example
 
 ```python
+from fireworks.client import Fireworks
+import instructor
+from pydantic import BaseModel
+
+
+# Enable instructor patches
+client = instructor.from_fireworks(Fireworks())
+
+
 class User(BaseModel):
     name: str
     age: int
     bio: str
 
-# Stream partial objects as they're generated
-for partial_user in client.stream_generate(
-    prompt="Create a user profile for Jason, age 25",
-    model='accounts/fireworks/models/llama-v2-7b',
+
+user = client.chat.completions.create_partial(
+    model="accounts/fireworks/models/llama-v3-8b-instruct",
+    messages=[
+        {
+            "role": "user",
+            "content": "Create a user profile for Jason + 1 sentence bio, age 25",
+        },
+    ],
     response_model=User,
-):
-    print(f"Current state: {partial_user}")
-    # Fields will populate gradually as they're generated
+)
+
+for user_partial in user:
+    print(user_partial)
+    # name=None age=None bio=None
+    # name='Jason' age=None bio=None
+    # name='Jason' age=25 bio="When he's"
+    # name='Jason' age=25 bio="When he's not working as a graphic designer, Jason can usually be found trying out new craft beers or attempting to cook something other than ramen noodles."
+
 ```
-
-**Important Notes on Streaming:**
-- Full streaming support varies by model and configuration
-- Partial streaming has limited support and may require additional error handling
-- Some models may not support streaming at all
-- Consider implementing fallback mechanisms for streaming scenarios
-- Test streaming capabilities with your specific model before deployment
-- Monitor streaming performance and implement appropriate error handling
-- For production use, implement non-streaming fallbacks
-
-### Model-Specific Streaming Support
-
-1. **Llama-2 Models**
-   - Basic streaming support
-   - May experience chunked responses
-   - Recommended for non-critical streaming use cases
-
-2. **Mistral Models**
-   - Limited streaming support
-   - Better suited for non-streaming operations
-   - Use with appropriate fallback mechanisms
-
-3. **Custom Models**
-   - Streaming capabilities vary
-   - Requires thorough testing
-   - May need model-specific optimizations
 
 ## Iterable Example
 
 ```python
-from typing import List
+from fireworks.client import Fireworks
+import instructor
+from pydantic import BaseModel
+
+
+# Enable instructor patches
+client = instructor.from_fireworks(Fireworks())
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 # Extract multiple users from text
-users = client.generate_iterable(
-    prompt="""
-        Extract users:
-        1. Jason is 25 years old
-        2. Sarah is 30 years old
-        3. Mike is 28 years old
-    """,
-    model='accounts/fireworks/models/llama-v2-7b',
+users = client.chat.completions.create_iterable(
+    model="accounts/fireworks/models/llama-v3-8b-instruct",
+    messages=[
+        {
+            "role": "user",
+            "content": """
+            Extract users:
+            1. Jason is 25 years old
+            2. Sarah is 30 years old
+            3. Mike is 28 years old
+        """,
+        },
+    ],
     response_model=User,
 )
 
 for user in users:
-    print(user)  # Prints each user as it's extracted
+    print(user)
+
+    # name='Jason' age=25
+    # name='Sarah' age=30
+    # name='Mike' age=28
 ```
 
-## Instructor Hooks
+## Instructor Modes
 
-Instructor provides several hooks to customize behavior:
+We provide several modes to make it easy to work with the different response models that Fireworks supports
 
-### Validation Hook
-
-```python
-from instructor import Instructor
-
-
-def validation_hook(value, retry_count, exception):
-    print(f"Validation failed {retry_count} times: {exception}")
-    return retry_count < 3  # Retry up to 3 times
-
-instructor.patch(client, validation_hook=validation_hook)
-```
-
-### Mode Hooks
-
-```python
-from instructor import Mode
-
-# Use different modes for different scenarios
-client = instructor.patch(client, mode=Mode.JSON)  # JSON mode
-client = instructor.patch(client, mode=Mode.TOOLS)  # Tools mode
-client = instructor.patch(client, mode=Mode.MD_JSON)  # Markdown JSON mode
-```
-
-### Custom Retrying
-
-```python
-from instructor import RetryConfig
-
-client = instructor.patch(
-    client,
-    retry_config=RetryConfig(
-        max_retries=3,
-        on_retry=lambda *args: print("Retrying..."),
-    )
-)
-```
-
-## Available Models
-
-Fireworks offers several model options:
-- Llama-2 (various sizes)
-- Mistral (various configurations)
-- Custom fine-tuned models
-- Enterprise deployments
-
-## Best Practices
-
-1. **Model Selection**
-   - Choose models with known streaming support
-   - Consider cost-performance ratio
-   - Monitor usage and costs
-   - Use appropriate context lengths
-
-2. **Optimization Tips**
-   - Implement proper caching
-   - Use non-streaming fallbacks
-   - Monitor token usage
-   - Use appropriate temperature settings
-
-3. **Error Handling**
-   - Implement streaming-specific error handling
-   - Handle rate limits
-   - Monitor model responses
-   - Use appropriate timeout settings
-
-## Common Use Cases
-
-- Enterprise Applications
-- Cost-Effective Processing
-- High-Performance Computing
-- Research Applications
-- Production Deployments
+1. `instructor.Mode.FIREWORKS_JSON` : This parses the raw text completion into a pydantic object
+2. `instructor.Mode.FIREWORKS_TOOLS` : This uses Fireworks's tool calling API to return structured outputs to the client
 
 ## Related Resources
 

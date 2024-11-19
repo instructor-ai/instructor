@@ -5,234 +5,265 @@ description: "Complete guide to using Instructor with Google's Gemini models. Le
 
 # Structured outputs with Google/Gemini, a complete guide w/ instructor
 
+Instructor supports the VertexAI and the Google.GenerativeAI libraries. This guide will show you how to use Instructor with the Google.GenerativeAI library.
+
+## Google.GenerativeAI
+
 Google's Gemini models provide powerful AI capabilities with multimodal support. This guide shows you how to use Instructor with Google's Gemini models for type-safe, validated responses.
 
-## Quick Start
-
-Install Instructor with Google support:
-
 ```bash
-pip install "instructor[google]"
+pip install "instructor[google-generativeai]
 ```
 
 ## Simple User Example (Sync)
 
 ```python
-from google.generativeai import GenerativeModel
 import instructor
+import google.generativeai as genai
 from pydantic import BaseModel
 
-# Initialize the client
-model = GenerativeModel('gemini-pro')
-
-# Enable instructor patches
-client = instructor.from_google(model)
 
 class User(BaseModel):
     name: str
     age: int
 
-# Create structured output
-user = client.generate_content(
-    prompt="Extract: Jason is 25 years old",
+
+client = instructor.from_gemini(
+    client=genai.GenerativeModel(
+        model_name="models/gemini-1.5-flash-latest",
+    ),
+    mode=instructor.Mode.GEMINI_JSON,
+)
+
+# note that client.chat.completions.create will also work
+resp = client.messages.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
     response_model=User,
 )
 
-print(user)  # User(name='Jason', age=25)
+print(resp)
 ```
 
 ## Simple User Example (Async)
 
+!!! info "Async Support"
+
+    Instructor supports async mode for the Google.GenerativeAI library. If you're using the async client, make sure that your client is declared within the same event loop as the function that calls it. If not you'll get a bunch of errors.
+
 ```python
-from google.generativeai import GenerativeModel
 import instructor
+import google.generativeai as genai
 from pydantic import BaseModel
 import asyncio
 
-# Initialize async client
-model = GenerativeModel('gemini-pro')
-
-# Enable instructor patches
-client = instructor.from_google(model)
 
 class User(BaseModel):
     name: str
     age: int
 
+
 async def extract_user():
-    user = await client.generate_content_async(
-        prompt="Extract: Jason is 25 years old",
+    client = instructor.from_gemini(
+        client=genai.GenerativeModel(
+            model_name="models/gemini-1.5-flash-latest",
+        ),
+        use_async=True,
+    )
+
+    user = await client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
         response_model=User,
     )
     return user
 
+
 # Run async function
 user = asyncio.run(extract_user())
 print(user)  # User(name='Jason', age=25)
+
 ```
 
 ## Nested Example
 
 ```python
+import instructor
+import google.generativeai as genai
 from pydantic import BaseModel
-from typing import List
+
 
 class Address(BaseModel):
     street: str
     city: str
     country: str
 
+
 class User(BaseModel):
     name: str
     age: int
-    addresses: List[Address]
+    addresses: list[Address]
 
-# Create structured output with nested objects
-user = client.generate_content(
-    prompt="""
-        Extract: Jason is 25 years old.
-        He lives at 123 Main St, New York, USA
-        and has a summer house at 456 Beach Rd, Miami, USA
-    """,
+
+client = instructor.from_gemini(
+    client=genai.GenerativeModel(
+        model_name="models/gemini-1.5-flash-latest",
+    ),
+)
+
+user = client.chat.completions.create(
+    messages=[
+        {
+            "role": "user",
+            "content": """
+            Extract: Jason is 25 years old.
+            He lives at 123 Main St, New York, USA
+            and has a summer house at 456 Beach Rd, Miami, USA
+        """,
+        },
+    ],
     response_model=User,
 )
 
-print(user)  # User with nested Address objects
+print(user)
+#> {
+#>     'name': 'Jason',
+#>     'age': 25,
+#>     'addresses': [
+#>         {
+#>             'street': '123 Main St',
+#>             'city': 'New York',
+#>             'country': 'USA'
+#>         },
+#>         {
+#>             'street': '456 Beach Rd',
+#>             'city': 'Miami',
+#>             'country': 'USA'
+#>         }
+#>     ]
+#> }
 ```
 
-## Streaming Support and Limitations
+## Streaming Support
 
-Google's Gemini models provide streaming capabilities with some limitations:
+Instructor has two main ways that you can use to stream responses out
 
-- **Full Streaming**: ✅ Supported
-- **Partial Streaming**: ⚠️ Limited support (may experience inconsistent behavior)
-- **Iterable Streaming**: ✅ Supported
-- **Async Support**: ✅ Supported
+1. **Iterables**: These are useful when you'd like to stream a list of objects of the same type (Eg. use structured outputs to extract multiple users)
+2. **Partial Streaming**: This is useful when you'd like to stream a single object and you'd like to immediately start processing the response as it comes in.
 
-### Partial Streaming Example
+### Partials
 
 ```python
+import instructor
+import google.generativeai as genai
+from pydantic import BaseModel
+
+
+client = instructor.from_gemini(
+    client=genai.GenerativeModel(
+        model_name="models/gemini-1.5-flash-latest",
+    ),
+)
+
+
 class User(BaseModel):
     name: str
     age: int
     bio: str
 
-# Stream partial objects as they're generated
-for partial_user in client.generate_content_stream(
-    prompt="Create a user profile for Jason, age 25",
+
+user = client.chat.completions.create_partial(
+    messages=[
+        {
+            "role": "user",
+            "content": "Create a user profile for Jason and 1 sentence bio, age 25",
+        },
+    ],
     response_model=User,
-):
-    print(f"Current state: {partial_user}")
-    # Fields will populate gradually as they're generated
+)
+
+for user_partial in user:
+    print(user_partial)
+    # > name=None age=None bio=None
+    # > name=None age=25 bio='Jason is a great guy'
+    # > name='Jason' age=25 bio='Jason is a great guy'
 ```
 
-**Important Notes on Streaming:**
-- Full streaming is well-supported for complete response generation
-- Partial streaming has limited support and may require additional error handling
-- Some responses may arrive in larger chunks rather than field-by-field
-- Consider implementing fallback mechanisms for partial streaming scenarios
-- Monitor streaming performance and implement appropriate error handling
-- Test thoroughly with your specific use case before deploying to production
-
-## Iterable Example
+### Iterable Example
 
 ```python
-from typing import List
+import instructor
+import google.generativeai as genai
+from pydantic import BaseModel
+
+
+client = instructor.from_gemini(
+    client=genai.GenerativeModel(
+        model_name="models/gemini-1.5-flash-latest",
+    ),
+)
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 # Extract multiple users from text
-users = client.generate_content_iterable(
-    prompt="""
-        Extract users:
-        1. Jason is 25 years old
-        2. Sarah is 30 years old
-        3. Mike is 28 years old
-    """,
+users = client.chat.completions.create_iterable(
+    messages=[
+        {
+            "role": "user",
+            "content": """
+            Extract users:
+            1. Jason is 25 years old
+            2. Sarah is 30 years old
+            3. Mike is 28 years old
+        """,
+        },
+    ],
     response_model=User,
 )
 
 for user in users:
-    print(user)  # Prints each user as it's extracted
+    print(user)
+    #> name='Jason' age=25
+    #> name='Sarah' age=30
+    #> name='Mike' age=28
 ```
 
-## Instructor Hooks
+## Instructor Modes
 
-Instructor provides several hooks to customize behavior:
+We provide several modes to make it easy to work with the different response models that Gemini supports
 
-### Validation Hook
-
-```python
-from instructor import Instructor
-
-def validation_hook(value, retry_count, exception):
-    print(f"Validation failed {retry_count} times: {exception}")
-    return retry_count < 3  # Retry up to 3 times
-
-instructor.patch(client, validation_hook=validation_hook)
-```
-
-### Mode Hooks
-
-```python
-from instructor import Mode
-
-# Use different modes for different scenarios
-client = instructor.patch(client, mode=Mode.JSON)  # JSON mode
-client = instructor.patch(client, mode=Mode.TOOLS)  # Tools mode
-client = instructor.patch(client, mode=Mode.MD_JSON)  # Markdown JSON mode
-```
-
-### Custom Retrying
-
-```python
-from instructor import RetryConfig
-
-client = instructor.patch(
-    client,
-    retry_config=RetryConfig(
-        max_retries=3,
-        on_retry=lambda *args: print("Retrying..."),
-    )
-)
-```
+1. `instructor.Mode.GEMINI_JSON` : This parses the raw text completion into a pydantic object
+2. `instructor.Mode.GEMINI_TOOLS` : This uses Gemini's tool calling API to return structured outputs to the client
 
 ## Available Models
 
 Google offers several Gemini models:
-- Gemini Pro (General purpose)
-- Gemini Pro Vision (Multimodal)
-- Gemini Ultra (Coming soon)
 
-## Best Practices
+- Gemini Flash (General purpose)
+- Gemini Pro (Multimodal)
+- Gemini Flash-8b (Coming soon)
 
-1. **Model Selection**
-   - Choose model based on task requirements
-   - Consider multimodal needs
-   - Monitor quota usage
-   - Use appropriate context lengths
+## Using Gemini's Multimodal Capabilities
 
-2. **Optimization Tips**
-   - Structure prompts effectively
-   - Use appropriate temperature settings
-   - Implement caching strategies
-   - Monitor API usage
+We've written an extensive list of guides on how to use gemini's multimodal capabilities with instructor.
 
-3. **Error Handling**
-   - Implement proper validation
-   - Handle quota limits gracefully
-   - Monitor model responses
-   - Use appropriate timeout settings
+- [Using Geminin To Extract Travel Video Recomendations](../blog/posts/multimodal-gemini.md)
+- [Parsing PDFs with Gemini](../blog/posts/chat-with-your-pdf-with-gemini.md)
+- [Generating Citations with Gemini](../blog/posts/generating-pdf-citations.md)
 
-## Common Use Cases
-
-- Data Extraction
-- Content Generation
-- Document Analysis
-- Multimodal Processing
-- Complex Reasoning Tasks
+Stay tuned to the blog for more guides on using Gemini with instructor.
 
 ## Related Resources
 
