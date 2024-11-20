@@ -7,12 +7,10 @@ description: Learn to create concise YouTube clips from video transcripts with `
 
 This guide demonstrates how to generate concise, informative clips from YouTube video transcripts using the `instructor` library. By leveraging the power of OpenAI's models, we can extract meaningful segments from a video's transcript, which can then be recut into smaller, standalone videos. This process involves identifying key moments within a transcript and summarizing them into clips with specific titles and descriptions.
 
-If you're interested in trying this example using `instructor hub`, you can pull it by running:
-
+First, install the necessary packages:
 
 ```bash
 pip install youtube_transcript_api instructor rich
-instructor hub pull --slug youtube-clips --py > youtube_clips.py
 ```
 
 ![youtube clip streaming](../img/youtube.gif)
@@ -127,3 +125,4 @@ if __name__ == "__main__":
                     str(youtube_clip.end),
                 )
             console.print(table)
+```

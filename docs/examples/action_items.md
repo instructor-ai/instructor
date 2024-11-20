@@ -7,12 +7,6 @@ description: Learn to extract actionable items from meeting transcripts using Op
 
 In this guide, we'll walk through how to extract action items from meeting transcripts using OpenAI's API and Pydantic. This use case is essential for automating project management tasks, such as task assignment and priority setting.
 
-If you want to try outs via `instructor hub`, you can pull it by running
-
-```bash
-instructor hub pull --slug action_items --py > action_items.py
-```
-
 For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.
 
 !!! tips "Motivation"
@@ -89,27 +83,16 @@ def generate(data: str) -> Iterable[Ticket]:
 prediction = generate(
     """
 Alice: Hey team, we have several critical tasks we need to tackle for the upcoming release. First, we need to work on improving the authentication system. It's a top priority.
-
 Bob: Got it, Alice. I can take the lead on the authentication improvements. Are there any specific areas you want me to focus on?
-
 Alice: Good question, Bob. We need both a front-end revamp and back-end optimization. So basically, two sub-tasks.
-
 Carol: I can help with the front-end part of the authentication system.
-
 Bob: Great, Carol. I'll handle the back-end optimization then.
-
 Alice: Perfect. Now, after the authentication system is improved, we have to integrate it with our new billing system. That's a medium priority task.
-
 Carol: Is the new billing system already in place?
-
 Alice: No, it's actually another task. So it's a dependency for the integration task. Bob, can you also handle the billing system?
-
 Bob: Sure, but I'll need to complete the back-end optimization of the authentication system first, so it's dependent on that.
-
 Alice: Understood. Lastly, we also need to update our user documentation to reflect all these changes. It's a low-priority task but still important.
-
 Carol: I can take that on once the front-end changes for the authentication system are done. So, it would be dependent on that.
-
 Alice: Sounds like a plan. Let's get these tasks modeled out and get started."""
 )
 ```

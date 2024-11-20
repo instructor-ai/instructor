@@ -18,7 +18,7 @@ Welcome to our collection of cookbooks showcasing the power of structured output
 7. [Complex Query Decomposition](planning-tasks.md): Break down intricate queries into manageable subtasks for thorough analysis.
 8. [Entity Extraction and Resolution](entity_resolution.md): Identify and disambiguate named entities in text.
 9. [PII Sanitization](pii.md): Detect and redact sensitive personal information from text data.
-10. [Action Item and Dependency Extraction](../hub/action_items.md): Generate structured task lists and relationships from meeting transcripts.
+10. [Action Item Extraction](planning-tasks.md): Generate structured task lists and relationships from meeting transcripts.
 11. [OpenAI Content Moderation Integration](moderation.md): Implement content filtering using OpenAI's moderation API.
 12. [Table Extraction with GPT-Vision](extracting_tables.md): Convert image-based tables into structured data using AI vision capabilities.
 13. [AI-Powered Ad Copy Generation from Images](image_to_ad_copy.md): Create compelling advertising text based on visual content.
@@ -34,7 +34,16 @@ Welcome to our collection of cookbooks showcasing the power of structured output
 23. [Slide Content Extraction with GPT-4 Vision](extract_slides.md): Convert presentation slide images into structured, analyzable text data.
 24. [Few-Shot Learning with Examples](examples.md): Improve AI model performance by providing contextual examples in prompts.
 25. [Local Classification without API](local_classification.md): Perform text classification tasks locally without relying on external API calls.
-
+26. [Action Items Extraction](action_items.md): Extract structured action items and tasks from text content.
+27. [Batch Classification with LangSmith](batch_classification_langsmith.md): Efficiently classify content in batches using LangSmith integration.
+28. [Contact Information Extraction](extract_contact_info.md): Extract structured contact details from unstructured text.
+29. [Knowledge Graph Building](building_knowledge_graph.md): Create and manipulate knowledge graphs from textual data.
+30. [Multiple Classification Tasks](multiple_classification.md): Handle multiple classification categories simultaneously.
+31. [Pandas DataFrame Integration](pandas_df.md): Work with structured data using Pandas DataFrames.
+32. [Partial Response Streaming](partial_streaming.md): Stream partial results for real-time processing.
+33. [Single Classification Tasks](single_classification.md): Implement focused single-category classification.
+34. [Table Extraction from Images](tables_from_vision.md): Convert visual tables into structured data formats.
+35. [YouTube Clip Analysis](youtube_clips.md): Extract and analyze information from YouTube video clips.
 
 ## Subscribe to our Newsletter for Updates and Tips
 

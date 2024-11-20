@@ -58,7 +58,7 @@ MarkdownDataFrame = Annotated[
         {
             "type": "string",
             "description": """
-                The markdown representation of the table, 
+                The markdown representation of the table,
                 each one should be tidy, do not try to join tables
                 that should be seperate""",
         }
@@ -108,11 +108,9 @@ def extract(url: str) -> MultipleTables:
                         "type": "text",
                         "text": """
                             First, analyze the image to determine the most appropriate headers for the tables.
-                            Generate a descriptive h1 for the overall image, followed by a brief summary of the data it contains. 
+                            Generate a descriptive h1 for the overall image, followed by a brief summary of the data it contains.
                             For each identified table, create an informative h2 title and a concise description of its contents.
                             Finally, output the markdown representation of each table.
-
-
                             Make sure to escape the markdown table properly, and make sure to include the caption and the dataframe.
                             including escaping all the newlines and quotes. Only return a markdown table in dataframe, nothing else.
                         """,

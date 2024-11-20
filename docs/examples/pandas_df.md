@@ -5,12 +5,6 @@ description: Learn how to extract and convert Markdown tables directly into Pand
 
 # Extracting directly to a DataFrame
 
-You can pull this example into your IDE by running the following command:
-
-```bash
-instructor hub pull --slug pandas_df --py > pandas_df.py
-```
-
 In this example we'll show you how to extract directly to a `pandas.DataFrame`
 
 ```python

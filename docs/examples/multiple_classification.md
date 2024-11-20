@@ -3,12 +3,6 @@ title: Multi-Label Classification with OpenAI and Pydantic
 description: Learn how to implement multi-label classification using OpenAI's API and Pydantic for effective support ticket classification.
 ---
 
-If you want to try outs via `instructor hub`, you can pull it by running
-
-```bash
-instructor hub pull --slug multiple_classification --py > multiple_classification.py
-```
-
 For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.
 
 ```python
@@ -28,7 +22,6 @@ LABELS = Literal["ACCOUNT", "BILLING", "GENERAL_QUERY"]
 class MultiClassPrediction(BaseModel):
     """
     A few-shot example of multi-label classification:
-
     Examples:
     - "My account is locked and I can't access my billing info.": ACCOUNT, BILLING
     - "I need help with my subscription.": ACCOUNT

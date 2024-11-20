@@ -37,10 +37,11 @@ pip install -U langsmith
 pip install -U instructor
 ```
 
-If you want to pull this example down from [instructor-hub](../../hub/index.md) you can use the following command:
+You can find this example in our [examples directory](../../examples/bulk_classification.md):
 
 ```bash
-instructor hub pull --slug batch_classification_langsmith --py > batch_classification_langsmith.py
+# The example code is available in the examples directory
+# See: https://python.useinstructor.com/examples/bulk_classification
 ```
 
 In this example we'll use the `wrap_openai` function to wrap the OpenAI client with LangSmith. This will allow us to use LangSmith's observability and monitoring features with the OpenAI client. Then we'll use `instructor` to patch the client with the `TOOLS` mode. This will allow us to use `instructor` to add additional functionality to the client. We'll use [asyncio](./learn-async.md) to classify a list of questions.

@@ -64,7 +64,7 @@ Other features on instructor, in and out of the llibrary are:
 3. [Parallel Tool Calling](../../concepts/parallel.md) with correct types
 4. Streaming [Partial](../../concepts/partial.md) and [Iterable](../../concepts/iterable.md) data.
 5. Returning [Primitive](../../concepts/types.md) Types and [Unions](../../concepts/unions.md) as well!
-6. Lots, and Lots of [Cookbooks](../../examples/index.md), [Tutorials](../../tutorials/1-introduction.ipynb), Documentation and even [instructor hub](../../integrations/index.md)
+6. Lots of [Cookbooks](../../examples/index.md), [Tutorials](../../tutorials/1-introduction.ipynb), and comprehensive Documentation in our [Integration Guides](../../integrations/index.md)
 
 ## Instructor's Broad Applicability
 

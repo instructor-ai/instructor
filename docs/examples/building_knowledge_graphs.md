@@ -7,12 +7,6 @@ description: Learn to construct knowledge graphs from textual data using OpenAI'
 
 In this tutorial, we will explore the process of constructing knowledge graphs from textual data using OpenAI's API and Pydantic. This approach is crucial for efficiently automating the extraction of structured information from unstructured text.
 
-To experiment with this yourself through `instructor hub`, you can obtain the necessary code by executing:
-
-```bash
-instructor hub pull --slug knowledge_graph --py > knowledge_graph.py
-```
-
 ```python
 from typing import List
 from pydantic import BaseModel, Field

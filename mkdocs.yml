@@ -164,6 +164,16 @@ nav:
     - "OpenAI Batch Jobs with Instructor": 'examples/batch_job_oai.md'
     - "Structured Outputs with Groq": 'examples/groq.md'
     - "Structured Outputs with Mistral": 'examples/mistral.md'
+    - "Action Items Extraction": 'examples/action_items.md'
+    - "Batch Classification with LangSmith": 'examples/batch_classification_langsmith.md'
+    - "Contact Information Extraction": 'examples/extract_contact_info.md'
+    - "Knowledge Graph Building": 'examples/building_knowledge_graph.md'
+    - "Multiple Classification Tasks": 'examples/multiple_classification.md'
+    - "Pandas DataFrame Integration": 'examples/pandas_df.md'
+    - "Partial Response Streaming": 'examples/partial_streaming.md'
+    - "Single Classification Tasks": 'examples/single_classification.md'
+    - "Table Extraction from Images": 'examples/tables_from_vision.md'
+    - "YouTube Clip Analysis": 'examples/youtube_clips.md'
   - Blog:
     - "blog/index.md"
   - Concepts:
@@ -197,18 +207,6 @@ nav:
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
     - Templating: 'concepts/templating.md'
-  - Hub:
-    - Introduction to Instructor Hub: 'hub/index.md'
-    - Classification: 'hub/single_classification.md'
-    - Bulk Classification: 'hub/multiple_classification.md'
-    - Extracting Tables: 'hub/tables_from_vision.md'
-    - Creating Pandas DataFrames: 'hub/pandas_df.md'
-    - Bulk Async Classification with LangSmith: 'hub/batch_classification_langsmith.md'
-    - Extracting Action Items: 'hub/action_items.md'
-    - Implementing Partial Streaming Responses: 'hub/partial_streaming.md'
-    - Extracting Contact Information: 'hub/extract_contact_info.md'
-    - Generating Knowledge Graphs: 'hub/knowledge_graph.md'
-    - Extracting Relevant Clips from YouTube Videos: "hub/youtube_clips.md"
   - Integrations:
     - Overview: 'integrations/index.md'
     - Anthropic: 'integrations/anthropic.md'
@@ -338,6 +336,18 @@ plugins:
          'hub/clients/together.md': 'integrations/together.md'
          'hub/clients/vertex.md': 'integrations/vertex.md'
          'hub/clients/vertexai.md': 'integrations/vertex.md'
+         # Example redirects
+         'hub/action_items.md': 'examples/action_items.md'
+         'hub/batch_classification_langsmith.md': 'examples/batch_classification_langsmith.md'
+         'hub/extract_contact_info.md': 'examples/extract_contact_info.md'
+         'hub/index.md': 'examples/index.md'
+         'hub/knowledge_graph.md': 'examples/building_knowledge_graph.md'
+         'hub/multiple_classification.md': 'examples/multiple_classification.md'
+         'hub/pandas_df.md': 'examples/pandas_df.md'
+         'hub/partial_streaming.md': 'examples/partial_streaming.md'
+         'hub/single_classification.md': 'examples/single_classification.md'
+         'hub/tables_from_vision.md': 'examples/tables_from_vision.md'
+         'hub/youtube_clips.md': 'examples/youtube_clips.md'
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false

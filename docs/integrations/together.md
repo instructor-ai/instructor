@@ -2,6 +2,8 @@
 draft: False
 date: 2024-01-27
 slug: together
+title: "Structured outputs with Together AI, a complete guide w/ instructor"
+description: "Complete guide to using Instructor with Together AI. Learn how to generate structured, type-safe outputs with Together AI."
 tags:
   - patching
   - open source
@@ -11,11 +13,7 @@ authors:
 
 # Structured outputs with Together AI, a complete guide w/ instructor
 
-If you want to try this example using `instructor hub`, you can pull it by running
-
-```bash
-instructor hub pull --slug together --py > together_example.py
-```
+This guide demonstrates how to use Together AI with Instructor to generate structured outputs. You'll learn how to use function calling with Together's models to create type-safe responses.
 
 Open-source LLMS are gaining popularity, and with the release of Together's Function calling models, its been easier than ever to get structured outputs.
 

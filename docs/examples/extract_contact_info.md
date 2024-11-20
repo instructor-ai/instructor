@@ -7,12 +7,6 @@ description: Learn to extract customer lead details using OpenAI's API and Pydan
 
 In this guide, we'll walk through how to extract customer lead information using OpenAI's API and Pydantic. This use case is essential for seamlessly automating the process of extracting specific information from a context.
 
-If you want to try this out via `instructor hub`, you can pull it by running:
-
-```bash
-instructor hub pull --slug extract_contact_info --py > extract_contact_info.py
-```
-
 ## Motivation
 
 You could potentially integrate this into a chatbot to extract relevant user information from user messages. With the use of machine learning driven validation it would reduce the need for a human to verify the information.
