@@ -164,6 +164,16 @@ nav:
     - "OpenAI Batch Jobs with Instructor": 'examples/batch_job_oai.md'
     - "Structured Outputs with Groq": 'examples/groq.md'
     - "Structured Outputs with Mistral": 'examples/mistral.md'
+    - "Action Items Extraction": 'examples/action_items.md'
+    - "Batch Classification with LangSmith": 'examples/batch_classification_langsmith.md'
+    - "Contact Information Extraction": 'examples/extract_contact_info.md'
+    - "Knowledge Graph Building": 'examples/building_knowledge_graph.md'
+    - "Multiple Classification Tasks": 'examples/multiple_classification.md'
+    - "Pandas DataFrame Integration": 'examples/pandas_df.md'
+    - "Partial Response Streaming": 'examples/partial_streaming.md'
+    - "Single Classification Tasks": 'examples/single_classification.md'
+    - "Table Extraction from Images": 'examples/tables_from_vision.md'
+    - "YouTube Clip Analysis": 'examples/youtube_clips.md'
   - Blog:
     - "blog/index.md"
   - Concepts:
