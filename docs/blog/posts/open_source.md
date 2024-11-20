@@ -17,11 +17,11 @@ tags:
 - API Integration
 ---
 
-# Structured Output for Open Source and Local LLMs 
+# Structured Output for Open Source and Local LLMs
 
 Instructor has expanded its capabilities for language models. It started with API interactions via the OpenAI SDK, using [Pydantic](https://pydantic-docs.helpmanual.io/) for structured data validation. Now, Instructor supports multiple models and platforms.
 
-The integration of [JSON mode](../../concepts/patching.md#json-mode) improved adaptability to vision models and open source alternatives. This allows support for models from [GPT](https://openai.com/api/) and [Mistral](https://mistral.ai) to models on [Ollama](https://ollama.ai) and [Hugging Face](https://huggingface.co/models), using [llama-cpp-python](../../hub/llama-cpp-python.md).
+The integration of [JSON mode](../../concepts/patching.md#json-mode) improved adaptability to vision models and open source alternatives. This allows support for models from [GPT](https://openai.com/api/) and [Mistral](https://mistral.ai) to models on [Ollama](https://ollama.ai) and [Hugging Face](https://huggingface.co/models), using [llama-cpp-python](../../integrations/llama-cpp-python.md).
 
 Instructor now works with cloud-based APIs and local models for structured data extraction. Developers can refer to our guide on [Patching](../../concepts/patching.md) for information on using JSON mode with different models.
 
@@ -40,7 +40,7 @@ OpenAI clients offer functionalities for different needs. We explore clients int
 
 ### Ollama: A New Frontier for Local Models
 
-Ollama enables structured outputs with local models using JSON schema. See our [Ollama documentation](../../hub/ollama.md) for details.
+Ollama enables structured outputs with local models using JSON schema. See our [Ollama documentation](../../integrations/ollama.md) for details.
 
 For setup and features, refer to the documentation. The [Ollama website](https://ollama.ai/download) provides resources, models, and support.
 
@@ -68,6 +68,7 @@ client = instructor.from_openai(
     mode=instructor.Mode.JSON,
 )
 
+
 user = client.chat.completions.create(
     model="llama2",
     messages=[
@@ -93,7 +94,6 @@ Example of using llama-cpp-python for structured outputs:
 ```python
 import llama_cpp
 import instructor
-
 from llama_cpp.llama_speculative import LlamaPromptLookupDecoding
 from pydantic import BaseModel
 
@@ -111,8 +111,9 @@ llama = llama_cpp.Llama(
 
 create = instructor.patch(
     create=llama.create_chat_completion_openai_v1,
-    mode=instructor.Mode.JSON_SCHEMA, 
+    mode=instructor.Mode.JSON_SCHEMA,
 )
+
 
 class UserDetail(BaseModel):
     name: str
@@ -131,56 +132,13 @@ user = create(
 
 print(user)
 #> name='Jason' age=30
-"""
 ```
 
 ## Alternative Providers
 
-### Anyscale
-
-Anyscale's Mistral model, as detailed in our [Anyscale documentation](../../hub/anyscale.md) and on [Anyscale's official documentation](https://docs.anyscale.com/), introduces the ability to obtain structured outputs using JSON schema.
-
-```bash
-export ANYSCALE_API_KEY="your-api-key"
-```
-
-```python
-import os
-from openai import OpenAI
-from pydantic import BaseModel
-import instructor
-
-
-class UserDetails(BaseModel):
-    name: str
-    age: int
-
-
-# enables `response_model` in create call
-client = instructor.from_openai(
-    OpenAI(
-        base_url="https://api.endpoints.anyscale.com/v1",
-        api_key=os.environ["ANYSCALE_API_KEY"],
-    ),
-    # This uses Anyscale's json schema output mode
-    mode=instructor.Mode.JSON_SCHEMA,
-)
-
-resp = client.chat.completions.create(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-    messages=[
-        {"role": "system", "content": "You are a world class extractor"},
-        {"role": "user", "content": 'Extract the following entities: "Jason is 20"'},
-    ],
-    response_model=UserDetails,
-)
-print(resp)
-#> name='Jason' age=20
-```
-
 ### Groq
 
-Groq's platform, detailed further in our [Groq documentation](../../hub/groq.md) and on [Groq's official documentation](https://groq.com/), offers a unique approach to processing with its tensor architecture. This innovation significantly enhances the performance of structured output processing.
+Groq's platform, detailed further in our [Groq documentation](../../integrations/groq.md) and on [Groq's official documentation](https://groq.com/), offers a unique approach to processing with its tensor architecture. This innovation significantly enhances the performance of structured output processing.
 
 ```bash
 export GROQ_API_KEY="your-api-key"
@@ -188,15 +146,18 @@ export GROQ_API_KEY="your-api-key"
 
 ```python
 import os
-import instructor
-import groq
 from pydantic import BaseModel
 
-client = qrog.Groq(
+import groq
+import instructor
+
+
+client = groq.Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
 )
 
-# By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods to support the response_model parameter
+# By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods
+# to support the response_model parameter
 client = instructor.from_openai(client, mode=instructor.Mode.MD_JSON)
 
 
@@ -216,14 +177,14 @@ user: UserExtract = client.chat.completions.create(
 )
 
 assert isinstance(user, UserExtract), "Should be instance of UserExtract"
+
 print(user)
 #> name='jason' age=25
-"""
 ```
 
 ### Together AI
 
-Together AI, when combined with Instructor, offers a seamless experience for developers looking to leverage structured outputs in their applications. For more details, refer to our [Together AI documentation](../hub/together.md) and explore the [patching guide](../concepts/patching.md) to enhance your applications.
+Together AI, when combined with Instructor, offers a seamless experience for developers looking to leverage structured outputs in their applications. For more details, refer to our [Together AI documentation](../../integrations/together.md) and explore the [patching guide](../../concepts/patching.md) to enhance your applications.
 
 ```bash
 export TOGETHER_API_KEY="your-api-key"
@@ -231,9 +192,11 @@ export TOGETHER_API_KEY="your-api-key"
 
 ```python
 import os
-import openai
 from pydantic import BaseModel
+
 import instructor
+import openai
+
 
 client = openai.OpenAI(
     base_url="https://api.together.xyz/v1",
@@ -241,6 +204,7 @@ client = openai.OpenAI(
 )
 
 client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
+
 
 class UserExtract(BaseModel):
     name: str
@@ -256,28 +220,32 @@ user: UserExtract = client.chat.completions.create(
 )
 
 assert isinstance(user, UserExtract), "Should be instance of UserExtract"
-print(user)
 
+print(user)
 #> name='jason' age=25
 ```
 
 ### Mistral
 
-For those interested in exploring the capabilities of Mistral Large with Instructor, we highly recommend checking out our comprehensive guide on [Mistral Large](../../hub/mistral.md).
+For those interested in exploring the capabilities of Mistral Large with Instructor, we highly recommend checking out our comprehensive guide on [Mistral Large](../../integrations/mistral.md).
 
 ```python
 import instructor
-
 from pydantic import BaseModel
 from mistralai.client import MistralClient
 
+
 client = MistralClient()
 
-patched_chat = instructor.from_openai(create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS)
+patched_chat = instructor.from_openai(
+    create=client.chat, mode=instructor.Mode.MISTRAL_TOOLS
+)
+
 
 class UserDetails(BaseModel):
     name: str
     age: int
+
 
 resp = patched_chat(
     model="mistral-large-latest",
@@ -289,6 +257,7 @@ resp = patched_chat(
         },
     ],
 )
+
 print(resp)
 #> name='Jason' age=20
 ```

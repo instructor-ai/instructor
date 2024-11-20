@@ -29,7 +29,7 @@ In this post, we'll show you how to summarise Youtube video transcripts into dis
 
 By the end of this article, you'll be able to build an application as per the video below.
 
-![](../../hub/img/youtube.gif)
+![](../../img/youtube.gif)
 
 <!-- more -->
 

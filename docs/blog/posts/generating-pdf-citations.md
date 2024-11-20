@@ -22,6 +22,8 @@ In this post, we'll explore how to use Google's Gemini model with Instructor to 
 
 We'll be using the Nvidia 10k report for this example which you can download at this [link](https://d18rn0p25nwr6d.cloudfront.net/CIK-0001045810/78501ce3-7816-4c4d-8688-53dd140df456.pdf).
 
+<!-- more -->
+
 ## Introduction
 
 When processing PDFs, it's crucial to ensure that any answers or insights derived are directly linked to the source material. This is especially important in applications where users need to verify the origin of information, such as legal or academic contexts.
