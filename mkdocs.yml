@@ -327,17 +327,17 @@ plugins:
          'hub/clients/vertex.md': 'integrations/vertex.md'
          'hub/clients/vertexai.md': 'integrations/vertex.md'
          # Example redirects
-         'hub/pandas_df.md': 'examples/sqlmodel.md'
-         'hub/partial_streaming.md': 'concepts/partial.md'
+         'hub/action_items.md': 'examples/action_items.md'
+         'hub/batch_classification_langsmith.md': 'examples/batch_classification_langsmith.md'
+         'hub/extract_contact_info.md': 'examples/extract_contact_info.md'
          'hub/index.md': 'examples/index.md'
-         'hub/action_items.md': 'examples/entity_resolution.md'
-         'hub/single_classification.md': 'examples/classification.md'
-         'hub/multiple_classification.md': 'examples/bulk_classification.md'
-         'hub/tables_from_vision.md': 'examples/extracting_tables.md'
-         'hub/batch_classification_langsmith.md': 'examples/batch_job_oai.md'
-         'hub/extract_contact_info.md': 'examples/pii.md'
-         'hub/knowledge_graph.md': 'examples/knowledge_graph.md'
-         'hub/youtube_clips.md': 'examples/document_segmentation.md'
+         'hub/knowledge_graph.md': 'examples/building_knowledge_graph.md'
+         'hub/multiple_classification.md': 'examples/multiple_classification.md'
+         'hub/pandas_df.md': 'examples/pandas_df.md'
+         'hub/partial_streaming.md': 'examples/partial_streaming.md'
+         'hub/single_classification.md': 'examples/single_classification.md'
+         'hub/tables_from_vision.md': 'examples/tables_from_vision.md'
+         'hub/youtube_clips.md': 'examples/youtube_clips.md'
   - mkdocs-jupyter:
       ignore_h1_titles: true
       execute: false
