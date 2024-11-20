@@ -1,6 +1,8 @@
 ---
 draft: False
 date: 2024-02-08
+title: "Structured outputs with Ollama, a complete guide w/ instructor"
+description: "Complete guide to using Instructor with Ollama. Learn how to generate structured, type-safe outputs with Ollama."
 slug: ollama
 tags:
   - patching

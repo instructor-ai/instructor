@@ -1,6 +1,8 @@
 ---
 draft: False
 date: 2024-02-26
+title: "Structured outputs with Mistral, a complete guide w/ instructor"
+description: "Complete guide to using Instructor with Mistral. Learn how to generate structured, type-safe outputs with Mistral."
 slug: mistral
 tags:
   - patching

@@ -2,6 +2,8 @@
 draft: False
 date: 2024-01-27
 slug: together
+title: "Structured outputs with Together AI, a complete guide w/ instructor"
+description: "Complete guide to using Instructor with Together AI. Learn how to generate structured, type-safe outputs with Together AI."
 tags:
   - patching
   - open source

@@ -1,6 +1,8 @@
 ---
 draft: False
 date: 2024-02-12
+title: "Structured outputs with llama-cpp-python, a complete guide w/ instructor"
+description: "Complete guide to using Instructor with llama-cpp-python. Learn how to generate structured, type-safe outputs with llama-cpp-python."
 slug: llama-cpp-python
 tags:
   - patching
