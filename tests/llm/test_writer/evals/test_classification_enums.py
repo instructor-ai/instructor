@@ -1,6 +1,5 @@
 import enum
 from itertools import product
-from typing import List, Tuple
 from writerai import Writer
 
 import pytest
@@ -38,7 +37,9 @@ data = [
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
-def test_writer_classification(model: str, data: List[Tuple], mode: instructor.Mode):
+def test_writer_classification(
+    model: str, data: list[tuple[str, Labels]], mode: instructor.Mode
+):
     client = instructor.from_writer(client=Writer(), mode=mode)
 
     input, expected = data
@@ -82,7 +83,9 @@ data = [
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
-def test_writer_multi_classify(model: str, data: List[Tuple], mode: instructor.Mode):
+def test_writer_multi_classify(
+    model: str, data: list[tuple[str, list[MultiLabels]]], mode: instructor.Mode
+):
     client = instructor.from_writer(client=Writer(), mode=mode)
 
     if (mode, model) in {

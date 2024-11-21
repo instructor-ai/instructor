@@ -1,5 +1,5 @@
 from itertools import product
-from typing import Literal, List, Tuple
+from typing import Literal
 from writerai import AsyncWriter
 
 import pytest
@@ -26,7 +26,11 @@ data = [
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 @pytest.mark.asyncio
-async def test_classification(model: str, data: List[Tuple], mode: instructor.Mode):
+async def test_classification(
+    model: str,
+    data: list[tuple[str, Literal["spam", "not_spam"]]],
+    mode: instructor.Mode,
+):
     client = instructor.from_writer(client=AsyncWriter(), mode=mode)
 
     input, expected = data
@@ -65,7 +69,11 @@ data = [
 
 @pytest.mark.parametrize("model, data, mode", product(models, data, modes))
 @pytest.mark.asyncio
-async def test_writer_multi_classify(model: str, data: List[Tuple], mode: instructor.Mode):
+async def test_writer_multi_classify(
+    model: str,
+    data: list[tuple[str, list[Literal["billing", "general_query", "hardware"]]]],
+    mode: instructor.Mode,
+):
     client = instructor.from_writer(client=AsyncWriter(), mode=mode)
 
     input, expected = data

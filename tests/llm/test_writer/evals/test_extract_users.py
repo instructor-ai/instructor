@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 import pytest
 from itertools import product
 from pydantic import BaseModel
@@ -21,7 +19,9 @@ test_data = [
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))
-def test_writer_extract(model: str, data: List[Tuple], mode: instructor.Mode):
+def test_writer_extract(
+    model: str, data: list[tuple[str, str, int]], mode: instructor.Mode
+):
     client = instructor.from_writer(client=Writer(), mode=mode)
 
     sample_data, expected_name, expected_age = data

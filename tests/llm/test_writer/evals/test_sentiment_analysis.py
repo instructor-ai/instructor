@@ -1,6 +1,5 @@
 import enum
 from itertools import product
-from typing import List, Tuple
 
 from pydantic import BaseModel
 from writerai import Writer
@@ -36,7 +35,9 @@ test_data = [
 
 
 @pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))
-def test_writer_sentiment_analysis(model: str, data: List[Tuple], mode: instructor.Mode):
+def test_writer_sentiment_analysis(
+    model: str, data: List[Tuple], mode: instructor.Mode
+):
     client = instructor.from_writer(client=Writer(), mode=mode)
 
     sample_data, expected_sentiment = data
