@@ -1,19 +1,19 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- Anthropic
+  - Anthropic
 comments: true
 date: 2024-10-23
 description: Learn how to leverage Anthropic's Claude with Instructor for structured outputs and prompt caching, enhancing AI application development.
 draft: false
 tags:
-- Anthropic
-- API Development
-- Pydantic
-- Python
-- LLM Techniques
-- Prompt Caching
+  - Anthropic
+  - API Development
+  - Pydantic
+  - Python
+  - LLM Techniques
+  - Prompt Caching
 ---
 
 # Structured Outputs and Prompt Caching with Anthropic
@@ -23,6 +23,8 @@ Anthropic's ecosystem now offers two powerful features for AI developers: struct
 ## Structured Outputs with Anthropic and Instructor
 
 Instructor now offers seamless integration with Anthropic's powerful language models, allowing developers to easily create structured outputs using Pydantic models. This integration simplifies the process of extracting specific information from AI-generated responses.
+
+<!-- more -->
 
 To get started, you'll need to install Instructor with Anthropic support:
 

@@ -1,20 +1,21 @@
 ---
 authors:
-- jxnl
-- joschkabraun
+  - jxnl
+  - joschkabraun
 categories:
-- LLM Observability
+  - LLM Observability
 comments: true
 date: 2024-07-17
-description: Explore how Parea enhances the OpenAI instructor, enabling better monitoring,
+description:
+  Explore how Parea enhances the OpenAI instructor, enabling better monitoring,
   collaboration, and error tracking for LLM applications.
 draft: false
 tags:
-- Parea
-- OpenAI
-- LLM
-- instructor
-- validation
+  - Parea
+  - OpenAI
+  - LLM
+  - instructor
+  - validation
 ---
 
 # Parea for Observing, Testing & Fine-tuning of Instructor
@@ -29,10 +30,11 @@ tags:
 
     Before starting this tutorial, make sure that you've registered for a [Parea](https://www.parea.ai) account. You'll also need to create an [API key](https://docs.parea.ai/api-reference/authentication).
 
-
 ## Example: Writing Emails with URLs from Instructor Docs
 
-We will demonstrate Parea by using `instructor` to write emails which only contain URLs from the `instructor` docs. We'll need to install our dependencies before proceeding so simply run the command below. 
+We will demonstrate Parea by using `instructor` to write emails which only contain URLs from the `instructor` docs. We'll need to install our dependencies before proceeding so simply run the command below.
+
+<!-- more -->
 
 ```bash
 pip install -U parea-ai instructor
@@ -133,12 +135,10 @@ To take a look at trace of this execution checkout the screenshot below. Noticea
 
 ![](./img/parea/trace.png)
 
-
 Above we can see that while the email was successfully created, there was a validation error which meant that additional cost & latency were introduced because of the initially failed validation.
 Below we can see a visualization of the average validation error count for our instructor usage over time.
 
 ![](./img/parea/validation-error-chart.png)
-
 
 ## Label Responses for Fine-Tuning
 
@@ -152,9 +152,9 @@ Sometimes you may want to let subject-matter experts (SMEs) label responses to u
 
     ```python hl_lines="5 6"
     from parea import Parea
-    
+
     p = Parea(api_key=os.getenv("PAREA_API_KEY"))
-    
+
     dataset = p.get_collection(DATASET_ID)  #(1)!
     dataset.write_to_finetune_jsonl("finetune.jsonl")  #(2)!
     ```

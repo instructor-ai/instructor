@@ -1,19 +1,19 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- LLM
-- Pydantic
+  - LLM
+  - Pydantic
 comments: true
 date: 2024-10-17
 description: Explore how to use Instructor and Pydantic to create a pairwise LLM judge for evaluating text relevance.
 draft: false
 tags:
-- LLM
-- Pydantic
-- Instructor
-- Text Relevance
-- AI Evaluation
+  - LLM
+  - Pydantic
+  - Instructor
+  - Text Relevance
+  - AI Evaluation
 ---
 
 # Building a Pairwise LLM Judge with Instructor and Pydantic
@@ -23,6 +23,8 @@ In this blog post, we'll explore how to create a pairwise LLM judge using Instru
 ## Introduction
 
 Evaluating text relevance is a common task in natural language processing and information retrieval. By leveraging large language models (LLMs) and structured outputs, we can create a system that judges the similarity or relevance between a question and a given text.
+
+<!-- more -->
 
 ## Setting Up the Environment
 

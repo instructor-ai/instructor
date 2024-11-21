@@ -1,23 +1,24 @@
 ---
 authors:
-- ivanleomk
-- sarahchieng
+  - ivanleomk
+  - sarahchieng
 categories:
-- API Development
-- Pydantic
-- Performance Optimization
+  - API Development
+  - Pydantic
+  - Performance Optimization
 comments: true
 date: 2024-10-15
-description: Learn how to use Cerebras Inference for structured outputs, faster model
+description:
+  Learn how to use Cerebras Inference for structured outputs, faster model
   inference, and seamless integration with Pydantic models.
 draft: false
 slug: introducing-structured-outputs-with-cerebras-inference
 tags:
-- Cerebras Inference
-- Pydantic
-- API Integration
-- Fast Inference
-- Structured Outputs
+  - Cerebras Inference
+  - Pydantic
+  - API Integration
+  - Fast Inference
+  - Structured Outputs
 ---
 
 # Introducing structured outputs with Cerebras Inference
@@ -31,6 +32,8 @@ Sign up for a Cerebras Inference API key here at [cloud.cerebras.ai](http://clou
 ### Basic Usage
 
 To get guaranteed structured outputs with Cerebras Inference, you
+
+<!-- more -->
 
 1. Create a new Instructor client with the `from_cerebras` method
 2. Define a Pydantic model to pass into the `response_model` parameter

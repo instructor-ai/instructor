@@ -1,20 +1,21 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- LLM Techniques
+  - LLM Techniques
 comments: true
 date: 2024-06-15
-description: Learn how to easily get structured JSON data from LLMs using the Instructor
+description:
+  Learn how to easily get structured JSON data from LLMs using the Instructor
   library with Pydantic models in Python.
 draft: false
 slug: zero-cost-abstractions
 tags:
-- Instructor
-- JSON
-- LLM
-- Pydantic
-- Python
+  - Instructor
+  - JSON
+  - LLM
+  - Pydantic
+  - Python
 ---
 
 # Why Instructor is the best way to get JSON from LLMs
@@ -32,6 +33,7 @@ It stands out for its simplicity, transparency, and user-centric design, built o
   - [Go](https://go.useinstructor.com)
   - [Elixir](https://hex.pm/packages/instructor)
 
+<!-- more -->
 
 ## The Simple Patch for JSON LLM Outputs
 
