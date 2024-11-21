@@ -1,19 +1,19 @@
 ---
 authors:
-- ivanleomk
+  - ivanleomk
 categories:
-- Gemini
-- Multimodal
+  - Gemini
+  - Multimodal
 comments: true
 date: 2024-10-23
 description: Learn how to use Google's Gemini model for multimodal structured extraction of YouTube videos, extracting structured recommendations for tourist destinations.
 draft: false
 tags:
-- Gemini
-- Multimodal AI
-- Travel Recommendations
-- Pydantic
-- Python
+  - Gemini
+  - Multimodal AI
+  - Travel Recommendations
+  - Pydantic
+  - Python
 ---
 
 # Structured Outputs with Multimodal Gemini
@@ -29,6 +29,8 @@ from pydantic import BaseModel
 import instructor
 import google.generativeai as genai
 ```
+
+<!-- more -->
 
 ## Defining Our Data Models
 
@@ -86,27 +88,27 @@ print(resp)
 
     ```python
     Recomendations(
-        chain_of_thought='The video recommends visiting Takayama city, in the Hida Region, Gifu Prefecture. The 
-    video suggests visiting the Miyagawa Morning Market, to try the Sarubobo good luck charms, and to enjoy the 
-    cookie cup espresso, made by Koma Coffee. Then, the video suggests visiting a traditional Japanese Cafe, 
-    called Kissako Katsure, and try their matcha and sweets. Afterwards, the video suggests to visit the Sanmachi 
+        chain_of_thought='The video recommends visiting Takayama city, in the Hida Region, Gifu Prefecture. The
+    video suggests visiting the Miyagawa Morning Market, to try the Sarubobo good luck charms, and to enjoy the
+    cookie cup espresso, made by Koma Coffee. Then, the video suggests visiting a traditional Japanese Cafe,
+    called Kissako Katsure, and try their matcha and sweets. Afterwards, the video suggests to visit the Sanmachi
     Historic District, where you can find local crafts and delicious foods. The video recommends trying Hida Wagyu
-    beef, at the Kin no Kotte Ushi shop, or to have a sit-down meal at the Kitchen Hida. Finally, the video 
+    beef, at the Kin no Kotte Ushi shop, or to have a sit-down meal at the Kitchen Hida. Finally, the video
     recommends visiting Shirakawa-go, a World Heritage Site in Gifu Prefecture.',
-        description='This video recommends a number of places to visit in Takayama city, in the Hida Region, Gifu 
-    Prefecture. It shows some of the local street food and highlights some of the unique shops and restaurants in 
+        description='This video recommends a number of places to visit in Takayama city, in the Hida Region, Gifu
+    Prefecture. It shows some of the local street food and highlights some of the unique shops and restaurants in
     the area.',
         destinations=[
             TouristDestination(
                 name='Takayama',
-                description='Takayama is a city at the base of the Japan Alps, located in the Hida Region of 
+                description='Takayama is a city at the base of the Japan Alps, located in the Hida Region of
     Gifu.',
                 location='Hida Region, Gifu Prefecture'
             ),
             TouristDestination(
                 name='Miyagawa Morning Market',
-                description="The Miyagawa Morning Market, or the Miyagawa Asai-chi in Japanese, is a market that 
-    has existed officially since the Edo Period, more than 100 years ago. It's open every single day, rain or 
+                description="The Miyagawa Morning Market, or the Miyagawa Asai-chi in Japanese, is a market that
+    has existed officially since the Edo Period, more than 100 years ago. It's open every single day, rain or
     shine, from 7am to noon.",
                 location='Hida Takayama'
             ),
@@ -117,19 +119,19 @@ print(resp)
             ),
             TouristDestination(
                 name='Koma Coffee',
-                description="Koma Coffee is a shop that has been in business for about 50 or 60 years, and they 
+                description="Koma Coffee is a shop that has been in business for about 50 or 60 years, and they
     serve coffee in a cookie cup. They've been serving coffee for about 10 years.",
                 location='Hida Takayama'
             ),
             TouristDestination(
                 name='Kissako Katsure',
-                description='Kissako Katsure is a traditional Japanese style cafe, called Kissako, and the name 
+                description='Kissako Katsure is a traditional Japanese style cafe, called Kissako, and the name
     means would you like to have some tea. They have a variety of teas and sweets.',
                 location='Hida Takayama'
             ),
             TouristDestination(
                 name='Sanmachi Historic District',
-                description='Sanmachi Dori is a Historic Merchant District in Takayama, all of the buildings here 
+                description='Sanmachi Dori is a Historic Merchant District in Takayama, all of the buildings here
     have been preserved to look as they did in the Edo Period.',
                 location='Hida Takayama'
             ),
@@ -146,7 +148,7 @@ print(resp)
             ),
             TouristDestination(
                 name='Kin no Kotte Ushi',
-                description='Kin no Kotte Ushi is a shop known for selling Beef Sushi, especially Hida Wagyu Beef 
+                description='Kin no Kotte Ushi is a shop known for selling Beef Sushi, especially Hida Wagyu Beef
     Sushi. Their sushi is medium rare.',
                 location='Hida Takayama'
             ),
@@ -202,6 +204,7 @@ To address these limitations and expand the capabilities of our video analysis s
 2. **Speaker Diarization**: Implement speaker recognition to attribute recommendations to specific individuals. This could be particularly useful for videos featuring multiple hosts or interviewees.
 
 3. **Segment-based Analysis**: Process longer videos in segments to maintain accuracy and capture all relevant information. This approach could involve:
+
    - Splitting the video into smaller chunks
    - Analyzing each chunk separately
    - Aggregating and deduplicating results

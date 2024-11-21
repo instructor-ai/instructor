@@ -1,23 +1,25 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- OpenAI
-- Audio
+  - OpenAI
+  - Audio
 comments: true
 date: 2024-10-17
 description: Explore the new audio capabilities in OpenAI's Chat Completions API using the gpt-4o-audio-preview model.
 draft: false
 tags:
-- OpenAI
-- Audio Processing
-- API
-- Machine Learning
+  - OpenAI
+  - Audio Processing
+  - API
+  - Machine Learning
 ---
 
 # Audio Support in OpenAI's Chat Completions API
 
 OpenAI has recently introduced audio support in their Chat Completions API, opening up exciting new possibilities for developers working with audio and text interactions. This feature is powered by the new `gpt-4o-audio-preview` model, which brings advanced voice capabilities to the familiar Chat Completions API interface.
+
+<!-- more -->
 
 ## Key Features
 

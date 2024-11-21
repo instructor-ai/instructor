@@ -1,28 +1,30 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- Anthropic
-- LLM Techniques
-- Python
+  - Anthropic
+  - LLM Techniques
+  - Python
 comments: true
 date: 2024-09-26
-description: Learn to implement Anthropic's Contextual Retrieval with async processing
+description:
+  Learn to implement Anthropic's Contextual Retrieval with async processing
   to enhance RAG systems and preserve crucial context efficiently.
 draft: false
 tags:
-- Contextual Retrieval
-- Async Processing
-- RAG Systems
-- Performance Optimization
-- Document Chunking
+  - Contextual Retrieval
+  - Async Processing
+  - RAG Systems
+  - Performance Optimization
+  - Document Chunking
 ---
 
 # Implementing Anthropic's Contextual Retrieval with Async Processing
 
-Anthropic's [Contextual Retrieval](https://www.anthropic.com/blog/contextual-retrieval-for-rag) technique enhances RAG systems by preserving crucial context. 
+Anthropic's [Contextual Retrieval](https://www.anthropic.com/blog/contextual-retrieval-for-rag) technique enhances RAG systems by preserving crucial context.
 
-This post examines the method and demonstrates an efficient implementation using async processing. We'll explore how to optimize your RAG applications with this approach, building on concepts from our [async processing guide](./learn-async.md). 
+This post examines the method and demonstrates an efficient implementation using async processing. We'll explore how to optimize your RAG applications with this approach, building on concepts from our [async processing guide](./learn-async.md).
+
 <!-- more -->
 
 ## Background: The Context Problem in RAG
@@ -48,14 +50,14 @@ contextualized_chunk = "This chunk is from an SEC filing on ACME corp's performa
 Anthropic uses Claude to generate context. They provide this prompt:
 
 ```
-<document> 
-{{WHOLE_DOCUMENT}} 
-</document> 
-Here is the chunk we want to situate within the whole document 
-<chunk> 
-{{CHUNK_CONTENT}} 
-</chunk> 
-Please give a short succinct context to situate this chunk within the overall document for the purposes of improving search retrieval of the chunk. Answer only with the succinct context and nothing else. 
+<document>
+{{WHOLE_DOCUMENT}}
+</document>
+Here is the chunk we want to situate within the whole document
+<chunk>
+{{CHUNK_CONTENT}}
+</chunk>
+Please give a short succinct context to situate this chunk within the overall document for the purposes of improving search retrieval of the chunk. Answer only with the succinct context and nothing else.
 ```
 
 ## Performance Improvements
