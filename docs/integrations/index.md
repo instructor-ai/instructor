@@ -22,11 +22,12 @@ Instructor supports a wide range of AI model providers, each with their own capa
 - [Anthropic](./anthropic.md) - Claude and Claude 2 models
 - [Google](./google.md) - PaLM and Gemini models
 - [Vertex AI](./vertex.md) - Google Cloud's AI platform
-- [Cohere](./cohere.md) - Command and other Cohere models
+- [Cohere](./cohere.md) - Command-R and other Cohere models
 - [Groq](./groq.md) - High-performance inference platform
 - [Mistral](./mistral.md) - Mistral's hosted models
 - [Fireworks](./fireworks.md) - High-performance model inference
-- [Cerebras](./cerebras.md) - AI accelerator platform
+- [Cerebras](./cerebras.md) - Llama-3-70B and other Open Source Models at blazing fast inference speeds
+- [Writer](./writer.md) - Palmyra-X-004 and other Writer models
 
 ### Model Management
 

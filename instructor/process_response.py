@@ -584,6 +584,19 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
     return response_model, new_kwargs
 
 
+def handle_writer_tools(
+        response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs["tools"] = [
+        {
+            "type": "function",
+            "function": response_model.openai_schema,
+        }
+    ]
+    new_kwargs["tool_choice"] = "auto"
+    return response_model, new_kwargs
+
+
 def is_typed_dict(cls) -> bool:
     return (
         isinstance(cls, type)
@@ -701,6 +714,7 @@ def handle_response_model(
         Mode.CEREBRAS_TOOLS: handle_cerebras_tools,
         Mode.FIREWORKS_JSON: handle_fireworks_json,
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
+        Mode.WRITER_TOOLS: handle_writer_tools,
     }
 
     if mode in mode_handlers:

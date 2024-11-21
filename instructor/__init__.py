@@ -91,3 +91,8 @@ if all(importlib.util.find_spec(pkg) for pkg in ("vertexai", "jsonref")):
     from .client_vertexai import from_vertexai
 
     __all__ += ["from_vertexai"]
+
+if importlib.util.find_spec("writerai") is not None:
+    from .client_writer import from_writer
+
+    __all__ += ["from_writer"]
