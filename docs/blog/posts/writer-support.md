@@ -21,7 +21,9 @@ We're excited to announce that `instructor` now supports [Writer](https://writer
 
 ## Getting Started
 
-First, install `instructor` with Writer support by running `pip install instructor[writer]` in your terminal. Then, head over to [Writer](https://writer.com) to sign up for Writer access and get an API key. You can paste API key as environment variable _WRITER_API_KEY_, or set attribute for Writer constructor.
+First, make sure that you've signed up for an account on [Writer](https://writer.com) and obtained an API key. Once you've done so, install `instructor` with Writer support by running `pip install instructor[writer]` in your terminal.
+
+Make sure to set the `WRITER_API_KEY` environment variable with your Writer API key or pass it as an argument to the `Writer` constructor.
 
 <!-- more -->
 
@@ -118,7 +120,7 @@ for obj in extraction_stream:
     #> date='March 15th, 2024' location='Grand Tech Arena, 4521 Innovation Drive' budget=50000 eadline='February 20th'
 ```
 
-As well, if you don't sure that your request will be successfully performed from the first attempt, don't excite we also support retries mechanism! It's quite easy in use:
+As with all our integrations, `instructor` ships with the ability to automatically retry requests that happen due to schema validation without you having to do anything.
 
 ```python
 import instructor
@@ -142,7 +144,7 @@ class User(BaseModel):
         ..., description="The name of the user"
     )
     age: int
-    
+
 
 user = client.chat.completions.create(
     model="palmyra-x-004",
@@ -155,4 +157,6 @@ print(user)
 #> name='JASON' age=12
 ```
 
-And that’s it! We showed only small part of things you can do featuring Writer provider: different types of classification, sentimental analysis and other cool stuff are ready to be used out of the box. We're excited to see what you build with Instructor and Writer! If you have any questions about Writer, do check out the [Writer documentation](https://dev.writer.com/home/introduction).
+This was a sneak peek into the things that you can do with Writer and `instructor` - from classification of text to sentimen analysis and more.
+
+We're excited to see what you build with `instructor` and Writer. If you have any other questions about writer, do check out the [Writer Documentation](https://dev.writer.com/introduction) for the API sdk.
