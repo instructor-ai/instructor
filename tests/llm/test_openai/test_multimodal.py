@@ -70,7 +70,7 @@ def test_multimodal_image_description(model, mode, client):
                 "content": [
                     "What is this?",
                     Image.from_url(
-                        "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg"
+                        "https://retail.degroot-inc.com/wp-content/uploads/2024/01/AS_Blueberry_Patriot_1-605x605.jpg"
                     ),
                 ],
             },
@@ -105,7 +105,7 @@ def test_multimodal_image_description_autodetect(model, mode, client):
                 ],
             },
         ],
-        autodetect_images=True
+        autodetect_images=True,
     )
 
     # Assertions to validate the response
