@@ -36,7 +36,7 @@ test_data = [
 
 @pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))
 def test_writer_sentiment_analysis(
-    model: str, data: List[Tuple], mode: instructor.Mode
+    model: str, data: list[tuple[str, Sentiment]], mode: instructor.Mode
 ):
     client = instructor.from_writer(client=Writer(), mode=mode)
 
