@@ -1,27 +1,28 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- LLM Techniques
+  - LLM Techniques
 comments: true
 date: 2024-06-15
-description: Learn how to easily get structured JSON data from LLMs using the Instructor
+description:
+  Learn how to easily get structured JSON data from LLMs using the Instructor
   library with Pydantic models in Python.
 draft: false
 slug: zero-cost-abstractions
 tags:
-- Instructor
-- JSON
-- LLM
-- Pydantic
-- Python
+  - Instructor
+  - JSON
+  - LLM
+  - Pydantic
+  - Python
 ---
 
 # Why Instructor is the best way to get JSON from LLMs
 
 Large Language Models (LLMs) like GPT are incredibly powerful, but getting them to return well-formatted JSON can be challenging. This is where the Instructor library shines. Instructor allows you to easily map LLM outputs to JSON data using Python type annotations and Pydantic models.
 
-Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](../../hub/together.md), [Anyscale](../../hub/anyscale.md), [Ollama](../../hub/ollama.md), and [llama-cpp-python](../../hub/llama-cpp-python.md).
+Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](../../integrations/together.md), [Ollama](../../integrations/ollama.md), and [llama-cpp-python](../../integrations/llama-cpp-python.md).
 
 It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](../../concepts/reask_validation.md), retries with [Tenacity](../../concepts/retrying.md), and streaming [Lists](../../concepts/lists.md) and [Partial](../../concepts/partial.md) responses.
 
@@ -32,6 +33,7 @@ It stands out for its simplicity, transparency, and user-centric design, built o
   - [Go](https://go.useinstructor.com)
   - [Elixir](https://hex.pm/packages/instructor)
 
+<!-- more -->
 
 ## The Simple Patch for JSON LLM Outputs
 
@@ -70,7 +72,7 @@ user = client.chat.completions.create(
 )
 
 print(user.model_dump())
-# > { 
+# > {
 #     "name": "John Doe",
 #     "age": 25,
 #     "email": "john@example.com"

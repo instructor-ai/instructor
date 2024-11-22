@@ -300,6 +300,25 @@ def reask_fireworks_json(
     return kwargs
 
 
+def reask_writer_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": (
+                f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+            ),
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
 def handle_reask_kwargs(
     kwargs: dict[str, Any],
     mode: Mode,
@@ -323,6 +342,7 @@ def handle_reask_kwargs(
         Mode.MD_JSON: reask_md_json,
         Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
         Mode.FIREWORKS_JSON: reask_fireworks_json,
+        Mode.WRITER_TOOLS: reask_writer_tools,
     }
     reask_function = functions.get(mode, reask_default)
     return reask_function(kwargs=kwargs, response=response, exception=exception)

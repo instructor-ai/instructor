@@ -2,7 +2,7 @@
 description: "Universal Self Prompting is a technique that aims to use unlabeled data to generate exemplars and a more complicated scoring function to select them."
 ---
 
-Universal Self Prompting is a two stage process similar to [Consistency Based Self Adaptive Prompting (COSP)](/cosp.md). Here is a breakdown of the two stages.
+Universal Self Prompting is a two stage process similar to [Consistency Based Self Adaptive Prompting (COSP)](../few_shot/cosp.md). Here is a breakdown of the two stages.
 
 1. **Generate Examples** : LLMs are prompted to generate a collection of candidate responses using a test dataset
 2. **Answer Query** : We then select a few of these model-generated responses as examples to prompt the LLM to obtain a final prediction.

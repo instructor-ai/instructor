@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 audio_url = "https://www2.cs.uic.edu/~i101/SoundFiles/gettysburg.wav"
+image_url = "https://retail.degroot-inc.com/wp-content/uploads/2024/01/AS_Blueberry_Patriot_1-605x605.jpg"
 
 
 def gettysburg_audio():
@@ -69,9 +70,7 @@ def test_multimodal_image_description(model, mode, client):
                 "role": "user",
                 "content": [
                     "What is this?",
-                    Image.from_url(
-                        "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg"
-                    ),
+                    Image.from_url(image_url),
                 ],
             },
         ],
@@ -101,11 +100,11 @@ def test_multimodal_image_description_autodetect(model, mode, client):
                 "role": "user",
                 "content": [
                     "What is this?",
-                    "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+                    image_url,
                 ],
             },
         ],
-        autodetect_images=True
+        autodetect_images=True,
     )
 
     # Assertions to validate the response
@@ -131,7 +130,7 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
             },
             {
                 "role": "user",
-                "content": "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+                "content": image_url,
             },
         ],
         max_tokens=1000,

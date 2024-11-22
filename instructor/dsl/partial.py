@@ -112,7 +112,10 @@ class PartialBase(Generic[T_Model]):
         if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream(json_chunks)
 
-        yield from cls.model_from_chunks(json_chunks, **kwargs)
+        if mode == Mode.WRITER_TOOLS:
+            yield from cls.writer_model_from_chunks(json_chunks, **kwargs)
+        else:
+            yield from cls.model_from_chunks(json_chunks, **kwargs)
 
     @classmethod
     async def from_streaming_response_async(
@@ -122,8 +125,50 @@ class PartialBase(Generic[T_Model]):
 
         if mode == Mode.MD_JSON:
             json_chunks = extract_json_from_stream_async(json_chunks)
+        elif mode == Mode.WRITER_TOOLS:
+            return cls.writer_model_from_chunks_async(json_chunks, **kwargs)
 
         return cls.model_from_chunks_async(json_chunks, **kwargs)
+
+    @classmethod
+    def writer_model_from_chunks(
+        cls, json_chunks: Iterable[Any], **kwargs: Any
+    ) -> Generator[T_Model, None, None]:
+        potential_object = ""
+        partial_model = cls.get_partial_model()
+        partial_mode = (
+            "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
+        )
+        for chunk in json_chunks:
+            if len(chunk) > len(potential_object):
+                potential_object = chunk
+            else:
+                potential_object += chunk
+            obj = from_json(
+                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+            )
+            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            yield obj
+
+    @classmethod
+    async def writer_model_from_chunks_async(
+        cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
+    ) -> AsyncGenerator[T_Model, None]:
+        potential_object = ""
+        partial_model = cls.get_partial_model()
+        partial_mode = (
+            "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
+        )
+        async for chunk in json_chunks:
+            if len(chunk) > len(potential_object):
+                potential_object = chunk
+            else:
+                potential_object += chunk
+            obj = from_json(
+                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+            )
+            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            yield obj
 
     @classmethod
     def model_from_chunks(
@@ -194,7 +239,12 @@ class PartialBase(Generic[T_Model]):
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS}:
+                    elif mode in {
+                        Mode.TOOLS,
+                        Mode.TOOLS_STRICT,
+                        Mode.FIREWORKS_TOOLS,
+                        Mode.WRITER_TOOLS,
+                    }:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             if json_chunk[0].function.arguments:
                                 yield json_chunk[0].function.arguments
@@ -230,7 +280,12 @@ class PartialBase(Generic[T_Model]):
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
-                    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT, Mode.FIREWORKS_TOOLS}:
+                    elif mode in {
+                        Mode.TOOLS,
+                        Mode.TOOLS_STRICT,
+                        Mode.FIREWORKS_TOOLS,
+                        Mode.WRITER_TOOLS,
+                    }:
                         if json_chunk := chunk.choices[0].delta.tool_calls:
                             if json_chunk[0].function.arguments:
                                 yield json_chunk[0].function.arguments

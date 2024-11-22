@@ -5,9 +5,12 @@ description: Explore 58 effective prompting techniques categorized for enhanced 
 
 # Prompting Guide
 
-Prompting requires understanding of techniques. Prompting enhances model performance.
+Prompting requires an understanding of techniques to enhance model performance.
 
-We created examples of 58 prompting techniques<sup><a href="https://arxiv.org/abs/2406.06608">\*</a></sup> using `instructor`.
+The team at [Learn Prompting](https://learnprompting.org) released The [Prompt Report](https://trigaten.github.io/Prompt_Survey_Site) in collaboration with researchers from OpenAI, Microsoft, and Google.
+This report surveys over 1,500 prompting papers and condenses the findings into a list of 58 distinct prompting techniques.
+
+Here are examples of the 58 prompting techniques<sup>*</sup> using `instructor`.
 
 Prompting techniques are separated into the following categories:
 - [Prompting Guide](#prompting-guide)
@@ -47,14 +50,14 @@ How do we choose effective examples to include in our prompt?
 
 How do we encourage our model to mimic human-like reasoning?
 
-#### Zero Shot
+## Zero Shot {#zero-shot-1}
 
 1. [Auto-Generate Chain-Of-Thought Examples](thought_generation/chain_of_thought_zero_shot/analogical_prompting.md)
 2. [First Ask a Higher-Level Question](thought_generation/chain_of_thought_zero_shot/step_back_prompting.md)
 3. [Encourage Analysis](thought_generation/chain_of_thought_zero_shot/thread_of_thought.md)
 4. [Encourage Structural Reasoning](thought_generation/chain_of_thought_zero_shot/tab_cot.md)
 
-#### Few Shot
+## Few Shot {#few-shot-1}
 5. [Annotate Only Uncertain Examples](thought_generation/chain_of_thought_few_shot/active_prompt.md)
 6. [Choose Diverse Examples](thought_generation/chain_of_thought_few_shot/auto_cot.md)
 7. [Choose Complex Examples](thought_generation/chain_of_thought_few_shot/complexity_based.md)

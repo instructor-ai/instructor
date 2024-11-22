@@ -15,7 +15,7 @@ The overarching theme of using Instructor and Pydantic for function calling is t
 - **Entity Relationships**: Define explicit identifiers and relationship fields.
 - **Contextual Logic**: Optionally add a "chain of thought" field in reusable components for extra context.
 
-## Modular Chain of Thought
+## Modular Chain of Thought {#chain-of-thought}
 
 This approach to "chain of thought" improves data quality but can have modular components rather than global CoT.
 
@@ -119,6 +119,8 @@ class UserDetail(BaseModel):
         description="Correctly assign one of the predefined roles to the user."
     )
 ```
+
+## Literals {#literals}
 
 If you're having a hard time with `Enum` an alternative is to use `Literal`
 

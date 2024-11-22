@@ -4,7 +4,7 @@ description: "Cumulative Reasoning breaks the reasoning process into three separ
 
 Cumulative Reasoning<sup><a href="https://arxiv.org/pdf/2308.04371">1</a></sup> aims to generate better outputs by dividing the reasoning process into three separate steps
 
-1. **Propose** : A LLM first suggests potential steps based o the current context, initiating the reasoning cycle
+1. **Propose** : A LLM first suggests potential steps based on the current context, initiating the reasoning cycle
 2. **Verify** : We then assess the proposer's suggestions for accuracy, incorporating valid steps into the ongoing context
 3. **Report** : We then determine the appropriate moment to conclude the reasoning process
 
