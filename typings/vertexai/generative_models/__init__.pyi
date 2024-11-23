@@ -1,6 +1,5 @@
 """Type stubs for vertexai.generative_models."""
-from enum import Enum
-from typing import Dict, Any, TypeAlias, Literal
+from typing import TypeAlias
 
 class HarmCategory(str):
     HARM_CATEGORY_HATE_SPEECH: str = "HARM_CATEGORY_HATE_SPEECH"
@@ -10,4 +9,4 @@ class HarmCategory(str):
 class HarmBlockThreshold(str):
     BLOCK_ONLY_HIGH: str = "BLOCK_ONLY_HIGH"
 
-SafetySettings: TypeAlias = Dict[str, str]
+SafetySettings: TypeAlias = dict[str, str]

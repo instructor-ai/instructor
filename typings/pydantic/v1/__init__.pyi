@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type, TypeVar, Optional, Union, overload
+from typing import Any, TypeVar, Callable, overload
 from .fields import FieldInfo
 
 T = TypeVar('T', bound='BaseModel')
@@ -7,10 +7,10 @@ class BaseConfig:
     arbitrary_types_allowed: bool = False
 
 class BaseModel:
-    model_fields: Dict[str, FieldInfo]
+    model_fields: dict[str, FieldInfo]
 
     @classmethod
-    def model_validate(cls: Type[T], obj: Any, context: Optional[Dict[str, Any]] = None) -> T: ...
+    def model_validate(cls: type[T], obj: Any, context: dict[str, Any] | None = None) -> T: ...
 
 class ConfigDict:
     def __init__(self, arbitrary_types_allowed: bool = False) -> None: ...
@@ -18,8 +18,8 @@ class ConfigDict:
 def Field(
     default: Any = None,
     *,
-    default_factory: Optional[Any] = None,
-    annotation: Optional[Any] = None,
+    default_factory: Any | None = None,
+    annotation: Any | None = None,
     **kwargs: Any
 ) -> FieldInfo: ...
 
@@ -27,22 +27,22 @@ def Field(
 def create_model(
     __model_name: str,
     *,
-    __config__: Optional[Type[BaseConfig]] = None,
+    __config__: type[BaseConfig] | None = None,
     __base__: None = None,
     __module__: str = ...,
-    __validators__: Optional[Dict[str, Any]] = None,
-    __cls_kwargs__: Optional[Dict[str, Any]] = None,
+    __validators__: dict[str, Any] | None = None,
+    __cls_kwargs__: dict[str, Any] | None = None,
     **field_definitions: Any,
-) -> Type[BaseModel]: ...
+) -> type[BaseModel]: ...
 
 @overload
 def create_model(
     __model_name: str,
     *,
-    __config__: Optional[Type[BaseConfig]] = None,
-    __base__: Union[Type[T], tuple[Type[T], ...]],
+    __config__: type[BaseConfig] | None = None,
+    __base__: type[T] | tuple[type[T], ...],
     __module__: str = ...,
-    __validators__: Optional[Dict[str, Any]] = None,
-    __cls_kwargs__: Optional[Dict[str, Any]] = None,
+    __validators__: dict[str, Any] | None = None,
+    __cls_kwargs__: dict[str, Any] | None = None,
     **field_definitions: Any,
-) -> Type[T]: ...
+) -> type[T]: ...

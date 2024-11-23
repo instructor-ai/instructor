@@ -1,19 +1,19 @@
 """Type stubs for pydantic v2."""
-from typing import Any, Dict, Type, TypeVar, Optional, Union, Callable, overload
+from typing import Any, TypeVar, Callable, overload
 from .fields import FieldInfo
 
 T = TypeVar('T', bound='BaseModel')
 
 class BaseModel:
     """Base class for Pydantic v2 models."""
-    model_fields: Dict[str, FieldInfo]
+    model_fields: dict[str, FieldInfo]
 
     @classmethod
     def model_validate(
-        cls: Type[T],
+        cls: type[T],
         obj: Any,
         *,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
         strict: bool = False,
     ) -> T: ...
 
@@ -27,8 +27,8 @@ class ConfigDict:
 def Field(
     default: Any = None,
     *,
-    default_factory: Optional[Callable[[], Any]] = None,
-    annotation: Optional[Any] = None,
+    default_factory: Callable[[], Any] | None = None,
+    annotation: Any | None = None,
     **kwargs: Any,
 ) -> FieldInfo: ...
 
@@ -36,17 +36,17 @@ def Field(
 def Field(
     default_factory: Callable[[], Any],
     *,
-    annotation: Optional[Any] = None,
+    annotation: Any | None = None,
     **kwargs: Any,
 ) -> FieldInfo: ...
 
 def create_model(
     model_name: str,
     *,
-    __base__: Union[Type[T], tuple[Type[T], ...]] = None,
-    __module__: Optional[str] = None,
-    __config__: Optional[ConfigDict] = None,
-    __validators__: Optional[Dict[str, Callable[..., Any]]] = None,
-    __cls_kwargs__: Optional[Dict[str, Any]] = None,
+    __base__: type[T] | tuple[type[T], ...] = None,
+    __module__: str | None = None,
+    __config__: ConfigDict | None = None,
+    __validators__: dict[str, Callable[..., Any]] | None = None,
+    __cls_kwargs__: dict[str, Any] | None = None,
     **field_definitions: Any,
-) -> Type[T]: ...
+) -> type[T]: ...
