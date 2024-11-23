@@ -18,6 +18,27 @@ It stands out for its simplicity, transparency, and user-centric design, built o
 
 [:material-star: Star the Repo](https://github.com/jxnl/instructor){: .md-button .md-button--primary } [:material-book-open-variant: Cookbooks](./examples/index.md){: .md-button } [:material-lightbulb: Prompting Guide](./prompting/index.md){: .md-button }
 
+=== "pip"
+    ```bash
+    pip install instructor
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install instructor
+    ```
+
+=== "poetry"
+    ```bash
+    poetry add instructor
+    ```
+
+If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
+
+```bash
+instructor docs [QUERY]
+```
+
 ## Newsletter
 
 If you want to be notified of tips, new blog posts, and research, subscribe to our newsletter. Here's what you can expect:
@@ -31,6 +52,420 @@ If you want to be notified of tips, new blog posts, and research, subscribe to o
 Subscribe to our newsletter for updates on AI development. We provide content to keep you informed and help you use Instructor in projects.
 
 <iframe src="https://embeds.beehiiv.com/2faf420d-8480-4b6e-8d6f-9c5a105f917a?slim=true" data-test-id="beehiiv-embed" height="52" width="80%" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
+
+## Getting Started
+
+If you want to see all the integrations, check out the [integrations guide](./integrations/index.md).
+
+=== "OpenAI"
+    ```bash
+    pip install instructor
+    ```
+
+    !!! info "Using OpenAI's Structured Output Response"
+
+        You can now use OpenAI's structured output response with Instructor. This feature combines the strengths of Instructor with OpenAI's precise sampling.
+
+        ```python
+        client = instructor.from_openai(OpenAI(), mode=Mode.TOOLS_STRICT)
+        ```
+
+    ```python
+    import instructor
+    from pydantic import BaseModel
+    from openai import OpenAI
+
+    # Define your desired output structure
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    # Patch the OpenAI client
+    client = instructor.from_openai(OpenAI())
+
+    # Extract structured data from natural language
+    res = client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=ExtractUser,
+        messages=[{"role": "user", "content": "John Doe is 30 years old."}],
+    )
+
+    assert res.name == "John Doe"
+    assert res.age == 30
+    ```
+
+    [See more :material-arrow-right:](./integrations/openai.md){: .md-button }
+
+=== "Ollama"
+
+    ```bash
+    pip install "instructor[ollama]"
+    ```
+
+    ```python
+    from openai import OpenAI
+    from pydantic import BaseModel, Field
+    from typing import List
+    import instructor
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    client = instructor.from_openai(
+        OpenAI(
+            base_url="http://localhost:11434/v1",
+            api_key="ollama",
+        ),
+        mode=instructor.Mode.JSON,
+    )
+
+    resp = client.chat.completions.create(
+        model="llama3",
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+        response_model=ExtractUser,
+    )
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/ollama.md){: .md-button }
+
+=== "llama-cpp-python"
+    ```bash
+    pip install "instructor[llama-cpp-python]"
+    ```
+
+    ```python
+    import llama_cpp
+    import instructor
+    from llama_cpp.llama_speculative import LlamaPromptLookupDecoding
+    from pydantic import BaseModel
+
+    llama = llama_cpp.Llama(
+        model_path="../../models/OpenHermes-2.5-Mistral-7B-GGUF/openhermes-2.5-mistral-7b.Q4_K_M.gguf",
+        n_gpu_layers=-1,
+        chat_format="chatml",
+        n_ctx=2048,
+        draft_model=LlamaPromptLookupDecoding(num_pred_tokens=2),
+        logits_all=True,
+        verbose=False,
+    )
+
+    create = instructor.patch(
+        create=llama.create_chat_completion_openai_v1,
+        mode=instructor.Mode.JSON_SCHEMA,
+    )
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    user = create(
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract `Jason is 30 years old`",
+            }
+        ],
+        response_model=ExtractUser,
+    )
+
+    assert user.name == "Jason"
+    assert user.age == 30
+    ```
+
+    [See more :material-arrow-right:](./integrations/llama-cpp-python.md){: .md-button }
+
+=== "Anthropic"
+    ```bash
+    pip install "instructor[anthropic]"
+    ```
+
+    ```python
+    import instructor
+    from anthropic import Anthropic
+    from pydantic import BaseModel
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    client = instructor.from_anthropic(Anthropic())
+
+    # note that client.chat.completions.create will also work
+    resp = client.messages.create(
+        model="claude-3-5-sonnet-20240620",
+        max_tokens=1024,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+        response_model=ExtractUser,
+    )
+
+    assert isinstance(resp, ExtractUser)
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/anthropic.md){: .md-button }
+
+=== "Gemini"
+    ```bash
+    pip install "instructor[google-generativeai]"
+    ```
+
+    ```python
+    import instructor
+    import google.generativeai as genai
+    from pydantic import BaseModel
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    client = instructor.from_gemini(
+        client=genai.GenerativeModel(
+            model_name="models/gemini-1.5-flash-latest",
+        ),
+        mode=instructor.Mode.GEMINI_JSON,
+    )
+
+    # note that client.chat.completions.create will also work
+    resp = client.messages.create(
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+        response_model=ExtractUser,
+    )
+
+    assert isinstance(resp, ExtractUser)
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/google.md){: .md-button }
+
+=== "Vertex AI"
+    ```bash
+    pip install "instructor[vertexai]"
+    ```
+
+    ```python
+    import instructor
+    import vertexai  # type: ignore
+    from vertexai.generative_models import GenerativeModel  # type: ignore
+    from pydantic import BaseModel
+
+    vertexai.init()
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    client = instructor.from_vertexai(
+        client=GenerativeModel("gemini-1.5-pro-preview-0409"),
+        mode=instructor.Mode.VERTEXAI_TOOLS,
+    )
+
+    # note that client.chat.completions.create will also work
+    resp = client.create(
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+        response_model=ExtractUser,
+    )
+
+    assert isinstance(resp, ExtractUser)
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/vertex.md){: .md-button }
+
+=== "Groq"
+    ```bash
+    pip install "instructor[groq]"
+    ```
+
+    ```python
+    import instructor
+    from groq import Groq
+    from pydantic import BaseModel
+
+    client = instructor.from_groq(Groq())
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    resp = client.chat.completions.create(
+        model="llama3-70b-8192",
+        response_model=ExtractUser,
+        messages=[{"role": "user", "content": "Extract Jason is 25 years old."}],
+    )
+
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/groq.md){: .md-button }
+
+=== "Litellm"
+    ```bash
+    pip install "instructor[litellm]"
+    ```
+
+    ```python
+    import instructor
+    from litellm import completion
+    from pydantic import BaseModel
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    client = instructor.from_litellm(completion)
+
+    resp = client.chat.completions.create(
+        model="claude-3-opus-20240229",
+        max_tokens=1024,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+        response_model=ExtractUser,
+    )
+
+    assert isinstance(resp, ExtractUser)
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/litellm.md){: .md-button }
+
+=== "Cohere"
+    ```bash
+    pip install "instructor[cohere]"
+    ```
+
+    ```python
+    import instructor
+    from pydantic import BaseModel
+    from cohere import Client
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    client = instructor.from_cohere(Client())
+
+    resp = client.chat.completions.create(
+        response_model=ExtractUser,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+    )
+
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/cohere.md){: .md-button }
+
+=== "Cerebras"
+    ```bash
+    pip install "instructor[cerebras]"
+    ```
+
+    ```python
+    from cerebras.cloud.sdk import Cerebras
+    import instructor
+    from pydantic import BaseModel
+    import os
+
+    client = Cerebras(
+        api_key=os.environ.get("CEREBRAS_API_KEY"),
+    )
+    client = instructor.from_cerebras(client)
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    resp = client.chat.completions.create(
+        model="llama3.1-70b",
+        response_model=ExtractUser,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+    )
+
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/cerebras.md){: .md-button }
+
+=== "Fireworks"
+    ```bash
+    pip install "instructor[fireworks]"
+    ```
+
+    ```python
+    from fireworks.client import Fireworks
+    import instructor
+    from pydantic import BaseModel
+    import os
+
+    client = Fireworks(
+        api_key=os.environ.get("FIREWORKS_API_KEY"),
+    )
+    client = instructor.from_fireworks(client)
+
+    class ExtractUser(BaseModel):
+        name: str
+        age: int
+
+    resp = client.chat.completions.create(
+        model="accounts/fireworks/models/llama-v3p2-1b-instruct",
+        response_model=ExtractUser,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract Jason is 25 years old.",
+            }
+        ],
+    )
+
+    assert resp.name == "Jason"
+    assert resp.age == 25
+    ```
+
+    [See more :material-arrow-right:](./integrations/fireworks.md){: .md-button }
+
 
 ## Why use Instructor?
 
@@ -74,96 +509,10 @@ Subscribe to our newsletter for updates on AI development. We provide content to
 
 </div>
 
-## Getting Started
-
-```
-pip install -U instructor
-```
-
-If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
-
-```
-instructor docs [QUERY]
-```
-
-You can also check out our [cookbooks](./examples/index.md) and [concepts](./concepts/models.md) to learn more about how to use Instructor.
-
-??? info "Make sure you've installed the dependencies for your specific client"
-
-    To keep the bundle size small, `instructor` only ships with the OpenAI client. Before using the other clients and their respective `from_xx` method, make sure you've installed the dependencies following the instructions below.
-
-    1. Anthropic : `pip install "instructor[anthropic]"`
-    2. Google Generative AI: `pip install "instructor[google-generativeai]"`
-    3. Vertex AI: `pip install "instructor[vertexai]"`
-    4. Cohere: `pip install "instructor[cohere]"`
-    5. Litellm: `pip install "instructor[litellm]"`
-    6. Mistral: `pip install "instructor[mistralai]"`
-
-Now, let's see Instructor in action with a simple example:
-
-### Using OpenAI
-
-??? info "Want to use OpenAI's Structured Output Response?"
-
-    We've added support for OpenAI's structured output response. With this, you'll get all the benefits of instructor you like with the constrained sampling from OpenAI.
-
-    ```python
-    from openai import OpenAI
-    from instructor import from_openai, Mode
-    from pydantic import BaseModel
-
-    client = from_openai(OpenAI(), mode=Mode.TOOLS_STRICT)
-
-
-    class User(BaseModel):
-        name: str
-        age: int
-
-
-    resp = client.chat.completions.create(
-        response_model=User,
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
-        model="gpt-4o",
-    )
-    ```
-
-```python
-import instructor
-from pydantic import BaseModel
-from openai import OpenAI
-
-
-# Define your desired output structure
-class UserInfo(BaseModel):
-    name: str
-    age: int
-
-
-# Patch the OpenAI client
-client = instructor.from_openai(OpenAI())
-
-# Extract structured data from natural language
-user_info = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=UserInfo,
-    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
-)
-
-print(user_info.name)
-#> John Doe
-print(user_info.age)
-#> 30
-```
-
 
 ### Using Hooks
 
-Instructor provides a powerful hooks system that allows you to intercept and log various stages of the LLM interaction process. Here's a simple example demonstrating how to use hooks:
+Instructor includes a hooks system that lets you manage events during the language model interaction process. Hooks allow you to intercept, log, and handle events at different stages, such as when completion arguments are provided or when a response is received. This system is based on the `Hooks` class, which handles event registration and emission. You can use hooks to add custom behavior like logging or error handling. Here's a simple example demonstrating how to use hooks:
 
 ```python
 import instructor
@@ -237,422 +586,9 @@ This example demonstrates:
 The hooks provide valuable insights into the function's inputs and any errors,
 enhancing debugging and monitoring capabilities.
 
-### Using Anthropic
+[Learn more about hooks :octicons-arrow-right:](./concepts/hooks.md){: .md-button .md-button-primary }
 
-```python
-import instructor
-from anthropic import Anthropic
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_anthropic(Anthropic())
-
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
-    model="claude-3-opus-20240229",
-    max_tokens=1024,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-### Using Gemini
-
-The Vertex AI and Gemini Clients have different APIs. When using instructor with these clients, make sure to read the documentation for the specific client you're using to make sure you're using the correct methods.
-
-**Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](./integrations/vertex.md). As of now, you cannot use tool calling with Gemini when you have multi-modal inputs (Eg. Images, Audio, Video), you must use the `JSON` mode equivalent for that client.
-
-#### Google AI
-
-```python
-import instructor
-import google.generativeai as genai
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",
-    ),
-    mode=instructor.Mode.GEMINI_JSON,
-)
-
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-??? info "Using Gemini's multi-modal capabilities with `google-generativeai`"
-
-    The `google.generativeai` library has a different API than the `vertexai` library. But, using `instructor`, working with multi-modal data is easy.
-
-    Here's a quick example of how to use an Audio file with `google-generativeai`. We've used this [recording](https://storage.googleapis.com/generativeai-downloads/data/State_of_the_Union_Address_30_January_1961.mp3) that's taken from the [Google Generative AI cookbook](https://github.com/google-gemini/cookbook/blob/main/quickstarts/Audio.ipynb)
-
-    For a more in-depth example, you can check out our guide to working with Gemini using the `google-generativeai` package [here](./examples/multi_modal_gemini.md).
-
-
-    ```python
-    import instructor
-    import google.generativeai as genai
-    from pydantic import BaseModel
-
-
-    client = instructor.from_gemini(
-        client=genai.GenerativeModel(
-            model_name="models/gemini-1.5-flash-latest",
-        ),
-        mode=instructor.Mode.GEMINI_JSON,  # (1)!
-    )
-
-    mp3_file = genai.upload_file("./sample.mp3")  # (2)!
-
-
-    class Description(BaseModel):
-        description: str
-
-
-    resp = client.create(
-        response_model=Description,
-        messages=[
-            {
-                "role": "user",
-                "content": "Summarize what's happening in this audio file and who the main speaker is",
-            },
-            {
-                "role": "user",
-                "content": mp3_file,  # (3)!
-            },
-        ],
-    )
-
-    print(resp)
-    #> description="The main speaker is President John F. Kennedy, and he's giving a
-    #> State of the Union address to a joint session of Congress. He begins by
-    #> acknowledging his fondness for the House of Representatives and his long
-    #> history with it. He then goes on to discuss the state of the economy,
-    #> highlighting the difficulties faced by Americans, such as unemployment and
-    #> low farm incomes. He also touches on the Cold War and the international
-    #> balance of payments. He speaks of the need to strengthen the US military,
-    #> and he also discusses the importance of international cooperation and the
-    #> need to address global issues like hunger and illiteracy. He ends by urging
-    #> his audience to work together to face the challenges that lie ahead."
-    ```
-
-    1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
-    2. Use `genai.upload_file` to upload your file. If you've already uploaded the file, you can get it by using `genai.get_file`
-    3. Pass in the file object as any normal user message
-
-#### Vertex AI
-
-```python
-import instructor
-import vertexai  # type: ignore
-from vertexai.generative_models import GenerativeModel  # type: ignore
-from pydantic import BaseModel
-
-vertexai.init()
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-1.5-pro-preview-0409"),
-    mode=instructor.Mode.VERTEXAI_TOOLS,
-)
-
-# note that client.chat.completions.create will also work
-resp = client.create(
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-??? info "Using Gemini's multi-modal capabilities with VertexAI"
-
-    We've most recently added support for multi-part file formats using google's `gm.Part` objects. This allows you to pass in additional information to the LLM about the data you'd like to see.
-
-    Here are two examples of how to use multi-part formats with Instructor.
-
-    We can combine multiple `gm.Part` objects into a single list and combine them into a single message to be sent to the LLM. Under the hood, we'll convert them into the appropriate format for Gemini.
-
-    ```python
-    import instructor
-    import vertexai.generative_models as gm  # type: ignore
-    from pydantic import BaseModel, Field
-
-    client = instructor.from_vertexai(gm.GenerativeModel("gemini-1.5-pro-001"))
-    content = [
-        "Order Details:",
-        gm.Part.from_text("Customer: Alice"),
-        gm.Part.from_text("Items:"),
-        "Name: Laptop, Price: 999.99",
-        "Name: Mouse, Price: 29.99",
-    ]
-
-
-    class Item(BaseModel):
-        name: str
-        price: float
-
-
-    class Order(BaseModel):
-        items: list[Item] = Field(..., default_factory=list)
-        customer: str
-
-
-    resp = client.create(
-        response_model=Order,
-        messages=[
-            {
-                "role": "user",
-                "content": content,
-            },
-        ],
-    )
-
-    print(resp)
-    #> items=[Item(name='Laptop', price=999.99), Item(name='Mouse', price=29.99)] customer='Alice'
-    ```
-
-    This is also the same for multi-modal responses when we want to work with images. In this example, we'll ask the LLM to describe an image and pass in the image as a `gm.Part` object.
-
-    ```python
-    import instructor
-    import vertexai.generative_models as gm  # type: ignore
-    from pydantic import BaseModel
-    import requests
-
-    client = instructor.from_vertexai(
-        gm.GenerativeModel("gemini-1.5-pro-001"), mode=instructor.Mode.VERTEXAI_JSON
-    )
-    content = [
-        gm.Part.from_text("Count the number of objects in the image."),
-        gm.Part.from_data(
-            bytes(
-                requests.get(
-                    "https://img.taste.com.au/Oq97xT-Q/taste/2016/11/blueberry-scones-75492-1.jpeg"
-                ).content
-            ),
-            "image/jpeg",
-        ),
-    ]
-
-
-    class Description(BaseModel):
-        description: str
-
-
-    resp = client.create(
-        response_model=Description,
-        messages=[
-            {
-                "role": "user",
-                "content": content,
-            },
-        ],
-    )
-
-    print(resp)
-    #> description='Seven blueberry scones sit inside a metal pie plate.'
-    ```
-
-### Using Litellm
-
-```python
-import instructor
-from litellm import completion
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_litellm(completion)
-
-resp = client.chat.completions.create(
-    model="claude-3-opus-20240229",
-    max_tokens=1024,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-### Using Cohere
-
-We also support users who want to use the Cohere models using the `from_cohere` method.
-
-??? info "Want to get the original Cohere response?"
-
-    If you want to get the original response object from the LLM instead of a structured output, you can pass `response_model=None` to the `create` method. This will return the raw response from the underlying API.
-
-    ```python
-    # This will return the original Cohere response object
-    raw_response = client.chat.completions.create(
-        response_model=None,
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
-    )
-    ```
-
-    This can be useful when you need access to additional metadata or want to handle the raw response yourself.
-
-```python
-import instructor
-from pydantic import BaseModel
-from cohere import Client
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_cohere(Client())
-
-resp = client.chat.completions.create(
-    response_model=User,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-)
-
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-### Using Cerebras
-
-For those who want to use the Cerebras models, you can use the `from_cerebras` method to patch the client. You can see their list of models [here](https://inference-docs.cerebras.ai/api-reference/models).
-
-```python
-from cerebras.cloud.sdk import Cerebras
-import instructor
-from pydantic import BaseModel
-import os
-
-client = Cerebras(
-    api_key=os.environ.get("CEREBRAS_API_KEY"),
-)
-client = instructor.from_cerebras(client)
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-resp = client.chat.completions.create(
-    model="llama3.1-70b",
-    response_model=User,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-)
-
-print(resp)
-#> name='Jason' age=25
-```
-
-### Using Fireworks
-
-For those who want to use the Fireworks models, you can use the `from_fireworks` method to patch the client. You can see their list of models [here](https://fireworks.ai/models).
-
-```python
-from fireworks.client import Fireworks
-import instructor
-from pydantic import BaseModel
-import os
-
-client = Fireworks(
-    api_key=os.environ.get("FIREWORKS_API_KEY"),
-)
-client = instructor.from_fireworks(client)
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-resp = client.chat.completions.create(
-    model="accounts/fireworks/models/llama-v3p2-1b-instruct",
-    response_model=User,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-)
-
-print(resp)
-#> name='Jason' age=25
-```
-
-## Correct Typing
+## Correct Type Inference
 
 This was the dream of instructor but due to the patching of openai, it wasnt possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
 
@@ -833,17 +769,72 @@ for user in users:
 
 ## Templating
 
-Instructor also ships with [Jinja](https://palletsprojects.com/p/jinja/) templating support. Check out our docs on [templating](./concepts/templating.md) to learn about how to use it to its full potential.
+Instructor supports templating with Jinja, which lets you create dynamic prompts. This is useful when you want to fill in parts of a prompt with data. Here's a simple example:
 
+```python
+import openai
+import instructor
+from pydantic import BaseModel
+
+client = instructor.from_openai(openai.OpenAI())
+
+class User(BaseModel):
+    name: str
+    age: int
+
+# Create a completion using a Jinja template in the message content
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {
+            "role": "user",
+            "content": """Extract the information from the
+            following text: {{ data }}`""",
+        },
+    ],
+    response_model=User,
+    context={"data": "John Doe is thirty years old"},
+)
+
+print(response)
+#> User(name='John Doe', age=30)
+```
+
+[Learn more about templating :octicons-arrow-right:](./concepts/templating.md){: .md-button .md-button-primary }
 ## Validation
 
 You can also use Pydantic to validate your outputs and get the llm to retry on failure. Check out our docs on [retrying](./concepts/retrying.md) and [validation context](./concepts/reask_validation.md).
 
-## More Examples
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel, ValidationError, BeforeValidator
+from typing_extensions import Annotated
+from instructor import llm_validator
 
-If you'd like to see more check out our [cookbook](examples/index.md).
+# Apply the patch to the OpenAI client
+client = instructor.from_openai(OpenAI())
 
-[Installing Instructor](installation.md) is a breeze. Just run `pip install instructor`.
+class QuestionAnswer(BaseModel):
+    question: str
+    answer: Annotated[
+        str,
+        BeforeValidator(llm_validator("don't say objectionable things", client=client)),
+    ]
+
+try:
+    qa = QuestionAnswer(
+        question="What is the meaning of life?",
+        answer="The meaning of life is to be evil and steal",
+    )
+except ValidationError as e:
+    print(e)
+    """
+    1 validation error for QuestionAnswer
+    answer
+      Assertion failed, The statement promotes objectionable behavior by encouraging evil and stealing. [type=assertion_error, input_value='The meaning of life is to be evil and steal', input_type=str]
+    """
+```
 
 ## Contributing
 
