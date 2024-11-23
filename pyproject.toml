@@ -43,6 +43,9 @@ test-docs = [
     "pydub>=0.25.1",
     "datasets>=3.0.1",
     "writer-sdk>=1.2.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.5",
+    "pytest-cov>=4.1.0",
 ]
 mistralai = ["mistralai>=1.0.3"]
 litellm = ["litellm>=1.35.31"]

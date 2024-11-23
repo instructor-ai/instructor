@@ -48,6 +48,8 @@ cohere==5.11.4
     # via instructor (pyproject.toml)
 courlan==1.3.2
     # via trafilatura
+coverage==7.6.7
+    # via pytest-cov
 datasets==3.1.0
     # via instructor (pyproject.toml)
 dateparser==1.2.0
@@ -118,6 +120,8 @@ idna==3.10
     #   yarl
 importlib-metadata==8.5.0
     # via litellm
+iniconfig==2.0.0
+    # via pytest
 jinja2==3.1.4
     # via
     #   instructor (pyproject.toml)
@@ -173,6 +177,7 @@ packaging==24.2
     # via
     #   datasets
     #   huggingface-hub
+    #   pytest
 pandas==2.2.3
     # via
     #   instructor (pyproject.toml)
@@ -181,6 +186,8 @@ parameterized==0.9.0
     # via cohere
 phonenumbers==8.13.50
     # via instructor (pyproject.toml)
+pluggy==1.5.0
+    # via pytest
 propcache==0.2.0
     # via
     #   aiohttp
@@ -211,6 +218,15 @@ pydub==0.25.1
     # via instructor (pyproject.toml)
 pygments==2.18.0
     # via rich
+pytest==8.3.3
+    # via
+    #   instructor (pyproject.toml)
+    #   pytest-asyncio
+    #   pytest-cov
+pytest-asyncio==0.24.0
+    # via instructor (pyproject.toml)
+pytest-cov==6.0.0
+    # via instructor (pyproject.toml)
 python-dateutil==2.8.2
     # via
     #   dateparser
