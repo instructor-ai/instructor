@@ -26,16 +26,11 @@ jobs:
           python-version: "3.10"
       - name: Install UV
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            echo "$HOME/.local/bin" >> $GITHUB_PATH
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            echo "$HOME/Library/Application Support/uv/bin" >> $GITHUB_PATH
-          else
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            echo "$HOME/.local/bin" >> $GITHUB_PATH
-          fi
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv --version
+        shell: bash
       - name: Create and activate venv
         run: |
           python -m venv .venv
@@ -47,8 +42,8 @@ jobs:
         shell: bash
       - name: Install dev dependencies
         run: |
-          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]" --system
-          uv pip install -r requirements-dev.txt --system
+          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]"
+          uv pip install -r requirements-dev.txt
         shell: bash
       - name: Run Continuous Integration Action
         uses: astral-sh/ruff-action@v1

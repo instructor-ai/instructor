@@ -34,16 +34,17 @@ jobs:
 
       - name: Install UV
         run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
           if [ "$RUNNER_OS" == "Windows" ]; then
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            echo "$HOME/.local/bin" >> $GITHUB_PATH
+            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           elif [ "$RUNNER_OS" == "macOS" ]; then
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            echo "$HOME/Library/Application Support/uv/bin" >> $GITHUB_PATH
+            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           else
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            echo "$HOME/.local/bin" >> $GITHUB_PATH
+            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv --version
+        shell: bash
 
       - name: Create and activate venv
         run: |
