@@ -5,7 +5,7 @@ description = "structured outputs for llm"
 authors = [{name = "Jason Liu", email = "jason@jxnl.co"}]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "openai>=1.52.0",
     "pydantic>=2.8.0",

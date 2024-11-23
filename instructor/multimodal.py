@@ -1,24 +1,44 @@
 from __future__ import annotations
-from .mode import Mode
-import base64
-import re
-from collections.abc import Mapping, Hashable
-from functools import lru_cache
+
 from typing import (
     Any,
     Callable,
     Literal,
     Optional,
-    Union,
     TypedDict,
     TypeVar,
+    Union,
     cast,
+    Protocol,
+    runtime_checkable,
 )
+from typing_extensions import TypeGuard
+from collections.abc import Mapping, Hashable
+from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlparse
+import base64
 import mimetypes
+import re
 import requests
-from pydantic import BaseModel, Field  # type:ignore
+
+import pydantic.v1 as pydantic
+from pydantic.v1 import Field
+
+# Type definitions
+ModelType = TypeVar('ModelType', bound='pydantic.BaseModel')
+
+@runtime_checkable
+class PydanticModel(Protocol):
+    """Protocol for Pydantic models."""
+    def dict(self, **kwargs: Any) -> dict[str, Any]: ...
+    def model_dump(self, **kwargs: Any) -> dict[str, Any]: ...
+
+class BaseModel(pydantic.BaseModel):
+    """Base model with proper type support."""
+    class Config:
+        arbitrary_types_allowed = True
+
 from .mode import Mode
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -42,16 +62,23 @@ class ImageParams(ImageParamsBase, total=False):
 
 
 class Image(BaseModel):
-    source: Union[str, Path] = Field(  # noqa: UP007
+    """An image that can be loaded from a URL, file path, or base64 data."""
+    source: Union[str, Path] = Field(
+        ...,  # Required field
         description="URL, file path, or base64 data of the image"
     )
-    media_type: str = Field(description="MIME type of the image")
-    data: Union[str, None] = Field(  # noqa: UP007
-        None, description="Base64 encoded image data", repr=False
+    media_type: str = Field(
+        ...,  # Required field
+        description="MIME type of the image"
+    )
+    data: Optional[str] = Field(
+        None,
+        description="Base64 encoded image data",
+        repr=False
     )
 
     @classmethod
-    def autodetect(cls, source: Union[str, Path]) -> Image:  # noqa: UP007
+    def autodetect(cls, source: Union[str, Path]) -> "Image":
         """Attempt to autodetect an image from a source string or Path.
 
         Args:
@@ -78,7 +105,7 @@ class Image(BaseModel):
     @classmethod
     def autodetect_safely(
         cls, source: Union[str, Path]
-    ) -> Union[Image, str]:  # noqa: UP007
+    ) -> Union["Image", str]:
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
@@ -149,7 +176,7 @@ class Image(BaseModel):
 
     @classmethod
     @lru_cache
-    def from_path(cls, path: Union[str, Path]) -> Image:  # noqa: UP007
+    def from_path(cls, path: Union[str, Path]) -> "Image":
         path = Path(path)
         if not path.is_file():
             raise FileNotFoundError(f"Image file not found: {path}")
@@ -209,12 +236,14 @@ class Image(BaseModel):
 
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
-
     source: Union[str, Path] = Field(
+        ...,  # Required field
         description="URL or file path of the audio"
-    )  # noqa: UP007
-    data: Union[str, None] = Field(  # noqa: UP007
-        None, description="Base64 encoded audio data", repr=False
+    )
+    data: Optional[str] = Field(
+        None,
+        description="Base64 encoded audio data",
+        repr=False
     )
 
     @classmethod
@@ -227,7 +256,7 @@ class Audio(BaseModel):
         return cls(source=url, data=data)
 
     @classmethod
-    def from_path(cls, path: Union[str, Path]) -> Audio:  # noqa: UP007
+    def from_path(cls, path: Union[str, Path]) -> "Audio":
         """Create an Audio instance from a file path."""
         path = Path(path)
         assert path.is_file(), f"Audio file not found: {path}"
@@ -249,13 +278,13 @@ class Audio(BaseModel):
 
 class ImageWithCacheControl(Image):
     """Image with Anthropic prompt caching support."""
-
     cache_control: OptionalCacheControlType = Field(
-        None, description="Optional Anthropic cache control image"
+        None,
+        description="Optional Anthropic cache control image"
     )
 
     @classmethod
-    def from_image_params(cls, image_params: ImageParams) -> Image:
+    def from_image_params(cls, image_params: ImageParams) -> ImageWithCacheControl:
         source = image_params["source"]
         cache_control = image_params.get("cache_control")
         base_image = Image.autodetect(source)
@@ -275,22 +304,22 @@ class ImageWithCacheControl(Image):
 
 
 def convert_contents(
-    contents: Union[  # noqa: UP007
+    contents: Union[
         str,
         dict[str, Any],
         Image,
         Audio,
-        list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
+        list[Union[str, dict[str, Any], Image, Audio]]
     ],
     mode: Mode,
-) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
+) -> Union[str, list[dict[str, Any]]]:
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
     if isinstance(contents, (Image, Audio)) or isinstance(contents, dict):
         contents = [contents]
 
-    converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
+    converted_contents: list[dict[str, Any]] = []
     for content in contents:
         if isinstance(content, str):
             converted_contents.append({"type": "text", "text": content})
@@ -312,28 +341,36 @@ def convert_messages(
     messages: list[
         dict[
             str,
-            Union[  # noqa: UP007
+            Union[
                 str,
                 dict[str, Any],
                 Image,
                 Audio,
-                list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
-            ],
+                list[Union[str, dict[str, Any], Image, Audio]]
+            ]
         ]
     ],
     mode: Mode,
     autodetect_images: bool = False,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
-    converted_messages = []
+    converted_messages: list[dict[str, Any]] = []
 
-    def is_image_params(x: Any) -> bool:
-        return isinstance(x, dict) and x.get("type") == "image" and "source" in x  # type: ignore
+    def is_image_params(x: Any) -> TypeGuard[ImageParams]:
+        """Check if a dictionary matches the ImageParams type."""
+        if not isinstance(x, dict):
+            return False
+        return (
+            "type" in x
+            and isinstance(x["type"], str)
+            and x["type"] == "image"
+            and "source" in x
+        )
 
     for message in messages:
         if "type" in message:
             if message["type"] in {"audio", "image"}:
-                converted_messages.append(message)  # type: ignore
+                converted_messages.append(message)
             else:
                 raise ValueError(f"Unsupported message type: {message['type']}")
         role = message["role"]
@@ -343,30 +380,24 @@ def convert_messages(
         }
         if autodetect_images:
             if isinstance(content, list):
-                new_content: list[Union[str, dict[str, Any], Image, Audio]] = (
-                    []
-                )  # noqa: UP007
+                new_content: list[Union[str, dict[str, Any], Image, Audio]] = []
                 for item in content:
                     if isinstance(item, str):
                         new_content.append(Image.autodetect_safely(item))
-                    elif is_image_params(item):
+                    elif isinstance(item, dict) and is_image_params(item):
                         new_content.append(
-                            ImageWithCacheControl.from_image_params(
-                                cast(ImageParams, item)
-                            )
+                            ImageWithCacheControl.from_image_params(item)
                         )
                     else:
-                        new_content.append(item)
+                        new_content.append(cast(Union[str, dict[str, Any], Image, Audio], item))
                 content = new_content
             elif isinstance(content, str):
                 content = Image.autodetect_safely(content)
             elif is_image_params(content):
-                content = ImageWithCacheControl.from_image_params(
-                    cast(ImageParams, content)
-                )
+                content = ImageWithCacheControl.from_image_params(content)
         if isinstance(content, str):
-            converted_messages.append({"role": role, "content": content, **other_kwargs})  # type: ignore
+            converted_messages.append({"role": role, "content": content, **other_kwargs})
         else:
             converted_content = convert_contents(content, mode)
-            converted_messages.append({"role": role, "content": converted_content, **other_kwargs})  # type: ignore
-    return converted_messages  # type: ignore
+            converted_messages.append({"role": role, "content": converted_content, **other_kwargs})
+    return converted_messages

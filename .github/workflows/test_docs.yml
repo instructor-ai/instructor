@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -13,7 +13,7 @@ jobs:
         python-version: ["3.11"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install system dependencies
         run: |
@@ -31,6 +31,7 @@ jobs:
           path: |
             ~/.cache/uv
             ~/.uv
+            .venv
           key: ${{ runner.os }}-uv-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-uv-
@@ -48,11 +49,23 @@ jobs:
             echo "$HOME/.local/bin" >> $GITHUB_PATH
           fi
 
+      - name: Create and activate venv
+        run: |
+          python -m venv .venv
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            . .venv/Scripts/activate
+          else
+            . .venv/bin/activate
+          fi
+        shell: bash
+
       - name: Install dependencies
         run: |
-          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]"
-          uv pip install -r requirements-dev.txt
-          uv pip install -r requirements-doc.txt
+          which uv
+          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]" --system
+          uv pip install -r requirements-dev.txt --system
+          uv pip install -r requirements-doc.txt --system
+        shell: bash
 
       - name: Run tests
         run: pytest tests/llm/test_openai/docs
