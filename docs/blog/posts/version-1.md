@@ -50,7 +50,9 @@ IF you know you want to pass in tempurature, seed, or model, you can do so.
 import openai
 import instructor
 
-client = instructor.from_openai(openai.OpenAI(), model="gpt-4-turbo-preview", temperature=0.2)
+client = instructor.from_openai(
+    openai.OpenAI(), model="gpt-4-turbo-preview", temperature=0.2
+)
 ```
 
 Now, whenever you call `client.chat.completions.create` the `model` and `temperature` will be passed to the openai client!
