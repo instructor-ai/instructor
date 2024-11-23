@@ -1,8 +1,3 @@
----
-title: Installing Instructor
-description: Learn how to install Instructor and its dependencies using pip or uv for Python 3.9+. Simple setup guide included.
----
-
 # Installation
 
 === "pip"
@@ -15,14 +10,48 @@ description: Learn how to install Instructor and its dependencies using pip or u
     uv pip install instructor
     ```
 
-Instructor has a few dependencies:
+## Version Compatibility
 
-- [`openai`](https://pypi.org/project/openai/): OpenAI's Python client.
-- [`typer`](https://pypi.org/project/typer/): Build great CLIs. Easy to code. Based on Python type hints.
-- [`docstring-parser`](https://pypi.org/project/docstring-parser/): A parser for Python docstrings, to improve the experience of working with docstrings in jsonschema.
-- [`pydantic`](https://pypi.org/project/pydantic/): Data validation and settings management using python type annotations.
+Instructor supports both Pydantic v1 and v2. The library automatically detects which version you have installed and adjusts its behavior accordingly.
 
-If you've got Python 3.9+ and either `pip` or `uv` installed, you're good to go.
+=== "Pydantic v1"
+    ```python
+    from pydantic import BaseModel
 
-!!! tip "Using UV"
-    [UV](https://github.com/astral-sh/uv) is a new, extremely fast Python package installer and resolver. It's a great alternative to pip, offering significantly faster installation times.
+    class UserProfile(BaseModel):
+        name: str
+        age: int
+
+    # Pydantic v1 style validation
+    profile = UserProfile(**{"name": "John", "age": 30})
+    ```
+
+=== "Pydantic v2"
+    ```python
+    from pydantic import BaseModel
+
+    class UserProfile(BaseModel):
+        name: str
+        age: int
+
+    # Pydantic v2 style validation
+    profile = UserProfile.model_validate({"name": "John", "age": 30})
+    ```
+
+Both versions work seamlessly with Instructor. The library automatically detects your Pydantic version and uses the appropriate validation method.
+
+## Development Installation
+
+For development, you can install additional dependencies:
+
+=== "pip"
+    ```bash
+    pip install -e ".[dev]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install -e ".[dev]"
+    ```
+
+This will install all the necessary dependencies for development, including testing and documentation tools.
