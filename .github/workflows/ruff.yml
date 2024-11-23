@@ -47,8 +47,8 @@ jobs:
         shell: bash
       - name: Install dev dependencies
         run: |
-          uv pip install -r requirements.txt
-          uv pip install -r requirements-doc.txt
+          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]" --system
+          uv pip install -r requirements-dev.txt --system
         shell: bash
       - name: Run Continuous Integration Action
         uses: astral-sh/ruff-action@v1
