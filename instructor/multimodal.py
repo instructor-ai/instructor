@@ -4,15 +4,12 @@ from typing import (
     Any,
     Callable,
     Literal,
-    Optional,
     TypedDict,
     TypeVar,
-    Union,
-    cast,
     Protocol,
     runtime_checkable,
+    Union,
 )
-from typing_extensions import TypeGuard
 from collections.abc import Mapping, Hashable
 from functools import lru_cache
 from pathlib import Path
@@ -22,11 +19,10 @@ import mimetypes
 import re
 import requests
 
-import pydantic.v1 as pydantic
-from pydantic.v1 import Field
+from pydantic.v1 import BaseModel as PydanticBaseModel, Field
 
 # Type definitions
-ModelType = TypeVar('ModelType', bound='pydantic.BaseModel')
+ModelType = TypeVar("ModelType", bound=PydanticBaseModel)
 
 @runtime_checkable
 class PydanticModel(Protocol):
@@ -34,7 +30,7 @@ class PydanticModel(Protocol):
     def dict(self, **kwargs: Any) -> dict[str, Any]: ...
     def model_dump(self, **kwargs: Any) -> dict[str, Any]: ...
 
-class BaseModel(pydantic.BaseModel):
+class BaseModel(PydanticBaseModel):
     """Base model with proper type support."""
     class Config:
         arbitrary_types_allowed = True
@@ -49,7 +45,7 @@ V = TypeVar("V")
 # Anthropic source: https://docs.anthropic.com/en/docs/build-with-claude/vision#ensuring-image-quality
 VALID_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 CacheControlType = Mapping[str, str]
-OptionalCacheControlType = Optional[CacheControlType]
+OptionalCacheControlType = Union[Mapping[str, str], None]
 
 
 class ImageParamsBase(TypedDict):
@@ -63,7 +59,7 @@ class ImageParams(ImageParamsBase, total=False):
 
 class Image(BaseModel):
     """An image that can be loaded from a URL, file path, or base64 data."""
-    source: Union[str, Path] = Field(
+    source: str | Path = Field(
         ...,  # Required field
         description="URL, file path, or base64 data of the image"
     )
@@ -71,18 +67,18 @@ class Image(BaseModel):
         ...,  # Required field
         description="MIME type of the image"
     )
-    data: Optional[str] = Field(
+    data: str | None = Field(
         None,
         description="Base64 encoded image data",
         repr=False
     )
 
     @classmethod
-    def autodetect(cls, source: Union[str, Path]) -> "Image":
+    def autodetect(cls, source: str | Path) -> Image:
         """Attempt to autodetect an image from a source string or Path.
 
         Args:
-            source (Union[str,path]): The source string or path.
+            source: The source string or path.
         Returns:
             An Image if the source is detected to be a valid image.
         Raises:
@@ -104,12 +100,12 @@ class Image(BaseModel):
 
     @classmethod
     def autodetect_safely(
-        cls, source: Union[str, Path]
-    ) -> Union["Image", str]:
+        cls, source: str | Path
+    ) -> Image | str:
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
-            source (Union[str,path]): The source string or path.
+            source: str | Path: The source string or path.
         Returns:
             An Image if the source is detected to be a valid image, otherwise
             the source itself as a string.
@@ -176,7 +172,7 @@ class Image(BaseModel):
 
     @classmethod
     @lru_cache
-    def from_path(cls, path: Union[str, Path]) -> "Image":
+    def from_path(cls, path: str | Path) -> Image:
         path = Path(path)
         if not path.is_file():
             raise FileNotFoundError(f"Image file not found: {path}")
@@ -236,11 +232,11 @@ class Image(BaseModel):
 
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
-    source: Union[str, Path] = Field(
+    source: str | Path = Field(
         ...,  # Required field
         description="URL or file path of the audio"
     )
-    data: Optional[str] = Field(
+    data: str | None = Field(
         None,
         description="Base64 encoded audio data",
         repr=False
@@ -256,7 +252,7 @@ class Audio(BaseModel):
         return cls(source=url, data=data)
 
     @classmethod
-    def from_path(cls, path: Union[str, Path]) -> "Audio":
+    def from_path(cls, path: str | Path) -> Audio:
         """Create an Audio instance from a file path."""
         path = Path(path)
         assert path.is_file(), f"Audio file not found: {path}"
@@ -304,15 +300,9 @@ class ImageWithCacheControl(Image):
 
 
 def convert_contents(
-    contents: Union[
-        str,
-        dict[str, Any],
-        Image,
-        Audio,
-        list[Union[str, dict[str, Any], Image, Audio]]
-    ],
+    contents: str | dict[str, Any] | Image | Audio | list[str | dict[str, Any] | Image | Audio],
     mode: Mode,
-) -> Union[str, list[dict[str, Any]]]:
+) -> str | list[dict[str, Any]]:
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
@@ -338,66 +328,54 @@ def convert_contents(
 
 
 def convert_messages(
-    messages: list[
-        dict[
-            str,
-            Union[
-                str,
-                dict[str, Any],
-                Image,
-                Audio,
-                list[Union[str, dict[str, Any], Image, Audio]]
-            ]
-        ]
-    ],
+    messages: list[dict[str, str | dict[str, Any] | Image | Audio | list[str | dict[str, Any] | Image | Audio]]],
     mode: Mode,
     autodetect_images: bool = False,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format based on the specified mode."""
     converted_messages: list[dict[str, Any]] = []
 
-    def is_image_params(x: Any) -> TypeGuard[ImageParams]:
-        """Check if a dictionary matches the ImageParams type."""
-        if not isinstance(x, dict):
-            return False
-        return (
-            "type" in x
-            and isinstance(x["type"], str)
-            and x["type"] == "image"
-            and "source" in x
-        )
-
     for message in messages:
+        converted_message: dict[str, Any] = {}
+
         if "type" in message:
             if message["type"] in {"audio", "image"}:
-                converted_messages.append(message)
-            else:
-                raise ValueError(f"Unsupported message type: {message['type']}")
-        role = message["role"]
-        content = message["content"] or []
-        other_kwargs = {
-            k: v for k, v in message.items() if k not in ["role", "content", "type"]
-        }
-        if autodetect_images:
-            if isinstance(content, list):
-                new_content: list[Union[str, dict[str, Any], Image, Audio]] = []
-                for item in content:
-                    if isinstance(item, str):
-                        new_content.append(Image.autodetect_safely(item))
-                    elif isinstance(item, dict) and is_image_params(item):
-                        new_content.append(
-                            ImageWithCacheControl.from_image_params(item)
-                        )
-                    else:
-                        new_content.append(cast(Union[str, dict[str, Any], Image, Audio], item))
-                content = new_content
-            elif isinstance(content, str):
-                content = Image.autodetect_safely(content)
-            elif is_image_params(content):
-                content = ImageWithCacheControl.from_image_params(content)
-        if isinstance(content, str):
-            converted_messages.append({"role": role, "content": content, **other_kwargs})
-        else:
-            converted_content = convert_contents(content, mode)
-            converted_messages.append({"role": role, "content": converted_content, **other_kwargs})
+                # Convert the message using the specified mode
+                content = convert_contents(message, mode)
+                if isinstance(content, list):
+                    converted_message.update(content[0])
+                else:
+                    converted_message["content"] = content
+                converted_messages.append(converted_message)
+                continue
+            converted_messages.append({"error": f"Unsupported message type: {message['type']}"})
+            continue
+
+        # Copy role and any additional fields
+        converted_message["role"] = message["role"]
+        for key, value in message.items():
+            if key not in ["role", "content", "type"]:
+                converted_message[key] = value
+
+        # Handle content conversion
+        content = message.get("content") or []
+        if autodetect_images and isinstance(content, list):
+            converted_content: list[str | dict[str, Any] | Image | Audio] = []
+            for item in content:
+                if isinstance(item, str):
+                    try:
+                        converted_item = Image.autodetect_safely(item)
+                        converted_content.append(converted_item)
+                    except ValueError:
+                        converted_content.append(item)
+                else:
+                    converted_content.append(item)
+            content = converted_content
+
+        # Convert the final content
+        converted_message["content"] = convert_contents(content, mode)
+        converted_messages.append(converted_message)
+
+    if not converted_messages:
+        return [{"error": "No messages to convert"}]
     return converted_messages
