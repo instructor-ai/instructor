@@ -39,17 +39,25 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install UV
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Create and activate venv
         run: |
           python -m venv .venv
-          source .venv/bin/activate
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            . .venv/Scripts/activate
+          else
+            . .venv/bin/activate
+          fi
+        shell: bash
 
       - name: Install dependencies
         run: |
           uv pip install -e ".[test-docs,anthropic]"
           uv pip install -r requirements-dev.txt
+        shell: bash
 
       - uses: jakebailey/pyright-action@v2
         with:

@@ -25,15 +25,23 @@ jobs:
         with:
           python-version: 3.9
       - name: Install UV
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Create and activate venv
         run: |
           python -m venv .venv
-          source .venv/bin/activate
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            . .venv/Scripts/activate
+          else
+            . .venv/bin/activate
+          fi
+        shell: bash
       - name: Install dev dependencies
         run: |
           uv pip install -r requirements.txt
           uv pip install -r requirements-doc.txt
+        shell: bash
       - name: Run Continuous Integration Action
         uses: astral-sh/ruff-action@v1
       - name: Upload Artifacts
