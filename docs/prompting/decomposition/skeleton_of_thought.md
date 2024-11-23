@@ -33,7 +33,7 @@ class Response(BaseModel):
 
 async def get_skeleton(question):
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Skeleton,
         messages=[
             {
@@ -59,7 +59,7 @@ async def get_skeleton(question):
 
 async def expand_point(question, skeleton, point_index):
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Response,
         messages=[
             {

@@ -296,7 +296,7 @@ def summarize_article(article: str, summary_steps: int = 3):
     summary_chain = []
     # We first generate an initial summary
     summary: InitialSummary = client.chat.completions.create(  # (2)!
-        model="gpt-4-0613",
+        model="gpt-4-turbo-preview",
         response_model=InitialSummary,
         messages=[
             {
@@ -325,7 +325,7 @@ def summarize_article(article: str, summary_steps: int = 3):
             ]
         )
         new_summary: RewrittenSummary = client.chat.completions.create( # (3)!
-            model="gpt-4-0613",
+            model="gpt-4-turbo-preview",
             messages=[
                 {
                     "role": "system",
@@ -482,14 +482,14 @@ instructor jobs create-from-file generated.jsonl
 Once the job is complete, all we need to do is to then change the annotation in the function call to `distil_summarization` in our original file above to start using our new model.
 
 ```py
-@instructions.distil(model='gpt-3.5-turbo:finetuned-123', mode="dispatch")  # (1)!
+@instructions.distil(model='gpt-4-turbo-preview:finetuned-123', mode="dispatch")  # (1)!
 def distil_summarization(text: str) -> GeneratedSummary:
     summary_chain: List[str] = summarize_article(text)
     return GeneratedSummary(summary=summary_chain[-1])
 ```
 
 1. Don't forget to replace this with your new model id. OpenAI identifies fine tuned models with an id of
-   ft:gpt-3.5-turbo-0613:personal::<id> under their Fine-tuning tab on their dashboard
+   ft:gpt-4-turbo-preview:personal::<id> under their Fine-tuning tab on their dashboard
 
 With that, you've now got your own fine-tuned model ready to go and serve data in production. We've seen how Instructor can make your life easier, from fine-tuning to distillation.
 

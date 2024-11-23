@@ -1,20 +1,26 @@
-from typing import Any, Optional, cast, ClassVar
+from typing import Any, Optional, cast, ClassVar, TypeVar, Generic, Type, Protocol
 from collections.abc import AsyncGenerator, Generator, Iterable
 
-from pydantic import BaseModel, Field, create_model  # type: ignore
+from pydantic import BaseModel, Field, create_model
 
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
 
-class IterableBase:
-    task_type: ClassVar[Optional[type[BaseModel]]] = None
+T = TypeVar('T', bound=BaseModel)
+
+class ModelValidateProtocol(Protocol):
+    @classmethod
+    def model_validate_json(cls, json_str: str, **kwargs: Any) -> Any: ...
+
+class IterableBase(Generic[T]):
+    task_type: ClassVar[Type[ModelValidateProtocol]] = None  # type: ignore[assignment]
 
     @classmethod
     def from_streaming_response(
         cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
-    ) -> Generator[BaseModel, None, None]:  # noqa: ARG003
+    ) -> Generator[T, None, None]:  # noqa: ARG003
         json_chunks = cls.extract_json(completion, mode)
 
         if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
@@ -25,7 +31,7 @@ class IterableBase:
     @classmethod
     async def from_streaming_response_async(
         cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
-    ) -> AsyncGenerator[BaseModel, None]:
+    ) -> AsyncGenerator[T, None]:
         json_chunks = cls.extract_json_async(completion, mode)
 
         if mode == Mode.MD_JSON:
@@ -36,7 +42,7 @@ class IterableBase:
     @classmethod
     def tasks_from_chunks(
         cls, json_chunks: Iterable[str], **kwargs: Any
-    ) -> Generator[BaseModel, None, None]:
+    ) -> Generator[T, None, None]:
         started = False
         potential_object = ""
         for chunk in json_chunks:
@@ -50,13 +56,13 @@ class IterableBase:
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
                 assert cls.task_type is not None
-                obj = cls.task_type.model_validate_json(task_json, **kwargs)
+                obj: T = cls.task_type.model_validate_json(task_json, **kwargs)
                 yield obj
 
     @classmethod
     async def tasks_from_chunks_async(
         cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
-    ) -> AsyncGenerator[BaseModel, None]:
+    ) -> AsyncGenerator[T, None]:
         started = False
         potential_object = ""
         async for chunk in json_chunks:
@@ -70,7 +76,7 @@ class IterableBase:
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
                 assert cls.task_type is not None
-                obj = cls.task_type.model_validate_json(task_json, **kwargs)
+                obj: T = cls.task_type.model_validate_json(task_json, **kwargs)
                 yield obj
 
     @staticmethod
@@ -170,10 +176,10 @@ class IterableBase:
 
 
 def IterableModel(
-    subtask_class: type[BaseModel],
+    subtask_class: Type[ModelValidateProtocol],
     name: Optional[str] = None,
     description: Optional[str] = None,
-) -> type[BaseModel]:
+) -> Type[BaseModel]:
     """
     Dynamically create a IterableModel OpenAISchema that can be used to segment multiple
     tasks given a base class. This creates class that can be used to create a toolkit
@@ -243,7 +249,7 @@ def IterableModel(
         tasks=list_tasks,
         __base__=base_models,
     )
-    new_cls = cast(type[IterableBase], new_cls)
+    new_cls = cast(Type[IterableBase[Any]], new_cls)
 
     # set the class constructor BaseModel
     new_cls.task_type = subtask_class

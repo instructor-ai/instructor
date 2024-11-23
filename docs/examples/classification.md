@@ -5,7 +5,7 @@ description: Learn to implement single-label and multi-label text classification
 
 # Text Classification using OpenAI and Pydantic
 
-This tutorial showcases how to implement text classification tasks—specifically, single-label and multi-label classifications—using the OpenAI API and Pydantic models. For complete examples, check out our [single classification](bulk_classification.md#single-label-classification) and [multi-label classification](bulk_classification.md#multi-label-classification) examples in the cookbook.
+This tutorial showcases how to implement text classification tasks—specifically, single-label and multi-label classifications—using the OpenAI API and Pydantic models. For more examples of classification at scale, check out our [bulk classification examples](bulk_classification.md).
 
 !!! tips "Motivation"
 
@@ -107,7 +107,7 @@ client = instructor.from_openai(OpenAI())
 def classify(data: str) -> ClassificationResponse:
     """Perform single-label classification on the input text."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=ClassificationResponse,
         messages=[
             {
@@ -116,7 +116,6 @@ def classify(data: str) -> ClassificationResponse:
             },
         ],
     )
-```
 
 ### Testing and Evaluation
 
@@ -157,7 +156,7 @@ class ClassificationResponse(BaseModel):
 def classify(data: str) -> ClassificationResponse:
     """Perform single-label classification on the input text."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=ClassificationResponse,
         messages=[
             {
@@ -258,7 +257,7 @@ client = instructor.from_openai(OpenAI())
 def multi_classify(data: str) -> MultiClassPrediction:
     """Perform multi-label classification on the input text."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=MultiClassPrediction,
         messages=[
             {
@@ -267,7 +266,6 @@ def multi_classify(data: str) -> MultiClassPrediction:
             },
         ],
     )
-```
 
 ### Testing and Evaluation
 
@@ -310,7 +308,7 @@ client = instructor.from_openai(OpenAI())
 def multi_classify(data: str) -> MultiClassPrediction:
     """Perform multi-label classification on the input text."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=MultiClassPrediction,
         messages=[
             {

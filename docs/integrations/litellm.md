@@ -11,9 +11,15 @@ LiteLLM provides a unified interface for multiple LLM providers, making it easy 
 
 Install Instructor with LiteLLM support:
 
-```bash
-pip install "instructor[litellm]"
-```
+=== "pip"
+    ```bash
+    pip install "instructor[litellm]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[litellm]"
+    ```
 
 ## Simple User Example (Sync)
 
@@ -31,7 +37,7 @@ class User(BaseModel):
 
 # Create structured output
 user = client.completion(
-    model="gpt-3.5-turbo",  # Can use any supported model
+    model="gpt-4-turbo-preview",  # Can use any supported model
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -58,7 +64,7 @@ class User(BaseModel):
 
 async def extract_user():
     user = await client.acompletion(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],

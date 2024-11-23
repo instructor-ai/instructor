@@ -59,7 +59,7 @@ def generate_graph(input: list[str]) -> KnowledgeGraph:
     num_iterations = len(input)
     for i, inp in enumerate(input):
         new_updates = client.chat.completions.create(
-            model="gpt-3.5-turbo-16k",
+            model="gpt-4-turbo-preview",
             messages=[
                 {
                     "role": "system",

@@ -41,7 +41,7 @@ question = "What is the meaning of life?"
 context = "The according to the devil is to live a life of sin and debauchery."
 
 qa: QuestionAnswer = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=QuestionAnswer,
     messages=[
         {
@@ -97,7 +97,7 @@ Catch exceptions raised by the validation.
 ```python
 try:
     qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=QuestionAnswerNoEvil,
         messages=[
             {
@@ -120,7 +120,7 @@ Allow for retries by setting `max_retries=2`.
 
 ```python
 qa: QuestionAnswerNoEvil = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=QuestionAnswerNoEvil,
     max_retries=2,
     messages=[

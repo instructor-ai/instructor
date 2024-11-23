@@ -82,7 +82,7 @@ class Question(BaseModel):
 # Function to extract entities from input text using GPT-3.5
 def stream_extract(question: Question) -> Iterable[Fact]:
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4-turbo-preview",
         temperature=0,
         stream=True,
         functions=[QuestionAnswer.openai_schema],

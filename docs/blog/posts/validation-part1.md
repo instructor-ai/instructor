@@ -54,7 +54,7 @@ class UserDetail(BaseModel):
 
 
 user: UserDetail = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
@@ -253,14 +253,14 @@ Using this structure, we can implement the same logic as before and utilize `Ins
 import instructor
 from openai import OpenAI
 
-# Enables `response_model` and `max_retries` parameters
+# Enables "" and "" parameters
 client = instructor.from_openai(OpenAI())
 
 
 def validator(v):
     statement = "don't say objectionable things"
     resp = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",
@@ -268,7 +268,7 @@ def validator(v):
             },
             {
                 "role": "user",
-                "content": f"Does `{v}` follow the rules: {statement}",
+                "content": f"Does " " follow the rules: {statement}",
             },
         ],
         # this comes from client = instructor.from_openai(OpenAI())
@@ -295,14 +295,14 @@ class UserMessage(BaseModel):
 
 A popular way of prompting large language models nowadays is known as chain of thought. This involves getting a model to generate reasons and explanations for an answer to a prompt.
 
-We can utilise `Pydantic` and `Instructor` to perform a validation to check if the reasoning is reasonable, given both the answer and the chain of thought. To do this we can't build a field validator since we need to access multiple fields in the model. Instead we can use a model validator.
+We can utilise `Pydantic` and `Instructor` to perform a validation to check if the reasoning is reasonable, given both the answer and the chain of thought. To do this we'll use a field validator with mode="after" to access multiple fields in the model.
 
 ```python
 def validate_chain_of_thought(values):
     chain_of_thought = values["chain_of_thought"]
     answer = values["answer"]
     resp = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",
@@ -310,7 +310,7 @@ def validate_chain_of_thought(values):
             },
             {
                 "role": "user",
-                "content": f"Verify that `{answer}` follows the chain of thought: {chain_of_thought}",
+                "content": f"Verify that {answer} follows the chain of thought: {chain_of_thought}",
             },
         ],
         # this comes from client = instructor.from_openai(OpenAI())
@@ -321,24 +321,28 @@ def validate_chain_of_thought(values):
     return values
 ```
 
-We can then take advantage of the `model_validator` decorator to perform a validation on a subset of the model's data.
+We can then take advantage of the `field_validator` decorator with mode="after" to perform a validation that requires access to multiple fields in the model.
 
-> We're defining a model validator here which runs before `Pydantic` parses the input into its respective fields. That's why we have a **before** keyword used in the `model_validator` class.
+> We're defining a field validator here which runs after `Pydantic` parses the input into its respective fields. That's why we have an **after** mode used in the `field_validator` decorator.
 
 ```python
-from pydantic import BaseModel, model_validator
-
+from pydantic import BaseModel, field_validator, ValidationInfo
 
 class AIResponse(BaseModel):
     chain_of_thought: str
     answer: str
 
-    @model_validator(mode='before')
+    @field_validator("answer", mode="after")
     @classmethod
-    def chain_of_thought_makes_sense(cls, data: Any) -> Any:
-        # here we assume data is the dict representation of the model
-        # since we use 'before' mode.
-        return validate_chain_of_thought(data)
+    def chain_of_thought_makes_sense(cls, answer: str, info: ValidationInfo) -> str:
+        # Get the chain_of_thought from the model data
+        chain_of_thought = info.data.get("chain_of_thought")
+        # Validate using our helper function
+        validate_chain_of_thought({
+            "chain_of_thought": chain_of_thought,
+            "answer": answer
+        })
+        return answer
 ```
 
 Now, when you create a `AIResponse` instance, the `chain_of_thought_makes_sense` validator will be invoked. Here's an example:
@@ -379,7 +383,7 @@ class AnswerWithCitation(BaseModel):
         if context:
             context = context.get('text_chunk')
             if v not in context:
-                raise ValueError(f"Citation `{v}` not found in text chunks")
+                raise ValueError(f"Citation " " not found in text chunks")
         return v
 ```
 
@@ -422,7 +426,7 @@ client = instructor.from_openai(OpenAI())
 
 def answer_question(question: str, text_chunk: str) -> AnswerWithCitation:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "user",
@@ -467,7 +471,7 @@ This is where the `max_retries` parameter comes in. It allows the model to self 
 
 ```python
 model = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
     ],

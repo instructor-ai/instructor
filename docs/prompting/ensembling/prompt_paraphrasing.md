@@ -23,7 +23,7 @@ class TranslatedPrompt(BaseModel):
 
 async def translate_prompt(prompt: str, from_language: str, to_language: str):
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",

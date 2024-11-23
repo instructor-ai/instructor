@@ -158,7 +158,7 @@ client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD
 
 def extract_table(url: str) -> Iterable[Table]:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[Table],
         max_tokens=1800,
         messages=[
@@ -171,7 +171,6 @@ def extract_table(url: str) -> Iterable[Table]:
             }
         ],
     )
-```
 
 ## Practical Example
 
@@ -229,7 +228,7 @@ client = instructor.from_openai(OpenAI())
 
 def extract_table(url: str) -> Iterable[Table]:
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[Table],
         max_tokens=1800,
         messages=[
@@ -242,7 +241,6 @@ def extract_table(url: str) -> Iterable[Table]:
             }
         ],
     )
-
     
 # <%hide%>
 

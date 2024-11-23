@@ -57,7 +57,7 @@ class Table(BaseModel):
 
 def extract(url: str):
     return client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-4-turbo-preview",
         max_tokens=4000,
         response_model=Table,
         messages=[
@@ -72,16 +72,16 @@ def extract(url: str):
                         "type": "text",
                         "text": """
                             Analyze the organizational chart image and extract the relevant information to reconstruct the hierarchy.
-                            
+
                             Create a list of People objects, where each person has the following attributes:
                             - id: A unique identifier for the person
                             - name: The person's name
                             - role: The person's role or position in the organization
                             - manager_name: The name of the person who manages this person
                             - manager_role: The role of the person who manages this person
-                            
+
                             Ensure that the relationships between people are accurately captured in the reports and manages attributes.
-                            
+
                             Return the list of People objects as the people attribute of an Organization object.
                         """,
                     },

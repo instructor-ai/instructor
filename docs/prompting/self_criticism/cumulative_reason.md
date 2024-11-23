@@ -93,9 +93,8 @@ async def generate_propositions(premises: list[str], hypothesis: str) -> Propose
             },
         ],
         response_model=ProposerOutput,
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
     )
-
 
 async def verify_propositions(
     premise_evaluation: ProposerOutput,
@@ -128,7 +127,7 @@ async def verify_propositions(
                 },
             ],
             response_model=VerifiedProposition,
-            model="gpt-4o",
+            model="gpt-4-turbo-preview",
         )
 
     tasks = [
@@ -145,7 +144,7 @@ async def final_evaluation(
     formatted_premises = "\n- ".join(premises)
     formatted_propositions = "\n- ".join(verification_result)
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",

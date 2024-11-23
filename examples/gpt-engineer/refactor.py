@@ -64,7 +64,7 @@ def refactor(new_requirements: str, program: Program) -> Diff:
         [f"{code.file_name}\n[[[\n{code.body}\n]]]\n" for code in program.files]
     )
     completion = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4-turbo-preview",
         temperature=0,
         functions=[Diff.openai_schema],
         function_call={"name": Diff.openai_schema["name"]},

@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, create_model  # type: ignore
-from typing import Generic, Optional, TypeVar
+from pydantic import BaseModel, Field, create_model
+from typing import Generic, Optional, TypeVar, Type, Any
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -17,7 +17,7 @@ class MaybeBase(BaseModel, Generic[T]):
         return self.result is not None
 
 
-def Maybe(model: type[T]) -> type[MaybeBase[T]]:
+def Maybe(model: Type[BaseModel]) -> Type[MaybeBase[Any]]:
     """
     Create a Maybe model for a given Pydantic model. This allows you to return a model that includes fields for `result`, `error`, and `message` for sitatations where the data may not be present in the context.
 

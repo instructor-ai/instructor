@@ -2,7 +2,7 @@ import instructor
 
 from loguru import logger
 from openai import OpenAI
-from pydantic import Field, BaseModel, FieldValidationInfo, model_validator
+from pydantic import Field, BaseModel, ValidationInfo, field_validator, ConfigDict
 
 client = instructor.from_openai(OpenAI())
 
@@ -15,28 +15,32 @@ class Fact(BaseModel):
         ...,
         description="String quote long enough to evaluate the truthfulness of the fact",
     )
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def validate_sources(self, info: FieldValidationInfo) -> "Fact":
+    @field_validator("substring_phrase", mode="after")
+    @classmethod
+    def validate_sources(cls, value: list[str], info: ValidationInfo) -> list[str]:
         """
         For each substring_phrase, find the span of the substring_phrase in the context.
         If the span is not found, remove the substring_phrase from the list.
         """
         if info.context is None:
             logger.info("No context found, skipping validation")
-            return self
+            return value
 
         # Get the context from the info
         text_chunks = info.context.get("text_chunk", None)
 
+        # Create temporary Fact instance to use get_spans method
+        fact = Fact(statement="", substring_phrase=value)
+
         # Get the spans of the substring_phrase in the context
-        spans = list(self.get_spans(text_chunks))
+        spans = list(fact.get_spans(text_chunks))
         logger.info(
-            f"Found {len(spans)} span(s) for from {len(self.substring_phrase)} citation(s)."
+            f"Found {len(spans)} span(s) for from {len(value)} citation(s)."
         )
         # Replace the substring_phrase with the actual substring
-        self.substring_phrase = [text_chunks[span[0] : span[1]] for span in spans]
-        return self
+        return [text_chunks[span[0] : span[1]] for span in spans]
 
     def _get_span(self, quote, context, errs=5):
         import regex
@@ -68,21 +72,23 @@ class QuestionAnswer(instructor.OpenAISchema):
         ...,
         description="Body of the answer, each fact should be its seperate object with a body and a list of sources",
     )
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def validate_sources(self) -> "QuestionAnswer":
+    @field_validator("answer", mode="after")
+    @classmethod
+    def validate_sources(cls, value: list[Fact]) -> list[Fact]:
         """
         Checks that each fact has some sources, and removes those that do not.
         """
-        logger.info(f"Validating {len(self.answer)} facts")
-        self.answer = [fact for fact in self.answer if len(fact.substring_phrase) > 0]
-        logger.info(f"Found {len(self.answer)} facts with sources")
-        return self
+        logger.info(f"Validating {len(value)} facts")
+        filtered = [fact for fact in value if len(fact.substring_phrase) > 0]
+        logger.info(f"Found {len(filtered)} facts with sources")
+        return filtered
 
 
 def ask_ai(question: str, context: str) -> QuestionAnswer:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4-turbo-preview",
         temperature=0,
         response_model=QuestionAnswer,
         messages=[

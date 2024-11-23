@@ -3,58 +3,124 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+import os
 from collections.abc import AsyncGenerator, Generator, Iterable
+from enum import Enum
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Generic,
     Protocol,
-    Union,
     TypedDict,
     TypeVar,
+    Union,
     cast,
+    Dict,
 )
+
+# Initialize safety settings with default values
+harm_settings: Dict[str, str] = {}
+block_high: str | None = None
+
+# Try to import and set Gemini-specific values
+try:
+    from vertexai.generative_models import generative_models  # type: ignore
+    harm_settings = {
+        "hate_speech": "HARM_CATEGORY_HATE_SPEECH",
+        "harassment": "HARM_CATEGORY_HARASSMENT",
+        "dangerous": "HARM_CATEGORY_DANGEROUS_CONTENT",
+    }
+    block_high = "BLOCK_ONLY_HIGH"
+except ImportError:
+    pass  # Use default values
+
 from pydantic import BaseModel
-import os
-
-from openai.types import CompletionUsage as OpenAIUsage
-from openai.types.chat import (
-    ChatCompletion,
-    ChatCompletionMessage,
-    ChatCompletionMessageParam,
-)
-
-if TYPE_CHECKING:
-    from anthropic.types import Usage as AnthropicUsage
-
+from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageParam
 
 logger = logging.getLogger("instructor")
+
 R_co = TypeVar("R_co", covariant=True)
-T_Model = TypeVar("T_Model", bound="Response")
 
-from enum import Enum
+class TokenDetails(TypedDict, total=False):
+    """Token details for completion tokens."""
+    audio_tokens: int
+    reasoning_tokens: int
+    cached_tokens: int
+
+class CompletionTokensDetails(TypedDict, total=False):
+    """Details about completion tokens."""
+    completion_tokens_details: dict[str, int]
+
+class OpenAIUsageDict(TypedDict, total=False):
+    """OpenAI usage information."""
+    completion_tokens: int
+    prompt_tokens: int
+    total_tokens: int
+    completion_tokens_details: dict[str, int]
+
+class AnthropicUsageDict(TypedDict, total=False):
+    """Anthropic usage information."""
+    input_tokens: int
+    output_tokens: int
+    completion_tokens_details: dict[str, int]
+
+# Define the union type for all usage dictionaries
+UsageDict = Union[OpenAIUsageDict, AnthropicUsageDict, CompletionTokensDetails]
+
+T_Model = TypeVar("T_Model", bound="ResponseProtocol")
+
+class ResponseProtocol(Protocol):
+    """Protocol for response objects."""
+    usage: UsageDict
+
+class Response(Generic[R_co]):
+    """Response object that wraps the response from the API."""
+    def __init__(self, response: R_co) -> None:
+        self._response: R_co = response
+        self._usage: UsageDict | None = None
+
+    @property
+    def usage(self) -> UsageDict:
+        """Get the usage information from the response."""
+        if self._usage is None:
+            self._usage = cast(UsageDict, {})
+            if hasattr(self._response, "usage"):
+                self._usage = cast(UsageDict, getattr(self._response, "usage", {}))
+        return self._usage
+
+    @usage.setter
+    def usage(self, value: UsageDict) -> None:
+        """Set the usage information."""
+        self._usage = value
+
+    def __getattr__(self, name: str) -> Any:
+        """Get an attribute from the response."""
+        return getattr(self._response, name)
+
+    def __repr__(self) -> str:
+        """Get the string representation of the response."""
+        return repr(self._response)
 
 
-class Response(Protocol):
-    usage: OpenAIUsage | AnthropicUsage
-
-
-class Provider(Enum):
-    OPENAI = "openai"
-    VERTEXAI = "vertexai"
-    ANTHROPIC = "anthropic"
+class Provider(str, Enum):
+    """Enum for different LLM providers."""
     ANYSCALE = "anyscale"
     TOGETHER = "together"
+    ANTHROPIC = "anthropic"
+    CEREBRAS = "cerebras"
+    FIREWORKS = "fireworks"
     GROQ = "groq"
+    OPENAI = "openai"
     MISTRAL = "mistral"
     COHERE = "cohere"
     GEMINI = "gemini"
     DATABRICKS = "databricks"
-    CEREBRAS = "cerebras"
-    FIREWORKS = "fireworks"
+    VERTEXAI = "vertexai"
     WRITER = "writer"
     UNKNOWN = "unknown"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 def get_provider(base_url: str) -> Provider:
@@ -134,47 +200,50 @@ async def extract_json_from_stream_async(
 
 
 def update_total_usage(
-    response: T_Model | None,
-    total_usage: OpenAIUsage | AnthropicUsage,
-) -> T_Model | ChatCompletion | None:
+    response: Response[Any] | None,
+    total_usage: UsageDict,
+) -> Response[Any] | None:
+    """Update total token usage with a new response's usage information."""
     if response is None:
         return None
 
-    response_usage = getattr(response, "usage", None)
-    if isinstance(response_usage, OpenAIUsage) and isinstance(total_usage, OpenAIUsage):
-        total_usage.completion_tokens += response_usage.completion_tokens or 0
-        total_usage.prompt_tokens += response_usage.prompt_tokens or 0
-        total_usage.total_tokens += response_usage.total_tokens or 0
-        if (rtd := response_usage.completion_tokens_details) and (
-            ttd := total_usage.completion_tokens_details
-        ):
-            ttd.audio_tokens = (ttd.audio_tokens or 0) + (rtd.audio_tokens or 0)
-            ttd.reasoning_tokens = (ttd.reasoning_tokens or 0) + (
-                rtd.reasoning_tokens or 0
-            )
-        if (rpd := response_usage.prompt_tokens_details) and (
-            tpd := total_usage.prompt_tokens_details
-        ):
-            tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
-            tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        response.usage = total_usage  # Replace each response usage with the total usage
+    response_usage: Dict[str, Any] = getattr(response, "usage", {})
+    if not isinstance(response_usage, dict) or not isinstance(total_usage, dict):
+        logger.debug("No compatible response.usage found, token usage not updated.")
         return response
 
-    # Anthropic usage.
-    try:
-        from anthropic.types import Usage as AnthropicUsage
+    # Handle OpenAI usage
+    openai_keys = ["completion_tokens", "prompt_tokens", "total_tokens"]
+    for key in openai_keys:
+        if key in response_usage:
+            total_usage[key] = int(total_usage.get(key, 0)) + int(response_usage[key])
 
-        if isinstance(response_usage, AnthropicUsage) and isinstance(
-            total_usage, AnthropicUsage
-        ):
-            total_usage.input_tokens += response_usage.input_tokens or 0
-            total_usage.output_tokens += response_usage.output_tokens or 0
-            response.usage = total_usage
-            return response
-    except ImportError:
-        pass
+    # Handle token details
+    token_details: Dict[str, int] = {}
+    if "completion_tokens_details" in response_usage:
+        raw_details: Dict[str, Any] = dict(response_usage["completion_tokens_details"])
+        for k, v in raw_details.items():
+            if isinstance(v, (int, float)):
+                token_details[str(k)] = int(v)
 
-    logger.debug("No compatible response.usage found, token usage not updated.")
+        if token_details:
+            if "completion_tokens_details" not in total_usage:
+                total_usage["completion_tokens_details"] = {}
+
+            details = total_usage["completion_tokens_details"]
+            for key in ["audio_tokens", "reasoning_tokens", "cached_tokens"]:
+                if key in token_details:
+                    details[key] = details.get(key, 0) + token_details[key]
+
+    # Handle Anthropic usage
+    anthropic_keys = ["input_tokens", "output_tokens"]
+    if all(key in response_usage for key in anthropic_keys):
+        for key in anthropic_keys:
+            if key in response_usage:
+                val = int(response_usage[key]) if response_usage[key] is not None else 0
+                total_usage[key] = int(total_usage.get(key, 0)) + val
+
+    setattr(response, "usage", total_usage)
     return response
 
 
@@ -311,8 +380,11 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     Ref - https://ai.google.dev/api/python/google/generativeai/protos/Schema,
     Note that `enum` requires specific `format` setting
     """
-
-    import jsonref
+    try:
+        from typing import cast
+        import jsonref
+    except ImportError:
+        raise ImportError("jsonref is required for function schema mapping. Please install it with 'pip install jsonref'")
 
     class FunctionSchema(BaseModel):
         description: str | None = None
@@ -325,8 +397,10 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
         type: str
         properties: dict[str, FunctionSchema] | None = None
 
-    schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)  # type: ignore
-    schema.pop("$defs", "")
+    schema_str = json.dumps(obj)
+    resolved: dict[str, Any] = cast(dict[str, Any], jsonref.loads(schema_str))
+    schema = resolved
+    schema.pop("$defs", None)
 
     def add_enum_format(obj: dict[str, Any]) -> dict[str, Any]:
         if isinstance(obj, dict):
@@ -340,11 +414,11 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
             return obj
 
     schema = add_enum_format(schema)
-
     return FunctionSchema(**schema).model_dump(exclude_none=True, exclude_unset=True)
 
 
 def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Update kwargs for Gemini API compatibility."""
     if "generation_config" in kwargs:
         map_openai_args_to_gemini = {
             "max_tokens": "max_output_tokens",
@@ -357,29 +431,28 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         # update gemini config if any params are set
         for k, v in map_openai_args_to_gemini.items():
             val = kwargs["generation_config"].pop(k, None)
-            if val == None:
+            if val is None:
                 continue
             kwargs["generation_config"][v] = val
 
-    # gemini has a different prompt format and params from other providers
     kwargs["contents"] = transform_to_gemini_prompt(kwargs.pop("messages"))
 
     # minimize gemini safety related errors - model is highly prone to false alarms
-    from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
+    try:
+        if not harm_settings:
+            logger.debug("vertexai not available, skipping safety settings")
+            return kwargs
 
-    kwargs["safety_settings"] = kwargs.get("safety_settings", {})
+        safety_settings = kwargs.get("safety_settings", {})
 
-    fallback_safety_settings = {
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-    }
+        # Use pre-defined constants for safety settings
+        for harm_category in harm_settings.values():
+            if harm_category not in safety_settings:
+                safety_settings[harm_category] = block_high
 
-    # Update or add fallback settings, respecting stricter existing ones
-    for category, fallback_threshold in fallback_safety_settings.items():
-        current_threshold = kwargs["safety_settings"].get(category)
-        if current_threshold is None or current_threshold < fallback_threshold:
-            kwargs["safety_settings"][category] = fallback_threshold
+        kwargs["safety_settings"] = safety_settings
+    except Exception:
+        logger.debug("Error configuring safety settings", exc_info=True)
 
     return kwargs
 

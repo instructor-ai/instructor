@@ -62,7 +62,7 @@ def prepare_dates(n=7) -> str:
 
 def parse_availability(text: str) -> Iterable[AvailabilityResponse]:
     return client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",

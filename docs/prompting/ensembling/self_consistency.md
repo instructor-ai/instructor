@@ -27,7 +27,7 @@ client = instructor.from_openai(AsyncOpenAI())
 
 async def generate_self_consistent_response(prompt: str):
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",

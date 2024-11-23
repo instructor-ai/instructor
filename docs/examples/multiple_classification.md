@@ -38,7 +38,7 @@ class MultiClassPrediction(BaseModel):
 
 def multi_classify(data: str) -> MultiClassPrediction:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=MultiClassPrediction,
         messages=[
             {

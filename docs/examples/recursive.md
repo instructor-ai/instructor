@@ -23,15 +23,18 @@ Here's an example of how to define a recursive Pydantic model:
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
+
 class RecursiveNode(BaseModel):
     """A node that can contain child nodes of the same type."""
 
     name: str = Field(..., description="Name of the node")
-    value: Optional[str] = Field(None, description="Optional value associated with the node")
-    children: List["RecursiveNode"] = Field(
-        default_factory=list,
-        description="List of child nodes"
+    value: Optional[str] = Field(
+        None, description="Optional value associated with the node"
     )
+    children: List["RecursiveNode"] = Field(
+        default_factory=list, description="List of child nodes"
+    )
+
 
 # Required for recursive Pydantic models
 RecursiveNode.model_rebuild()
@@ -44,28 +47,41 @@ Let's see how to use this recursive schema with Instructor:
 ```python
 import instructor
 from openai import OpenAI
+from typing import List, Optional
+from pydantic import BaseModel, Field
+
+class RecursiveNode(BaseModel):
+    """A node that can contain child nodes of the same type."""
+    name: str = Field(..., description="Name of the node")
+    value: Optional[str] = Field(None, description="Optional value associated with the node")
+    children: List["RecursiveNode"] = Field(default_factory=list, description="List of child nodes")
+
+RecursiveNode.model_rebuild()
 
 client = instructor.from_openai(OpenAI())
+
 
 def parse_hierarchy(text: str) -> RecursiveNode:
     """Parse text into a hierarchical structure."""
     return client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",
-                "content": "You are an expert at parsing text into hierarchical structures."
+                "content": "You are an expert at parsing text into hierarchical structures.",
             },
             {
                 "role": "user",
-                "content": f"Parse this text into a hierarchical structure: {text}"
-            }
+                "content": f"Parse this text into a hierarchical structure: {text}",
+            },
         ],
-        response_model=RecursiveNode
+        response_model=RecursiveNode,
     )
 
+
 # Example usage
-hierarchy = parse_hierarchy("""
+hierarchy = parse_hierarchy(
+    """
 Company: Acme Corp
 - Department: Engineering
   - Team: Frontend
@@ -79,8 +95,8 @@ Company: Acme Corp
     - Project: Social Media Campaign
   - Team: Brand
     - Project: Logo Refresh
-""")
-```
+"""
+)
 
 ## Validation and Best Practices
 
@@ -92,21 +108,34 @@ When working with recursive schemas:
 4. Consider implementing custom validators for specific business rules
 
 ```python
-from pydantic import model_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
+from typing import List, Optional
+
+class RecursiveNode(BaseModel):
+    """A node that can contain child nodes of the same type."""
+    name: str = Field(..., description="Name of the node")
+    value: Optional[str] = Field(None, description="Optional value associated with the node")
+    children: List["RecursiveNode"] = Field(default_factory=list, description="List of child nodes")
+
+RecursiveNode.model_rebuild()
 
 class RecursiveNodeWithDepth(RecursiveNode):
-    @model_validator(mode='after')
-    def validate_depth(self) -> "RecursiveNodeWithDepth":
+    model_config = ConfigDict(validate_default=True)
+
+    @field_validator("children", mode="after")
+    @classmethod
+    def validate_depth(cls, children: List["RecursiveNodeWithDepth"], info) -> List["RecursiveNodeWithDepth"]:
         def check_depth(node: "RecursiveNodeWithDepth", current_depth: int = 0) -> int:
             if current_depth > 10:  # Maximum allowed depth
                 raise ValueError("Maximum depth exceeded")
             return max(
                 [check_depth(child, current_depth + 1) for child in node.children],
-                default=current_depth,  # Added comma here
+                default=current_depth,
             )
 
-        check_depth(self)
-        return self
+        for child in children:
+            check_depth(child)
+        return children
 ```
 
 ## Performance Considerations

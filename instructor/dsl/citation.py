@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, model_validator, ValidationInfo  # type: ignore
+from pydantic import BaseModel, Field, field_validator, ValidationInfo, ConfigDict
 from collections.abc import Generator
+from typing import ClassVar, Optional
 
 
 class CitationMixin(BaseModel):
@@ -55,25 +56,32 @@ class CitationMixin(BaseModel):
 
     substring_quotes: list[str] = Field(
         description="List of unique and specific substrings of the quote that was used to answer the question.",
+        default_factory=list,
     )
+    model_config: ClassVar[ConfigDict] = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")  # type: ignore[misc]
-    def validate_sources(self, info: ValidationInfo) -> "CitationMixin":
+    @field_validator("substring_quotes", mode="after")
+    @classmethod
+    def validate_sources(cls, value: list[str], info: ValidationInfo) -> list[str]:
         """
         For each substring_phrase, find the span of the substring_phrase in the context.
         If the span is not found, remove the substring_phrase from the list.
         """
         if info.context is None:
-            return self
+            return value
 
         # Get the context from the info
-        text_chunks = info.context.get("context", None)
+        text_chunks: Optional[str] = info.context.get("context", None)
+        if text_chunks is None:
+            return value
+
+        # Create temporary instance to use get_spans method
+        instance = cls(substring_quotes=value)
 
         # Get the spans of the substring_phrase in the context
-        spans = list(self.get_spans(text_chunks))
+        spans = list(instance.get_spans(text_chunks))
         # Replace the substring_phrase with the actual substring
-        self.substring_quotes = [text_chunks[span[0] : span[1]] for span in spans]
-        return self
+        return [text_chunks[span[0] : span[1]] for span in spans]
 
     def _get_span(
         self, quote: str, context: str, errs: int = 5

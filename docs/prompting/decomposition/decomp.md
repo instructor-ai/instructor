@@ -79,7 +79,7 @@ def derive_action_plan(task_description: str) -> ActionPlan:
         ],
         response_model=ActionPlan,
         max_retries=3,
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
     )
 
 

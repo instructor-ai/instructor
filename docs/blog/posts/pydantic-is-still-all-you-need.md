@@ -45,12 +45,11 @@ And here's the kicker: nothing's really changed in the past year. The core API i
 
 ```python
 from instructor import from_openai
+
 client = from_openai(OpenAI())
 
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=User,
-    messages=[...]
+    model="gpt-4-turbo-preview", response_model=User, messages=[...]
 )
 ```
 

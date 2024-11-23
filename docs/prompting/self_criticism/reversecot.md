@@ -61,7 +61,7 @@ class ModelResponse(BaseModel):
 
 def generate_response(query: str):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",
@@ -82,7 +82,7 @@ def generate_response(query: str):
 
 def reconstruct_prompt(model_response: ModelResponse):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=ReconstructedPrompt,
         messages=[
             {
@@ -104,7 +104,7 @@ def reconstruct_prompt(model_response: ModelResponse):
 
 def deconstruct_prompt_into_condition_list(prompt: str):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=ConditionList,
         messages=[
             {
@@ -133,7 +133,7 @@ def generate_feedback(
     formatted_original_conditions = "\n- ".join(original_condition_list)
     formatted_final_conditions = "\n- ".join(final_condition_list)
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=ModelFeedback,
         messages=[
             {
@@ -162,7 +162,7 @@ def generate_feedback(
 def revise_response(response: ModelResponse, feedback: ModelFeedback):
     formatted_inconsistencies = "\n- ".join(feedback.detected_inconsistencies)
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",

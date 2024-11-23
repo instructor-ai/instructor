@@ -45,13 +45,12 @@ def generate_responses(prompt: str, n: int = 3) -> List[Response]:
     responses = []
     for _ in range(n):
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4-turbo-preview",
             messages=[{"role": "user", "content": prompt}],
             response_model=Response
         )
         responses.append(response)
     return responses
-```
 
 ### Stage 2: Example Selection
 
@@ -102,7 +101,7 @@ class COSPSelector:
     def generate_responses(self, prompt: str) -> List[Response]:
         return [
             self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4-turbo-preview",
                 messages=[{"role": "user", "content": prompt}],
                 response_model=Response
             )

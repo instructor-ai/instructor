@@ -1,0 +1,17 @@
+pyright>=1.1.350
+pytest>=8.0.0
+pytest-asyncio>=0.23.5
+pytest-cov>=4.1.0
+pytest-examples>=0.0.10
+black>=24.1.1
+ruff>=0.2.1
+typing-extensions>=4.12.0
+regex>=2024.11.6
+requests>=2.32.3
+anthropic>=0.37.1
+google-generativeai>=0.8.3
+openai>=1.55.0
+fireworks-ai>=0.8.0
+mistralai>=0.0.11
+cohere>=4.48
+google-cloud-aiplatform>=1.38.1  # for vertexai

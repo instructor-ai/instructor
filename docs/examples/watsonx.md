@@ -16,7 +16,7 @@ You can use IBM watsonx.ai for inference using [LiteLLM](https://docs.litellm.ai
 ## Install
 
 ```bash
-poetry install instructor --with litellm
+uv pip install "instructor[litellm]"
 ```
 
 ## Example

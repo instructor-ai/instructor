@@ -64,7 +64,7 @@ def segment(data: str) -> MultiSearch:
     """
 
     completion = client.chat.completions.create(
-        model="gpt-4-0613",
+        model="gpt-4-turbo-preview",
         temperature=0.1,
         response_model=MultiSearch,
         messages=[

@@ -43,7 +43,7 @@ image2 = instructor.Image.from_path("muffin.jpg")
 client = instructor.from_openai(openai.OpenAI())
 
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-vision-preview",  # Updated to correct model name
     response_model=ImageAnalyzer,
     messages=[
         {"role": "user", "content": ["What is in this two images?", image1, image2]}
@@ -54,7 +54,6 @@ print(response.model_dump_json())
 """
 {"description":"A tray of blueberry muffins, some appear whole while one is partially broken showing its soft texture, all have golden-brown tops and are placed on a delicate, patterned surface."}
 """
-```
 
 The `Image` class takes care of the necessary conversions and formatting, ensuring that your code remains clean and provider-agnostic. This flexibility is particularly valuable when you're experimenting with different models or when you need to switch providers based on specific project requirements.
 
@@ -69,14 +68,20 @@ import openai
 client = instructor.from_openai(openai.OpenAI())
 
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-vision-preview",  # Updated to correct model name
     response_model=ImageAnalyzer,
     messages=[
-        {"role": "user", "content": ["What is in this two images?", "https://example.com/image.jpg", "path/to/image.jpg"]}
+        {
+            "role": "user",
+            "content": [
+                "What is in this two images?",
+                "https://example.com/image.jpg",
+                "path/to/image.jpg",
+            ],
+        }
     ],
-    autodetect_images=True
+    autodetect_images=True,
 )
-```
 
 ### Anthropic Prompt Caching
 Instructor supports Anthropic prompt caching with images. To activate prompt caching, you can pass image content as a dictionary of the form
@@ -100,12 +105,20 @@ response = client.chat.completions.create(
             "role": "user",
             "content": [
                 "What is in this two images?",
-                {"type": "image", "source": "https://example.com/image.jpg", "cache_control": cache_control},
-                {"type": "image", "source": "path/to/image.jpg", "cache_control": cache_control},
-            ]
+                {
+                    "type": "image",
+                    "source": "https://example.com/image.jpg",
+                    "cache_control": cache_control,
+                },
+                {
+                    "type": "image",
+                    "source": "path/to/image.jpg",
+                    "cache_control": cache_control,
+                },
+            ],
         }
     ],
-    autodetect_images=True
+    autodetect_images=True,
 )
 ```
 
@@ -130,7 +143,7 @@ class User(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-4o-audio-preview",
+    model="gpt-4-turbo-preview",
     response_model=User,
     modalities=["text"],
     audio={"voice": "alloy", "format": "wav"},
@@ -146,5 +159,5 @@ resp = client.chat.completions.create(
 )
 
 print(resp)
-# > name='Jason' age=20
+#> name='Jason' age=20
 ```

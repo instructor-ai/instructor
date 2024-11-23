@@ -52,7 +52,7 @@ class Statements(BaseModel):
         for text_chunk in context.values():
             if v in text_chunk:  # (1)
                 return v
-        raise ValueError("Could not find substring_quote `{v}` in contexts")
+        raise ValueError("Could not find substring_quote " " in contexts")
 
 
 class AnswerWithCitaton(BaseModel):
@@ -111,8 +111,9 @@ class Statements(BaseModel):
     body: str
     substring_quote: str
 
-    @model_validator(mode="after")
-    def substring_quote_exists(self, info: ValidationInfo):
+    @field_validator("substring_quote", mode="after")
+    @classmethod
+    def substring_quote_exists(cls, substring_quote: str, info: ValidationInfo) -> str:
         context = info.context.get("text_chunks", None)
 
         resp: Validation = client.chat.completions.create(
@@ -120,17 +121,16 @@ class Statements(BaseModel):
             messages=[
                 {
                     "role": "user",
-                    "content": f"Does the following citation exist in the following context?\n\nCitation: {self.substring_quote}\n\nContext: {context}",
+                    "content": f"Does the following citation exist in the following context?\n\nCitation: {substring_quote}\n\nContext: {context}",
                 }
             ],
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
         )
 
         if resp.is_valid:
-            return self
+            return substring_quote
 
         raise ValueError(resp.error_messages)
-
 
 class AnswerWithCitaton(BaseModel):
     question: str
@@ -212,31 +212,30 @@ We use the same `Statements` model as above, but we add a new model for the answ
 
 ### Code Example:
 
-```python
 class AnswerWithCitaton(BaseModel):
     question: str
     answer: List[Statements]
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def validate_answer(self, info: ValidationInfo):
+    @field_validator("answer", mode="after")
+    @classmethod
+    def validate_answer(cls, answer: List[Statements], info: ValidationInfo) -> List[Statements]:
         context = info.context.get("text_chunks", None)
+        question = info.data.get("question")
 
         resp: Validation = client.chat.completions.create(
             response_model=Validation,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"Does the following answers match the question and the context?\n\nQuestion: {self.question}\n\nAnswer: {self.answer}\n\nContext: {context}",
-                }
-            ],
-            model="gpt-3.5-turbo",
+            messages=[{
+                "role": "user",
+                "content": f"Does the following answers match the question and the context?\n\nQuestion: {question}\n\nAnswer: {answer}\n\nContext: {context}",
+            }],
+            model="gpt-4-turbo-preview",
         )
 
         if resp.is_valid:
-            return self
+            return answer
 
         raise ValueError(resp.error_messages)
-```
 
 When we have a mismatch between the answer and the citation, the LLM returns an error message.
 

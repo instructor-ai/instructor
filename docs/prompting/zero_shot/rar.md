@@ -35,7 +35,7 @@ class Response(BaseModel):
 
 def rephrase_and_respond(query):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "user",

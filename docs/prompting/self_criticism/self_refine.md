@@ -60,7 +60,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate_feedback(response):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Feedback,
         messages=[
             {
@@ -83,7 +83,7 @@ def generate_feedback(response):
 
 def refine(response, feedback):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Response,
         messages=[
             {
@@ -112,7 +112,7 @@ def stop_condition(feedback, history):
 
 if __name__ == "__main__":
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Response,
         messages=[
             {

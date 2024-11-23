@@ -58,7 +58,7 @@ client = instructor.from_openai(OpenAI())
 
 def create_hero() -> Hero:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=Hero,
         messages=[
             {"role": "user", "content": "Make a new superhero"},
@@ -89,7 +89,7 @@ client = instructor.from_openai(OpenAI())
 
 def create_hero() -> Hero:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=Hero,
         messages=[
             {"role": "user", "content": "Make a new superhero"},

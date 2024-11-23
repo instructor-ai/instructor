@@ -9,9 +9,15 @@ Now that we have a [Anthropic](https://www.anthropic.com/) client, we can use it
 
 Let's first install the instructor client with anthropic support
 
-```
-pip install "instructor[anthropic]"
-```
+=== "pip"
+    ```bash
+    pip install "instructor[anthropic]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[anthropic]"
+    ```
 
 Once we've done so, getting started is as simple as using our `from_anthropic` method to patch the client up.
 

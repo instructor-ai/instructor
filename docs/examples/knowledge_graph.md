@@ -78,7 +78,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate_graph(input) -> KnowledgeGraph:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "user",
@@ -87,7 +87,6 @@ def generate_graph(input) -> KnowledgeGraph:
         ],
         response_model=KnowledgeGraph,
     )  # type: ignore
-```
 
 ## Visualizing the Graph
 
@@ -126,7 +125,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate_graph(input) -> KnowledgeGraph:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "user",
@@ -135,7 +134,6 @@ def generate_graph(input) -> KnowledgeGraph:
         ],
         response_model=KnowledgeGraph,
     )  # type: ignore
-
 
 # <%hide%>
 
@@ -284,7 +282,7 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
     num_iterations = len(input)
     for i, inp in enumerate(input):
         new_updates = client.chat.completions.create(
-            model="gpt-3.5-turbo-16k",
+            model="gpt-4-turbo-preview",
             messages=[
                 {
                     "role": "system",
@@ -376,7 +374,7 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
     num_iterations = len(input)
     for i, inp in enumerate(input):
         new_updates = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4-turbo-preview",
             messages=[
                 {
                     "role": "system",

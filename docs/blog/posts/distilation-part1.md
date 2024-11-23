@@ -117,9 +117,7 @@ Here's how the logging output would look:
             },
         },
     ],
-    "functions": [
-        {"name": "Multiply", "description": "Correctly extracted `Multiply`..."}
-    ],
+    "functions": [{"name": "Multiply", "description": "Correctly extracted " "..."}],
 }
 ```
 

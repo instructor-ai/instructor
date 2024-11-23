@@ -32,7 +32,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate_sample(input_review, sentiment):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=GeneratedReview,
         messages=[
             {
@@ -48,7 +48,7 @@ def generate_sample(input_review, sentiment):
 
 def predict_sentiment(input_review, in_context_samples):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=SentimentPrediction,
         messages=[
             {

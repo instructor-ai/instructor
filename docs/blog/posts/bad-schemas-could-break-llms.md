@@ -6,23 +6,23 @@ categories:
 comments: true
 date: 2024-09-26
 description: Discover how response models impact LLM performance, focusing on structured
-  outputs for optimal results in GPT-4o and Claude models.
+  outputs for optimal results in GPT-4-turbo-preview and Claude models.
 draft: false
 tags:
 - LLM Performance
 - Response Models
 - Structured Outputs
-- GPT-4o
+- GPT-4-turbo-preview
 - Claude Models
 ---
 
 # Bad Schemas could break your LLM Structured Outputs
 
-You might be leaving up to 60% performance gains on the table with the wrong response model. Response Models impact model performance massively with Claude and GPT-4o, irregardless of you’re using JSON mode or Tool Calling.
+You might be leaving up to 60% performance gains on the table with the wrong response model. Response Models impact model performance massively with Claude and GPT-4-turbo-preview, irregardless of you're using JSON mode or Tool Calling.
 
 Using the right response model can help ensure [your models respond in the right language](../posts/matching-language.md) or prevent [hallucinations when extracting video timestamps](../posts/timestamp.md).
 
-We decided to investigate this by benchmarking Claude and GPT-4o on the GSM8k dataset and found that
+We decided to investigate this by benchmarking Claude and GPT-4-turbo-preview on the GSM8k dataset and found that
 
 1. **Field Naming drastically impacts performance** - Changing a single field name from `final_choice` to `answer` improved model accuracy from 4.5% to 95%. The way we structure and name fields in our response models can fundamentally alter how the model interprets and responds to queries.
 2. **Chain Of Thought significantly boosts performance** - Adding a `reasoning` field increased model accuracy by 60% on the GSM8k dataset. Models perform significantly better when they explain their logic step-by-step.
@@ -49,6 +49,7 @@ from datasets import load_dataset, Dataset, DatasetDict
 
 splits = ["test", "train"]
 
+
 def generate_gsm8k(split):
     ds = load_dataset("gsm8k", "main", split=split, streaming=True)
     for row in ds:
@@ -59,6 +60,7 @@ def generate_gsm8k(split):
             "answer": answer,
             "reasoning": reasoning,
         }
+
 
 # Create the dataset for train and test splits
 train_dataset = Dataset.from_generator(lambda: generate_gsm8k("train"))
@@ -72,7 +74,7 @@ dataset.push_to_hub("567-labs/gsm8k")
 
 This allows us to test how changes in the response format, response model and even the chosen model itself would affect reasoning ability of the model.
 
-Using this new dataset, we then tested the Claude and GPT-4o models with a variety of different response models and response modes such as JSON Mode and Tool Calling. The final results were fascinating - highlighting the importance of a good response model in squeezing out the maximum performance from your chosen model.
+Using this new dataset, we then tested the Claude and GPT-4-turbo-preview models with a variety of different response models and response modes such as JSON Mode and Tool Calling. The final results were fascinating - highlighting the importance of a good response model in squeezing out the maximum performance from your chosen model.
 
 ## Benchmarks
 
@@ -94,11 +96,11 @@ Let’s explore each portion in greater detail.
 
 By the end of these experiments, we had the following takeaways
 
-1. **Claude Models excel at complex tasks** : Claude models see significantly greater improvement with few shot improvements as compared to the GPT-4o variants. This means that for complex tasks with specific nuanced output formats or instructions, Claude models will benefit more from few-shot examples
+1. **Claude Models excel at complex tasks** : Claude models see significantly greater improvement with few shot improvements as compared to the GPT-4-turbo-preview variants. This means that for complex tasks with specific nuanced output formats or instructions, Claude models will benefit more from few-shot examples
 
 2. **Structured Extraction doesn’t lose out** : While we see a 1-2% in performance with JSON mode relative to function calling, working with JSON mode is tricky when response models get complicated. Working with smaller models such as Haiku in JSON mode often required parsing out control characters and increasing the number of re-asks. This was in contrast to the consistent performance of structured extraction that returned a consistent schema.
 
-3. **4o Mini should be used carefully** : We found that 4o-mini had much less steerability as compared to Claude models, with few-shot examples something resulting in worse performance.
+3. **GPT-4-turbo-preview should be used carefully** : We found that GPT-4-turbo-preview had much less steerability as compared to Claude models, with few-shot examples something resulting in worse performance.
 
 It’s important here to note that the few shot examples mentioned here only made a difference when the reasoning behind the answer was provided. Without this reasoning example, there wasn’t the same performance improvement observed.
 
@@ -111,18 +113,18 @@ Here were our results for the Claude Family of models
 | claude-3-sonnet   | 94.50%              | 91.5              | 91.00%          | 96.50%             | 91.5%               | 92.3       |
 | claude-3-opus     | 96.50%              | 98.50%            | 96.50%          | 97.00%             | 97.00%              | 95         |
 
-Here were our results for `4o-mini`
+Here were our results for `gpt-4-turbo-preview`
 
-| model                         | gpt-4o-mini | gpt-4o |
-| ----------------------------- | ----------- | ------ |
-| Structured Outputs            | 95.5        | 91.5%  |
-| Structured Outputs 5 Few-Shot | 94.5        | 94.5%  |
-| Tool Calling                  | 93.5        | 93.5%  |
-| Tool Calling 5 Few Shot       | 93.0        | 95%    |
-| Json Mode                     | 94.5        | 95.5   |
-| Json Mode 5 Few Shot          | 95.0        | 97%    |
+| model                         | gpt-4-turbo-preview | gpt-4-turbo-preview |
+| ----------------------------- | ------------------- | ------------------- |
+| Structured Outputs            | 95.5                | 91.5%              |
+| Structured Outputs 5 Few-Shot | 94.5                | 94.5%              |
+| Tool Calling                  | 93.5                | 93.5%              |
+| Tool Calling 5 Few Shot       | 93.0                | 95%                |
+| Json Mode                     | 94.5                | 95.5               |
+| Json Mode 5 Few Shot          | 95.0                | 97%                |
 
-It’s clear here that Claude models consistently show significant improvement with few-shot examples compared to GPT-4o variants. This is in contrast to `4o-mini` which actually showed a decreased in performance for tool calling when provided with simple examples.
+It's clear here that Claude models consistently show significant improvement with few-shot examples compared to GPT-4-turbo-preview variants. This is in contrast to GPT-4-turbo-preview which actually showed a decreased in performance for tool calling when provided with simple examples.
 
 ### Response Models
 
@@ -142,6 +144,7 @@ In our initial tests , we used the following two models
 class Answer(BaseModel):
     chain_of_thought: str
     answer: int
+
 
 class OnlyAnswer(BaseModel):
     answer: int
@@ -205,7 +208,7 @@ So if you’re generating any sort of response, don’t forget to add in a simpl
 
 #### JSON mode is incredibly Sensitive
 
-We were curious how this would translate over to the original sample of 200 questions. To do so, we took the original 200 questions that we sampled in our previous experiment and tried to see how JSON mode and Tool Calling performed with other different permutations with `gpt-4o-mini`.
+We were curious how this would translate over to the original sample of 200 questions. To do so, we took the original 200 questions that we sampled in our previous experiment and tried to see how JSON mode and Tool Calling performed with other different permutations with `gpt-4-turbo-preview`.
 
 Here were the models that we used
 
@@ -214,21 +217,25 @@ class Answer(BaseModel):
     chain_of_thought: str
     answer: int
 
+
 class AnswerWithCalculation(BaseModel):
     chain_of_thought: str
     required_calculations: list[str]
     answer: int
+
 
 class AssumptionBasedAnswer(BaseModel):
     assumptions: list[str]
     logic_flow: str
     answer: int
 
+
 class ErrorAwareCalculation(BaseModel):
     key_steps: list[str]
     potential_pitfalls: list[str]
     intermediate_results: list[str]
     answer: int
+
 
 class AnswerWithNecessaryCalculationAndFinalChoice(BaseModel):
     chain_of_thought: str
@@ -279,21 +286,16 @@ In fact, the only thing that changed was the last two parameters. Upon closer in
 
 ```python
 {
-  "chain_of_thought": "In the race, there are a total of 240 Asians. Given that 80 were Japanese, we can calculate the number of Chinese participants by subtracting the number of Japanese from the total number of Asians: 240 - 80 = 160. Now, it is given that there are 60 boys on the Chinese team. Therefore, to find the number of girls on the Chinese team, we subtract the number of boys from the total number of Chinese participants: 160 - 60 = 100 girls. Thus, the number of girls on the Chinese team is 100.",
-  "necessary_calculations": [
-    "Total Asians = 240",
-    "Japanese participants = 80",
-    "Chinese participants = Total Asians - Japanese participants = 240 - 80 = 160",
-    "Boys in Chinese team = 60",
-    "Girls in Chinese team = Chinese participants - Boys in Chinese team = 160 - 60 = 100"
-  ],
-  "potential_final_choices": [
-    "60",
-    "100",
-    "80",
-    "120"
-  ],
-  "final_choice": 2
+    "chain_of_thought": "In the race, there are a total of 240 Asians. Given that 80 were Japanese, we can calculate the number of Chinese participants by subtracting the number of Japanese from the total number of Asians: 240 - 80 = 160. Now, it is given that there are 60 boys on the Chinese team. Therefore, to find the number of girls on the Chinese team, we subtract the number of boys from the total number of Chinese participants: 160 - 60 = 100 girls. Thus, the number of girls on the Chinese team is 100.",
+    "necessary_calculations": [
+        "Total Asians = 240",
+        "Japanese participants = 80",
+        "Chinese participants = Total Asians - Japanese participants = 240 - 80 = 160",
+        "Boys in Chinese team = 60",
+        "Girls in Chinese team = Chinese participants - Boys in Chinese team = 160 - 60 = 100",
+    ],
+    "potential_final_choices": ["60", "100", "80", "120"],
+    "final_choice": 2,
 }
 ```
 
@@ -301,21 +303,16 @@ This meant that instead of the final answer of 100, our model was generating pot
 
 ```python
 {
-  "chain_of_thought": "First, we need to determine how many Asians were Chinese. Since there were 240 Asians in total and 80 of them were Japanese, we can find the number of Chinese by subtracting the number of Japanese from the total: 240 - 80 = 160. Now, we know that there are 160 Chinese participants. Given that there were 60 boys on the Chinese team, we can find the number of girls by subtracting the number of boys from the total number of Chinese: 160 - 60 = 100. Therefore, there are 100 girls on the Chinese team.",
-  "necessary_calculations": [
-    "Total Asians = 240",
-    "Number of Japanese = 80",
-    "Number of Chinese = 240 - 80 = 160",
-    "Number of boys on Chinese team = 60",
-    "Number of girls on Chinese team = 160 - 60 = 100"
-  ],
-  "potential_final_answers": [
-    "100",
-    "60",
-    "80",
-    "40"
-  ],
-  "answer": 100
+    "chain_of_thought": "First, we need to determine how many Asians were Chinese. Since there were 240 Asians in total and 80 of them were Japanese, we can find the number of Chinese by subtracting the number of Japanese from the total: 240 - 80 = 160. Now, we know that there are 160 Chinese participants. Given that there were 60 boys on the Chinese team, we can find the number of girls by subtracting the number of boys from the total number of Chinese: 160 - 60 = 100. Therefore, there are 100 girls on the Chinese team.",
+    "necessary_calculations": [
+        "Total Asians = 240",
+        "Number of Japanese = 80",
+        "Number of Chinese = 240 - 80 = 160",
+        "Number of boys on Chinese team = 60",
+        "Number of girls on Chinese team = 160 - 60 = 100",
+    ],
+    "potential_final_answers": ["100", "60", "80", "40"],
+    "answer": 100,
 }
 ```
 
@@ -331,7 +328,8 @@ For instance, instead of asking for just chain_of_thought, we can be much more c
 class Equations(BaseModel):
     chain_of_thought: str
     eval_string: list[str] = Field(
-        description="Python code to evaluate to get the final answer. The final answer should be stored in a variable called `answer`."
+        description="Python code to evaluate to get the final answer. The final answer should be stored in a variable called "
+        "."
     )
 ```
 

@@ -38,7 +38,7 @@ class User(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {
             "role": "user",
@@ -85,7 +85,7 @@ class Response(BaseModel):
 
 
 response = client.create(
-    model="gpt-4o",
+    model="gpt-4-turbo-preview",
     response_model=Response,
     messages=[
         {
@@ -147,7 +147,7 @@ class Response(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {
             "role": "user",
@@ -221,7 +221,7 @@ client = instructor.from_openai(openai.OpenAI())
 context = UserContext(name="scolvin", address="secret address")
 
 address = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-4-turbo-preview",
     messages=[
         {
             "role": "user",

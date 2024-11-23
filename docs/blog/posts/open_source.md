@@ -124,7 +124,7 @@ user = create(
     messages=[
         {
             "role": "user",
-            "content": "Extract `Jason is 30 years old`",
+            "content": "Extract " "",
         }
     ],
     response_model=UserDetail,

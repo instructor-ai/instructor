@@ -54,7 +54,7 @@ async def generate_ai_frontmatter(
         ]
 
     response = await client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",

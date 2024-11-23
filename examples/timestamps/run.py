@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Literal
 
 
@@ -21,13 +21,16 @@ class SegmentWithTimestamp(BaseModel):
     timestamp: str = Field(
         ..., description="The timestamp of the event as either HH:MM:SS or MM:SS"
     )
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def parse_timestamp(self):
-        if self.time_format == "HH:MM:SS":
-            hours, minutes, seconds = map(int, self.timestamp.split(":"))
-        elif self.time_format == "MM:SS":
-            hours, minutes, seconds = 0, *map(int, self.timestamp.split(":"))
+    @field_validator("timestamp", mode="after")
+    @classmethod
+    def parse_timestamp(cls, value: str, info) -> str:
+        time_format = info.data.get("time_format")
+        if time_format == "HH:MM:SS":
+            hours, minutes, seconds = map(int, value.split(":"))
+        elif time_format == "MM:SS":
+            hours, minutes, seconds = 0, *map(int, value.split(":"))
         else:
             raise ValueError("Invalid time format, must be HH:MM:SS or MM:SS")
 
@@ -37,11 +40,9 @@ class SegmentWithTimestamp(BaseModel):
         minutes, seconds = divmod(remainder, 60)
 
         if hours > 0:
-            self.timestamp = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
         else:
-            self.timestamp = f"00:{minutes:02d}:{seconds:02d}"
-
-        return self
+            return f"00:{minutes:02d}:{seconds:02d}"
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 import json
 import logging
 from functools import wraps
-from typing import Annotated, Any, Optional, TypeVar, cast
+from typing import Annotated, Any, Optional, TypeVar, cast, Type, Protocol
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (
@@ -22,14 +22,16 @@ from instructor.utils import (
 )
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
+M = TypeVar("M", bound="OpenAISchema")
 
 logger = logging.getLogger("instructor")
 
 
 class OpenAISchema(BaseModel):
-    # Ignore classproperty, since Pydantic doesn't understand it like it would a normal property.
-    model_config = ConfigDict(ignored_types=(classproperty,))
+    """Base class for OpenAI function calling schemas."""
+
+    model_config: ConfigDict = ConfigDict(ignored_types=(classproperty,))
 
     @classproperty
     def openai_schema(cls) -> dict[str, Any]:
@@ -42,9 +44,9 @@ class OpenAISchema(BaseModel):
         Returns:
             model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
         """
-        schema = cls.model_json_schema()
+        schema: dict[str, Any] = cls.model_json_schema()
         docstring = parse(cls.__doc__ or "")
-        parameters = {
+        parameters: dict[str, Any] = {
             k: v for k, v in schema.items() if k not in ("title", "description")
         }
         for param in docstring.params:
@@ -94,20 +96,19 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def from_response(
-        cls,
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
         mode: Mode = Mode.TOOLS,
-    ) -> BaseModel:
+    ) -> M:
         """Execute the function from the response of an openai chat completion
 
         Parameters:
             completion (openai.ChatCompletion): The response from an openai chat completion
-            throw_error (bool): Whether to throw an error if the function call is not detected
-            context (dict): The context to use for validating the response
-            strict (bool): Whether to use strict json parsing
-            mode (Mode): The openai completion mode
+            validation_context (dict, optional): The context to use for validating the response
+            strict (bool, optional): Whether to use strict json parsing
+            mode (Mode): The openai completion mode to use for parsing the response
 
         Returns:
             cls (OpenAISchema): An instance of the class
@@ -169,11 +170,11 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_cohere_json_schema(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ):
+    ) -> M:
         assert hasattr(
             completion, "text"
         ), "Completion is not of type NonStreamedChatResponse"
@@ -183,11 +184,11 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_anthropic_tools(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         from anthropic.types import Message
 
         if isinstance(completion, Message) and completion.stop_reason == "max_tokens":
@@ -209,11 +210,11 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_anthropic_json(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         from anthropic.types import Message
 
         if hasattr(completion, "choices"):
@@ -241,11 +242,11 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_gemini_json(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: Any,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         try:
             text = completion.text
         except ValueError:
@@ -270,10 +271,10 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_vertexai_tools(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
-    ) -> BaseModel:
+    ) -> M:
         tool_call = completion.candidates[0].content.parts[0].function_call.args  # type: ignore
         model = {}
         for field in tool_call:  # type: ignore
@@ -283,22 +284,22 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_vertexai_json(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         return cls.model_validate_json(
             completion.text, context=validation_context, strict=strict
         )
 
     @classmethod
     def parse_cohere_tools(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         text = cast(str, completion.text)  # type: ignore - TODO update with cohere specific types
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
@@ -307,11 +308,11 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_writer_tools(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         message = completion.choices[0].message
         tool_calls = message.tool_calls
         assert (
@@ -328,11 +329,11 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_functions(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         message = completion.choices[0].message
         assert (
             message.function_call.name == cls.openai_schema["name"]  # type: ignore[index]
@@ -345,11 +346,11 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_tools(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         message = completion.choices[0].message
         # this field seems to be missing when using instructor with some other tools (e.g. litellm)
         # trying to fix this by adding a check
@@ -373,11 +374,11 @@ class OpenAISchema(BaseModel):
 
     @classmethod
     def parse_json(
-        cls: type[BaseModel],
+        cls: Type[M],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
-    ) -> BaseModel:
+    ) -> M:
         message = completion.choices[0].message.content or ""
         message = extract_json_from_codeblock(message)
 
@@ -388,7 +389,7 @@ class OpenAISchema(BaseModel):
         )
 
 
-def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
+def openai_schema(cls: type[T]) -> type[T]:
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
@@ -398,4 +399,4 @@ def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
             __base__=(cls, OpenAISchema),
         )
     )
-    return cast(OpenAISchema, schema)
+    return cast(type[T], schema)

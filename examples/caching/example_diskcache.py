@@ -64,7 +64,7 @@ def instructor_cache(func):
 @instructor_cache
 def extract(data) -> UserDetail:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
@@ -75,7 +75,7 @@ def extract(data) -> UserDetail:
 @instructor_cache
 async def aextract(data) -> UserDetail:
     return await aclient.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},

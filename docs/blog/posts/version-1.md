@@ -77,9 +77,9 @@ client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
 # allow you to add instructor to try it out, while easily removing it
-client.create(model="gpt-4", response_model=T)
-client.chat.completions.create(model="gpt-4", response_model=T)
-client.messages.create(model="gpt-4", response_model=T)
+client.create(model="gpt-4-turbo-preview", response_model=T)
+client.chat.completions.create(model="gpt-4-turbo-preview", response_model=T)
+client.messages.create(model="gpt-4-turbo-preview", response_model=T)
 ```
 
 ## Type are infered correctly

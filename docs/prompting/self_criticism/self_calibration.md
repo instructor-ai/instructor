@@ -42,9 +42,8 @@ def evaluate_model_output(original_prompt: str, model_response: str):
             }
         ],
         response_model=SelfCalibration,
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
     )
-
 
 if __name__ == "__main__":
     original_prompt = """

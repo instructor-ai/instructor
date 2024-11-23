@@ -31,7 +31,7 @@ class Step2(BaseModel):
 
 def rewrite_prompt(query):
     rewritten_prompt = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Step1,
         messages=[
             {
@@ -53,7 +53,7 @@ def rewrite_prompt(query):
 
 def generate_final_response(rewritten_prompt):
     final_response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Step2,
         messages=[
             {

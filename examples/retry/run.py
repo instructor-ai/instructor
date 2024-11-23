@@ -18,7 +18,7 @@ class User(BaseModel):
 
 
 resp = client.messages.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     max_tokens=1024,
     max_retries=tenacity.Retrying(
         stop=tenacity.stop_after_attempt(3),

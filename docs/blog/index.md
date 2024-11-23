@@ -50,8 +50,8 @@ If you want to get updates on new features and tips on how to use Instructor, yo
 - [Ollama Integration](../integrations/ollama.md)
 - [llama-cpp-python Integration](../integrations/llama-cpp-python.md)
 - [Together Compute Integration](../integrations/together.md)
-- [Pandas DataFrame Examples](../examples/bulk_classification.md#working-with-dataframes)
-- [Streaming Response Examples](../examples/bulk_classification.md#streaming-responses)
+- [Bulk Classification Examples](../examples/bulk_classification.md)
+- [Batch Processing Examples](../examples/batch_job_oai.md)
 
 ## Media and Resources
 

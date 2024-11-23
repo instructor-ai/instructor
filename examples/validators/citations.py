@@ -27,11 +27,11 @@ try:
     q = "Are blue berries high in protein?"
     text_chunk = """
     Blueberries are a good source of vitamin K.
-    They also contain vitamin C, fibre, manganese and other antioxidants (notably anthocyanins).    
+    They also contain vitamin C, fibre, manganese and other antioxidants (notably anthocyanins).
     """
 
     resp = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=AnswerWithCitation,
         messages=[
             {

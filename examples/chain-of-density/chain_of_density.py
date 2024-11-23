@@ -98,7 +98,7 @@ def summarize_article(article: str, summary_steps: int = 3):
     summary_chain = []
     # We first generate an initial summary
     summary: InitialSummary = client.chat.completions.create(
-        model="gpt-4-0613",
+        model="gpt-4-turbo-preview",
         response_model=InitialSummary,
         messages=[
             {
@@ -116,7 +116,7 @@ def summarize_article(article: str, summary_steps: int = 3):
     summary_chain.append(summary.summary)
     for _i in range(summary_steps):
         new_summary: RewrittenSummary = client.chat.completions.create(
-            model="gpt-4-0613",
+            model="gpt-4-turbo-preview",
             messages=[
                 {
                     "role": "system",

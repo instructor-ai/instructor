@@ -99,5 +99,5 @@ def mock_track(*args: tuple[Any, ...], **kwargs: dict[str, Any]) -> None:
 
 def fn(a: int, b: int) -> int:
     return client.chat.completions.create(
-        messages=[], model="davinci", response_model=SimpleModel
+        messages=[], model="gpt-4-turbo-preview", response_model=SimpleModel
     )

@@ -89,7 +89,7 @@ client = from_openai(AsyncOpenAI())
 async def generate_prediction(query: str):
     return (
         await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
             messages=[
                 {
                     "role": "user",
@@ -132,7 +132,7 @@ def get_balanced_sample(predictions: list[tuple[Classification, str]], k: int):
 async def generate_response_with_examples(query: str, examples: list[str]):
     formatted_examples = "\n".join(examples)
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Classification,
         messages=[
             {

@@ -29,7 +29,7 @@ class Organization(BaseModel):
 
 def extract(url: str):
     return client.chat.completions.create_partial(
-        model="gpt-4-turbo",
+        model="gpt-4-turbo-preview",
         max_tokens=4000,
         response_model=Organization,
         messages=[
@@ -44,16 +44,16 @@ def extract(url: str):
                         "type": "text",
                         "text": """
                             Analyze the organizational chart image and extract the relevant information to reconstruct the hierarchy.
-                            
+
                             Create a list of People objects, where each person has the following attributes:
                             - id: A unique identifier for the person
                             - name: The person's name
                             - role: The person's role or position in the organization
                             - reports: A list of IDs of people who report directly to this person
                             - manages: A list of IDs of people who this person manages
-                            
+
                             Ensure that the relationships between people are accurately captured in the reports and manages attributes.
-                            
+
                             Return the list of People objects as the people attribute of an Organization object.
                         """,
                     },

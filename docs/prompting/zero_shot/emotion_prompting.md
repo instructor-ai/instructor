@@ -33,7 +33,7 @@ client = instructor.from_openai(openai.OpenAI())
 
 def emotion_prompting(query, stimuli):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[Album],
         messages=[
             {

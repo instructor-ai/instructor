@@ -41,7 +41,7 @@ class Response(BaseModel):
 
 def generate_known_facts(entity, context, query) -> Iterable[KnownFact]:
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[KnownFact],
         messages=[
             {
@@ -62,7 +62,7 @@ def generate_known_facts(entity, context, query) -> Iterable[KnownFact]:
 
 def answer_question_based_on_facts(entity, query, known_facts) -> Response:
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Response,
         messages=[
             {

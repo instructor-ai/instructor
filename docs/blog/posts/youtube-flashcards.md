@@ -120,14 +120,13 @@ to help study and understand the topic better. Please rate all questions from 1 
 based on their difficulty."""
 
 response = instructor_client.chat.completions.create_iterable(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     response_model=QuestionAnswer,
     messages=[
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": transcript},
     ],
 )
-```
 
 This will return an generator that you can iterate over to access individual
 `QuestionAnswer` objects.
@@ -219,7 +218,7 @@ def generate_question_and_answers(state: State) -> State:
         " based on their difficulty."
     )
     response = instructor_client.chat.completions.create_iterable(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=QuestionAnswer,
         messages=[
             {"role": "system", "content": system_prompt},

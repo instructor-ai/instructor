@@ -97,11 +97,12 @@ We also support streaming with the Cerebras client with the `CEREBRAS_JSON` mo
 
 ```python
 import instructor
-from cerebras.cloud.sdk import Cerebras, AsyncCerebras
+from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 from typing import Iterable
 
 client = instructor.from_cerebras(Cerebras(), mode=instructor.Mode.CEREBRAS_JSON)
+```
 
 
 class Person(BaseModel):

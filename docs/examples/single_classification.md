@@ -5,7 +5,7 @@ description: Learn to implement single-label classification using the OpenAI API
 
 # Single-Label Classification
 
-This example demonstrates how to perform single-label classification using the OpenAI API. The example uses the `gpt-3.5-turbo` model to classify text as either `SPAM` or `NOT_SPAM`.
+This example demonstrates how to perform single-label classification using the OpenAI API. The example uses the `gpt-4-turbo-preview` model to classify text as either `SPAM` or `NOT_SPAM`.
 
 ```python
 from pydantic import BaseModel, Field
@@ -39,7 +39,7 @@ class ClassificationResponse(BaseModel):
 def classify(data: str) -> ClassificationResponse:
     """Perform single-label classification on the input text."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=ClassificationResponse,
         messages=[
             {

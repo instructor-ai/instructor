@@ -9,10 +9,26 @@ This guide demonstrates how to use Groq AI with Instructor to generate structure
 
 you'll need to sign up for an account and get an API key. You can do that [here](https://console.groq.com/docs/quickstart).
 
+you'll need to sign up for an account and get an API key. You can do that [here](https://console.groq.com/docs/quickstart).
+
 ```bash
 export GROQ_API_KEY=<your-api-key-here>
-pip install "instructor[groq]"
 ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[groq]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[groq]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[groq]"
+    ```
 
 ## Groq AI
 

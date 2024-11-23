@@ -162,7 +162,7 @@ class SearchQuery(BaseModel):
 
 
 query = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     messages=[{"role": "user", "content": "Search for a picture of a cat"}],
     response_model=SearchQuery,
 )

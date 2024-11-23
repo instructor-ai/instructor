@@ -5,12 +5,22 @@ from typing import (
     Callable,
     Protocol,
     TypeVar,
+    cast,
     overload,
+    Dict,
+    List,
+    Mapping,
+    Iterable,
 )
-from collections.abc import Awaitable
-from typing_extensions import ParamSpec
+from collections.abc import Awaitable, Coroutine
+from typing_extensions import ParamSpec, NotRequired, TypedDict
 
 from openai import AsyncOpenAI, OpenAI
+from openai.types.chat import ChatCompletion
+from openai.types.chat.chat_completion_message import ChatCompletionMessage
+from openai.types.chat.chat_completion import Function, ChatCompletionToolParam
+from openai.types.completion_create_params import CompletionCreateParamsBase
+from openai.types import NotGiven, Omit
 from pydantic import BaseModel
 
 from instructor.process_response import handle_response_model
@@ -34,7 +44,7 @@ T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 
 
-class InstructorChatCompletionCreate(Protocol):
+class InstructorChatCompletionCreate(Protocol[T_Model]):
     def __call__(
         self,
         response_model: type[T_Model] | None = None,
@@ -46,7 +56,7 @@ class InstructorChatCompletionCreate(Protocol):
     ) -> T_Model: ...
 
 
-class AsyncInstructorChatCompletionCreate(Protocol):
+class AsyncInstructorChatCompletionCreate(Protocol[T_Model]):
     async def __call__(
         self,
         response_model: type[T_Model] | None = None,
@@ -116,7 +126,7 @@ def patch(  # type: ignore
     client: OpenAI | AsyncOpenAI | None = None,
     create: Callable[T_ParamSpec, T_Retval] | None = None,
     mode: Mode = Mode.TOOLS,
-) -> OpenAI | AsyncOpenAI:
+) -> OpenAI | AsyncOpenAI | InstructorChatCompletionCreate[T_Model] | AsyncInstructorChatCompletionCreate[T_Model]:
     """
     Patch the `client.chat.completions.create` method
 
@@ -134,7 +144,8 @@ def patch(  # type: ignore
     if create is not None:
         func = create
     elif client is not None:
-        func = client.chat.completions.create
+        from openai.resources.chat.completions import Completions
+        func = cast(Completions, client.chat.completions).create
     else:
         raise ValueError("Either client or create must be provided")
 
@@ -150,7 +161,7 @@ def patch(  # type: ignore
         hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model:
+    ) -> T_Model | ChatCompletion:
         context = handle_context(context, validation_context)
 
         response_model, new_kwargs = handle_response_model(
@@ -181,7 +192,7 @@ def patch(  # type: ignore
         hooks: Hooks | None = None,
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
-    ) -> T_Model:
+    ) -> T_Model | ChatCompletion:
         context = handle_context(context, validation_context)
 
         response_model, new_kwargs = handle_response_model(

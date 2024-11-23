@@ -33,7 +33,7 @@ def test_multimodal_audio_description(audio_file, client):
         source: str
 
     response = client.chat.completions.create(
-        model="gpt-4o-audio-preview",
+        model="gpt-4-vision-preview",
         response_model=AudioDescription,
         modalities=["text"],
         messages=[

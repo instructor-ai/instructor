@@ -114,7 +114,7 @@ client = instructor.from_openai(OpenAI())
 
 
 def query_planner(question: str) -> QueryPlan:
-    PLANNING_MODEL = "gpt-4o-mini"
+    PLANNING_MODEL = "gpt-4-turbo-preview"
 
     messages = [
         {
@@ -135,7 +135,6 @@ def query_planner(question: str) -> QueryPlan:
         max_tokens=1000,
     )
     return root
-```
 
 ```
 plan = query_planner(

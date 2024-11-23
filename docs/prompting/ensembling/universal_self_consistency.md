@@ -48,7 +48,7 @@ class SelectedResponse(BaseModel):
 
 async def generate_response(query: str) -> Response:
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Response,
         messages=[{"role": "user", "content": query}],
     )
@@ -68,7 +68,7 @@ async def select_consistent_response(responses: list[Response], query: str):
     )
 
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=SelectedResponse,
         messages=[
             {

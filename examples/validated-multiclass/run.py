@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ValidationInfo, model_validator
+from pydantic import BaseModel, ValidationInfo, field_validator, ConfigDict
 import openai
 import instructor
 import asyncio
@@ -11,19 +11,19 @@ client = instructor.from_openai(
 class Tag(BaseModel):
     id: int
     name: str
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def validate_ids(self, info: ValidationInfo):
+    @field_validator("id", "name", mode="after")
+    @classmethod
+    def validate_ids(cls, value, info: ValidationInfo):
         context = info.context
         if context:
             tags: list[Tag] = context.get("tags")
-            assert self.id in {
-                tag.id for tag in tags
-            }, f"Tag ID {self.id} not found in context"
-            assert self.name in {
-                tag.name for tag in tags
-            }, f"Tag name {self.name} not found in context"
-        return self
+            if isinstance(value, int):  # id validation
+                assert value in {tag.id for tag in tags}, f"Tag ID {value} not found in context"
+            else:  # name validation
+                assert value in {tag.name for tag in tags}, f"Tag name {value} not found in context"
+        return value
 
 
 class TagWithInstructions(Tag):

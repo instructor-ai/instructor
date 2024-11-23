@@ -89,7 +89,7 @@ class ProgramExecution(BaseModel):
 
 def generate_intermediate_reasoning(query: str):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",
@@ -123,7 +123,7 @@ def generate_prediction(
 ) -> Prediction:
     formatted_options = ",".join(options)
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Prediction,
         messages=[
             {

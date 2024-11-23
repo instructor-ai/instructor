@@ -221,7 +221,7 @@ class MeetingInfo(BaseModel):
 
 
 extraction_stream = client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-4-turbo-preview",
     response_model=Partial[MeetingInfo],
     messages=[
         {
@@ -259,7 +259,7 @@ from typing import Iterable
 Users = Iterable[User]
 
 users = client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-4-turbo-preview",
     temperature=0.1,
     stream=True,
     response_model=Users,
@@ -320,7 +320,7 @@ class UserDetails(BaseModel):
 
 
 model = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=UserDetails,
     max_retries=2,
     messages=[

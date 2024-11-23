@@ -1,10 +1,14 @@
+"""Module for instructor-specific exceptions."""
+
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Sequence
 
 
 class IncompleteOutputException(Exception):
     """Exception raised when the output from LLM is incomplete due to max tokens limit reached."""
+
+    last_completion: Any | None
 
     def __init__(
         self,
@@ -18,6 +22,14 @@ class IncompleteOutputException(Exception):
 
 
 class InstructorRetryException(Exception):
+    """Exception raised when instructor retries fail."""
+
+    last_completion: Any | None
+    messages: Sequence[Any] | None
+    n_attempts: int
+    total_usage: int
+    create_kwargs: dict[str, Any] | None
+
     def __init__(
         self,
         *args: list[Any],

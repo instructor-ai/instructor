@@ -126,7 +126,7 @@ def score_repetitiveness(prediction: Response):
 async def generate_cot_response(query: str) -> tuple[Response, str]:
     return (
         await client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4-turbo-preview",
             messages=[{"role": "user", "content": query}],
             response_model=Response,
             temperature=0.4,
@@ -187,7 +187,7 @@ def get_top_k_examples(queries: list[ResponseScore], k: int):
 async def generate_answer_with_examples(query: str, examples: list[ResponseScore]):
     formatted_examples = "\n".join([example.format_response() for example in examples])
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",

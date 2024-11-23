@@ -32,7 +32,7 @@ class Program(OpenAISchema):
 
 def develop(data: str) -> Program:
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4-turbo-preview",
         temperature=0.1,
         functions=[Program.openai_schema],
         function_call={"name": Program.openai_schema["name"]},

@@ -43,7 +43,8 @@ def async_field_validator(field: str, *fields: str) -> Callable[[T], T]:
     return decorator
 
 
-def async_model_validator() -> Callable[[T], T]:
+def async_field_validator_after() -> Callable[[T], T]:
+    """Decorator for async field validators that run after all fields are validated."""
     def decorator(func: T) -> T:
         params = signature(func).parameters
         requires_validation_context = False
@@ -63,9 +64,13 @@ def async_model_validator() -> Callable[[T], T]:
 
         setattr(
             func,
-            ASYNC_MODEL_VALIDATOR_KEY,
+            ASYNC_MODEL_VALIDATOR_KEY,  # Keep the same key for backward compatibility
             (func, requires_validation_context),
         )
         return func
 
     return decorator
+
+
+# Alias for backward compatibility
+async_model_validator = async_field_validator_after

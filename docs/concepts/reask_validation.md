@@ -161,7 +161,7 @@ class UserDetails(BaseModel):
 
 
 model = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=UserDetails,
     max_retries=2,
     messages=[

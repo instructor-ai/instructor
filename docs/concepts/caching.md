@@ -27,7 +27,7 @@ class UserDetail(BaseModel):
 @functools.cache
 def extract(data) -> UserDetail:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
@@ -182,7 +182,7 @@ class UserDetail(BaseModel):
 @instructor_cache
 def extract(data) -> UserDetail:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
@@ -285,7 +285,7 @@ class UserDetail(BaseModel):
 def extract(data) -> UserDetail:
     # Assuming client.chat.completions.create returns a UserDetail instance
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},

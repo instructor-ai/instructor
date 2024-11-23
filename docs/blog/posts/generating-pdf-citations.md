@@ -41,12 +41,6 @@ pip install "instructor[google-generativeai]" pymupdf
 Then let's import the necessary libraries:
 
 ```python
-import instructor
-import google.generativeai as genai
-from google.ai.generativelanguage_v1beta.types.file import File
-from pydantic import BaseModel
-import pymupdf
-import time
 ```
 
 ## Defining Our Data Models
@@ -58,6 +52,7 @@ class Citation(BaseModel):
     reason_for_relevance: str
     text: list[str]
     page_number: int
+
 
 class Answer(BaseModel):
     chain_of_thought: str
@@ -128,7 +123,6 @@ print(resp)
 #     ],
 #     answer="In 2023, the U.S. government (USG) announced new licensing requirements for the export of certain chips to China, Russia, and other countries.  These chips included the A100 and H100 integrated circuits, the DGX system, and any other systems or boards incorporating the A100 or H100 chips.",
 # )
-
 ```
 
 ## Highlighting Citations in the PDF

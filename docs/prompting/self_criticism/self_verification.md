@@ -81,7 +81,7 @@ class Verification(BaseModel):
 
 def query_llm(query, model):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=model,
         messages=[
             {
@@ -94,7 +94,7 @@ def query_llm(query, model):
 
 def rewrite(query, candidate):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Rewritten,
         messages=[
             {
@@ -111,7 +111,7 @@ def rewrite(query, candidate):
 
 def verify(question):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Verification,
         messages=[{"role": "user", "content": question}],
     )

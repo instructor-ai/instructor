@@ -1,7 +1,7 @@
 import instructor
 from openai import OpenAI
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional
 
 # Enables `response_model` and `max_retries` parameters
@@ -22,7 +22,7 @@ def validator(values):
     chain_of_thought = values["chain_of_thought"]
     answer = values["answer"]
     resp = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",
@@ -44,11 +44,13 @@ def validator(values):
 class Response(BaseModel):
     chain_of_thought: str
     answer: str
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="before")
+    @field_validator("answer", mode="before")
     @classmethod
-    def chain_of_thought_makes_sense(cls, data):
-        return validator(data)
+    def chain_of_thought_makes_sense(cls, value: str, info):
+        data = {"chain_of_thought": info.data.get("chain_of_thought"), "answer": value}
+        return validator(data)["answer"]
 
 
 if __name__ == "__main__":
@@ -61,6 +63,6 @@ if __name__ == "__main__":
         print(e)
         """
         1 validation error for Response
-            Value error, The statement 'The meaning of life is 42' does not follow the chain of thought: 1 + 1 = 2. 
+            Value error, The statement 'The meaning of life is 42' does not follow the chain of thought: 1 + 1 = 2.
             [type=value_error, input_value={'chain_of_thought': '1 +... meaning of life is 42'}, input_type=dict]
         """

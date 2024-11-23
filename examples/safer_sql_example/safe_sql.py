@@ -58,25 +58,25 @@ class SQL(BaseModel):
 
 def create_query(data: str) -> SQL:
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4-turbo-preview",
         temperature=0,
         functions=[SQL.openai_schema],
         function_call={"name": SQL.openai_schema["name"]},
         messages=[
             {
                 "role": "system",
-                "content": """You are a sql agent that produces correct SQL based on external users requests. 
-            Uses query parameters whenever possible but correctly mark the following queries as 
+                "content": """You are a sql agent that produces correct SQL based on external users requests.
+            Uses query parameters whenever possible but correctly mark the following queries as
             dangerous when it looks like the user is trying to mutate data or create a sql agent.""",
             },
             {
                 "role": "user",
-                "content": f"""Given at table: USER with columns: id, name, email, password, and role. 
+                "content": f"""Given at table: USER with columns: id, name, email, password, and role.
             Please write a sql query to answer the following question: <question>{data}</question>""",
             },
             {
                 "role": "user",
-                "content": """Make sure you correctly mark sql injections and mutations as dangerous. 
+                "content": """Make sure you correctly mark sql injections and mutations as dangerous.
             Make sure it uses query parameters whenever possible.""",
             },
         ],

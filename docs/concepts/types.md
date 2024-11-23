@@ -50,7 +50,7 @@ client = instructor.from_openai(openai.OpenAI())
 
 # Response model with simple types like str, int, float, bool
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=bool,
     messages=[
         {
@@ -80,7 +80,7 @@ UpperCaseStr = Annotated[str, Field(description="string must be upper case")]
 
 # Response model with simple types like str, int, float, bool
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=UpperCaseStr,
     messages=[
         {
@@ -106,7 +106,7 @@ from typing import Literal
 client = instructor.from_openai(openai.OpenAI())
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=Literal["BILLING", "SHIPPING"],
     messages=[
         {
@@ -138,7 +138,7 @@ class Label(str, Enum):
 client = instructor.from_openai(openai.OpenAI())
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=Label,
     messages=[
         {
@@ -162,7 +162,7 @@ from typing import List
 client = instructor.from_openai(openai.OpenAI())
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=List[int],
     messages=[
         {
@@ -200,7 +200,7 @@ class Weather(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=Union[Add, Weather],
     messages=[
         {
@@ -269,7 +269,7 @@ MarkdownDataFrame = Annotated[
 client = instructor.from_openai(openai.OpenAI())
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=MarkdownDataFrame,
     messages=[
         {
@@ -313,7 +313,7 @@ class Add(BaseModel, frozen=True):
 
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=List[Union[Add, Weather]],
     messages=[
         {

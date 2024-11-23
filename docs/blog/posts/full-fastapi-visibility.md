@@ -65,7 +65,7 @@ client = instructor.from_openai(AsyncOpenAI())
 @app.post("/user", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
     user_detail = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -73,7 +73,6 @@ async def endpoint_function(data: UserData) -> UserDetail:
     )
 
     return user_detail
-
 ```
 
 This simple endpoint takes in a user query and extracts out a user from the statement. Let's see how we can add in Logfire into this endpoint with just a few lines of code
@@ -83,7 +82,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI
 from openai import AsyncOpenAI
 import instructor
-import logfire #(1)!
+import logfire  # (1)!
 
 
 class UserData(BaseModel):
@@ -96,7 +95,7 @@ class UserDetail(BaseModel):
 
 
 app = FastAPI()
-openai_client = AsyncOpenAI() #(2)!
+openai_client = AsyncOpenAI()  # (2)!
 logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
 logfire.instrument_openai(openai_client)
 logfire.instrument_fastapi(app)
@@ -106,7 +105,7 @@ client = instructor.from_openai(openai_client)
 @app.post("/user", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
     user_detail = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -152,14 +151,16 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     ```python
     import asyncio
 
+
     class MultipleUserData(BaseModel):
         queries: list[str]
+
 
     @app.post("/many-users", response_model=list[UserDetail])
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
             user_detail = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4-turbo-preview",
                 response_model=UserDetail,
                 messages=[
                     {"role": "user", "content": f"Extract: `{query}`"},
@@ -180,8 +181,6 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     from openai import AsyncOpenAI
     import instructor
     import logfire
-    from collections.abc import Iterable
-    from fastapi.responses import StreamingResponse
     import asyncio
 
 
@@ -209,7 +208,7 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     @app.post("/user", response_model=UserDetail)
     async def endpoint_function(data: UserData) -> UserDetail:
         user_detail = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
             response_model=UserDetail,
             messages=[
                 {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -223,7 +222,7 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
             user_detail = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4-turbo-preview",
                 response_model=UserDetail,
                 messages=[
                     {"role": "user", "content": f"Extract: `{query}`"},
@@ -265,20 +264,23 @@ Let's add a new endpoint to our server to see how this might work
 === "New Code"
 
     ```python
-    import asyncio
     from collections.abc import Iterable
     from fastapi.responses import StreamingResponse
+
 
     class MultipleUserData(BaseModel):
         queries: list[str]
 
+
     @app.post("/extract", response_class=StreamingResponse)
     async def extract(data: UserData):
         supressed_client = AsyncOpenAI()
-        logfire.instrument_openai(supressed_client, suppress_other_instrumentation=False) #(1)!
+        logfire.instrument_openai(
+            supressed_client, suppress_other_instrumentation=False
+        )  # (1)!
         client = instructor.from_openai(supressed_client)
         users = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
             response_model=Iterable[UserDetail],
             stream=True,
             messages=[
@@ -336,7 +338,7 @@ Let's add a new endpoint to our server to see how this might work
     @app.post("/user", response_model=UserDetail)
     async def endpoint_function(data: UserData) -> UserDetail:
         user_detail = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
             response_model=UserDetail,
             messages=[
                 {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -350,7 +352,7 @@ Let's add a new endpoint to our server to see how this might work
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
             user_detail = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4-turbo-preview",
                 response_model=UserDetail,
                 messages=[
                     {"role": "user", "content": f"Extract: `{query}`"},
@@ -369,7 +371,7 @@ Let's add a new endpoint to our server to see how this might work
         logfire.instrument_openai(supressed_client, suppress_other_instrumentation=False)
         client = instructor.from_openai(supressed_client)
         users = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
             response_model=Iterable[UserDetail],
             stream=True,
             messages=[
@@ -404,7 +406,6 @@ response = requests.post(
 for chunk in response.iter_content(chunk_size=1024):
     if chunk:
         print(str(chunk, encoding="utf-8"), end="\n")
-
 ```
 
 This gives us the output of

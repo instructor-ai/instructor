@@ -62,7 +62,7 @@ client = instructor.from_openai(openai.OpenAI())
 
 def extract_df(data: str) -> pd.DataFrame:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=MarkdownDataFrame,
         messages=[
             {
@@ -84,7 +84,7 @@ class Table(BaseModel):
 
 def extract_table(data: str) -> Table:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=Table,
         messages=[
             {

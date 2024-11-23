@@ -1,13 +1,21 @@
 from __future__ import annotations
 from enum import Enum
 from collections import defaultdict
-from typing import Any, Callable, Literal, TypeVar
+from typing import Any, Callable, Literal, TypeVar, Protocol, Union, TypeAlias
 
 import traceback
 import warnings
 
 T = TypeVar("T")
 
+HookHandler = Callable[[Any], None]
+HookNameLiteral: TypeAlias = Literal[
+    "completion:kwargs",
+    "completion:response",
+    "completion:error",
+    "completion:last_attempt",
+    "parse:error",
+]
 
 class HookName(Enum):
     COMPLETION_KWARGS = "completion:kwargs"
@@ -25,24 +33,15 @@ class Hooks:
     for various stages of the completion process.
     """
 
+    _handlers: defaultdict[HookName, list[HookHandler]]
+
     def __init__(self) -> None:
-        self._handlers: defaultdict[HookName, list[Callable[[Any], None]]] = (
-            defaultdict(list)
-        )
+        self._handlers = defaultdict(list)
 
     def on(
         self,
-        hook_name: (
-            HookName
-            | Literal[
-                "completion:kwargs",
-                "completion:response",
-                "completion:error",
-                "completion:last_attempt",
-                "parse:error",
-            ]
-        ),
-        handler: Callable[[Any], None],
+        hook_name: Union[HookName, HookNameLiteral],
+        handler: HookHandler,
     ) -> None:
         """
         Registers an event handler for a specific event.
@@ -70,7 +69,7 @@ class Hooks:
         hook_name = self.get_hook_name(hook_name)
         self._handlers[hook_name].append(handler)
 
-    def get_hook_name(self, hook_name: HookName | str) -> HookName:
+    def get_hook_name(self, hook_name: Union[HookName, str]) -> HookName:
         if isinstance(hook_name, str):
             try:
                 return HookName(hook_name)
@@ -134,15 +133,8 @@ class Hooks:
 
     def off(
         self,
-        hook_name: HookName
-        | Literal[
-            "completion:kwargs",
-            "completion:response",
-            "completion:error",
-            "completion:last_attempt",
-            "parse:error",
-        ],
-        handler: Callable[[Any], None],
+        hook_name: Union[HookName, HookNameLiteral],
+        handler: HookHandler,
     ) -> None:
         """
         Removes a specific handler from an event.
@@ -159,15 +151,7 @@ class Hooks:
 
     def clear(
         self,
-        hook_name: HookName
-        | Literal[
-            "completion:kwargs",
-            "completion:response",
-            "completion:error",
-            "completion:last_attempt",
-            "parse:error",
-        ]
-        | None = None,
+        hook_name: Union[HookName, HookNameLiteral, None] = None,
     ) -> None:
         """
         Clears handlers for a specific event or all events.

@@ -90,7 +90,7 @@ def parse_tree_to_filesystem(data: str) -> DirectoryTree:
     """
 
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4-turbo-preview",
         response_model=DirectoryTree,
         messages=[
             {

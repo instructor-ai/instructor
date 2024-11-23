@@ -17,7 +17,7 @@ description: Learn to utilize field-level streaming with Instructor and OpenAI f
         age: int
         category: Literal["admin", "user", "guest"]
 
-    // The rest of your code below
+    # The rest of your code below
     ```
 
     This is because `jiter` throws an error otherwise if it encounters a incomplete Literal value while it's being streamed in
@@ -102,7 +102,7 @@ class MeetingInfo(BaseModel):
 
 
 extraction_stream = client.chat.completions.create_partial(
-    model="gpt-4",
+    model="gpt-4-turbo-preview",
     response_model=MeetingInfo,
     messages=[
         {

@@ -25,7 +25,7 @@ async def main():
 
     try:
         qa: QuestionAnswerNoEvil = await aclient.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
             response_model=QuestionAnswerNoEvil,
             max_retries=2,
             messages=[

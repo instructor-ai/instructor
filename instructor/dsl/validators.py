@@ -1,29 +1,28 @@
-from typing import Callable, Any, TypeVar, cast, Protocol, TypeAlias
+from __future__ import annotations
+
+from typing import Any, Callable, Protocol, TypeVar
+
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
-from openai.types.moderation import (
-    Moderation,
-    Categories,
-    CreateModerationResponse,
-)
-from pydantic import Field, ConfigDict  # type: ignore
+from openai.types.moderation_create_response import ModerationCreateResponse
 
-from instructor.function_calls import OpenAISchema
-from instructor.client import Instructor
+from pydantic import BaseModel, Field, ConfigDict
+
+from instructor import Instructor
+from instructor.function_calls import Mode
 
 
 T = TypeVar('T')
-ChatMessage: TypeAlias = ChatCompletionMessageParam
+ChatMessage = ChatCompletionMessageParam
 
 class ValidatorProtocol(Protocol):
     """Protocol for validator objects."""
     def model_dump(self) -> dict[str, Any]: ...
 
 
-class Validator(OpenAISchema):
+class Validator(BaseModel):
     """Validate if an attribute is correct and if not, return a new value with an error message."""
-
-    model_config: ConfigDict = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     is_valid: bool = Field(
         default=True,
@@ -75,13 +74,14 @@ def llm_validator(
 
     Parameters:
         statement (str): The statement to validate
-        model (str): The LLM to use for validation (default: "gpt-3.5-turbo-0613")
+        client (Instructor): The Instructor client to use for validation
+        allow_override (bool): Whether to allow the LLM to override the value with a fixed value
+        model (str): The LLM to use for validation (default: "gpt-3.5-turbo")
         temperature (float): The temperature to use for the LLM (default: 0)
-        openai_client (OpenAI): The OpenAI client to use (default: None)
     """
 
     def llm(v: str) -> str:
-        messages: list[ChatMessage] = [
+        messages: list[ChatCompletionMessageParam] = [
             {
                 "role": "system",
                 "content": "You are a world class validation model. Capable to determine if the following value is valid for the statement, if it is not, explain why and suggest a new value.",
@@ -91,19 +91,22 @@ def llm_validator(
                 "content": f"Does `{v}` follow the rules: {statement}",
             },
         ]
-        resp = cast(Validator, client.chat.completions.create(
+
+        # Use instructor client's create method which handles response_model
+        resp: Validator = client.chat.completions.create(
             response_model=Validator,
             messages=messages,
             model=model,
             temperature=temperature,
-        ))
+            mode=Mode.JSON,
+        )
 
-        # If the response is  not valid, return the reason, this could be used in
-        # the future to generate a better response, via reasking mechanism.
-        assert resp.is_valid, resp.reason
+        if not resp.is_valid:
+            if resp.reason:
+                raise ValueError(resp.reason)
+            raise ValueError("Invalid value")
 
-        if allow_override and not resp.is_valid and resp.fixed_value is not None:
-            # If the value is not valid, but we allow override, return the fixed value
+        if allow_override and resp.fixed_value is not None:
             return resp.fixed_value
         return v
 
@@ -138,12 +141,14 @@ def openai_moderation(client: OpenAI) -> Callable[[str], str]:
     """
 
     def validate_message_with_openai_mod(v: str) -> str:
-        response: CreateModerationResponse = client.moderations.create(input=v)
-        moderation: Moderation = response.results[0]
-        categories: Categories = moderation.categories
-        if moderation.flagged:
+        response: ModerationCreateResponse = client.moderations.create(input=v)
+        result = response.results[0]
+
+        if result.flagged:
+            categories_dict: dict[str, bool] = dict(result.categories)
             flagged_categories: list[str] = [
-                cat for cat, is_flagged in categories.model_dump().items() if is_flagged
+                category for category, is_flagged in categories_dict.items()
+                if is_flagged
             ]
             raise ValueError(f"`{v}` was flagged for {', '.join(flagged_categories)}")
         return v

@@ -39,7 +39,7 @@ client = instructor.from_openai(OpenAI())
 
 def decompose(question):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[Subquestion],
         messages=[
             {
@@ -52,7 +52,7 @@ def decompose(question):
 
 def solve(question, solved_questions, original_question):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Answer,
         messages=[
             {

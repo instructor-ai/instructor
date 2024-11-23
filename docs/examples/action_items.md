@@ -65,7 +65,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate(data: str) -> Iterable[Ticket]:
     return client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[Ticket],
         messages=[
             {

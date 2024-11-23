@@ -115,14 +115,13 @@ auth_req = google.auth.transport.requests.Request()
 creds.refresh(auth_req)
 
 # Pass the Vertex endpoint and authentication to the OpenAI SDK
-PROJECT = 'PROJECT_ID'
-LOCATION = 'LOCATION'
+PROJECT = 'my-project-123'  # Replace with your actual project ID
+LOCATION = 'us-central1'    # Common Google Cloud location
 
 base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
 client = instructor.from_openai(
     OpenAI(base_url=base_url, api_key=creds.token), mode=instructor.Mode.JSON
 )
-```
 
 ### Gemini JSON Mode
 

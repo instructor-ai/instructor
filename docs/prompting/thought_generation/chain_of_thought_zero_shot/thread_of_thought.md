@@ -33,7 +33,7 @@ class ThreadOfThoughtResponse(BaseModel):
 
 def analyze_context_and_generate_response(query: str, context: list[str]):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=ThreadOfThoughtResponse,
         messages=[
             {

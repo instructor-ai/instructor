@@ -23,7 +23,7 @@ class UserExtract(BaseModel):
 
 
 user, completion = client.chat.completions.create_with_completion(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},

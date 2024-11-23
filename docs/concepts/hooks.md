@@ -77,7 +77,7 @@ def log_completion_kwargs(*args, **kwargs):
 client.on("completion:kwargs", log_completion_kwargs)
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     messages=[{"role": "user", "content": "Hello, world!"}],
     response_model=str,
 )
@@ -101,7 +101,7 @@ import pprint
 
 client = instructor.from_openai(openai.OpenAI())
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     messages=[{"role": "user", "content": "Hello, world!"}],
     response_model=str,
 )
@@ -127,7 +127,7 @@ import openai
 
 client = instructor.from_openai(openai.OpenAI())
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     messages=[{"role": "user", "content": "Hello, world!"}],
     response_model=str,
 )
@@ -160,7 +160,7 @@ def log_completion_kwargs(kwargs) -> None:
                 "content": "Extract the user name and age from the following text: 'John is 20 years old'",
             }
         ],
-        "model": "gpt-4o-mini",
+        "model": "gpt-4-turbo-preview",
         "tools": [
             {
                 "type": "function",
@@ -213,7 +213,7 @@ def log_completion_response(response) -> None:
             }
         ],
         "created": 1729158226,
-        "model": "gpt-4o-mini-2024-07-18",
+        "model": "gpt-4-turbo-preview",
         "object": "chat.completion",
         "service_tier": None,
         "system_fingerprint": "fp_e2bde53e6e",
@@ -270,7 +270,7 @@ class User(pydantic.BaseModel):
 try:
     # Use the client to create a completion
     user = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "user",
@@ -285,7 +285,7 @@ except Exception as e:
 
 
 user = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {
             "role": "user",

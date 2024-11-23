@@ -39,7 +39,6 @@ First, let's set up our environment with the necessary imports:
 ```python
 import instructor
 from openai import OpenAI
-from pydantic import BaseModel, Field, field_validator
 
 client = instructor.from_openai(OpenAI())
 ```
@@ -50,12 +49,14 @@ We're using the `instructor` library, which integrates seamlessly with OpenAI's 
 
 We'll use Pydantic to define our `Label` and `RerankedResults` models that structure the output of our LLM:
 
-Notice that not only do I reference the chunk_id in the label class, I also asked a language model to use chain of thought. This is very useful for using models like 4o Mini or Claude, but not necessarily if we plan to use the `o1-mini` and `o1-preview` models.
+Notice that not only do I reference the chunk_id in the label class, I also asked a language model to use chain of thought. This is very useful for using models like gpt-4-turbo-preview or Claude, but not necessarily if we plan to use the `o1-mini` and `o1-preview` models.
 
 ```python
 class Label(BaseModel):
     chunk_id: int = Field(description="The unique identifier of the text chunk")
-    chain_of_thought: str = Field(description="The reasoning process used to evaluate the relevance")
+    chain_of_thought: str = Field(
+        description="The reasoning process used to evaluate the relevance"
+    )
     relevancy: int = Field(
         description="Relevancy score from 0 to 10, where 10 is most relevant",
         ge=0,
@@ -81,7 +82,7 @@ Next, we'll create a function that uses our LLM to rerank a list of text chunks 
 ```python
 def rerank_results(query: str, chunks: list[dict]) -> RerankedResults:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=RerankedResults,
         messages=[
             {
@@ -159,6 +160,7 @@ def main():
         print(f"Reasoning: {label.chain_of_thought}")
         print()
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -182,7 +184,9 @@ class Label(BaseModel):
         context = info.context
         chunks = context["chunks"]
         if v not in [chunk["id"] for chunk in chunks]:
-            raise ValueError(f"Chunk with id {v} not found, must be one of {[chunk['id'] for chunk in chunks]}")
+            raise ValueError(
+                f"Chunk with id {v} not found, must be one of {[chunk['id'] for chunk in chunks]}"
+            )
         return v
 ```
 

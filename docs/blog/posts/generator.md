@@ -138,7 +138,7 @@ client = OpenAI(
 )
 
 response_generator = client.chat.completions.create(
-    model='gpt-3.5-turbo',
+    model='gpt-4-turbo-preview',
     messages=[{'role': 'user', 'content': "What are some good reasons to smile?"}],
     temperature=0,
     stream=True,
@@ -268,7 +268,7 @@ prompt = (
 
 start_perf = time.perf_counter()
 recommendations_stream = client.chat.completions.create(
-    model="gpt-3.5-turbo-1106",
+    model="gpt-4-turbo-preview",
     temperature=0.1,
     response_model=Iterable[ProductRecommendation],
     stream=True,
@@ -297,7 +297,7 @@ Time for first result (generator): 4.33 seconds
 ```python
 start_perf = time.perf_counter()
 recommendations_list = client.chat.completions.create(
-    model="gpt-3.5-turbo-1106",
+    model="gpt-4-turbo-preview",
     temperature=0.1,
     response_model=Iterable[ProductRecommendation],
     stream=False,

@@ -157,7 +157,7 @@ def task_planner(question: str) -> TaskPlan:
     ]
 
     completion = client.chat.completions.create(
-        model="gpt-4-0613",
+        model="gpt-4-turbo-preview",
         temperature=0,
         response_model=TaskPlan,
         messages=messages,

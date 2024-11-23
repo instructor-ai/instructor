@@ -11,9 +11,20 @@ Cerebras provides hardware-accelerated AI models optimized for high-performance 
 
 Install Instructor with Cerebras support:
 
-```bash
-pip install "instructor[cerebras_cloud_sdk]"
-```
+=== "pip"
+    ```bash
+    pip install "instructor[cerebras_cloud_sdk]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[cerebras_cloud_sdk]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[cerebras_cloud_sdk]"
+    ```
 
 ## Simple User Example (Sync)
 

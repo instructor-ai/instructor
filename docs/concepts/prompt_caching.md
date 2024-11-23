@@ -17,8 +17,8 @@ This optimization is especially useful for applications making multiple API call
 
 Prompt Caching is enabled for the following models:
 
-* gpt-4o
-* gpt-4o-mini
+* gpt-4-turbo-preview
+* gpt-4-turbo-preview
 * o1-preview
 * o1-mini
 
@@ -201,8 +201,10 @@ class Character(BaseModel):
     description: str
 
 
-with open("./book.txt") as f:
-    book = f.read()
+# Using the text content directly instead of reading from a file
+book = '''Walt Whitman has somewhere a fine and just distinction between "loving
+by allowance" and "loving with personal love." This distinction applies
+to books as well as to men and women...''' # Text from above example
 
 resp = client.chat.completions.create(
     model="claude-3-haiku-20240307",

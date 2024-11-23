@@ -22,7 +22,7 @@ class SinglePrediction(BaseModel):
 
 def classify(data: str) -> SinglePrediction:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4-turbo-preview",
         response_model=SinglePrediction,
         messages=[
             {

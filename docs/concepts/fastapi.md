@@ -42,14 +42,13 @@ class UserDetail(BaseModel):
 @app.post("/endpoint", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
     user_detail = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
         ],
     )
     return user_detail
-```
 
 ## Streaming Responses with FastAPI
 
@@ -77,7 +76,7 @@ class UserDetail(BaseModel):
 @app.post("/extract", response_class=StreamingResponse)
 async def extract(data: UserData):
     users = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[UserDetail],
         stream=True,
         messages=[

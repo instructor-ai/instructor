@@ -45,7 +45,7 @@ class DocumentExtraction(BaseModel):
 
 def ask_ai(content) -> DocumentExtraction:
     resp: DocumentExtraction = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4-turbo-preview",
         response_model=DocumentExtraction,
         messages=[
             {

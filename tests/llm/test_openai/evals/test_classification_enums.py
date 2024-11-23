@@ -39,9 +39,9 @@ data = [
 def test_classification(model, data, mode, client):
     client = instructor.from_openai(client, mode=mode)
 
-    if mode == instructor.Mode.JSON and model in {"gpt-3.5-turbo", "gpt-4"}:
+    if mode == instructor.Mode.JSON and model in {"gpt-4-turbo-preview"}:
         pytest.skip(
-            "JSON mode is not supported for gpt-3.5-turbo and gpt-4, skipping test"
+            "JSON mode is not supported for gpt-4-turbo-preview, skipping test"
         )
 
     input, expected = data
@@ -91,8 +91,7 @@ def test_multi_classify(model, data, mode, client):
     client = instructor.from_openai(client, mode=mode)
 
     if (mode, model) in {
-        (Mode.JSON, "gpt-3.5-turbo"),
-        (Mode.JSON, "gpt-4"),
+        (Mode.JSON, "gpt-4-turbo-preview"),
     }:
         pytest.skip(f"{mode} mode is not supported for {model}, skipping test")
 

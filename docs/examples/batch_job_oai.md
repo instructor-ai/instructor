@@ -47,7 +47,7 @@ class QuestionAnswerPair(BaseModel):
 
 def generate_question(chunk: str) -> QuestionAnswerPair:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "system",
@@ -113,11 +113,10 @@ class QuestionAnswerPair(BaseModel):
 
 BatchJob.create_from_messages(
     messages_batch=get_messages(dataset),
-    model="gpt-4o",
+    model="gpt-4-turbo-preview",
     file_path="./test.jsonl",
     response_model=QuestionAnswerPair,
 )  # (2)!
-```
 
 1.  We first define a generator which generates a list of messages which we would have made in a normal `openai` api call
 

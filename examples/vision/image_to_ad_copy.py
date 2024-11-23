@@ -146,7 +146,7 @@ def generate_ad_copy(product: Product) -> AdCopy:
     logger.info(f"Generating ad copy for product: {product.name}")
 
     return client_copy.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="gpt-4-turbo-preview",
         response_model=AdCopy,
         temperature=0.3,
         messages=[

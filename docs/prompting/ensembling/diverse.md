@@ -9,7 +9,7 @@ Diverse Verifier On Reasoning Step (DiVeRSe)<sup><a href="https://aclanthology.o
 
 In the paper itself, they also train a step-wise verifier that is able to score each individual reasoning step. This enables much more fine-grained predictions but is challenging to obtain training data for.
 
-We can implement this in `instructor`. However, instead of using a `deberta-v3-large` model, we'll be using gpt-4o to score its own outputs and generate a quality score.
+We can implement this in `instructor`. However, instead of using a `deberta-v3-large` model, we'll be using gpt-4-turbo-preview to score its own outputs and generate a quality score.
 
 ```python
 import instructor
@@ -44,7 +44,7 @@ class Grading(BaseModel):
 async def generate_response(query: str, examples: list[str]):
     formatted_examples = "\n".join(examples)
     return await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "user",
@@ -72,7 +72,7 @@ async def score_response(query: str, response: Response) -> tuple[Response, Grad
     return (
         response,
         await client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4-turbo-preview",
             messages=[
                 {
                     "role": "user",

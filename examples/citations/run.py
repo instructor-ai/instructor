@@ -7,13 +7,14 @@ from pydantic import (
     ValidationInfo,
     field_validator,
     model_validator,
+    ConfigDict,
 )
 
 import instructor
 
 client = instructor.from_openai(OpenAI())
 
-""" 
+"""
 Example 1) Simple Substring check that compares a citation to a text chunk
 """
 
@@ -67,8 +68,8 @@ answer.0.substring_quote
 """
 
 
-""" 
-Example 2) Using an LLM to verify if a 
+"""
+Example 2) Using an LLM to verify if a
 """
 
 
@@ -87,9 +88,11 @@ class Validation(BaseModel):
 class Statements(BaseModel):
     body: str
     substring_quote: str
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def substring_quote_exists(self, info: ValidationInfo):
+    @field_validator("substring_quote", mode="after")
+    @classmethod
+    def substring_quote_exists(cls, value: str, info: ValidationInfo) -> str:
         context = info.context.get("text_chunks", None)
 
         resp: Validation = client.chat.completions.create(
@@ -97,14 +100,14 @@ class Statements(BaseModel):
             messages=[
                 {
                     "role": "user",
-                    "content": f"Does the following citation exist in the following context?\n\nCitation: {self.substring_quote}\n\nContext: {context}",
+                    "content": f"Does the following citation exist in the following context?\n\nCitation: {value}\n\nContext: {context}",
                 }
             ],
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
         )
 
         if resp.is_valid:
-            return self
+            return value
 
         raise ValueError(resp.error_messages)
 
@@ -155,7 +158,7 @@ try:
     )
 except ValidationError as e:
     print(e)
-""" 
+"""
 1 validation error for AnswerWithCitaton
 answer.0
   Value error, Citation not found in context [type=value_error, input_value={'body': 'Paris', 'substr... the capital of France'}, input_type=dict]
@@ -170,34 +173,37 @@ answer.0
 class AnswerWithCitaton(BaseModel):
     question: str
     answer: list[Statements]
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def validate_answer(self, info: ValidationInfo):
+    @field_validator("answer", mode="after")
+    @classmethod
+    def validate_answer(cls, value: list[Statements], info: ValidationInfo) -> list[Statements]:
         context = info.context.get("text_chunks", None)
+        question = info.data.get("question")
 
         resp: Validation = client.chat.completions.create(
             response_model=Validation,
             messages=[
                 {
                     "role": "user",
-                    "content": f"Does the following answers match the question and the context?\n\nQuestion: {self.question}\n\nAnswer: {self.answer}\n\nContext: {context}",
+                    "content": f"Does the following answers match the question and the context?\n\nQuestion: {question}\n\nAnswer: {value}\n\nContext: {context}",
                 }
             ],
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
         )
 
         if resp.is_valid:
-            return self
+            return value
 
         raise ValueError(resp.error_messages)
 
 
-""" 
-Using LLMs for citation verification is inefficient during runtime. 
-However, we can utilize them to create a dataset consisting only of accurate responses 
-where citations must be valid (as determined by LLM, fuzzy text search, etc.). 
+"""
+Using LLMs for citation verification is inefficient during runtime.
+However, we can utilize them to create a dataset consisting only of accurate responses
+where citations must be valid (as determined by LLM, fuzzy text search, etc.).
 
-This approach would require an initial investment during data generation to obtain 
+This approach would require an initial investment during data generation to obtain
 a finely-tuned model for improved citation.
 """
 try:
@@ -218,7 +224,7 @@ try:
     )
 except ValidationError as e:
     print(e)
-""" 
+"""
 1 validation error for AnswerWithCitaton
   Value error, The answer does not match the question and context [type=value_error, input_value={'question': 'What is the...he capital of France'}]}, input_type=dict]
     For further information visit https://errors.pydantic.dev/2.4/v/value_error

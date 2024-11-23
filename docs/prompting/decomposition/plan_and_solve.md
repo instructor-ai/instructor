@@ -62,7 +62,7 @@ def generate_reasoning(query: str):
             },
         ],
         response_model=Reasoning,
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
     )
 
 
@@ -94,7 +94,7 @@ def extract_answer(query: str, reasoning: Reasoning):
                 """,
             }
         ],
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Response,
     )
 

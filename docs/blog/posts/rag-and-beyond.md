@@ -106,7 +106,7 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI())
 
 query = client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-4-turbo-preview",
     response_model=MetaphorQuery,
     messages=[
         {
@@ -187,7 +187,7 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI())
 
 retrieval = client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-4-turbo-preview",
     response_model=Retrieval,
     messages=[
         {"role": "system", "content": "You are Jason's personal assistant."},

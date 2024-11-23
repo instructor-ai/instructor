@@ -66,7 +66,7 @@ class User(BaseModel):
 
 client = instructor.from_gemini(
     client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest", # (1)!
+        model_name="models/gemini-1.5-flash-latest",  # (1)!
     )
 )
 
@@ -105,7 +105,7 @@ class User(BaseModel):
 
 
 client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-1.5-pro-preview-0409"), # (1)!
+    client=GenerativeModel("gemini-1.5-pro-preview-0409"),  # (1)!
 )
 
 

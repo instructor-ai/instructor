@@ -69,7 +69,7 @@ class User(BaseModel):
 
 
 users = client.chat.completions.create(
-    model="gpt-3.5-turbo-1106",
+    model="gpt-4-turbo-preview",
     temperature=0.1,
     response_model=Iterable[User],
     stream=False,
@@ -109,7 +109,7 @@ class User(BaseModel):
 
 
 users = client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-4-turbo-preview",
     temperature=0.1,
     stream=True,
     response_model=Iterable[User],
@@ -152,7 +152,7 @@ class UserExtract(BaseModel):
 
 async def print_iterable_results():
     model = await client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[UserExtract],
         max_retries=2,
         stream=True,

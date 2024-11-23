@@ -59,10 +59,9 @@ def analogical_prompting(query: str):
                 ),
             }
         ],
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Response,
     )
-
 
 if __name__ == "__main__":
     query = (

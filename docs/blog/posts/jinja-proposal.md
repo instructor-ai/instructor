@@ -62,12 +62,12 @@ Let's look at an example to illustrate this feature:
 
 ```python
 client.create(
-    model="gpt-4o",
+    model="gpt-4-turbo-preview",
     messages=[
         {
-            "role": "user", 
+            "role": "user",
             "content": """
-                You are a {{ role }} tasks with the following question 
+                You are a {{ role }} tasks with the following question
 
                 <question>
                 {{ question }}
@@ -91,18 +91,18 @@ client.create(
                   * {{ rule }}
                 {% endfor %}
                 {% endif %}
-            """
+            """,
         },
     ],
     context={
-        "role": "professional educator", 
-        "question": "What is the capital of France?", 
+        "role": "professional educator",
+        "question": "What is the capital of France?",
         "context": [
-            {"id": 1, "text": "Paris is the capital of France."}, 
-            {"id": 2, "text": "France is a country in Europe."}
-        ], 
-        "rules": ["Use markdown."]
-    }
+            {"id": 1, "text": "Paris is the capital of France."},
+            {"id": 2, "text": "France is a country in Europe."},
+        ],
+        "rules": ["Use markdown."],
+    },
 )
 ```
 
@@ -144,11 +144,11 @@ class Response(BaseModel):
         return v
 
 response = client.create(
-    model="gpt-4o",
+    model="gpt-4-turbo-preview",
     response_model=Response,
     messages=[
         {
-            "role": "user", 
+            "role": "user",
             "content": """
                 Write about a {{ topic }}
 
@@ -199,9 +199,11 @@ Consider using secret string to pass in sensitive information to the llm.
 ```python
 from pydantic import BaseModel, SecretStr
 
+
 class UserContext(BaseModel):
     name: str
     address: SecretStr
+
 
 class Address(BaseModel):
     street: SecretStr
@@ -209,24 +211,28 @@ class Address(BaseModel):
     state: str
     zipcode: str
 
+
 def normalize_address(address: Address):
-  context = UserContext(username="scolvin", address=address)
-  address = client.create(
-      model="gpt-4o",
-      messages=[
-          {
-              "role": "user", 
-              "content": "{{ user.name }} is `{{ user.address.get_secret_value() }}`, normalize it to an address object"
-          },
-      ],
-      context={"user": context},
-  )
-  print(context)
-  # > UserContext(username='jliu', address="******")
-  print(address)
-  # > Address(street='******', city="Toronto", state="Ontario", zipcode="M5A 0J3")
-  logger.info(f"Normalized address: {address}", extra={"user_context": context, "address": address})
-  return address
+    context = UserContext(username="scolvin", address=address)
+    address = client.create(
+        model="gpt-4-turbo-preview",
+        messages=[
+            {
+                "role": "user",
+                "content": "{{ user.name }} is " ", normalize it to an address object",
+            },
+        ],
+        context={"user": context},
+    )
+    print(context)
+    #> UserContext(username='jliu', address="******")
+    print(address)
+    #> Address(street='******', city="Toronto", state="Ontario", zipcode="M5A 0J3")
+    logger.info(
+        f"Normalized address: {address}",
+        extra={"user_context": context, "address": address},
+    )
+    return address
 ```
 
 This approach offers several advantages:

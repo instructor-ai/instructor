@@ -42,6 +42,7 @@ from pydantic import BaseModel
 # Enable response_model and API Model Distillation
 client = instructor.patch(OpenAI())
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
@@ -49,14 +50,15 @@ class UserDetail(BaseModel):
     def introduce(self):
         return f"Hello, I'm {self.name} and I'm {self.age} years old"
 
+
 # Use the store parameter to enable API Model Distillation
 user: UserDetail = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ],
-    store=True  # Enable API Model Distillation
+    store=True,  # Enable API Model Distillation
 )
 ```
 
@@ -70,16 +72,13 @@ For example, you can add metadata to your API calls:
 
 ```python
 user: UserDetail = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ],
     store=True,
-    metadata={
-        "task": "user_extraction",
-        "source": "customer_support_chat"
-    }
+    metadata={"task": "user_extraction", "source": "customer_support_chat"},
 )
 ```
 

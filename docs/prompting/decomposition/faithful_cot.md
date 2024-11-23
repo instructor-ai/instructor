@@ -69,7 +69,7 @@ def generate_reasoning_steps(query: str) -> list[ReasoningStep]:
             },
             {"role": "user", "content": query},
         ],
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=list[ReasoningStep],
     )
 

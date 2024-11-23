@@ -59,7 +59,7 @@ class GeneratedSummary(BaseModel):
 
 async def summarize_text(text: str):
     response = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=GeneratedSummary,
         messages=[
             {

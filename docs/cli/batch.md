@@ -110,7 +110,7 @@ import json
 with open("output.jsonl", "w") as f:
     for line in BatchJob.create_from_messages(
         messages,
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=Classification,
         max_tokens=100,
     ):

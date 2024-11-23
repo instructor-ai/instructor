@@ -38,6 +38,7 @@ class Segment(BaseModel):
     title: str = Field(..., description="The title of the segment")
     timestamp: str = Field(..., description="The timestamp of the event as HH:MM:SS")
 
+
 # This might work for some cases, but fails for others:
 # "2:00" could be interpreted as 2 minutes or 2 hours
 # "1:30:00" doesn't fit the expected format
@@ -56,8 +57,9 @@ To address this issue, we can use a combination of Pydantic for data validation 
 Let's look at the improved implementation:
 
 ```python
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Literal
+
 
 class SegmentWithTimestamp(BaseModel):
     title: str = Field(..., description="The title of the segment")
@@ -67,13 +69,16 @@ class SegmentWithTimestamp(BaseModel):
     timestamp: str = Field(
         ..., description="The timestamp of the event as either HH:MM:SS or MM:SS"
     )
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def parse_timestamp(self):
-        if self.time_format == "HH:MM:SS":
-            hours, minutes, seconds = map(int, self.timestamp.split(":"))
-        elif self.time_format == "MM:SS":
-            hours, minutes, seconds = 0, *map(int, self.timestamp.split(":"))
+    @field_validator("timestamp", mode="after")
+    @classmethod
+    def parse_timestamp(cls, timestamp: str, info) -> str:
+        time_format = info.data.get('time_format')
+        if time_format == "HH:MM:SS":
+            hours, minutes, seconds = map(int, timestamp.split(":"))
+        elif time_format == "MM:SS":
+            hours, minutes, seconds = 0, *map(int, timestamp.split(":"))
         else:
             raise ValueError("Invalid time format, must be HH:MM:SS or MM:SS")
 
@@ -83,11 +88,9 @@ class SegmentWithTimestamp(BaseModel):
         minutes, seconds = divmod(remainder, 60)
 
         if hours > 0:
-            self.timestamp = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
         else:
-            self.timestamp = f"00:{minutes:02d}:{seconds:02d}"
-
-        return self
+            return f"00:{minutes:02d}:{seconds:02d}"
 ```
 
 This implementation offers several advantages:

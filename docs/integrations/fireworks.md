@@ -11,9 +11,15 @@ Fireworks provides efficient and cost-effective AI models with enterprise-grade 
 
 Install Instructor with Fireworks support:
 
-```bash
-pip install "instructor[fireworks-ai]"
-```
+=== "pip"
+    ```bash
+    pip install "instructor[fireworks-ai]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[fireworks-ai]"
+    ```
 
 ## Simple User Example (Sync)
 

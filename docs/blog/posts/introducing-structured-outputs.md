@@ -71,7 +71,7 @@ try:
                 "content": "Extract the following user: Jason is 25 years old.",
             },
         ],
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
     )
 except Exception as e:
     print(e)
@@ -81,7 +81,6 @@ except Exception as e:
       Value error, All letters must be uppercase. Got: Jason [type=value_error, input_value='Jason', input_type=str]
         For further information visit https://errors.pydantic.dev/2.8/v/value_error
     """
-```
 
 We can see that we lose the original completion when validation fails. This leaves developers without the means to implement retry logic so that the LLM can provide a targetted correction and regenerate its response.
 
@@ -112,12 +111,11 @@ with client.beta.chat.completions.stream(
             "content": "Extract the following user: Jason is 25 years old.",
         },
     ],
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
 ) as stream:
     for event in stream:
         if event.type == "content.delta":
             print(event.snapshot, flush=True, end="\n")
-            #>
             #> {"
             #> {"name
             #> {"name":"
@@ -181,12 +179,11 @@ resp = client.chat.completions.create(
             "content": "Extract the following user: Jason is 25 years old.",
         }
     ],
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
 )
 
 print(resp)
 #> name='JASON' age=25
-```
 
 This built-in retry logic allows for targetted correction to the generated response, ensuring that outputs are not only consistent with your schema but also correct for your use-case. This is invaluable in building reliable LLM systems.
 
@@ -195,9 +192,6 @@ This built-in retry logic allows for targetted correction to the generated respo
 A common use-case is to define a single schema and extract multiple instances of it. With `instructor`, doing this is relatively straightforward by using [our `create_iterable` method](../../concepts/lists.md).
 
 ```python
-import instructor
-import openai
-from pydantic import BaseModel
 ```
 
 client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS_STRICT)
@@ -209,7 +203,7 @@ class User(BaseModel):
 
 
 users = client.chat.completions.create_iterable(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     response_model=User,
     messages=[
         {
@@ -218,16 +212,15 @@ users = client.chat.completions.create_iterable(
         },
         {
             "role": "user",
-            "content": (f"Extract `Jason is 10 and John is 10`"),
+            "content": "Extract `Jason is 10 and John is 10`",
         },
     ],
 )
 
 for user in users:
     print(user)
-    #> name='Jason' age=10
-    #> name='John' age=10
-```
+    # > name='Jason' age=10
+    # > name='John' age=10
 
 Other times, we might also want to stream out information as it's dynamically generated into some sort of frontend component With `instructor`, you'll be able to do just that [using the `create_partial` method](../../concepts/partial.md).
 
@@ -269,7 +262,7 @@ class MeetingInfo(BaseModel):
 
 
 extraction_stream = client.chat.completions.create_partial(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     response_model=MeetingInfo,
     messages=[
         {
@@ -280,14 +273,12 @@ extraction_stream = client.chat.completions.create_partial(
     stream=True,
 )
 
-
 console = Console()
 
 for extraction in extraction_stream:
     obj = extraction.model_dump()
     console.clear()
     console.print(obj)
-
 ```
 
 This will output the following
@@ -302,7 +293,7 @@ For example, the swtich from OpenAI to Anthropic requires only three adjustments
 
 1. Import the Anthropic client
 2. Use `from_anthropic` instead of `from_openai`
-3. Update the model name (e.g., from gpt-4o-mini to claude-3-5-sonnet)
+3. Update the model name (e.g., from gpt-4-turbo-preview to claude-3-5-sonnet)
 
 This makes it incredibly flexible for users looking to migrate and test different providers for their use cases. Let's see this in action with an example below.
 
@@ -320,7 +311,7 @@ class User(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     response_model=User,
     messages=[
         {
@@ -333,7 +324,6 @@ resp = client.chat.completions.create(
 
 print(resp)
 #> name='Chris' age=27
-```
 
 Now let's see how we can achieve the same with Anthropic.
 

@@ -11,8 +11,17 @@ You'll need to sign up for an account and get an API key. You can do that [here]
 
 ```bash
 export WRITER_API_KEY=<your-api-key-here>
-pip install "instructor[writer]"
 ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[writer]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[writer]"
+    ```
 
 ## Palmyra-X-004
 

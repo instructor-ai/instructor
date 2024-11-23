@@ -59,7 +59,7 @@ def generate_prompt_templates(prompt: str):
         response_model=list[PromptTemplate],
         temperature=0,
         max_retries=3,
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
     )
 
 

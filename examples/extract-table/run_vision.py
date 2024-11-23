@@ -77,7 +77,7 @@ example = MultipleTables(
 
 def extract(url: str) -> MultipleTables:
     return client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-4-vision-preview",
         max_tokens=4000,
         response_model=MultipleTables,
         messages=[
@@ -92,7 +92,7 @@ def extract(url: str) -> MultipleTables:
                         "type": "text",
                         "text": """
                             First, analyze the image to determine the most appropriate headers for the tables.
-                            Generate a descriptive h1 for the overall image, followed by a brief summary of the data it contains. 
+                            Generate a descriptive h1 for the overall image, followed by a brief summary of the data it contains.
                             For each identified table, create an informative h2 title and a concise description of its contents.
                             Finally, output the markdown representation of each table.
 

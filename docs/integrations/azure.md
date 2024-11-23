@@ -13,9 +13,15 @@ We can use the same installation as we do for OpenAI since the default `openai` 
 
 First, install the required dependencies:
 
-```bash
-pip install instructor
-```
+=== "pip"
+    ```bash
+    pip install instructor
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install instructor
+    ```
 
 Next, make sure that you've enabled Azure OpenAI in your Azure account and have a deployment for the model you'd like to use. [Here is a guide to get started](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/create-resource?pivots=web-portal)
 
@@ -76,7 +82,7 @@ class User(BaseModel):
 
 # Synchronous usage
 user = client.chat.completions.create(
-    model="gpt-4o-mini",  # Your deployment name
+    model="gpt-4-turbo-preview",  # Your deployment name
     messages=[{"role": "user", "content": "John is 30 years old"}],
     response_model=User,
 )
@@ -111,7 +117,7 @@ class User(BaseModel):
 
 async def get_user_async():
     return await client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[{"role": "user", "content": "John is 30 years old"}],
         response_model=User,
     )
@@ -154,7 +160,7 @@ class UserWithAddress(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-4o-mini",  # Your deployment name
+    model="gpt-4-turbo-preview",  # Your deployment name
     messages=[
         {
             "role": "user",
@@ -221,7 +227,7 @@ class User(BaseModel):
 
 # Stream partial objects as they're generated
 user = client.chat.completions.create_partial(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create a user profile for Jason, age 25"},
     ],
@@ -263,7 +269,7 @@ class User(BaseModel):
 
 # Extract multiple users from text
 users = client.chat.completions.create_iterable(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {
             "role": "user",

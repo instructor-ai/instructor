@@ -23,7 +23,7 @@ def test_sync_parallel_tools__error(client):
 
     with pytest.raises(TypeError):
         resp = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4-turbo-preview",
             messages=[
                 {"role": "system", "content": "You must always use tools"},
                 {
@@ -38,7 +38,7 @@ def test_sync_parallel_tools__error(client):
 def test_sync_parallel_tools_or(client):
     client = instructor.from_openai(client, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {
@@ -72,7 +72,7 @@ async def test_async_parallel_tools_or(model, mode, aclient):
 def test_sync_parallel_tools_one(client):
     client = instructor.patch(client, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {
@@ -90,7 +90,7 @@ async def test_async_parallel_tools_one(aclient):
     client = instructor.from_openai(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
 
     resp = await client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {

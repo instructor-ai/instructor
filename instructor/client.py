@@ -12,6 +12,9 @@ from typing import (
     Union,
     Literal,
     Any,
+    cast,
+    Protocol,
+    Type,
 )
 from tenacity import (
     AsyncRetrying,
@@ -24,26 +27,34 @@ from instructor.dsl.partial import Partial
 from instructor.hooks import Hooks, HookName
 
 
-T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
+T = TypeVar("T", bound=Union[BaseModel, Iterable[Any], Partial[Any]])
+
+
+class ChatCompletionProtocol(Protocol):
+    """Protocol for chat completion clients."""
+    def create(self, *args: Any, **kwargs: Any) -> Any: ...
+    async def acreate(self, *args: Any, **kwargs: Any) -> Any: ...
 
 
 class Instructor:
-    client: Any | None
+    """Main instructor client class."""
+    client: ChatCompletionProtocol | None
     create_fn: Callable[..., Any]
     mode: instructor.Mode
     default_model: str | None = None
     provider: Provider
     hooks: Hooks
+    kwargs: dict[str, Any]
 
     def __init__(
         self,
-        client: Any | None,
+        client: ChatCompletionProtocol | None,
         create: Callable[..., Any],
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         self.client = client
         self.create_fn = create
         self.mode = mode
@@ -350,7 +361,7 @@ class Instructor:
 
 
 class AsyncInstructor(Instructor):
-    client: Any | None
+    client: ChatCompletionProtocol | None
     create_fn: Callable[..., Any]
     mode: instructor.Mode
     default_model: str | None = None
@@ -359,13 +370,13 @@ class AsyncInstructor(Instructor):
 
     def __init__(
         self,
-        client: Any | None,
+        client: ChatCompletionProtocol | None,
         create: Callable[..., Any],
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         self.client = client
         self.create_fn = create
         self.mode = mode
@@ -472,8 +483,7 @@ def from_openai(
     client: openai.OpenAI,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
-) -> Instructor:
-    pass
+) -> Instructor: ...
 
 
 @overload
@@ -481,8 +491,7 @@ def from_openai(
     client: openai.AsyncOpenAI,
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
-) -> AsyncInstructor:
-    pass
+) -> AsyncInstructor: ...
 
 
 def from_openai(
@@ -554,8 +563,7 @@ def from_litellm(
     completion: Awaitable[Any],
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
-) -> AsyncInstructor:
-    pass
+) -> AsyncInstructor: ...
 
 
 def from_litellm(

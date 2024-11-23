@@ -22,7 +22,7 @@ client = instructor.from_openai(OpenAI())
 
 
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4-turbo-preview",
     response_model=User,
     messages=[
         {

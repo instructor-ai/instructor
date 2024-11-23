@@ -21,10 +21,16 @@ If your company uses Instructor a lot, we'd love to have your logo on our websit
 
 ## Get Started in Minutes
 
-Install Instructor with a single command:
+Install Instructor with pip:
 
 ```bash
 pip install -U instructor
+```
+
+Or with UV (recommended):
+
+```bash
+uv pip install -U instructor
 ```
 
 Now, let's see Instructor in action with a simple example:
@@ -46,7 +52,7 @@ client = instructor.from_openai(OpenAI())
 
 # Extract structured data from natural language
 user_info = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     response_model=UserInfo,
     messages=[{"role": "user", "content": "John Doe is 30 years old."}],
 )
@@ -66,27 +72,34 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
+
 class UserInfo(BaseModel):
     name: str
     age: int
 
+
 # Initialize the OpenAI client with Instructor
 client = instructor.from_openai(OpenAI())
+
 
 # Define hook functions
 def log_kwargs(**kwargs):
     print(f"Function called with kwargs: {kwargs}")
 
+
 def log_exception(exception: Exception):
     print(f"An exception occurred: {str(exception)}")
+
 
 client.on("completion:kwargs", log_kwargs)
 client.on("completion:error", log_exception)
 
 user_info = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     response_model=UserInfo,
-    messages=[{"role": "user", "content": "Extract the user name: 'John is 20 years old'"}],
+    messages=[
+        {"role": "user", "content": "Extract the user name: 'John is 20 years old'"}
+    ],
 )
 
 """
@@ -99,7 +112,7 @@ user_info = client.chat.completions.create(
                     'content': "Extract the user name: 'John is 20 years old'",
                 }
             ],
-            'model': 'gpt-4o-mini',
+            'model': 'gpt-4-turbo-preview',
             'tools': [
                 {
                     'type': 'function',
@@ -171,8 +184,12 @@ assert resp.age == 25
 
 Make sure to install `cohere` and set your system environment variable with `export CO_API_KEY=<YOUR_COHERE_API_KEY>`.
 
-```
+```bash
+# Using pip
 pip install cohere
+
+# Using UV (recommended)
+uv pip install cohere
 ```
 
 ```python
@@ -211,8 +228,12 @@ assert resp.age == 25
 Make sure you [install](https://ai.google.dev/api/python/google/generativeai#setup) the Google AI Python SDK. You should set a `GOOGLE_API_KEY` environment variable with your API key.
 Gemini tool calling also requires `jsonref` to be installed.
 
-```
+```bash
+# Using pip
 pip install google-generativeai jsonref
+
+# Using UV (recommended)
+uv pip install google-generativeai jsonref
 ```
 
 ```python
@@ -238,7 +259,11 @@ client = instructor.from_gemini(
 Alternatively, you can [call Gemini from the OpenAI client](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/call-gemini-using-openai-library#python). You'll have to setup [`gcloud`](https://cloud.google.com/docs/authentication/provide-credentials-adc#local-dev), get setup on Vertex AI, and install the Google Auth library.
 
 ```sh
+# Using pip
 pip install google-auth
+
+# Using UV (recommended)
+uv pip install google-auth
 ```
 
 ```python

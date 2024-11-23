@@ -8,74 +8,71 @@
 
 from __future__ import annotations
 
-from jiter import from_json
-from pydantic import BaseModel, create_model
-from pydantic.fields import FieldInfo
 from typing import (
     Any,
+    cast,
+    TypeVar,
     Generic,
+    Type,
     get_args,
     get_origin,
     NoReturn,
-    Optional,
-    TypeVar,
+    Union,
 )
 from collections.abc import AsyncGenerator, Generator, Iterable
 from copy import deepcopy
 from functools import cache
 
+from pydantic import BaseModel
+from pydantic.fields import FieldInfo
+from pydantic.main import create_model
+from jiter import from_json
+
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
+TVar = TypeVar("TVar")
 
+T_Model = TypeVar("T_Model", bound=BaseModel)
+TVar = TypeVar("TVar")  # Renamed from T to avoid constant redefinition
 
 class MakeFieldsOptional:
+    """Marker class for making fields optional."""
     pass
-
 
 class PartialLiteralMixin:
+    """Mixin for partial literal types."""
     pass
-
 
 def _make_field_optional(
     field: FieldInfo,
-) -> tuple[Any, FieldInfo]:
-    tmp_field = deepcopy(field)
+) -> tuple[Type[Any], FieldInfo]:
+    """Make a field optional and handle nested models."""
+    base_annotation: Any = field.annotation if field.annotation is not None else Any
 
-    annotation = field.annotation
+    if get_origin(base_annotation) is not None:
+        generic_base = get_origin(base_annotation)
+        generic_args = get_args(base_annotation)
 
-    # Handle generics (like List, Dict, etc.)
-    if get_origin(annotation) is not None:
-        # Get the generic base (like List, Dict) and its arguments (like User in List[User])
-        generic_base = get_origin(annotation)
-        generic_args = get_args(annotation)
-
-        # Recursively apply Partial to each of the generic arguments
         modified_args = tuple(
-            (
-                Partial[arg, MakeFieldsOptional]  # type: ignore[valid-type]
+            cast(Type[Any],
+                Partial[arg]
                 if isinstance(arg, type) and issubclass(arg, BaseModel)
                 else arg
             )
             for arg in generic_args
         )
 
-        # Reconstruct the generic type with modified arguments
-        tmp_field.annotation = (
-            Optional[generic_base[modified_args]] if generic_base else None
-        )
-        tmp_field.default = None
-    # If the field is a BaseModel, then recursively convert it's
-    # attributes to optionals.
-    elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
-        tmp_field.annotation = Optional[Partial[annotation, MakeFieldsOptional]]  # type: ignore[assignment, valid-type]
-        tmp_field.default = {}
+        new_type = generic_base[modified_args] if generic_base else Any
+        # Create new field with proper type casting
+        return (cast(Type[Any], Union[new_type, None]), FieldInfo(default=None))
+    elif isinstance(base_annotation, type) and issubclass(base_annotation, BaseModel):
+        # Handle BaseModel case
+        return (cast(Type[Any], Union[Partial[base_annotation], None]), FieldInfo(default={}))
     else:
-        tmp_field.annotation = Optional[field.annotation]  # type: ignore[assignment]
-        tmp_field.default = None
-
-    return tmp_field.annotation, tmp_field  # type: ignore
+        # Handle simple types
+        return (cast(Type[Any], Union[base_annotation, None]), FieldInfo(default=None))
 
 
 class PartialBase(Generic[T_Model]):

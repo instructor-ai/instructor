@@ -39,7 +39,7 @@ client = instructor.from_openai(OpenAI())
 def generate_graph(input_text: str) -> KnowledgeGraph:
     """Generates a knowledge graph from the input text."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "user",

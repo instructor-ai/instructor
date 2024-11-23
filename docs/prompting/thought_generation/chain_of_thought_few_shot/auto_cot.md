@@ -60,7 +60,7 @@ def cluster_and_sort(questions, n_clusters=NUM_CLUSTERS):
 def sample(cluster):
     for question in cluster:
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4-turbo-preview",
             response_model=Example,
             messages=[
                 {
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     # Use selected questions as examples for the LLM
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=FinalAnswer,
         messages=[
             {

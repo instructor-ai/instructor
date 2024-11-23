@@ -31,25 +31,27 @@ Here's an example of extracting structured user data from an LLM:
 from pydantic import BaseModel
 import instructor
 
+
 class User(BaseModel):
     name: str
     age: int
 
+
 client = instructor.from_openai(openai.OpenAI())
 
 user = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=User, # (1)!
+    model="gpt-4-turbo-preview",
+    response_model=User,  # (1)!
     messages=[
         {
             "role": "user",
-            "content": "Extract the user's name and age from this: John is 25 years old"
+            "content": "Extract the user's name and age from this: John is 25 years old",
         }
-    ]
+    ],
 )
 
-print(user) # (2)!
-# > User(name='John', age=25)
+print(user)  # (2)!
+#> User(name='John', age=25)
 ```
 
 1. Notice that now we have a new response_model parameter that we pass in to the completions.create method. This parameter lets us specify the structure we want the LLM output to be mapped to. In this case, we're using a Pydantic model called User that describes a user's name and age.

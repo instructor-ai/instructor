@@ -61,7 +61,7 @@ from openai import OpenAI
 client = instructor.from_openai(OpenAI())
 
 response = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-4-turbo-preview",
     response_model=SearchQuery,
     messages=[
         {

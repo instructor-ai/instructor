@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, ConfigDict
 from openai import OpenAI
 import instructor
 
@@ -18,22 +18,23 @@ class Item(BaseModel):
 class Receipt(BaseModel):
     items: list[Item]
     total: float
+    model_config = ConfigDict(validate_default=True)
 
-    @model_validator(mode="after")
-    def check_total(cls, values: "Receipt"):
-        items = values.items
-        total = values.total
+    @field_validator("total", mode="after")
+    @classmethod
+    def check_total(cls, value: float, info) -> float:
+        items = info.data.get("items", [])
         calculated_total = sum(item.price * item.quantity for item in items)
-        if calculated_total != total:
+        if calculated_total != value:
             raise ValueError(
-                f"Total {total} does not match the sum of item prices {calculated_total}"
+                f"Total {value} does not match the sum of item prices {calculated_total}"
             )
-        return values
+        return value
 
 
 def extract(url: str) -> Receipt:
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-vision-preview",
         max_tokens=4000,
         response_model=Receipt,
         messages=[

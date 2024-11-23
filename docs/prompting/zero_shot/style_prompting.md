@@ -32,7 +32,7 @@ client = instructor.from_openai(openai.OpenAI())
 
 def generate_email(subject, to, sender, tone):
     return client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         messages=[
             {
                 "role": "user",

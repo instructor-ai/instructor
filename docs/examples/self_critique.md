@@ -28,7 +28,7 @@ question = "What is the meaning of life?"
 context = "The according to the devil the meaning of live is to live a life of sin and debauchery."
 
 qa: QuestionAnswer = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     response_model=QuestionAnswer,
     messages=[
         {
@@ -41,7 +41,6 @@ qa: QuestionAnswer = client.chat.completions.create(
         },
     ],
 )
-```
 
 ### Output Before Validation
 
@@ -83,7 +82,7 @@ class QuestionAnswerNoEvil(BaseModel):
 
 try:
     qa: QuestionAnswerNoEvil = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",  # Fixed model name
         response_model=QuestionAnswerNoEvil,
         messages=[
             {
@@ -99,7 +98,6 @@ try:
 except Exception as e:
     print(e)
     #> name 'context' is not defined
-```
 
 ### Output After Validation
 
@@ -144,7 +142,7 @@ class QuestionAnswerNoEvil(BaseModel):
 # <%hide%>
 
 qa: QuestionAnswerNoEvil = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     response_model=QuestionAnswerNoEvil,
     messages=[
         {
@@ -157,7 +155,6 @@ qa: QuestionAnswerNoEvil = client.chat.completions.create(
         },
     ],
 )
-```
 
 ### Final Output
 

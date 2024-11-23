@@ -5,7 +5,7 @@ description: Learn how to fine-tune language models with Python functions using 
 
 # Distilling python functions into LLM
 
-`Instructions` from the `Instructor` library offers a seamless way to make language models backward compatible with existing Python functions. By employing Pydantic type hints, it not only ensures compatibility but also facilitates fine-tuning `gpt-3.5-turbo` to emulate these functions end-to-end.
+`Instructions` from the `Instructor` library offers a seamless way to make language models backward compatible with existing Python functions. By employing Pydantic type hints, it not only ensures compatibility but also facilitates fine-tuning language models to emulate these functions end-to-end.
 
 If you want to see the full example checkout [examples/distillation](https://github.com/jxnl/instructor/tree/main/examples/distilations)
 

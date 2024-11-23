@@ -6,7 +6,7 @@ categories:
   - Audio
 comments: true
 date: 2024-10-17
-description: Explore the new audio capabilities in OpenAI's Chat Completions API using the gpt-4o-audio-preview model.
+description: Explore the new audio capabilities in OpenAI's Chat Completions API using the gpt-4-turbo-preview model.
 draft: false
 tags:
   - OpenAI
@@ -17,7 +17,7 @@ tags:
 
 # Audio Support in OpenAI's Chat Completions API
 
-OpenAI has recently introduced audio support in their Chat Completions API, opening up exciting new possibilities for developers working with audio and text interactions. This feature is powered by the new `gpt-4o-audio-preview` model, which brings advanced voice capabilities to the familiar Chat Completions API interface.
+OpenAI has recently introduced audio support in their Chat Completions API, opening up exciting new possibilities for developers working with audio and text interactions. This feature is powered by the new `gpt-4-turbo-preview` model, which brings advanced voice capabilities to the familiar Chat Completions API interface.
 
 <!-- more -->
 
@@ -40,16 +40,17 @@ from openai import OpenAI
 from pydantic import BaseModel
 import instructor
 from instructor.multimodal import Audio
-import base64
 
 client = instructor.from_openai(OpenAI())
+
 
 class Person(BaseModel):
     name: str
     age: int
 
+
 resp = client.chat.completions.create(
-    model="gpt-4o-audio-preview",
+    model="gpt-4-turbo-preview",
     response_model=Person,
     modalities=["text"],
     audio={"voice": "alloy", "format": "wav"},
@@ -68,7 +69,7 @@ print(resp)
 # Expected output: Person(name='Jason', age=20)
 ```
 
-In this example, we're using the `gpt-4o-audio-preview` model to extract information from an audio file. The API processes the audio input and returns structured data (a Person object with name and age) based on the content of the audio.
+In this example, we're using the `gpt-4-turbo-preview` model to extract information from an audio file. The API processes the audio input and returns structured data (a Person object with name and age) based on the content of the audio.
 
 ## Use Cases
 

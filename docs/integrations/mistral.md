@@ -18,6 +18,20 @@ Mistral Large is the flagship model from Mistral AI, supporting 32k context wind
 
 By the end of this blog post, you will learn how to effectively utilize Instructor with Mistral Large.
 
+## Installation
+
+=== "pip"
+    ```bash
+    pip install "instructor[mistralai]"
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install "instructor[mistralai]"
+    ```
+
+## Usage
+
 ```python
 import os
 from pydantic import BaseModel

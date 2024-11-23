@@ -41,7 +41,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[UserDetail],
         messages=[
             {"role": "user", "content": f"Generate a {count} synthetic users"},
@@ -83,7 +83,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[UserDetail],
         messages=[
             {"role": "user", "content": f"Generate a {count} synthetic users"},
@@ -112,13 +112,14 @@ To effectively generate synthetic examples with more nuance, lets upgrade to the
 import instructor
 
 from typing import Iterable
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from openai import OpenAI
 
 
 # Define the UserDetail model
 class UserDetail(BaseModel):
     """Old Wizards"""
+
     name: str
     age: int
 
@@ -184,7 +185,7 @@ client = instructor.from_openai(OpenAI())
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[UserDetail],
         messages=[
             {"role": "user", "content": f"Generate `{count}` synthetic users"},

@@ -38,7 +38,7 @@ class Search(BaseModel):
 
 def segment(data: str) -> Search:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4-turbo-preview",
         response_model=Iterable[Search],
         messages=[
             {

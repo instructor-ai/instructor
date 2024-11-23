@@ -26,7 +26,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache UV virtualenv
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/uv
@@ -39,13 +39,7 @@ jobs:
       - name: Install UV
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          else
-            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          fi
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           export PATH="$HOME/.cargo/bin:$PATH"
           uv --version
         shell: bash
@@ -53,19 +47,14 @@ jobs:
       - name: Create and activate venv
         run: |
           python -m venv .venv
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            . .venv/Scripts/activate
-          else
-            . .venv/bin/activate
-          fi
+          . .venv/bin/activate
         shell: bash
 
       - name: Install dependencies
         run: |
-          which uv
-          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]" --system
-          uv pip install -r requirements-dev.txt --system
-          uv pip install -r requirements-doc.txt --system
+          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]"
+          uv pip install -r requirements-dev.txt
+          uv pip install -r requirements-doc.txt
         shell: bash
 
       - name: Run tests

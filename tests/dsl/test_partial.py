@@ -5,7 +5,7 @@ import pytest
 import instructor
 from openai import OpenAI, AsyncOpenAI
 
-models = ["gpt-4o-mini"]
+models = ["gpt-4-turbo-preview"]
 modes = [
     instructor.Mode.TOOLS,
 ]
@@ -122,7 +122,7 @@ def test_summary_extraction():
     client = OpenAI()
     client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
     extraction_stream = client.chat.completions.create_partial(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Summary,
         messages=[
             {"role": "system", "content": "You summarize text"},
@@ -149,7 +149,7 @@ async def test_summary_extraction_async():
     client = AsyncOpenAI()
     client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
     extraction_stream = client.chat.completions.create_partial(
-        model="gpt-4o",
+        model="gpt-4-turbo-preview",
         response_model=Summary,
         messages=[
             {"role": "system", "content": "You summarize text"},

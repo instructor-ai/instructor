@@ -5,15 +5,21 @@ description: "Learn how to use Instructor with OpenAI's models for type-safe, st
 
 # OpenAI Integration with Instructor
 
-OpenAI is the primary integration for Instructor, offering robust support for structured outputs with GPT-3.5, GPT-4, and future models. This guide covers everything you need to know about using OpenAI with Instructor for type-safe, validated responses.
+OpenAI is the primary integration for Instructor, offering robust support for structured outputs with GPT-4 and future models. This guide covers everything you need to know about using OpenAI with Instructor for type-safe, validated responses.
 
 ## Quick Start
 
 Instructor comes with support for OpenAI out of the box, so you don't need to install anything extra.
 
-```bash
-pip install "instructor"
-```
+=== "pip"
+    ```bash
+    pip install instructor
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install instructor
+    ```
 
 ⚠️ **Important**: You must set your OpenAI API key before using the client. You can do this in two ways:
 
@@ -51,7 +57,7 @@ class User(BaseModel):
 
 # Create structured output
 user = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -124,7 +130,7 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 client = instructor.from_openai(client)
 # Create structured output with nested objects
 user = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": """
             Extract: Jason is 25 years old.
@@ -178,7 +184,7 @@ class User(BaseModel):
 
 
 user = client.chat.completions.create_partial(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create a user profile for Jason, age 25"},
     ],
@@ -210,7 +216,7 @@ class User(BaseModel):
 
 # Extract multiple users from text
 users = client.chat.completions.create_iterable(
-    model="gpt-4o-mini",
+    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": """
             Extract users:
@@ -251,7 +257,7 @@ Read more about how to use it [here](../examples/batch_job_oai.md)
 
 ## Best Practices
 
-1. **Model Selection** : We recommend using gpt-4o-mini for simpler use cases because it's cheap and works well with a clearly defined objective for structured outputs. When the task is more ambigious, consider upgrading to `4o` or even `O1` depending on your needs
+1. **Model Selection** : We recommend using gpt-4-turbo-preview for simpler use cases because it's cheap and works well with a clearly defined objective for structured outputs. When the task is more ambigious, consider upgrading to gpt-4-turbo-preview or even `O1` depending on your needs
 
 2. **Performance Optimization** : Streaming a response model is faster and should be done from the get-go. This is especially true if you're using a simple response model.
 
