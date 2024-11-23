@@ -10,32 +10,71 @@ from __future__ import annotations
 
 from typing import (
     Any,
-    cast,
     TypeVar,
     Generic,
     Type,
     get_args,
     get_origin,
-    NoReturn,
+    TYPE_CHECKING,
+    ClassVar,
+    Protocol,
+    runtime_checkable,
+    Dict,
+    Optional,
     Union,
 )
 from collections.abc import AsyncGenerator, Generator, Iterable
-from copy import deepcopy
 from functools import cache
 
-from pydantic import BaseModel
-from pydantic.fields import FieldInfo
-from pydantic.main import create_model
+if TYPE_CHECKING:
+    from pydantic.v1 import BaseModel, Field, create_model, BaseConfig
+    from pydantic.v1.fields import FieldInfo
+else:
+    from pydantic.v1 import BaseModel, Field, create_model, BaseConfig
+    from pydantic.v1.fields import FieldInfo
+
 from jiter import from_json
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
-T_Model = TypeVar("T_Model", bound=BaseModel)
+# Type definitions
+T_Model = TypeVar('T_Model', bound='BaseModel')
+
+# Type definitions
+T_Model = TypeVar("T_Model", bound="BaseModel")
 TVar = TypeVar("TVar")
 
-T_Model = TypeVar("T_Model", bound=BaseModel)
-TVar = TypeVar("TVar")  # Renamed from T to avoid constant redefinition
+@runtime_checkable
+class ExtractorProtocol(Protocol):
+    """Protocol for JSON extraction from completion streams."""
+    @classmethod
+    def extract_json(
+        cls,
+        completion: Iterable[Any],
+        mode: Mode
+    ) -> Generator[str, None, None]: ...
+
+    @classmethod
+    def extract_json_async(
+        cls,
+        completion: AsyncGenerator[Any, None],
+        mode: Mode
+    ) -> AsyncGenerator[str, None]: ...
+
+# Type aliases
+FieldType = Type[FieldInfo]
+ModelType = Type[BaseModel]
+
+def create_field(
+    annotation: Union[Type[Any], Any],
+    default: Optional[Any] = None,
+    **kwargs: Any
+) -> FieldInfo:
+    """Create a Pydantic field with proper typing."""
+    if default is None and 'default_factory' not in kwargs:
+        return Field(default=None, annotation=annotation, **kwargs)
+    return Field(default=default, annotation=annotation, **kwargs)
 
 class MakeFieldsOptional:
     """Marker class for making fields optional."""
@@ -46,43 +85,57 @@ class PartialLiteralMixin:
     pass
 
 def _make_field_optional(
-    field: FieldInfo,
+    field_info: FieldInfo,
 ) -> tuple[Type[Any], FieldInfo]:
     """Make a field optional and handle nested models."""
-    base_annotation: Any = field.annotation if field.annotation is not None else Any
+    base_type = field_info.annotation if field_info.annotation is not None else Any
+    base_type = cast(Type[Any], base_type)
 
-    if get_origin(base_annotation) is not None:
-        generic_base = get_origin(base_annotation)
-        generic_args = get_args(base_annotation)
-
+    if get_origin(base_type) is not None:
+        generic_base = get_origin(base_type)
+        generic_args = get_args(base_type)
         modified_args = tuple(
-            cast(Type[Any],
-                Partial[arg]
-                if isinstance(arg, type) and issubclass(arg, BaseModel)
-                else arg
-            )
+            Partial[arg] if isinstance(arg, type) and issubclass(arg, BaseModel) else arg
             for arg in generic_args
         )
-
         new_type = generic_base[modified_args] if generic_base else Any
-        # Create new field with proper type casting
-        return (cast(Type[Any], Union[new_type, None]), FieldInfo(default=None))
-    elif isinstance(base_annotation, type) and issubclass(base_annotation, BaseModel):
-        # Handle BaseModel case
-        return (cast(Type[Any], Union[Partial[base_annotation], None]), FieldInfo(default={}))
+        return (new_type, create_field(new_type))
+    elif isinstance(base_type, type) and issubclass(base_type, BaseModel):
+        partial_type = Partial[base_type]
+        return (partial_type, create_field(partial_type, default_factory=dict))
     else:
-        # Handle simple types
-        return (cast(Type[Any], Union[base_annotation, None]), FieldInfo(default=None))
-
+        return (base_type, create_field(base_type))
 
 class PartialBase(Generic[T_Model]):
+    """Base class for partial models with streaming support."""
+    model_fields: ClassVar[Dict[str, FieldInfo]]
+
+    @classmethod
+    def extract_json(
+        cls,
+        completion: Iterable[Any],
+        mode: Mode
+    ) -> Generator[str, None, None]:
+        """Extract JSON from completion stream."""
+        for chunk in completion:
+            yield str(chunk)
+
+    @classmethod
+    async def extract_json_async(
+        cls,
+        completion: AsyncGenerator[Any, None],
+        mode: Mode
+    ) -> AsyncGenerator[str, None]:
+        """Extract JSON from completion stream asynchronously."""
+        async for chunk in completion:
+            yield str(chunk)
+
     @classmethod
     @cache
-    def get_partial_model(cls) -> type[T_Model]:
+    def get_partial_model(cls: Type[PartialBase[T_Model]]) -> Type[T_Model]:
         """Return a partial model we can use to validate partial results."""
-        assert issubclass(
-            cls, BaseModel
-        ), f"{cls.__name__} must be a subclass of BaseModel"
+        if not issubclass(cls, BaseModel):
+            raise TypeError(f"{cls.__name__} must be a subclass of BaseModel")
 
         model_name = (
             cls.__name__
@@ -90,21 +143,43 @@ class PartialBase(Generic[T_Model]):
             else f"Partial{cls.__name__}"
         )
 
-        return create_model(
+        fields: Dict[str, tuple[Type[Any], FieldInfo]] = {}
+        for field_name, field_info in cls.model_fields.items():
+            field_type, field_info = _make_field_optional(field_info)
+            fields[field_name] = (field_type, field_info)
+
+        # Create model with proper type handling
+        config = type('Config', (BaseConfig,), {'arbitrary_types_allowed': True})
+        model_kwargs = {
+            name: field_tuple
+            for name, field_tuple in fields.items()
+        }
+
+        partial_model = create_model(
             model_name,
             __base__=cls,
             __module__=cls.__module__,
-            **{
-                field_name: _make_field_optional(field_info)
-                for field_name, field_info in cls.model_fields.items()
-            },  # type: ignore[all]
+            __config__=config,
+            **model_kwargs
         )
+
+        return cast(Type[T_Model], partial_model)
+
+        # Add fields after model creation
+        for field_name, (_, field_info) in fields.items():
+            partial_model.model_fields[field_name] = field_info
+
+        return partial_model
 
     @classmethod
     def from_streaming_response(
-        cls, completion: Iterable[Any], mode: Mode, **kwargs: Any
+        cls: Type[PartialBase[T_Model]],
+        completion: Iterable[Any],
+        mode: Mode,
+        **kwargs: Any
     ) -> Generator[T_Model, None, None]:
-        json_chunks = cls.extract_json(completion, mode)
+        """Process streaming response and yield models."""
+        json_chunks: Generator[str, None, None] = cls.extract_json(completion, mode)
 
         if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream(json_chunks)
@@ -116,21 +191,31 @@ class PartialBase(Generic[T_Model]):
 
     @classmethod
     async def from_streaming_response_async(
-        cls, completion: AsyncGenerator[Any, None], mode: Mode, **kwargs: Any
+        cls: Type[PartialBase[T_Model]],
+        completion: AsyncGenerator[Any, None],
+        mode: Mode,
+        **kwargs: Any
     ) -> AsyncGenerator[T_Model, None]:
-        json_chunks = cls.extract_json_async(completion, mode)
+        """Process streaming response asynchronously and yield models."""
+        json_chunks: AsyncGenerator[str, None] = cls.extract_json_async(completion, mode)
 
         if mode == Mode.MD_JSON:
             json_chunks = extract_json_from_stream_async(json_chunks)
         elif mode == Mode.WRITER_TOOLS:
-            return cls.writer_model_from_chunks_async(json_chunks, **kwargs)
+            async for model in cls.writer_model_from_chunks_async(json_chunks, **kwargs):
+                yield model
+            return
 
-        return cls.model_from_chunks_async(json_chunks, **kwargs)
+        async for model in cls.model_from_chunks_async(json_chunks, **kwargs):
+            yield model
 
     @classmethod
     def writer_model_from_chunks(
-        cls, json_chunks: Iterable[Any], **kwargs: Any
+        cls: Type[PartialBase[T_Model]],
+        json_chunks: Iterable[str],
+        **kwargs: Any
     ) -> Generator[T_Model, None, None]:
+        """Process chunks using writer mode and yield models."""
         potential_object = ""
         partial_model = cls.get_partial_model()
         partial_mode = (
@@ -142,15 +227,19 @@ class PartialBase(Generic[T_Model]):
             else:
                 potential_object += chunk
             obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+                (potential_object.strip() or "{}").encode(),
+                partial_mode=partial_mode
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
-            yield obj
+            validated_obj = partial_model.model_validate(obj, context=kwargs)
+            yield validated_obj
 
     @classmethod
     async def writer_model_from_chunks_async(
-        cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
+        cls: Type[PartialBase[T_Model]],
+        json_chunks: AsyncGenerator[str, None],
+        **kwargs: Any
     ) -> AsyncGenerator[T_Model, None]:
+        """Process chunks asynchronously using writer mode and yield models."""
         potential_object = ""
         partial_model = cls.get_partial_model()
         partial_mode = (
@@ -162,15 +251,19 @@ class PartialBase(Generic[T_Model]):
             else:
                 potential_object += chunk
             obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+                (potential_object.strip() or "{}").encode(),
+                partial_mode=partial_mode
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
-            yield obj
+            validated_obj = partial_model.model_validate(obj, context=kwargs)
+            yield validated_obj
 
     @classmethod
     def model_from_chunks(
-        cls, json_chunks: Iterable[Any], **kwargs: Any
+        cls: Type[PartialBase[T_Model]],
+        json_chunks: Iterable[str],
+        **kwargs: Any
     ) -> Generator[T_Model, None, None]:
+        """Process chunks and yield models."""
         potential_object = ""
         partial_model = cls.get_partial_model()
         partial_mode = (
@@ -179,32 +272,40 @@ class PartialBase(Generic[T_Model]):
         for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+                (potential_object.strip() or "{}").encode(),
+                partial_mode=partial_mode
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
-            yield obj
+            validated_obj = partial_model.model_validate(obj, context=kwargs)
+            yield validated_obj
 
     @classmethod
     async def model_from_chunks_async(
-        cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
+        cls: Type[PartialBase[T_Model]],
+        json_chunks: AsyncGenerator[str, None],
+        **kwargs: Any
     ) -> AsyncGenerator[T_Model, None]:
+        """Process chunks asynchronously and yield models."""
         potential_object = ""
-        partial_model = cls.get_partial_model()
+        partial_model = cast(Type[T_Model], cls.get_partial_model())
         partial_mode = (
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
         async for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+                (potential_object.strip() or "{}").encode(),
+                partial_mode=partial_mode
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            obj = partial_model.model_validate(obj, context=kwargs)
             yield obj
 
-    @staticmethod
+    @classmethod
     def extract_json(
-        completion: Iterable[Any], mode: Mode
+        cls,
+        completion: Iterable[Any],
+        mode: Mode
     ) -> Generator[str, None, None]:
+        """Extract JSON from completion chunks."""
         for chunk in completion:
             try:
                 if mode == Mode.ANTHROPIC_JSON:
@@ -252,10 +353,13 @@ class PartialBase(Generic[T_Model]):
             except AttributeError:
                 pass
 
-    @staticmethod
+    @classmethod
     async def extract_json_async(
-        completion: AsyncGenerator[Any, None], mode: Mode
+        cls,
+        completion: AsyncGenerator[Any, None],
+        mode: Mode
     ) -> AsyncGenerator[str, None]:
+        """Extract JSON from completion chunks asynchronously."""
         async for chunk in completion:
             try:
                 if mode == Mode.ANTHROPIC_JSON:
@@ -293,106 +397,42 @@ class PartialBase(Generic[T_Model]):
             except AttributeError:
                 pass
 
-
 class Partial(Generic[T_Model]):
-    """Generate a new class which has PartialBase as a base class.
+    """A class for creating partial versions of Pydantic models."""
 
-    Notes:
-        This will enable partial validation of the model while streaming.
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+        raise TypeError("Partial cannot be instantiated")
 
-    Example:
-        Partial[SomeModel]
-    """
+    def __init_subclass__(cls) -> None:
+        raise TypeError("Partial cannot be subclassed")
 
-    def __new__(
-        cls,
-        *args: object,  # noqa :ARG003
-        **kwargs: object,  # noqa :ARG003
-    ) -> Partial[T_Model]:
-        """Cannot instantiate.
+    @classmethod
+    def __class_getitem__(cls, model: Union[Type[T_Model], tuple[Type[T_Model], ...]]) -> Type[T_Model]:
+        """Create a partial version of the model."""
+        def _wrap_models(base_model: Type[T_Model]) -> Type[T_Model]:
+            if not isinstance(base_model, type) or not issubclass(base_model, BaseModel):
+                raise TypeError(f"Expected BaseModel subclass, got {base_model}")
 
-        Raises:
-            TypeError: Direct instantiation not allowed.
-        """
-        raise TypeError("Cannot instantiate abstract Partial class.")
+            fields: Dict[str, tuple[Type[Any], FieldInfo]] = {}
+            for field_name, field_info in base_model.model_fields.items():
+                field_type, field_info = _make_field_optional(field_info)
+                fields[field_name] = (field_type, field_info)
 
-    def __init_subclass__(
-        cls,
-        *args: object,
-        **kwargs: object,
-    ) -> NoReturn:
-        """Cannot subclass.
+            model_name = (
+                base_model.__name__
+                if base_model.__name__.startswith("Partial")
+                else f"Partial{base_model.__name__}"
+            )
 
-        Raises:
-           TypeError: Subclassing not allowed.
-        """
-        raise TypeError(f"Cannot subclass {cls.__module__}.Partial")
+            return cast(Type[T_Model], _create_partial_model(base_model, model_name, fields))
 
-    def __class_getitem__(
-        cls,
-        wrapped_class: type[T_Model] | tuple[type[T_Model], type[MakeFieldsOptional]],
-    ) -> type[T_Model]:
-        """Convert model to one that inherits from PartialBase.
+        if isinstance(model, tuple):
+            return cast(Type[T_Model], tuple(_wrap_models(m) for m in model))
+        return _wrap_models(model)
 
-        We don't make the fields optional at this point, we just wrap them with `Partial` so the names of the nested models will be
-        `Partial{ModelName}`. We want the output of `model_json_schema()` to
-        reflect the name change, but everything else should be the same as the
-        original model. During validation, we'll generate a true partial model
-        to support partially defined fields.
+        # Add fields after model creation
+        for field_name, (field_type, field_info) in fields.items():
+            setattr(model, field_name, field_info)
+            model.model_fields[field_name] = field_info
 
-        """
-
-        make_fields_optional = None
-        if isinstance(wrapped_class, tuple):
-            wrapped_class, make_fields_optional = wrapped_class
-
-        def _wrap_models(field: FieldInfo) -> tuple[object, FieldInfo]:
-            tmp_field = deepcopy(field)
-
-            annotation = field.annotation
-
-            # Handle generics (like List, Dict, etc.)
-            if get_origin(annotation) is not None:
-                # Get the generic base (like List, Dict) and its arguments (like User in List[User])
-                generic_base = get_origin(annotation)
-                generic_args = get_args(annotation)
-
-                # Recursively apply Partial to each of the generic arguments
-                modified_args = tuple(
-                    (
-                        Partial[arg]
-                        if isinstance(arg, type) and issubclass(arg, BaseModel)
-                        else arg
-                    )
-                    for arg in generic_args
-                )
-
-                # Reconstruct the generic type with modified arguments
-                tmp_field.annotation = (
-                    generic_base[modified_args] if generic_base else None
-                )
-            # If the field is a BaseModel, then recursively convert it's
-            # attributes to optionals.
-            elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
-                tmp_field.annotation = Partial[annotation]
-            return tmp_field.annotation, tmp_field
-
-        model_name = (
-            wrapped_class.__name__
-            if wrapped_class.__name__.startswith("Partial")
-            else f"Partial{wrapped_class.__name__}"
-        )
-
-        return create_model(
-            model_name,
-            __base__=(wrapped_class, PartialBase),  # type: ignore
-            __module__=wrapped_class.__module__,
-            **{
-                field_name: (
-                    _make_field_optional(field_info)
-                    if make_fields_optional is not None
-                    else _wrap_models(field_info)
-                )
-                for field_name, field_info in wrapped_class.model_fields.items()
-            },  # type: ignore
-        )
+        return model
