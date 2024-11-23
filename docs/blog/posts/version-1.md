@@ -47,14 +47,13 @@ Except now, any default arguments you want to place into the `create` call will 
 IF you know you want to pass in tempurature, seed, or model, you can do so.
 
 ```python
-
 import openai
 import instructor
 
 client = instructor.from_openai(
     openai.OpenAI(),
     model="gpt-4-turbo-preview",
-    temperature=0.2
+    temperature=0.2,
 )
 ```
 
@@ -96,17 +95,17 @@ import openai
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 client = instructor.from_openai(openai.OpenAI())
 
 user = client.chat.completions.create(
     model="gpt-4-turbo-preview",
-    messages=[
-        {"role": "user", "content": "Create a user"},
-    ],
+    messages=[{"role": "user", "content": "Create a user"}],
     response_model=User,
 )
 ```
