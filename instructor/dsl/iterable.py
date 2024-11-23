@@ -1,5 +1,6 @@
-from typing import Any, Optional, cast, ClassVar, TypeVar, Generic, Type, Protocol
+from typing import Any, Optional, cast, ClassVar, TypeVar, Generic, Type, Protocol, TypeAlias
 from collections.abc import AsyncGenerator, Generator, Iterable
+from typing_extensions import TypeVar
 
 from pydantic import BaseModel, Field, create_model
 
@@ -8,14 +9,15 @@ from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
 
 
-T = TypeVar('T', bound=BaseModel)
-
 class ModelValidateProtocol(Protocol):
     @classmethod
     def model_validate_json(cls, json_str: str, **kwargs: Any) -> Any: ...
 
+T = TypeVar('T', bound=BaseModel)
+ModelType: TypeAlias = Type[ModelValidateProtocol]
+
 class IterableBase(Generic[T]):
-    task_type: ClassVar[Type[ModelValidateProtocol]] = None  # type: ignore[assignment]
+    task_type: ClassVar[ModelType] = None  # type: ignore[assignment]
 
     @classmethod
     def from_streaming_response(
@@ -176,10 +178,10 @@ class IterableBase(Generic[T]):
 
 
 def IterableModel(
-    subtask_class: Type[ModelValidateProtocol],
+    subtask_class: ModelType,
     name: Optional[str] = None,
     description: Optional[str] = None,
-) -> Type[BaseModel]:
+) -> Type[IterableBase[Any]]:
     """
     Dynamically create a IterableModel OpenAISchema that can be used to segment multiple
     tasks given a base class. This creates class that can be used to create a toolkit
@@ -231,11 +233,10 @@ def IterableModel(
         schema (OpenAISchema): A new class that can be used to segment multiple tasks
     """
     task_name = subtask_class.__name__ if name is None else name
-
     name = f"Iterable{task_name}"
 
-    list_tasks = (
-        list[subtask_class],
+    list_tasks: tuple[Type[list[Any]], Field] = (
+        list[subtask_class],  # type: ignore
         Field(
             default_factory=list,
             repr=False,
@@ -243,8 +244,12 @@ def IterableModel(
         ),
     )
 
-    base_models = cast(tuple[type[BaseModel], ...], (OpenAISchema, IterableBase))
-    new_cls = create_model(
+    base_models: tuple[Type[BaseModel], ...] = cast(
+        tuple[Type[BaseModel], ...],
+        (OpenAISchema, IterableBase)
+    )
+
+    new_cls: Type[IterableBase[Any]] = create_model(
         name,
         tasks=list_tasks,
         __base__=base_models,

@@ -18,9 +18,10 @@ from typing_extensions import ParamSpec, NotRequired, TypedDict
 from openai import AsyncOpenAI, OpenAI
 from openai.types.chat import ChatCompletion
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
-from openai.types.chat.chat_completion import Function, ChatCompletionToolParam
+from openai.types.shared.function_definition import FunctionDefinition as Function
+from openai.types.chat.chat_completion_tool_param import ChatCompletionToolParam
 from openai.types.completion_create_params import CompletionCreateParamsBase
-from openai.types import NotGiven, Omit
+from openai._types import NotGiven, Omit
 from pydantic import BaseModel
 
 from instructor.process_response import handle_response_model
@@ -112,14 +113,14 @@ def patch(
 def patch(
     create: Callable[T_ParamSpec, T_Retval],
     mode: Mode = Mode.TOOLS,
-) -> InstructorChatCompletionCreate: ...
+) -> InstructorChatCompletionCreate[T_Model]: ...
 
 
 @overload
 def patch(
     create: Awaitable[T_Retval],
     mode: Mode = Mode.TOOLS,
-) -> InstructorChatCompletionCreate: ...
+) -> AsyncInstructorChatCompletionCreate[T_Model]: ...
 
 
 def patch(  # type: ignore

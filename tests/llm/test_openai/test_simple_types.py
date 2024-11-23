@@ -1,14 +1,14 @@
 import pytest
 import instructor
 import enum
-
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal, Union, Any
 from pydantic import Field
+from openai import AsyncClient, Client
 from .util import models
 
 
 @pytest.mark.asyncio
-async def test_response_simple_types(aclient):
+async def test_response_simple_types(aclient: AsyncClient) -> None:
     client = instructor.patch(aclient, mode=instructor.Mode.TOOLS)
 
     for response_model in [int, bool, str]:
@@ -26,7 +26,7 @@ async def test_response_simple_types(aclient):
 
 
 @pytest.mark.asyncio
-async def test_annotate(aclient):
+async def test_annotate(aclient: AsyncClient) -> None:
     client = instructor.patch(aclient, mode=instructor.Mode.TOOLS)
 
     response = await client.chat.completions.create(
@@ -42,7 +42,7 @@ async def test_annotate(aclient):
     assert type(response) == int
 
 
-def test_literal(client):
+def test_literal(client: Client) -> None:
     client = instructor.patch(client, mode=instructor.Mode.TOOLS)
 
     response = client.chat.completions.create(
@@ -58,7 +58,7 @@ def test_literal(client):
     assert response in ["1231", "212", "331"]
 
 
-def test_union(client):
+def test_union(client: Client) -> None:
     client = instructor.patch(client, mode=instructor.Mode.TOOLS)
 
     response = client.chat.completions.create(
@@ -74,7 +74,7 @@ def test_union(client):
     assert type(response) in [int, str]
 
 
-def test_enum(client):
+def test_enum(client: Client) -> None:
     class Options(enum.Enum):
         A = "A"
         B = "B"
@@ -95,7 +95,7 @@ def test_enum(client):
     assert response in [Options.A, Options.B, Options.C]
 
 
-def test_bool(client):
+def test_bool(client: Client) -> None:
     client = instructor.patch(client, mode=instructor.Mode.TOOLS)
 
     response = client.chat.completions.create(

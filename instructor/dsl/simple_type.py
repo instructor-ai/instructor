@@ -1,27 +1,27 @@
 from __future__ import annotations
 from inspect import isclass
 import typing
+from typing import Any, TypeVar, Generic, Type, TypeAlias, Union, Optional
 from pydantic import BaseModel, create_model
 from enum import Enum
-
 
 from instructor.dsl.partial import Partial
 from instructor.function_calls import OpenAISchema
 
-
-T = typing.TypeVar("T")
-
+# Type definitions
+T = TypeVar("T")
+ModelType: TypeAlias = Type[BaseModel]
 
 class AdapterBase(BaseModel):
     pass
 
 
-class ModelAdapter(typing.Generic[T]):
+class ModelAdapter(Generic[T]):
     """
     Accepts a response model and returns a BaseModel with the response model as the content.
     """
 
-    def __class_getitem__(cls, response_model: type[BaseModel]) -> type[BaseModel]:
+    def __class_getitem__(cls, response_model: ModelType) -> ModelType:
         assert is_simple_type(response_model), "Only simple types are supported"
         return create_model(
             "Response",
@@ -45,7 +45,7 @@ def validateIsSubClass(response_model: type):
 
 
 def is_simple_type(
-    response_model: type[BaseModel] | str | int | float | bool | typing.Any,
+    response_model: Union[ModelType, Type[str], Type[int], Type[float], Type[bool], Any],
 ) -> bool:
     # ! we're getting mixes between classes and instances due to how we handle some
     # ! response model types, we should fix this in later PRs

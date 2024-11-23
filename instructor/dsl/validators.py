@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Protocol, TypeVar
+from typing import Any, Callable, Protocol, TypeVar, TYPE_CHECKING, TypeAlias
 
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
@@ -8,7 +8,6 @@ from openai.types.moderation_create_response import ModerationCreateResponse
 
 from pydantic import BaseModel, Field, ConfigDict
 
-from instructor import Instructor
 from instructor.function_calls import Mode
 
 
@@ -40,7 +39,7 @@ class Validator(BaseModel):
 
 def llm_validator(
     statement: str,
-    client: Instructor,
+    client: Any,  # Type will be Instructor but import moved to runtime
     allow_override: bool = False,
     model: str = "gpt-3.5-turbo",
     temperature: float = 0,

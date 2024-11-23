@@ -1,5 +1,5 @@
 import importlib.util
-from typing import Any
+from typing import Any, Callable, TypeVar, Union, Optional
 from typing_extensions import ParamSpec, TypeVar
 
 from pydantic import BaseModel
@@ -31,6 +31,10 @@ from .client import (
 T = TypeVar("T", bound=BaseModel)
 P = ParamSpec("P")
 R = TypeVar("R")
+
+# Define function types
+PatchFunction = Callable[P, Union[T, Any]]
+AsyncPatchFunction = Callable[P, Union[T, Any]]
 
 __all__ = [
     "Instructor",
