@@ -50,7 +50,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install -e ".[dev,docs,test-docs,anthropic,google-generativeai]"
+          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]"
           uv pip install -r requirements-dev.txt
           uv pip install -r requirements-doc.txt
 

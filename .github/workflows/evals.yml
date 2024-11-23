@@ -46,7 +46,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install -e ".[test-docs,anthropic]"
+          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]"
           uv pip install -r requirements-dev.txt
 
       - name: Run all tests
