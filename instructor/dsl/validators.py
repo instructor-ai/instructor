@@ -1,27 +1,38 @@
-from typing import Callable, Optional
-
+from typing import Callable, Optional, Any, TypeVar, cast, Protocol, TypeAlias
 from openai import OpenAI
-from pydantic import Field  # type: ignore
+from openai.types.chat import ChatCompletionMessageParam
+from openai.types.moderation import (
+    Moderation,
+    Categories,
+)
+from pydantic import Field, BaseModel, ConfigDict  # type: ignore
 
 from instructor.function_calls import OpenAISchema
 from instructor.client import Instructor
 
 
+T = TypeVar('T')
+ChatMessage: TypeAlias = ChatCompletionMessageParam
+
+class ValidatorProtocol(Protocol):
+    """Protocol for validator objects."""
+    def model_dump(self) -> dict[str, Any]: ...
+
+
 class Validator(OpenAISchema):
-    """
-    Validate if an attribute is correct and if not,
-    return a new value with an error message
-    """
+    """Validate if an attribute is correct and if not, return a new value with an error message."""
+
+    model_config: ConfigDict = ConfigDict(arbitrary_types_allowed=True)
 
     is_valid: bool = Field(
         default=True,
         description="Whether the attribute is valid based on the requirements",
     )
-    reason: Optional[str] = Field(
+    reason: str | None = Field(
         default=None,
         description="The error message if the attribute is not valid, otherwise None",
     )
-    fixed_value: Optional[str] = Field(
+    fixed_value: str | None = Field(
         default=None,
         description="If the attribute is not valid, suggest a new value for the attribute",
     )
@@ -69,21 +80,22 @@ def llm_validator(
     """
 
     def llm(v: str) -> str:
-        resp = client.chat.completions.create(
+        messages: list[ChatMessage] = [
+            {
+                "role": "system",
+                "content": "You are a world class validation model. Capable to determine if the following value is valid for the statement, if it is not, explain why and suggest a new value.",
+            },
+            {
+                "role": "user",
+                "content": f"Does `{v}` follow the rules: {statement}",
+            },
+        ]
+        resp = cast(Validator, client.chat.completions.create(
             response_model=Validator,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a world class validation model. Capable to determine if the following value is valid for the statement, if it is not, explain why and suggest a new value.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Does `{v}` follow the rules: {statement}",
-                },
-            ],
+            messages=messages,
             model=model,
             temperature=temperature,
-        )
+        ))
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.
@@ -126,13 +138,15 @@ def openai_moderation(client: OpenAI) -> Callable[[str], str]:
 
     def validate_message_with_openai_mod(v: str) -> str:
         response = client.moderations.create(input=v)
-        out = response.results[0]
-        cats = out.categories.model_dump()
-        if out.flagged:
-            raise ValueError(
-                f"`{v}` was flagged for {', '.join(cat for cat in cats if cats[cat])}"
-            )
-
+        moderation: Moderation = response.results[0]
+        categories: Categories = moderation.categories
+        if moderation.flagged:
+            flagged_categories = [
+                cat for cat, is_flagged in categories.model_dump().items() if is_flagged
+            ]
+            raise ValueError(f"`{v}` was flagged for {', '.join(flagged_categories)}")
         return v
+
+    return validate_message_with_openai_mod
 
     return validate_message_with_openai_mod
