@@ -1,5 +1,6 @@
 # type: ignore[all]
 from pydantic import BaseModel, Field
+from typing import Optional, Union
 from instructor.dsl.partial import Partial, PartialLiteralMixin
 import pytest
 import instructor
@@ -18,6 +19,24 @@ class SampleNestedPartial(BaseModel):
 class SamplePartial(BaseModel):
     a: int
     b: SampleNestedPartial
+
+
+class NestedA(BaseModel):
+    a: str
+    b: Optional[str]
+
+
+class NestedB(BaseModel):
+    c: str
+    d: str
+    e: list[Union[str, int]]
+    f: str
+
+
+class UnionWithNested(BaseModel):
+    a: list[Union[NestedA, NestedB]]
+    b: list[NestedA]
+    c: NestedB
 
 
 def test_partial():
@@ -166,3 +185,10 @@ async def test_summary_extraction_async():
         previous_summary = extraction.summary
 
     assert updates == 1
+
+
+def test_union_with_nested():
+    partial = Partial[UnionWithNested]
+    partial.get_partial_model().model_validate_json(
+        '{"a": [{"b": "b"}, {"d": "d"}], "b": [{"b": "b"}], "c": {"d": "d"}, "e": [1, "a"]}'
+    )
