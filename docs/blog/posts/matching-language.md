@@ -208,7 +208,9 @@ In den letzten Jahren sind Sprachmodelle immer ausgefeilter geworden und können
 ---
 
 近年、言語モデルは非常に洗練され、自然で流暢なテキストを生成できるようになり、機械翻訳、質問応答、クリエイティブなテキスト生成など、様々なタスクで優れたパフォーマンスを発揮しています。これらのモデルは膨大なテキストデータセットで学習され、自然言語の構造とニュアンスを捉えることができます。言語モデルの改善により、コンピューターと人間のコミュニケーションに革命が起こる可能性があり、将来のさらなる進歩が期待されています。
-""".split("---"),
+""".split(
+        "---"
+    ),
 )
 
 # Patch the OpenAI client to enable response_model
@@ -220,6 +222,7 @@ class GeneratedSummary(BaseModel):
         description="The language code of the original article. The summary must be generated in this same language.",
     )
     summary: str
+
 
 async def summarize_text(text: str):
     response = await client.chat.completions.create(

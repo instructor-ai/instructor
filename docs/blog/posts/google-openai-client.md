@@ -32,14 +32,14 @@ This looks something like this:
 
 ```python
 from openai import OpenAI
+
 client = OpenAI(
-    base_url="https://generativelanguage.googleapis.com/v1beta/",
-    api_key="YOUR_API_KEY"
+    base_url="https://generativelanguage.googleapis.com/v1beta/", api_key="YOUR_API_KEY"
 )
 
 response = client.chat.completions.create(
     model="gemini-1.5-flash",
-    messages=[{"role": "user", "content": "Extract name and age from: John is 30"}]
+    messages=[{"role": "user", "content": "Extract name and age from: John is 30"}],
 )
 ```
 
@@ -53,6 +53,7 @@ The current implementation only supports simple, single-level schemas. This mean
 class User(BaseModel):
     name: str
     age: int
+
 
 class Users(BaseModel):
     users: list[User]  # Nested schema - will throw an error
@@ -179,7 +180,6 @@ for r in resp:
     print(r)
 
 
-
 # title = None summary = None
 # title='The Little Firefly Who Lost His Light' summary=None
 # title='The Little Firefly Who Lost His Light' summary='A tiny firefly learns the true meaning of friendship when he loses his glow and a wise old owl helps him find it again.'
@@ -216,9 +216,7 @@ If we wanted to switch to Anthropic, all it takes is changing the following line
 from anthropic import Anthropic
 from instructor import from_anthropic
 
-client = from_anthropic(
-    Anthropic()
-)
+client = from_anthropic(Anthropic())
 
 # rest of code
 ```

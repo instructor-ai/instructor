@@ -97,7 +97,7 @@ We also support streaming with the Cerebras client with the `CEREBRAS_JSON` mo
 
 ```python
 import instructor
-from cerebras.cloud.sdk import Cerebras, AsyncCerebras
+from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 from typing import Iterable
 
@@ -123,9 +123,9 @@ resp = client.chat.completions.create(
 
 for person in resp:
     print(person)
-    # > Person(name='Chris', age=27)
-    # > Person(name='John', age=30)
-    # > Person(name='Jessica', age=26)
+    #> Person(name='Chris', age=27)
+    #> Person(name='John', age=30)
+    #> Person(name='Jessica', age=26)
 ```
 
 And that’s it! We're excited to see what you build with Instructor and Cerebras! If you have any questions about Cerebras or need to get off the API key waitlist, please reach out to sarah.chieng@cerebras.net.

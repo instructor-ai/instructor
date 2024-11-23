@@ -25,9 +25,7 @@ In this post, we'll explore how to use Google's Gemini model with Instructor to 
 First, let's set up our environment with the necessary libraries:
 
 ```python
-from pydantic import BaseModel
-import instructor
-import google.generativeai as genai
+
 ```
 
 <!-- more -->
@@ -41,6 +39,7 @@ class TouristDestination(BaseModel):
     name: str
     description: str
     location: str
+
 
 class Recommendations(BaseModel):
     chain_of_thought: str
@@ -193,8 +192,9 @@ To address these limitations and expand the capabilities of our video analysis s
    ```python
    class TimestampedRecommendation(BaseModel):
        timestamp: str
-       timestamp_format: Literal["HH:MM", "HH:MM:SS"] # Helps with parsing
+       timestamp_format: Literal["HH:MM", "HH:MM:SS"]  # Helps with parsing
        recommendation: str
+
 
    class EnhancedRecommendations(BaseModel):
        destinations: list[TouristDestination]

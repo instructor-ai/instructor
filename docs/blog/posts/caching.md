@@ -107,8 +107,10 @@ print(f"Time taken: {time.perf_counter() - start}")
     def decorator(func):
         def wrapper(*args, **kwargs):
             print("Do something before")  # (1)
+            #> Do something before
             result = func(*args, **kwargs)
             print("Do something after")  # (2)
+            #> Do something after
             return result
 
         return wrapper
@@ -116,6 +118,7 @@ print(f"Time taken: {time.perf_counter() - start}")
 
     @decorator
     def say_hello():
+        #> Hello!
         print("Hello!")
 
 

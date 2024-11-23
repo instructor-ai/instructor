@@ -39,7 +39,6 @@ First, let's set up our environment with the necessary imports:
 ```python
 import instructor
 from openai import OpenAI
-from pydantic import BaseModel, Field, field_validator
 
 client = instructor.from_openai(OpenAI())
 ```
@@ -55,7 +54,9 @@ Notice that not only do I reference the chunk_id in the label class, I also aske
 ```python
 class Label(BaseModel):
     chunk_id: int = Field(description="The unique identifier of the text chunk")
-    chain_of_thought: str = Field(description="The reasoning process used to evaluate the relevance")
+    chain_of_thought: str = Field(
+        description="The reasoning process used to evaluate the relevance"
+    )
     relevancy: int = Field(
         description="Relevancy score from 0 to 10, where 10 is most relevant",
         ge=0,
@@ -159,6 +160,7 @@ def main():
         print(f"Reasoning: {label.chain_of_thought}")
         print()
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -182,7 +184,9 @@ class Label(BaseModel):
         context = info.context
         chunks = context["chunks"]
         if v not in [chunk["id"] for chunk in chunks]:
-            raise ValueError(f"Chunk with id {v} not found, must be one of {[chunk['id'] for chunk in chunks]}")
+            raise ValueError(
+                f"Chunk with id {v} not found, must be one of {[chunk['id'] for chunk in chunks]}"
+            )
         return v
 ```
 

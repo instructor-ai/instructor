@@ -33,13 +33,10 @@ Using tools like instructor to automatically convert untidy data into tidy forma
 Let's start by first defining a custom type that can parse the markdown table into a pandas dataframe.
 
 ```python
-import instructor
 from io import StringIO
 from typing import Annotated, Any
 from pydantic import BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
 import pandas as pd
-from pydantic import BaseModel
-from openai import OpenAI
 
 
 def md_to_df(data: Any) -> Any:
@@ -80,28 +77,35 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
+
 class Table(BaseModel):
     caption: str
     dataframe: MarkdownDataFrame  # Custom type for handling tables
 
+
 class TidyTables(BaseModel):
     tables: list[Table]
+
 
 # Patch the OpenAI client with instructor
 client = instructor.from_openai(OpenAI())
 
+
 def extract_table(image_path: str) -> TidyTables:
     return client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{
-            "role": "user",
-            "content": [
-                "Convert this untidy table to tidy format",
-                instructor.Image.from_path(image_path)
-            ]
-        }],
-        response_model=TidyTables
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    "Convert this untidy table to tidy format",
+                    instructor.Image.from_path(image_path),
+                ],
+            }
+        ],
+        response_model=TidyTables,
     )
+
 
 extracted_tables = extract_table("./untidy_table.png")
 ```

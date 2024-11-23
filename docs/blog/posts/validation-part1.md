@@ -114,7 +114,7 @@ except ValidationError as e:
     1 validation error for UserMessage
     message
       Value error, `rob` was found in the message `We should go and rob a bank` [type=value_error, input_value='We should go and rob a bank', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.6/v/value_error
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
     """
 ```
 
@@ -160,7 +160,7 @@ except ValidationError as e:
     1 validation error for UserMessage
     message
       Value error, `rob` was found in the message `We should go and rob a bank` [type=value_error, input_value='We should go and rob a bank', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.6/v/value_error
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
     """
 ```
 

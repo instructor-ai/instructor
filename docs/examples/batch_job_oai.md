@@ -65,9 +65,9 @@ The Reserve Bank of Australia (RBA) came into being on 14 January 1960 as Austra
 print(generate_question(text_chunk).model_dump_json(indent=2))
 """
 {
-  "chain_of_thought": "The text provides historical information about the Reserve Bank of Australia, including its establishment date and the key functions it took over from the Commonwealth Bank. It also details its assets and employee distribution. A question that captures this information was formulated.",
-  "question": "When was the Reserve Bank of Australia established?",
-  "answer": "14 January 1960."
+  "chain_of_thought": "The text discusses the formation of the Reserve Bank of Australia (RBA) and provides key details about its establishment date, the removal of central banking functions from the Commonwealth Bank, its asset worth, and its employee distribution. By focusing on these details, a search query can be framed around the establishment date and purpose of the RBA.",
+  "question": "When was the Reserve Bank of Australia established and what are its main functions?",
+  "answer": "The Reserve Bank of Australia was established on 14 January 1960 as Australia's central bank and banknote issuing authority."
 }
 """
 ```

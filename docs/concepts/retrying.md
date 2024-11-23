@@ -37,7 +37,7 @@ except Exception as e:
     1 validation error for UserDetail
     name
       Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.7/v/value_error
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
     """
 ```
 
@@ -118,10 +118,12 @@ try:
 except InstructorRetryException as e:
     print(e.messages[-1]["content"])  # type: ignore
     """
+    Validation Error found:
     1 validation error for UserDetail
     age
-    Value error, You will never succeed with 25 [type=value_error, input_value=25, input_type=int]
-        For further information visit https://errors.pydantic.dev/2.7/v/value_error
+      Value error, You will never succeed with 25 [type=value_error, input_value=25, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
+    Recall the function correctly, fix the errors
     """
 
     print(e.n_attempts)
@@ -129,7 +131,47 @@ except InstructorRetryException as e:
 
     print(e.last_completion)
     """
-    ChatCompletion(id='chatcmpl-9FaHq4dL4SszLAbErGlpD3a0TYxi0', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content=None, role='assistant', function_call=None, tool_calls=[ChatCompletionMessageToolCall(id='call_XidgLpIu1yfaq876L65k91RM', function=Function(arguments='{"name":"Jason","age":25}', name='UserDetail'), type='function')]))], created=1713501434, model='gpt-3.5-turbo-0125', object='chat.completion', system_fingerprint='fp_d9767fc5b9', usage=CompletionUsage(completion_tokens=27, prompt_tokens=513, total_tokens=540))
+    ChatCompletion(
+        id='chatcmpl-AWl4B5JrGm7QSxBPQhx7lQH89WHxg',
+        choices=[
+            Choice(
+                finish_reason='stop',
+                index=0,
+                logprobs=None,
+                message=ChatCompletionMessage(
+                    content=None,
+                    refusal=None,
+                    role='assistant',
+                    audio=None,
+                    function_call=None,
+                    tool_calls=[
+                        ChatCompletionMessageToolCall(
+                            id='call_LGFqmLGaMvlkriHANf2nqLus',
+                            function=Function(
+                                arguments='{"name":"Jason","age":25}', name='UserDetail'
+                            ),
+                            type='function',
+                        )
+                    ],
+                ),
+            )
+        ],
+        created=1732370783,
+        model='gpt-3.5-turbo-0125',
+        object='chat.completion',
+        service_tier=None,
+        system_fingerprint=None,
+        usage=CompletionUsage(
+            completion_tokens=27,
+            prompt_tokens=522,
+            total_tokens=549,
+            completion_tokens_details=CompletionTokensDetails(
+                audio_tokens=0, reasoning_tokens=0
+            ),
+            prompt_tokens_details=None,
+            prompt_token_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
+        ),
+    )
     """
 ```
 
@@ -262,10 +304,10 @@ resp = client.messages.create(
     max_retries=tenacity.Retrying(
         stop=tenacity.stop_after_attempt(3),
         before=lambda _: print("before:", _),
-        # """
-        # before:
-        # <RetryCallState 4682490016: attempt #1; slept for 0.0; last result: none yet>
-        # """
+"""
+before:
+<RetryCallState 5565220688: attempt #1; slept for 0.0; last result: none yet>
+"""
         after=lambda _: print("after:", _),
     ),  # type: ignore
     messages=[

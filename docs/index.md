@@ -519,27 +519,34 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 
+
 class UserInfo(BaseModel):
     name: str
     age: int
 
+
 # Initialize the OpenAI client with Instructor
 client = instructor.from_openai(OpenAI())
+
 
 # Define hook functions
 def log_kwargs(**kwargs):
     print(f"Function called with kwargs: {kwargs}")
 
+
 def log_exception(exception: Exception):
     print(f"An exception occurred: {str(exception)}")
+
 
 client.on("completion:kwargs", log_kwargs)
 client.on("completion:error", log_exception)
 
 user_info = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4o-mini",
     response_model=UserInfo,
-    messages=[{"role": "user", "content": "Extract the user name: 'John is 20 years old'"}],
+    messages=[
+        {"role": "user", "content": "Extract the user name: 'John is 20 years old'"}
+    ],
 )
 
 """

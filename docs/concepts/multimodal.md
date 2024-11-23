@@ -52,7 +52,7 @@ response = client.chat.completions.create(
 
 print(response.model_dump_json())
 """
-{"description":"A tray of blueberry muffins, some appear whole while one is partially broken showing its soft texture, all have golden-brown tops and are placed on a delicate, patterned surface."}
+{"description":"A tray of freshly baked blueberry muffins. The muffins have a golden-brown top, are placed in paper liners, and some have blueberries peeking out. In the background, more muffins are visible, along with a single blueberry on the tray."}
 """
 ```
 
@@ -72,9 +72,16 @@ response = client.chat.completions.create(
     model="gpt-4o-mini",
     response_model=ImageAnalyzer,
     messages=[
-        {"role": "user", "content": ["What is in this two images?", "https://example.com/image.jpg", "path/to/image.jpg"]}
+        {
+            "role": "user",
+            "content": [
+                "What is in this two images?",
+                "https://example.com/image.jpg",
+                "path/to/image.jpg",
+            ],
+        }
     ],
-    autodetect_images=True
+    autodetect_images=True,
 )
 ```
 
@@ -100,12 +107,20 @@ response = client.chat.completions.create(
             "role": "user",
             "content": [
                 "What is in this two images?",
-                {"type": "image", "source": "https://example.com/image.jpg", "cache_control": cache_control},
-                {"type": "image", "source": "path/to/image.jpg", "cache_control": cache_control},
-            ]
+                {
+                    "type": "image",
+                    "source": "https://example.com/image.jpg",
+                    "cache_control": cache_control,
+                },
+                {
+                    "type": "image",
+                    "source": "path/to/image.jpg",
+                    "cache_control": cache_control,
+                },
+            ],
         }
     ],
-    autodetect_images=True
+    autodetect_images=True,
 )
 ```
 
@@ -146,5 +161,5 @@ resp = client.chat.completions.create(
 )
 
 print(resp)
-# > name='Jason' age=20
+#> name='Jason' age=20
 ```

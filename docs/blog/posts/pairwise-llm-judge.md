@@ -33,7 +33,6 @@ First, let's set up our environment with the necessary imports:
 ```python
 import instructor
 import openai
-from pydantic import BaseModel, Field
 
 client = instructor.from_openai(openai.OpenAI())
 ```
@@ -88,7 +87,7 @@ def judge_relevance(question: str, text: str) -> Judgment:
                     Before giving your final judgment, provide a justification for your decision. Explain the key factors that led to your conclusion.
 
                     Please ensure your analysis is thorough, impartial, and based on the content provided.
-                """
+                """,
             },
             {
                 "role": "user",
@@ -103,8 +102,8 @@ def judge_relevance(question: str, text: str) -> Judgment:
                     <text>
                     {{text}}
                     </text>
-                """
-            }
+                """,
+            },
         ],
         response_model=Judgment,
         context={"question": question, "text": text},

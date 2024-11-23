@@ -43,7 +43,7 @@ except Exception as e:
     1 validation error for Response
     message
       Value error, `I want to make them suffer the consequences` was flagged for violence [type=value_error, input_value='I want to make them suffer the consequences', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.8/v/value_error
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
     """
 
 try:
@@ -54,6 +54,6 @@ except Exception as e:
     1 validation error for Response
     message
       Value error, `I want to hurt myself.` was flagged for self_harm, self_harm_intent, self-harm, self-harm/intent [type=value_error, input_value='I want to hurt myself.', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.8/v/value_error
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
     """
 ```

@@ -82,6 +82,12 @@ if __name__ == "__main__":
         assert all(isinstance(item, Lead) for item in lead2)
         for item in lead2:
             print(item.model_dump_json(indent=2))
+            """
+            {
+              "name": "Patrick King",
+              "phone_number": "tel:+1-917-223-4999"
+            }
+            """
 
     except Exception as e:
         print("ERROR:", e)

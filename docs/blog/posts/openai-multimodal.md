@@ -40,13 +40,14 @@ from openai import OpenAI
 from pydantic import BaseModel
 import instructor
 from instructor.multimodal import Audio
-import base64
 
 client = instructor.from_openai(OpenAI())
+
 
 class Person(BaseModel):
     name: str
     age: int
+
 
 resp = client.chat.completions.create(
     model="gpt-4o-audio-preview",

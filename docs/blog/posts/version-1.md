@@ -47,14 +47,11 @@ Except now, any default arguments you want to place into the `create` call will 
 IF you know you want to pass in tempurature, seed, or model, you can do so.
 
 ```python
-
 import openai
 import instructor
 
 client = instructor.from_openai(
-    openai.OpenAI(),
-    model="gpt-4-turbo-preview",
-    temperature=0.2
+    openai.OpenAI(), model="gpt-4-turbo-preview", temperature=0.2
 )
 ```
 
@@ -96,9 +93,11 @@ import openai
 import instructor
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 client = instructor.from_openai(openai.OpenAI())
 
@@ -205,6 +204,16 @@ user_stream = client.chat.completions.create_partial(
 
 for user in user_stream:
     print(user)
+    #> name=None age=None
+    #> name=None age=None
+    #> name=None age=None
+    #> name=None age=25
+    #> name=None age=25
+    #> name=None age=25
+    #> name='' age=25
+    #> name='John' age=25
+    #> name='John Smith' age=25
+    #> name='John Smith' age=25
     # name=None age=None
     # name='' age=None
     # name='John' age=None
@@ -244,6 +253,8 @@ users = client.chat.completions.create_iterable(
 
 for user in users:
     print(user)
+    #> name='John Doe' age=30
+    #> name='Jane Smith' age=28
     # User(name='John Doe', age=30)
     # User(name='Jane Smith', age=25)
 ```
