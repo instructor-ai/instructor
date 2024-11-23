@@ -58,6 +58,8 @@ jobs:
         shell: bash
 
       - name: Run tests
-        run: pytest tests/llm/test_openai/docs --update-examples
+        run: |
+          . .venv/bin/activate
+          pytest tests/llm/test_openai/docs --update-examples
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
