@@ -18,6 +18,8 @@ dependencies = [
     "jiter>=0.6.1,<0.7",
     "jinja2>=3.1.4",
     "requests>=2.32.3",
+    "typing-extensions>=4.12.0",
+    "regex>=2024.11.6",
 ]
 
 [project.optional-dependencies]
@@ -75,8 +77,23 @@ exclude = [
     "src/typestubs",
     "**/tests/**",
 ]
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 typeCheckingMode = "strict"
 # Allow "redundant" runtime type-checking.
 reportUnnecessaryIsInstance = "none"
 reportUnnecessaryTypeIgnoreComment = "error"
+
+[tool.black]
+target-version = ["py310"]
+include = '\.pyi?$'
+extend-exclude = '''
+# A regex preceded with ^/ will apply only to files and directories
+# in the root of the project.
+^/docs/blog/posts/
+'''
+
+[tool.ruff]
+target-version = "py310"
+select = ["E", "F", "I"]
+ignore = ["F401"]  # Ignore unused imports in documentation
+exclude = ["docs/blog/posts"]

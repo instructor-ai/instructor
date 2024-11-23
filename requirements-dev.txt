@@ -29,6 +29,8 @@ attrs==24.2.0
     #   referencing
 babel==2.16.0
     # via courlan
+black==24.10.0
+    # via pytest-examples
 certifi==2024.8.30
     # via
     #   httpcore
@@ -42,6 +44,7 @@ charset-normalizer==3.4.0
     #   trafilatura
 click==8.1.7
     # via
+    #   black
     #   litellm
     #   typer
 cohere==5.11.4
@@ -164,7 +167,9 @@ multidict==6.1.0
 multiprocess==0.70.16
     # via datasets
 mypy-extensions==1.0.0
-    # via typing-inspect
+    # via
+    #   black
+    #   typing-inspect
 numpy==2.1.3
     # via
     #   datasets
@@ -175,6 +180,7 @@ openai==1.55.0
     #   litellm
 packaging==24.2
     # via
+    #   black
     #   datasets
     #   huggingface-hub
     #   pytest
@@ -184,8 +190,12 @@ pandas==2.2.3
     #   datasets
 parameterized==0.9.0
     # via cohere
+pathspec==0.12.1
+    # via black
 phonenumbers==8.13.50
     # via instructor (pyproject.toml)
+platformdirs==4.3.6
+    # via black
 pluggy==1.5.0
     # via pytest
 propcache==0.2.0
@@ -223,9 +233,12 @@ pytest==8.3.3
     #   instructor (pyproject.toml)
     #   pytest-asyncio
     #   pytest-cov
+    #   pytest-examples
 pytest-asyncio==0.24.0
     # via instructor (pyproject.toml)
 pytest-cov==6.0.0
+    # via instructor (pyproject.toml)
+pytest-examples==0.0.15
     # via instructor (pyproject.toml)
 python-dateutil==2.8.2
     # via
@@ -251,6 +264,7 @@ referencing==0.35.1
     #   jsonschema-specifications
 regex==2024.11.6
     # via
+    #   instructor (pyproject.toml)
     #   dateparser
     #   tiktoken
 requests==2.32.3
@@ -269,6 +283,8 @@ rpds-py==0.21.0
     # via
     #   jsonschema
     #   referencing
+ruff==0.8.0
+    # via pytest-examples
 shellingham==1.5.4
     # via typer
 six==1.16.0
@@ -313,6 +329,7 @@ types-requests==2.32.0.20241016
     # via cohere
 typing-extensions==4.12.2
     # via
+    #   instructor (pyproject.toml)
     #   anthropic
     #   cohere
     #   fastapi
