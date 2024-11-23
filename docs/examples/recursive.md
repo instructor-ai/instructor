@@ -102,7 +102,7 @@ class RecursiveNodeWithDepth(RecursiveNode):
                 raise ValueError("Maximum depth exceeded")
             return max(
                 [check_depth(child, current_depth + 1) for child in node.children],
-                default=current_depth
+                default=current_depth,  # Added comma here
             )
 
         check_depth(self)
