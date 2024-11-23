@@ -36,7 +36,17 @@ jobs:
             ${{ runner.os }}-uv-
 
       - name: Install UV
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            echo "$HOME/Library/Application Support/uv/bin" >> $GITHUB_PATH
+          else
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+          fi
 
       - name: Install dependencies
         run: |
