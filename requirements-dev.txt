@@ -1,0 +1,1 @@
+pytest>=8.3.3\npytest-asyncio>=0.24.0\ncoverage>=7.3.2\npyright>=1.1.360\njsonref>=1.1.0

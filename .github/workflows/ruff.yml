@@ -24,12 +24,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
-          cache: "pip"
+      - name: Install UV
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Install dev dependencies
         run: |
-          python3 -m pip install --upgrade pip setuptools wheel
-          python3 -m pip install -r requirements.txt
-          python3 -m pip install -r requirements-doc.txt
+          uv pip install -r requirements.txt
+          uv pip install -r requirements-doc.txt
       - name: Run Continuous Integration Action
         uses: astral-sh/ruff-action@v1
       - name: Upload Artifacts

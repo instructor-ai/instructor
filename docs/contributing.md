@@ -27,6 +27,30 @@ If it is not a small change, please start by [filing an issue](https://github.co
 
 If you need ideas, you can check out the [help wanted](https://github.com/jxnl/instructor/labels/help%20wanted) or [good first issue](https://github.com/jxnl/instructor/labels/good%20first%20issue) labels.
 
+## Development Setup
+
+1. Install UV if you haven't already:
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+2. Clone the repository and install dependencies:
+   ```bash
+   git clone https://github.com/jxnl/instructor.git
+   cd instructor
+   uv pip install -e ".[test-docs]"
+   ```
+
+3. Install development dependencies:
+   ```bash
+   uv pip install -r requirements-dev.txt
+   ```
+
+4. Install documentation dependencies (if working on docs):
+   ```bash
+   uv pip install -r requirements-doc.txt
+   ```
+
 [Grit](https://docs.grit.io/) is used to enforce best practices. You can run `grit check` to check your code before submitting a pull request.
 
 # Contributors

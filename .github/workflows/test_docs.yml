@@ -20,27 +20,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y graphviz libcairo2-dev xdg-utils
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.1
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
 
-      - name: Cache Poetry virtualenv
+      - name: Cache UV virtualenv
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          path: |
+            ~/.cache/uv
+            ~/.uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
-            ${{ runner.os }}-poetry-
+            ${{ runner.os }}-uv-
+
+      - name: Install UV
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies
-        run: poetry install --with dev,docs,test-docs,anthropic,google-generativeai
+        run: |
+          uv pip install -e ".[dev,docs,test-docs,anthropic,google-generativeai]"
+          uv pip install -r requirements-dev.txt
+          uv pip install -r requirements-doc.txt
 
       - name: Run tests
-        run: poetry run pytest tests/llm/test_openai/docs
+        run: pytest tests/llm/test_openai/docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

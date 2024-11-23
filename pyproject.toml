@@ -1,134 +1,66 @@
-[tool.poetry]
+[project]
 name = "instructor"
 version = "1.7.0"
 description = "structured outputs for llm"
-authors = ["Jason Liu <jason@jxnl.co>"]
+authors = [{name = "Jason Liu", email = "jason@jxnl.co"}]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "instructor" }]
-repository = "https://github.com/jxnl/instructor"
-
-[tool.poetry.dependencies]
-python = "^3.9"
-openai = "^1.52.0"
-pydantic = "^2.8.0"
-docstring-parser = "^0.16"
-typer = ">=0.9.0,<1.0.0"
-rich = "^13.7.0"
-aiohttp = "^3.9.1"
-tenacity = ">=9.0.0,<10.0.0"
-pydantic-core = "^2.18.0"
-jiter = ">=0.6.1,<0.7"
-jinja2 = "^3.1.4"
-requests = "^2.32.3"
-
-# dependency versions for extras
-fastapi = { version = ">=0.109.2,<0.116.0", optional = true }
-redis = { version = "^5.0.1", optional = true }
-diskcache = { version = "^5.6.3", optional = true }
-pandas = { version = "^2.2.0", optional = true }
-tabulate = { version = "^0.9.0", optional = true }
-pydantic_extra_types = { version = "^2.6.0", optional = true }
-litellm = { version = "^1.35.31", optional = true }
-anthropic = { version = ">=0.36.2,<0.38.0", optional = true }
-xmltodict = { version = ">=0.13,<0.15", optional = true }
-groq = { version = ">=0.4.2,<0.12.0", optional = true }
-cohere = { version = "^5.1.8", optional = true }
-mistralai = { version = "^1.0.3", optional = true }
-google-generativeai = { version = "^0.8.2", optional = true }
-google-cloud-aiplatform = { version = "^1.53.0", optional = true }
-jsonref = { version = "^1.1.0", optional = true }
-cerebras_cloud_sdk = { version = "^1.5.0", optional = true }
-fireworks-ai = { version = "^0.15.4", optional = true }
-writer-sdk = { version = "^1.2.0", optional = true }
-
-[tool.poetry.extras]
-anthropic = ["anthropic", "xmltodict"]
-groq = ["groq"]
-cohere = ["cohere"]
-test-docs = [
-    "fastapi",
-    "redis",
-    "diskcache",
-    "pandas",
-    "tabulate",
-    "pydantic_extra_types",
-    "litellm",
-    "anthropic",
-    "groq",
-    "cohere",
-    "mistralai",
+requires-python = ">=3.9"
+dependencies = [
+    "openai>=1.52.0",
+    "pydantic>=2.8.0",
+    "docstring-parser>=0.16",
+    "typer>=0.9.0,<1.0.0",
+    "rich>=13.7.0",
+    "aiohttp>=3.9.1",
+    "tenacity>=9.0.0,<10.0.0",
+    "pydantic-core>=2.18.0",
+    "jiter>=0.6.1,<0.7",
+    "jinja2>=3.1.4",
+    "requests>=2.32.3",
 ]
-mistralai = ["mistralai"]
-litellm = ["litellm"]
-google-generativeai = ["google-generativeai"]
-vertexai = ["google-cloud-aiplatform", "jsonref"]
-cerebras_cloud_sdk = ["cerebras_cloud_sdk"]
-fireworks-ai = ["fireworks-ai"]
-writer = ["writer-sdk"]
 
-[tool.poetry.scripts]
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.36.2,<0.38.0", "xmltodict>=0.13,<0.15"]
+groq = ["groq>=0.4.2,<0.12.0"]
+cohere = ["cohere>=5.1.8"]
+test-docs = [
+    "fastapi>=0.109.2,<0.116.0",
+    "redis>=5.0.1",
+    "diskcache>=5.6.3",
+    "pandas>=2.2.0",
+    "tabulate>=0.9.0",
+    "pydantic_extra_types>=2.6.0",
+    "litellm>=1.35.31",
+    "anthropic>=0.36.2,<0.38.0",
+    "groq>=0.4.2,<0.12.0",
+    "cohere>=5.1.8",
+    "mistralai>=1.0.3",
+    "phonenumbers>=8.13.33",
+    "graphviz>=0.20.3",
+    "sqlmodel>=0.0.22",
+    "trafilatura>=1.12.2",
+    "pydub>=0.25.1",
+    "datasets>=3.0.1",
+    "writer-sdk>=1.2.0",
+]
+mistralai = ["mistralai>=1.0.3"]
+litellm = ["litellm>=1.35.31"]
+google-generativeai = ["google-generativeai>=0.8.2"]
+vertexai = ["google-cloud-aiplatform>=1.53.0", "jsonref>=1.1.0"]
+cerebras_cloud_sdk = ["cerebras_cloud_sdk>=1.5.0"]
+fireworks-ai = ["fireworks-ai>=0.15.4"]
+writer = ["writer-sdk>=1.2.0"]
+
+[project.scripts]
 instructor = "instructor.cli.cli:app"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.3"
-pytest-asyncio = "^0.24.0"
-coverage = "^7.3.2"
-pyright = "^1.1.360"
-jsonref = "^1.1.0"
-black = "^24.10.0"
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.4.3"
-mkdocs-material = { extras = ["imaging"], version = "^9.5.9" }
-mkdocstrings = "^0.26.1"
-mkdocstrings-python = "^1.11.1"
-pytest-examples = "^0.0.13"
-mkdocs-jupyter = ">=0.24.6,<0.26.0"
-mkdocs-rss-plugin = "^1.12.0"
-mkdocs-minify-plugin = "^0.8.0"
-mkdocs-redirects = "^1.2.1"
-
-[tool.poetry.group.anthropic.dependencies]
-anthropic = ">=0.36.2,<0.38.0"
-
-[tool.poetry.group.test-docs.dependencies]
-fastapi = ">=0.109.2,<0.116.0"
-redis = "^5.0.1"
-diskcache = "^5.6.3"
-pandas = "^2.2.0"
-tabulate = "^0.9.0"
-pydantic_extra_types = "^2.6.0"
-litellm = "^1.35.31"
-anthropic = ">=0.36.2,<0.38.0"
-xmltodict = ">=0.13,<0.15"
-groq = ">=0.4.2,<0.12.0"
-phonenumbers = "^8.13.33"
-cohere = "^5.1.8"
-mistralai = "^1.0.3"
-cerebras_cloud_sdk = "^1.5.0"
-fireworks-ai = "^0.15.4"
-graphviz = "^0.20.3"
-sqlmodel = "^0.0.22"
-trafilatura = "^1.12.2"
-pydub = "^0.25.1"
-datasets = "^3.0.1"
-writer-sdk = "^1.2.0"
-
-[tool.poetry.group.litellm.dependencies]
-litellm = "^1.35.31"
-
-[tool.poetry.group.google-generativeai.dependencies]
-google-generativeai = "^0.8.2"
-jsonref = "^1.1.0"
-
-[tool.poetry.group.vertexai.dependencies]
-google-cloud-aiplatform = "^1.53.0"
-jsonref = "^1.1.0"
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["instructor"]
 
 [tool.pyright]
 include = ["instructor"]

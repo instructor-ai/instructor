@@ -19,6 +19,22 @@ It stands out for its simplicity, transparency, and user-centric design, built o
 
 [:material-star: Star the Repo](https://github.com/jxnl/instructor){: .md-button .md-button--primary } [:material-book-open-variant: Cookbooks](./examples/index.md){: .md-button } [:material-lightbulb: Prompting Guide](./prompting/index.md){: .md-button }
 
+=== "pip"
+    ```bash
+    pip install instructor
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install instructor
+    ```
+
+If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
+
+```bash
+instructor docs [QUERY]
+```
+
 ## Newsletter
 
 If you want to be notified of tips, new blog posts, and research, subscribe to our newsletter. Here's what you can expect:
@@ -77,9 +93,15 @@ Subscribe to our newsletter for updates on AI development. We provide content to
 
 ## Getting Started
 
-```
-pip install -U instructor
-```
+=== "pip"
+    ```bash
+    pip install -U instructor
+    ```
+
+=== "uv"
+    ```bash
+    uv pip install instructor
+    ```
 
 If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
 
@@ -93,12 +115,25 @@ You can also check out our [cookbooks](./examples/index.md) and [concepts](./con
 
     To keep the bundle size small, `instructor` only ships with the OpenAI client. Before using the other clients and their respective `from_xx` method, make sure you've installed the dependencies following the instructions below.
 
-    1. Anthropic : `pip install "instructor[anthropic]"`
-    2. Google Generative AI: `pip install "instructor[google-generativeai]"`
-    3. Vertex AI: `pip install "instructor[vertexai]"`
-    4. Cohere: `pip install "instructor[cohere]"`
-    5. Litellm: `pip install "instructor[litellm]"`
-    6. Mistral: `pip install "instructor[mistralai]"`
+    === "pip"
+        ```bash
+        pip install "instructor[anthropic]"     # For Anthropic
+        pip install "instructor[google-generativeai]"  # For Google Generative AI
+        pip install "instructor[vertexai]"      # For Vertex AI
+        pip install "instructor[cohere]"        # For Cohere
+        pip install "instructor[litellm]"       # For Litellm
+        pip install "instructor[mistralai]"     # For Mistral
+        ```
+
+    === "uv"
+        ```bash
+        uv pip install "instructor[anthropic]"     # For Anthropic
+        uv pip install "instructor[google-generativeai]"  # For Google Generative AI
+        uv pip install "instructor[vertexai]"      # For Vertex AI
+        uv pip install "instructor[cohere]"        # For Cohere
+        uv pip install "instructor[litellm]"       # For Litellm
+        uv pip install "instructor[mistralai]"     # For Mistral
+        ```
 
 Now, let's see Instructor in action with a simple example:
 
