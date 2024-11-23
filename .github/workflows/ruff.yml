@@ -26,6 +26,10 @@ jobs:
           python-version: 3.9
       - name: Install UV
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Create and activate venv
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
       - name: Install dev dependencies
         run: |
           uv pip install -r requirements.txt

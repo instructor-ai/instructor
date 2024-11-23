@@ -33,12 +33,18 @@ jobs:
           path: |
             ~/.cache/uv
             ~/.uv
+            .venv
           key: ${{ runner.os }}-uv-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-uv-
 
       - name: Install UV
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Create and activate venv
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
 
       - name: Install dependencies
         run: |
