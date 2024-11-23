@@ -4,6 +4,7 @@ from openai.types.chat import ChatCompletionMessageParam
 from openai.types.moderation import (
     Moderation,
     Categories,
+    CreateModerationResponse,
 )
 from pydantic import Field, BaseModel, ConfigDict  # type: ignore
 
@@ -137,16 +138,14 @@ def openai_moderation(client: OpenAI) -> Callable[[str], str]:
     """
 
     def validate_message_with_openai_mod(v: str) -> str:
-        response = client.moderations.create(input=v)
+        response: CreateModerationResponse = client.moderations.create(input=v)
         moderation: Moderation = response.results[0]
         categories: Categories = moderation.categories
         if moderation.flagged:
-            flagged_categories = [
+            flagged_categories: list[str] = [
                 cat for cat, is_flagged in categories.model_dump().items() if is_flagged
             ]
             raise ValueError(f"`{v}` was flagged for {', '.join(flagged_categories)}")
         return v
-
-    return validate_message_with_openai_mod
 
     return validate_message_with_openai_mod
