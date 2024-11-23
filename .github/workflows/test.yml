@@ -60,8 +60,10 @@ jobs:
         run: |
           source .venv/bin/activate  # Ensure venv is activated
           python --version  # Verify Python version
-          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]"
+          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai,writer]"
           uv pip install -r requirements-dev.txt
+          uv pip install --upgrade "typing-extensions>=4.12.2" "requests>=2.32.3" "regex>=2024.11.6"
+          uv pip list  # List installed packages for debugging
         shell: bash
 
       - name: Run tests
