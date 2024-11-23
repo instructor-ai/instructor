@@ -136,6 +136,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.COHERE_JSON_SCHEMA:
             return cls.parse_cohere_json_schema(completion, validation_context, strict)
 
+        if mode == Mode.WRITER_TOOLS:
+            return cls.parse_writer_tools(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
@@ -300,6 +303,27 @@ class OpenAISchema(BaseModel):
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict
+        )
+
+    @classmethod
+    def parse_writer_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        message = completion.choices[0].message
+        tool_calls = message.tool_calls
+        assert (
+            len(tool_calls) == 1
+        ), "Instructor does not support multiple tool calls, use List[Model] instead"
+        assert (
+            tool_calls[0].function.name == cls.openai_schema["name"]
+        ), "Tool name does not match"
+        return cls.model_validate_json(
+            tool_calls[0].function.arguments,
+            context=validation_context,
+            strict=strict,
         )
 
     @classmethod

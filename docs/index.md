@@ -11,9 +11,8 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
-[![GPT](https://img.shields.io/badge/docs-InstructorGPT-blue)](https://chat.openai.com/g/g-EvZweRWrE-instructor-gpt)
 
-Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), and [llama-cpp-python](./hub/llama-cpp-python.md).
+Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./integrations/together.md), [Ollama](./integrations/ollama.md), and [llama-cpp-python](./integrations/llama-cpp-python.md).
 
 It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
 
@@ -69,9 +68,9 @@ Subscribe to our newsletter for updates on AI development. We provide content to
 
 - :material-lightning-bolt: **Simplified LLM Interactions**
 
-    Support for [OpenAI](./hub/openai.md), [Anthropic](./hub/anthropic.md), [Google](./hub/google.md), [Vertex AI](./hub/vertexai.md), [Mistral/Mixtral](./hub/together.md), [Anyscale](./hub/anyscale.md), [Ollama](./hub/ollama.md), [llama-cpp-python](./hub/llama-cpp-python.md), [Cohere](./hub/cohere.md), [LiteLLM](./hub/litellm.md).
+    Support for [OpenAI](./integrations/openai.md), [Anthropic](./integrations/anthropic.md), [Google](./integrations/google.md), [Vertex AI](./integrations/vertex.md), [Mistral/Mixtral](./integrations/together.md), [Ollama](./integrations/ollama.md), [llama-cpp-python](./integrations/llama-cpp-python.md), [Cohere](./integrations/cohere.md), [LiteLLM](./integrations/litellm.md).
 
-    [:octicons-arrow-right-16: See Hub](./hub/index.md)
+    [:octicons-arrow-right-16: See Hub](./integrations/index.md)
 
 </div>
 
@@ -275,7 +274,7 @@ assert resp.age == 25
 
 The Vertex AI and Gemini Clients have different APIs. When using instructor with these clients, make sure to read the documentation for the specific client you're using to make sure you're using the correct methods.
 
-**Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](../hub/vertexai.md). As of now, you cannot use tool calling with Gemini when you have multi-modal inputs (Eg. Images, Audio, Video), you must use the `JSON` mode equivalent for that client.
+**Note**: Gemini Tool Calling is still in preview, and there are some limitations. You can learn more about them in the [Vertex AI examples notebook](./integrations/vertex.md). As of now, you cannot use tool calling with Gemini when you have multi-modal inputs (Eg. Images, Audio, Video), you must use the `JSON` mode equivalent for that client.
 
 #### Google AI
 

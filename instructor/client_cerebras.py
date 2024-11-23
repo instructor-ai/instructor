@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal, overload
+from typing import Any, overload
 
 import instructor
 from instructor.client import AsyncInstructor, Instructor
@@ -13,7 +13,6 @@ from cerebras.cloud.sdk import Cerebras, AsyncCerebras
 def from_cerebras(
     client: Cerebras,
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
-    use_async: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
 
@@ -22,7 +21,6 @@ def from_cerebras(
 def from_cerebras(
     client: AsyncCerebras,
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
-    use_async: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -30,7 +28,6 @@ def from_cerebras(
 def from_cerebras(
     client: Cerebras | AsyncCerebras,
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
-    use_async: bool = False,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     assert (
@@ -45,7 +42,7 @@ def from_cerebras(
         client, (Cerebras, AsyncCerebras)
     ), "Client must be an instance of Cerebras or AsyncCerebras"
 
-    if use_async:
+    if isinstance(client, AsyncCerebras):
         create = client.chat.completions.create
         return AsyncInstructor(
             client=client,

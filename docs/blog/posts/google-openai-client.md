@@ -22,6 +22,8 @@ If you're unfamiliar with instructor, we provide a simple interface to get struc
 
 This makes it easy to switch between providers, get reliable outputs from language models and ultimately build production grade LLM applications.
 
+<!-- more -->
+
 ## The current state
 
 The new integration provides an easy integration with the Open AI Client, this means that using function calling with Gemini models has become much easier. We don't need to use a gemini specific library like `vertexai` or `google.generativeai` anymore to define response models.

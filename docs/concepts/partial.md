@@ -5,6 +5,23 @@ description: Learn to utilize field-level streaming with Instructor and OpenAI f
 
 # Streaming Partial Responses
 
+!!! info "Literal"
+
+    If the data structure you're using has literal values, you need to make sure to import the `PartialLiteralMixin` mixin.
+
+    ```python
+    from instructor.dsl.partial import PartialLiteralMixin
+
+    class User(BaseModel, PartialLiteralMixin):
+        name: str
+        age: int
+        category: Literal["admin", "user", "guest"]
+
+    // The rest of your code below
+    ```
+
+    This is because `jiter` throws an error otherwise if it encounters a incomplete Literal value while it's being streamed in
+
 Field level streaming provides incremental snapshots of the current state of the response model that are immediately useable. This approach is particularly relevant in contexts like rendering UI components.
 
 Instructor supports this pattern by making use of `create_partial`. This lets us dynamically create a new class that treats all of the original model's fields as `Optional`.

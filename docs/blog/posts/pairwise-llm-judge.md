@@ -1,19 +1,19 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- LLM
-- Pydantic
+  - LLM
+  - Pydantic
 comments: true
 date: 2024-10-17
 description: Explore how to use Instructor and Pydantic to create a pairwise LLM judge for evaluating text relevance.
 draft: false
 tags:
-- LLM
-- Pydantic
-- Instructor
-- Text Relevance
-- AI Evaluation
+  - LLM
+  - Pydantic
+  - Instructor
+  - Text Relevance
+  - AI Evaluation
 ---
 
 # Building a Pairwise LLM Judge with Instructor and Pydantic
@@ -23,6 +23,8 @@ In this blog post, we'll explore how to create a pairwise LLM judge using Instru
 ## Introduction
 
 Evaluating text relevance is a common task in natural language processing and information retrieval. By leveraging large language models (LLMs) and structured outputs, we can create a system that judges the similarity or relevance between a question and a given text.
+
+<!-- more -->
 
 ## Setting Up the Environment
 
@@ -64,7 +66,7 @@ Next, we'll create a function that uses our LLM to judge the relevance between a
 ```python
 def judge_relevance(question: str, text: str) -> Judgment:
     return client.chat.create(
-        model="gpt-4o-mini",
+        model="gpt-4",
         messages=[
             {
                 "role": "system",
@@ -102,8 +104,7 @@ def judge_relevance(question: str, text: str) -> Judgment:
                     {{text}}
                     </text>
                 """
-            },
-            },
+            }
         ],
         response_model=Judgment,
         context={"question": question, "text": text},
@@ -134,7 +135,7 @@ if __name__ == "__main__":
             score += 1
 
     print(f"Score: {score}/{len(test_pairs)}")
-    # > Score 9/10
+    #> Score 9/10
 ```
 
 This test loop runs the judge on each pair and compares the result to a predetermined similarity value, calculating an overall score.

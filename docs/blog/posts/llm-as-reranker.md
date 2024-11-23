@@ -1,19 +1,19 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- LLM
-- Pydantic
+  - LLM
+  - Pydantic
 comments: true
 date: 2024-10-23
 description: Learn how to use Instructor and Pydantic to create an LLM-based reranker for improving search results relevance.
 draft: false
 tags:
-- LLM
-- Pydantic
-- Instructor
-- Search Relevance
-- Reranking
+  - LLM
+  - Pydantic
+  - Instructor
+  - Search Relevance
+  - Reranking
 ---
 
 # Building an LLM-based Reranker for your RAG pipeline
@@ -29,6 +29,8 @@ In this blog post, we'll show you how to create an LLM-based reranker using Inst
 - Utilize structured outputs for precise information retrieval
 
 By the end of this tutorial, you'll be able to implement a llm reranker to label your synthetic data for fine-tuning a traditional reranker, or to build out an evaluation pipeline for your RAG system. Let's dive in!
+
+<!-- more -->
 
 ## Setting Up the Environment
 
@@ -167,7 +169,7 @@ If you want to extend this example, you could use the `rerank_results` function 
 
 Moreover, we could also add validators to the `Label.chunk_id` field to ensure that the chunk_id is present in the `chunks` list. This might be useful if labels are `uuids` or complex strings and we want to ensure that the chunk_id is a valid index for the chunks list.
 
-heres an example 
+heres an example
 
 ```python
 class Label(BaseModel):

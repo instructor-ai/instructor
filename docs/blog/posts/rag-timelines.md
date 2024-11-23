@@ -1,19 +1,20 @@
 ---
 authors:
-- jxnl
+  - jxnl
 categories:
-- LLM Techniques
+  - LLM Techniques
 comments: true
 date: 2024-06-06
-description: Explore enhancing RAG systems with time filters using Instructor and
+description:
+  Explore enhancing RAG systems with time filters using Instructor and
   Pydantic for accurate, relevant data retrieval.
 draft: false
 tags:
-- RAG
-- Time Filters
-- Pydantic
-- Instructor
-- LLM Techniques
+  - RAG
+  - Time Filters
+  - Pydantic
+  - Instructor
+  - LLM Techniques
 ---
 
 # Enhancing RAG with Time Filters Using Instructor
@@ -21,6 +22,8 @@ tags:
 Retrieval-augmented generation (RAG) systems often need to handle queries with time-based constraints, like "What new features were released last quarter?" or "Show me support tickets from the past week." Effective time filtering is crucial for providing accurate, relevant responses.
 
 Instructor is a Python library that simplifies integrating large language models (LLMs) with data sources and APIs. It allows defining structured output models using Pydantic, which can be used as prompts or to parse LLM outputs.
+
+<!-- more -->
 
 ## Modeling Time Filters
 
@@ -61,21 +64,23 @@ response = client.chat.completions.create(
     response_model=SearchQuery,
     messages=[
         {
-            "role": "system", 
-            "content": "You are a query generator for customer support tickets. The current date is 2024-02-17"},
+            "role": "system",
+            "content": "You are a query generator for customer support tickets. The current date is 2024-02-17",
+        },
         {
-            "role": "user", 
-            "content": "Show me customer support tickets opened in the past week."
+            "role": "user",
+            "content": "Show me customer support tickets opened in the past week.",
         },
     ],
 )
 
+# Example response:
 {
     "query": "Show me customer support tickets opened in the past week.",
     "time_filter": {
         "start_date": "2024-02-10T00:00:00",
-        "end_date": "2024-02-17T00:00:00"
-    }
+        "end_date": "2024-02-17T00:00:00",
+    },
 }
 ```
 
@@ -85,7 +90,7 @@ When working with time-based queries, it's important to consider the nuances of 
 
 To handle this, you'll want to design your `TimeFilter` model to intelligently reason about these relative time periods. This could involve:
 
-- Defaulting to the user's local timezone if available, or using a consistent default like UTC  
+- Defaulting to the user's local timezone if available, or using a consistent default like UTC
 - Defining clear rules for how to calculate the start and end of relative periods like "week" or "month"
   - e.g. does "past week" mean the last 7 days or the previous Sunday-Saturday range?
 - Allowing for flexibility in how users specify dates (exact datetimes, just dates, natural language phrases)
