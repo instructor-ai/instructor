@@ -19,9 +19,9 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Environment setup
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Install UV
@@ -35,13 +35,16 @@ jobs:
         run: |
           python -m venv .venv
           if [ "$RUNNER_OS" == "Windows" ]; then
-            . .venv/Scripts/activate
+            source .venv/Scripts/activate
           else
-            . .venv/bin/activate
+            source .venv/bin/activate
           fi
+          python --version  # Verify Python version
         shell: bash
       - name: Install dev dependencies
         run: |
+          source .venv/bin/activate  # Ensure venv is activated
+          python --version  # Verify Python version
           uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai]"
           uv pip install -r requirements-dev.txt
         shell: bash
