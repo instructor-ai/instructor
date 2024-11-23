@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Any, TypeVar, cast, Protocol, TypeAlias
+from typing import Callable, Any, TypeVar, cast, Protocol, TypeAlias
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai.types.moderation import (
@@ -6,7 +6,7 @@ from openai.types.moderation import (
     Categories,
     CreateModerationResponse,
 )
-from pydantic import Field, BaseModel, ConfigDict  # type: ignore
+from pydantic import Field, ConfigDict  # type: ignore
 
 from instructor.function_calls import OpenAISchema
 from instructor.client import Instructor
