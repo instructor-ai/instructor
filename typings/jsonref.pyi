@@ -1,5 +1,6 @@
 """Type stubs for jsonref."""
-from typing import Any, Optional, Union, Dict, List, Mapping
+from typing import Any
+from collections.abc import Mapping
 
 class JsonRef:
     """Type stub for JsonRef class."""
@@ -8,11 +9,11 @@ class JsonRef:
 def loads(
     s: str,
     base_uri: str = "",
-    loader: Optional[Any] = None,
+    loader: None | Any = None,
     jsonschema: bool = False,
     load_on_repr: bool = True,
     merge_props: bool = False,
     proxies: bool = True,
     lazy_load: bool = True,
     **kwargs: Any
-) -> Union[JsonRef, List[Any], str, Dict[str, Any], Mapping[str, Any]]: ...
+) -> JsonRef | list[Any] | str | dict[str, Any] | Mapping[str, Any]: ...
