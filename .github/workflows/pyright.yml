@@ -27,22 +27,54 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Cache Poetry virtualenv
-        uses: actions/cache@v2
+      - name: Cache UV virtualenv
+        uses: actions/cache@v3
         with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          path: |
+            ~/.cache/uv
+            ~/.uv
+            .venv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
-            ${{ runner.os }}-poetry-
+            ${{ runner.os }}-uv-
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.1
+      - name: Install UV
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            curl.exe -LsSf https://astral.sh/uv/install.ps1 | pwsh
+            echo "$USERPROFILE/.cargo/bin" >> $GITHUB_PATH
+          else
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          fi
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv --version
+        shell: bash
+
+      - name: Create and activate venv
+        run: |
+          python -m venv .venv
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            source .venv/Scripts/activate
+          else
+            source .venv/bin/activate
+          fi
+          python --version  # Verify Python version
+        shell: bash
 
       - name: Install dependencies
-        run: poetry install --with dev,anthropic
-
-      - name: Add poetry to PATH
-        run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            source .venv/Scripts/activate
+          else
+            source .venv/bin/activate
+          fi
+          python --version
+          uv pip install -e ".[test-docs,anthropic,groq,cohere,mistralai,litellm,google-generativeai,vertexai,cerebras_cloud_sdk,fireworks-ai,writer]" --system
+          uv pip install -r requirements-dev.txt --system
+          uv pip install --upgrade "typing-extensions>=4.12.2" "requests>=2.32.3" "regex>=2024.11.6" --system
+          uv pip list
+        shell: bash
 
       - uses: jakebailey/pyright-action@v2
         with:
