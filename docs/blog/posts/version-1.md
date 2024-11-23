@@ -50,11 +50,7 @@ IF you know you want to pass in tempurature, seed, or model, you can do so.
 import openai
 import instructor
 
-client = instructor.from_openai(
-    openai.OpenAI(),
-    model="gpt-4-turbo-preview",
-    temperature=0.2,
-)
+client = instructor.from_openai(openai.OpenAI(), model="gpt-4-turbo-preview", temperature=0.2)
 ```
 
 Now, whenever you call `client.chat.completions.create` the `model` and `temperature` will be passed to the openai client!
@@ -79,9 +75,9 @@ client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
 # allow you to add instructor to try it out, while easily removing it
-client.create(model="gpt-4", response_model=type[T]) -> T
-client.chat.completions.create(model="gpt-4", response_model=type[T]) -> T
-client.messages.create(model="gpt-4", response_model=type[T]) -> T
+client.create(model="gpt-4", response_model=T)
+client.chat.completions.create(model="gpt-4", response_model=T)
+client.messages.create(model="gpt-4", response_model=T)
 ```
 
 ## Type are infered correctly
@@ -110,7 +106,7 @@ user = client.chat.completions.create(
 )
 ```
 
-Now if you use a ID, you can see the type is correctly infered.
+Now if you use a ID, you can see the type is correctly inferred.
 
 ![type](./img/type.png)
 
