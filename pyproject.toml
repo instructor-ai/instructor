@@ -46,6 +46,7 @@ test-docs = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.5",
     "pytest-cov>=4.1.0",
+    "pytest-examples>=0.0.10",
 ]
 mistralai = ["mistralai>=1.0.3"]
 litellm = ["litellm>=1.35.31"]
