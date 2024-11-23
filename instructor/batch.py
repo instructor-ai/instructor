@@ -126,14 +126,27 @@ class BatchJob:
             _, kwargs = handle_response_model(
                 response_model=response_model, mode=instructor.Mode.ANTHROPIC_JSON
             )
+            with open(file_path, "w") as file:
+                for messages in messages_batch:
+                    # Format specifically for Anthropic batch API
+                    request = {
+                        "custom_id": str(uuid.uuid4()),
+                        "params": {
+                            "model": model,
+                            "max_tokens": max_tokens,
+                            "temperature": temperature,
+                            "messages": messages,
+                            **kwargs,
+                        }
+                    }
+                    file.write(json.dumps(request) + "\n")
         else:
+            # Existing OpenAI format
             _, kwargs = handle_response_model(
                 response_model=response_model, mode=instructor.Mode.TOOLS
             )
-
-        with open(file_path, "w") as file:
-            for messages in messages_batch:
-                if use_anthropic:
+            with open(file_path, "w") as file:
+                for messages in messages_batch:
                     batch_model = BatchModel(
                         custom_id=str(uuid.uuid4()),
                         params=RequestBody(
@@ -144,15 +157,4 @@ class BatchJob:
                             **kwargs,
                         ),
                     )
-                else:
-                    batch_model = BatchModel(
-                        custom_id=str(uuid.uuid4()),
-                        params=RequestBody(
-                            model=model,
-                            messages=messages,
-                            max_tokens=max_tokens,
-                            temperature=temperature,
-                            **kwargs,
-                        ),
-                    )
-                file.write(batch_model.model_dump_json() + "\n")
+                    file.write(batch_model.model_dump_json() + "\n")
