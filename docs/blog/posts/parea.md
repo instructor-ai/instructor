@@ -46,18 +46,15 @@ Parea is dead simple to integrate - all it takes is 2 lines of code, and we have
 import os
 
 import instructor
-import requests
 from dotenv import load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, field_validator, Field
-import re
-from parea import Parea #(1)!
+from parea import Parea  # (1)!
 
 load_dotenv()
 
 client = OpenAI()
 
-p = Parea(api_key=os.getenv("PAREA_API_KEY")) #(2)!
+p = Parea(api_key=os.getenv("PAREA_API_KEY"))  # (2)!
 p.wrap_openai_client(client, "instructor")
 
 client = instructor.from_openai(client)
@@ -106,7 +103,7 @@ email = client.messages.create(
     model="gpt-3.5-turbo",
     max_tokens=1024,
     max_retries=3,
-    messages=[ #(1)!
+    messages=[  # (1)!
         {
             "role": "user",
             "content": "I'm responding to a student's question. Here is the link to the documentation: {{doc_link1}} and {{doc_link2}}",
@@ -155,8 +152,8 @@ Sometimes you may want to let subject-matter experts (SMEs) label responses to u
 
     p = Parea(api_key=os.getenv("PAREA_API_KEY"))
 
-    dataset = p.get_collection(DATASET_ID)  #(1)!
-    dataset.write_to_finetune_jsonl("finetune.jsonl")  #(2)!
+    dataset = p.get_collection(DATASET_ID)  # (1)!
+    dataset.write_to_finetune_jsonl("finetune.jsonl")  # (2)!
     ```
 
     1. Replace `DATASET_ID` with the actual dataset ID

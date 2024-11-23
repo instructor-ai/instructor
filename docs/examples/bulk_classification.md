@@ -528,5 +528,6 @@ async def get_tags(text: List[str], tags: List[Tag]) -> List[Tag]:
 tag_results = asyncio.run(get_tags(text, tags))
 for tag in tag_results:
     print(tag)
+    #> id=0 name='personal'
     #> id=1 name='phone'
 ```

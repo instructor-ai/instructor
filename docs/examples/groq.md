@@ -58,9 +58,9 @@ print(resp.model_dump_json(indent=2))
   "name": "Tesla",
   "fact": [
     "electric vehicle manufacturer",
-    "headquartered in Austin, Texas",
-    "founded by Elon Musk",
-    "known for models such as the Model S, Model 3, Model X, and Model Y"
+    "solar panel producer",
+    "based in Palo Alto, California",
+    "founded in 2003 by Elon Musk"
   ]
 }
 """

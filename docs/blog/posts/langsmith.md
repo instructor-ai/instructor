@@ -67,6 +67,7 @@ client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
 # Rate limit the number of requests
 sem = asyncio.Semaphore(5)
 
+
 # Use an Enum to define the types of questions
 class QuestionType(Enum):
     CONTACT = "CONTACT"

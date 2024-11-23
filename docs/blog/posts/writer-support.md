@@ -128,11 +128,11 @@ from typing import Annotated
 from writerai import Writer
 from pydantic import BaseModel, AfterValidator, Field
 
-#Initialize Writer client
+# Initialize Writer client
 client = instructor.from_writer(Writer())
 
 
-#Example of model, that may require usage of retries
+# Example of model, that may require usage of retries
 def uppercase_validator(v):
     if v.islower():
         raise ValueError("Name must be in uppercase")

@@ -10,6 +10,7 @@ Union types let you specify that a field can be one of several types:
 from typing import Union
 from pydantic import BaseModel
 
+
 class Response(BaseModel):
     value: Union[str, int]  # Can be either string or integer
 ```
@@ -22,13 +23,16 @@ Use discriminated unions to handle different response types:
 from typing import Literal, Union
 from pydantic import BaseModel
 
+
 class UserQuery(BaseModel):
     type: Literal["user"]
     username: str
 
+
 class SystemQuery(BaseModel):
     type: Literal["system"]
     command: str
+
 
 Query = Union[UserQuery, SystemQuery]
 
@@ -36,7 +40,7 @@ Query = Union[UserQuery, SystemQuery]
 response = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=Query,
-    messages=[{"role": "user", "content": "Parse: user lookup jsmith"}]
+    messages=[{"role": "user", "content": "Parse: user lookup jsmith"}],
 )
 ```
 
@@ -47,6 +51,7 @@ Combine Union with Optional for nullable fields:
 ```python
 from typing import Optional
 from pydantic import BaseModel
+
 
 class User(BaseModel):
     name: str
@@ -67,13 +72,16 @@ class User(BaseModel):
 from typing import Union, Literal
 from pydantic import BaseModel
 
+
 class SuccessResponse(BaseModel):
     status: Literal["success"]
     data: dict
 
+
 class ErrorResponse(BaseModel):
     status: Literal["error"]
     message: str
+
 
 Response = Union[SuccessResponse, ErrorResponse]
 ```
@@ -83,13 +91,16 @@ Response = Union[SuccessResponse, ErrorResponse]
 from typing import Union, List
 from pydantic import BaseModel
 
+
 class TextContent(BaseModel):
     type: Literal["text"]
     text: str
 
+
 class ImageContent(BaseModel):
     type: Literal["image"]
     url: str
+
 
 class Message(BaseModel):
     content: List[Union[TextContent, ImageContent]]
@@ -104,16 +115,18 @@ from openai import OpenAI
 
 client = patch(OpenAI())
 
+
 def validate_response(response: Response) -> bool:
     if isinstance(response, ErrorResponse):
         return len(response.message) > 0
     return True
 
+
 result = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=Response,
     validation_hook=validate_response,
-    messages=[{"role": "user", "content": "Process this request"}]
+    messages=[{"role": "user", "content": "Process this request"}],
 )
 ```
 
@@ -124,7 +137,7 @@ def stream_content():
         model="gpt-3.5-turbo",
         response_model=Message,
         stream=True,
-        messages=[{"role": "user", "content": "Generate mixed content"}]
+        messages=[{"role": "user", "content": "Generate mixed content"}],
     )
     for partial in response:
         if partial.content:
@@ -143,10 +156,7 @@ Handle union type validation errors:
 from pydantic import ValidationError
 
 try:
-    response = Response(
-        status="invalid",  # Invalid status
-        data={"key": "value"}
-    )
+    response = Response(status="invalid", data={"key": "value"})  # Invalid status
 except ValidationError as e:
     print(f"Validation error: {e}")
 ```

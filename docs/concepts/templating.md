@@ -51,7 +51,7 @@ resp = client.chat.completions.create(
 )
 
 print(resp)
-#> User(name='John Doe', age=30)
+#> name='John Doe' age=30
 ```
 
 1. Declare jinja style template variables inside the prompt itself (e.g. `{{ name }}`)
@@ -116,7 +116,19 @@ response = client.create(
 )
 
 print(response.text)
-#> While i can't say his name anymore, his phone number is ****
+"""
+Jason is a remarkable individual known for his generosity and lively spirit. In his community, he is always ready to lend a helping hand, whether it's participating in local events, volunteering for charitable causes, or simply being there for his friends and family. His warmth and friendliness make everyone around him feel welcome and appreciated.
+
+Jason is an enthusiast of technology and innovation. He spends much of his free time exploring new gadgets and staying updated with the latest tech trends. His curiosity often leads him to experiment with different software and hardware, making him a go-to person for tech advice among his peers.
+
+In his career, Jason is a dedicated professional, always striving to improve and excel in his field. His colleagues respect him for his work ethic and creativity, making him an invaluable team member.
+
+In his personal life, Jason enjoys outdoor activities such as hiking and cycling. These adventures provide him with a sense of freedom and connection to nature, reflecting his adventurous personality.
+
+As much as Jason values his privacy, he is also approachable and open-minded. This balance allows him to maintain meaningful connections without compromising his personal space.
+
+Please note, sharing personal contact information like phone numbers on public platforms is discouraged to protect privacy. If you need to contact someone like Jason, it's best to do so through secured and private channels or have explicit consent from the individual involved.
+"""
 ```
 
 1. Access the variables passed into the `context` variable inside your Pydantic validator
@@ -192,6 +204,7 @@ resp = client.chat.completions.create(
 )
 
 print(resp)
+#> answer=[Citation(source_ids=[1], text='The capital of France is Paris.')]
 # answer=[Citation(source_ids=[1], text='The capital of France is Paris.')]
 ```
 
@@ -232,9 +245,9 @@ address = client.chat.completions.create(
     response_model=Address,
 )
 print(context)
-#> UserContext(username='jliu', address="******")
+#> name='scolvin' address=SecretStr('**********')
 print(address)
-#> Address(street='******', city="Toronto", state="Ontario", zipcode="M5A 0J3")
+#> street=SecretStr('**********') city='scolvin' state='' zipcode=''
 ```
 
 This allows you to preserve your sensitive information while still using it in your prompts.

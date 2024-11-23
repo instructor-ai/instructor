@@ -185,12 +185,11 @@ async def print_partial_results():
         #> name=None age=None
         #> name=None age=None
         #> name=None age=None
-        #> name=None age=None
         #> name=None age=12
         #> name=None age=12
         #> name=None age=12
-        #> name=None age=12
-        #> name=None age=12
+        #> name='' age=12
+        #> name='Jason' age=12
         #> name='Jason' age=12
 
 

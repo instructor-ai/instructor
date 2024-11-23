@@ -54,15 +54,14 @@ Now that we've got Logfire setup, let's see how we can get it to help us track a
 Logfire is dead simple to integrate - all it takes is 2 lines of code and we have it setup.
 
 ```python
-from pydantic import BaseModel
 from openai import OpenAI
 import instructor
 import logfire
 
 
 openai_client = OpenAI()
-logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all")) #(1)!
-logfire.instrument_openai(openai_client) #(2)!
+logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))  # (1)!
+logfire.instrument_openai(openai_client)  # (2)!
 client = instructor.from_openai(openai_client)
 ```
 
@@ -73,6 +72,7 @@ In this example, we'll be looking at classifying emails as either spam or not sp
 
 ```python
 import enum
+
 
 class Labels(str, enum.Enum):
     """Enumeration for single-label text classification."""
@@ -94,7 +94,7 @@ We can then use this in a generic instructor function as seen below that simply 
 Logfire can help us to log this entire function, and what's happening inside it, even down to the model validation level by using their `logfire.instrument` decorator.
 
 ```python
-@logfire.instrument("classification", extract_args=True) #(1)!
+@logfire.instrument("classification", extract_args=True)  # (1)!
 def classify(data: str) -> SinglePrediction:
     """Perform single-label classification on the input text."""
     return client.chat.completions.create(
@@ -138,7 +138,7 @@ For our second example, we'll use the inbuilt `llm_validator` that instructor pr
 
 ```python
 from typing import Annotated
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 from pydantic.functional_validators import AfterValidator
 from instructor import llm_validator
 import logfire
@@ -203,7 +203,8 @@ What we want is an output of the combined numbers as seen below
 This is relatively simple with Pydantic. What we need to do is to define a custom type which will handle the conversion process as seen below
 
 ```python
-from pydantic import BaseModel, Field, BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
+from pydantic import BeforeValidator, InstanceOf, WithJsonSchema
+
 
 def md_to_df(data: Any) -> Any:
     # Convert markdown to DataFrame
@@ -222,9 +223,9 @@ def md_to_df(data: Any) -> Any:
 
 
 MarkdownDataFrame = Annotated[
-    InstanceOf[pd.DataFrame], #(1)!
-    BeforeValidator(md_to_df), #(2)!
-    WithJsonSchema( #(3)!
+    InstanceOf[pd.DataFrame],  # (1)!
+    BeforeValidator(md_to_df),  # (2)!
+    WithJsonSchema(  # (3)!
         {
             "type": "string",
             "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
@@ -247,9 +248,8 @@ import logfire
 openai_client = OpenAI()
 logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
 logfire.instrument_openai(openai_client)
-client = instructor.from_openai(
-    openai_client, mode=instructor.Mode.MD_JSON
-)
+client = instructor.from_openai(openai_client, mode=instructor.Mode.MD_JSON)
+
 
 @logfire.instrument("extract-table", extract_args=True)
 def extract_table_from_image(url: str) -> Iterable[Table]:

@@ -107,7 +107,7 @@ print("Extracted PII Data:")
 #> Extracted PII Data:
 print(pii_data.model_dump_json())
 """
-{"private_data":[{"index":0,"data_type":"Name","pii_value":"John Doe"},{"index":1,"data_type":"Email","pii_value":"john.doe@example.com"},{"index":2,"data_type":"Phone Number","pii_value":"(555) 123-4567"},{"index":3,"data_type":"Address","pii_value":"123 Main St, Anytown, USA"},{"index":4,"data_type":"Social Security Number","pii_value":"123-45-6789"}]}
+{"private_data":[{"index":1,"data_type":"Name","pii_value":"John Doe"},{"index":2,"data_type":"Email","pii_value":"john.doe@example.com"},{"index":3,"data_type":"Phone","pii_value":"+1234567890"},{"index":4,"data_type":"Address","pii_value":"1234 Elm Street, Springfield, IL 62704"},{"index":5,"data_type":"SSN","pii_value":"123-45-6789"}]}
 """
 ```
 
