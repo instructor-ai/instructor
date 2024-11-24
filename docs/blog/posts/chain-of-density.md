@@ -394,18 +394,18 @@ In order to prevent any contamination of data during testing, we randomly sample
 
 ```py hl_lines="2 9 11 13-21 40 43"
 from typing import List
-from chain_of_density import summarize_article #(1)!
+from chain_of_density import summarize_article  # (1)!
 import csv
 import logging
 import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
-client = instructor.from_openai(OpenAI()) # (2)!
+client = instructor.from_openai(OpenAI())  # (2)!
 
-logging.basicConfig(level=logging.INFO) #(3)!
+logging.basicConfig(level=logging.INFO)  # (3)!
 
-instructions = instructor.Instructions( #(4)!
+instructions = instructor.Instructions(  # (4)!
     name="Chain Of Density",
     finetune_format="messages",
     # log handler is used to save the data to a file
@@ -432,10 +432,10 @@ class GeneratedSummary(BaseModel):
         description="This represents the final summary generated that captures the meaning of the original article which is as concise as possible. ",
     )
 
-@instructions.distil #(4)!
+@instructions.distil  # (4)!
 def distil_summarization(text: str) -> GeneratedSummary:
     summary_chain: List[str] = summarize_article(text)
-    return GeneratedSummary(summary=summary_chain[-1]) #(5)!
+    return GeneratedSummary(summary=summary_chain[-1])  # (5)!
 
 with open("train.csv", "r") as file:
     reader = csv.reader(file)
@@ -443,7 +443,6 @@ with open("train.csv", "r") as file:
     for article, summary in reader:
         # Run Distillisation to generate the values
         distil_summarization(article)
-```
 
 1.  In this example, we're using the summarize_article that we defined up above. We saved it in a local file called `chain_of_density.py`,
     hence the import

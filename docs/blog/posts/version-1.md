@@ -77,10 +77,9 @@ client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
 # allow you to add instructor to try it out, while easily removing it
-client.create(model="gpt-4", response_model=type[T]) -> T
-client.chat.completions.create(model="gpt-4", response_model=type[T]) -> T
-client.messages.create(model="gpt-4", response_model=type[T]) -> T
-```
+client.create(model="gpt-4", response_model=Type[T]) -> T
+client.chat.completions.create(model="gpt-4", response_model=Type[T]) -> T
+client.messages.create(model="gpt-4", response_model=Type[T]) -> T
 
 ## Type are infered correctly
 
@@ -214,12 +213,11 @@ for user in user_stream:
     #> name='John' age=25
     #> name='John Smith' age=25
     #> name='John Smith' age=25
-    # name=None age=None
-    # name='' age=None
-    # name='John' age=None
-    # name='John Doe' age=None
-    # name='John Doe' age=30
-```
+    #> name=None age=None
+    #> name='' age=None
+    #> name='John' age=None
+    #> name='John Doe' age=None
+    #> name='John Doe' age=30
 
 Notice now that the type infered is `Generator[User, None]`
 
