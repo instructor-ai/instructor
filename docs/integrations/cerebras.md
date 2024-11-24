@@ -12,8 +12,31 @@ Cerebras provides hardware-accelerated AI models optimized for high-performance 
 Install Instructor with Cerebras support:
 
 ```bash
-pip install "instructor[cerebras_cloud_sdk]"
-```
+=== "UV (Recommended)"
+    ```bash
+=== "UV (Recommended)"
+    ```bash
+Let's first install the instructor client with cerebras support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor
+    uv pip install "instructor[cerebras]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[cerebras]"
+    ```
+
+
+
+
+
+
 
 ## Simple User Example (Sync)
 

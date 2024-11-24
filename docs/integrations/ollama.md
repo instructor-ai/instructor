@@ -15,6 +15,22 @@ authors:
 
 This guide demonstrates how to use Ollama with Instructor to generate structured outputs. You'll learn how to use JSON schema mode with local LLMs to create type-safe responses.
 
+Let's first install the instructor client with Ollama support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor with Ollama support
+    uv pip install "instructor[ollama]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[ollama]"
+    ```
+
 Open-source LLMS are gaining popularity, and the release of Ollama's OpenAI compatibility later it has made it possible to obtain structured outputs using JSON schema.
 
 By the end of this blog post, you will learn how to effectively utilize instructor with ollama. But before we proceed, let's first explore the concept of patching.

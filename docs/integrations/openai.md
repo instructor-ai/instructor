@@ -11,17 +11,19 @@ OpenAI is the primary integration for Instructor, offering robust support for st
 
 Instructor comes with support for OpenAI out of the box, so you don't need to install anything extra.
 
-```bash
-pip install "instructor"
-```
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 
-⚠️ **Important**: You must set your OpenAI API key before using the client. You can do this in two ways:
+    # Install instructor
+    uv pip install "instructor"
+    ```
 
-1. Set the environment variable:
-
-```bash
-export OPENAI_API_KEY='your-api-key-here'
-```
+=== "pip"
+    ```bash
+    pip install "instructor"
+    ```
 
 2. Or provide it directly to the client:
 

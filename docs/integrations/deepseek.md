@@ -14,8 +14,28 @@ This guide covers everything you need to know about using DeepSeek with Instruct
 Instructor comes with support for the OpenAI Client out of the box, so you don't need to install anything extra.
 
 ```bash
-pip install "instructor"
-```
+=== "UV (Recommended)"
+    ```bash
+Let's first install the instructor client with deepseek support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor
+    uv pip install "instructor[deepseek]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[deepseek]"
+    ```
+
+
+
+
+
 
 ⚠️ **Important**: You must set your DeepSeek API key before using the client. You can do this in two ways:
 

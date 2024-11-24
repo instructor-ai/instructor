@@ -12,8 +12,31 @@ LiteLLM provides a unified interface for multiple LLM providers, making it easy 
 Install Instructor with LiteLLM support:
 
 ```bash
-pip install "instructor[litellm]"
-```
+=== "UV (Recommended)"
+    ```bash
+=== "UV (Recommended)"
+    ```bash
+Let's first install the instructor client with litellm support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor
+    uv pip install "instructor[litellm]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[litellm]"
+    ```
+
+
+
+
+
+
 
 ## Simple User Example (Sync)
 

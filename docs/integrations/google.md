@@ -11,9 +11,24 @@ This guide will show you how to use Instructor with the Google.GenerativeAI libr
 
 Google's Gemini models provide powerful AI capabilities with multimodal support. This guide shows you how to use Instructor with Google's Gemini models for type-safe, validated responses.
 
-```bash
-pip install "instructor[google-generativeai]
-```
+Let's first install the instructor client with Google/Gemini support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor
+    uv pip install "instructor[google]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[google]"
+    ```
+
+
+
 
 ## Simple User Example (Sync)
 

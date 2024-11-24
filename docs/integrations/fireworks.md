@@ -12,8 +12,31 @@ Fireworks provides efficient and cost-effective AI models with enterprise-grade 
 Install Instructor with Fireworks support:
 
 ```bash
-pip install "instructor[fireworks-ai]"
-```
+=== "UV (Recommended)"
+    ```bash
+=== "UV (Recommended)"
+    ```bash
+Let's first install the instructor client with fireworks support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor
+    uv pip install "instructor[fireworks]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[fireworks]"
+    ```
+
+
+
+
+
+
 
 ## Simple User Example (Sync)
 

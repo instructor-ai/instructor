@@ -9,11 +9,24 @@ Google Cloud's Vertex AI provides enterprise-grade AI capabilities with robust s
 
 ## Quick Start
 
-Install Instructor with Vertex AI support. You can do so by running the command below.
+Let's first install the instructor client with Vertex AI support:
 
-```bash
-pip install "instructor[vertexai]"
-```
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor
+    uv pip install "instructor[vertex]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[vertex]"
+    ```
+
+
+
 
 ## Simple User Example (Sync)
 

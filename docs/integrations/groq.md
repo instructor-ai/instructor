@@ -11,8 +11,30 @@ you'll need to sign up for an account and get an API key. You can do that [here]
 
 ```bash
 export GROQ_API_KEY=<your-api-key-here>
-pip install "instructor[groq]"
 ```
+
+Let's first install the instructor client with groq support:
+```bash
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor
+    uv pip install "instructor[groq]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[groq]"
+    ```
+
+
+
+
+
+
 
 ## Groq AI
 

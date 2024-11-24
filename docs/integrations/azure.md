@@ -9,23 +9,22 @@ This guide demonstrates how to use Azure OpenAI with instructor for structured o
 
 ## Installation
 
-We can use the same installation as we do for OpenAI since the default `openai` client ships with an AzureOpenAI client.
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 
-First, install the required dependencies:
+    # Install instructor
+    uv pip install "instructor[azure]"
+    ```
 
-```bash
-pip install instructor
-```
+=== "pip"
+    ```bash
+    pip install "instructor[azure]"
+    ```
 
-Next, make sure that you've enabled Azure OpenAI in your Azure account and have a deployment for the model you'd like to use. [Here is a guide to get started](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/create-resource?pivots=web-portal)
 
-Once you've done so, you'll have an endpoint and a API key to be used to configure the client.
 
-```bash
-instructor.exceptions.InstructorRetryException: Error code: 401 - {'statusCode': 401, 'message': 'Unauthorized. Access token is missing, invalid, audience is incorrect (https://cognitiveservices.azure.com), or have expired.'}
-```
-
-If you see an error like the one above, make sure you've set the correct endpoint and API key in the client.
 
 ## Authentication
 

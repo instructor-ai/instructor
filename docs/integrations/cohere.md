@@ -13,10 +13,15 @@ You'll need a cohere API key which can be obtained by signing up [here](https://
 
 ## Setup
 
-```
-pip install "instructor[cohere]"
+=== "UV (Recommended)"
+    ```bash
+    uv pip install "instructor[cohere]"
+    ```
 
-```
+=== "pip"
+    ```bash
+    pip install "instructor[cohere]"
+    ```
 
 Export your key:
 

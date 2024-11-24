@@ -15,6 +15,22 @@ authors:
 
 This guide demonstrates how to use Together AI with Instructor to generate structured outputs. You'll learn how to use function calling with Together's models to create type-safe responses.
 
+Let's first install the instructor client with Together AI support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor with Together AI support
+    uv pip install "instructor[together]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[together]"
+    ```
+
 Open-source LLMS are gaining popularity, and with the release of Together's Function calling models, its been easier than ever to get structured outputs.
 
 By the end of this blog post, you will learn how to effectively utilize instructor with Together AI. But before we proceed, let's first explore the concept of patching.

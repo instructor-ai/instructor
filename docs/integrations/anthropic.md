@@ -7,69 +7,24 @@ description: Learn how to combine Anthropic and Instructor clients to create use
 
 Now that we have a [Anthropic](https://www.anthropic.com/) client, we can use it with the `instructor` client to make requests.
 
-Let's first install the instructor client with anthropic support
+Let's first install the instructor client with anthropic support:
 
-```
-pip install "instructor[anthropic]"
-```
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 
-Once we've done so, getting started is as simple as using our `from_anthropic` method to patch the client up.
+    # Install instructor
+    uv pip install "instructor[anthropic]"
+    ```
 
-```python
-from pydantic import BaseModel
-from typing import List
-import anthropic
-import instructor
-
-# Patching the Anthropics client with the instructor for enhanced capabilities
-client = instructor.from_anthropic(
-    anthropic.Anthropic(),
-)
+=== "pip"
+    ```bash
+    pip install "instructor[anthropic]"
+    ```
 
 
-class Properties(BaseModel):
-    name: str
-    value: str
 
-
-class User(BaseModel):
-    name: str
-    age: int
-    properties: List[Properties]
-
-
-# client.messages.create will also work due to the instructor client
-user_response = client.chat.completions.create(
-    model="claude-3-haiku-20240307",
-    max_tokens=1024,
-    max_retries=0,
-    messages=[
-        {
-            "role": "user",
-            "content": "Create a user for a model with a name, age, and properties.",
-        }
-    ],
-    response_model=User,
-)  # type: ignore
-
-print(user_response.model_dump_json(indent=2))
-"""
-{
-  "name": "John Doe",
-  "age": 35,
-  "properties": [
-    {
-      "name": "City",
-      "value": "New York"
-    },
-    {
-      "name": "Occupation",
-      "value": "Software Engineer"
-    }
-  ]
-}
-"""
-```
 
 ## Streaming Support
 

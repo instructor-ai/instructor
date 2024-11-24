@@ -11,8 +11,31 @@ You'll need to sign up for an account and get an API key. You can do that [here]
 
 ```bash
 export WRITER_API_KEY=<your-api-key-here>
-pip install "instructor[writer]"
-```
+=== "UV (Recommended)"
+    ```bash
+=== "UV (Recommended)"
+    ```bash
+Let's first install the instructor client with writer support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor
+    uv pip install "instructor[writer]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[writer]"
+    ```
+
+
+
+
+
+
 
 ## Palmyra-X-004
 

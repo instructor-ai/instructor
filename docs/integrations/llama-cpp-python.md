@@ -16,6 +16,22 @@ This guide demonstrates how to use llama-cpp-python with Instructor to generate 
 
 Open-source LLMS are gaining popularity, and llama-cpp-python has made the `llama-cpp` model available to obtain structured outputs using JSON schema via a mixture of [constrained sampling](https://llama-cpp-python.readthedocs.io/en/latest/#json-schema-mode) and [speculative decoding](https://llama-cpp-python.readthedocs.io/en/latest/#speculative-decoding).
 
+Let's first install the instructor client with llama-cpp-python support:
+
+=== "UV (Recommended)"
+    ```bash
+    # Install UV if you haven't already
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install instructor with llama-cpp-python support
+    uv pip install "instructor[llama]"
+    ```
+
+=== "pip"
+    ```bash
+    pip install "instructor[llama]"
+    ```
+
 They also support a [OpenAI compatible client](https://llama-cpp-python.readthedocs.io/en/latest/#openai-compatible-web-server), which can be used to obtain structured output as a in process mechanism to avoid any network dependency.
 
 <!-- more -->
