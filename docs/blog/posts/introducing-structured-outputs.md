@@ -126,17 +126,7 @@ with client.beta.chat.completions.stream(
             # > {"name":"Jason","age":
             # > {"name":"Jason","age":25
             # > {"name":"Jason","age":25}
-            # > {"
-            # > {"name
-            # > {"name":"
-            # > {"name":"Jason
-            # > {"name":"Jason","
-            # > {"name":"Jason","age
-            # > {"name":"Jason","age":
-            # > {"name":"Jason","age":25
-            # > {"name":"Jason","age":25}
-
-### Unpredictable Latency Spikes
+```
 
 In order to benchmark the two modes, we made 200 identical requests to OpenAI and noted the time taken for each request to complete. The results are summarized in the following table:
 
