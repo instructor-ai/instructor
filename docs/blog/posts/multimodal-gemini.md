@@ -98,16 +98,16 @@ print(resp)
             "recommends visiting Shirakawa-go, a World Heritage Site in Gifu Prefecture."
         ),
         description=(
-            'This video recommends a number of places to visit in Takayama city, in the Hida Region, Gifu '
-            'Prefecture. It shows some of the local street food and highlights some of the unique shops and restaurants in '
-            'the area.'
+            "This video recommends a number of places to visit in Takayama city, in the Hida Region, Gifu "
+            "Prefecture. It shows some of the local street food and highlights some of the unique shops and restaurants in "
+            "the area."
         ),
         destinations=[
             TouristDestination(
-                name='Takayama',
-                description='Takayama is a city at the base of the Japan Alps, located in the Hida Region of '
-    'Gifu.',
-                location='Hida Region, Gifu Prefecture'
+                name="Takayama",
+                description="Takayama is a city at the base of the Japan Alps, located in the Hida Region of "
+                "Gifu.",
+                location="Hida Region, Gifu Prefecture"
             ),
             TouristDestination(
                 name='Miyagawa Morning Market',
