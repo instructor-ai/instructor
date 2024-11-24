@@ -206,27 +206,28 @@ user_stream = client.chat.completions.create_partial(
 
 for user in user_stream:
     print(user)
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name='' age=25
-    #> name='John' age=25
-    #> name='John Smith' age=25
-    #> name='John Smith' age=25
-    #> name=None age=None
-    #> name='' age=None
-    #> name='John' age=None
-    #> name='John Doe' age=None
-    #> name='John Doe' age=30
+    # > name=None age=None
+    # > name=None age=None
+    # > name=None age=None
+    # > name=None age=25
+    # > name=None age=25
+    # > name=None age=25
+    # > name='' age=25
+    # > name='John' age=25
+    # > name='John Smith' age=25
+    # > name='John Smith' age=25
+    # > name=None age=None
+    # > name='' age=None
+    # > name='John' age=None
+    # > name='John Doe' age=None
+    # > name='John Doe' age=30
 
 # Note: The return type is Generator[User, None, None]
-
-### Streaming Iterables: `create_iterable`
+```
 
 ![generator](./img/generator.png)
+
+### Streaming Iterables: `create_iterable`
 
 We get an iterable of objects when we want to extract multiple objects.
 
