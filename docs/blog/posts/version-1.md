@@ -77,9 +77,9 @@ client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
 # allow you to add instructor to try it out, while easily removing it
-client.create(model="gpt-4", response_model=typing.Type[T])  # type: ignore[return]
-client.chat.completions.create(model="gpt-4", response_model=typing.Type[T])  # type: ignore[return]
-client.messages.create(model="gpt-4", response_model=typing.Type[T])  # type: ignore[return]
+def create(model: str, response_model: typing.Type[T]) -> T: ...  # type: ignore
+def chat_completions_create(model: str, response_model: typing.Type[T]) -> T: ...  # type: ignore
+def messages_create(model: str, response_model: typing.Type[T]) -> T: ...  # type: ignore
 
 ## Type are infered correctly
 
