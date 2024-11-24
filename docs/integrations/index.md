@@ -28,6 +28,7 @@ Instructor supports a wide range of AI model providers, each with their own capa
 - [Fireworks](./fireworks.md) - High-performance model inference
 - [Cerebras](./cerebras.md) - Llama-3-70B and other Open Source Models at blazing fast inference speeds
 - [Writer](./writer.md) - Palmyra-X-004 and other Writer models
+- [DeepSeek](./deepseek.md) - DeepSeek Coder and DeepSeek Chat models
 
 ### Model Management
 
