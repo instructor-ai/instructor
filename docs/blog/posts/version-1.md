@@ -78,6 +78,7 @@ client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
 # allow you to add instructor to try it out, while easily removing it
+
 def create(model: str, response_model: 'Any') -> 'T': ...  # type: ignore
 def chat_completions_create(model: str, response_model: 'Any') -> 'T': ...  # type: ignore
 def messages_create(model: str, response_model: 'Any') -> 'T': ...  # type: ignore
@@ -221,7 +222,7 @@ for user in user_stream:
     #> name='John Doe' age=None
     #> name='John Doe' age=30
 
-Notice now that the type infered is `Generator[User, None]`
+# Note: The return type is Generator[User, None, None]
 
 ![generator](./img/generator.png)
 

@@ -117,15 +117,15 @@ with client.beta.chat.completions.stream(
     for event in stream:
         if event.type == "content.delta":
             print(event.snapshot, flush=True, end="\n")
-            # >
-            # > {"name
-            # > {"name":"
-            # > {"name":"Jason
-            # > {"name":"Jason","
-            # > {"name":"Jason","age
-            # > {"name":"Jason","age":
-            # > {"name":"Jason","age":25
-            # > {"name":"Jason","age":25}
+            #>
+            #> {"name
+            #> {"name":"
+            #> {"name":"Jason
+            #> {"name":"Jason","
+            #> {"name":"Jason","age
+            #> {"name":"Jason","age":
+            #> {"name":"Jason","age":25
+            #> {"name":"Jason","age":25}
 ```
 
 ## Why use `instructor`
