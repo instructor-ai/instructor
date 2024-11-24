@@ -204,16 +204,15 @@ class RewrittenSummary(BaseModel):
         ...,
         description="This is a new, denser summary of identical length which covers every entity and detail from the previous summary plus the Missing Entities. It should have the same length ( ~ 80 words ) as the previous summary and should be easily understood without the Article",
     )
-    absent: List[str] = Field(
+    absent: typing.List[str] = Field(
         ...,
         default_factory=list,
         description="this is a list of Entities found absent from the new summary that were present in the previous summary",
     )
-    missing: List[str] = Field(
+    missing: typing.List[str] = Field(
         default_factory=list,
         description="This is a list of 1-3 informative Entities from the Article that are missing from the new summary which should be included in the next generated summary.",
     )
-```
 
 !!! tip "Using Pydantic Validators with Instructor"
 

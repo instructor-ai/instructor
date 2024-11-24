@@ -97,9 +97,11 @@ print(resp)
             "no Kotte Ushi shop, or to have a sit-down meal at the Kitchen Hida. Finally, the video "
             "recommends visiting Shirakawa-go, a World Heritage Site in Gifu Prefecture."
         ),
-        description='This video recommends a number of places to visit in Takayama city, in the Hida Region, Gifu '
-    'Prefecture. It shows some of the local street food and highlights some of the unique shops and restaurants in '
-    'the area.',
+        description=(
+            'This video recommends a number of places to visit in Takayama city, in the Hida Region, Gifu '
+            'Prefecture. It shows some of the local street food and highlights some of the unique shops and restaurants in '
+            'the area.'
+        ),
         destinations=[
             TouristDestination(
                 name='Takayama',
