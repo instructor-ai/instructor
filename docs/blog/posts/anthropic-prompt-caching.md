@@ -187,7 +187,6 @@ Let's first initialize our Anthropic client, this will be the same as what we've
 ```python
 from instructor import Instructor, Mode, patch
 from anthropic import Anthropic
-from pydantic import BaseModel
 
 
 client = Instructor(
@@ -203,8 +202,9 @@ client = Instructor(
 We'll then create a new `Character` class that will be used to extract out a single character from the text and read in our source text ( roughly 2856 tokens using the Anthropic tokenizer).
 
 ```python
-with open("./book.txt", "r") as f:
+with open("./book.txt") as f:
     book = f.read()
+
 
 class Character(BaseModel):
     name: str
@@ -215,7 +215,7 @@ Once we've done this, we can then make an api call to get the description of the
 
 ```python
 for _ in range(2):
-    resp, completion = client.chat.completions.create_with_completion( # (1)!
+    resp, completion = client.chat.completions.create_with_completion(  # (1)!
         model="claude-3-haiku-20240307",
         messages=[
             {
@@ -224,7 +224,7 @@ for _ in range(2):
                     {
                         "type": "text",
                         "text": "<book>" + book + "</book>",
-                        "cache_control": {"type": "ephemeral"}, # (2)!
+                        "cache_control": {"type": "ephemeral"},  # (2)!
                     },
                     {
                         "type": "text",
@@ -238,7 +238,7 @@ for _ in range(2):
     )
     assert isinstance(resp, Character)
 
-    print(completion.usage) # (3)!
+    print(completion.usage)  # (3)!
     print(resp)
 ```
 
@@ -307,7 +307,7 @@ class Character(BaseModel):
     description: str
 
 
-with open("./book.txt", "r") as f:
+with open("./book.txt") as f:
     book = f.read()
 
 for _ in range(2):

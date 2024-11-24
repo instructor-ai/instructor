@@ -51,13 +51,11 @@ def generate_fake_users(count: int) -> Iterable[UserDetail]:
 
 for user in generate_fake_users(5):
     print(user)
-    """
-    name='Alice' age=25
-    name='Bob' age=30
-    name='Charlie' age=35
-    name='David' age=40
-    name='Eve' age=45
-    """
+    #> name='Alice' age=25
+    #> name='Bob' age=30
+    #> name='Charlie' age=35
+    #> name='David' age=40
+    #> name='Eve' age=22
 ```
 
 ## Leveraging Simple Examples
@@ -93,13 +91,11 @@ def generate_fake_users(count: int) -> Iterable[UserDetail]:
 
 for user in generate_fake_users(5):
     print(user)
-    """
-    name='Timothee Chalamet' age=25
-    name='Zendaya' age=24
-    name='Keanu Reeves' age=56
-    name='Scarlett Johansson' age=36
-    name='Chris Hemsworth' age=37
-    """
+    #> name='John Doe' age=25
+    #> name='Jane Smith' age=30
+    #> name='Michael Johnson' age=22
+    #> name='Emily Davis' age=28
+    #> name='David Brown' age=35
 ```
 
 By incorporating names of celebrities as examples, we have shifted towards generating synthetic data featuring well-known personalities, moving away from the simplistic, single-word names previously used.
@@ -112,13 +108,14 @@ To effectively generate synthetic examples with more nuance, lets upgrade to the
 import instructor
 
 from typing import Iterable
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from openai import OpenAI
 
 
 # Define the UserDetail model
 class UserDetail(BaseModel):
     """Old Wizards"""
+
     name: str
     age: int
 
@@ -148,13 +145,11 @@ def generate_fake_users(count: int) -> Iterable[UserDetail]:
 
 for user in generate_fake_users(5):
     print(user)
-    """
-    name='Merlin' age=196
-    name='Saruman the White' age=543
-    name='Radagast the Brown' age=89
-    name='Morgoth' age=901
-    name='Filius Flitwick' age=105 
-    """
+    #> name='Merlin' age=1000
+    #> name='Saruman the White' age=700
+    #> name='Radagast the Brown' age=600
+    #> name='Elminster Aumar' age=1200
+    #> name='Mordenkainen' age=850
 ```
 
 ## Leveraging Descriptions
@@ -194,11 +189,9 @@ def generate_fake_users(count: int) -> Iterable[UserDetail]:
 
 for user in generate_fake_users(5):
     print(user)
-    """
-    name='Jean' age=25
-    name='Claire' age=30
-    name='Pierre' age=22
-    name='Marie' age=27
-    name='Luc' age=35
-    """
+    #> name='Jean Luc' age=30
+    #> name='Claire Belle' age=25
+    #> name='Pierre Leclair' age=40
+    #> name='Amelie Rousseau' age=35
+    #> name='Etienne Lefevre' age=28
 ```

@@ -22,6 +22,7 @@ Instructor uses Pydantic for validation, which provides:
 from pydantic import BaseModel, Field, validator
 from typing import List
 
+
 class User(BaseModel):
     name: str = Field(..., min_length=2)
     age: int = Field(..., ge=0, le=150)
@@ -87,7 +88,7 @@ try:
     user = client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=User,
-        messages=[{"role": "user", "content": "Extract: John Doe, age: -5"}]
+        messages=[{"role": "user", "content": "Extract: John Doe, age: -5"}],
     )
 except ValueError as e:
     print(f"Validation error: {e}")
@@ -116,6 +117,7 @@ class Address(BaseModel):
     street: str
     city: str
     country: str
+
 
 class User(BaseModel):
     name: str

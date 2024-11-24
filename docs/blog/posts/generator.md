@@ -90,7 +90,7 @@ def calculate_time_for_first_result_with_generator(func_input, func):
     result = next(func(x) for x in func_input)
     end_perf = time.perf_counter()
     print(f"Time for first result (generator): {end_perf - start_perf:.2f} seconds")
-    #> Time for first result (generator): 1.01 seconds
+    #> Time for first result (generator): 1.00 seconds
     return result
 
 

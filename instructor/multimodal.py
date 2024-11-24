@@ -77,7 +77,7 @@ class Image(BaseModel):
 
     @classmethod
     def autodetect_safely(
-        cls, source: Union[str, Path]
+        cls, source: str | Path
     ) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
@@ -210,7 +210,7 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: Union[str, Path] = Field(
+    source: str | Path = Field(
         description="URL or file path of the audio"
     )  # noqa: UP007
     data: Union[str, None] = Field(  # noqa: UP007
@@ -343,7 +343,7 @@ def convert_messages(
         }
         if autodetect_images:
             if isinstance(content, list):
-                new_content: list[Union[str, dict[str, Any], Image, Audio]] = (
+                new_content: list[str | dict[str, Any] | Image | Audio] = (
                     []
                 )  # noqa: UP007
                 for item in content:

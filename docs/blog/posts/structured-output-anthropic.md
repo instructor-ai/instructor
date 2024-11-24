@@ -41,19 +41,20 @@ import anthropic
 import instructor
 
 # Patch the Anthropic client with Instructor
-anthropic_client = instructor.from_anthropic(
-    create=anthropic.Anthropic()
-)
+anthropic_client = instructor.from_anthropic(create=anthropic.Anthropic())
+
 
 # Define your Pydantic models
 class Properties(BaseModel):
     name: str
     value: str
 
+
 class User(BaseModel):
     name: str
     age: int
     properties: List[Properties]
+
 
 # Use the patched client to generate structured output
 user_response = anthropic_client(
@@ -89,20 +90,21 @@ Anthropic has introduced a new prompt caching feature that can significantly imp
 Here's how you can implement prompt caching with Instructor and Anthropic:
 
 ```python
-from instructor import Instructor, Mode, patch
 from anthropic import Anthropic
 from pydantic import BaseModel
 
 # Set up the client with prompt caching
 client = instructor.from_anthropic(Anthropic())
 
+
 # Define your Pydantic model
 class Character(BaseModel):
     name: str
     description: str
 
+
 # Load your large context
-with open("./book.txt", "r") as f:
+with open("./book.txt") as f:
     book = f.read()
 
 # Make multiple calls using the cached context

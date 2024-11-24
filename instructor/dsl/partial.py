@@ -10,6 +10,9 @@ from __future__ import annotations
 
 from jiter import from_json
 from pydantic import BaseModel, create_model
+from typing import Union
+import types
+import sys
 from pydantic.fields import FieldInfo
 from typing import (
     Any,
@@ -29,6 +32,12 @@ from instructor.utils import extract_json_from_stream, extract_json_from_stream_
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
+if sys.version_info >= (3, 10):
+    # types.UnionType is only available in Python 3.10 and above
+    UNION_ORIGINS = (Union, types.UnionType)
+else:
+    UNION_ORIGINS = (Union,)
+
 
 class MakeFieldsOptional:
     pass
@@ -36,6 +45,37 @@ class MakeFieldsOptional:
 
 class PartialLiteralMixin:
     pass
+
+
+def _process_generic_arg(
+    arg: Any,
+    make_fields_optional: bool = False,
+) -> Any:
+    arg_origin = get_origin(arg)
+    if arg_origin is not None:
+        # Handle any nested generic type (Union, List, Dict, etc.)
+        nested_args = get_args(arg)
+        modified_nested_args = tuple(
+            _process_generic_arg(
+                t,
+                make_fields_optional=make_fields_optional,
+            )
+            for t in nested_args
+        )
+        # Special handling for Union types (types.UnionType isn't subscriptable)
+        if arg_origin in UNION_ORIGINS:
+            return Union[modified_nested_args]  # type: ignore
+
+        return arg_origin[modified_nested_args]
+    else:
+        if isinstance(arg, type) and issubclass(arg, BaseModel):
+            return (
+                Partial[arg, MakeFieldsOptional]  # type: ignore[valid-type]
+                if make_fields_optional
+                else Partial[arg]
+            )
+        else:
+            return arg
 
 
 def _make_field_optional(
@@ -51,14 +91,8 @@ def _make_field_optional(
         generic_base = get_origin(annotation)
         generic_args = get_args(annotation)
 
-        # Recursively apply Partial to each of the generic arguments
         modified_args = tuple(
-            (
-                Partial[arg, MakeFieldsOptional]  # type: ignore[valid-type]
-                if isinstance(arg, type) and issubclass(arg, BaseModel)
-                else arg
-            )
-            for arg in generic_args
+            _process_generic_arg(arg, make_fields_optional=True) for arg in generic_args
         )
 
         # Reconstruct the generic type with modified arguments
@@ -72,7 +106,7 @@ def _make_field_optional(
         tmp_field.annotation = Optional[Partial[annotation, MakeFieldsOptional]]  # type: ignore[assignment, valid-type]
         tmp_field.default = {}
     else:
-        tmp_field.annotation = Optional[field.annotation]  # type: ignore[assignment]
+        tmp_field.annotation = Optional[field.annotation]  # type:ignore
         tmp_field.default = None
 
     return tmp_field.annotation, tmp_field  # type: ignore
@@ -360,15 +394,7 @@ class Partial(Generic[T_Model]):
                 generic_base = get_origin(annotation)
                 generic_args = get_args(annotation)
 
-                # Recursively apply Partial to each of the generic arguments
-                modified_args = tuple(
-                    (
-                        Partial[arg]
-                        if isinstance(arg, type) and issubclass(arg, BaseModel)
-                        else arg
-                    )
-                    for arg in generic_args
-                )
+                modified_args = tuple(_process_generic_arg(arg) for arg in generic_args)
 
                 # Reconstruct the generic type with modified arguments
                 tmp_field.annotation = (

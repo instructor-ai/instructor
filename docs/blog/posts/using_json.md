@@ -53,10 +53,12 @@ Here's an example of a `response_model` for a simple user profile:
 ```python
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     name: str
     age: int
     email: str
+
 
 client = instructor.from_openai(openai.OpenAI())
 
@@ -66,13 +68,13 @@ user = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Extract the user's name, age, and email from this: John Doe is 25 years old. His email is john@example.com"
+            "content": "Extract the user's name, age, and email from this: John Doe is 25 years old. His email is john@example.com",
         }
-    ]
+    ],
 )
 
 print(user.model_dump())
-# > {
+#> {
 #     "name": "John Doe",
 #     "age": 25,
 #     "email": "john@example.com"

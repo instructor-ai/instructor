@@ -38,6 +38,7 @@ class Segment(BaseModel):
     title: str = Field(..., description="The title of the segment")
     timestamp: str = Field(..., description="The timestamp of the event as HH:MM:SS")
 
+
 # This might work for some cases, but fails for others:
 # "2:00" could be interpreted as 2 minutes or 2 hours
 # "1:30:00" doesn't fit the expected format
@@ -58,6 +59,7 @@ Let's look at the improved implementation:
 ```python
 from pydantic import BaseModel, Field, model_validator
 from typing import Literal
+
 
 class SegmentWithTimestamp(BaseModel):
     title: str = Field(..., description="The title of the segment")

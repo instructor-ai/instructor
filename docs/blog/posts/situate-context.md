@@ -79,9 +79,13 @@ from pydantic import BaseModel, Field
 import asyncio
 from typing import List, Dict
 
+
 class SituatedContext(BaseModel):
     title: str = Field(..., description="The title of the document.")
-    context: str = Field(..., description="The context to situate the chunk within the document.")
+    context: str = Field(
+        ..., description="The context to situate the chunk within the document."
+    )
+
 
 client = AsyncInstructor(
     create=patch(
@@ -90,6 +94,7 @@ client = AsyncInstructor(
     ),
     mode=Mode.ANTHROPIC_TOOLS,
 )
+
 
 async def situate_context(doc: str, chunk: str) -> str:
     response = await client.chat.completions.create(
@@ -117,6 +122,7 @@ async def situate_context(doc: str, chunk: str) -> str:
     )
     return response.context
 
+
 def chunking_function(doc: str) -> List[str]:
     chunk_size = 1000
     overlap = 200
@@ -128,18 +134,18 @@ def chunking_function(doc: str) -> List[str]:
         start += chunk_size - overlap
     return chunks
 
+
 async def process_chunk(doc: str, chunk: str) -> Dict[str, str]:
     context = await situate_context(doc, chunk)
-    return {
-        "chunk": chunk,
-        "context": context
-    }
+    return {"chunk": chunk, "context": context}
+
 
 async def process(doc: str) -> List[Dict[str, str]]:
     chunks = chunking_function(doc)
     tasks = [process_chunk(doc, chunk) for chunk in chunks]
     results = await asyncio.gather(*tasks)
     return results
+
 
 # Example usage
 async def main():
@@ -150,6 +156,7 @@ async def main():
         print(f"Text: {item['chunk'][:50]}...")
         print(f"Context: {item['context']}")
         print()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
