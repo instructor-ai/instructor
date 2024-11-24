@@ -87,21 +87,21 @@ print(resp)
 
     ```python
     Recomendations(
-        chain_of_thought=(
-            "The video recommends visiting Takayama city, in the Hida Region, Gifu Prefecture. "
-            "The video suggests visiting the Miyagawa Morning Market, to try the Sarubobo good luck charms, "
-            "and to enjoy the cookie cup espresso, made by Koma Coffee. Then, the video suggests visiting "
-            "a traditional Japanese Cafe, called Kissako Katsure, and try their matcha and sweets. "
-            "Afterwards, the video suggests to visit the Sanmachi Historic District, where you can find "
-            "local crafts and delicious foods. The video recommends trying Hida Wagyu beef, at the Kin "
-            "no Kotte Ushi shop, or to have a sit-down meal at the Kitchen Hida. Finally, the video "
+        chain_of_thought=" ".join([
+            "The video recommends visiting Takayama city, in the Hida Region, Gifu Prefecture.",
+            "The video suggests visiting the Miyagawa Morning Market, to try the Sarubobo good luck charms,",
+            "and to enjoy the cookie cup espresso, made by Koma Coffee. Then, the video suggests visiting",
+            "a traditional Japanese Cafe, called Kissako Katsure, and try their matcha and sweets.",
+            "Afterwards, the video suggests to visit the Sanmachi Historic District, where you can find",
+            "local crafts and delicious foods. The video recommends trying Hida Wagyu beef, at the Kin",
+            "no Kotte Ushi shop, or to have a sit-down meal at the Kitchen Hida. Finally, the video",
             "recommends visiting Shirakawa-go, a World Heritage Site in Gifu Prefecture."
-        ),
-        description=(
-            "This video recommends a number of places to visit in Takayama city, in the Hida Region, Gifu "
-            "Prefecture. It shows some of the local street food and highlights some of the unique shops and restaurants in "
+        ]),
+        description=" ".join([
+            "This video recommends a number of places to visit in Takayama city, in the Hida Region, Gifu",
+            "Prefecture. It shows some of the local street food and highlights some of the unique shops and restaurants in",
             "the area."
-        ),
+        ]),
         destinations=[
             TouristDestination(
                 name="Takayama",
@@ -172,9 +172,6 @@ print(resp)
             ),
             TouristDestination(
                 name="Shirakawa-go",
-                description="Shirakawa-go is a World Heritage Site in Gifu Prefecture.",
-                location="Gifu Prefecture"
-            )
                 description="Shirakawa-go is a World Heritage Site in Gifu Prefecture.",
                 location="Gifu Prefecture"
             )

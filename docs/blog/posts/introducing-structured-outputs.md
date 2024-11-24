@@ -117,7 +117,7 @@ with client.beta.chat.completions.stream(
     for event in stream:
         if event.type == "content.delta":
             print(event.snapshot, flush=True, end="\n")
-            # > {"
+            # >
             # > {"name
             # > {"name":"
             # > {"name":"Jason
@@ -127,15 +127,6 @@ with client.beta.chat.completions.stream(
             # > {"name":"Jason","age":25
             # > {"name":"Jason","age":25}
 ```
-
-In order to benchmark the two modes, we made 200 identical requests to OpenAI and noted the time taken for each request to complete. The results are summarized in the following table:
-
-| mode               | mean  | min   | max    | std_dev | variance |
-| ------------------ | ----- | ----- | ------ | ------- | -------- |
-| Tool Calling       | 6.84  | 6.21  | 12.84  | 0.69    | 0.47     |
-| Structured Outputs | 28.20 | 14.91 | 136.90 | 9.27    | 86.01    |
-
-Structured Outputs suffers from unpredictable latency spikes while Tool Calling maintains consistent performance. This could cause users to occasionally experience significant delays in response times, potentially impacting the overall user satisfication and retention rates.
 
 ## Why use `instructor`
 
