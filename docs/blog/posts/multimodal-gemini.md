@@ -105,61 +105,78 @@ print(resp)
         destinations=[
             TouristDestination(
                 name="Takayama",
-                description="Takayama is a city at the base of the Japan Alps, located in the Hida Region of "
-                "Gifu.",
+                description=(
+                    "Takayama is a city at the base of the Japan Alps, located in the Hida Region of "
+                    "Gifu."
+                ),
                 location="Hida Region, Gifu Prefecture"
             ),
             TouristDestination(
-                name='Miyagawa Morning Market',
-                description="The Miyagawa Morning Market, or the Miyagawa Asai-chi in Japanese, is a market that
-    has existed officially since the Edo Period, more than 100 years ago. It's open every single day, rain or
-    shine, from 7am to noon.",
-                location='Hida Takayama'
+                name="Miyagawa Morning Market",
+                description=(
+                    "The Miyagawa Morning Market, or the Miyagawa Asai-chi in Japanese, is a market that "
+                    "has existed officially since the Edo Period, more than 100 years ago. It's open every "
+                    "single day, rain or shine, from 7am to noon."
+                ),
+                location="Hida Takayama"
             ),
             TouristDestination(
-                name='Nakaya - Handmade Hida Sarubobo',
-                description='The Nakaya shop sells handcrafted Sarubobo good luck charms.',
-                location='Hida Takayama'
+                name="Nakaya - Handmade Hida Sarubobo",
+                description="The Nakaya shop sells handcrafted Sarubobo good luck charms.",
+                location="Hida Takayama"
             ),
             TouristDestination(
-                name='Koma Coffee',
-                description="Koma Coffee is a shop that has been in business for about 50 or 60 years, and they
-    serve coffee in a cookie cup. They've been serving coffee for about 10 years.",
-                location='Hida Takayama'
+                name="Koma Coffee",
+                description=(
+                    "Koma Coffee is a shop that has been in business for about 50 or 60 years, and they "
+                    "serve coffee in a cookie cup. They've been serving coffee for about 10 years."
+                ),
+                location="Hida Takayama"
             ),
             TouristDestination(
-                name='Kissako Katsure',
-                description='Kissako Katsure is a traditional Japanese style cafe, called Kissako, and the name
-    means would you like to have some tea. They have a variety of teas and sweets.',
-                location='Hida Takayama'
+                name="Kissako Katsure",
+                description=(
+                    "Kissako Katsure is a traditional Japanese style cafe, called Kissako, and the name "
+                    "means would you like to have some tea. They have a variety of teas and sweets."
+                ),
+                location="Hida Takayama"
             ),
             TouristDestination(
-                name='Sanmachi Historic District',
-                description='Sanmachi Dori is a Historic Merchant District in Takayama, all of the buildings here
-    have been preserved to look as they did in the Edo Period.',
-                location='Hida Takayama'
+                name="Sanmachi Historic District",
+                description=(
+                    "Sanmachi Dori is a Historic Merchant District in Takayama, all of the buildings here "
+                    "have been preserved to look as they did in the Edo Period."
+                ),
+                location="Hida Takayama"
             ),
             TouristDestination(
-                name='Suwa Orchard',
-                description='The Suwa Orchard has been in business for more than 50 years.',
-                location='Hida Takayama'
+                name="Suwa Orchard",
+                description="The Suwa Orchard has been in business for more than 50 years.",
+                location="Hida Takayama"
             ),
             TouristDestination(
-                name='Kitchen HIDA',
-                description='Kitchen HIDA is a restaurant with a 50 year history, known for their Hida Beef dishes
-    and for using a lot of local ingredients.',
-                location='Hida Takayama'
+                name="Kitchen HIDA",
+                description=(
+                    "Kitchen HIDA is a restaurant with a 50 year history, known for their Hida Beef dishes "
+                    "and for using a lot of local ingredients."
+                ),
+                location="Hida Takayama"
             ),
             TouristDestination(
-                name='Kin no Kotte Ushi',
-                description='Kin no Kotte Ushi is a shop known for selling Beef Sushi, especially Hida Wagyu Beef
-    Sushi. Their sushi is medium rare.',
-                location='Hida Takayama'
+                name="Kin no Kotte Ushi",
+                description=(
+                    "Kin no Kotte Ushi is a shop known for selling Beef Sushi, especially Hida Wagyu Beef "
+                    "Sushi. Their sushi is medium rare."
+                ),
+                location="Hida Takayama"
             ),
             TouristDestination(
-                name='Shirakawa-go',
-                description='Shirakawa-go is a World Heritage Site in Gifu Prefecture.',
-                location='Gifu Prefecture'
+                name="Shirakawa-go",
+                description="Shirakawa-go is a World Heritage Site in Gifu Prefecture.",
+                location="Gifu Prefecture"
+            )
+                description="Shirakawa-go is a World Heritage Site in Gifu Prefecture.",
+                location="Gifu Prefecture"
             )
         ]
     )
