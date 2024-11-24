@@ -224,9 +224,9 @@ for user in user_stream:
 
 # Note: The return type is Generator[User, None, None]
 
-![generator](./img/generator.png)
-
 ### Streaming Iterables: `create_iterable`
+
+![generator](./img/generator.png)
 
 We get an iterable of objects when we want to extract multiple objects.
 
