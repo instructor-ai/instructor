@@ -41,6 +41,7 @@ def from_anthropic(
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     enable_prompt_caching: bool = False,
+    beta:bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
     assert (
@@ -70,6 +71,8 @@ def from_anthropic(
             raise TypeError(
                 "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic} to enable prompt caching"
             )
+    elif beta:
+        create = client.beta.messages.create
     else:
         create = client.messages.create
 
