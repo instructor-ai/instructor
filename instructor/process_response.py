@@ -16,7 +16,14 @@ from pydantic import BaseModel, create_model
 
 from instructor.mode import Mode
 from instructor.dsl.iterable import IterableBase, IterableModel
-from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
+from instructor.dsl.parallel import (
+    ParallelBase, 
+    ParallelModel, 
+    handle_parallel_model, 
+    get_types_array,
+    VertexAIParallelBase,
+    VertexAIParallelModel
+)
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
@@ -112,7 +119,7 @@ def process_response(
     validation_context: dict[str, Any] | None = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
-):
+) -> T_Model | list[T_Model] | VertexAIParallelBase | None:
     """
     Process the response from the API call and convert it to the specified response model.
 
@@ -485,6 +492,27 @@ def handle_gemini_tools(
     return response_model, new_kwargs
 
 
+def handle_vertexai_parallel_tools(
+    response_model: type[Iterable[T]], new_kwargs: dict[str, Any]
+) -> tuple[VertexAIParallelBase, dict[str, Any]]:
+    assert (
+        new_kwargs.get("stream", False) is False
+    ), "stream=True is not supported when using PARALLEL_TOOLS mode"
+    
+    from instructor.client_vertexai import vertexai_process_response
+    from instructor.dsl.parallel import VertexAIParallelModel
+    
+    # Extract concrete types before passing to vertexai_process_response
+    model_types = list(get_types_array(response_model))
+    contents, tools, tool_config = vertexai_process_response(new_kwargs, model_types)
+    
+    new_kwargs["contents"] = contents
+    new_kwargs["tools"] = tools
+    new_kwargs["tool_config"] = tool_config
+    
+    return VertexAIParallelModel(typehint=response_model), new_kwargs
+
+
 def handle_vertexai_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
@@ -646,7 +674,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
 
 def handle_response_model(
     response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
-) -> tuple[type[T] | None, dict[str, Any]]:
+) -> tuple[type[T] | VertexAIParallelBase | None, dict[str, Any]]:
     """
     Handles the response model based on the specified mode and prepares the kwargs for the API call.
 
@@ -690,6 +718,8 @@ def handle_response_model(
 
     if mode in {Mode.PARALLEL_TOOLS}:
         return handle_parallel_tools(response_model, new_kwargs)
+    elif mode in {Mode.VERTEXAI_PARALLEL_TOOLS}:
+        return handle_vertexai_parallel_tools(response_model, new_kwargs)
 
     response_model = prepare_response_model(response_model)
 
