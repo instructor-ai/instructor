@@ -16,6 +16,7 @@ Instructor supports a wide range of AI model providers, each with their own capa
 - [Ollama](./ollama.md) - Run open-source models locally
 - [llama-cpp-python](./llama-cpp-python.md) - Python bindings for llama.cpp
 - [Together AI](./together.md) - Host and run open source models
+- [Cortex](./cortex.md) - Run open source models with Cortex
 
 ### Cloud AI Providers
 
