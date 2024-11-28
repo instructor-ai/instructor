@@ -75,10 +75,12 @@ from pydantic import BaseModel
 import asyncio
 
 # Initialize with API key
-client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-
-# Enable instructor patches for async OpenAI client
-client = instructor.from_openai(client)
+client = from_openai(
+    openai.AsyncOpenAI(
+        base_url="http://localhost:39281/v1",
+        api_key="this is a fake api key that doesn't matter",
+    )
+)
 
 class User(BaseModel):
     name: str
