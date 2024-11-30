@@ -9,8 +9,8 @@
 from __future__ import annotations
 
 from jiter import from_json
-from pydantic import BaseModel, create_model
-from typing import Literal, Union, Any
+from pydantic import BaseModel, create_model, BeforeValidator
+from typing import Literal, Union, Any, Annotated
 import types
 import sys
 from pydantic.fields import FieldInfo
@@ -45,6 +45,16 @@ class MakeFieldsOptional:
 
 class PartialLiteralMixin:
     pass
+
+
+class PartialLiteralValidator(BeforeValidator):
+    def __init__(self, literal_type: Any, **kwargs: Any):
+        def validate_literal(v: Any) -> Optional[Any]:
+            if v in get_args(literal_type):
+                return v
+            return None
+
+        super().__init__(func=validate_literal, **kwargs)
 
 
 def _process_generic_arg(
@@ -93,7 +103,7 @@ def _make_field_optional(
 
         if generic_base is Literal and Partial in field.metadata:
             literal_types: set[type[Any]] = {type(arg) for arg in generic_args}
-            tmp_field.annotation = Optional[Union[tuple(literal_types)]]  # type: ignore
+            tmp_field.annotation = Annotated[Optional[Union[tuple(literal_types)]], PartialLiteralValidator(annotation)]  # type: ignore
             tmp_field.default = None
         else:
             modified_args = tuple(

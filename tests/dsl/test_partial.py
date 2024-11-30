@@ -1,5 +1,5 @@
 # type: ignore[all]
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, validator
 from typing import Optional, Union, Literal, Annotated
 from instructor.dsl.partial import Partial, PartialLiteralMixin
 import pytest
@@ -212,12 +212,32 @@ def test_partial_enums():
     # partial values with the partial model
     partial = Partial[PartialEnums]
     partial_results = (
-        '{"a": "a_", "b": "b_", "c": "c_v", "d": 10, "e": "a_", "f": "a_value"}'
+        '{"a": "a_", "b": "b_", "c": "c_v", "d": 1, "e": "a_", "f": "a_value"}'
     )
-    partial.get_partial_model().model_validate_json(partial_results)
+    partial_validated = partial.get_partial_model().model_validate_json(partial_results)
+
+    assert partial_validated.a is None
+    assert partial_validated.b is None
+    assert partial_validated.c is None
+    assert partial_validated.d is None
+    assert partial_validated.e is None
+    assert partial_validated.f == "a_value"
+
     with pytest.raises(ValidationError):
         partial.model_validate_json(partial_results)
 
     with pytest.raises(ValidationError):
         # "f" is not marked as a partil enum
         partial.get_partial_model().model_validate_json('{"f": "a_"}')
+
+    resolved_enum_partial_results = (
+        '{"a": "a_value", "b": "b_value", "c": "c_v", "d": 10}'
+    )
+    resolved_enum_partial_validated = partial.get_partial_model().model_validate_json(
+        resolved_enum_partial_results
+    )
+    assert resolved_enum_partial_validated.a == "a_value"
+    assert resolved_enum_partial_validated.b == "b_value"
+    # this value still isn't fully resolved
+    assert resolved_enum_partial_validated.c is None
+    assert resolved_enum_partial_validated.d == 10
