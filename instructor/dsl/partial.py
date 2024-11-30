@@ -9,8 +9,8 @@
 from __future__ import annotations
 
 from jiter import from_json
-from pydantic import BaseModel, create_model
-from typing import Union
+from pydantic import BaseModel, create_model, BeforeValidator
+from typing import Literal, Union, Any, Annotated
 import types
 import sys
 from pydantic.fields import FieldInfo
@@ -45,6 +45,16 @@ class MakeFieldsOptional:
 
 class PartialLiteralMixin:
     pass
+
+
+class PartialLiteralValidator(BeforeValidator):
+    def __init__(self, literal_type: Any, **kwargs: Any):
+        def validate_literal(v: Any) -> Optional[Any]:
+            if v in get_args(literal_type):
+                return v
+            return None
+
+        super().__init__(func=validate_literal, **kwargs)
 
 
 def _process_generic_arg(
@@ -91,15 +101,20 @@ def _make_field_optional(
         generic_base = get_origin(annotation)
         generic_args = get_args(annotation)
 
-        modified_args = tuple(
-            _process_generic_arg(arg, make_fields_optional=True) for arg in generic_args
-        )
+        if generic_base is Literal and Partial in field.metadata:
+            literal_types: set[type[Any]] = {type(arg) for arg in generic_args}
+            tmp_field.annotation = Annotated[Optional[Union[tuple(literal_types)]], PartialLiteralValidator(annotation)]  # type: ignore
+            tmp_field.default = None
+        else:
+            modified_args = tuple(
+                _process_generic_arg(arg, make_fields_optional=True)
+                for arg in generic_args
+            )
+            tmp_annotation: Any = Optional[generic_base[modified_args]] if generic_base else None  # type: ignore
 
-        # Reconstruct the generic type with modified arguments
-        tmp_field.annotation = (
-            Optional[generic_base[modified_args]] if generic_base else None
-        )
-        tmp_field.default = None
+            # Reconstruct the generic type with modified arguments
+            tmp_field.annotation = tmp_annotation
+            tmp_field.default = None
     # If the field is a BaseModel, then recursively convert it's
     # attributes to optionals.
     elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
