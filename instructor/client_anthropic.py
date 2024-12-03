@@ -13,6 +13,7 @@ def from_anthropic(
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     enable_prompt_caching: bool = False,
+    beta: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor: ...
 
@@ -26,6 +27,7 @@ def from_anthropic(
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     enable_prompt_caching: bool = False,
+    beta: bool = False,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
 
@@ -41,9 +43,25 @@ def from_anthropic(
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
     enable_prompt_caching: bool = False,
-    beta:bool = False,
+    beta: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
+    """Create an Instructor instance from an Anthropic client.
+
+    Args:
+        client: An instance of Anthropic client (sync or async)
+        mode: The mode to use for the client (ANTHROPIC_JSON or ANTHROPIC_TOOLS)
+        enable_prompt_caching: Whether to enable prompt caching (requires Anthropic or AsyncAnthropic client)
+        beta: Whether to use beta API features (uses client.beta.messages.create)
+        **kwargs: Additional keyword arguments to pass to the Instructor constructor
+
+    Returns:
+        An Instructor instance (sync or async depending on the client type)
+
+    Raises:
+        TypeError: If enable_prompt_caching is True and client is not Anthropic or AsyncAnthropic
+        AssertionError: If mode is not ANTHROPIC_JSON or ANTHROPIC_TOOLS
+    """
     assert (
         mode
         in {
