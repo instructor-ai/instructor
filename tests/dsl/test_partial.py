@@ -233,6 +233,7 @@ def test_partial_enums():
     assert partial_validated.i is not None
     assert partial_validated.i.c is None
 
+
     with pytest.raises(ValidationError):
         partial.model_validate_json(partial_results)
 
