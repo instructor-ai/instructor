@@ -241,3 +241,45 @@ response = client.chat.completions.create(
     autodetect_images=True
 )
 ```
+
+## Beta support
+The Anthropic beta API has [multiple features](https://docs.anthropic.com/en/docs/build-with-claude/pdf-support) other than those mentioned above. You can access the beta api by setting the beta flag to `True` when creating your client. The example below shows extraction from a pdf.
+
+```python
+import instructor
+import requests
+import base64
+from pydantic import BaseModel
+from anthropic import Anthropic
+
+class Character(BaseModel):
+    name: str
+    description: str
+
+client = instructor.from_anthropic(anthropic.AsyncAnthropic(), beta=True)
+
+pdf_data=base64.b64encode(requests.get("https://freekidsbooks.org/wp-content/uploads/2019/12/FKB-Kids-Stories-Peter-Rabbit.pdf").content).decode()
+
+extracted_content = await self.instructor_client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        betas=["pdfs-2024-09-25"],
+        max_tokens=1024,
+        messages=[
+            {"role": "system", "content": "Extract a character from the pdf and describe them from any pictures ine the document"},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "document",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "application/pdf",
+                            "data": pdf_data,
+                        },
+                    },
+                ],
+            },
+        ],
+        response_model=Character,
+    )
+```
