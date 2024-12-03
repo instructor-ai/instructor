@@ -414,21 +414,7 @@ Since everything is already annotated with Pydantic, this code is very simple to
 
 ## Improving the Model
 
-### Single-Label Classification
-
 There's a couple things we could do to make this system a little bit more robust.
-
-### Multi-Label Classification
-
-Notice in the example we use Iterable[Tag] vs Tag. This is because we might want to use a multiclass classification model that returns multiple tag!
-
-### Working with DataFrames
-
-When working with large datasets, you might want to use pandas DataFrames for efficient processing. See our [DataFrame Integration Guide](pandas_df.md) for details.
-
-### Streaming Responses
-
-For real-time processing needs, you can utilize streaming responses. Check out our [Partial Streaming Guide](partial_streaming.md) for implementation details.
 
 1. Use confidence score:
 
@@ -542,6 +528,4 @@ async def get_tags(text: List[str], tags: List[Tag]) -> List[Tag]:
 tag_results = asyncio.run(get_tags(text, tags))
 for tag in tag_results:
     print(tag)
-    #> id=0 name='personal'
     #> id=1 name='phone'
-```
