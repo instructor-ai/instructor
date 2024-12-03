@@ -1,4 +1,5 @@
 # type: ignore[all]
+from uuid import UUID
 from pydantic import BaseModel, Field, ValidationError, validator
 from typing import Optional, Union, Literal, Annotated
 from instructor.dsl.partial import Partial, PartialLiteralMixin
@@ -50,6 +51,7 @@ class PartialEnums(BaseModel):
     d: Annotated[Literal["a_value", 10], Partial]
     e: Annotated[Literal["a_value"], Partial]
     f: Literal["a_value"]
+    g: Annotated[UUID, Partial]
 
 
 def test_partial():
@@ -212,7 +214,7 @@ def test_partial_enums():
     # partial values with the partial model
     partial = Partial[PartialEnums]
     partial_results = (
-        '{"a": "a_", "b": "b_", "c": "c_v", "d": 1, "e": "a_", "f": "a_value"}'
+        '{"a": "a_", "b": "b_", "c": "c_v", "d": 1, "e": "a_", "f": "a_value", "g": "1"}'
     )
     partial_validated = partial.get_partial_model().model_validate_json(partial_results)
 
@@ -222,7 +224,7 @@ def test_partial_enums():
     assert partial_validated.d is None
     assert partial_validated.e is None
     assert partial_validated.f == "a_value"
-
+    assert partial_validated.g is None
     with pytest.raises(ValidationError):
         partial.model_validate_json(partial_results)
 
@@ -231,7 +233,7 @@ def test_partial_enums():
         partial.get_partial_model().model_validate_json('{"f": "a_"}')
 
     resolved_enum_partial_results = (
-        '{"a": "a_value", "b": "b_value", "c": "c_v", "d": 10}'
+        '{"a": "a_value", "b": "b_value", "c": "c_v", "d": 10, "g": "123e4567-e89b-12d3-a456-426655440000"}'
     )
     resolved_enum_partial_validated = partial.get_partial_model().model_validate_json(
         resolved_enum_partial_results
@@ -241,3 +243,4 @@ def test_partial_enums():
     # this value still isn't fully resolved
     assert resolved_enum_partial_validated.c is None
     assert resolved_enum_partial_validated.d == 10
+    assert resolved_enum_partial_validated.g == UUID("123e4567-e89b-12d3-a456-426655440000")
