@@ -75,13 +75,17 @@ def _process_generic_arg(
     if arg_origin is not None:
         # Handle any nested generic type (Union, List, Dict, etc.)
         nested_args = get_args(arg)
-        modified_nested_args = tuple(
+        modified_nested_args = [
             _process_generic_arg(
                 t,
                 make_fields_optional=make_fields_optional,
             )
             for t in nested_args
-        )
+        ]
+        if make_fields_optional and Partial in modified_nested_args:
+            modified_nested_args.append(PartialValidator())
+
+        modified_nested_args = tuple(modified_nested_args)
         # Special handling for Union types (types.UnionType isn't subscriptable)
         if arg_origin in UNION_ORIGINS:
             return Union[modified_nested_args]  # type: ignore

@@ -1,5 +1,6 @@
 # type: ignore[all]
 from uuid import UUID
+from datetime import datetime
 from pydantic import BaseModel, Field, ValidationError, validator
 from typing import Optional, Union, Literal, Annotated
 from instructor.dsl.partial import Partial, PartialLiteralMixin
@@ -25,6 +26,7 @@ class SamplePartial(BaseModel):
 class NestedA(BaseModel):
     a: str
     b: Optional[str]
+    c: Optional[Annotated[datetime, Partial]]
 
 
 class NestedB(BaseModel):
@@ -52,6 +54,8 @@ class PartialEnums(BaseModel):
     e: Annotated[Literal["a_value"], Partial]
     f: Literal["a_value"]
     g: Annotated[UUID, Partial]
+    h: Optional[Annotated[datetime, Partial]]
+    i: Optional[NestedA]
 
 
 def test_partial():
@@ -214,7 +218,7 @@ def test_partial_enums():
     # partial values with the partial model
     partial = Partial[PartialEnums]
     partial_results = (
-        '{"a": "a_", "b": "b_", "c": "c_v", "d": 1, "e": "a_", "f": "a_value", "g": "1"}'
+        '{"a": "a_", "b": "b_", "c": "c_v", "d": 1, "e": "a_", "f": "a_value", "g": "1", "h": "", "i": {"c": ""}}'
     )
     partial_validated = partial.get_partial_model().model_validate_json(partial_results)
 
@@ -225,6 +229,10 @@ def test_partial_enums():
     assert partial_validated.e is None
     assert partial_validated.f == "a_value"
     assert partial_validated.g is None
+    assert partial_validated.h is None
+    assert partial_validated.i is not None
+    assert partial_validated.i.c is None
+
     with pytest.raises(ValidationError):
         partial.model_validate_json(partial_results)
 
@@ -233,7 +241,7 @@ def test_partial_enums():
         partial.get_partial_model().model_validate_json('{"f": "a_"}')
 
     resolved_enum_partial_results = (
-        '{"a": "a_value", "b": "b_value", "c": "c_v", "d": 10, "g": "123e4567-e89b-12d3-a456-426655440000"}'
+        '{"a": "a_value", "b": "b_value", "c": "c_v", "d": 10, "g": "123e4567-e89b-12d3-a456-426655440000", "h": "2024-01-01T00:00:00"}'
     )
     resolved_enum_partial_validated = partial.get_partial_model().model_validate_json(
         resolved_enum_partial_results
@@ -244,3 +252,4 @@ def test_partial_enums():
     assert resolved_enum_partial_validated.c is None
     assert resolved_enum_partial_validated.d == 10
     assert resolved_enum_partial_validated.g == UUID("123e4567-e89b-12d3-a456-426655440000")
+    assert resolved_enum_partial_validated.h == datetime(2024, 1, 1)
