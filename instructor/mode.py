@@ -18,6 +18,7 @@ class Mode(enum.Enum):
     COHERE_TOOLS = "cohere_tools"
     VERTEXAI_TOOLS = "vertexai_tools"
     VERTEXAI_JSON = "vertexai_json"
+    VERTEXAI_PARALLEL_TOOLS = "vertexai_parallel_tools"
     GEMINI_JSON = "gemini_json"
     GEMINI_TOOLS = "gemini_tools"
     COHERE_JSON_SCHEMA = "json_object"
