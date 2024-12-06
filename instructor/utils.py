@@ -12,7 +12,6 @@ from typing import (
     Protocol,
     TypeVar,
 )
-import os
 
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
@@ -47,7 +46,9 @@ class Provider(Enum):
     COHERE = "cohere"
     GEMINI = "gemini"
     DATABRICKS = "databricks"
+    OLLAMA = "ollama"
     UNKNOWN = "unknown"
+    
 
 
 def get_provider(base_url: str) -> Provider:

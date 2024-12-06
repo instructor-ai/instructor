@@ -79,3 +79,8 @@ if importlib.util.find_spec("vertexai") is not None:
     from .client_vertexai import from_vertexai
 
     __all__ += ["from_vertexai"]
+
+if importlib.util.find_spec("ollama") is not None:
+    from .client_ollama import from_ollama
+
+    __all__ += ["from_ollama"]

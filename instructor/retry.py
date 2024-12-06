@@ -108,6 +108,10 @@ def reask_messages(response: ChatCompletion, mode: Mode, exception: Exception):
             }
         )
         return
+    
+    if mode == Mode.OLLAMA_TOOLS:
+        yield response.message
+        return
 
     yield dump_message(response.choices[0].message)
     # TODO: Give users more control on configuration

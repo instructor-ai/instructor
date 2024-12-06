@@ -114,6 +114,9 @@ class OpenAISchema(BaseModel):
 
         if mode == Mode.GEMINI_JSON:
             return cls.parse_gemini_json(completion, validation_context, strict)
+        
+        if mode == Mode.OLLAMA_TOOLS:
+            return cls.parse_ollama_tools(completion, validation_context, strict)
 
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
@@ -126,6 +129,7 @@ class OpenAISchema(BaseModel):
 
         if mode in {Mode.JSON, Mode.JSON_SCHEMA, Mode.MD_JSON}:
             return cls.parse_json(completion, validation_context, strict)
+    
 
         raise ValueError(f"Invalid patch mode: {mode}")
 
@@ -248,6 +252,20 @@ class OpenAISchema(BaseModel):
         ), "Function name does not match"
         return cls.model_validate_json(
             message.function_call.arguments,  # type: ignore[attr-defined]
+            context=validation_context,
+            strict=strict,
+        )
+    
+    @classmethod
+    def parse_ollama_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ):
+        message = completion.message.content
+        return cls.model_validate_json(
+            message,
             context=validation_context,
             strict=strict,
         )

@@ -1,30 +1,29 @@
 # type: ignore[all]
 from __future__ import annotations
 
-from collections.abc import Iterable
+import inspect
+import json
+import logging
+from collections.abc import Generator, Iterable
 from textwrap import dedent
+from typing import (
+    Any,
+    TypeVar,
+    get_args,
+    get_origin,
+)
+
+from openai.types.chat import ChatCompletion
+from pydantic import BaseModel, create_model
+from typing_extensions import ParamSpec
+
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
 from instructor.function_calls import OpenAISchema, openai_schema
-from instructor.utils import merge_consecutive_messages
-from openai.types.chat import ChatCompletion
-from pydantic import BaseModel, create_model
-
-import json
-import inspect
-import logging
-from typing import (
-    get_args,
-    get_origin,
-    TypeVar,
-    Any,
-)
-from collections.abc import Generator
-from typing_extensions import ParamSpec
-
 from instructor.mode import Mode
+from instructor.utils import merge_consecutive_messages
 
 from .utils import transform_to_gemini_prompt
 
@@ -424,7 +423,7 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
             )
 
             # minimize gemini safety related errors - model is highly prone to false alarms
-            from google.generativeai.types import HarmCategory, HarmBlockThreshold
+            from google.generativeai.types import HarmBlockThreshold, HarmCategory
 
             new_kwargs["safety_settings"] = new_kwargs.get("safety_settings", {}) | {
                 HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
@@ -450,6 +449,9 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
 
             new_kwargs["contents"] = contents
             new_kwargs["generation_config"] = generation_config
+
+        elif mode == Mode.OLLAMA_TOOLS:
+            new_kwargs['format'] = response_model.model_json_schema()
         else:
             raise ValueError(f"Invalid patch mode: {mode}")
 

@@ -29,3 +29,4 @@ class Mode(enum.Enum, metaclass=_WarnOnFunctionsAccessEnumMeta):
     VERTEXAI_TOOLS = "vertexai_tools"
     VERTEXAI_JSON = "vertexai_json"
     GEMINI_JSON = "gemini_json"
+    OLLAMA_TOOLS = "ollama_tools"
