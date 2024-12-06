@@ -3,6 +3,7 @@ import json
 import logging
 from functools import wraps
 from typing import Annotated, Any, Optional, TypeVar, cast
+
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (
@@ -20,7 +21,6 @@ from instructor.utils import (
     extract_json_from_codeblock,
     map_to_gemini_function_schema,
 )
-
 
 T = TypeVar("T")
 
@@ -138,6 +138,9 @@ class OpenAISchema(BaseModel):
 
         if mode == Mode.WRITER_TOOLS:
             return cls.parse_writer_tools(completion, validation_context, strict)
+        
+        if mode == Mode.OLLAMA_TOOLS:
+            return cls.parse_ollama_tools(completion, validation_context, strict)
 
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
@@ -381,6 +384,20 @@ class OpenAISchema(BaseModel):
         message = completion.choices[0].message.content or ""
         message = extract_json_from_codeblock(message)
 
+        return cls.model_validate_json(
+            message,
+            context=validation_context,
+            strict=strict,
+        )
+    
+    @classmethod
+    def parse_ollama_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ):
+        message = completion.message.content
         return cls.model_validate_json(
             message,
             context=validation_context,

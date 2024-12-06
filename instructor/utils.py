@@ -54,6 +54,7 @@ class Provider(Enum):
     CEREBRAS = "cerebras"
     FIREWORKS = "fireworks"
     WRITER = "writer"
+    OLLAMA = "ollama"
     UNKNOWN = "unknown"
 
 

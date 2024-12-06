@@ -96,3 +96,8 @@ if importlib.util.find_spec("writerai") is not None:
     from .client_writer import from_writer
 
     __all__ += ["from_writer"]
+
+if importlib.util.find_spec("ollama") is not None:
+    from .client_ollama import from_ollama
+
+    __all__ += ["from_ollama"]
