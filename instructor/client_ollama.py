@@ -22,7 +22,7 @@ def from_ollama(
     client: (
        ollama.AsyncClient
     ),
-    mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
+    mode: instructor.Mode = instructor.Mode.OLLAMA_TOOLS,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
 
