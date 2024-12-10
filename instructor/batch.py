@@ -31,7 +31,9 @@ class RequestBody(BaseModel):
 
 class BatchModel(BaseModel):
     custom_id: str
-    params: RequestBody
+    body: RequestBody
+    url: str
+    method: str
 
 
 class BatchJob:
@@ -149,12 +151,14 @@ class BatchJob:
                 for messages in messages_batch:
                     batch_model = BatchModel(
                         custom_id=str(uuid.uuid4()),
-                        params=RequestBody(
+                        body=RequestBody(
                             model=model,
                             messages=messages,
                             max_tokens=max_tokens,
                             temperature=temperature,
                             **kwargs,
                         ),
+                        method="POST",
+                        url="/v1/chat/completions"
                     )
                     file.write(batch_model.model_dump_json() + "\n")
