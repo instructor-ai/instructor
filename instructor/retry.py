@@ -73,7 +73,7 @@ def initialize_usage(mode: Mode) -> CompletionUsage | Any:
     """
     total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0,
         completion_tokens_details = CompletionTokensDetails(audio_tokens=0, reasoning_tokens=0),
-        prompt_token_details = PromptTokensDetails(audio_tokens=0, cached_tokens=0)
+        prompt_tokens_details = PromptTokensDetails(audio_tokens=0, cached_tokens=0)
     )
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
         from anthropic.types import Usage as AnthropicUsage
