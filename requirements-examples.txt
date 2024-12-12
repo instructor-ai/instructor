@@ -3,7 +3,7 @@ pydantic
 docstring-parser
 rich
 aiohttp
-ruff==0.8.1
+ruff==0.8.3
 pre-commit==4.0.1
 pyright==1.1.390
 typer
