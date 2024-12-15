@@ -118,7 +118,7 @@ class Image(BaseModel):
             decoded: bytes = base64.b64decode(data)
             import imghdr
 
-            img_type: str | None = imghdr.what(None, decoded)
+            img_type: Union[str, None] = imghdr.what(None, decoded)
             if img_type:
                 media_type: str = f"image/{img_type}"
                 if media_type in VALID_MIME_TYPES:
