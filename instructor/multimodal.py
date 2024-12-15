@@ -18,7 +18,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 import mimetypes
 import requests
-from pydantic import BaseModel, Field  # type:ignore
+from pydantic import BaseModel
+from pydantic.fields import Field
 from .mode import Mode
 
 # Constants for Mistral image validation
@@ -81,7 +82,7 @@ class Image(BaseModel):
 
     @classmethod
     def autodetect_safely(
-        cls, source: str | Path
+        cls, source: Union[str, Path]
     ) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
@@ -242,12 +243,12 @@ class Image(BaseModel):
             and self.source.startswith(("http://", "https://"))
             and not self.is_base64(self.source)
         ):
-            return {"type": "image_url", "image_url": self.source}
+            return {"type": "image_url", "url": self.source}
         elif self.data or self.is_base64(str(self.source)):
             data = self.data or str(self.source).split(",", 1)[1]
             return {
                 "type": "image_url",
-                "image_url": f"data:{self.media_type};base64,{data}"
+                "data": f"data:{self.media_type};base64,{data}"
             }
         else:
             raise ValueError("Image data is missing for base64 encoding.")
@@ -257,38 +258,13 @@ class Image(BaseModel):
     source: str | Path = Field(
         description="URL or file path of the audio"
     )  # noqa: UP007
-    data: Union[str, None] = Field(  # noqa: UP007
+    data: str | None = Field(
         None, description="Base64 encoded audio data", repr=False
     )
 
-    @classmethod
-    def from_url(cls, url: str) -> Audio:
-        """Create an Audio instance from a URL."""
-        assert url.endswith(".wav"), "Audio must be in WAV format"
+    # PLACEHOLDER: Image class methods and properties above
 
-        response = requests.get(url)
-        data = base64.b64encode(response.content).decode("utf-8")
-        return cls(source=url, data=data)
-
-    @classmethod
-    def from_path(cls, path: Union[str, Path]) -> Audio:  # noqa: UP007
-        """Create an Audio instance from a file path."""
-        path = Path(path)
-        assert path.is_file(), f"Audio file not found: {path}"
-        assert path.suffix.lower() == ".wav", "Audio must be in WAV format"
-
-        data = base64.b64encode(path.read_bytes()).decode("utf-8")
-        return cls(source=str(path), data=data)
-
-    def to_openai(self) -> dict[str, Any]:
-        """Convert the Audio instance to OpenAI's API format."""
-        return {
-            "type": "input_audio",
-            "input_audio": {"data": self.data, "format": "wav"},
-        }
-
-    def to_anthropic(self) -> dict[str, Any]:
-        raise NotImplementedError("Anthropic is not supported yet")
+    # PLACEHOLDER: ImageWithCacheControl class below
 
 
 class ImageWithCacheControl(Image):
@@ -319,28 +295,14 @@ class ImageWithCacheControl(Image):
 
 
 def convert_contents(
-    contents: Union[  # noqa: UP007
-        str,
-        dict[str, Any],
-        Image,
-        Audio,
-        list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
-    ],
-    mode: Mode,
-) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
-    """Convert content items to the appropriate format based on the specified mode."""
-    if isinstance(contents, str):
-        return contents
-    if isinstance(contents, (Image, Audio)) or isinstance(contents, dict):
-        contents = [contents]
-
-    converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
+    contents: list[Union[str, Image]], mode: Mode  # noqa: UP007
+) -> list[Union[str, dict[str, Any]]]:  # noqa: UP007
+    """Convert contents to the appropriate format for the given mode."""
+    converted_contents: list[Union[str, dict[str, Any]]] = []  # noqa: UP007
     for content in contents:
         if isinstance(content, str):
-            converted_contents.append({"type": "text", "text": content})
-        elif isinstance(content, dict):
             converted_contents.append(content)
-        elif isinstance(content, (Image, Audio)):
+        elif isinstance(content, Image):
             if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
                 converted_contents.append(content.to_anthropic())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
@@ -355,64 +317,41 @@ def convert_contents(
 
 
 def convert_messages(
-    messages: list[
-        dict[
-            str,
-            Union[  # noqa: UP007
-                str,
-                dict[str, Any],
-                Image,
-                Audio,
-                list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
-            ],
-        ]
-    ],
+    messages: list[dict[str, Any]],
     mode: Mode,
-    autodetect_images: bool = False,
+    model: Optional[str] = None,  # Reserved for future provider-specific handling
 ) -> list[dict[str, Any]]:
-    """Convert messages to the appropriate format based on the specified mode."""
-    converted_messages = []
+    """Convert messages to the appropriate format for the given mode.
 
-    def is_image_params(x: Any) -> bool:
-        return isinstance(x, dict) and x.get("type") == "image" and "source" in x  # type: ignore
+    Args:
+        messages: List of message dictionaries to convert
+        mode: The mode to convert messages for (e.g. MISTRAL_JSON)
+        model: Optional model name for provider-specific handling (reserved for future use)
 
-    for message in messages:
-        if "type" in message:
-            if message["type"] in {"audio", "image"}:
-                converted_messages.append(message)  # type: ignore
-            else:
-                raise ValueError(f"Unsupported message type: {message['type']}")
-        role = message["role"]
-        content = message["content"] or []
-        other_kwargs = {
-            k: v for k, v in message.items() if k not in ["role", "content", "type"]
-        }
-        if autodetect_images:
-            if isinstance(content, list):
-                new_content: list[str | dict[str, Any] | Image | Audio] = (
-                    []
-                )  # noqa: UP007
-                for item in content:
-                    if isinstance(item, str):
-                        new_content.append(Image.autodetect_safely(item))
-                    elif is_image_params(item):
-                        new_content.append(
-                            ImageWithCacheControl.from_image_params(
-                                cast(ImageParams, item)
-                            )
-                        )
-                    else:
-                        new_content.append(item)
-                content = new_content
-            elif isinstance(content, str):
-                content = Image.autodetect_safely(content)
-            elif is_image_params(content):
-                content = ImageWithCacheControl.from_image_params(
-                    cast(ImageParams, content)
-                )
-        if isinstance(content, str):
-            converted_messages.append({"role": role, "content": content, **other_kwargs})  # type: ignore
-        else:
-            converted_content = convert_contents(content, mode)
-            converted_messages.append({"role": role, "content": converted_content, **other_kwargs})  # type: ignore
-    return converted_messages  # type: ignore
+    Returns:
+        List of converted message dictionaries
+    """
+    if mode == Mode.MISTRAL_JSON:
+        converted_messages: list[dict[str, Any]] = []
+        for message in messages:
+            if not isinstance(message.get("content"), list):
+                converted_messages.append(message)
+                continue
+
+            content_list: list[dict[str, Any]] = []
+            for item in cast(list[Union[str, Image, dict[str, Any]]], message["content"]):  # noqa: UP007
+                if isinstance(item, str):
+                    content_list.append({"type": "text", "text": item})
+                elif isinstance(item, Image):
+                    content_list.append(item.to_mistral())
+                else:
+                    content_list.append(item)  # item is already dict[str, Any]
+
+            converted_message = message.copy()
+            converted_message["content"] = content_list
+            converted_messages.append(converted_message)
+
+        return converted_messages
+
+    # Return original messages for other modes
+    return messages

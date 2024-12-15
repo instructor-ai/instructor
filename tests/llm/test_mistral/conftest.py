@@ -1,9 +1,10 @@
 """Pytest configuration for Mistral tests."""
 import os
 import pytest
-from mistralai import MistralClient
+from mistralai.client import MistralClient
+from collections.abc import Iterator
 
-def pytest_collection_modifyitems(items):
+def pytest_collection_modifyitems(items: Iterator[pytest.Item]) -> None:
     """Mark tests requiring Mistral API key."""
     for item in items:
         if "test_mistral" in str(item.fspath):
