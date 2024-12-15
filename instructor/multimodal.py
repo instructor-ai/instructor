@@ -7,7 +7,7 @@ import re
 from collections.abc import Mapping
 from functools import lru_cache, cache
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional, TypeVar, TypedDict, ClassVar
+from typing import Any, Callable, Literal, Optional, TypeVar, TypedDict, ClassVar, Union
 from urllib.parse import urlparse
 
 import requests
@@ -47,14 +47,16 @@ class Image(BaseModel):
         "image/gif",
         "image/webp",
     ]
-    source: str | Path = Field(
+    source: Union[str, Path] = Field(
         description="URL, file path, or base64 data of the image"
     )
     media_type: str = Field(description="MIME type of the image")
-    data: str | None = Field(None, description="Base64 encoded image data", repr=False)
+    data: Union[str, None] = Field(
+        None, description="Base64 encoded image data", repr=False
+    )
 
     @classmethod
-    def autodetect(cls, source: str | Path) -> Image | None:
+    def autodetect(cls, source: Union[str, Path]) -> Union[Image, None]:
         """Attempt to autodetect an image from a source string or Path.
 
         Args:
@@ -83,7 +85,7 @@ class Image(BaseModel):
             return None
 
     @classmethod
-    def autodetect_safely(cls, source: str | Path) -> Image | str:
+    def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
@@ -126,7 +128,7 @@ class Image(BaseModel):
         return cls(source=data, media_type=media_type, data=encoded)
 
     @classmethod  # Caching likely unnecessary
-    def from_raw_base64(cls, data: str) -> Image | None:
+    def from_raw_base64(cls, data: str) -> Union[Image, None]:
         """Create an Image from raw base64 data.
 
         Args:
@@ -137,7 +139,7 @@ class Image(BaseModel):
         """
         try:
             decoded: bytes = base64.b64decode(data)
-            img_type: str | None = imghdr.what(None, decoded)
+            img_type: Union[str, None] = imghdr.what(None, decoded)
             if img_type:
                 media_type = mimetypes.guess_type(data)[0]
                 if media_type in cls.VALID_MIME_TYPES:
@@ -152,7 +154,7 @@ class Image(BaseModel):
         if cls.is_base64(url):
             return cls.from_base64(url)
         parsed_url = urlparse(url)
-        media_type: str | None = mimetypes.guess_type(parsed_url.path)[0]
+        media_type: Union[str, None] = mimetypes.guess_type(parsed_url.path)[0]
 
         if not media_type:
             try:
@@ -167,7 +169,7 @@ class Image(BaseModel):
 
     @classmethod
     @lru_cache
-    def from_path(cls, path: str | Path) -> Image:
+    def from_path(cls, path: Union[str, Path]) -> Image:
         path = Path(path)
         if not path.is_file():
             raise FileNotFoundError(f"Image file not found: {path}")
@@ -180,7 +182,7 @@ class Image(BaseModel):
                 f"Image file size ({path.stat().st_size / 1024 / 1024:.1f}MB) "
                 f"exceeds Mistral's limit of {MAX_MISTRAL_IMAGE_SIZE / 1024 / 1024:.1f}MB"
             )
-        media_type: str | None = mimetypes.guess_type(str(path))[0]
+        media_type: Union[str, None] = mimetypes.guess_type(str(path))[0]
         if media_type not in VALID_MISTRAL_MIME_TYPES:
             raise ValueError(
                 f"Unsupported image format: {media_type}. "
@@ -277,8 +279,10 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: str | Path = Field(description="URL or file path of the audio")
-    data: str | None = Field(None, description="Base64 encoded audio data", repr=False)
+    source: Union[str, Path] = Field(description="URL or file path of the audio")
+    data: Union[str, None] = Field(
+        None, description="Base64 encoded audio data", repr=False
+    )
 
 
 class ImageWithCacheControl(Image):
@@ -290,8 +294,8 @@ class ImageWithCacheControl(Image):
 
     @classmethod
     def from_image_params(
-        cls, source: str | Path, image_params: dict[str, Any]
-    ) -> ImageWithCacheControl | None:
+        cls, source: Union[str, Path], image_params: dict[str, Any]
+    ) -> Union[ImageWithCacheControl, None]:
         """Create an ImageWithCacheControl from image parameters.
 
         Args:
@@ -322,11 +326,13 @@ class ImageWithCacheControl(Image):
 
 
 def convert_contents(
-    contents: str | Image | dict[str, Any] | list[str | Image | dict[str, Any]],
+    contents: Union[
+        str, Image, dict[str, Any], list[Union[str, Image, dict[str, Any]]]
+    ],
     mode: Mode,
     *,  # Make autodetect_images keyword-only since it's unused
     _autodetect_images: bool = True,  # Prefix with _ to indicate intentionally unused
-) -> str | list[dict[str, Any]]:
+) -> Union[str, list[dict[str, Any]]]:
     """Convert contents to the appropriate format for the given mode."""
     # Handle single string case
     if isinstance(contents, str):
@@ -403,7 +409,9 @@ def convert_messages(
 
         # Handle list content
         if isinstance(content, list):
-            converted_message["content"] = convert_contents(content, mode)
+            # Explicitly type the content as Union[str, Image, dict[str, Any]]
+            typed_content: list[Union[str, Image, dict[str, Any]]] = content
+            converted_message["content"] = convert_contents(typed_content, mode)
             converted_messages.append(converted_message)
             continue
 
