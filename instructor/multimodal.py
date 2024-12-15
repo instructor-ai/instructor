@@ -47,20 +47,20 @@ class ImageParams(ImageParamsBase, total=False):
 
 
 class Image(BaseModel):
-    source: Union[str, Path] = Field(  # noqa: UP007
+    source: str | Path = Field(
         description="URL, file path, or base64 data of the image"
     )
     media_type: str = Field(description="MIME type of the image")
-    data: Union[str, None] = Field(  # noqa: UP007
+    data: str | None = Field(
         None, description="Base64 encoded image data", repr=False
     )
 
     @classmethod
-    def autodetect(cls, source: Union[str, Path]) -> Image:  # noqa: UP007
+    def autodetect(cls, source: str | Path) -> Image:
         """Attempt to autodetect an image from a source string or Path.
 
         Args:
-            source (Union[str,path]): The source string or path.
+            source (str | Path): The source string or path.
         Returns:
             An Image if the source is detected to be a valid image.
         Raises:
@@ -82,8 +82,8 @@ class Image(BaseModel):
 
     @classmethod
     def autodetect_safely(
-        cls, source: Union[str, Path]
-    ) -> Union[Image, str]:  # noqa: UP007
+        cls, source: str | Path
+    ) -> Image | str:
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
@@ -154,7 +154,7 @@ class Image(BaseModel):
 
     @classmethod
     @lru_cache
-    def from_path(cls, path: Union[str, Path]) -> Image:  # noqa: UP007
+    def from_path(cls, path: str | Path) -> Image:
         path = Path(path)
         if not path.is_file():
             raise FileNotFoundError(f"Image file not found: {path}")
@@ -295,10 +295,10 @@ class ImageWithCacheControl(Image):
 
 
 def convert_contents(
-    contents: list[Union[str, Image]], mode: Mode  # noqa: UP007
-) -> list[Union[str, dict[str, Any]]]:  # noqa: UP007
+    contents: list[str | Image], mode: Mode
+) -> list[str | dict[str, Any]]:
     """Convert contents to the appropriate format for the given mode."""
-    converted_contents: list[Union[str, dict[str, Any]]] = []  # noqa: UP007
+    converted_contents: list[str | dict[str, Any]] = []
     for content in contents:
         if isinstance(content, str):
             converted_contents.append(content)
@@ -319,14 +319,12 @@ def convert_contents(
 def convert_messages(
     messages: list[dict[str, Any]],
     mode: Mode,
-    model: Optional[str] = None,  # Reserved for future provider-specific handling
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format for the given mode.
 
     Args:
         messages: List of message dictionaries to convert
         mode: The mode to convert messages for (e.g. MISTRAL_JSON)
-        model: Optional model name for provider-specific handling (reserved for future use)
 
     Returns:
         List of converted message dictionaries
@@ -339,7 +337,7 @@ def convert_messages(
                 continue
 
             content_list: list[dict[str, Any]] = []
-            for item in cast(list[Union[str, Image, dict[str, Any]]], message["content"]):  # noqa: UP007
+            for item in cast(list[str | Image | dict[str, Any]], message["content"]):
                 if isinstance(item, str):
                     content_list.append({"type": "text", "text": item})
                 elif isinstance(item, Image):
