@@ -86,8 +86,10 @@ async def process_response_async(
         mode=mode,
     )
 
-    # ? This really hints at the fact that we need a better way of
-    # ? attaching usage data and the raw response to the model we return.
+    # Ensure token usage details are preserved
+    if hasattr(response, 'usage') and hasattr(response.usage, 'prompt_tokens_details'):
+        model.usage = response.usage
+
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
         return [task for task in model.tasks]
