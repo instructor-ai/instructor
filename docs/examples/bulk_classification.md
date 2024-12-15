@@ -268,7 +268,7 @@ async def tag_request(request: TagRequest) -> TagResponse:
         predictions=predictions,
     )
 
-## Working with dataframes
+## working-with-dataframes
 
 When working with large datasets, it's often convenient to use pandas DataFrames. Here's how you can integrate this classification system with pandas:
 
@@ -285,7 +285,7 @@ async def classify_dataframe(df: pd.DataFrame, text_column: str, tags: List[TagW
     return df
 ```
 
-## Streaming Responses
+## streaming-responses
 
 For real-time processing, you can stream responses as they become available:
 
