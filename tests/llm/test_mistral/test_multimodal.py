@@ -17,10 +17,12 @@ test_images = {
     "gif": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif",
 }
 
+
 class ImageDescription(BaseModel):
     objects: list[str] = Field(..., description="The objects in the image")
     scene: str = Field(..., description="The scene of the image")
     colors: list[str] = Field(..., description="The colors in the image")
+
 
 @pytest.mark.requires_mistral
 @pytest.mark.parametrize("model, mode", product(models, modes))
@@ -50,6 +52,7 @@ def test_multimodal_image_description(model: str, mode: Mode, client: Any) -> No
     assert response.scene != ""
     assert len(response.colors) > 0
 
+
 def test_image_size_validation(tmp_path: Path) -> None:
     """Test that images over 10MB are rejected."""
     large_image: Path = tmp_path / "large_image.jpg"
@@ -58,8 +61,12 @@ def test_image_size_validation(tmp_path: Path) -> None:
         typed_file: IO[bytes] = cast(IO[bytes], file_obj)
         typed_file.write(b"0" * (10 * 1024 * 1024 + 1))
 
-    with pytest.raises(ValueError, match=r"Image file size \(10\.0MB\) exceeds Mistral's limit of 10\.0MB"):
+    with pytest.raises(
+        ValueError,
+        match=r"Image file size \(10\.0MB\) exceeds Mistral's limit of 10\.0MB",
+    ):
         Image.from_path(large_image).to_mistral()
+
 
 def test_image_format_validation() -> None:
     """Test validation of supported image formats."""
@@ -72,6 +79,7 @@ def test_image_format_validation() -> None:
     # Test invalid format
     with pytest.raises(ValueError, match="Unsupported image format"):
         Image(source="test.bmp", media_type="image/bmp", data="fake_data").to_mistral()
+
 
 @pytest.mark.requires_mistral
 @pytest.mark.parametrize("model, mode", product(models, modes))
@@ -107,6 +115,7 @@ def test_multiple_images(model: str, mode: Mode, client: Any) -> None:
             ],
         )
 
+
 def test_image_downscaling() -> None:
     """Test automatic downscaling of large images."""
     large_image_url = "https://example.com/large_image.jpg"  # Mock URL
@@ -125,17 +134,19 @@ def test_image_downscaling() -> None:
         assert mistral_format is not None
         # Note: Actual downscaling verification would require PIL/image processing
 
+
 def test_base64_image_handling(base64_image: str) -> None:
     """Test handling of base64-encoded images."""
     image = Image(
         source="data:image/jpeg;base64," + base64_image,
         media_type="image/jpeg",
-        data=base64_image
+        data=base64_image,
     )
 
     mistral_format = image.to_mistral()
     assert mistral_format["type"] == "image_url"
     assert mistral_format["data"].startswith("data:image/jpeg;base64,")
+
 
 @pytest.fixture
 def base64_image() -> str:

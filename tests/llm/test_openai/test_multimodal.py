@@ -9,10 +9,12 @@ from typing import Any
 
 image_url = "https://retail.degroot-inc.com/wp-content/uploads/2024/01/AS_Blueberry_Patriot_1-605x605.jpg"
 
+
 class ImageDescription(BaseModel):
     objects: list[str] = Field(..., description="The objects in the image")
     scene: str = Field(..., description="The scene of the image")
     colors: list[str] = Field(..., description="The colors in the image")
+
 
 @pytest.mark.requires_openai
 @pytest.mark.parametrize("model, mode", product(models, modes))
@@ -42,9 +44,12 @@ def test_multimodal_image_description(model: str, mode: Mode, client: Any) -> No
     assert response.scene != ""
     assert len(response.colors) > 0
 
+
 @pytest.mark.requires_openai
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_multimodal_image_description_autodetect(model: str, mode: Mode, client: Any) -> None:
+def test_multimodal_image_description_autodetect(
+    model: str, mode: Mode, client: Any
+) -> None:
     client = instructor.from_openai(client, mode=mode)
     response = client.chat.completions.create(
         model=model,  # Ensure this is a vision-capable model
@@ -71,9 +76,12 @@ def test_multimodal_image_description_autodetect(model: str, mode: Mode, client:
     assert response.scene != ""
     assert len(response.colors) > 0
 
+
 @pytest.mark.requires_openai
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_multimodal_image_description_autodetect_no_response_model(model: str, mode: Mode, client: Any) -> None:
+def test_multimodal_image_description_autodetect_no_response_model(
+    model: str, mode: Mode, client: Any
+) -> None:
     client = instructor.from_openai(client, mode=mode)
     response = client.chat.completions.create(
         response_model=None,
