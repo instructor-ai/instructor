@@ -268,7 +268,7 @@ async def tag_request(request: TagRequest) -> TagResponse:
         predictions=predictions,
     )
 
-## Working with DataFrames
+## Working with dataframes
 
 When working with large datasets, it's often convenient to use pandas DataFrames. Here's how you can integrate this classification system with pandas:
 

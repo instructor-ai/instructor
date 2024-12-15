@@ -103,3 +103,113 @@ When working with images in Pixtral:
 - Base64 and file paths are supported input formats
 
 The `Image` class handles all validation and preprocessing automatically, ensuring your images meet Mistral's requirements.
+
+## Async Implementation
+
+```python
+import os
+from pydantic import BaseModel
+from mistralai import AsyncMistral
+from instructor import from_mistral, Mode
+
+class UserDetails(BaseModel):
+    name: str
+    age: int
+
+# Initialize async client
+client = AsyncMistral(api_key=os.environ.get("MISTRAL_API_KEY"))
+instructor_client = from_mistral(
+    client=client,
+    model="mistral-large-latest",
+    mode=Mode.MISTRAL_TOOLS,
+    max_tokens=1000,
+)
+
+async def get_user_details(text: str) -> UserDetails:
+    return await instructor_client.messages.create(
+        response_model=UserDetails,
+        messages=[{"role": "user", "content": text}],
+        temperature=0,
+    )
+
+# Usage
+import asyncio
+user = asyncio.run(get_user_details("Jason is 10"))
+print(user)
+```
+
+## Streaming Support
+
+Mistral supports streaming responses, which can be useful for real-time processing:
+
+```python
+from typing import AsyncIterator
+from pydantic import BaseModel
+
+class PartialResponse(BaseModel):
+    partial_text: str
+
+async def stream_response(text: str) -> AsyncIterator[PartialResponse]:
+    async for partial in instructor_client.messages.create(
+        response_model=PartialResponse,
+        messages=[{"role": "user", "content": text}],
+        temperature=0,
+        stream=True,
+    ):
+        yield partial
+
+# Usage
+async for chunk in stream_response("Describe the weather"):
+    print(chunk.partial_text)
+```
+
+## Using Instructor Hooks
+
+Hooks allow you to add custom processing logic:
+
+```python
+from instructor import patch
+
+# Add a custom hook
+@patch.register_hook
+def log_response(response, **kwargs):
+    print(f"Model response: {response}")
+    return response
+
+# The hook will be called automatically
+result = instructor_client.messages.create(
+    response_model=UserDetails,
+    messages=[{"role": "user", "content": "Jason is 10"}],
+    temperature=0,
+)
+```
+
+## Best Practices
+
+When working with Mistral and Instructor:
+
+1. **API Key Management**
+   - Use environment variables for API keys
+   - Consider using a .env file for development
+
+2. **Model Selection**
+   - Use mistral-large-latest for complex tasks
+   - Use mistral-medium or mistral-small for simpler tasks
+   - Use pixtral for multimodal applications
+
+3. **Error Handling**
+   - Implement proper try-except blocks
+   - Handle rate limits and token limits
+   - Use validation_context to prevent hallucinations
+
+4. **Performance Optimization**
+   - Use async implementations for concurrent requests
+   - Implement streaming for long responses
+   - Cache responses when appropriate
+
+## Related Resources
+
+- [Mistral AI Documentation](https://docs.mistral.ai/)
+- [Instructor GitHub Repository](https://github.com/jxnl/instructor/)
+- [Pydantic Documentation](https://docs.pydantic.dev/)
+- [AsyncIO in Python](https://docs.python.org/3/library/asyncio.html)

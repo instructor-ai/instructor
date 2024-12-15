@@ -344,7 +344,7 @@ plugins:
          'hub/batch_classification_langsmith.md': 'examples/batch_classification_langsmith.md'
          'hub/extract_contact_info.md': 'examples/extract_contact_info.md'
          'hub/index.md': 'examples/index.md'
-         'hub/knowledge_graph.md': 'examples/building_knowledge_graph.md'
+         'hub/knowledge_graph.md': 'examples/building_knowledge_graphs.md'
          'hub/multiple_classification.md': 'examples/multiple_classification.md'
          'hub/pandas_df.md': 'examples/pandas_df.md'
          'hub/partial_streaming.md': 'examples/partial_streaming.md'
