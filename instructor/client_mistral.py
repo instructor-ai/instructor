@@ -1,58 +1,94 @@
 # Future imports to ensure compatibility with Python 3.9
 from __future__ import annotations
 
+from typing import Any, Dict, Literal, Protocol, overload, TYPE_CHECKING, Callable, TypeVar, Union
 
-from mistralai import Mistral
-import instructor
-from typing import overload, Any, Literal
+if TYPE_CHECKING:
+    from mistralai.client import MistralClient as Mistral
+    from mistralai.models.chat_completion import ChatCompletionResponse
+    from instructor import Instructor, AsyncInstructor
+    from instructor.patch import patch, PatchedFunctionReturn
+else:
+    from mistralai import Mistral
+    from instructor import Instructor, AsyncInstructor
+    from instructor.patch import patch
 
+from instructor.mode import Mode
+from instructor.utils import Provider
+
+T = TypeVar("T")
+PatchFunction = Callable[..., Union[T, PatchedFunctionReturn]]
+
+class MistralChatProtocol(Protocol):
+    def complete(self, **kwargs: Dict[str, Any]) -> ChatCompletionResponse: ...
+    async def complete_async(self, **kwargs: Dict[str, Any]) -> ChatCompletionResponse: ...
+
+class MistralChat:
+    client: Mistral
+    complete: Callable[..., ChatCompletionResponse]
+    complete_async: Callable[..., ChatCompletionResponse]
+
+    def __init__(self, client: Mistral) -> None:
+        self.client = client
+        self.complete = client.chat.complete
+        self.complete_async = client.chat.complete_async
 
 @overload
 def from_mistral(
     client: Mistral,
-    mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
+    mode: Mode = Mode.MISTRAL_JSON,
     use_async: Literal[False] = False,
     **kwargs: Any,
-) -> instructor.Instructor: ...
+) -> Instructor: ...
 
 
 @overload
 def from_mistral(
     client: Mistral,
-    mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
+    mode: Mode = Mode.MISTRAL_JSON,
     use_async: Literal[True] = True,
     **kwargs: Any,
-) -> instructor.AsyncInstructor: ...
+) -> AsyncInstructor: ...
 
 
 def from_mistral(
     client: Mistral,
-    mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
+    mode: Mode = Mode.MISTRAL_JSON,
     use_async: bool = False,
     **kwargs: Any,
-) -> instructor.Instructor | instructor.AsyncInstructor:
+) -> Instructor | AsyncInstructor:
     assert mode in {
-        instructor.Mode.MISTRAL_TOOLS,
-    }, "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
+        Mode.MISTRAL_TOOLS,
+        Mode.MISTRAL_JSON,
+    }, f"Mode must be one of {Mode.MISTRAL_TOOLS}, {Mode.MISTRAL_JSON}"
 
     assert isinstance(
         client, Mistral
     ), "Client must be an instance of mistralai.Mistral"
 
+    chat_client = MistralChat(client)
+
     if not use_async:
-        return instructor.Instructor(
+        return Instructor(
             client=client,
-            create=instructor.patch(create=client.chat.complete, mode=mode),
-            provider=instructor.Provider.MISTRAL,
+            create=patch(
+                create=chat_client.complete,
+                mode=mode,
+                provider=Provider.MISTRAL,
+            ),
+            provider=Provider.MISTRAL,
             mode=mode,
             **kwargs,
         )
-
     else:
-        return instructor.AsyncInstructor(
+        return AsyncInstructor(
             client=client,
-            create=instructor.patch(create=client.chat.complete_async, mode=mode),
-            provider=instructor.Provider.MISTRAL,
+            create=patch(
+                create=chat_client.complete_async,
+                mode=mode,
+                provider=Provider.MISTRAL,
+            ),
+            provider=Provider.MISTRAL,
             mode=mode,
             **kwargs,
         )

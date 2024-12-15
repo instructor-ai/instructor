@@ -21,6 +21,10 @@ import requests
 from pydantic import BaseModel, Field  # type:ignore
 from .mode import Mode
 
+# Constants for Mistral image validation
+VALID_MISTRAL_MIME_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+MAX_MISTRAL_IMAGE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
+
 F = TypeVar("F", bound=Callable[..., Any])
 K = TypeVar("K", bound=Hashable)
 V = TypeVar("V")
@@ -157,9 +161,14 @@ class Image(BaseModel):
         if path.stat().st_size == 0:
             raise ValueError("Image file is empty")
 
+        if path.stat().st_size > MAX_MISTRAL_IMAGE_SIZE:
+            raise ValueError(f"Image file size ({path.stat().st_size / 1024 / 1024:.1f}MB) "
+                           f"exceeds Mistral's limit of {MAX_MISTRAL_IMAGE_SIZE / 1024 / 1024:.1f}MB")
+
         media_type, _ = mimetypes.guess_type(str(path))
-        if media_type not in VALID_MIME_TYPES:
-            raise ValueError(f"Unsupported image format: {media_type}")
+        if media_type not in VALID_MISTRAL_MIME_TYPES:
+            raise ValueError(f"Unsupported image format: {media_type}. "
+                           f"Supported formats are: {', '.join(VALID_MISTRAL_MIME_TYPES)}")
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=path, media_type=media_type, data=data)
@@ -206,8 +215,43 @@ class Image(BaseModel):
         else:
             raise ValueError("Image data is missing for base64 encoding.")
 
+    def to_mistral(self) -> dict[str, Any]:
+        """Convert the image to Mistral's API format.
 
-class Audio(BaseModel):
+        Returns:
+            dict[str, Any]: Image data in Mistral's API format, either as a URL or base64 data URI.
+
+        Raises:
+            ValueError: If the image format is not supported by Mistral or exceeds size limit.
+        """
+        # Validate media type
+        if self.media_type not in VALID_MISTRAL_MIME_TYPES:
+            raise ValueError(f"Unsupported image format for Mistral: {self.media_type}. "
+                           f"Supported formats are: {', '.join(VALID_MISTRAL_MIME_TYPES)}")
+
+        # For base64 data, validate size
+        if self.data:
+            # Calculate size of decoded base64 data
+            data_size = len(base64.b64decode(self.data))
+            if data_size > MAX_MISTRAL_IMAGE_SIZE:
+                raise ValueError(f"Image size ({data_size / 1024 / 1024:.1f}MB) exceeds "
+                               f"Mistral's limit of {MAX_MISTRAL_IMAGE_SIZE / 1024 / 1024:.1f}MB")
+
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.is_base64(self.source)
+        ):
+            return {"type": "image_url", "image_url": self.source}
+        elif self.data or self.is_base64(str(self.source)):
+            data = self.data or str(self.source).split(",", 1)[1]
+            return {
+                "type": "image_url",
+                "image_url": f"data:{self.media_type};base64,{data}"
+            }
+        else:
+            raise ValueError("Image data is missing for base64 encoding.")
+
     """Represents an audio that can be loaded from a URL or file path."""
 
     source: str | Path = Field(
@@ -301,6 +345,8 @@ def convert_contents(
                 converted_contents.append(content.to_anthropic())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
                 raise NotImplementedError("Gemini is not supported yet")
+            elif mode in {Mode.MISTRAL_JSON, Mode.MISTRAL_TOOLS}:
+                converted_contents.append(content.to_mistral())
             else:
                 converted_contents.append(content.to_openai())
         else:
