@@ -330,8 +330,8 @@ def convert_contents(
         str, Image, dict[str, Any], list[Union[str, Image, dict[str, Any]]]
     ],
     mode: Mode,
-    *,  # Make autodetect_images keyword-only since it's unused
-    _autodetect_images: bool = True,  # Prefix with _ to indicate intentionally unused
+    *,  # Make autodetect_images keyword-only
+    autodetect_images: bool = True,
 ) -> Union[str, list[dict[str, Any]]]:
     """Convert contents to the appropriate format for the given mode."""
     # Handle single string case
@@ -377,8 +377,8 @@ def convert_contents(
 def convert_messages(
     messages: list[dict[str, Any]],
     mode: Mode,
-    *,  # Make autodetect_images keyword-only since it's unused
-    _autodetect_images: bool = True,  # Prefix with _ to indicate intentionally unused
+    *,  # Make autodetect_images keyword-only
+    autodetect_images: bool = True,
 ) -> list[dict[str, Any]]:
     """Convert messages to the appropriate format for the given mode.
 
