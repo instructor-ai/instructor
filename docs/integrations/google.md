@@ -12,7 +12,7 @@ This guide will show you how to use Instructor with the Google.GenerativeAI libr
 Google's Gemini models provide powerful AI capabilities with multimodal support. This guide shows you how to use Instructor with Google's Gemini models for type-safe, validated responses.
 
 ```bash
-pip install "instructor[google-generativeai]
+pip install "instructor[google-generativeai, vertexai]"
 ```
 
 ## Simple User Example (Sync)
