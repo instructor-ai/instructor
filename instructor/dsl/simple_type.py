@@ -26,7 +26,7 @@ class ModelAdapter(typing.Generic[T]):
         return create_model(
             "Response",
             content=(response_model, ...),
-            __doc__="Correctly Formated and Extracted Response.",
+            __doc__="Correctly Formatted and Extracted Response.",
             __base__=(AdapterBase, OpenAISchema),
         )
 
