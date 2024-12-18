@@ -500,7 +500,6 @@ def handle_vertexai_parallel_tools(
     ), "stream=True is not supported when using PARALLEL_TOOLS mode"
     
     from instructor.client_vertexai import vertexai_process_response
-    from instructor.dsl.parallel import VertexAIParallelModel
     
     # Extract concrete types before passing to vertexai_process_response
     model_types = list(get_types_array(response_model))

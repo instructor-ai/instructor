@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Type, Union, get_origin
+from typing import Any, Union, get_origin
 
 from vertexai.preview.generative_models import ToolConfig  # type: ignore
 import vertexai.generative_models as gm  # type: ignore
@@ -27,7 +27,7 @@ def _create_gemini_json_schema(model: BaseModel):
     return gemini_schema
 
 
-def _create_vertexai_tool(models: Union[BaseModel, list[BaseModel], Type]) -> gm.Tool:
+def _create_vertexai_tool(models: Union[BaseModel, list[BaseModel], type]) -> gm.Tool:  # noqa: UP007
     """Creates a tool with function declarations for single model or list of models"""
     # Handle Iterable case first
     if get_origin(models) is not None:
@@ -35,8 +35,6 @@ def _create_vertexai_tool(models: Union[BaseModel, list[BaseModel], Type]) -> gm
     else:
         # Handle both single model and list of models
         model_list = models if isinstance(models, list) else [models]
-
-    print(f"Debug - Model list: {[model.__name__ for model in model_list]}")
     
     declarations = []
     for model in model_list:
@@ -101,7 +99,7 @@ def vertexai_function_response_parser(
     )
 
 
-def vertexai_process_response(_kwargs: dict[str, Any], model: Union[BaseModel, list[BaseModel], Type]):
+def vertexai_process_response(_kwargs: dict[str, Any], model: Union[BaseModel, list[BaseModel], type]):  # noqa: UP007
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
 

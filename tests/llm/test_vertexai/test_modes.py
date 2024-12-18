@@ -1,5 +1,5 @@
 from itertools import product
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import vertexai.generative_models as gm  # type: ignore
 import pytest
 import instructor
