@@ -54,7 +54,9 @@ class VertexAIParallelBase(ParallelBase):
         validation_context: Optional[Any] = None,
         strict: Optional[bool] = None,
     ) -> Generator[BaseModel, None, None]:
-        assert mode == Mode.VERTEXAI_PARALLEL_TOOLS, "Mode must be VERTEXAI_PARALLEL_TOOLS"
+        assert (
+            mode == Mode.VERTEXAI_PARALLEL_TOOLS
+        ), "Mode must be VERTEXAI_PARALLEL_TOOLS"
 
         if not response or not response.candidates:
             return
@@ -64,9 +66,7 @@ class VertexAIParallelBase(ParallelBase):
                 continue
 
             for part in candidate.content.parts:
-                if (hasattr(part, 'function_call') and
-                    part.function_call is not None):
-
+                if hasattr(part, "function_call") and part.function_call is not None:
                     name = part.function_call.name
                     arguments = part.function_call.args
 
@@ -115,6 +115,7 @@ def handle_parallel_model(typehint: type[Iterable[T]]) -> list[dict[str, Any]]:
 def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
     the_types = get_types_array(typehint)
     return ParallelBase(*[model for model in the_types])
+
 
 def VertexAIParallelModel(typehint: type[Iterable[T]]) -> VertexAIParallelBase:
     the_types = get_types_array(typehint)
