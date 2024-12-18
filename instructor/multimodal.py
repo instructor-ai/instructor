@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 import mimetypes
 import requests
-from pydantic import BaseModel, Field  # type:ignore
+from pydantic import BaseModel, Field
 from .mode import Mode
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -76,9 +76,7 @@ class Image(BaseModel):
         raise ValueError("Unable to determine image type or unsupported image format")
 
     @classmethod
-    def autodetect_safely(
-        cls, source: str | Path
-    ) -> Union[Image, str]:  # noqa: UP007
+    def autodetect_safely(cls, source: str | Path) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
@@ -210,9 +208,7 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: str | Path = Field(
-        description="URL or file path of the audio"
-    )  # noqa: UP007
+    source: str | Path = Field(description="URL or file path of the audio")  # noqa: UP007
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded audio data", repr=False
     )
@@ -343,9 +339,7 @@ def convert_messages(
         }
         if autodetect_images:
             if isinstance(content, list):
-                new_content: list[str | dict[str, Any] | Image | Audio] = (
-                    []
-                )  # noqa: UP007
+                new_content: list[str | dict[str, Any] | Image | Audio] = []  # noqa: UP007
                 for item in content:
                     if isinstance(item, str):
                         new_content.append(Image.autodetect_safely(item))
@@ -365,8 +359,12 @@ def convert_messages(
                     cast(ImageParams, content)
                 )
         if isinstance(content, str):
-            converted_messages.append({"role": role, "content": content, **other_kwargs})  # type: ignore
+            converted_messages.append(  # type: ignore
+                {"role": role, "content": content, **other_kwargs}
+            )
         else:
             converted_content = convert_contents(content, mode)
-            converted_messages.append({"role": role, "content": converted_content, **other_kwargs})  # type: ignore
+            converted_messages.append(  # type: ignore
+                {"role": role, "content": converted_content, **other_kwargs}
+            )
     return converted_messages  # type: ignore
