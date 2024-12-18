@@ -100,8 +100,8 @@ def vertexai_function_response_parser(
 
 
 def vertexai_process_response(
-    _kwargs: dict[str, Any], model: Union[BaseModel, list[BaseModel], type]
-):  # noqa: UP007
+    _kwargs: dict[str, Any], model: Union[BaseModel, list[BaseModel], type] # noqa: UP007
+):  
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
 
