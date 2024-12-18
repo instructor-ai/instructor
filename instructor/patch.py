@@ -155,7 +155,7 @@ def patch(  # type: ignore
 
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
-        )
+        )  # type: ignore
         new_kwargs = handle_templating(new_kwargs, context)
 
         response = await retry_async(
@@ -186,7 +186,7 @@ def patch(  # type: ignore
 
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
-        )
+        )  # type: ignore
 
         new_kwargs = handle_templating(new_kwargs, context)
 

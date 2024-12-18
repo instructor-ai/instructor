@@ -31,22 +31,22 @@ def _create_vertexai_tool(models: Union[BaseModel, list[BaseModel], type]) -> gm
     """Creates a tool with function declarations for single model or list of models"""
     # Handle Iterable case first
     if get_origin(models) is not None:
-        model_list = list(get_types_array(models))
+        model_list = list(get_types_array(models))  # type: ignore
     else:
         # Handle both single model and list of models
         model_list = models if isinstance(models, list) else [models]
-    
-    declarations = []
-    for model in model_list:
-        parameters = _create_gemini_json_schema(model)
-        declaration = gm.FunctionDeclaration(
-            name=model.__name__, 
-            description=model.__doc__, 
-            parameters=parameters
-        )
-        declarations.append(declaration)
 
-    return gm.Tool(function_declarations=declarations)
+    declarations = []
+    for model in model_list:  # type: ignore
+        parameters = _create_gemini_json_schema(model)  # type: ignore
+        declaration = gm.FunctionDeclaration(
+            name=model.__name__,  # type: ignore
+            description=model.__doc__,  # type: ignore
+            parameters=parameters,
+        )
+        declarations.append(declaration)  # type: ignore
+
+    return gm.Tool(function_declarations=declarations)  # type: ignore
 
 
 def vertexai_message_parser(
@@ -99,7 +99,9 @@ def vertexai_function_response_parser(
     )
 
 
-def vertexai_process_response(_kwargs: dict[str, Any], model: Union[BaseModel, list[BaseModel], type]):  # noqa: UP007
+def vertexai_process_response(
+    _kwargs: dict[str, Any], model: Union[BaseModel, list[BaseModel], type]
+):  # noqa: UP007
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
 
