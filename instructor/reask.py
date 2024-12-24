@@ -108,6 +108,15 @@ def reask_gemini_tools(
 
     reask_msgs = [
         {
+            "role": "model",
+            "parts": [
+                glm.FunctionCall(
+                    name=response.parts[0].function_call.name,
+                    args=response.parts[0].function_call.args,
+                )
+            ],
+        },
+        {
             "role": "function",
             "parts": [
                 glm.Part(
