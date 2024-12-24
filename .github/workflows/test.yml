@@ -44,10 +44,9 @@ jobs:
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
 
       - name: Run Gemini Tests
-        if: matrix.python-version == '3.11'
         run: poetry run pytest tests/llm/test_gemini
         env:
-          GEMINI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
