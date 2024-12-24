@@ -538,6 +538,6 @@ This project is licensed under the terms of the MIT License.
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-<a href="https://github.com/jxnl/instructor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
+<a href="https://github.com/instructor-ai/instructor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=instructor-ai/instructor" />
 </a>
