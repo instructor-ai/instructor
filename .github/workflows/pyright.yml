@@ -31,5 +31,3 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - uses: jakebailey/pyright-action@v2
-        with:
-          version: 1.1.373
