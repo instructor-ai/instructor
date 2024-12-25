@@ -1,18 +1,3 @@
-[tool.pyright]
-include = ["instructor"]
-exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-    "src/experimental",
-    "src/typestubs",
-    "**/tests/**",
-]
-pythonVersion = "3.9"
-typeCheckingMode = "strict"
-# Allow "redundant" runtime type-checking.
-reportUnnecessaryIsInstance = "none"
-reportUnnecessaryTypeIgnoreComment = "error"
-
 [project]
 authors = [
     {name = "Jason Liu", email = "jason@jxnl.co"},
@@ -39,6 +24,22 @@ readme = "README.md"
 
 [project.urls]
 repository = "https://github.com/jxnl/instructor"
+
+[tool.pyright]
+include = ["instructor"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs",
+    "**/tests/**",
+]
+
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+
+pythonVersion = "3.9"
+pythonPlatform = "Linux"
 
 [project.optional-dependencies]
 test-docs = [
@@ -87,7 +88,7 @@ dev = [
     "pytest<9.0.0,>=8.3.3",
     "pytest-asyncio<1.0.0,>=0.24.0",
     "coverage<8.0.0,>=7.3.2",
-    "pyright<2.0.0,>=1.1.360",
+    "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
     "black<25.0.0,>=24.10.0",
 ]

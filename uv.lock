@@ -1748,7 +1748,7 @@ dev = [
     { name = "black", specifier = ">=24.10.0,<25.0.0" },
     { name = "coverage", specifier = ">=7.3.2,<8.0.0" },
     { name = "jsonref", specifier = ">=1.1.0,<2.0.0" },
-    { name = "pyright", specifier = ">=1.1.360,<2.0.0" },
+    { name = "pyright", specifier = "<2.0.0" },
     { name = "pytest", specifier = ">=8.3.3,<9.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.24.0,<1.0.0" },
 ]
