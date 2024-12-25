@@ -11,19 +11,18 @@ from typing import overload, Any, Literal
 def from_mistral(
     client: Mistral,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
-    use_async: Literal[False] = False,
+    use_async: Literal[True] = True,
     **kwargs: Any,
-) -> instructor.Instructor: ...
+) -> instructor.AsyncInstructor: ...
 
 
 @overload
 def from_mistral(
     client: Mistral,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
-    use_async: Literal[True] = True,
+    use_async: Literal[False] = False,
     **kwargs: Any,
-) -> instructor.AsyncInstructor: ...
-
+) -> instructor.Instructor: ...
 
 def from_mistral(
     client: Mistral,
@@ -34,6 +33,8 @@ def from_mistral(
     assert mode in {
         instructor.Mode.MISTRAL_TOOLS,
     }, "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
+
+    
 
     assert isinstance(
         client, Mistral
