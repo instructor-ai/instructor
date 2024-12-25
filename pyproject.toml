@@ -26,7 +26,7 @@ readme = "README.md"
 package = true
 
 [project.urls]
-repository = "https://github.com/jxnl/instructor"
+repository = "https://github.com/instructor-ai/instructor"
 
 [tool.pyright]
 include = ["instructor"]

@@ -1596,7 +1596,7 @@ wheels = [
 [[package]]
 name = "instructor"
 version = "1.7.1"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "docstring-parser" },
