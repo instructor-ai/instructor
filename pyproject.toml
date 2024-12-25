@@ -22,6 +22,9 @@ version = "1.7.1"
 description = "structured outputs for llm"
 readme = "README.md"
 
+[tool.uv]
+package = true
+
 [project.urls]
 repository = "https://github.com/jxnl/instructor"
 
