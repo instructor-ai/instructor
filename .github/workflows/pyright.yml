@@ -30,4 +30,5 @@ jobs:
         uses: astral-sh/setup-uv@v4
       - name: Install the project
         run: uv sync --all-extras
-      - uses: jakebailey/pyright-action@v2
+      - name: Run pyright
+        run: uv run pyright
