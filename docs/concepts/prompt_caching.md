@@ -17,23 +17,16 @@ This optimization is especially useful for applications making multiple API call
 
 Prompt Caching is enabled for the following models:
 
-* gpt-4o
-* gpt-4o-mini
-* o1-preview
-* o1-mini
+- gpt-4o
+- gpt-4o-mini
+- o1-preview
+- o1-mini
 
 Caching is based on prefix matching, so if you're using a system prompt that contains a common set of instructions, you're likely to see a cache hit as long as you move all variable parts of the prompt to the end of the message when possible.
 
-
 ## Prompt Caching in Anthropic
 
-The `anthropic.beta.prompt_caching.messages.create` method enables you to:
-
-1. Cache specific prompt portions
-2. Reuse cached content in subsequent calls
-3. Reduce processed data per request
-
-By implementing prompt caching, you can potentially enhance efficiency and reduce costs, especially when dealing with large, shared contexts across multiple API interactions.
+Prompt Caching is now generally avaliable for Anthropic. This enables you to cache specific prompt portions, reuse cached content in subsequent calls, and reduce processed data per request.
 
 ??? note "Source Text"
 
@@ -182,18 +175,11 @@ By implementing prompt caching, you can potentially enhance efficiency and reduc
     ```
 
 ```python
-from instructor import Instructor, Mode, patch
+import instructor
 from anthropic import Anthropic
 from pydantic import BaseModel
 
-client = Instructor(  # (1)!
-    client=Anthropic(),
-    create=patch(
-        create=Anthropic().beta.prompt_caching.messages.create,
-        mode=Mode.ANTHROPIC_TOOLS,
-    ),
-    mode=Mode.ANTHROPIC_TOOLS,
-)
+client = instructor.from_anthropic(Anthropic())
 
 
 class Character(BaseModel):
@@ -204,8 +190,8 @@ class Character(BaseModel):
 with open("./book.txt") as f:
     book = f.read()
 
-resp = client.chat.completions.create(
-    model="claude-3-haiku-20240307",
+resp, completion = client.chat.completions.create_with_completion(
+    model="claude-3-5-sonnet-20240620",
     messages=[
         {
             "role": "user",
@@ -213,7 +199,7 @@ resp = client.chat.completions.create(
                 {
                     "type": "text",
                     "text": "<book>" + book + "</book>",
-                    "cache_control": {"type": "ephemeral"},  # (2)!
+                    "cache_control": {"type": "ephemeral"}, #(1)!
                 },
                 {
                     "type": "text",
@@ -225,11 +211,33 @@ resp = client.chat.completions.create(
     response_model=Character,
     max_tokens=1000,
 )
+
+print(completion)
+# Message(
+#     id='msg_01QcqjktYc1PXL8nk7y5hkMV',
+#     content=[
+#         ToolUseBlock(
+#             id='toolu_019wABRzQxtSbXeuuRwvJo15',
+#             input={
+#                 'name': 'Jane Austen',
+#                 'description': 'A renowned English novelist of the early 19th century, known for her wit, humor, and keen observations of human nature. She is the author of
+# several classic novels including "Pride and Prejudice," "Emma," "Sense and Sensibility," and "Mansfield Park." Austen\'s writing is characterized by its subtlety, delicate touch,
+# and ability to create memorable characters. Her work often involves social commentary and explores themes of love, marriage, and societal expectations in Regency-era England.'
+#             },
+#             name='Character',
+#             type='tool_use'
+#         )
+#     ],
+#     model='claude-3-5-sonnet-20240620',
+#     role='assistant',
+#     stop_reason='tool_use',
+#     stop_sequence=None,
+#     type='message',
+#     usage=Usage(cache_creation_input_tokens=2777, cache_read_input_tokens=0, input_tokens=30, output_tokens=161)
+# )
 ```
 
-1. Since the feature is still in beta, we need to manually pass in the function that we're looking to patch.
-
-2. Anthropic requires that you explicitly pass in the `cache_control` parameter to indicate that you want to cache the content.
+1. Anthropic requires that you explicitly pass in the `cache_control` parameter to indicate that you want to cache the content.
 
 !!! Warning "Caching Considerations"
 

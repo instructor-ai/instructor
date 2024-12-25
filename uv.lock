@@ -1664,6 +1664,7 @@ dev = [
     { name = "pytest-examples" },
 ]
 docs = [
+    { name = "material" },
     { name = "mkdocs" },
     { name = "mkdocs-jupyter" },
     { name = "mkdocs-material", extra = ["imaging"] },
@@ -1755,6 +1756,7 @@ dev = [
     { name = "pytest-examples", specifier = ">=0.0.15" },
 ]
 docs = [
+    { name = "material", specifier = ">=0.1" },
     { name = "mkdocs", specifier = ">=1.4.3,<2.0.0" },
     { name = "mkdocs-jupyter", specifier = ">=0.24.6,<0.26.0" },
     { name = "mkdocs-material", extras = ["imaging"], specifier = ">=9.5.9,<10.0.0" },
@@ -2294,6 +2296,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/7c/31/bd635fb5989440d9365c5e3c47556cfea121c7803f5034ac843e8f37c2f2/MarkupSafe-3.0.2-cp39-cp39-win32.whl", hash = "sha256:8c4e8c3ce11e1f92f6536ff07154f9d49677ebaaafc32db9db4620bc11ed480f", size = 15063 },
     { url = "https://files.pythonhosted.org/packages/b3/73/085399401383ce949f727afec55ec3abd76648d04b9f22e1c0e99cb4bec3/MarkupSafe-3.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:6e296a513ca3d94054c2c881cc913116e90fd030ad1c656b3869762b754f5f8a", size = 15506 },
 ]
+
+[[package]]
+name = "material"
+version = "0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/df/39108218c4d4da0e2bbbefb241bf00dcaaaf6622963a886e65042d26a797/material-0.1.tar.gz", hash = "sha256:99a6a68527b0faff78d9ae85d3838d7eb350922f8b15d536945c515cd8418c42", size = 1182 }
 
 [[package]]
 name = "matplotlib-inline"

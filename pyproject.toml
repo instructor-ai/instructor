@@ -106,6 +106,7 @@ docs = [
     "mkdocs-rss-plugin<2.0.0,>=1.12.0",
     "mkdocs-minify-plugin<1.0.0,>=0.8.0",
     "mkdocs-redirects<2.0.0,>=1.2.1",
+    "material>=0.1",
 ]
 anthropic = [
     "anthropic==0.42.0",
