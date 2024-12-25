@@ -26,23 +26,23 @@ jobs:
         run: uv sync --all-extras
       - name: Run tests
         if: matrix.python-version != '3.11'
-        run: poetry run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai' && poetry run pytest tests/llm/test_cohere
+        run: uvx run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai' && uvx run pytest tests/llm/test_cohere
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
 
       - name: Run Gemini Tests
-        run: poetry run pytest tests/llm/test_gemini
+        run: uvx run pytest tests/llm/test_gemini
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
-          poetry run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks"
-          poetry run coverage report
-          poetry run coverage html
+          uvx run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks"
+          uvx run coverage report
+          uvx run coverage html
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
