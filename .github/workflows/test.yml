@@ -32,6 +32,7 @@ jobs:
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
 
       - name: Run Gemini Tests
+        if: matrix.python-version == '3.11'
         run: uv run pytest tests/llm/test_gemini
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
