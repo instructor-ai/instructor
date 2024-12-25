@@ -91,13 +91,14 @@ dev = [
     "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
     "black<25.0.0,>=24.10.0",
+    "pytest-examples>=0.0.15",
 ]
 docs = [
     "mkdocs<2.0.0,>=1.4.3",
     "mkdocs-material[imaging]<10.0.0,>=9.5.9",
     "mkdocstrings<0.28.0,>=0.26.1",
     "mkdocstrings-python<2.0.0,>=1.11.1",
-    "pytest-examples<0.0.16,>=0.0.13",
+    "pytest-examples>=0.0.15",
     "mkdocs-jupyter<0.26.0,>=0.24.6",
     "mkdocs-rss-plugin<2.0.0,>=1.12.0",
     "mkdocs-minify-plugin<1.0.0,>=0.8.0",
