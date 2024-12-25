@@ -169,6 +169,12 @@ def update_total_usage(
         ):
             total_usage.input_tokens += response_usage.input_tokens or 0
             total_usage.output_tokens += response_usage.output_tokens or 0
+            total_usage.cache_creation_input_tokens += (
+                response_usage.cache_creation_input_tokens or 0
+            )
+            total_usage.cache_read_input_tokens += (
+                response_usage.cache_read_input_tokens or 0
+            )
             response.usage = total_usage
             return response
     except ImportError:

@@ -12,6 +12,9 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
+image_url = "https://github.com/google-gemini/cookbook/blob/main/examples/assets/castle.png?raw=true"
+
+
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multimodal_image_description(model, mode, client):
     client = instructor.from_anthropic(client, mode=mode)
@@ -27,9 +30,7 @@ def test_multimodal_image_description(model, mode, client):
                 "role": "user",
                 "content": [
                     "What is this?",
-                    Image.from_url(
-                        "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg"
-                    ),
+                    Image.from_url(image_url),
                 ],
             },
         ],
@@ -59,7 +60,7 @@ def test_multimodal_image_description_autodetect(model, mode, client):
                 "role": "user",
                 "content": [
                     "What is this?",
-                    "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+                    image_url,
                 ],
             },
         ],
@@ -94,7 +95,7 @@ def test_multimodal_image_description_autodetect_image_params(model, mode, clien
                     "What is this?",
                     {
                         "type": "image",
-                        "source": "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+                        "source": image_url,
                     },
                 ],
             },
@@ -117,7 +118,7 @@ def test_multimodal_image_description_autodetect_image_params(model, mode, clien
 def test_multimodal_image_description_autodetect_image_params_cache(
     model, mode, client
 ):
-    client = instructor.from_anthropic(client, mode=mode, enable_prompt_caching=True)
+    client = instructor.from_anthropic(client, mode=mode)
     messages = client.chat.completions.create(
         model=model,  # Ensure this is a vision-capable model
         response_model=None,
@@ -174,7 +175,7 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
             },
             {
                 "role": "user",
-                "content": "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+                "content": image_url,
             },
         ],
         max_tokens=1000,
@@ -192,7 +193,7 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
         messages=[
             {
                 "role": "user",
-                "content": "https://pbs.twimg.com/profile_images/1816950591857233920/ZBxrWCbX_400x400.jpg",
+                "content": image_url,
             },
         ],
         max_tokens=1000,

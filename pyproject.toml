@@ -56,7 +56,7 @@ test-docs = [
     "mistralai<2.0.0,>=1.0.3",
 ]
 anthropic = [
-    "anthropic<0.41.0,>=0.36.2",
+    "anthropic==0.42.0",
     "xmltodict<0.15,>=0.13",
 ]
 groq = [
@@ -108,7 +108,7 @@ docs = [
     "mkdocs-redirects<2.0.0,>=1.2.1",
 ]
 anthropic = [
-    "anthropic<0.41.0,>=0.36.2",
+    "anthropic==0.42.0",
 ]
 test-docs = [
     "fastapi<0.116.0,>=0.109.2",
@@ -118,7 +118,7 @@ test-docs = [
     "tabulate<1.0.0,>=0.9.0",
     "pydantic-extra-types<3.0.0,>=2.6.0",
     "litellm<2.0.0,>=1.35.31",
-    "anthropic<0.41.0,>=0.36.2",
+    "anthropic==0.42.0",
     "xmltodict<0.15,>=0.13",
     "groq<0.14.0,>=0.4.2",
     "phonenumbers<9.0.0,>=8.13.33",
