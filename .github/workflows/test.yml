@@ -20,21 +20,10 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Cache Poetry virtualenv
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.1
-
-      - name: Install dependencies
-        run: poetry install --with dev,anthropic
-
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+      - name: Install the project
+        run: uv sync --all-extras
       - name: Run tests
         if: matrix.python-version != '3.11'
         run: poetry run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai' && poetry run pytest tests/llm/test_cohere
