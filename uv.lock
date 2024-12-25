@@ -1661,6 +1661,7 @@ dev = [
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "pytest-examples" },
 ]
 docs = [
     { name = "mkdocs" },
@@ -1751,6 +1752,7 @@ dev = [
     { name = "pyright", specifier = "<2.0.0" },
     { name = "pytest", specifier = ">=8.3.3,<9.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.24.0,<1.0.0" },
+    { name = "pytest-examples", specifier = ">=0.0.15" },
 ]
 docs = [
     { name = "mkdocs", specifier = ">=1.4.3,<2.0.0" },
@@ -1761,7 +1763,7 @@ docs = [
     { name = "mkdocs-rss-plugin", specifier = ">=1.12.0,<2.0.0" },
     { name = "mkdocstrings", specifier = ">=0.26.1,<0.28.0" },
     { name = "mkdocstrings-python", specifier = ">=1.11.1,<2.0.0" },
-    { name = "pytest-examples", specifier = ">=0.0.13,<0.0.16" },
+    { name = "pytest-examples", specifier = ">=0.0.15" },
 ]
 google-generativeai = [
     { name = "google-generativeai", specifier = ">=0.8.2,<1.0.0" },
