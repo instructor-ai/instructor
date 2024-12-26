@@ -132,7 +132,7 @@ wheels = [
 
 [[package]]
 name = "anthropic"
-version = "0.40.0"
+version = "0.42.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -143,9 +143,9 @@ dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4d/d9/c39005f04c602607d68d48d1c917b35af8d16b687b7ca427ca787c39d8b9/anthropic-0.40.0.tar.gz", hash = "sha256:3efeca6d9e97813f93ed34322c6c7ea2279bf0824cd0aa71b59ce222665e2b87", size = 190939 }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/7c/91b79f5ae4a52497a4e330d66ea5929aec2878ee2c9f8a998dbe4f4c7f01/anthropic-0.42.0.tar.gz", hash = "sha256:bf8b0ed8c8cb2c2118038f29c58099d2f99f7847296cafdaa853910bfff4edf4", size = 192361 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cb/18/a68cfb9a11990377650c36c25b5dfb0baece900e9e505b68e1aa06ad0227/anthropic-0.40.0-py3-none-any.whl", hash = "sha256:442028ae8790ff9e3b6f8912043918755af1230d193904ae2ef78cc22995280c", size = 199484 },
+    { url = "https://files.pythonhosted.org/packages/ba/33/b907a6d27dd0d8d3adb4edb5c9e9c85a189719ec6855051cce3814c8ef13/anthropic-0.42.0-py3-none-any.whl", hash = "sha256:46775f65b723c078a2ac9e9de44a46db5c6a4fabeacfd165e5ea78e6817f4eff", size = 203365 },
 ]
 
 [[package]]
@@ -1664,6 +1664,7 @@ dev = [
     { name = "pytest-examples" },
 ]
 docs = [
+    { name = "material" },
     { name = "mkdocs" },
     { name = "mkdocs-jupyter" },
     { name = "mkdocs-material", extra = ["imaging"] },
@@ -1712,7 +1713,7 @@ vertexai = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.1,<4.0.0" },
-    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.36.2,<0.41.0" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.42.0" },
     { name = "cerebras-cloud-sdk", marker = "extra == 'cerebras-cloud-sdk'", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", marker = "extra == 'cohere'", specifier = ">=5.1.8,<6.0.0" },
     { name = "diskcache", marker = "extra == 'test-docs'", specifier = ">=5.6.3,<6.0.0" },
@@ -1744,7 +1745,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-anthropic = [{ name = "anthropic", specifier = ">=0.36.2,<0.41.0" }]
+anthropic = [{ name = "anthropic", specifier = "==0.42.0" }]
 dev = [
     { name = "black", specifier = ">=24.10.0,<25.0.0" },
     { name = "coverage", specifier = ">=7.3.2,<8.0.0" },
@@ -1755,6 +1756,7 @@ dev = [
     { name = "pytest-examples", specifier = ">=0.0.15" },
 ]
 docs = [
+    { name = "material", specifier = ">=0.1" },
     { name = "mkdocs", specifier = ">=1.4.3,<2.0.0" },
     { name = "mkdocs-jupyter", specifier = ">=0.24.6,<0.26.0" },
     { name = "mkdocs-material", extras = ["imaging"], specifier = ">=9.5.9,<10.0.0" },
@@ -1771,7 +1773,7 @@ google-generativeai = [
 ]
 litellm = [{ name = "litellm", specifier = ">=1.35.31,<2.0.0" }]
 test-docs = [
-    { name = "anthropic", specifier = ">=0.36.2,<0.41.0" },
+    { name = "anthropic", specifier = "==0.42.0" },
     { name = "cerebras-cloud-sdk", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", specifier = ">=5.1.8,<6.0.0" },
     { name = "datasets", specifier = ">=3.0.1,<4.0.0" },
@@ -2061,7 +2063,7 @@ wheels = [
 
 [[package]]
 name = "litellm"
-version = "1.55.11"
+version = "1.55.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2076,9 +2078,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "tokenizers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/82/09/347533465a145359b909dc262356960b1c70c892f181b1c0ee8fed947b67/litellm-1.55.11.tar.gz", hash = "sha256:f2a90a157ba93797c86deb9b41b9f34a47714a9e04118fc2da7886f3c5581bfc", size = 6207717 }
+sdist = { url = "https://files.pythonhosted.org/packages/50/0e/1704168f8f658df61fbfdc0fa5d8a9ce8350616dc74b4481da2284a8f4c9/litellm-1.55.12.tar.gz", hash = "sha256:6d93025ebf29ae3d6929a90c44d648ba6804fdbc1bb1c3a72d7dddd08f6229dc", size = 6209840 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/55/8d10bd070cdd2978e4066a1578fb1cd7269d25fb74db3a2867839ac195b0/litellm-1.55.11-py3-none-any.whl", hash = "sha256:1631f060cd625cd1097c5383c71693f4b9b95a8e761b726d4863a9c325a2fa50", size = 6484499 },
+    { url = "https://files.pythonhosted.org/packages/30/5a/f3b621795e2288d8dc3d663a0db030700ee6cc127a6bb1ccc55ace061fbb/litellm-1.55.12-py3-none-any.whl", hash = "sha256:d034c3d6cdd5b8dd2c56f1100eb14f41f920b7673ac943d38fb2d7155ae5774b", size = 6488096 },
 ]
 
 [[package]]
@@ -2294,6 +2296,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/7c/31/bd635fb5989440d9365c5e3c47556cfea121c7803f5034ac843e8f37c2f2/MarkupSafe-3.0.2-cp39-cp39-win32.whl", hash = "sha256:8c4e8c3ce11e1f92f6536ff07154f9d49677ebaaafc32db9db4620bc11ed480f", size = 15063 },
     { url = "https://files.pythonhosted.org/packages/b3/73/085399401383ce949f727afec55ec3abd76648d04b9f22e1c0e99cb4bec3/MarkupSafe-3.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:6e296a513ca3d94054c2c881cc913116e90fd030ad1c656b3869762b754f5f8a", size = 15506 },
 ]
+
+[[package]]
+name = "material"
+version = "0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/df/39108218c4d4da0e2bbbefb241bf00dcaaaf6622963a886e65042d26a797/material-0.1.tar.gz", hash = "sha256:99a6a68527b0faff78d9ae85d3838d7eb350922f8b15d536945c515cd8418c42", size = 1182 }
 
 [[package]]
 name = "matplotlib-inline"

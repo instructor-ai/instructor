@@ -14,7 +14,11 @@ from instructor.process_response import process_response, process_response_async
 from instructor.utils import update_total_usage
 from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
-from openai.types.completion_usage import CompletionUsage, CompletionTokensDetails, PromptTokensDetails
+from openai.types.completion_usage import (
+    CompletionUsage,
+    CompletionTokensDetails,
+    PromptTokensDetails,
+)
 from pydantic import BaseModel, ValidationError
 from tenacity import (
     AsyncRetrying,
@@ -71,14 +75,24 @@ def initialize_usage(mode: Mode) -> CompletionUsage | Any:
     Returns:
         CompletionUsage | Any: Initialized usage object.
     """
-    total_usage = CompletionUsage(completion_tokens=0, prompt_tokens=0, total_tokens=0,
-        completion_tokens_details = CompletionTokensDetails(audio_tokens=0, reasoning_tokens=0),
-        prompt_tokens_details = PromptTokensDetails(audio_tokens=0, cached_tokens=0)
+    total_usage = CompletionUsage(
+        completion_tokens=0,
+        prompt_tokens=0,
+        total_tokens=0,
+        completion_tokens_details=CompletionTokensDetails(
+            audio_tokens=0, reasoning_tokens=0
+        ),
+        prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
     )
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
         from anthropic.types import Usage as AnthropicUsage
 
-        total_usage = AnthropicUsage(input_tokens=0, output_tokens=0)
+        total_usage = AnthropicUsage(
+            input_tokens=0,
+            output_tokens=0,
+            cache_read_input_tokens=0,
+            cache_creation_input_tokens=0,
+        )
     return total_usage
 
 

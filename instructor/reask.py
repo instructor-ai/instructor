@@ -23,9 +23,8 @@ def reask_anthropic_tools(
 ):
     kwargs = kwargs.copy()
     from anthropic.types import Message
-    from anthropic.types.beta.prompt_caching import PromptCachingBetaMessage
 
-    assert isinstance(response, Message) or isinstance(response, PromptCachingBetaMessage), "Response must be a Anthropic Message"
+    assert isinstance(response, Message), "Response must be a Anthropic Message"
 
     assistant_content = []
     tool_use_id = None
@@ -71,9 +70,8 @@ def reask_anthropic_json(
 ):
     kwargs = kwargs.copy()
     from anthropic.types import Message
-    from anthropic.types.beta.prompt_caching import PromptCachingBetaMessage
 
-    assert isinstance(response, Message) or isinstance(response, PromptCachingBetaMessage), "Response must be a Anthropic Message"
+    assert isinstance(response, Message), "Response must be a Anthropic Message"
 
     reask_msg = {
         "role": "user",
