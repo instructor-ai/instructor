@@ -12,7 +12,6 @@ def from_anthropic(
         anthropic.Anthropic | anthropic.AnthropicBedrock | anthropic.AnthropicVertex
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
-    enable_prompt_caching: bool = False,
     beta: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor: ...
@@ -26,7 +25,6 @@ def from_anthropic(
         | anthropic.AsyncAnthropicVertex
     ),
     mode: instructor.Mode = instructor.Mode.ANTHROPIC_TOOLS,
-    enable_prompt_caching: bool = False,
     beta: bool = False,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...

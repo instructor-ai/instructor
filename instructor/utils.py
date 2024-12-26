@@ -167,6 +167,12 @@ def update_total_usage(
         if isinstance(response_usage, AnthropicUsage) and isinstance(
             total_usage, AnthropicUsage
         ):
+            if not total_usage.cache_creation_input_tokens:
+                total_usage.cache_creation_input_tokens = 0
+
+            if not total_usage.cache_read_input_tokens:
+                total_usage.cache_read_input_tokens = 0
+
             total_usage.input_tokens += response_usage.input_tokens or 0
             total_usage.output_tokens += response_usage.output_tokens or 0
             total_usage.cache_creation_input_tokens += (
