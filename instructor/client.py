@@ -373,7 +373,7 @@ class AsyncInstructor(Instructor):
         self.provider = provider
         self.hooks = hooks or Hooks()
 
-    async def create(
+    async def create(  # type: ignore[override]
         self,
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
@@ -395,7 +395,7 @@ class AsyncInstructor(Instructor):
             **kwargs,
         )
 
-    async def create_partial(
+    async def create_partial(  # type: ignore[override]
         self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
@@ -419,7 +419,7 @@ class AsyncInstructor(Instructor):
         ):
             yield item
 
-    async def create_iterable(
+    async def create_iterable(  # type: ignore[override]
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
@@ -443,7 +443,7 @@ class AsyncInstructor(Instructor):
         ):
             yield item
 
-    async def create_with_completion(
+    async def create_with_completion(  # type: ignore[override]
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
