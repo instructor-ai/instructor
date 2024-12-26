@@ -13,7 +13,7 @@ tags:
 
 ## Why we migrated to uv
 
-One of the main reasons we migrated to uv was to make local development easier. Poetry is great but we wanted to benefit from the features that uv provided such as
+We recently migrated to uv from poetry because we wanted to benefit from it's many features such as
 
 - Easier dependency management with automatic caching built in
 - Significantly faster CI/CD compared to poetry, especially when we use the `caching` functionality provided by the Astral team
@@ -24,6 +24,8 @@ We took around 1-2 days to handle the migration and we're happy with the results
 Here are some timings for jobs that I took from our CI/CD runs.
 
 In general I'd say that we saw a ~3x speedup with approximately 67% reduction in time needed for the jobs once we implemented caching for the individual `uv` github actions.
+
+<!-- more -->
 
 | Job              | Time (Poetry)                                                                                 | Time (UV)                                                                                            |
 | ---------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
