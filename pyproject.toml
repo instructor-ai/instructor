@@ -22,6 +22,10 @@ version = "1.7.2"
 description = "structured outputs for llm"
 readme = "README.md"
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [tool.uv]
 package = true
 
