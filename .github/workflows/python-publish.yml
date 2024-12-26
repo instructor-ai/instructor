@@ -29,7 +29,8 @@ jobs:
         run: uv python install 3.10
       - name: Install the project
         run: uv sync --all-extras
-
+      - name: Build the project
+        run: uv build
       - name: Build and publish Python package
         run: uv publish
         env:
