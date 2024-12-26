@@ -30,9 +30,6 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
 
-      - name: Get release version
-        run: echo "RELEASE_VERSION=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
-
       - name: Build and publish Python package
         run: uv publish
         env:
