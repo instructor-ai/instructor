@@ -35,6 +35,7 @@ Gemini tool calling comes with some known limitations:
     - Gemini tool calling is incompatible with Pydantic schema customizations such as examples due to API limitations and may result in errors
     - Gemini can sometimes call the wrong function name, resulting in malformed or invalid json
     - Gemini tool calling could fail with enum and literal field types
+    - Gemini tool calling doesn't preserve the order of the fields in the response. Don't rely on the order of the fields in the response.
 
 ```python
 import instructor
@@ -45,7 +46,7 @@ client = instructor.from_gemini(
 )
 ```
 
-### Gemini Vertex AI Tool Callin
+### Gemini Vertex AI Tool Calling
 
 This method allows us to get structured output from Gemini via tool calling with the Vertex AI SDK.
 
