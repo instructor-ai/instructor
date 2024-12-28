@@ -41,7 +41,7 @@ def test_creation(model, mode, client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_creation_with_system_cache(model, mode, client):
-    client = instructor.from_anthropic(client, mode=mode, enable_prompt_caching=True)
+    client = instructor.from_anthropic(client, mode=mode)
     response, message = client.chat.completions.create_with_completion(
         model=model,
         response_model=User,
@@ -83,7 +83,7 @@ def test_creation_with_system_cache(model, mode, client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_creation_with_system_cache_anthropic_style(model, mode, client):
-    client = instructor.from_anthropic(client, mode=mode, enable_prompt_caching=True)
+    client = instructor.from_anthropic(client, mode=mode)
     response, message = client.chat.completions.create_with_completion(
         model=model,
         system=[

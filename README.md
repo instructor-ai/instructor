@@ -1,6 +1,6 @@
 # Instructor, The Most Popular Library for Simple Structured Outputs
 
-Instructor is the most popular Python library for working with structured outputs from large language models (LLMs), boasting over 600,000 monthly downloads. Built on top of Pydantic, it provides a simple, transparent, and user-friendly API to manage validation, retries, and streaming responses. Get ready to supercharge your LLM workflows with the community's top choice!
+Instructor is the most popular Python library for working with structured outputs from large language models (LLMs), boasting over 1 million monthly downloads. Built on top of Pydantic, it provides a simple, transparent, and user-friendly API to manage validation, retries, and streaming responses. Get ready to supercharge your LLM workflows with the community's top choice!
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
@@ -131,9 +131,10 @@ user_info = client.chat.completions.create(
 
 print(f"Name: {user_info.name}, Age: {user_info.age}")
 #> Name: John, Age: 20
-``` 
+```
 
 This example demonstrates:
+
 1. A pre-execution hook that logs all kwargs passed to the function.
 2. An exception hook that logs any exceptions that occur during execution.
 
@@ -513,6 +514,14 @@ We invite you to contribute to evals in `pytest` as a way to monitor the quality
 
 If you want to help, checkout some of the issues marked as `good-first-issue` or `help-wanted` found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cookbook.
 
+Here's a quick list of commands that you can run to get started. We're using `uv` to manage our dependencies so make sure you have that installed.
+
+1. `uv sync --all-extras --group <dependency groups you'd like to install>`: This should install all the dependencies for the project using `uv`, make sure to install the specific dependencies that you'd like to install
+
+2. `uv run pytest` : This runs the tests in `pytest`. If you're pushing up a new PR, make sure that you've written some tests and that they're passing locally for you
+
+We use `ruff` and `pyright` for linting and type checking so make sure those are passing when you push up a PR. You can check pyright by running `uv run pyright` and ruff with `uv run ruff check` locally.
+
 ## CLI
 
 We also provide some added CLI functionality for easy convenience:
@@ -538,6 +547,6 @@ This project is licensed under the terms of the MIT License.
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-<a href="https://github.com/jxnl/instructor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
+<a href="https://github.com/instructor-ai/instructor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=instructor-ai/instructor" />
 </a>

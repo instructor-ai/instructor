@@ -94,7 +94,12 @@ def initialize_usage(mode: Mode) -> CompletionUsage | Any:
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
         from anthropic.types import Usage as AnthropicUsage
 
-        total_usage = AnthropicUsage(input_tokens=0, output_tokens=0)
+        total_usage = AnthropicUsage(
+            input_tokens=0,
+            output_tokens=0,
+            cache_read_input_tokens=0,
+            cache_creation_input_tokens=0,
+        )
     return total_usage
 
 

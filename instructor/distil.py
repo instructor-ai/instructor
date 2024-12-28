@@ -203,7 +203,7 @@ class Instructions:
             return _dispatch if mode == "dispatch" else _distil
 
         if len(args) == 1 and callable(args[0]):
-            return _wrap_distil(args[0])
+            return _wrap_distil(args[0]) # type: ignore
 
         return _wrap_distil
 
