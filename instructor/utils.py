@@ -445,7 +445,7 @@ def combine_system_messages(
 
 
 def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:
-    def convert_message(content: Union[str, dict[str, Any]]) -> SystemMessage:
+    def convert_message(content: Union[str, dict[str, Any]]) -> SystemMessage:  # noqa: UP007
         if isinstance(content, str):
             return SystemMessage(type="text", text=content)
         elif isinstance(content, dict):
@@ -457,9 +457,7 @@ def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessag
     for m in messages:
         if m["role"] == "system":
             # System message must always be a string or list of dictionaries
-            content = cast(
-                Union[str, list[dict[str, Any]]], m["content"]
-            )  # noqa: UP007
+            content = cast(Union[str, list[dict[str, Any]]], m["content"])  # noqa: UP007
             if isinstance(content, list):
                 result.extend(convert_message(item) for item in content)
             else:
