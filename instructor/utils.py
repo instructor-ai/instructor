@@ -167,20 +167,36 @@ def update_total_usage(
         if isinstance(response_usage, AnthropicUsage) and isinstance(
             total_usage, AnthropicUsage
         ):
-            if not total_usage.cache_creation_input_tokens:
-                total_usage.cache_creation_input_tokens = 0
+            # update input_tokens / output_tokens
+            if hasattr(total_usage, "input_tokens") and hasattr(
+                response_usage, "input_tokens"
+            ):
+                total_usage.input_tokens += response_usage.input_tokens or 0
+            if hasattr(total_usage, "output_tokens") and hasattr(
+                response_usage, "output_tokens"
+            ):
+                total_usage.output_tokens += response_usage.output_tokens or 0
 
-            if not total_usage.cache_read_input_tokens:
-                total_usage.cache_read_input_tokens = 0
+            # Update cache_creation_input_tokens if both have that field
+            if hasattr(total_usage, "cache_creation_input_tokens") and hasattr(
+                response_usage, "cache_creation_input_tokens"
+            ):
+                if not total_usage.cache_creation_input_tokens:
+                    total_usage.cache_creation_input_tokens = 0
+                total_usage.cache_creation_input_tokens += (
+                    response_usage.cache_creation_input_tokens or 0
+                )
 
-            total_usage.input_tokens += response_usage.input_tokens or 0
-            total_usage.output_tokens += response_usage.output_tokens or 0
-            total_usage.cache_creation_input_tokens += (
-                response_usage.cache_creation_input_tokens or 0
-            )
-            total_usage.cache_read_input_tokens += (
-                response_usage.cache_read_input_tokens or 0
-            )
+            # Update cache_read_input_tokens if both have that field
+            if hasattr(total_usage, "cache_read_input_tokens") and hasattr(
+                response_usage, "cache_read_input_tokens"
+            ):
+                if not total_usage.cache_read_input_tokens:
+                    total_usage.cache_read_input_tokens = 0
+                total_usage.cache_read_input_tokens += (
+                    response_usage.cache_read_input_tokens or 0
+                )
+
             response.usage = total_usage
             return response
     except ImportError:
@@ -429,7 +445,9 @@ def combine_system_messages(
 
 
 def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:
-    def convert_message(content: Union[str, dict[str, Any]]) -> SystemMessage:  # noqa: UP007
+    def convert_message(
+        content: Union[str, dict[str, Any]]
+    ) -> SystemMessage:  # noqa: UP007
         if isinstance(content, str):
             return SystemMessage(type="text", text=content)
         elif isinstance(content, dict):
@@ -441,7 +459,9 @@ def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessag
     for m in messages:
         if m["role"] == "system":
             # System message must always be a string or list of dictionaries
-            content = cast(Union[str, list[dict[str, Any]]], m["content"])  # noqa: UP007
+            content = cast(
+                Union[str, list[dict[str, Any]]], m["content"]
+            )  # noqa: UP007
             if isinstance(content, list):
                 result.extend(convert_message(item) for item in content)
             else:
