@@ -1,5 +1,5 @@
 ---
-title: Query Planning with OpenAI: A Step-by-Step Guide
+title: 'Query Planning with OpenAI: A Step-by-Step Guide'
 description: Learn how to effectively plan and execute complex query plans using OpenAI's Function Call model for systematic information gathering.
 ---
 
