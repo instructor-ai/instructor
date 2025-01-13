@@ -1,5 +1,5 @@
 ---
-title: Using Groq for Inference: Setup and Example
+title: 'Using Groq for Inference: Setup and Example'
 description: Learn how to use Groq for inference with the mixtral-8x7b model, including API setup and a practical Python example.
 ---
 
