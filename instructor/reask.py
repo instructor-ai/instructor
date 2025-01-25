@@ -368,7 +368,7 @@ def handle_reask_kwargs(
         Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
         Mode.FIREWORKS_JSON: reask_fireworks_json,
         Mode.WRITER_TOOLS: reask_writer_tools,
-        Mode.PERPLEXITY_JSON: reask_perplexity_json,  # Add Perplexity JSON mode handler
+        Mode.PERPLEXITY_JSON: reask_perplexity_json,
     }
     reask_function = functions.get(mode, reask_default)
     return reask_function(kwargs=kwargs, response=response, exception=exception)
