@@ -139,6 +139,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.WRITER_TOOLS:
             return cls.parse_writer_tools(completion, validation_context, strict)
 
+        if mode == Mode.PERPLEXITY_JSON:
+            return cls.parse_perplexity_json(completion, validation_context, strict)
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
@@ -378,6 +381,32 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
+        message = completion.choices[0].message.content or ""
+        message = extract_json_from_codeblock(message)
+
+        return cls.model_validate_json(
+            message,
+            context=validation_context,
+            strict=strict,
+        )
+
+    @classmethod
+    def parse_perplexity_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        """Parse a Perplexity response into a BaseModel.
+
+        Args:
+            completion: The Perplexity completion response
+            validation_context: Optional context for validation
+            strict: Whether to use strict validation
+
+        Returns:
+            An instance of the model class
+        """
         message = completion.choices[0].message.content or ""
         message = extract_json_from_codeblock(message)
 

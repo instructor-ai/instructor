@@ -295,6 +295,37 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+### Using Perplexity Models
+
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_perplexity(OpenAI(base_url="https://api.perplexity.ai"))
+
+resp = client.chat.completions.create(
+    model="pplx-7b-online",  # or any other Perplexity model
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
 ### Using Litellm
 
 ```python

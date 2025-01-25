@@ -744,6 +744,7 @@ def handle_response_model(
         Mode.FIREWORKS_JSON: handle_fireworks_json,
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
         Mode.WRITER_TOOLS: handle_writer_tools,
+        Mode.PERPLEXITY_JSON: handle_perplexity_json,
     }
 
     if mode in mode_handlers:
@@ -769,4 +770,34 @@ def handle_response_model(
             "new_kwargs": new_kwargs,
         },
     )
+    return response_model, new_kwargs
+
+
+def handle_perplexity_json(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    """Handle Perplexity JSON mode by setting up the response format and system message."""
+    new_kwargs["response_format"] = {
+        "type": "json_schema",
+        "json_schema": {
+            "schema": response_model.model_json_schema()
+        }
+    }
+
+    message = dedent(
+        f"""
+        As a genius expert, your task is to understand the content and provide
+        the parsed objects in json that match the following json_schema:\n
+
+        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+        Make sure to return an instance of the JSON, not the schema itself
+        """
+    )
+
+    if new_kwargs["messages"][0]["role"] != "system":
+        new_kwargs["messages"].insert(0, {"role": "system", "content": message})
+    else:
+        new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+
     return response_model, new_kwargs
