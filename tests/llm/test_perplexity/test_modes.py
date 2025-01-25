@@ -93,4 +93,4 @@ def test_complex_nested_model(model: str, mode: instructor.Mode, client: OpenAI)
     }
     assert {book.author for book in resp.books} == {"Jane Doe", "John Smith"}
     assert {book.genre for book in resp.books} == {"Fantasy", "Non-Fiction"}
-    assert {book.isbn for book in resp.books} == {"1234567890", "0987654321"} 
+    assert {book.isbn for book in resp.books} == {"1234567890", "0987654321"}
