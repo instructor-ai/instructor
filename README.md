@@ -295,7 +295,7 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
-### Using Perplexity Models
+### Using Perplexity Sonar Models
 
 ```python
 import instructor
@@ -311,7 +311,7 @@ class User(BaseModel):
 client = instructor.from_perplexity(OpenAI(base_url="https://api.perplexity.ai"))
 
 resp = client.chat.completions.create(
-    model="pplx-7b-online",  # or any other Perplexity model
+    model="sonar",
     messages=[
         {
             "role": "user",
