@@ -84,6 +84,8 @@ async def process_response_async(
             response,
             mode=mode,
         )
+        if hasattr(response_model, "model_async_validate"):
+            await response_model.model_async_validate(model)
         return model
 
     model = response_model.from_response(
@@ -92,6 +94,8 @@ async def process_response_async(
         strict=strict,
         mode=mode,
     )
+    if hasattr(response_model, "model_async_validate"):
+        await response_model.model_async_validate(model)
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
