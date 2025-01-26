@@ -131,9 +131,6 @@ def patch(  # type: ignore
 
     logger.debug(f"Patching `client.chat.completions.create` with {mode=}")
 
-    # TODO: remove this
-    print(f"instructor.patch: patching {create.__name__}")
-
     if create is not None:
         func = create
     elif client is not None:

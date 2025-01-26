@@ -168,9 +168,6 @@ def retry_sync(
                         response=response, total_usage=total_usage
                     )
 
-                    # TODO: remove this
-                    print(f"instructor.retry.py: {response}")
-
                     return process_response(  # type: ignore
                         response=response,
                         response_model=response_model,

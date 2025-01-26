@@ -151,12 +151,6 @@ def process_response(
         f"Instructor Raw Response: {response}",
     )
 
-    # TODO: remove this
-    print(f"instructor.process_response.py: response_model {response_model}")
-
-    # TODO: remove this
-    print(f"instructor.process_response.py: response {response}")
-
     if response_model is None:
         logger.debug("No response model, returning response as is")
         return response
@@ -194,9 +188,6 @@ def process_response(
         return model.content
 
     model._raw_response = response
-
-    # TODO: remove this
-    print(f"instructor.process_response.py: model {model}")
 
     return model
 
@@ -570,8 +561,6 @@ def handle_vertexai_json(
 def handle_bedrock_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    print(f"handle_bedrock_json: response_model {response_model}")
-    print(f"handle_bedrock_json: new_kwargs {new_kwargs}")
     json_message = dedent(
         f"""
         As a genius expert, your task is to understand the content and provide
@@ -594,6 +583,14 @@ def handle_bedrock_json(
                 """
             )
         system_message.append({"text": json_message})
+    new_kwargs["system"] = system_message
+
+    return response_model, new_kwargs
+
+
+def handle_bedrock_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
     return response_model, new_kwargs
 
 
@@ -806,6 +803,7 @@ def handle_response_model(
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
         Mode.WRITER_TOOLS: handle_writer_tools,
         Mode.BEDROCK_JSON: handle_bedrock_json,
+        Mode.BEDROCK_TOOLS: handle_bedrock_tools,
     }
 
     if mode in mode_handlers:
