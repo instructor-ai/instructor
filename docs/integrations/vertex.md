@@ -74,8 +74,6 @@ client = instructor.from_vertexai(
 )
 
 async def extract_user():
-
-async def extract_user():
     user = await client.create(
         messages=[
             {
