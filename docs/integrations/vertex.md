@@ -54,6 +54,7 @@ print(resp)
 ## Simple User Example (Async)
 
 ```python
+import asyncio
 import instructor
 import vertexai  # type: ignore
 from vertexai.generative_models import GenerativeModel  # type: ignore
