@@ -543,23 +543,22 @@ def from_openai(
 
 @overload
 def from_litellm(
+    completion: Callable[..., Awaitable[Any]],
+    mode: instructor.Mode = instructor.Mode.TOOLS,
+    **kwargs: Any,
+) -> AsyncInstructor: ...
+
+
+@overload
+def from_litellm(
     completion: Callable[..., Any],
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor: ...
 
 
-@overload
 def from_litellm(
-    completion: Awaitable[Any],
-    mode: instructor.Mode = instructor.Mode.TOOLS,
-    **kwargs: Any,
-) -> AsyncInstructor:
-    pass
-
-
-def from_litellm(
-    completion: Callable[..., Any] | Awaitable[Any],
+    completion: Callable[..., Any] | Callable[..., Awaitable[Any]],
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
