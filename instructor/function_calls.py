@@ -294,10 +294,6 @@ class OpenAISchema(BaseModel):
                 text = match.group(1).strip()
 
             text = re.sub(r"```?json|\\n", "", text).strip()
-            # TODO: remove this
-            print(
-                f"instructor.function_calls: parse_bedrock_json: test {text}"
-            )
         else:
             text = completion.text
         return cls.model_validate_json(

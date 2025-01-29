@@ -183,7 +183,7 @@ def patch(  # type: ignore
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
         context = handle_context(context, validation_context)
-        print(f"instructor.patch: patched_function {func.__name__}")
+        # print(f"instructor.patch: patched_function {func.__name__}")
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )  # type: ignore

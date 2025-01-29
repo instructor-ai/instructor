@@ -576,6 +576,7 @@ def handle_bedrock_json(
     if not system_message:
         new_kwargs["system"] = [{"text": json_message}]
     else:
+
         if not isinstance(system_message, list):
             raise ValueError(
                 """system must be a list of SystemMessage refer 
@@ -583,7 +584,7 @@ def handle_bedrock_json(
                 """
             )
         system_message.append({"text": json_message})
-    new_kwargs["system"] = system_message
+        new_kwargs["system"] = system_message
 
     return response_model, new_kwargs
 
@@ -746,7 +747,7 @@ def handle_response_model(
     """
 
     new_kwargs = kwargs.copy()
-    print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
+    # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 
     if response_model is None:
