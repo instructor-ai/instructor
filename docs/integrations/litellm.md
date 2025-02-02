@@ -30,7 +30,7 @@ class User(BaseModel):
     age: int
 
 # Create structured output
-user = client.completion(
+user = client.chat.completions.create(
     model="gpt-3.5-turbo",  # Can use any supported model
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -52,12 +52,14 @@ import asyncio
 # Enable instructor patches for async
 client = instructor.from_litellm(acompletion)
 
+
 class User(BaseModel):
     name: str
     age: int
 
+
 async def extract_user():
-    user = await client.acompletion(
+    user = await client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -66,9 +68,11 @@ async def extract_user():
     )
     return user
 
+
 # Run async function
 user = asyncio.run(extract_user())
 print(user)  # User(name='Jason', age=25)
+
 ```
 
 ## Cost Calculation
