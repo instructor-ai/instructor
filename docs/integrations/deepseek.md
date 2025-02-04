@@ -266,6 +266,49 @@ for user in users:
     #> name='Mike' age=28
 ```
 
+## Reasoning Models
+
+Because Instructor is built on top of the OpenAI API, we can get our reasoning traces from the `deepseek-reasoner` model. Make sure to configure the `MD_JSON` mode here to get the best experience.
+
+```python
+import os
+from openai import OpenAI
+from pydantic import BaseModel
+import instructor
+from rich import print
+
+client = instructor.from_openai(
+    OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com"),
+    mode=instructor.Mode.MD_JSON,
+)
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+# Create structured output
+completion, raw_completion = client.chat.completions.create_with_completion(
+    model="deepseek-reasoner",
+    messages=[
+        {"role": "user", "content": "Extract: Jason is 25 years old"},
+    ],
+    response_model=User,
+)
+
+print(completion)
+# > User(name='Jason', age=25)
+print(raw_completion.choices[0].message.reasoning_content)
+# > Okay, let's see. The user wants me to extract information from the sentence "Jason is 25 years old" and format it into a JSON object that matches the given schema. The schema requires a "name" and an "age", both of which are required.
+# >
+# > First, I need to identify the name. The sentence starts with "Jason", so that's the name. Then the age is given as "25 years old". The age should be an integer, so I need to convert "25" from a string to a number.
+# >
+# > So putting that together, the JSON should have "name": "Jason" and "age": 25. Let me double-check the schema to make sure there are no other requirements. The properties are "name" (string) and "age" (integer), both required. Yep, that's all.
+# >
+# > I need to make sure the JSON is correctly formatted, with commas and braces. Also, the user specified to return it in a json codeblock, not the schema itself. So the final answer should be a JSON object with those key-value pairs.
+```
+
 ## Instructor Modes
 
 We suggest using the `Mode.Tools` mode for Deepseek which is the default mode for the `from_openai` method.
