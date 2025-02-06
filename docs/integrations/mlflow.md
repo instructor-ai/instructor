@@ -60,7 +60,7 @@ Now, start the MLflow UI with `mlflow ui`. You'll be able to view the traces in 
 
 ### Anthropic Tracing Example
 
-As noted above, MLflow autologging works with Instructor by tracing the client library calls. Here we'll adapt the above example to use an Anthropic model.
+As noted above, MLflow autologging works with Instructor by tracing the client library calls. Here we'll adapt the above example to use an Anthropic model. First, install the Anthropic Python package with `pip install anthropic`.
 
 ```python
 import anthropic
