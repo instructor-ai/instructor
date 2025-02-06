@@ -14,7 +14,7 @@ Here's a simple example showing how to enable tracing with OpenAI. To get starte
 pip install instructor mlflow openai
 ```
 
-Then, enable tracing with `mlflow.openai.autolog()`. Afterward, all calls to OpenAI models, including those made with Instructor, will be captured as MLflow traces.
+Then, enable tracing with `mlflow.openai.autolog()`. Afterward, all calls to OpenAI models, including those made with Instructor, will be captured as MLflow traces. Read [this guide](https://mlflow.org/docs/latest/tracking/autolog.html) for more on getting started with MLflow autologging.
 
 ```python
 import instructor
