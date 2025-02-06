@@ -35,6 +35,10 @@ Instructor supports a wide range of AI model providers, each with their own capa
 
 - [LiteLLM](./litellm.md) - Unified interface for multiple providers
 
+### Observability
+
+- [MLflow](./mlflow.md) - LLM Tracing and Lifecycle Management
+
 ## Common Concepts
 
 All integrations share some common concepts:
