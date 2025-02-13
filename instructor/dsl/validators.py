@@ -70,7 +70,7 @@ def llm_validator(
     """
 
     def llm(v: str) -> str:
-        args={
+        args = {
             "response_model": Validator,
             "messages": [
                 {
@@ -82,13 +82,9 @@ def llm_validator(
                     "content": f"Does `{v}` follow the rules: {statement}",
                 },
             ],
-            "model": model,
-            "temperature": temperature,
+            # Conditionally add keys based on the client type
+            **({"model": model, "temperature": temperature} if not isinstance(client.client, genai.GenerativeModel) else {})
         }
-        if isinstance(client.client, genai.GenerativeModel):
-            del args["model"]
-            del args["temperature"]
-            # client.client._generation_config['temperature'] = temperature #type: ignore
         resp = client.chat.completions.create(**args)
 
         # If the response is  not valid, return the reason, this could be used in
