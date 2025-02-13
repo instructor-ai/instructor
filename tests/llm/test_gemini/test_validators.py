@@ -12,7 +12,7 @@ from .util import models, modes
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_runmodel_validator_error(model, mode, client):
+def test_runmodel_validator_error(model, mode):
     client = instructor.from_gemini(
         genai.GenerativeModel(
             model,
