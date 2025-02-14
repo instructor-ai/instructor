@@ -158,6 +158,7 @@ class OpenAISchema(BaseModel):
         if mode in {
             Mode.JSON,
             Mode.JSON_SCHEMA,
+            Mode.JSON_SCHEMA_OPENROUTER,
             Mode.MD_JSON,
             Mode.JSON_O1,
             Mode.CEREBRAS_JSON,

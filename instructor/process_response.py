@@ -304,6 +304,11 @@ def handle_json_modes(
             "type": "json_object",
             "schema": response_model.model_json_schema(),
         }
+    elif mode == Mode.JSON_SCHEMA_OPENROUTER:
+        new_kwargs["response_format"] = {
+            "type": "json_schema",
+            "schema": response_model.model_json_schema(),
+        }
     elif mode == Mode.MD_JSON:
         new_kwargs["messages"].append(
             {
@@ -731,6 +736,7 @@ def handle_response_model(
         Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON),  # type: ignore
         Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
         Mode.JSON_SCHEMA: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA),  # type: ignore
+        Mode.JSON_SCHEMA_OPENROUTER: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA_OPENROUTER),  # type: ignore
         Mode.ANTHROPIC_TOOLS: handle_anthropic_tools,
         Mode.ANTHROPIC_JSON: handle_anthropic_json,
         Mode.COHERE_JSON_SCHEMA: handle_cohere_json_schema,
