@@ -13,6 +13,7 @@ class Mode(enum.Enum):
     JSON_O1 = "json_o1"
     MD_JSON = "markdown_json_mode"
     JSON_SCHEMA = "json_schema_mode"
+    JSON_SCHEMA_OPENROUTER = "json_schema_openrouter"
     ANTHROPIC_TOOLS = "anthropic_tools"
     ANTHROPIC_JSON = "anthropic_json"
     COHERE_TOOLS = "cohere_tools"

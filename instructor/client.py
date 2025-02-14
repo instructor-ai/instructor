@@ -508,6 +508,7 @@ def from_openai(
             instructor.Mode.TOOLS,
             instructor.Mode.JSON,
             instructor.Mode.JSON_SCHEMA,
+            instructor.Mode.JSON_SCHEMA_OPENROUTER,
             instructor.Mode.MD_JSON,
         }
 

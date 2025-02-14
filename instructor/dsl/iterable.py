@@ -104,6 +104,7 @@ class IterableBase:
                         Mode.JSON,
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
+                        Mode.JSON_SCHEMA_OPENROUTER,
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
                     }:
@@ -145,6 +146,7 @@ class IterableBase:
                         Mode.JSON,
                         Mode.MD_JSON,
                         Mode.JSON_SCHEMA,
+                        Mode.JSON_SCHEMA_OPENROUTER,
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
                     }:
