@@ -55,6 +55,7 @@ class Provider(Enum):
     FIREWORKS = "fireworks"
     WRITER = "writer"
     UNKNOWN = "unknown"
+    PERPLEXITY = "perplexity"
 
 
 def get_provider(base_url: str) -> Provider:
@@ -84,6 +85,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.VERTEXAI
     elif "writer" in str(base_url):
         return Provider.WRITER
+    elif "perplexity" in str(base_url):
+        return Provider.PERPLEXITY
     return Provider.UNKNOWN
 
 

@@ -624,6 +624,19 @@ def handle_writer_tools(
     return response_model, new_kwargs
 
 
+def handle_perplexity_json(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs["response_format"] = {
+        "type": "json_schema",
+        "json_schema": {
+            "schema": response_model.model_json_schema()
+        }
+    }
+
+    return response_model, new_kwargs
+
+
 def is_typed_dict(cls) -> bool:
     return (
         isinstance(cls, type)
@@ -744,6 +757,7 @@ def handle_response_model(
         Mode.FIREWORKS_JSON: handle_fireworks_json,
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
         Mode.WRITER_TOOLS: handle_writer_tools,
+        Mode.PERPLEXITY_JSON: handle_perplexity_json,
     }
 
     if mode in mode_handlers:
