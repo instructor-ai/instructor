@@ -54,6 +54,7 @@ print(resp)
 ## Simple User Example (Async)
 
 ```python
+import asyncio
 import instructor
 import vertexai  # type: ignore
 from vertexai.generative_models import GenerativeModel  # type: ignore
@@ -72,8 +73,6 @@ client = instructor.from_vertexai(
     mode=instructor.Mode.VERTEXAI_TOOLS,
     _async=True,
 )
-
-async def extract_user():
 
 async def extract_user():
     user = await client.create(
