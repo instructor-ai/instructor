@@ -336,6 +336,7 @@ def handle_reask_kwargs(
 
     functions = {
         Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
+        Mode.ANTHROPIC_REASONING_TOOLS: reask_anthropic_tools,
         Mode.ANTHROPIC_JSON: reask_anthropic_json,
         Mode.COHERE_TOOLS: reask_cohere_tools,
         Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,  # Same Function
