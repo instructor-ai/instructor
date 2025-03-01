@@ -14,6 +14,7 @@ class Mode(enum.Enum):
     MD_JSON = "markdown_json_mode"
     JSON_SCHEMA = "json_schema_mode"
     ANTHROPIC_TOOLS = "anthropic_tools"
+    ANTHROPIC_REASONING_TOOLS = "anthropic_reasoning_tools"
     ANTHROPIC_JSON = "anthropic_json"
     COHERE_TOOLS = "cohere_tools"
     VERTEXAI_TOOLS = "vertexai_tools"
