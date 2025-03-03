@@ -1,40 +1,93 @@
 ---
-title: Key Concepts for Structured Outputs in AI
-description: Explore essential concepts in Instructor for efficient extraction and validation of structured data from AI models.
+title: Instructor Concepts
+description: Core concepts and features of the Instructor library
 ---
 
-# Concepts
+# Instructor Concepts
 
-Welcome to the Concepts section of Instructor documentation. This section provides an in-depth exploration of key ideas and techniques that form the foundation of working with structured outputs in AI applications using Instructor.
+This section explains the core concepts and features of the Instructor library, organized by category to help you find what you need.
 
-## Introduction
+## Core Concepts
 
-Instructor is designed to simplify the process of extracting structured data from large language models (LLMs). By leveraging the power of Pydantic and OpenAI's function calling API, Instructor enables developers to create robust, type-safe applications that can efficiently process and validate AI-generated outputs.
+These are the fundamental concepts you need to understand to use Instructor effectively:
 
-In this section, we'll cover a range of concepts that are crucial for understanding and effectively using Instructor. Whether you're new to the library or looking to deepen your knowledge, these guides will provide valuable insights into the core principles and advanced features of Instructor.
+- [Models](./models.md) - Using Pydantic models to define output structures
+- [Patching](./patching.md) - How Instructor patches LLM clients
+- [Types](./types.md) - Working with different data types in your models
+- [Validation](./validation.md) - Validating LLM outputs against your models
+- [Prompting](./prompting.md) - Creating effective prompts for structured output extraction
 
-## Key Concepts
+## Data Handling and Structures
 
-Here's an overview of the concepts we'll explore:
+These concepts relate to defining and working with different data structures:
 
-1. [Aliases](alias.md): Learn how to use aliases to customize field names in your Pydantic models.
+- [Fields](./fields.md) - Working with Pydantic fields and attributes
+- [Lists and Arrays](./lists.md) - Handling lists and arrays in your models
+- [TypedDicts](./typeddicts.md) - Using TypedDict for flexible typing
+- [Union Types](./unions.md) - Working with union types
+- [Enums](./enums.md) - Using enumerated types in your models
+- [Missing](./maybe.md) - Handling missing or optional values
+- [Alias](./alias.md) - Create field aliases
 
-2. [Caching](caching.md): Discover techniques for improving performance through effective data management and caching strategies.
+## Streaming Features
 
-3. [Templating](templating.md): Explore Jinja templating for dynamic and efficient prompt management.
+These features help you work with streaming responses:
 
-4. [Type Adapter](typeadapter.md): Understand Pydantic's Type Adapter for enhanced data validation and parsing.
+- [Stream Partial](./partial.md) - Stream partially completed responses
+- [Stream Iterable](./iterable.md) - Stream collections of completed objects
+- [Raw Response](./raw_response.md) - Access the raw LLM response
 
-5. [TypedDicts](typeddicts.md): Learn about using TypedDicts for structured data handling with OpenAI's API.
+## Error Handling and Validation
 
-6. [Types](types.md): Dive into the various data types supported by Instructor, from simple to complex.
+These features help you ensure data quality:
 
-7. [Union](union.md): Explore the use of Union types for flexible and dynamic operations in your models.
+- [Retrying](./retrying.md) - Configure automatic retry behavior
+- [Validators](./reask_validation.md) - Define custom validation logic
+- [Hooks](./hooks.md) - Add callbacks for monitoring and debugging
 
-8. [Usage](usage.md): Get insights on handling non-streaming requests and managing token usage with the OpenAI API.
+## Performance Optimization
 
-Each of these concepts plays a crucial role in building efficient, type-safe, and robust applications with Instructor. By mastering these ideas, you'll be well-equipped to tackle complex data extraction and validation tasks in your AI-powered projects.
+These features help you optimize performance:
 
-We encourage you to explore these concepts in depth and see how they can be applied to your specific use cases. Remember, the power of Instructor lies in its ability to combine these concepts seamlessly, allowing you to create sophisticated applications with ease.
+- [Caching](./caching.md) - Cache responses to improve performance
+- [Prompt Caching](./prompt_caching.md) - Cache prompts to reduce token usage
+- [Usage Tokens](./usage.md) - Track token usage
+- [Parallel Tools](./parallel.md) - Run multiple tools in parallel
 
-Happy learning, and enjoy your journey through the world of structured outputs with Instructor!
+## Integration Features
+
+These features help you integrate with other technologies:
+
+- [FastAPI](./fastapi.md) - Integrate with FastAPI
+- [Type Adapter](./typeadapter.md) - Use TypeAdapter with Instructor
+- [Templating](./templating.md) - Use templates for dynamic prompts
+- [Distillation](./distillation.md) - Optimize models for production
+
+## Philosophy
+
+- [Philosophy](./philosophy.md) - The guiding principles behind Instructor
+
+## How These Concepts Work Together
+
+Instructor is built around a few key ideas that work together:
+
+1. **Define Structure with Pydantic**: Use Pydantic models to define exactly what data you want.
+2. **Enhance LLM Clients**: Patch provider clients to add structured output capabilities.
+3. **Validate and Retry**: Automatically validate responses and retry if necessary.
+4. **Process Streams**: Handle streaming responses for real-time updates.
+
+For example, a typical workflow might involve:
+
+1. Define a Pydantic model for your output structure
+2. Patch your LLM client using `instructor.from_provider()`
+3. Make requests with the `response_model` parameter
+4. Process validated Pydantic objects
+
+## What to Read Next
+
+- If you're new to Instructor, start with [Models](./models.md) and [Patching](./patching.md)
+- If you're having validation issues, check out [Validators](./reask_validation.md) and [Retrying](./retrying.md)
+- For streaming applications, read [Stream Partial](./partial.md) and [Stream Iterable](./iterable.md)
+- To optimize your application, look at [Caching](./caching.md) and [Usage Tokens](./usage.md)
+
+For practical examples of these concepts, visit the [Cookbook](../examples/index.md) section.

@@ -129,13 +129,17 @@ extra_css:
 nav:
   - Introduction:
     - Structured Outputs for LLMs: 'index.md'
-    - Why use Instructor?: 'why.md'
-    - Help with Instructor: 'help.md'
-    - Newsletter: 'newsletter.md'
+    - Getting Started: 'getting-started.md'
     - Installation: 'installation.md'
-    - Contributing: 'contributing.md'
+    - Why use Instructor?: 'why.md'
+    - Architecture: 'architecture.md'
+    - Mode Comparison: 'modes-comparison.md'
     - Philosophy: 'concepts/philosophy.md'
     - API Reference: 'api.md'
+    - FAQ: 'faq.md'
+    - Help with Instructor: 'help.md'
+    - Contributing: 'contributing.md'
+    - Newsletter: 'newsletter.md'
   - Cookbook:
     - Cookbooks: 'examples/index.md'
     - "Recursive Schema Examples": 'examples/recursive.md'
@@ -231,14 +235,6 @@ nav:
       - "Batch Jobs": "cli/batch.md"
   - Tutorials:
     - Overview: 'tutorials/index.md'
-    - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
-    - Tips and Tricks: 'tutorials/2-tips.ipynb'
-    - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
-    - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
-    - Validation: 'tutorials/4-validation.ipynb'
-    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
-    - Chain of Density: 'tutorials/6-chain-of-density.ipynb'
-    - Synthetic Data Generation: 'tutorials/7-synthetic-data-generation.ipynb'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
   - Prompt Design:

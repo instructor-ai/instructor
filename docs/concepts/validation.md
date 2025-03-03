@@ -1,3 +1,8 @@
+---
+title: Validation in Instructor
+description: Learn how to validate LLM outputs with Pydantic, ensuring type safety and data consistency.
+---
+
 # Validation in Instructor
 
 This guide covers validation concepts and best practices when using Instructor for structured outputs.
