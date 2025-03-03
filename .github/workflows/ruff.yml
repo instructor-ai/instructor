@@ -31,7 +31,7 @@ jobs:
       - name: Run Continuous Integration Action
         uses: astral-sh/ruff-action@v1
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ruff-log
           path: ${{ env.WORKING_DIRECTORY }}/${{ env.RUFF_OUTPUT_FILENAME }}
