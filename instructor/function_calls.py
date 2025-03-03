@@ -112,7 +112,7 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
-        if mode == Mode.ANTHROPIC_TOOLS:
+        if mode == Mode.ANTHROPIC_TOOLS or mode == Mode.ANTHROPIC_REASONING_TOOLS:
             return cls.parse_anthropic_tools(completion, validation_context, strict)
 
         if mode == Mode.ANTHROPIC_JSON:
@@ -226,7 +226,9 @@ class OpenAISchema(BaseModel):
             assert isinstance(completion, Message)
             if completion.stop_reason == "max_tokens":
                 raise IncompleteOutputException(last_completion=completion)
-            text = completion.content[0].text
+            # Find the first text block
+            text_blocks = [c for c in completion.content if c.type == "text"]
+            text = text_blocks[0].text
 
         extra_text = extract_json_from_codeblock(text)
 
