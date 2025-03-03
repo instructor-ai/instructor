@@ -162,6 +162,7 @@ class OpenAISchema(BaseModel):
             Mode.JSON_O1,
             Mode.CEREBRAS_JSON,
             Mode.FIREWORKS_JSON,
+            Mode.PERPLEXITY_JSON,
         }:
             return cls.parse_json(completion, validation_context, strict)
 
