@@ -1,8 +1,6 @@
 [project]
-authors = [
-    {name = "Jason Liu", email = "jason@jxnl.co"},
-]
-license = {text = "MIT"}
+authors = [{ name = "Jason Liu", email = "jason@jxnl.co" }]
+license = { text = "MIT" }
 requires-python = "<4.0,>=3.9"
 dependencies = [
     "openai<2.0.0,>=1.52.0",
@@ -59,33 +57,17 @@ test-docs = [
     "litellm<2.0.0,>=1.35.31",
     "mistralai<2.0.0,>=1.0.3",
 ]
-anthropic = [
-    "anthropic==0.42.0",
-    "xmltodict<0.15,>=0.13",
-]
-groq = [
-    "groq<0.14.0,>=0.4.2",
-]
-cohere = [
-    "cohere<6.0.0,>=5.1.8",
-]
+anthropic = ["anthropic==0.47.2", "xmltodict<0.15,>=0.13"]
+groq = ["groq<0.14.0,>=0.4.2"]
+cohere = ["cohere<6.0.0,>=5.1.8"]
 google-generativeai = [
     "google-generativeai<1.0.0,>=0.8.2",
     "jsonref<2.0.0,>=1.1.0",
 ]
-vertexai = [
-    "google-cloud-aiplatform<2.0.0,>=1.53.0",
-    "jsonref<2.0.0,>=1.1.0",
-]
-cerebras_cloud_sdk = [
-    "cerebras-cloud-sdk<2.0.0,>=1.5.0",
-]
-fireworks-ai = [
-    "fireworks-ai<1.0.0,>=0.15.4",
-]
-writer = [
-    "writer-sdk<2.0.0,>=1.2.0",
-]
+vertexai = ["google-cloud-aiplatform<2.0.0,>=1.53.0", "jsonref<2.0.0,>=1.1.0"]
+cerebras_cloud_sdk = ["cerebras-cloud-sdk<2.0.0,>=1.5.0"]
+fireworks-ai = ["fireworks-ai<1.0.0,>=0.15.4"]
+writer = ["writer-sdk<2.0.0,>=1.2.0"]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"
@@ -112,9 +94,7 @@ docs = [
     "mkdocs-redirects<2.0.0,>=1.2.1",
     "material>=0.1",
 ]
-anthropic = [
-    "anthropic==0.42.0",
-]
+anthropic = ["anthropic==0.47.2"]
 test-docs = [
     "fastapi<0.116.0,>=0.109.2",
     "redis<6.0.0,>=5.0.1",
@@ -123,7 +103,7 @@ test-docs = [
     "tabulate<1.0.0,>=0.9.0",
     "pydantic-extra-types<3.0.0,>=2.6.0",
     "litellm<2.0.0,>=1.35.31",
-    "anthropic==0.42.0",
+    "anthropic==0.47.2",
     "xmltodict<0.15,>=0.13",
     "groq<0.14.0,>=0.4.2",
     "phonenumbers<9.0.0,>=8.13.33",
@@ -138,14 +118,9 @@ test-docs = [
     "datasets<4.0.0,>=3.0.1",
     "writer-sdk<2.0.0,>=1.2.0",
 ]
-litellm = [
-    "litellm<2.0.0,>=1.35.31",
-]
+litellm = ["litellm<2.0.0,>=1.35.31"]
 google-generativeai = [
     "google-generativeai<1.0.0,>=0.8.2",
     "jsonref<2.0.0,>=1.1.0",
 ]
-vertexai = [
-    "google-cloud-aiplatform<2.0.0,>=1.53.0",
-    "jsonref<2.0.0,>=1.1.0",
-]
+vertexai = ["google-cloud-aiplatform<2.0.0,>=1.53.0", "jsonref<2.0.0,>=1.1.0"]

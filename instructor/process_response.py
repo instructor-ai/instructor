@@ -367,6 +367,30 @@ def handle_anthropic_tools(
     return response_model, new_kwargs
 
 
+def handle_anthropic_reasoning_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
+
+    response_model, new_kwargs = handle_anthropic_tools(response_model, new_kwargs)
+
+    # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
+    # Reasoning does not allow forced tool use
+    new_kwargs["tool_choice"] = {"type": "auto"}
+
+    # But add a message recommending only to use the tools if they are relevant
+    implict_forced_tool_message = dedent(
+        f"""
+        Return only the tool call and no additional text.
+        """
+    )
+    new_kwargs["system"] = combine_system_messages(
+        new_kwargs.get("system"),
+        [{"type": "text", "text": implict_forced_tool_message}],
+    )
+    return response_model, new_kwargs
+
+
 def handle_anthropic_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
@@ -521,7 +545,6 @@ def handle_vertexai_parallel_tools(
     contents, tools, tool_config = vertexai_process_response(
         new_kwargs, model_types
     )
-
     new_kwargs["contents"] = contents
     new_kwargs["tools"] = tools
     new_kwargs["tool_config"] = tool_config
@@ -680,6 +703,19 @@ def handle_writer_tools(
     return response_model, new_kwargs
 
 
+def handle_perplexity_json(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs["response_format"] = {
+        "type": "json_schema",
+        "json_schema": {
+            "schema": response_model.model_json_schema()
+        }
+    }
+
+    return response_model, new_kwargs
+
+
 def is_typed_dict(cls) -> bool:
     return (
         isinstance(cls, type)
@@ -791,6 +827,7 @@ def handle_response_model(
         Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
         Mode.JSON_SCHEMA: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA),  # type: ignore
         Mode.ANTHROPIC_TOOLS: handle_anthropic_tools,
+        Mode.ANTHROPIC_REASONING_TOOLS: handle_anthropic_reasoning_tools,
         Mode.ANTHROPIC_JSON: handle_anthropic_json,
         Mode.COHERE_JSON_SCHEMA: handle_cohere_json_schema,
         Mode.COHERE_TOOLS: handle_cohere_tools,
@@ -805,6 +842,7 @@ def handle_response_model(
         Mode.WRITER_TOOLS: handle_writer_tools,
         Mode.BEDROCK_JSON: handle_bedrock_json,
         Mode.BEDROCK_TOOLS: handle_bedrock_tools,
+        Mode.PERPLEXITY_JSON: handle_perplexity_json,
     }
 
     if mode in mode_handlers:
