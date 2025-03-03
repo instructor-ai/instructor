@@ -29,6 +29,7 @@ from functools import cache
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
+import re
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
@@ -45,6 +46,18 @@ class MakeFieldsOptional:
 
 class PartialLiteralMixin:
     pass
+
+
+def remove_control_chars(s):
+    return re.sub(r"[\x00-\x1F\x7F-\x9F]", "", s)
+
+
+def process_potential_object(potential_object, partial_mode, partial_model, **kwargs):
+    obj = from_json(
+        (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+    )
+    obj = partial_model.model_validate(obj, strict=None, **kwargs)
+    return obj
 
 
 def _process_generic_arg(
@@ -213,12 +226,22 @@ class PartialBase(Generic[T_Model]):
         partial_mode = (
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
+        chunk_buffer = []
         for chunk in json_chunks:
-            potential_object += chunk
-            obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+            chunk_buffer += chunk
+            if len(chunk_buffer) < 2:
+                continue
+            potential_object += remove_control_chars("".join(chunk_buffer))
+            chunk_buffer = []
+            obj = process_potential_object(
+                potential_object, partial_mode, partial_model, **kwargs
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            yield obj
+        if chunk_buffer:
+            potential_object += remove_control_chars(chunk_buffer[0])
+            obj = process_potential_object(
+                potential_object, partial_mode, partial_model, **kwargs
+            )
             yield obj
 
     @classmethod
