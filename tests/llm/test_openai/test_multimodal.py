@@ -8,7 +8,7 @@ import requests
 from pathlib import Path
 
 
-audio_url = "https://www2.cs.uic.edu/~i101/SoundFiles/gettysburg.wav"
+audio_url = "https://www.cs.uic.edu/~i101/SoundFiles/gettysburg.wav"
 image_url = "https://retail.degroot-inc.com/wp-content/uploads/2024/01/AS_Blueberry_Patriot_1-605x605.jpg"
 
 
