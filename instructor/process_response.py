@@ -14,6 +14,7 @@ from openai import pydantic_function_tool
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, create_model
 
+# from instructor.client_bedrock import handle_bedrock_json
 from instructor.mode import Mode
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import (
@@ -25,7 +26,11 @@ from instructor.dsl.parallel import (
     VertexAIParallelModel,
 )
 from instructor.dsl.partial import PartialBase
-from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
+from instructor.dsl.simple_type import (
+    AdapterBase,
+    ModelAdapter,
+    is_simple_type,
+)
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import (
     merge_consecutive_messages,
@@ -183,6 +188,7 @@ def process_response(
         return model.content
 
     model._raw_response = response
+
     return model
 
 
@@ -210,7 +216,9 @@ def handle_functions(
 ) -> tuple[type[T], dict[str, Any]]:
     Mode.warn_mode_functions_deprecation()
     new_kwargs["functions"] = [response_model.openai_schema]
-    new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
+    new_kwargs["function_call"] = {
+        "name": response_model.openai_schema["name"]
+    }
     return response_model, new_kwargs
 
 
@@ -311,7 +319,9 @@ def handle_json_modes(
                 "content": "Return the correct JSON response within a ```json codeblock. not the JSON_SCHEMA",
             },
         )
-        new_kwargs["messages"] = merge_consecutive_messages(new_kwargs["messages"])
+        new_kwargs["messages"] = merge_consecutive_messages(
+            new_kwargs["messages"]
+        )
 
     if new_kwargs["messages"][0]["role"] != "system":
         new_kwargs["messages"].insert(
@@ -407,13 +417,16 @@ def handle_anthropic_json(
     )
 
     new_kwargs["system"] = combine_system_messages(
-        new_kwargs.get("system"), [{"type": "text", "text": json_schema_message}]
+        new_kwargs.get("system"),
+        [{"type": "text", "text": json_schema_message}],
     )
 
     return response_model, new_kwargs
 
 
-def handle_cohere_modes(new_kwargs: dict[str, Any]) -> tuple[None, dict[str, Any]]:
+def handle_cohere_modes(
+    new_kwargs: dict[str, Any]
+) -> tuple[None, dict[str, Any]]:
     messages = new_kwargs.pop("messages", [])
     chat_history = []
     for message in messages[:-1]:
@@ -483,13 +496,15 @@ def handle_gemini_json(
     )
 
     if new_kwargs["messages"][0]["role"] != "system":
-        new_kwargs["messages"].insert(0, {"role": "system", "content": message})
+        new_kwargs["messages"].insert(
+            0, {"role": "system", "content": message}
+        )
     else:
         new_kwargs["messages"][0]["content"] += f"\n\n{message}"
 
-    new_kwargs["generation_config"] = new_kwargs.get("generation_config", {}) | {
-        "response_mime_type": "application/json"
-    }
+    new_kwargs["generation_config"] = new_kwargs.get(
+        "generation_config", {}
+    ) | {"response_mime_type": "application/json"}
 
     new_kwargs = update_gemini_kwargs(new_kwargs)
     return response_model, new_kwargs
@@ -527,8 +542,9 @@ def handle_vertexai_parallel_tools(
 
     # Extract concrete types before passing to vertexai_process_response
     model_types = list(get_types_array(response_model))
-    contents, tools, tool_config = vertexai_process_response(new_kwargs, model_types)
-
+    contents, tools, tool_config = vertexai_process_response(
+        new_kwargs, model_types
+    )
     new_kwargs["contents"] = contents
     new_kwargs["tools"] = tools
     new_kwargs["tool_config"] = tool_config
@@ -541,7 +557,9 @@ def handle_vertexai_tools(
 ) -> tuple[type[T], dict[str, Any]]:
     from instructor.client_vertexai import vertexai_process_response
 
-    contents, tools, tool_config = vertexai_process_response(new_kwargs, response_model)
+    contents, tools, tool_config = vertexai_process_response(
+        new_kwargs, response_model
+    )
 
     new_kwargs["contents"] = contents
     new_kwargs["tools"] = tools
@@ -560,6 +578,43 @@ def handle_vertexai_json(
 
     new_kwargs["contents"] = contents
     new_kwargs["generation_config"] = generation_config
+    return response_model, new_kwargs
+
+
+def handle_bedrock_json(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    json_message = dedent(
+        f"""
+        As a genius expert, your task is to understand the content and provide
+        the parsed objects in json that match the following json_schema:\n
+
+        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+        Make sure to return an instance of the JSON, not the schema itself 
+        and don't include any other text in the response apart from the json
+        """
+    )
+    system_message = new_kwargs.pop("system", None)
+    if not system_message:
+        new_kwargs["system"] = [{"text": json_message}]
+    else:
+
+        if not isinstance(system_message, list):
+            raise ValueError(
+                """system must be a list of SystemMessage refer 
+                https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse.html
+                """
+            )
+        system_message.append({"text": json_message})
+        new_kwargs["system"] = system_message
+
+    return response_model, new_kwargs
+
+
+def handle_bedrock_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
     return response_model, new_kwargs
 
 
@@ -608,9 +663,9 @@ Here is the relevant JSON schema to adhere to
 Your response should consist only of a valid JSON object that `{response_model.__name__}.model_validate_json()` can successfully parse.
 """
 
-    new_kwargs["messages"] = [{"role": "system", "content": instruction}] + new_kwargs[
-        "messages"
-    ]
+    new_kwargs["messages"] = [
+        {"role": "system", "content": instruction}
+    ] + new_kwargs["messages"]
     return response_model, new_kwargs
 
 
@@ -728,6 +783,7 @@ def handle_response_model(
     """
 
     new_kwargs = kwargs.copy()
+    # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 
     if response_model is None:
@@ -743,7 +799,9 @@ def handle_response_model(
             )
             if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
                 # Handle OpenAI style or Anthropic style messages
-                new_kwargs["messages"] = [m for m in messages if m["role"] != "system"]
+                new_kwargs["messages"] = [
+                    m for m in messages if m["role"] != "system"
+                ]
                 if "system" not in new_kwargs:
                     system_message = extract_system_messages(messages)
                     if system_message:
@@ -782,11 +840,15 @@ def handle_response_model(
         Mode.FIREWORKS_JSON: handle_fireworks_json,
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
         Mode.WRITER_TOOLS: handle_writer_tools,
+        Mode.BEDROCK_JSON: handle_bedrock_json,
+        Mode.BEDROCK_TOOLS: handle_bedrock_tools,
         Mode.PERPLEXITY_JSON: handle_perplexity_json,
     }
 
     if mode in mode_handlers:
-        response_model, new_kwargs = mode_handlers[mode](response_model, new_kwargs)
+        response_model, new_kwargs = mode_handlers[mode](
+            response_model, new_kwargs
+        )
     else:
         raise ValueError(f"Invalid patch mode: {mode}")
 
@@ -802,7 +864,8 @@ def handle_response_model(
             "mode": mode.value,
             "response_model": (
                 response_model.__name__
-                if response_model is not None and hasattr(response_model, "__name__")
+                if response_model is not None
+                and hasattr(response_model, "__name__")
                 else str(response_model)
             ),
             "new_kwargs": new_kwargs,
