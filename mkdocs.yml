@@ -237,8 +237,6 @@ nav:
       - "Finetuning GPT-3.5": "cli/finetune.md"
       - "Usage Tracking": "cli/usage.md"
       - "Batch Jobs": "cli/batch.md"
-  - Tutorials:
-    - Overview: 'tutorials/index.md'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
   - Prompt Design:
@@ -353,9 +351,6 @@ plugins:
          'hub/single_classification.md': 'examples/single_classification.md'
          'hub/tables_from_vision.md': 'examples/tables_from_vision.md'
          'hub/youtube_clips.md': 'examples/youtube_clips.md'
-  - mkdocs-jupyter:
-      ignore_h1_titles: true
-      execute: false
   - social
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\b)(?=[A-Z][a-z])'
