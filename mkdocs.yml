@@ -215,6 +215,7 @@ nav:
     - Overview: 'integrations/index.md'
     - Anthropic: 'integrations/anthropic.md'
     - Anyscale: 'integrations/anyscale.md'
+    - AWS Bedrock: 'integrations/bedrock.md'
     - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
@@ -309,6 +310,7 @@ plugins:
          hub/anthropic.md: integrations/anthropic.md
          hub/anyscale.md: integrations/anyscale.md
          hub/azure.md: integrations/azure.md
+         hub/bedrock.md: integrations/bedrock.md
          hub/cerebras.md: integrations/cerebras.md
          hub/cohere.md: integrations/cohere.md
          hub/databricks.md: integrations/databricks.md
@@ -329,6 +331,7 @@ plugins:
          'hub/clients/anthropic.md': 'integrations/anthropic.md'
          'hub/clients/anyscale.md': 'integrations/anyscale.md'
          'hub/clients/azure.md': 'integrations/azure.md'
+         'hub/clients/bedrock.md': 'integrations/bedrock.md'
          'hub/clients/cerebras.md': 'integrations/cerebras.md'
          'hub/clients/cohere.md': 'integrations/cohere.md'
          'hub/clients/databricks.md': 'integrations/databricks.md'
