@@ -1,5 +1,5 @@
 ---
-title: Document Segmentation with LLMs: A Comprehensive Guide
+title: 'Document Segmentation with LLMs: A Comprehensive Guide'
 description: Learn effective document segmentation techniques using Cohere's LLM, enhancing comprehension of complex texts.
 ---
 

@@ -23,15 +23,18 @@ Here's an example of how to define a recursive Pydantic model:
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
+
 class RecursiveNode(BaseModel):
     """A node that can contain child nodes of the same type."""
 
     name: str = Field(..., description="Name of the node")
-    value: Optional[str] = Field(None, description="Optional value associated with the node")
-    children: List["RecursiveNode"] = Field(
-        default_factory=list,
-        description="List of child nodes"
+    value: Optional[str] = Field(
+        None, description="Optional value associated with the node"
     )
+    children: List["RecursiveNode"] = Field(
+        default_factory=list, description="List of child nodes"
+    )
+
 
 # Required for recursive Pydantic models
 RecursiveNode.model_rebuild()
@@ -47,6 +50,7 @@ from openai import OpenAI
 
 client = instructor.from_openai(OpenAI())
 
+
 def parse_hierarchy(text: str) -> RecursiveNode:
     """Parse text into a hierarchical structure."""
     return client.chat.completions.create(
@@ -54,18 +58,20 @@ def parse_hierarchy(text: str) -> RecursiveNode:
         messages=[
             {
                 "role": "system",
-                "content": "You are an expert at parsing text into hierarchical structures."
+                "content": "You are an expert at parsing text into hierarchical structures.",
             },
             {
                 "role": "user",
-                "content": f"Parse this text into a hierarchical structure: {text}"
-            }
+                "content": f"Parse this text into a hierarchical structure: {text}",
+            },
         ],
-        response_model=RecursiveNode
+        response_model=RecursiveNode,
     )
 
+
 # Example usage
-hierarchy = parse_hierarchy("""
+hierarchy = parse_hierarchy(
+    """
 Company: Acme Corp
 - Department: Engineering
   - Team: Frontend
@@ -79,7 +85,8 @@ Company: Acme Corp
     - Project: Social Media Campaign
   - Team: Brand
     - Project: Logo Refresh
-""")
+"""
+)
 ```
 
 ## Validation and Best Practices
@@ -94,6 +101,7 @@ When working with recursive schemas:
 ```python
 from pydantic import model_validator
 
+
 class RecursiveNodeWithDepth(RecursiveNode):
     @model_validator(mode='after')
     def validate_depth(self) -> "RecursiveNodeWithDepth":
@@ -102,7 +110,7 @@ class RecursiveNodeWithDepth(RecursiveNode):
                 raise ValueError("Maximum depth exceeded")
             return max(
                 [check_depth(child, current_depth + 1) for child in node.children],
-                default=current_depth
+                default=current_depth,
             )
 
         check_depth(self)

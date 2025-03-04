@@ -79,7 +79,7 @@ except Exception as e:
     1 validation error for User
     name
       Value error, All letters must be uppercase. Got: Jason [type=value_error, input_value='Jason', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.8/v/value_error
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
     """
 ```
 
@@ -117,7 +117,17 @@ with client.beta.chat.completions.stream(
     for event in stream:
         if event.type == "content.delta":
             print(event.snapshot, flush=True, end="\n")
-            #>
+            #> 
+            #> {"
+            #> {"name
+            #> {"name":"
+            #> {"name":"Jason
+            #> {"name":"Jason","
+            #> {"name":"Jason","age
+            #> {"name":"Jason","age":
+            #> {"name":"Jason","age":25
+            #> {"name":"Jason","age":25}
+            # >
             #> {"
             #> {"name
             #> {"name":"
@@ -195,9 +205,7 @@ This built-in retry logic allows for targetted correction to the generated respo
 A common use-case is to define a single schema and extract multiple instances of it. With `instructor`, doing this is relatively straightforward by using [our `create_iterable` method](../../concepts/lists.md).
 
 ```python
-import instructor
-import openai
-from pydantic import BaseModel
+
 ```
 
 client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS_STRICT)

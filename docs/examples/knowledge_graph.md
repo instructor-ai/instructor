@@ -1,5 +1,5 @@
 ---
-title: Visualizing Knowledge Graphs: A Guide to Complex Topics
+title: 'Visualizing Knowledge Graphs: A Guide to Complex Topics'
 description: Learn how to create and update knowledge graphs using Python, OpenAI's API, Pydantic, and Graphviz for enhanced understanding of complex subjects.
 ---
 

@@ -107,13 +107,13 @@ if __name__ == "__main__":
     assert isinstance(df, pd.DataFrame)
     print(df)
     """
-                         Party    Years Served
+                         Party          Years Served
      President
-    Joe Biden        Democratic  2021 - Present
-    Donald Trump     Republican     2017 - 2021
-    Barack Obama     Democratic     2009 - 2017
-    George W. Bush   Republican     2001 - 2009
-    Bill Clinton     Democratic     1993 - 2001
+    Joe Biden                  Democrat  2021 - Present
+    Donald Trump             Republican     2017 - 2021
+    Barack Obama               Democrat     2009 - 2017
+    George W. Bush           Republican     2001 - 2009
+    Bill Clinton               Democrat     1993 - 2001
     """
 
     table = extract_table(
@@ -126,13 +126,13 @@ if __name__ == "__main__":
     #> Last 5 Presidents of the United States
     print(table.data)
     """
-                         Party    Years Served
+                         Party  Years Served
      President
-    Joe Biden        Democratic  2021 - Present
-    Donald Trump     Republican     2017 - 2021
-    Barack Obama     Democratic     2009 - 2017
-    George W. Bush   Republican     2001 - 2009
-    Bill Clinton     Democratic     1993 - 2001
+    Joe Biden        Democratic     2021-2025
+    Donald Trump     Republican     2017-2021
+    Barack Obama     Democratic     2009-2017
+    George W. Bush   Republican     2001-2009
+    Bill Clinton     Democratic     1993-2001
     """
 ```
 

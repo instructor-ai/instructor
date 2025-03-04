@@ -15,6 +15,8 @@ pip install "instructor[anthropic]"
 
 Once we've done so, getting started is as simple as using our `from_anthropic` method to patch the client up.
 
+### Basic Usage
+
 ```python
 # Standard library imports
 import os
@@ -89,6 +91,19 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 ```
 ```
+
+### Beta API Features
+
+Anthropic provides beta features through their beta API endpoint. To use these features, enable the beta parameter when creating the client:
+
+```python
+client = instructor.from_anthropic(
+    anthropic.Anthropic(),
+    beta=True  # Enable beta API features
+)
+```
+
+This allows you to access beta features like PDF support and other experimental capabilities. For more information about available beta features, refer to [Anthropic's documentation](https://docs.anthropic.com/claude/docs/beta-features).
 
 ## Streaming Support
 

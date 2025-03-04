@@ -19,7 +19,7 @@ Instructor works with many different LLM providers, allowing you to use structur
 
     Use major commercial AI providers with enterprise features
 
-    [:octicons-arrow-right-16: Anthropic](./anthropic.md) · [:octicons-arrow-right-16: Google](./google.md) · [:octicons-arrow-right-16: Vertex AI](./vertex.md) · [:octicons-arrow-right-16: Cohere](./cohere.md) · [:octicons-arrow-right-16: Mistral](./mistral.md)
+    [:octicons-arrow-right-16: Anthropic](./anthropic.md) · [:octicons-arrow-right-16: Google](./google.md) · [:octicons-arrow-right-16: Vertex AI](./vertex.md) · [:octicons-arrow-right-16: Cohere](./cohere.md) · [:octicons-arrow-right-16: Mistral](./mistral.md) · [:octicons-arrow-right-16: DeepSeek](./deepseek.md)
 
 - :material-server: **Fast Inference**
 

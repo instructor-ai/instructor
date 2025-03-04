@@ -14,10 +14,12 @@ class Mode(enum.Enum):
     MD_JSON = "markdown_json_mode"
     JSON_SCHEMA = "json_schema_mode"
     ANTHROPIC_TOOLS = "anthropic_tools"
+    ANTHROPIC_REASONING_TOOLS = "anthropic_reasoning_tools"
     ANTHROPIC_JSON = "anthropic_json"
     COHERE_TOOLS = "cohere_tools"
     VERTEXAI_TOOLS = "vertexai_tools"
     VERTEXAI_JSON = "vertexai_json"
+    VERTEXAI_PARALLEL_TOOLS = "vertexai_parallel_tools"
     GEMINI_JSON = "gemini_json"
     GEMINI_TOOLS = "gemini_tools"
     COHERE_JSON_SCHEMA = "json_object"
@@ -27,6 +29,9 @@ class Mode(enum.Enum):
     FIREWORKS_TOOLS = "fireworks_tools"
     FIREWORKS_JSON = "fireworks_json"
     WRITER_TOOLS = "writer_tools"
+    BEDROCK_TOOLS = "bedrock_tools"
+    BEDROCK_JSON = "bedrock_json"
+    PERPLEXITY_JSON = "perplexity_json"
 
     @classmethod
     def warn_mode_functions_deprecation(cls):

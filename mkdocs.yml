@@ -219,6 +219,7 @@ nav:
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
     - Databricks: 'integrations/databricks.md'
+    - Cortex: 'integrations/cortex.md'
     - Fireworks: 'integrations/fireworks.md'
     - Gemini: 'integrations/google.md'
     - Groq: 'integrations/groq.md'
@@ -230,6 +231,7 @@ nav:
     - Together: 'integrations/together.md'
     - Vertex AI: 'integrations/vertex.md'
     - Writer: 'integrations/writer.md'
+    - DeepSeek: 'integrations/deepseek.md'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"

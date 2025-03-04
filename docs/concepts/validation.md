@@ -207,6 +207,7 @@ class Address(BaseModel):
     city: str = Field(description="City name")
     country: str = Field(description="Country name")
 
+
 class User(BaseModel):
     """Model representing a user with nested address validation."""
     name: str = Field(description="User's full name")

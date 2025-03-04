@@ -42,12 +42,14 @@ from pydantic import BaseModel
 # Enable response_model and API Model Distillation
 client = instructor.patch(OpenAI())
 
+
 class UserDetail(BaseModel):
     name: str
     age: int
 
     def introduce(self):
         return f"Hello, I'm {self.name} and I'm {self.age} years old"
+
 
 # Use the store parameter to enable API Model Distillation
 user: UserDetail = client.chat.completions.create(
@@ -56,7 +58,7 @@ user: UserDetail = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ],
-    store=True  # Enable API Model Distillation
+    store=True,  # Enable API Model Distillation
 )
 ```
 
@@ -76,10 +78,7 @@ user: UserDetail = client.chat.completions.create(
         {"role": "user", "content": "Extract Jason is 25 years old"},
     ],
     store=True,
-    metadata={
-        "task": "user_extraction",
-        "source": "customer_support_chat"
-    }
+    metadata={"task": "user_extraction", "source": "customer_support_chat"},
 )
 ```
 

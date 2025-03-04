@@ -1,15 +1,20 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Union, get_origin
 
 from vertexai.preview.generative_models import ToolConfig  # type: ignore
 import vertexai.generative_models as gm  # type: ignore
 from pydantic import BaseModel
 import instructor
+from instructor.dsl.parallel import get_types_array
 import jsonref
 
 
 def _create_gemini_json_schema(model: BaseModel):
+    # Add type check to ensure we have a concrete model class
+    if get_origin(model) is not None:
+        raise TypeError(f"Expected concrete model class, got type hint {model}")
+        
     schema = model.model_json_schema()
     schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore
     gemini_schema: dict[Any, Any] = {
@@ -22,16 +27,26 @@ def _create_gemini_json_schema(model: BaseModel):
     return gemini_schema
 
 
-def _create_vertexai_tool(model: BaseModel) -> gm.Tool:
-    parameters = _create_gemini_json_schema(model)
+def _create_vertexai_tool(models: Union[BaseModel, list[BaseModel], type]) -> gm.Tool:  # noqa: UP007
+    """Creates a tool with function declarations for single model or list of models"""
+    # Handle Iterable case first
+    if get_origin(models) is not None:
+        model_list = list(get_types_array(models))  # type: ignore
+    else:
+        # Handle both single model and list of models
+        model_list = models if isinstance(models, list) else [models]
 
-    declaration = gm.FunctionDeclaration(
-        name=model.__name__, description=model.__doc__, parameters=parameters
-    )
+    declarations = []
+    for model in model_list:  # type: ignore
+        parameters = _create_gemini_json_schema(model)  # type: ignore
+        declaration = gm.FunctionDeclaration(
+            name=model.__name__,  # type: ignore
+            description=model.__doc__,  # type: ignore
+            parameters=parameters,
+        )
+        declarations.append(declaration)  # type: ignore
 
-    tool = gm.Tool(function_declarations=[declaration])
-
-    return tool
+    return gm.Tool(function_declarations=declarations)  # type: ignore
 
 
 def vertexai_message_parser(
@@ -84,11 +99,13 @@ def vertexai_function_response_parser(
     )
 
 
-def vertexai_process_response(_kwargs: dict[str, Any], model: BaseModel):
+def vertexai_process_response(
+    _kwargs: dict[str, Any], model: Union[BaseModel, list[BaseModel], type] # noqa: UP007
+):  
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
 
-    tool = _create_vertexai_tool(model=model)
+    tool = _create_vertexai_tool(models=model)
 
     tool_config = ToolConfig(
         function_calling_config=ToolConfig.FunctionCallingConfig(
@@ -122,6 +139,7 @@ def from_vertexai(
     **kwargs: Any,
 ) -> instructor.Instructor:
     assert mode in {
+        instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
         instructor.Mode.VERTEXAI_TOOLS,
         instructor.Mode.VERTEXAI_JSON,
     }, "Mode must be instructor.Mode.VERTEXAI_TOOLS"

@@ -49,6 +49,7 @@ from datasets import load_dataset, Dataset, DatasetDict
 
 splits = ["test", "train"]
 
+
 def generate_gsm8k(split):
     ds = load_dataset("gsm8k", "main", split=split, streaming=True)
     for row in ds:
@@ -59,6 +60,7 @@ def generate_gsm8k(split):
             "answer": answer,
             "reasoning": reasoning,
         }
+
 
 # Create the dataset for train and test splits
 train_dataset = Dataset.from_generator(lambda: generate_gsm8k("train"))
@@ -143,6 +145,7 @@ class Answer(BaseModel):
     chain_of_thought: str
     answer: int
 
+
 class OnlyAnswer(BaseModel):
     answer: int
 ```
@@ -214,21 +217,25 @@ class Answer(BaseModel):
     chain_of_thought: str
     answer: int
 
+
 class AnswerWithCalculation(BaseModel):
     chain_of_thought: str
     required_calculations: list[str]
     answer: int
+
 
 class AssumptionBasedAnswer(BaseModel):
     assumptions: list[str]
     logic_flow: str
     answer: int
 
+
 class ErrorAwareCalculation(BaseModel):
     key_steps: list[str]
     potential_pitfalls: list[str]
     intermediate_results: list[str]
     answer: int
+
 
 class AnswerWithNecessaryCalculationAndFinalChoice(BaseModel):
     chain_of_thought: str
@@ -279,21 +286,16 @@ In fact, the only thing that changed was the last two parameters. Upon closer in
 
 ```python
 {
-  "chain_of_thought": "In the race, there are a total of 240 Asians. Given that 80 were Japanese, we can calculate the number of Chinese participants by subtracting the number of Japanese from the total number of Asians: 240 - 80 = 160. Now, it is given that there are 60 boys on the Chinese team. Therefore, to find the number of girls on the Chinese team, we subtract the number of boys from the total number of Chinese participants: 160 - 60 = 100 girls. Thus, the number of girls on the Chinese team is 100.",
-  "necessary_calculations": [
-    "Total Asians = 240",
-    "Japanese participants = 80",
-    "Chinese participants = Total Asians - Japanese participants = 240 - 80 = 160",
-    "Boys in Chinese team = 60",
-    "Girls in Chinese team = Chinese participants - Boys in Chinese team = 160 - 60 = 100"
-  ],
-  "potential_final_choices": [
-    "60",
-    "100",
-    "80",
-    "120"
-  ],
-  "final_choice": 2
+    "chain_of_thought": "In the race, there are a total of 240 Asians. Given that 80 were Japanese, we can calculate the number of Chinese participants by subtracting the number of Japanese from the total number of Asians: 240 - 80 = 160. Now, it is given that there are 60 boys on the Chinese team. Therefore, to find the number of girls on the Chinese team, we subtract the number of boys from the total number of Chinese participants: 160 - 60 = 100 girls. Thus, the number of girls on the Chinese team is 100.",
+    "necessary_calculations": [
+        "Total Asians = 240",
+        "Japanese participants = 80",
+        "Chinese participants = Total Asians - Japanese participants = 240 - 80 = 160",
+        "Boys in Chinese team = 60",
+        "Girls in Chinese team = Chinese participants - Boys in Chinese team = 160 - 60 = 100",
+    ],
+    "potential_final_choices": ["60", "100", "80", "120"],
+    "final_choice": 2,
 }
 ```
 
@@ -301,21 +303,16 @@ This meant that instead of the final answer of 100, our model was generating pot
 
 ```python
 {
-  "chain_of_thought": "First, we need to determine how many Asians were Chinese. Since there were 240 Asians in total and 80 of them were Japanese, we can find the number of Chinese by subtracting the number of Japanese from the total: 240 - 80 = 160. Now, we know that there are 160 Chinese participants. Given that there were 60 boys on the Chinese team, we can find the number of girls by subtracting the number of boys from the total number of Chinese: 160 - 60 = 100. Therefore, there are 100 girls on the Chinese team.",
-  "necessary_calculations": [
-    "Total Asians = 240",
-    "Number of Japanese = 80",
-    "Number of Chinese = 240 - 80 = 160",
-    "Number of boys on Chinese team = 60",
-    "Number of girls on Chinese team = 160 - 60 = 100"
-  ],
-  "potential_final_answers": [
-    "100",
-    "60",
-    "80",
-    "40"
-  ],
-  "answer": 100
+    "chain_of_thought": "First, we need to determine how many Asians were Chinese. Since there were 240 Asians in total and 80 of them were Japanese, we can find the number of Chinese by subtracting the number of Japanese from the total: 240 - 80 = 160. Now, we know that there are 160 Chinese participants. Given that there were 60 boys on the Chinese team, we can find the number of girls by subtracting the number of boys from the total number of Chinese: 160 - 60 = 100. Therefore, there are 100 girls on the Chinese team.",
+    "necessary_calculations": [
+        "Total Asians = 240",
+        "Number of Japanese = 80",
+        "Number of Chinese = 240 - 80 = 160",
+        "Number of boys on Chinese team = 60",
+        "Number of girls on Chinese team = 160 - 60 = 100",
+    ],
+    "potential_final_answers": ["100", "60", "80", "40"],
+    "answer": 100,
 }
 ```
 

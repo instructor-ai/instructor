@@ -77,7 +77,7 @@ if __name__ == "__main__":
         {
           "source": 1,
           "target": 2,
-          "label": "friend",
+          "label": "is a friend of",
           "color": "black"
         },
         {

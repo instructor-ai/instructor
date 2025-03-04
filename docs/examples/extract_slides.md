@@ -209,22 +209,24 @@ print(model.model_dump_json(indent=2))
 {
   "industry_list": [
     {
-      "name": "Accommodation Booking",
+      "name": "Accommodation Services",
       "competitor_list": [
         {
           "name": "CouchSurfing",
           "features": [
             "Free accommodation",
+            "Cultural exchange",
             "Community-driven",
-            "Cultural exchange"
+            "User profiles and reviews"
           ]
         },
         {
           "name": "Craigslist",
           "features": [
             "Local listings",
-            "Variety of options",
-            "Direct communication with hosts"
+            "Variety of accommodation types",
+            "Direct communication with hosts",
+            "No booking fees"
           ]
         },
         {
@@ -232,31 +234,35 @@ print(model.model_dump_json(indent=2))
           "features": [
             "Specialized in B&Bs",
             "User reviews",
-            "Booking options"
+            "Booking options",
+            "Local experiences"
           ]
         },
         {
           "name": "AirBed & Breakfast (Airbnb)",
           "features": [
             "Wide range of accommodations",
-            "User-friendly platform",
-            "Host and guest reviews"
+            "User reviews",
+            "Instant booking",
+            "Host profiles"
           ]
         },
         {
           "name": "Hostels.com",
           "features": [
             "Budget-friendly hostels",
-            "Global reach",
-            "User reviews"
+            "User reviews",
+            "Booking options",
+            "Global reach"
           ]
         },
         {
-          "name": "Rent.com",
+          "name": "RentDigs.com",
           "features": [
-            "Apartment rentals",
-            "User-friendly search",
-            "Local listings"
+            "Rental listings",
+            "User-friendly interface",
+            "Local listings",
+            "Direct communication with landlords"
           ]
         },
         {
@@ -264,7 +270,8 @@ print(model.model_dump_json(indent=2))
           "features": [
             "Vacation rentals",
             "Family-friendly options",
-            "Direct booking with owners"
+            "User reviews",
+            "Booking protection"
           ]
         },
         {
@@ -272,7 +279,8 @@ print(model.model_dump_json(indent=2))
           "features": [
             "Wide range of hotels",
             "Rewards program",
-            "User reviews"
+            "User reviews",
+            "Price match guarantee"
           ]
         }
       ]

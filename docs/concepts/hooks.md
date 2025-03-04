@@ -185,46 +185,99 @@ def log_completion_kwargs(kwargs) -> None:
 
 def log_completion_response(response) -> None:
     print("## Completion response:")
-    print(response.model_dump())
+    #> ## Completion response:
     """
     {
-        "id": "chatcmpl-AJHKkGTSwkxdmxBuaz69q4yCeqIZK",
-        "choices": [
+        'id': 'chatcmpl-AWl4Mj5Jrv7m7JkOTIiHXSldQIOFm',
+        'choices': [
             {
-                "finish_reason": "stop",
-                "index": 0,
-                "logprobs": None,
-                "message": {
-                    "content": None,
-                    "refusal": None,
-                    "role": "assistant",
-                    "function_call": None,
-                    "tool_calls": [
+                'finish_reason': 'stop',
+                'index': 0,
+                'logprobs': None,
+                'message': {
+                    'content': None,
+                    'refusal': None,
+                    'role': 'assistant',
+                    'audio': None,
+                    'function_call': None,
+                    'tool_calls': [
                         {
-                            "id": "call_glxG7L23PiVLHWBT2nxvh4Vs",
-                            "function": {
-                                "arguments": '{"name":"John","age":20}',
-                                "name": "User",
+                            'id': 'call_6oQ9WXxeSiVEV71B9IYtsbIE',
+                            'function': {
+                                'arguments': '{"name":"John","age":-1}',
+                                'name': 'User',
                             },
-                            "type": "function",
+                            'type': 'function',
                         }
                     ],
                 },
             }
         ],
-        "created": 1729158226,
-        "model": "gpt-4o-mini-2024-07-18",
-        "object": "chat.completion",
-        "service_tier": None,
-        "system_fingerprint": "fp_e2bde53e6e",
-        "usage": {
-            "completion_tokens": 9,
-            "prompt_tokens": 87,
-            "total_tokens": 96,
-            "completion_tokens_details": {"audio_tokens": None, "reasoning_tokens": 0},
-            "prompt_tokens_details": {"audio_tokens": None, "cached_tokens": 0},
+        'created': 1732370794,
+        'model': 'gpt-4o-mini-2024-07-18',
+        'object': 'chat.completion',
+        'service_tier': None,
+        'system_fingerprint': 'fp_0705bf87c0',
+        'usage': {
+            'completion_tokens': 10,
+            'prompt_tokens': 87,
+            'total_tokens': 97,
+            'completion_tokens_details': {
+                'audio_tokens': 0,
+                'reasoning_tokens': 0,
+                'accepted_prediction_tokens': 0,
+                'rejected_prediction_tokens': 0,
+            },
+            'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0},
         },
-    }   
+    }
+    """
+    print(response.model_dump())
+    """
+    {
+        'id': 'chatcmpl-AWl4Mxdq0BUGRlVCA61z8YOIVga7F',
+        'choices': [
+            {
+                'finish_reason': 'stop',
+                'index': 0,
+                'logprobs': None,
+                'message': {
+                    'content': None,
+                    'refusal': None,
+                    'role': 'assistant',
+                    'audio': None,
+                    'function_call': None,
+                    'tool_calls': [
+                        {
+                            'id': 'call_EJIEr27Mb6sdbplnYw4iBWlm',
+                            'function': {
+                                'arguments': '{"name":"John","age":10}',
+                                'name': 'User',
+                            },
+                            'type': 'function',
+                        }
+                    ],
+                },
+            }
+        ],
+        'created': 1732370794,
+        'model': 'gpt-4o-mini-2024-07-18',
+        'object': 'chat.completion',
+        'service_tier': None,
+        'system_fingerprint': 'fp_0705bf87c0',
+        'usage': {
+            'completion_tokens': 9,
+            'prompt_tokens': 87,
+            'total_tokens': 96,
+            'completion_tokens_details': {
+                'audio_tokens': 0,
+                'reasoning_tokens': 0,
+                'accepted_prediction_tokens': 0,
+                'rejected_prediction_tokens': 0,
+            },
+            'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0},
+        },
+    }
     """
 
 
@@ -273,8 +326,15 @@ try:
         model="gpt-4o-mini",
         messages=[
             {
+    #> ## Parse error:
                 "role": "user",
                 "content": "Extract the user name and age from the following text: 'John is -1 years old'",
+    """
+    1 validation error for User
+    age
+      Value error, Age cannot be negative [type=value_error, input_value=-1, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
+    """
             }
         ],
         response_model=User,
@@ -297,6 +357,12 @@ user = client.chat.completions.create(
 )
 print(user)
 #> name='John' age=10
+    """
+    Error: 1 validation error for User
+    age
+      Value error, Age cannot be negative [type=value_error, input_value=-1, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
+    """
 ```
 
 This example demonstrates:

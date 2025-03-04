@@ -17,11 +17,13 @@ tags:
 
 # Structured Outputs with Writer now supported
 
+>
+
 We're excited to announce that `instructor` now supports [Writer](https://writer.com)'s enterprise-grade LLMs, including their latest Palmyra X 004 model. This integration enables structured outputs and enterprise AI workflows with Writer's powerful language models.
 
 ## Getting Started
 
-First, make sure that you've signed up for an account on [Writer](https://writer.com) and obtained an API key. Once you've done so, install `instructor` with Writer support by running `pip install instructor[writer]` in your terminal.
+First, make sure that you've signed up for an account on [Writer](https://app.writer.com/aistudio/signup?utm_campaign=devrel) and obtained an API key using this [quickstart guide](https://dev.writer.com/api-guides/quickstart). Once you've done so, install `instructor` with Writer support by running `pip install instructor[writer]` in your terminal.
 
 Make sure to set the `WRITER_API_KEY` environment variable with your Writer API key or pass it as an argument to the `Writer` constructor.
 
@@ -128,11 +130,11 @@ from typing import Annotated
 from writerai import Writer
 from pydantic import BaseModel, AfterValidator, Field
 
-#Initialize Writer client
+# Initialize Writer client
 client = instructor.from_writer(Writer())
 
 
-#Example of model, that may require usage of retries
+# Example of model, that may require usage of retries
 def uppercase_validator(v):
     if v.islower():
         raise ValueError("Name must be in uppercase")

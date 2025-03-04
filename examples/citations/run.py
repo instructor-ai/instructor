@@ -74,7 +74,7 @@ Example 2) Using an LLM to verify if a
 
 class Validation(BaseModel):
     """
-    Verfication response from the LLM,
+    Verification response from the LLM,
     the error message should be detailed if the is_valid is False
     but keep it to less than 100 characters, reference specific
     attributes that you are comparing, use `...` is the string is too long

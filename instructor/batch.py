@@ -1,6 +1,6 @@
 from typing import Any, Union, TypeVar, Optional
 from collections.abc import Iterable
-from pydantic import BaseModel, Field  # type: ignore
+from pydantic import BaseModel, Field
 from instructor.process_response import handle_response_model
 import instructor
 import uuid
@@ -31,7 +31,9 @@ class RequestBody(BaseModel):
 
 class BatchModel(BaseModel):
     custom_id: str
-    params: RequestBody
+    body: RequestBody
+    url: str
+    method: str
 
 
 class BatchJob:
@@ -137,7 +139,7 @@ class BatchJob:
                             "temperature": temperature,
                             "messages": messages,
                             **kwargs,
-                        }
+                        },
                     }
                     file.write(json.dumps(request) + "\n")
         else:
@@ -149,12 +151,14 @@ class BatchJob:
                 for messages in messages_batch:
                     batch_model = BatchModel(
                         custom_id=str(uuid.uuid4()),
-                        params=RequestBody(
+                        body=RequestBody(
                             model=model,
                             messages=messages,
                             max_tokens=max_tokens,
                             temperature=temperature,
                             **kwargs,
                         ),
+                        method="POST",
+                        url="/v1/chat/completions",
                     )
                     file.write(batch_model.model_dump_json() + "\n")

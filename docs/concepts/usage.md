@@ -28,7 +28,18 @@ user, completion = client.chat.completions.create_with_completion(
 )
 
 print(completion.usage)
-#> CompletionUsage(completion_tokens=9, prompt_tokens=82, total_tokens=91)
+"""
+CompletionUsage(
+    completion_tokens=9,
+    prompt_tokens=82,
+    total_tokens=91,
+    completion_tokens_details=CompletionTokensDetails(
+        audio_tokens=0, reasoning_tokens=0
+    ),
+    prompt_tokens_details=None,
+    prompt_token_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
+)
+"""
 ```
 
 You can catch an IncompleteOutputException whenever the context length is exceeded and react accordingly, such as by trimming your prompt by the number of exceeding tokens.

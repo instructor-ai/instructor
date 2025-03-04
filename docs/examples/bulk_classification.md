@@ -529,4 +529,3 @@ tag_results = asyncio.run(get_tags(text, tags))
 for tag in tag_results:
     print(tag)
     #> id=1 name='phone'
-```

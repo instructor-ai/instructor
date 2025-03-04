@@ -173,6 +173,9 @@ url = "https://templates.mediamodifier.com/645124ff36ed2f5227cbf871/supermarket-
 
 receipt = extract(url)
 print(receipt)
+"""
+items=[Item(name='Lorem ipsum', price=9.2, quantity=1), Item(name='Lorem ipsum dolor sit', price=19.2, quantity=1), Item(name='Lorem ipsum dolor sit amet', price=15.0, quantity=1), Item(name='Lorem ipsum', price=15.0, quantity=1), Item(name='Lorem ipsum', price=15.0, quantity=1), Item(name='Lorem ipsum dolor sit', price=15.0, quantity=1), Item(name='Lorem ipsum', price=19.2, quantity=1)] total=107.6
+"""
 ```
 
 By combining the power of GPT-4 and Python's Pydantic library, we can accurately extract and validate receipt data from images, streamlining expense tracking and financial analysis tasks.

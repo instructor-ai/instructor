@@ -30,7 +30,7 @@ class User(BaseModel):
     age: int
 
 # Create structured output
-user = client.completion(
+user = client.chat.completions.create(
     model="gpt-3.5-turbo",  # Can use any supported model
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -52,12 +52,14 @@ import asyncio
 # Enable instructor patches for async
 client = instructor.from_litellm(acompletion)
 
+
 class User(BaseModel):
     name: str
     age: int
 
+
 async def extract_user():
-    user = await client.acompletion(
+    user = await client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -66,9 +68,45 @@ async def extract_user():
     )
     return user
 
+
 # Run async function
 user = asyncio.run(extract_user())
 print(user)  # User(name='Jason', age=25)
+
+```
+
+## Cost Calculation
+
+In order to calculate the cost of the response, LiteLLM provides a simple `response_cost` attribute on the response object's `_hidden_params` attribute. This is recorded in their documentation [here](https://docs.litellm.ai/docs/completion/token_usage#6-completion_cost).
+
+Here is a code snippet using instructor to calculate the cost of the response:
+
+```python
+import instructor
+from litellm import completion
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_litellm(completion)
+instructor_resp, raw_completion = client.chat.completions.create_with_completion(
+    model="claude-3-5-sonnet-20240620",
+    max_tokens=1024,
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+print(raw_completion._hidden_params["response_cost"])
+#> 0.00189
 ```
 
 ## Related Resources

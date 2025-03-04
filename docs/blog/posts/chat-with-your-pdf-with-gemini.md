@@ -55,9 +55,11 @@ client = instructor.from_gemini(
     )
 )
 
+
 # Define your output structure
 class Summary(BaseModel):
     summary: str
+
 
 # Upload the PDF
 file = genai.upload_file("path/to/your.pdf")

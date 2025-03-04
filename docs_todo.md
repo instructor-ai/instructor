@@ -11,7 +11,7 @@
 - [x] Create a template for provider integration pages
 - [x] Create a template for concept pages
 - [x] Create a template for example/cookbook pages
-- [ ] Ensure consistent headings and structure across all pages
+- [x] Ensure consistent headings and structure across all pages
 
 ## 3. Enhance Content Organization
 - [x] Group concepts into logical categories (core, advanced, etc.)
@@ -20,10 +20,10 @@
 - [x] Add clear "what's next" sections to guide through learning path
 
 ## 4. Improve Code Examples
-- [ ] Ensure all examples include complete import statements
-- [ ] Add environment setup instructions where needed
-- [ ] Standardize code formatting and comments across examples
-- [ ] Include expected output for all examples
+- [x] Ensure all examples include complete import statements
+- [x] Add environment setup instructions where needed
+- [x] Standardize code formatting and comments across examples
+- [x] Include expected output for all examples
 
 ## 5. Add Missing Documentation
 - [x] Add documentation for Anyscale provider
@@ -47,6 +47,8 @@
 12. Consolidated duplicate concept pages (Union and Unions)
 13. Created migration guides from similar libraries
 14. Created a complete feature comparison table
+15. Standardized documentation headings and structure
+16. Improved code examples with complete imports, setup, formatting, and expected outputs
 
 ## Priority Order
 1. Fix critical issues (missing providers, broken links)
@@ -54,3 +56,15 @@
 3. Improve getting started experience
 4. Enhance content organization
 5. Add detailed guides and diagrams
+
+## Code Example Standardization
+- All examples must include complete import statements (standard lib → third-party → local)
+- Environment setup must be shown (API keys, etc.) or referenced
+- Use consistent model versions (latest stable for each provider)
+- Include error handling where appropriate
+- Use proper type annotations
+- Add docstrings for complex functions
+- Show expected output in consistent format
+- Specify mode explicitly when not using defaults
+- Include validation checks where helpful
+- Follow Black formatting conventions
