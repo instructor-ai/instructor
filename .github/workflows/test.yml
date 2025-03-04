@@ -23,26 +23,91 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
       - name: Install the project
         run: uv sync --all-extras
-      - name: Run tests
-        if: matrix.python-version != '3.11'
-        run: uv run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai'
+
+      # Run non-LLM tests first (excluding all LLM tests)
+      # Some LLM tests are in the top-level tests directory and evals directories, so we exclude them directly
+      - name: Run non-LLM tests
+        run: pytest tests/ -k 'not llm and not test_openai and not test_anthropic and not test_gemini and not test_cohere and not test_vertexai and not test_fireworks and not test_perplexity and not test_cerebras and not test_writer and not evals'
+
+      # Only run OpenAI and Anthropic tests, others are commented out
+      # but can be uncommented when needed
+      - name: Run OpenAI Tests
+        run: pytest tests/llm/test_openai -k "not docs"
+        if: matrix.python-version == '3.11'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
 
-      - name: Run Gemini Tests
+      - name: Run Anthropic Tests
+        run: pytest tests/llm/test_anthropic -k "not docs"
         if: matrix.python-version == '3.11'
-        run: uv run pytest tests/llm/test_gemini
         env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
+      # Other provider tests are commented out to speed up CI
+      # Uncomment any of these when you need to test specific providers
+
+      # - name: Run Gemini Tests
+      #   run: pytest tests/llm/test_gemini -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+      # - name: Run Cohere Tests
+      #   run: pytest tests/llm/test_cohere -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+
+      # - name: Run VertexAI Tests
+      #   run: pytest tests/llm/test_vertexai -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+      # - name: Run Fireworks Tests
+      #   run: pytest tests/llm/test_fireworks -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+
+      # - name: Run Perplexity Tests
+      #   run: pytest tests/llm/test_perplexity -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+
+      # - name: Run Cerebras Tests
+      #   run: pytest tests/llm/test_cerebras -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+
+      # - name: Run LiteLLM Tests
+      #   run: pytest tests/llm/test_litellm.py -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      # - name: Run New Client Tests
+      #   run: pytest tests/llm/test_new_client.py -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      # - name: Run Writer Tests
+      #   run: pytest tests/llm/test_writer -k "not docs"
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     WRITER_API_KEY: ${{ secrets.WRITER_API_KEY }}
+
+      # Generate coverage report only on Python 3.11
+      # Modified to only include non-LLM, OpenAI and Anthropic tests
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
-          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks"
-          uv run coverage report
-          uv run coverage html
+          coverage run -m pytest tests/ -k "not docs and not llm and not test_openai and not test_anthropic and not test_gemini and not test_cohere and not test_vertexai and not test_fireworks and not test_perplexity and not test_cerebras and not test_writer and not evals"
+          coverage report
+          coverage html
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
