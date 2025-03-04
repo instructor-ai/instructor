@@ -2,8 +2,6 @@ import anthropic
 import pytest
 import instructor
 from pydantic import BaseModel
-from itertools import product
-from anthropic.types.message import Message
 
 
 class Answer(BaseModel):
