@@ -459,7 +459,7 @@ def extract_system_messages(
     messages: list[dict[str, Any]]
 ) -> list[SystemMessage]:
     def convert_message(
-        content: Union[str, dict[str, Any]]
+        content: str | dict[str, Any]
     ) -> SystemMessage:  # noqa: UP007
         if isinstance(content, str):
             return SystemMessage(type="text", text=content)

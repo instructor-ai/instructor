@@ -1,15 +1,24 @@
 ---
-title: Support for Simple Types in Python with Pydantic
-description: Learn how to use simple types like str, int, float, and more in Python Pydantic models for effective API responses.
+title: Working with Types in Instructor
+description: Learn how to use different data types with Instructor, from simple primitives to complex types.
 ---
 
-# Support for Simple Types
+# Working with Types in Instructor
 
-Aside from the recommended `pydantic.BaseModel`, and [Iterable](lists.md), and [Partial](partial.md),
+Instructor supports a wide range of types for your structured outputs, from simple primitives to complex nested structures.
 
-Instructor supports simple types like `str`, `int`, `float`, `bool`, `Union`, `Literal`, out of the box. You can use these types directly in your response models.
+## Simple Types
 
-To add more descriptions you can also use `typing.Annotated` to include more information about the type.
+In addition to `pydantic.BaseModel` (the recommended approach), Instructor also supports:
+
+- Primitive types: `str`, `int`, `float`, `bool`
+- Collection types: `List`, `Dict`
+- Type composition: `Union`, `Literal`, `Optional`
+- Specialized outputs: [Iterable](lists.md), [Partial](partial.md)
+
+You can use these types directly in your `response_model` parameter without wrapping them in a Pydantic model.
+
+For better documentation and control, use `typing.Annotated` to add more context to your types.
 
 ## What happens behind the scenes?
 

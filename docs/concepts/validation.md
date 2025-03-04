@@ -1,3 +1,8 @@
+---
+title: Validation in Instructor
+description: Learn how to validate LLM outputs with Pydantic, ensuring type safety and data consistency.
+---
+
 # Validation in Instructor
 
 This guide covers validation concepts and best practices when using Instructor for structured outputs.
@@ -19,17 +24,21 @@ Instructor uses Pydantic for validation, which provides:
 4. Field constraints
 
 ```python
-from pydantic import BaseModel, Field, validator
+# Standard library imports
 from typing import List
 
+# Third-party imports
+from pydantic import BaseModel, Field, validator
 
 class User(BaseModel):
-    name: str = Field(..., min_length=2)
-    age: int = Field(..., ge=0, le=150)
-    emails: List[str]
+    """Model representing a user with validation rules."""
+    name: str = Field(..., min_length=2, description="User's full name, minimum 2 characters")
+    age: int = Field(..., ge=0, le=150, description="User's age between 0 and 150")
+    emails: List[str] = Field(description="List of user's email addresses")
 
     @validator('emails')
     def validate_emails(cls, v):
+        """Validate that all email addresses contain an @ symbol."""
         if not all('@' in email for email in v):
             raise ValueError('Invalid email format')
         return v
@@ -41,22 +50,47 @@ class User(BaseModel):
 
 Use Field() for basic constraints:
 ```python
+# Third-party imports
+from pydantic import BaseModel, Field
+
 class Product(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
-    price: float = Field(..., gt=0)
-    quantity: int = Field(..., ge=0)
+    """Model representing a product with field validation constraints."""
+    name: str = Field(
+        ..., 
+        min_length=1, 
+        max_length=100, 
+        description="Product name between 1-100 characters"
+    )
+    price: float = Field(
+        ..., 
+        gt=0, 
+        description="Product price, must be greater than 0"
+    )
+    quantity: int = Field(
+        ..., 
+        ge=0, 
+        description="Available quantity, must be 0 or greater"
+    )
 ```
 
 ### 2. Custom Validators
 
 Use @validator for complex validation:
 ```python
+# Standard library imports
+from typing import List
+
+# Third-party imports
+from pydantic import BaseModel, Field, validator
+
 class Order(BaseModel):
-    items: List[str]
-    total: float
+    """Model representing an order with custom validation logic."""
+    items: List[str] = Field(description="List of item names in the order")
+    total: float = Field(description="Total order amount")
 
     @validator('total')
     def validate_total(cls, v, values):
+        """Validate that the total amount is not negative."""
         if v < 0:
             raise ValueError('Total cannot be negative')
         return v
@@ -66,11 +100,16 @@ class Order(BaseModel):
 
 Use pre-validation hooks for data transformation:
 ```python
+# Third-party imports
+from pydantic import BaseModel, Field, validator
+
 class UserProfile(BaseModel):
-    username: str
+    """Model representing a user profile with pre-validation transformation."""
+    username: str = Field(description="User's unique username")
 
     @validator('username', pre=True)
     def lowercase_username(cls, v):
+        """Transform username to lowercase before validation."""
         return v.lower()
 ```
 
@@ -79,19 +118,55 @@ class UserProfile(BaseModel):
 Instructor provides robust error handling for validation failures:
 
 ```python
-from instructor import patch
-import openai
+# Standard library imports
+import os
 
-client = patch(openai.OpenAI())
+# Third-party imports
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel, Field, validator
+
+# Set up environment (typically handled before script execution)
+# os.environ["OPENAI_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
+
+# Define model with validation
+class User(BaseModel):
+    """Model representing a user with validation rules."""
+    name: str = Field(description="User's full name")
+    age: int = Field(description="User's age in years")
+    
+    @validator('age')
+    def validate_age(cls, v):
+        """Validate that age is a positive number."""
+        if v < 0:
+            raise ValueError("Age cannot be negative")
+        return v
+
+# Initialize client with explicit mode
+client = instructor.from_openai(
+    OpenAI(api_key=os.environ.get("OPENAI_API_KEY")),
+    mode=instructor.Mode.JSON
+)
 
 try:
+    # Attempt to extract with validation
     user = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",  # Use latest stable model
         response_model=User,
-        messages=[{"role": "user", "content": "Extract: John Doe, age: -5"}],
+        messages=[
+            {"role": "system", "content": "Extract structured user information from the text."},
+            {"role": "user", "content": "Extract: John Doe, age: -5"}
+        ]
     )
-except ValueError as e:
+    print(user.model_dump_json(indent=2))
+except instructor.exceptions.InstructorValidationError as e:
     print(f"Validation error: {e}")
+    # Expected output:
+    # Validation error: 1 validation error for User
+    # age
+    #   Age cannot be negative (type=value_error)
+except Exception as e:
+    print(f"Other error: {e}")
 ```
 
 ## Best Practices
@@ -106,36 +181,67 @@ except ValueError as e:
 
 ### Optional Fields
 ```python
+# Standard library imports
+from typing import Optional
+
+# Third-party imports
+from pydantic import BaseModel, Field
+
 class Profile(BaseModel):
-    name: str
-    bio: Optional[str] = None
+    """Model representing a user profile with optional fields."""
+    name: str = Field(description="User's full name")
+    bio: Optional[str] = Field(None, description="Optional user biography")
 ```
 
 ### Nested Validation
 ```python
+# Standard library imports
+from typing import List
+
+# Third-party imports
+from pydantic import BaseModel, Field
+
 class Address(BaseModel):
-    street: str
-    city: str
-    country: str
+    """Model representing a physical address."""
+    street: str = Field(description="Street address including number")
+    city: str = Field(description="City name")
+    country: str = Field(description="Country name")
 
 
 class User(BaseModel):
-    name: str
-    addresses: List[Address]
+    """Model representing a user with nested address validation."""
+    name: str = Field(description="User's full name")
+    addresses: List[Address] = Field(description="List of user's addresses")
 ```
 
 ### Complex Validation
 ```python
+# Standard library imports
+from datetime import datetime
+from typing import List
+
+# Third-party imports
+from pydantic import BaseModel, Field, validator
+
 class Transaction(BaseModel):
-    amount: float
-    currency: str
-    timestamp: datetime
+    """Model representing a financial transaction with complex validation."""
+    amount: float = Field(description="Transaction amount")
+    currency: str = Field(description="Three-letter currency code (USD, EUR, GBP)")
+    timestamp: datetime = Field(description="Transaction timestamp")
 
     @validator('currency')
     def validate_currency(cls, v):
+        """Validate that currency is one of the supported codes."""
         valid_currencies = ['USD', 'EUR', 'GBP']
         if v not in valid_currencies:
             raise ValueError(f'Currency must be one of {valid_currencies}')
+        return v
+        
+    @validator('timestamp')
+    def validate_timestamp(cls, v):
+        """Validate that timestamp is not in the future."""
+        if v > datetime.now():
+            raise ValueError("Transaction timestamp cannot be in the future")
         return v
 ```
 

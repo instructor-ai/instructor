@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from json import JSONDecodeError
-from typing import Any, Callable, TypeVar, Union
+from typing import Any, Callable, TypeVar
 
 from instructor.exceptions import InstructorRetryException
 from instructor.hooks import Hooks
