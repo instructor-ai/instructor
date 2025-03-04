@@ -27,7 +27,6 @@
 - **Provider Testing**: Tests in `tests/llm/` directory, define Pydantic models, make API calls, verify structured outputs
 - **Provider Detection**: `get_provider` function analyzes base URL to detect which provider is being used
 
-<<<<<<< HEAD
 ## Documentation Guidelines
 - Every provider needs documentation in `docs/integrations/` following standard format
 - Provider docs should include: installation, basic example, modes supported, special features
