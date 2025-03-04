@@ -27,35 +27,52 @@ export PROVIDER_API_KEY=your_api_key_here
 Here's how to extract structured data using [Provider Name]:
 
 ```python
+# Standard library imports
+import os
+from typing import Optional
+
+# Third-party imports
 import instructor
 from provider_sdk import ClientClass
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-# Initialize the client
+# Set up environment (typically handled before script execution)
+# os.environ["PROVIDER_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
+
+# Initialize the client with explicit mode
 client = instructor.from_provider(
     ClientClass(
-        api_key="your_api_key_here",
+        api_key=os.environ.get("PROVIDER_API_KEY", "your_api_key_here"),
         # Other configuration options
     ),
     mode=instructor.Mode.PROVIDER_SPECIFIC_MODE,
 )
 
-# Define your data structure
+# Define your data structure with proper annotations
 class UserExtract(BaseModel):
-    name: str
-    age: int
+    """Model for extracting user information from text."""
+    name: str = Field(description="The user's full name")
+    age: int = Field(description="The user's age in years")
 
 # Extract structured data
-user = client.chat.completions.create(
-    model="provider-model-name",
-    response_model=UserExtract,
-    messages=[
-        {"role": "user", "content": "Extract jason is 25 years old"},
-    ],
-)
-
-print(user)
-# Expected output: UserExtract(name='Jason', age=25)
+try:
+    user = client.chat.completions.create(
+        model="provider-model-name",  # Use latest stable model version
+        response_model=UserExtract,
+        messages=[
+            {"role": "system", "content": "Extract structured user information from the text."},
+            {"role": "user", "content": "Extract jason is 25 years old"},
+        ],
+    )
+    
+    print(user.model_dump_json(indent=2))
+    # Expected output:
+    # {
+    #   "name": "Jason",
+    #   "age": 25
+    # }
+except Exception as e:
+    print(f"Error: {e}")
 ```
 
 ## Async Example
@@ -63,31 +80,71 @@ print(user)
 For asynchronous use cases:
 
 ```python
-import instructor
+# Standard library imports
+import os
 import asyncio
+from typing import Optional
+
+# Third-party imports
+import instructor
 from provider_sdk import AsyncClientClass
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-# Initialize the async client
-client = instructor.from_provider(AsyncClientClass())
+# Set up environment (typically handled before script execution)
+# os.environ["PROVIDER_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
 
+# Define your data structure with proper annotations
 class UserExtract(BaseModel):
-    name: str
-    age: int
+    """Model for extracting user information from text."""
+    name: str = Field(description="The user's full name")
+    age: int = Field(description="The user's age in years")
 
-async def extract_data():
-    user = await client.chat.completions.create(
-        model="provider-model-name",
-        response_model=UserExtract,
-        messages=[
-            {"role": "user", "content": "Extract jason is 25 years old"},
-        ],
-    )
-    return user
+# Initialize the async client with explicit mode
+client = instructor.from_provider(
+    AsyncClientClass(
+        api_key=os.environ.get("PROVIDER_API_KEY", "your_api_key_here"),
+    ),
+    mode=instructor.Mode.PROVIDER_SPECIFIC_MODE,
+)
+
+async def extract_data(text: str) -> UserExtract:
+    """
+    Asynchronously extract structured data from text.
+    
+    Args:
+        text: The input text to extract from
+        
+    Returns:
+        A structured UserExtract object
+    """
+    try:
+        user = await client.chat.completions.create(
+            model="provider-model-name",  # Use latest stable model version
+            response_model=UserExtract,
+            messages=[
+                {"role": "system", "content": "Extract structured user information from the text."},
+                {"role": "user", "content": text},
+            ],
+        )
+        return user
+    except Exception as e:
+        print(f"Error during extraction: {e}")
+        raise
+
+# Example usage
+async def main():
+    result = await extract_data("Extract jason is 25 years old")
+    print(result.model_dump_json(indent=2))
 
 # Run the async function
-user = asyncio.run(extract_data())
-print(user)
+if __name__ == "__main__":
+    asyncio.run(main())
+
+# Expected output:
+# {
+#   "name": "Jason",
+#   "age": 25
+# }
 ```
 
 ## Supported Modes

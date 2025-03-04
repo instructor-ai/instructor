@@ -214,9 +214,11 @@ nav:
   - Integrations:
     - Overview: 'integrations/index.md'
     - Anthropic: 'integrations/anthropic.md'
+    - Anyscale: 'integrations/anyscale.md'
     - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
+    - Databricks: 'integrations/databricks.md'
     - Fireworks: 'integrations/fireworks.md'
     - Gemini: 'integrations/google.md'
     - Groq: 'integrations/groq.md'
@@ -305,9 +307,11 @@ plugins:
          hub/ollama.md: integrations/ollama.md
          hub/llama-cpp-python.md: integrations/llama-cpp-python.md
          hub/anthropic.md: integrations/anthropic.md
+         hub/anyscale.md: integrations/anyscale.md
          hub/azure.md: integrations/azure.md
          hub/cerebras.md: integrations/cerebras.md
          hub/cohere.md: integrations/cohere.md
+         hub/databricks.md: integrations/databricks.md
          hub/fireworks.md: integrations/fireworks.md
          hub/google.md: integrations/google.md
          hub/groq.md: integrations/groq.md
@@ -323,9 +327,11 @@ plugins:
          'hub/clients/ollama.md': 'integrations/ollama.md'
          'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
          'hub/clients/anthropic.md': 'integrations/anthropic.md'
+         'hub/clients/anyscale.md': 'integrations/anyscale.md'
          'hub/clients/azure.md': 'integrations/azure.md'
          'hub/clients/cerebras.md': 'integrations/cerebras.md'
          'hub/clients/cohere.md': 'integrations/cohere.md'
+         'hub/clients/databricks.md': 'integrations/databricks.md'
          'hub/clients/fireworks.md': 'integrations/fireworks.md'
          'hub/clients/groq.md': 'integrations/groq.md'
          'hub/clients/mistral.md': 'integrations/mistral.md'
