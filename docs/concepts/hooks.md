@@ -58,6 +58,45 @@ def handler(error) -> None: ...
 The Hooks system is implemented in the `instructor/hooks.py` file. The `Hooks` class handles the registration and emission of hook events. You can refer to this file to see how hooks work under the hood.
 The retry logic that uses Hooks is implemented in the `instructor/retry.py` file. This shows how Hooks are used when trying again after errors during completions.
 
+### Hook Types
+
+The Hooks system uses typed Protocol classes to provide better type safety for handler functions:
+
+```python
+# Handler protocol types for type safety
+class CompletionKwargsHandler(Protocol):
+    """Protocol for completion kwargs handlers."""
+    def __call__(self, *args: Any, **kwargs: Any) -> None: ...
+
+class CompletionResponseHandler(Protocol):
+    """Protocol for completion response handlers."""
+    def __call__(self, response: Any) -> None: ...
+
+class CompletionErrorHandler(Protocol):
+    """Protocol for completion error and last attempt handlers."""
+    def __call__(self, error: Exception) -> None: ...
+
+class ParseErrorHandler(Protocol):
+    """Protocol for parse error handlers."""
+    def __call__(self, error: Exception) -> None: ...
+```
+
+These Protocol types help ensure that your handler functions have the correct signature for each type of hook.
+
+### Hook Names
+
+Hook names can be specified either as enum values (`HookName.COMPLETION_KWARGS`) or as strings (`"completion:kwargs"`):
+
+```python
+from instructor.hooks import HookName
+
+# Using enum
+client.on(HookName.COMPLETION_KWARGS, handler)
+
+# Using string
+client.on("completion:kwargs", handler)
+```
+
 ### Registering Hooks
 
 You can register hooks using the `on` method of the Instructor client or a `Hooks` instance. Here's an example:
@@ -87,7 +126,7 @@ print(resp)
 
 ### Emitting Events
 
-Events are automatically emitted by the Instructor library at appropriate times. You don't need to manually emit events in most cases.
+Events are automatically emitted by the Instructor library at appropriate times. You don't need to manually emit events in most cases. Internally, all emit methods use a common `emit` method that handles error trapping and provides consistent behavior.
 
 ### Removing Hooks
 
@@ -149,7 +188,7 @@ import openai
 import pydantic
 
 
-def log_completion_kwargs(kwargs) -> None:
+def log_completion_kwargs(*args, **kwargs) -> None:
     print("## Completion kwargs:")
     print(kwargs)
     """
@@ -233,157 +272,142 @@ def log_completion_response(response) -> None:
     }
     """
     print(response.model_dump())
-    """
-    {
-        'id': 'chatcmpl-AWl4Mxdq0BUGRlVCA61z8YOIVga7F',
-        'choices': [
-            {
-                'finish_reason': 'stop',
-                'index': 0,
-                'logprobs': None,
-                'message': {
-                    'content': None,
-                    'refusal': None,
-                    'role': 'assistant',
-                    'audio': None,
-                    'function_call': None,
-                    'tool_calls': [
-                        {
-                            'id': 'call_EJIEr27Mb6sdbplnYw4iBWlm',
-                            'function': {
-                                'arguments': '{"name":"John","age":10}',
-                                'name': 'User',
-                            },
-                            'type': 'function',
-                        }
-                    ],
-                },
-            }
-        ],
-        'created': 1732370794,
-        'model': 'gpt-4o-mini-2024-07-18',
-        'object': 'chat.completion',
-        'service_tier': None,
-        'system_fingerprint': 'fp_0705bf87c0',
-        'usage': {
-            'completion_tokens': 9,
-            'prompt_tokens': 87,
-            'total_tokens': 96,
-            'completion_tokens_details': {
-                'audio_tokens': 0,
-                'reasoning_tokens': 0,
-                'accepted_prediction_tokens': 0,
-                'rejected_prediction_tokens': 0,
-            },
-            'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0},
-        },
-    }
-    """
 
 
-def log_completion_error(error) -> None:
-    print("## Completion error:")
-    print({"error": error})
+def handle_completion_error(error: Exception) -> None:
+    print(f"## Completion error: {error}")
+    print(f"Type: {type(error).__name__}")
+    print(f"Message: {str(error)}")
 
 
-def log_parse_error(error) -> None:
-    print("## Parse error:")
-    #> ## Parse error:
-    print(error)
-    """
-    1 validation error for User
-    age
-    Value error, Age cannot be negative [type=value_error, input_value=-10, input_type=int]
-        For further information visit https://errors.pydantic.dev/2.8/v/value_error
-    """
+def log_parse_error(error: Exception) -> None:
+    print(f"## Parse error: {error}")
+    print(f"Type: {type(error).__name__}")
+    print(f"Message: {str(error)}")
 
 
-# Create an Instructor client
+# Handler for a custom logger that records how many errors have occurred
+class ErrorCounter:
+    def __init__(self) -> None:
+        self.error_count = 0
+
+    def count_error(self, error: Exception) -> None:
+        self.error_count += 1
+        print(f"Error count: {self.error_count}")
+
+
 client = instructor.from_openai(openai.OpenAI())
 
+# Register the hooks
 client.on("completion:kwargs", log_completion_kwargs)
 client.on("completion:response", log_completion_response)
-
-client.on("completion:error", log_completion_error)
+client.on("completion:error", handle_completion_error)
 client.on("parse:error", log_parse_error)
 
+# Example with error counter
+error_counter = ErrorCounter()
+client.on("completion:error", error_counter.count_error)
+client.on("parse:error", error_counter.count_error)
 
-# Define a model with a validator
+# Define a model for extraction
 class User(pydantic.BaseModel):
     name: str
     age: int
 
-    @pydantic.field_validator("age")
-    def check_age(cls, v: int) -> int:
-        if v < 0:
-            raise ValueError("Age cannot be negative")
-        return v
-
-
+# Try extraction with a potentially problematic input
 try:
-    # Use the client to create a completion
-    user = client.chat.completions.create(
+    resp = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {
-    #> ## Parse error:
                 "role": "user",
-                "content": "Extract the user name and age from the following text: 'John is -1 years old'",
-    """
-    1 validation error for User
-    age
-      Value error, Age cannot be negative [type=value_error, input_value=-1, input_type=int]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
-    """
+                "content": "Extract the user name and age: 'John is twenty years old'",
             }
         ],
         response_model=User,
-        max_retries=1,
     )
+    print(f"Extracted: {resp}")
 except Exception as e:
-    print(f"Error: {e}")
+    print(f"Main exception caught: {e}")
 
-
-user = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract the user name and age from the following text: 'John is 10 years old'",
-        }
-    ],
-    response_model=User,
-    max_retries=1,
-)
-print(user)
-#> name='John' age=10
-    """
-    Error: 1 validation error for User
-    age
-      Value error, Age cannot be negative [type=value_error, input_value=-1, input_type=int]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
-    """
+# Check the error count
+print(f"Total errors recorded: {error_counter.error_count}")
 ```
 
-This example demonstrates:
+## Advanced: Creating Custom Hooks
 
-1. Defining hook handlers for different events.
-2. Registering the hooks with the Instructor client.
-3. Using a Pydantic model with a validator.
-4. Making a completion request that will trigger various hooks.
+While the Instructor library provides several built-in hooks, you might need to create custom hooks for specific use cases. You can do this by extending the `HookName` enum and adding handlers for your custom events:
 
-The hooks will log information at different stages of the process, helping with debugging and understanding the flow of data.
+```python
+from enum import Enum
+from instructor.hooks import Hooks, HookName
 
-## Best Practices
+# Extend the HookName enum
+class CustomHookName(HookName):
+    CUSTOM_EVENT = "custom:event"
 
-1. **Error Handling**: Always include error handling in your hook handlers to prevent exceptions from breaking the main execution flow. We will automatically warn if an exception is raised in a hook handler.
+# Create a hooks instance
+hooks = Hooks()
 
-2. **Performance**: Keep hook handlers lightweight to avoid impacting the performance of the main application.
+# Define a handler
+def custom_handler(data):
+    print(f"Custom event: {data}")
 
-3. **Modularity**: Use hooks to separate concerns. For example, use hooks for logging, monitoring, or custom business logic without cluttering the main code.
+# Register the handler
+hooks.on(CustomHookName.CUSTOM_EVENT, custom_handler)
 
-4. **Consistency**: Use the same naming conventions and patterns across all your hooks for better maintainability.
+# Emit the event
+hooks.emit(CustomHookName.CUSTOM_EVENT, {"data": "value"})
+```
 
-5. **Documentation**: Document the purpose and expected input/output of each hook handler for easier collaboration and maintenance.
+## Type Safety with Protocol Types
 
-By leveraging hooks effectively, you can create more flexible, debuggable, and maintainable applications when working with the Instructor library and language models.
+The Hooks system uses Python's `Protocol` types to provide better type safety for handler functions. This helps catch errors at development time and provides better IDE support with autocompletion.
+
+If you're writing your own handlers, you can specify the appropriate type:
+
+```python
+from instructor.hooks import CompletionErrorHandler
+
+def my_error_handler(error: Exception) -> None:
+    print(f"Error occurred: {error}")
+
+# Type checking will verify this is a valid error handler
+handler: CompletionErrorHandler = my_error_handler
+
+client.on("completion:error", handler)
+```
+
+## Hooks in Testing
+
+Hooks are particularly useful for testing, as they allow you to inspect the arguments and responses without modifying your application code:
+
+```python
+import unittest
+from unittest.mock import Mock
+import instructor
+import openai
+
+class TestMyApp(unittest.TestCase):
+    def test_completion(self):
+        client = instructor.from_openai(openai.OpenAI())
+        mock_handler = Mock()
+        
+        client.on("completion:response", mock_handler)
+        
+        # Call your code that uses the client
+        result = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": "Hello"}],
+            response_model=str,
+        )
+        
+        # Verify the mock was called
+        mock_handler.assert_called_once()
+        
+        # You can also inspect the arguments
+        response_arg = mock_handler.call_args[0][0]
+        self.assertEqual(response_arg.model, "gpt-3.5-turbo")
+```
+
+This approach allows you to test your code without mocking the entire client.
