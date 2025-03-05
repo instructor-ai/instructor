@@ -137,6 +137,12 @@ def extract_json_from_stream(
     This optimized version extracts JSON from markdown code blocks or plain JSON
     by implementing a state machine approach.
 
+    The state machine tracks several states:
+    - Whether we're inside a code block (```json ... ```)
+    - Whether we've started tracking a JSON object
+    - Whether we're inside a string literal
+    - The stack of open braces to properly identify the JSON structure
+
     Args:
         chunks: An iterable of string chunks
 
@@ -259,6 +265,12 @@ async def extract_json_from_stream_async(
 
     This optimized version extracts JSON from markdown code blocks or plain JSON
     by implementing a state machine approach.
+
+    The state machine tracks several states:
+    - Whether we're inside a code block (```json ... ```)
+    - Whether we've started tracking a JSON object
+    - Whether we're inside a string literal
+    - The stack of open braces to properly identify the JSON structure
 
     Args:
         chunks: An async generator yielding string chunks
