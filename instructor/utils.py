@@ -132,10 +132,10 @@ def extract_json_from_stream(
     chunks: Iterable[str],
 ) -> Generator[str, None, None]:
     """
-    Extract JSON from a stream of chunks.
+    Extract JSON from a stream of chunks, handling JSON in code blocks.
 
-    This optimized version reduces character-by-character processing overhead
-    by processing in larger chunks when possible.
+    This optimized version extracts JSON from markdown code blocks or plain JSON
+    by implementing a state machine approach.
 
     Args:
         chunks: An iterable of string chunks
@@ -143,54 +143,122 @@ def extract_json_from_stream(
     Yields:
         Characters within the JSON object
     """
-    # Use a buffer to reduce character-by-character processing
-    buffer = []
-    brace_stack = []
+    # State flags
+    in_codeblock = False
+    codeblock_delimiter_count = 0
+    json_started = False
     in_string = False
     escape_next = False
+    brace_stack = []
+    buffer = []
+
+    # Track potential codeblock start/end
+    codeblock_buffer = []
 
     for chunk in chunks:
         for char in chunk:
-            # Handle string literals and escaped characters
-            if char == '"' and not escape_next:
-                in_string = not in_string
-            elif char == "\\" and in_string:
-                escape_next = True
+            # Track codeblock delimiters (```)
+            if not in_codeblock and char == "`":
+                codeblock_buffer.append(char)
+                if len(codeblock_buffer) == 3:
+                    in_codeblock = True
+                    codeblock_delimiter_count = 0
+                    codeblock_buffer = []
+                continue
+            elif len(codeblock_buffer) > 0 and char != "`":
+                # Reset if we see something other than backticks
+                codeblock_buffer = []
+
+            # If we're in a codeblock but haven't started JSON yet
+            if in_codeblock and not json_started:
+                # Track end of codeblock
+                if char == "`":
+                    codeblock_delimiter_count += 1
+                    if codeblock_delimiter_count == 3:
+                        in_codeblock = False
+                        codeblock_delimiter_count = 0
+                    continue
+                elif codeblock_delimiter_count > 0:
+                    codeblock_delimiter_count = (
+                        0  # Reset if we see something other than backticks
+                    )
+
+                # Look for the start of JSON
+                if char == "{":
+                    json_started = True
+                    brace_stack.append("{")
+                    buffer.append(char)
+                # Skip other characters until we find the start of JSON
+                continue
+
+            # If we've started tracking JSON
+            if json_started:
+                # Handle string literals and escaped characters
+                if char == '"' and not escape_next:
+                    in_string = not in_string
+                elif char == "\\" and in_string:
+                    escape_next = True
+                    buffer.append(char)
+                    continue
+                else:
+                    escape_next = False
+
+                # Track end of codeblock if we're in one
+                if in_codeblock and not in_string:
+                    if char == "`":
+                        codeblock_delimiter_count += 1
+                        if codeblock_delimiter_count == 3:
+                            # End of codeblock means end of JSON
+                            in_codeblock = False
+                            # Yield the buffer without the closing backticks
+                            for c in buffer:
+                                yield c
+                            buffer = []
+                            json_started = False
+                            break
+                        continue
+                    elif codeblock_delimiter_count > 0:
+                        codeblock_delimiter_count = 0
+
+                # Track braces when not in a string
+                if not in_string:
+                    if char == "{":
+                        brace_stack.append("{")
+                    elif char == "}" and brace_stack:
+                        brace_stack.pop()
+                        # If we've completed a JSON object, yield its characters
+                        if not brace_stack:
+                            buffer.append(char)
+                            for c in buffer:
+                                yield c
+                            buffer = []
+                            json_started = False
+                            break
+
+                # Add character to buffer
                 buffer.append(char)
                 continue
-            else:
-                escape_next = False
 
-            # Track braces when not in a string
-            if not in_string:
-                if char == "{":
-                    brace_stack.append("{")
-                elif char == "}" and brace_stack:
-                    brace_stack.pop()
+            # If we're not in a codeblock and haven't started JSON, look for standalone JSON
+            if not in_codeblock and not json_started and char == "{":
+                json_started = True
+                brace_stack.append("{")
+                buffer.append(char)
 
-            # Add to buffer
-            buffer.append(char)
-
-            # If we've completed a JSON object, yield its characters
-            if brace_stack == [] and buffer and buffer[0] == "{":
-                for c in buffer:
-                    yield c
-                buffer = []
-                break
-
-    # Yield any remaining buffer content
-    for c in buffer:
-        yield c
+    # Yield any remaining buffer content if we have valid JSON
+    if json_started and buffer:
+        for c in buffer:
+            yield c
 
 
 async def extract_json_from_stream_async(
     chunks: AsyncGenerator[str, None],
 ) -> AsyncGenerator[str, None]:
     """
-    Extract JSON from an async stream of chunks.
+    Extract JSON from an async stream of chunks, handling JSON in code blocks.
 
-    This optimized version reduces character-by-character processing overhead
-    by processing in larger chunks when possible.
+    This optimized version extracts JSON from markdown code blocks or plain JSON
+    by implementing a state machine approach.
 
     Args:
         chunks: An async generator yielding string chunks
@@ -198,44 +266,112 @@ async def extract_json_from_stream_async(
     Yields:
         Characters within the JSON object
     """
-    # Use a buffer to reduce character-by-character processing
-    buffer = []
-    brace_stack = []
+    # State flags
+    in_codeblock = False
+    codeblock_delimiter_count = 0
+    json_started = False
     in_string = False
     escape_next = False
+    brace_stack = []
+    buffer = []
+
+    # Track potential codeblock start/end
+    codeblock_buffer = []
 
     async for chunk in chunks:
         for char in chunk:
-            # Handle string literals and escaped characters
-            if char == '"' and not escape_next:
-                in_string = not in_string
-            elif char == "\\" and in_string:
-                escape_next = True
+            # Track codeblock delimiters (```)
+            if not in_codeblock and char == "`":
+                codeblock_buffer.append(char)
+                if len(codeblock_buffer) == 3:
+                    in_codeblock = True
+                    codeblock_delimiter_count = 0
+                    codeblock_buffer = []
+                continue
+            elif len(codeblock_buffer) > 0 and char != "`":
+                # Reset if we see something other than backticks
+                codeblock_buffer = []
+
+            # If we're in a codeblock but haven't started JSON yet
+            if in_codeblock and not json_started:
+                # Track end of codeblock
+                if char == "`":
+                    codeblock_delimiter_count += 1
+                    if codeblock_delimiter_count == 3:
+                        in_codeblock = False
+                        codeblock_delimiter_count = 0
+                    continue
+                elif codeblock_delimiter_count > 0:
+                    codeblock_delimiter_count = (
+                        0  # Reset if we see something other than backticks
+                    )
+
+                # Look for the start of JSON
+                if char == "{":
+                    json_started = True
+                    brace_stack.append("{")
+                    buffer.append(char)
+                # Skip other characters until we find the start of JSON
+                continue
+
+            # If we've started tracking JSON
+            if json_started:
+                # Handle string literals and escaped characters
+                if char == '"' and not escape_next:
+                    in_string = not in_string
+                elif char == "\\" and in_string:
+                    escape_next = True
+                    buffer.append(char)
+                    continue
+                else:
+                    escape_next = False
+
+                # Track end of codeblock if we're in one
+                if in_codeblock and not in_string:
+                    if char == "`":
+                        codeblock_delimiter_count += 1
+                        if codeblock_delimiter_count == 3:
+                            # End of codeblock means end of JSON
+                            in_codeblock = False
+                            # Yield the buffer without the closing backticks
+                            for c in buffer:
+                                yield c
+                            buffer = []
+                            json_started = False
+                            break
+                        continue
+                    elif codeblock_delimiter_count > 0:
+                        codeblock_delimiter_count = 0
+
+                # Track braces when not in a string
+                if not in_string:
+                    if char == "{":
+                        brace_stack.append("{")
+                    elif char == "}" and brace_stack:
+                        brace_stack.pop()
+                        # If we've completed a JSON object, yield its characters
+                        if not brace_stack:
+                            buffer.append(char)
+                            for c in buffer:
+                                yield c
+                            buffer = []
+                            json_started = False
+                            break
+
+                # Add character to buffer
                 buffer.append(char)
                 continue
-            else:
-                escape_next = False
 
-            # Track braces when not in a string
-            if not in_string:
-                if char == "{":
-                    brace_stack.append("{")
-                elif char == "}" and brace_stack:
-                    brace_stack.pop()
+            # If we're not in a codeblock and haven't started JSON, look for standalone JSON
+            if not in_codeblock and not json_started and char == "{":
+                json_started = True
+                brace_stack.append("{")
+                buffer.append(char)
 
-            # Add to buffer
-            buffer.append(char)
-
-            # If we've completed a JSON object, yield its characters
-            if brace_stack == [] and buffer and buffer[0] == "{":
-                for c in buffer:
-                    yield c
-                buffer = []
-                break
-
-    # Yield any remaining buffer content
-    for c in buffer:
-        yield c
+    # Yield any remaining buffer content if we have valid JSON
+    if json_started and buffer:
+        for c in buffer:
+            yield c
 
 
 def update_total_usage(
