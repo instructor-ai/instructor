@@ -14,6 +14,9 @@ The `extract_messages` function in `retry.py` was optimized to use direct key lo
 
 **Before:**
 ```python
+from typing import Any
+
+
 def extract_messages(kwargs: dict[str, Any]) -> Any:
     return kwargs.get(
         "messages", kwargs.get("contents", kwargs.get("chat_history", []))
@@ -22,6 +25,9 @@ def extract_messages(kwargs: dict[str, Any]) -> Any:
 
 **After:**
 ```python
+from typing import Any
+
+
 def extract_messages(kwargs: dict[str, Any]) -> Any:
     if "messages" in kwargs:
         return kwargs["messages"]

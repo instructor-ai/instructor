@@ -117,17 +117,7 @@ response = client.create(
 
 print(response.text)
 """
-Jason is a remarkable individual known for his generosity and lively spirit. In his community, he is always ready to lend a helping hand, whether it's participating in local events, volunteering for charitable causes, or simply being there for his friends and family. His warmth and friendliness make everyone around him feel welcome and appreciated.
-
-Jason is an enthusiast of technology and innovation. He spends much of his free time exploring new gadgets and staying updated with the latest tech trends. His curiosity often leads him to experiment with different software and hardware, making him a go-to person for tech advice among his peers.
-
-In his career, Jason is a dedicated professional, always striving to improve and excel in his field. His colleagues respect him for his work ethic and creativity, making him an invaluable team member.
-
-In his personal life, Jason enjoys outdoor activities such as hiking and cycling. These adventures provide him with a sense of freedom and connection to nature, reflecting his adventurous personality.
-
-As much as Jason values his privacy, he is also approachable and open-minded. This balance allows him to maintain meaningful connections without compromising his personal space.
-
-Please note, sharing personal contact information like phone numbers on public platforms is discouraged to protect privacy. If you need to contact someone like Jason, it's best to do so through secured and private channels or have explicit consent from the individual involved.
+Jason is a tech enthusiast known for his innovative ideas and passion for technology. He spends most of his time working on new projects, attending tech meetups, and connecting with like-minded individuals. Jason values his privacy, and while networking is vital to him, he prefers to share his phone number only with close friends and colleagues, ensuring he maintains a balance between professional engagements and personal life. His phone number, ****, is not just a means of communication; it's a way for him to manage his connections and collaborations effectively. Jason is careful about who accesses his direct contact information, understanding the importance of maintaining a secure and controlled communication channel in the digital age.
 """
 ```
 
@@ -247,7 +237,7 @@ address = client.chat.completions.create(
 print(context)
 #> name='scolvin' address=SecretStr('**********')
 print(address)
-#> street=SecretStr('**********') city='scolvin' state='' zipcode=''
+#> street=SecretStr('**********') city='scolvin' state='scolvin' zipcode='scolvin'
 ```
 
 This allows you to preserve your sensitive information while still using it in your prompts.

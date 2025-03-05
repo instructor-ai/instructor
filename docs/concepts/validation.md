@@ -30,9 +30,13 @@ from typing import List
 # Third-party imports
 from pydantic import BaseModel, Field, validator
 
+
 class User(BaseModel):
     """Model representing a user with validation rules."""
-    name: str = Field(..., min_length=2, description="User's full name, minimum 2 characters")
+
+    name: str = Field(
+        ..., min_length=2, description="User's full name, minimum 2 characters"
+    )
     age: int = Field(..., ge=0, le=150, description="User's age between 0 and 150")
     emails: List[str] = Field(description="List of user's email addresses")
 
@@ -53,23 +57,19 @@ Use Field() for basic constraints:
 # Third-party imports
 from pydantic import BaseModel, Field
 
+
 class Product(BaseModel):
     """Model representing a product with field validation constraints."""
+
     name: str = Field(
-        ..., 
-        min_length=1, 
-        max_length=100, 
-        description="Product name between 1-100 characters"
+        ...,
+        min_length=1,
+        max_length=100,
+        description="Product name between 1-100 characters",
     )
-    price: float = Field(
-        ..., 
-        gt=0, 
-        description="Product price, must be greater than 0"
-    )
+    price: float = Field(..., gt=0, description="Product price, must be greater than 0")
     quantity: int = Field(
-        ..., 
-        ge=0, 
-        description="Available quantity, must be 0 or greater"
+        ..., ge=0, description="Available quantity, must be 0 or greater"
     )
 ```
 
@@ -78,18 +78,19 @@ class Product(BaseModel):
 Use @validator for complex validation:
 ```python
 # Standard library imports
-from typing import List
+from typing import List, ClassVar
 
 # Third-party imports
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 class Order(BaseModel):
     """Model representing an order with custom validation logic."""
     items: List[str] = Field(description="List of item names in the order")
     total: float = Field(description="Total order amount")
 
-    @validator('total')
-    def validate_total(cls, v, values):
+    @field_validator('total')
+    @classmethod
+    def validate_total(cls, v):
         """Validate that the total amount is not negative."""
         if v < 0:
             raise ValueError('Total cannot be negative')
@@ -103,8 +104,10 @@ Use pre-validation hooks for data transformation:
 # Third-party imports
 from pydantic import BaseModel, Field, validator
 
+
 class UserProfile(BaseModel):
     """Model representing a user profile with pre-validation transformation."""
+
     username: str = Field(description="User's unique username")
 
     @validator('username', pre=True)
@@ -129,12 +132,14 @@ from pydantic import BaseModel, Field, validator
 # Set up environment (typically handled before script execution)
 # os.environ["OPENAI_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
 
+
 # Define model with validation
 class User(BaseModel):
     """Model representing a user with validation rules."""
+
     name: str = Field(description="User's full name")
     age: int = Field(description="User's age in years")
-    
+
     @validator('age')
     def validate_age(cls, v):
         """Validate that age is a positive number."""
@@ -142,10 +147,10 @@ class User(BaseModel):
             raise ValueError("Age cannot be negative")
         return v
 
+
 # Initialize client with explicit mode
 client = instructor.from_openai(
-    OpenAI(api_key=os.environ.get("OPENAI_API_KEY")),
-    mode=instructor.Mode.JSON
+    OpenAI(api_key=os.environ.get("OPENAI_API_KEY")), mode=instructor.Mode.JSON
 )
 
 try:
@@ -154,11 +159,20 @@ try:
         model="gpt-4o",  # Use latest stable model
         response_model=User,
         messages=[
-            {"role": "system", "content": "Extract structured user information from the text."},
-            {"role": "user", "content": "Extract: John Doe, age: -5"}
-        ]
+            {
+                "role": "system",
+                "content": "Extract structured user information from the text.",
+            },
+            {"role": "user", "content": "Extract: John Doe, age: -5"},
+        ],
     )
     print(user.model_dump_json(indent=2))
+    """
+    {
+      "name": "John Doe",
+      "age": 0
+    }
+    """
 except instructor.exceptions.InstructorValidationError as e:
     print(f"Validation error: {e}")
     # Expected output:
@@ -187,8 +201,10 @@ from typing import Optional
 # Third-party imports
 from pydantic import BaseModel, Field
 
+
 class Profile(BaseModel):
     """Model representing a user profile with optional fields."""
+
     name: str = Field(description="User's full name")
     bio: Optional[str] = Field(None, description="Optional user biography")
 ```
@@ -201,8 +217,10 @@ from typing import List
 # Third-party imports
 from pydantic import BaseModel, Field
 
+
 class Address(BaseModel):
     """Model representing a physical address."""
+
     street: str = Field(description="Street address including number")
     city: str = Field(description="City name")
     country: str = Field(description="Country name")
@@ -210,6 +228,7 @@ class Address(BaseModel):
 
 class User(BaseModel):
     """Model representing a user with nested address validation."""
+
     name: str = Field(description="User's full name")
     addresses: List[Address] = Field(description="List of user's addresses")
 ```
@@ -218,13 +237,14 @@ class User(BaseModel):
 ```python
 # Standard library imports
 from datetime import datetime
-from typing import List
 
 # Third-party imports
 from pydantic import BaseModel, Field, validator
 
+
 class Transaction(BaseModel):
     """Model representing a financial transaction with complex validation."""
+
     amount: float = Field(description="Transaction amount")
     currency: str = Field(description="Three-letter currency code (USD, EUR, GBP)")
     timestamp: datetime = Field(description="Transaction timestamp")
@@ -236,7 +256,7 @@ class Transaction(BaseModel):
         if v not in valid_currencies:
             raise ValueError(f'Currency must be one of {valid_currencies}')
         return v
-        
+
     @validator('timestamp')
     def validate_timestamp(cls, v):
         """Validate that timestamp is not in the future."""

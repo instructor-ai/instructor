@@ -132,7 +132,7 @@ except InstructorRetryException as e:
     print(e.last_completion)
     """
     ChatCompletion(
-        id='chatcmpl-AWl4B5JrGm7QSxBPQhx7lQH89WHxg',
+        id='chatcmpl-B7YezUqZgLZNa1muRD7pHNdwgOhqQ',
         choices=[
             Choice(
                 finish_reason='stop',
@@ -146,7 +146,7 @@ except InstructorRetryException as e:
                     function_call=None,
                     tool_calls=[
                         ChatCompletionMessageToolCall(
-                            id='call_LGFqmLGaMvlkriHANf2nqLus',
+                            id='call_S2WAS8t5Q9rPKeYXUnedyYWW',
                             function=Function(
                                 arguments='{"name":"Jason","age":25}', name='UserDetail'
                             ),
@@ -156,20 +156,19 @@ except InstructorRetryException as e:
                 ),
             )
         ],
-        created=1732370783,
+        created=1741141229,
         model='gpt-3.5-turbo-0125',
         object='chat.completion',
-        service_tier=None,
+        service_tier='default',
         system_fingerprint=None,
         usage=CompletionUsage(
-            completion_tokens=27,
+            completion_tokens=30,
             prompt_tokens=522,
-            total_tokens=549,
+            total_tokens=552,
             completion_tokens_details=CompletionTokensDetails(
                 audio_tokens=0, reasoning_tokens=0
             ),
-            prompt_tokens_details=None,
-            prompt_token_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
+            prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
         ),
     )
     """
@@ -304,10 +303,8 @@ resp = client.messages.create(
     max_retries=tenacity.Retrying(
         stop=tenacity.stop_after_attempt(3),
         before=lambda _: print("before:", _),
-"""
-before:
-<RetryCallState 5565220688: attempt #1; slept for 0.0; last result: none yet>
-"""
+        # Sample output:
+        # before: <RetryCallState 5565220688: attempt #1; slept for 0.0; last result: none yet>
         after=lambda _: print("after:", _),
     ),  # type: ignore
     messages=[
@@ -323,16 +320,15 @@ assert isinstance(resp, User)
 assert resp.name == "JOHN"  # due to validation
 assert resp.age == 18
 print(resp)
-#> name='JOHN' age=18
+# Output: name='JOHN' age=18
 
-"""
-before: <RetryCallState 4421908816: attempt #1; slept for 0.0; last result: none yet>
-after: <RetryCallState 4421908816: attempt #1; slept for 0.0; last result: failed (ValidationError 1 validation error for User
-name
-  Assertion failed, Name must be uppercase [type=assertion_error, input_value='John', input_type=str]
-    For further information visit https://errors.pydantic.dev/2.6/v/assertion_error)>
-
-before: <RetryCallState 4421908816: attempt #2; slept for 0.0; last result: none yet>
-name='JOHN' age=18
-"""
+# Sample output:
+# before: <RetryCallState 4421908816: attempt #1; slept for 0.0; last result: none yet>
+# after: <RetryCallState 4421908816: attempt #1; slept for 0.0; last result: failed (ValidationError 1 validation error for User
+# name
+#   Assertion failed, Name must be uppercase [type=assertion_error, input_value='John', input_type=str]
+#     For further information visit https://errors.pydantic.dev/2.6/v/assertion_error)>
+#
+# before: <RetryCallState 4421908816: attempt #2; slept for 0.0; last result: none yet>
+# name='JOHN' age=18
 ```

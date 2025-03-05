@@ -36,7 +36,7 @@ print(user)
 print(completion)
 """
 ChatCompletion(
-    id='chatcmpl-AWl4kOf2XIrMZ2cBWC41gXCkFCpQs',
+    id='chatcmpl-B7YfOsG7o7IQUFD5IHJVrkzqCzkah',
     choices=[
         Choice(
             finish_reason='stop',
@@ -50,7 +50,7 @@ ChatCompletion(
                 function_call=None,
                 tool_calls=[
                     ChatCompletionMessageToolCall(
-                        id='call_bGBFg2QrTqw30Y8zXCs9RYGY',
+                        id='call_etLBMnL2MHzKEwiizMAfnnNw',
                         function=Function(
                             arguments='{"name":"Jason","age":25}', name='UserExtract'
                         ),
@@ -60,21 +60,46 @@ ChatCompletion(
             ),
         )
     ],
-    created=1732370818,
+    created=1741141254,
     model='gpt-3.5-turbo-0125',
     object='chat.completion',
-    service_tier=None,
+    service_tier='default',
     system_fingerprint=None,
     usage=CompletionUsage(
-        completion_tokens=9,
+        completion_tokens=10,
         prompt_tokens=82,
-        total_tokens=91,
+        total_tokens=92,
         completion_tokens_details=CompletionTokensDetails(
             audio_tokens=0, reasoning_tokens=0
         ),
-        prompt_tokens_details=None,
-        prompt_token_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
+        prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
     ),
 )
 """
 ```
+
+## Anthropic Raw Response
+
+You can also access the raw response from Anthropic models. This is useful for debugging or when you need to access additional information from the response.
+
+```python
+import instructor
+
+from anthropic import Anthropic
+
+client = instructor.from_anthropic(Anthropic())
+
+
+user, completion = client.chat.completions.create_with_completion(
+    model="claude-3-5-sonnet-latest",
+    response_model=UserExtract,
+    messages=[
+        {"role": "user", "content": "Extract jason is 25 years old"},
+    ],
+)
+
+print(user)
+#> name='Jason' age=25
+
+print(completion)
+"""

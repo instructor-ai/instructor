@@ -63,21 +63,31 @@ The retry logic that uses Hooks is implemented in the `instructor/retry.py` file
 The Hooks system uses typed Protocol classes to provide better type safety for handler functions:
 
 ```python
+from typing import Any, Protocol
+
+
 # Handler protocol types for type safety
 class CompletionKwargsHandler(Protocol):
     """Protocol for completion kwargs handlers."""
+
     def __call__(self, *args: Any, **kwargs: Any) -> None: ...
+
 
 class CompletionResponseHandler(Protocol):
     """Protocol for completion response handlers."""
+
     def __call__(self, response: Any) -> None: ...
+
 
 class CompletionErrorHandler(Protocol):
     """Protocol for completion error and last attempt handlers."""
+
     def __call__(self, error: Exception) -> None: ...
+
 
 class ParseErrorHandler(Protocol):
     """Protocol for parse error handlers."""
+
     def __call__(self, error: Exception) -> None: ...
 ```
 
@@ -121,7 +131,7 @@ resp = client.chat.completions.create(
     response_model=str,
 )
 print(resp)
-#> Hello, world!
+#> Hello! How can I assist you today?
 ```
 
 ### Emitting Events
@@ -339,19 +349,22 @@ print(f"Total errors recorded: {error_counter.error_count}")
 While the Instructor library provides several built-in hooks, you might need to create custom hooks for specific use cases. You can do this by extending the `HookName` enum and adding handlers for your custom events:
 
 ```python
-from enum import Enum
 from instructor.hooks import Hooks, HookName
+
 
 # Extend the HookName enum
 class CustomHookName(HookName):
     CUSTOM_EVENT = "custom:event"
 
+
 # Create a hooks instance
 hooks = Hooks()
+
 
 # Define a handler
 def custom_handler(data):
     print(f"Custom event: {data}")
+
 
 # Register the handler
 hooks.on(CustomHookName.CUSTOM_EVENT, custom_handler)
@@ -369,8 +382,10 @@ If you're writing your own handlers, you can specify the appropriate type:
 ```python
 from instructor.hooks import CompletionErrorHandler
 
+
 def my_error_handler(error: Exception) -> None:
     print(f"Error occurred: {error}")
+
 
 # Type checking will verify this is a valid error handler
 handler: CompletionErrorHandler = my_error_handler
@@ -388,26 +403,70 @@ from unittest.mock import Mock
 import instructor
 import openai
 
+
 class TestMyApp(unittest.TestCase):
     def test_completion(self):
         client = instructor.from_openai(openai.OpenAI())
         mock_handler = Mock()
-        
+
         client.on("completion:response", mock_handler)
-        
+
         # Call your code that uses the client
         result = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": "Hello"}],
             response_model=str,
         )
-        
+
         # Verify the mock was called
         mock_handler.assert_called_once()
-        
+
         # You can also inspect the arguments
         response_arg = mock_handler.call_args[0][0]
         self.assertEqual(response_arg.model, "gpt-3.5-turbo")
 ```
 
 This approach allows you to test your code without mocking the entire client.
+
+### Using Hooks
+
+```python
+from openai import OpenAI
+import instructor
+
+
+# Initialize client
+client = instructor.patch(OpenAI())
+
+# Example with all hooks enabled (default)
+response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=str,
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+```
+
+```python
+from enum import Enum, auto
+import instructor
+from openai import OpenAI
+
+
+# Define standard hook names
+class HookName(Enum):
+    COMPLETION_KWARGS = auto()
+    COMPLETION_RESPONSE = auto()
+    COMPLETION_ERROR = auto()
+    COMPLETION_LAST_ERROR = auto()
+    PARSE_ERROR = auto()
+
+
+# Create a new enum for custom hooks
+class CustomHookName(Enum):
+    MY_CUSTOM_HOOK = "my_custom_hook"
+    ANOTHER_HOOK = "another_hook"
+
+
+# Initialize client with custom hooks
+client = instructor.patch(OpenAI())
+```

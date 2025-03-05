@@ -20,11 +20,21 @@ You can create an `Image` instance from a URL or file path using the `from_url` 
 ```python
 import instructor
 import openai
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import List, Optional
 
 
 class ImageAnalyzer(BaseModel):
-    description: str
+    """A model for analyzing image content."""
+
+    description: str = Field(
+        description="A detailed description of what's in the image"
+    )
+    objects: List[str] = Field(description="List of objects identified in the image")
+    colors: List[str] = Field(description="Dominant colors in the image")
+    text: Optional[str] = Field(
+        description="Any text visible in the image", default=None
+    )
 
 
 # <%hide%>
@@ -46,13 +56,21 @@ response = client.chat.completions.create(
     model="gpt-4o-mini",
     response_model=ImageAnalyzer,
     messages=[
-        {"role": "user", "content": ["What is in this two images?", image1, image2]}
+        {
+            "role": "user",
+            "content": [
+                "What is in this two images?",
+                "https://example.com/image.jpg",
+                "path/to/image.jpg",
+            ],
+        }
     ],
+    autodetect_images=True,
 )
 
 print(response.model_dump_json())
 """
-{"description":"A tray of freshly baked blueberry muffins. The muffins have a golden-brown top, are placed in paper liners, and some have blueberries peeking out. In the background, more muffins are visible, along with a single blueberry on the tray."}
+{"description":"A tray filled with several blueberry muffins, with one muffin prominently in the foreground. The muffins have a golden-brown top and are surrounded by a beige paper liners. Some muffins are partially visible, and fresh blueberries are scattered around the tray."}
 """
 ```
 
@@ -93,34 +111,45 @@ Instructor supports Anthropic prompt caching with images. To activate prompt cac
 and set `autodetect_images=True`, or flag it within a constructor such as `instructor.Image.from_path("path/to/image.jpg", cache_control=True)`. For example:
 
 ```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
 import instructor
 from anthropic import Anthropic
+from instructor import Image
+
+
+class ImageAnalyzer(BaseModel):
+    """A model for analyzing image content."""
+
+    description: str = Field(
+        description="A detailed description of what's in the image"
+    )
+    objects: List[str] = Field(description="List of objects identified in the image")
+    colors: List[str] = Field(description="Dominant colors in the image")
+    text: Optional[str] = Field(
+        description="Any text visible in the image", default=None
+    )
+
 
 client = instructor.from_anthropic(Anthropic(), enable_prompt_caching=True)
 
-cache_control = {"type": "ephemeral"}
-response = client.chat.completions.create(
-    model="claude-3-haiku-20240307",
-    response_model=ImageAnalyzer,  # This can be set to `None` to return an Anthropic prompt caching message
+# Create an image from a file path with caching enabled
+image1 = Image.from_path("path/to/image1.jpg", cache_control=True)
+image2 = Image.from_path("path/to/image2.jpg", cache_control=True)
+
+response = client.messages.create(
+    model="claude-3-opus-20240229",
+    response_model=ImageAnalyzer,
     messages=[
         {
             "role": "user",
             "content": [
-                "What is in this two images?",
-                {
-                    "type": "image",
-                    "source": "https://example.com/image.jpg",
-                    "cache_control": cache_control,
-                },
-                {
-                    "type": "image",
-                    "source": "path/to/image.jpg",
-                    "cache_control": cache_control,
-                },
+                {"type": "text", "text": "What is in these images?"},
+                image1,
+                image2,
             ],
         }
     ],
-    autodetect_images=True,
 )
 ```
 

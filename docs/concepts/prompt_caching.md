@@ -199,7 +199,7 @@ resp, completion = client.chat.completions.create_with_completion(
                 {
                     "type": "text",
                     "text": "<book>" + book + "</book>",
-                    "cache_control": {"type": "ephemeral"}, #(1)!
+                    "cache_control": {"type": "ephemeral"},  # (1)!
                 },
                 {
                     "type": "text",

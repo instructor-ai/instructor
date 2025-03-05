@@ -10,6 +10,8 @@ description: Learn to utilize field-level streaming with Instructor and OpenAI f
     If the data structure you're using has literal values, you need to make sure to import the `PartialLiteralMixin` mixin.
 
     ```python
+    from typing import Literal
+    from pydantic import BaseModel
     from instructor.dsl.partial import PartialLiteralMixin
 
     class User(BaseModel, PartialLiteralMixin):
@@ -17,7 +19,7 @@ description: Learn to utilize field-level streaming with Instructor and OpenAI f
         age: int
         category: Literal["admin", "user", "guest"]
 
-    // The rest of your code below
+    # The rest of your code below
     ```
 
     This is because `jiter` throws an error otherwise if it encounters a incomplete Literal value while it's being streamed in
@@ -44,7 +46,7 @@ If we streamed json out from OpenAI, we would only be able to parse when the obj
 ```
 {"name": "Jo
 {"name": "John", "ag
-{"name": "John", "age":
+{"name": "John", "age:
 {"name": "John", "age": 25} # Completed
 ```
 
@@ -67,7 +69,7 @@ Let's look at an example of streaming an extraction of conference information, t
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
-from typing import List
+from typing import List, Literal
 from rich.console import Console
 
 client = instructor.from_openai(OpenAI())
@@ -142,7 +144,7 @@ print(extraction.model_dump_json(indent=2))
     }
   ],
   "date": "2024-03-15",
-  "location": "Grand Tech Arena located at 4521 Innovation Drive",
+  "location": "Grand Tech Arena, 4521 Innovation Drive",
   "budget": 50000,
   "deadline": "2024-02-20"
 }
