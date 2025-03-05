@@ -33,13 +33,13 @@ Prompt Caching is now generally avaliable for Anthropic. This enables you to cac
     In the following example, we'll be using a short excerpt from the novel "Pride and Prejudice" by Jane Austen. This text serves as an example of a substantial context that might typically lead to slow response times and high costs when working with language models. You can download it manually [here](https://www.gutenberg.org/cache/epub/1342/pg1342.txt)
 
     ```
-        _Walt Whitman has somewhere a fine and just distinction between “loving
-    by allowance” and “loving with personal love.” This distinction applies
+        _Walt Whitman has somewhere a fine and just distinction between "loving
+    by allowance" and "loving with personal love." This distinction applies
     to books as well as to men and women; and in the case of the not very
     numerous authors who are the objects of the personal affection, it
     brings a curious consequence with it. There is much more difference as
-    to their best work than in the case of those others who are loved “by
-    allowance” by convention, and because it is felt to be the right and
+    to their best work than in the case of those others who are loved "by
+    allowance" by convention, and because it is felt to be the right and
     proper thing to love them. And in the sect--fairly large and yet
     unusually choice--of Austenians or Janites, there would probably be
     found partisans of the claim to primacy of almost every one of the
@@ -69,7 +69,7 @@ Prompt Caching is now generally avaliable for Anthropic. This enables you to cac
     Eltons, cannot but unite the suffrages of everybody. On the other hand,
     I, for my part, declare for_ Pride and Prejudice _unhesitatingly. It
     seems to me the most perfect, the most characteristic, the most
-    eminently quintessential of its author’s works; and for this contention
+    eminently quintessential of its author's works; and for this contention
     in such narrow space as is permitted to me, I propose here to show
     cause._
     _In the first place, the book (it may be barely necessary to remind the
@@ -96,9 +96,9 @@ Prompt Caching is now generally avaliable for Anthropic. This enables you to cac
     always liked something of the misunderstanding kind, which afforded her
     opportunities for the display of the peculiar and incomparable talent to
     be noticed presently, she has been satisfied here with the perfectly
-    natural occasions provided by the false account of Darcy’s conduct given
+    natural occasions provided by the false account of Darcy's conduct given
     by Wickham, and by the awkwardness (arising with equal naturalness) from
-    the gradual transformation of Elizabeth’s own feelings from positive
+    the gradual transformation of Elizabeth's own feelings from positive
     aversion to actual love. I do not know whether the all-grasping hand of
     the playwright has ever been laid upon_ Pride and Prejudice; _and I dare
     say that, if it were, the situations would prove not startling or
@@ -119,12 +119,12 @@ Prompt Caching is now generally avaliable for Anthropic. This enables you to cac
     acted and told by puppets with pebbles in their mouths. And despite the
     ability which Miss Austen has shown in working out the story, I for one
     should put_ Pride and Prejudice _far lower if it did not contain what
-    seem to me the very masterpieces of Miss Austen’s humour and of her
+    seem to me the very masterpieces of Miss Austen's humour and of her
     faculty of character-creation--masterpieces who may indeed admit John
     Thorpe, the Eltons, Mrs. Norris, and one or two others to their company,
     but who, in one instance certainly, and perhaps in others, are still
     superior to them._
-    _The characteristics of Miss Austen’s humour are so subtle and delicate
+    _The characteristics of Miss Austen's humour are so subtle and delicate
     that they are, perhaps, at all times easier to apprehend than to
     express, and at any particular time likely to be differently
     apprehended by different persons. To me this humour seems to possess a
@@ -132,8 +132,8 @@ Prompt Caching is now generally avaliable for Anthropic. This enables you to cac
     the numerous species of this great British genus. The differences of
     scheme, of time, of subject, of literary convention, are, of course,
     obvious enough; the difference of sex does not, perhaps, count for much,
-    for there was a distinctly feminine element in “Mr. Spectator,” and in
-    Jane Austen’s genius there was, though nothing mannish, much that was
+    for there was a distinctly feminine element in "Mr. Spectator," and in
+    Jane Austen's genius there was, though nothing mannish, much that was
     masculine. But the likeness of quality consists in a great number of
     common subdivisions of quality--demureness, extreme minuteness of touch,
     avoidance of loud tones and glaring effects. Also there is in both a
@@ -146,26 +146,26 @@ Prompt Caching is now generally avaliable for Anthropic. This enables you to cac
     restrained and well-mannered, an insatiable and ruthless delight in
     roasting and cutting up a fool. A man in the early eighteenth century,
     of course, could push this taste further than a lady in the early
-    nineteenth; and no doubt Miss Austen’s principles, as well as her heart,
+    nineteenth; and no doubt Miss Austen's principles, as well as her heart,
     would have shrunk from such things as the letter from the unfortunate
     husband in the_ Spectator, _who describes, with all the gusto and all the
     innocence in the world, how his wife and his friend induce him to play
-    at blind-man’s-buff. But another_ Spectator _letter--that of the damsel
+    at blind-man's-buff. But another_ Spectator _letter--that of the damsel
     of fourteen who wishes to marry Mr. Shapely, and assures her selected
-    Mentor that “he admires your_ Spectators _mightily”--might have been
+    Mentor that "he admires your_ Spectators _mightily"--might have been
     written by a rather more ladylike and intelligent Lydia Bennet in the
-    days of Lydia’s great-grandmother; while, on the other hand, some (I
-    think unreasonably) have found “cynicism” in touches of Miss Austen’s
-    own, such as her satire of Mrs. Musgrove’s self-deceiving regrets over
-    her son. But this word “cynical” is one of the most misused in the
+    days of Lydia's great-grandmother; while, on the other hand, some (I
+    think unreasonably) have found "cynicism" in touches of Miss Austen's
+    own, such as her satire of Mrs. Musgrove's self-deceiving regrets over
+    her son. But this word "cynical" is one of the most misused in the
     English language, especially when, by a glaring and gratuitous
     falsification of its original sense, it is applied, not to rough and
     snarling invective, but to gentle and oblique satire. If cynicism means
-    the perception of “the other side,” the sense of “the accepted hells
-    beneath,” the consciousness that motives are nearly always mixed, and
+    the perception of "the other side," the sense of "the accepted hells
+    beneath," the consciousness that motives are nearly always mixed, and
     that to seem is not identical with to be--if this be cynicism, then
     every man and woman who is not a fool, who does not care to live in a
-    fool’s paradise, who has knowledge of nature and the world and life, is
+    fool's paradise, who has knowledge of nature and the world and life, is
     a cynic. And in that sense Miss Austen certainly was one. She may even
     have been one in the further sense that, like her own Mr. Bennet, she
     took an epicurean delight in dissecting, in displaying, in setting at
@@ -187,8 +187,26 @@ class Character(BaseModel):
     description: str
 
 
-with open("./book.txt") as f:
-    book = f.read()
+# Note: For testing this example locally, create a book.txt file with content like:
+# Sample book.txt content:
+# "Pride and Prejudice by Jane Austen
+#
+# It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.
+# However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is
+# so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or
+# other of their daughters..."
+book = """
+Pride and Prejudice by Jane Austen
+
+It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.
+However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is
+so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or
+other of their daughters...
+"""
+
+# Uncomment to read from an actual file instead of using the sample text above
+# with open("./book.txt") as f:
+#     book = f.read()
 
 resp, completion = client.chat.completions.create_with_completion(
     model="claude-3-5-sonnet-20240620",

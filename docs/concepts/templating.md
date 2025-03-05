@@ -117,7 +117,13 @@ response = client.create(
 
 print(response.text)
 """
-Jason is a tech enthusiast known for his innovative ideas and passion for technology. He spends most of his time working on new projects, attending tech meetups, and connecting with like-minded individuals. Jason values his privacy, and while networking is vital to him, he prefers to share his phone number only with close friends and colleagues, ensuring he maintains a balance between professional engagements and personal life. His phone number, ****, is not just a means of communication; it's a way for him to manage his connections and collaborations effectively. Jason is careful about who accesses his direct contact information, understanding the importance of maintaining a secure and controlled communication channel in the digital age.
+Jason is a vibrant and dynamic individual known for his charismatic personality and entrepreneurial spirit. He has always been passionate about technology and innovation, which led him to start his own tech company. Throughout his career, Jason has been dedicated to making a significant impact in the tech industry, always seeking out new opportunities to learn and grow.
+
+In addition to his professional endeavors, Jason is an adventurous person who loves to travel and explore new places. He finds joy in experiencing different cultures and meeting new people, which has contributed to his broad worldview and understanding of global markets.
+
+Jason’s journey is one of hard work, resilience, and determination, as he continuously pushes the boundaries to achieve his goals and inspire those around him.
+
+(Note: Personal phone numbers should remain confidential and not be shared publicly to protect privacy.)
 """
 ```
 
@@ -237,7 +243,7 @@ address = client.chat.completions.create(
 print(context)
 #> name='scolvin' address=SecretStr('**********')
 print(address)
-#> street=SecretStr('**********') city='scolvin' state='scolvin' zipcode='scolvin'
+#> street=SecretStr('**********') city='scolvin' state='NA' zipcode='00000'
 ```
 
 This allows you to preserve your sensitive information while still using it in your prompts.

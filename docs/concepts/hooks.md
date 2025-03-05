@@ -131,7 +131,7 @@ resp = client.chat.completions.create(
     response_model=str,
 )
 print(resp)
-#> Hello! How can I assist you today?
+#> Hello, user! How can I assist you today?
 ```
 
 ### Emitting Events
@@ -143,25 +143,21 @@ Events are automatically emitted by the Instructor library at appropriate times.
 You can remove a specific hook using the `off` method:
 
 ```python
-# <%hide%>
 import instructor
 import openai
 import pprint
 
 client = instructor.from_openai(openai.OpenAI())
-resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[{"role": "user", "content": "Hello, world!"}],
-    response_model=str,
-)
 
 
 def log_completion_kwargs(*args, **kwargs):
     pprint.pprint({"args": args, "kwargs": kwargs})
 
 
+# Register the hook
 client.on("completion:kwargs", log_completion_kwargs)
-# <%hide%>
+
+# Then later, remove it when no longer needed
 client.off("completion:kwargs", log_completion_kwargs)
 ```
 
@@ -170,19 +166,33 @@ client.off("completion:kwargs", log_completion_kwargs)
 To remove all hooks for a specific event or all events:
 
 ```python
-# <%hide%>
 import instructor
 import openai
 
 client = instructor.from_openai(openai.OpenAI())
+
+# Define a simple handler
+def log_completion_kwargs(*args, **kwargs):
+    print("Logging completion kwargs...")
+
+# Register the hook
+client.on("completion:kwargs", log_completion_kwargs)
+
+# Make a request that triggers the hook
 resp = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Hello, world!"}],
     response_model=str,
 )
-# <%hide%>
+
 # Clear hooks for a specific event
 client.clear("completion:kwargs")
+
+# Register another handler for a different event
+def log_response(response):
+    print("Logging response...")
+
+client.on("completion:response", log_response)
 
 # Clear all hooks
 client.clear()
@@ -201,86 +211,83 @@ import pydantic
 def log_completion_kwargs(*args, **kwargs) -> None:
     print("## Completion kwargs:")
     print(kwargs)
-    """
-    {
-        "messages": [
-            {
-                "role": "user",
-                "content": "Extract the user name and age from the following text: 'John is 20 years old'",
-            }
-        ],
-        "model": "gpt-4o-mini",
-        "tools": [
-            {
-                "type": "function",
-                "function": {
-                    "name": "User",
-                    "description": "Correctly extracted `User` with all the required parameters with correct types",
-                    "parameters": {
-                        "properties": {
-                            "name": {"title": "Name", "type": "string"},
-                            "age": {"title": "Age", "type": "integer"},
-                        },
-                        "required": ["age", "name"],
-                        "type": "object",
-                    },
-                },
-            }
-        ],
-        "tool_choice": {"type": "function", "function": {"name": "User"}},
-    }
-    """
+    # Example output:
+    # {
+    #     "messages": [
+    #         {
+    #             "role": "user",
+    #             "content": "Extract the user name and age from the following text: 'John is 20 years old'",
+    #         }
+    #     ],
+    #     "model": "gpt-4o-mini",
+    #     "tools": [
+    #         {
+    #             "type": "function",
+    #             "function": {
+    #                 "name": "User",
+    #                 "description": "Correctly extracted `User` with all the required parameters with correct types",
+    #                 "parameters": {
+    #                     "properties": {
+    #                         "name": {"title": "Name", "type": "string"},
+    #                         "age": {"title": "Age", "type": "integer"},
+    #                     },
+    #                     "required": ["age", "name"],
+    #                     "type": "object",
+    #                 },
+    #             },
+    #         }
+    #     ],
+    #     "tool_choice": {"type": "function", "function": {"name": "User"}},
+    # }
 
 
 def log_completion_response(response) -> None:
     print("## Completion response:")
-    #> ## Completion response:
-    """
-    {
-        'id': 'chatcmpl-AWl4Mj5Jrv7m7JkOTIiHXSldQIOFm',
-        'choices': [
-            {
-                'finish_reason': 'stop',
-                'index': 0,
-                'logprobs': None,
-                'message': {
-                    'content': None,
-                    'refusal': None,
-                    'role': 'assistant',
-                    'audio': None,
-                    'function_call': None,
-                    'tool_calls': [
-                        {
-                            'id': 'call_6oQ9WXxeSiVEV71B9IYtsbIE',
-                            'function': {
-                                'arguments': '{"name":"John","age":-1}',
-                                'name': 'User',
-                            },
-                            'type': 'function',
-                        }
-                    ],
-                },
-            }
-        ],
-        'created': 1732370794,
-        'model': 'gpt-4o-mini-2024-07-18',
-        'object': 'chat.completion',
-        'service_tier': None,
-        'system_fingerprint': 'fp_0705bf87c0',
-        'usage': {
-            'completion_tokens': 10,
-            'prompt_tokens': 87,
-            'total_tokens': 97,
-            'completion_tokens_details': {
-                'audio_tokens': 0,
-                'reasoning_tokens': 0,
-                'accepted_prediction_tokens': 0,
-                'rejected_prediction_tokens': 0,
-            },
-            'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0},
-        },
-    }
-    """
+    # Example output:
+    # {
+    #     'id': 'chatcmpl-AWl4Mj5Jrv7m7JkOTIiHXSldQIOFm',
+    #     'choices': [
+    #         {
+    #             'finish_reason': 'stop',
+    #             'index': 0,
+    #             'logprobs': None,
+    #             'message': {
+    #                 'content': None,
+    #                 'refusal': None,
+    #                 'role': 'assistant',
+    #                 'audio': None,
+    #                 'function_call': None,
+    #                 'tool_calls': [
+    #                     {
+    #                         'id': 'call_6oQ9WXxeSiVEV71B9IYtsbIE',
+    #                         'function': {
+    #                             'arguments': '{"name":"John","age":-1}',
+    #                             'name': 'User',
+    #                         },
+    #                         'type': 'function',
+    #                     }
+    #                 ],
+    #             },
+    #         }
+    #     ],
+    #     'created': 1732370794,
+    #     'model': 'gpt-4o-mini-2024-07-18',
+    #     'object': 'chat.completion',
+    #     'service_tier': None,
+    #     'system_fingerprint': 'fp_0705bf87c0',
+    #     'usage': {
+    #         'completion_tokens': 10,
+    #         'prompt_tokens': 87,
+    #         'total_tokens': 97,
+    #         'completion_tokens_details': {
+    #             'audio_tokens': 0,
+    #             'reasoning_tokens': 0,
+    #             'accepted_prediction_tokens': 0,
+    #             'rejected_prediction_tokens': 0,
+    #         },
+    #         'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0},
+    #     },
+    # }
     print(response.model_dump())
 
 
@@ -349,12 +356,21 @@ print(f"Total errors recorded: {error_counter.error_count}")
 While the Instructor library provides several built-in hooks, you might need to create custom hooks for specific use cases. You can do this by extending the `HookName` enum and adding handlers for your custom events:
 
 ```python
+from typing import Protocol, Any
+from enum import Enum
 from instructor.hooks import Hooks, HookName
 
 
 # Extend the HookName enum
-class CustomHookName(HookName):
+class CustomHookName(str, Enum):
     CUSTOM_EVENT = "custom:event"
+
+    # Make it compatible with the base HookName enum
+    COMPLETION_KWARGS = HookName.COMPLETION_KWARGS.value
+    COMPLETION_RESPONSE = HookName.COMPLETION_RESPONSE.value
+    COMPLETION_ERROR = HookName.COMPLETION_ERROR.value
+    PARSE_ERROR = HookName.PARSE_ERROR.value
+    COMPLETION_LAST_ATTEMPT = HookName.COMPLETION_LAST_ATTEMPT.value
 
 
 # Create a hooks instance
@@ -457,7 +473,7 @@ class HookName(Enum):
     COMPLETION_KWARGS = auto()
     COMPLETION_RESPONSE = auto()
     COMPLETION_ERROR = auto()
-    COMPLETION_LAST_ERROR = auto()
+    COMPLETION_LAST_ATTEMPT = auto()
     PARSE_ERROR = auto()
 
 

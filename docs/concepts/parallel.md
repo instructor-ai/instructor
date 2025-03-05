@@ -54,7 +54,7 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         print(fc)
         #> location='Toronto' units='metric'
         #> location='Dallas' units='metric'
-        #> query='Super Bowl winner 2023'
+        #> query='who won the super bowl 2023'
     ```
 
 === "Vertex AI"

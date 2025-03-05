@@ -14,10 +14,12 @@ description: Learn to utilize field-level streaming with Instructor and OpenAI f
     from pydantic import BaseModel
     from instructor.dsl.partial import PartialLiteralMixin
 
+
     class User(BaseModel, PartialLiteralMixin):
         name: str
         age: int
         category: Literal["admin", "user", "guest"]
+
 
     # The rest of your code below
     ```
@@ -69,7 +71,7 @@ Let's look at an example of streaming an extraction of conference information, t
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
-from typing import List, Literal
+from typing import List
 from rich.console import Console
 
 client = instructor.from_openai(OpenAI())
@@ -144,7 +146,7 @@ print(extraction.model_dump_json(indent=2))
     }
   ],
   "date": "2024-03-15",
-  "location": "Grand Tech Arena, 4521 Innovation Drive",
+  "location": "Grand Tech Arena located at 4521 Innovation Drive",
   "budget": 50000,
   "deadline": "2024-02-20"
 }
@@ -186,11 +188,11 @@ async def print_partial_results():
         print(m)
         #> name=None age=None
         #> name=None age=None
-        #> name=None age=None
-        #> name=None age=12
-        #> name=None age=12
-        #> name=None age=12
-        #> name='' age=12
+        #> name='' age=None
+        #> name='Jason' age=None
+        #> name='Jason' age=None
+        #> name='Jason' age=None
+        #> name='Jason' age=None
         #> name='Jason' age=12
         #> name='Jason' age=12
 

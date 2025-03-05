@@ -28,7 +28,7 @@ Instructor uses Pydantic for validation, which provides:
 from typing import List
 
 # Third-party imports
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class User(BaseModel):
@@ -40,7 +40,8 @@ class User(BaseModel):
     age: int = Field(..., ge=0, le=150, description="User's age between 0 and 150")
     emails: List[str] = Field(description="List of user's email addresses")
 
-    @validator('emails')
+    @field_validator('emails')
+    @classmethod
     def validate_emails(cls, v):
         """Validate that all email addresses contain an @ symbol."""
         if not all('@' in email for email in v):
@@ -78,13 +79,15 @@ class Product(BaseModel):
 Use @validator for complex validation:
 ```python
 # Standard library imports
-from typing import List, ClassVar
+from typing import List
 
 # Third-party imports
 from pydantic import BaseModel, Field, field_validator
 
+
 class Order(BaseModel):
     """Model representing an order with custom validation logic."""
+
     items: List[str] = Field(description="List of item names in the order")
     total: float = Field(description="Total order amount")
 

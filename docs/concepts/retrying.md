@@ -132,7 +132,7 @@ except InstructorRetryException as e:
     print(e.last_completion)
     """
     ChatCompletion(
-        id='chatcmpl-B7YezUqZgLZNa1muRD7pHNdwgOhqQ',
+        id='chatcmpl-B7YgHmfrWA8FxsSxvzUUvdSe2lo9h',
         choices=[
             Choice(
                 finish_reason='stop',
@@ -146,7 +146,7 @@ except InstructorRetryException as e:
                     function_call=None,
                     tool_calls=[
                         ChatCompletionMessageToolCall(
-                            id='call_S2WAS8t5Q9rPKeYXUnedyYWW',
+                            id='call_zvTyhnBKPIhDXrOCxNzlsgzN',
                             function=Function(
                                 arguments='{"name":"Jason","age":25}', name='UserDetail'
                             ),
@@ -156,7 +156,7 @@ except InstructorRetryException as e:
                 ),
             )
         ],
-        created=1741141229,
+        created=1741141309,
         model='gpt-3.5-turbo-0125',
         object='chat.completion',
         service_tier='default',
@@ -303,8 +303,10 @@ resp = client.messages.create(
     max_retries=tenacity.Retrying(
         stop=tenacity.stop_after_attempt(3),
         before=lambda _: print("before:", _),
-        # Sample output:
-        # before: <RetryCallState 5565220688: attempt #1; slept for 0.0; last result: none yet>
+"""
+before:
+<RetryCallState 13531729680: attempt #1; slept for 0.0; last result: none yet>
+"""
         after=lambda _: print("after:", _),
     ),  # type: ignore
     messages=[
@@ -320,6 +322,7 @@ assert isinstance(resp, User)
 assert resp.name == "JOHN"  # due to validation
 assert resp.age == 18
 print(resp)
+#> name='JOHN' age=18
 # Output: name='JOHN' age=18
 
 # Sample output:
