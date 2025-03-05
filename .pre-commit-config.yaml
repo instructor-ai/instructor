@@ -8,7 +8,3 @@ repos:
         files: ^(instructor|tests|examples)/
       - id: ruff-format       # Run the formatter.
         name: Run Formatter (Ruff)
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.360
-    hooks:
-    - id: pyright

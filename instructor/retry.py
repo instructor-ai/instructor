@@ -40,9 +40,7 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
 
-def initialize_retrying(
-    max_retries: int | Retrying | AsyncRetrying, is_async: bool
-):
+def initialize_retrying(max_retries: int | Retrying | AsyncRetrying, is_async: bool):
     """
     Initialize the retrying mechanism based on the type (synchronous or asynchronous).
 
@@ -87,9 +85,7 @@ def initialize_usage(mode: Mode) -> CompletionUsage | Any:
         completion_tokens_details=CompletionTokensDetails(
             audio_tokens=0, reasoning_tokens=0
         ),
-        prompt_tokens_details=PromptTokensDetails(
-            audio_tokens=0, cached_tokens=0
-        ),
+        prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
     )
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_JSON}:
         from anthropic.types import Usage as AnthropicUsage
@@ -113,9 +109,15 @@ def extract_messages(kwargs: dict[str, Any]) -> Any:
     Returns:
         Any: Extracted messages.
     """
-    return kwargs.get(
-        "messages", kwargs.get("contents", kwargs.get("chat_history", []))
-    )
+    # Directly check for keys in an efficient order (most common first)
+    # instead of nested get() calls which are inefficient
+    if "messages" in kwargs:
+        return kwargs["messages"]
+    if "contents" in kwargs:
+        return kwargs["contents"]
+    if "chat_history" in kwargs:
+        return kwargs["chat_history"]
+    return []
 
 
 def retry_sync(
@@ -153,13 +155,14 @@ def retry_sync(
     total_usage = initialize_usage(mode)
     max_retries = initialize_retrying(max_retries, is_async=False)
 
+    # Pre-extract stream flag to avoid repeated lookup
+    stream = kwargs.get("stream", False)
+
     try:
         response = None
         for attempt in max_retries:
             with attempt:
-                logger.debug(
-                    f"Retrying, attempt: {attempt.retry_state.attempt_number}"
-                )
+                logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
                 try:
                     hooks.emit_completion_arguments(*args, **kwargs)
                     response = func(*args, **kwargs)
@@ -174,7 +177,7 @@ def retry_sync(
                         validation_context=context,
                         strict=strict,
                         mode=mode,
-                        stream=kwargs.get("stream", False),
+                        stream=stream,
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Parse error: {e}")
@@ -193,10 +196,9 @@ def retry_sync(
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             #! deprecate messages soon
-            messages=kwargs.get(
-                "messages",
-                kwargs.get("contents", kwargs.get("chat_history", [])),
-            ),
+            messages=extract_messages(
+                kwargs
+            ),  # Use the optimized function instead of nested lookups
             create_kwargs=kwargs,
             total_usage=total_usage,
         ) from e
@@ -237,12 +239,13 @@ async def retry_async(
     total_usage = initialize_usage(mode)
     max_retries = initialize_retrying(max_retries, is_async=True)
 
+    # Pre-extract stream flag to avoid repeated lookup
+    stream = kwargs.get("stream", False)
+
     try:
         response = None
         async for attempt in max_retries:
-            logger.debug(
-                f"Retrying, attempt: {attempt.retry_state.attempt_number}"
-            )
+            logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
             with attempt:
                 try:
                     hooks.emit_completion_arguments(*args, **kwargs)
@@ -258,7 +261,7 @@ async def retry_async(
                         validation_context=context,
                         strict=strict,
                         mode=mode,
-                        stream=kwargs.get("stream", False),
+                        stream=stream,
                     )
                 except (
                     ValidationError,
@@ -281,10 +284,9 @@ async def retry_async(
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             #! deprecate messages soon
-            messages=kwargs.get(
-                "messages",
-                kwargs.get("contents", kwargs.get("chat_history", [])),
-            ),
+            messages=extract_messages(
+                kwargs
+            ),  # Use the optimized function instead of nested lookups
             create_kwargs=kwargs,
             total_usage=total_usage,
         ) from e
