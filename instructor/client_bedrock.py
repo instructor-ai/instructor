@@ -1,4 +1,4 @@
-from __future__ import annotations
+from __future__ import annotations  # type: ignore
 
 from typing import Any, overload
 import boto3
@@ -7,20 +7,22 @@ import instructor
 from instructor.client import AsyncInstructor, Instructor
 
 
-@overload
+@overload  # type: ignore
 def from_bedrock(
     client: boto3.client,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
     **kwargs: Any,
-) -> Instructor: ...
+) -> Instructor:
+    ...
 
 
-@overload
+@overload  # type: ignore
 def from_bedrock(
     client: boto3.client,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
     **kwargs: Any,
-) -> AsyncInstructor: ...
+) -> AsyncInstructor:
+    ...
 
 
 def handle_bedrock_json(
@@ -37,10 +39,13 @@ def from_bedrock(
     mode: instructor.Mode = instructor.Mode.BEDROCK_JSON,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    assert mode in {
-        instructor.Mode.BEDROCK_TOOLS,
-        instructor.Mode.BEDROCK_JSON,
-    }, "Mode must be one of {instructor.Mode.BEDROCK_TOOLS, instructor.Mode.BEDROCK_JSON}"
+    assert (
+        mode
+        in {
+            instructor.Mode.BEDROCK_TOOLS,
+            instructor.Mode.BEDROCK_JSON,
+        }
+    ), "Mode must be one of {instructor.Mode.BEDROCK_TOOLS, instructor.Mode.BEDROCK_JSON}"
     assert isinstance(
         client,
         BaseClient,

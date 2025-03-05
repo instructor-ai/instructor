@@ -1,0 +1,10 @@
+{
+  "include": [
+    "instructor"
+  ],
+  "exclude": [
+    "instructor/client_bedrock.py",
+    "instructor/client_cerebras.py"
+  ],
+  "typeCheckingMode": "basic"
+} 
