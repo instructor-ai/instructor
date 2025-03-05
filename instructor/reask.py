@@ -24,9 +24,7 @@ def reask_anthropic_tools(
     kwargs = kwargs.copy()
     from anthropic.types import Message
 
-    assert isinstance(
-        response, Message
-    ), "Response must be a Anthropic Message"
+    assert isinstance(response, Message), "Response must be a Anthropic Message"
 
     assistant_content = []
     tool_use_id = None
@@ -73,9 +71,7 @@ def reask_anthropic_json(
     kwargs = kwargs.copy()
     from anthropic.types import Message
 
-    assert isinstance(
-        response, Message
-    ), "Response must be a Anthropic Message"
+    assert isinstance(response, Message), "Response must be a Anthropic Message"
 
     reask_msg = {
         "role": "user",
@@ -90,12 +86,20 @@ def reask_cohere_tools(
     response: Any,  # Replace with actual response type for Cohere
     exception: Exception,
 ):
-    chat_history = kwargs.get("chat_history", [])
-    chat_history.append({"role": "user", "message": kwargs.get("message")})
-    kwargs["chat_history"] = chat_history
+    # Get message outside the function
+    message = kwargs.get("message", "")
 
+    # Fetch or initialize chat_history in one operation
+    if "chat_history" in kwargs:
+        # Only modify chat_history if it exists
+        kwargs["chat_history"].append({"role": "user", "message": message})
+    else:
+        # Create a new chat_history if it doesn't exist
+        kwargs["chat_history"] = [{"role": "user", "message": message}]
+
+    # Set the message directly without string concatenation with f-strings
     kwargs["message"] = (
-        f"Correct the following JSON response, based on the errors given below:\n\n"
+        "Correct the following JSON response, based on the errors given below:\n\n"
         f"JSON:\n{response.text}\n\nExceptions:\n{exception}"
     )
     return kwargs
@@ -124,18 +128,14 @@ def reask_gemini_tools(
                 glm.Part(
                     function_response=glm.FunctionResponse(
                         name=response.parts[0].function_call.name,
-                        response={
-                            "error": f"Validation Error(s) found:\n{exception}"
-                        },
+                        response={"error": f"Validation Error(s) found:\n{exception}"},
                     )
                 ),
             ],
         },
         {
             "role": "user",
-            "parts": [
-                "Recall the function arguments correctly and fix the errors"
-            ],
+            "parts": ["Recall the function arguments correctly and fix the errors"],
         },
     ]
     kwargs["contents"].extend(reask_msgs)
@@ -301,9 +301,7 @@ def reask_default(
     return kwargs
 
 
-def reask_fireworks_tools(
-    kwargs: dict[str, Any], response: Any, exception: Exception
-):
+def reask_fireworks_tools(kwargs: dict[str, Any], response: Any, exception: Exception):
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     for tool_call in response.choices[0].message.tool_calls:
@@ -381,29 +379,40 @@ def handle_reask_kwargs(
     response: Any,  # Replace with actual response type based on the mode
     exception: Exception,
 ):
-    kwargs = kwargs.copy()
+    # Create a shallow copy of kwargs to avoid modifying the original
+    kwargs_copy = kwargs.copy()
 
-    functions = {
-        Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
-        Mode.ANTHROPIC_REASONING_TOOLS: reask_anthropic_tools,
-        Mode.ANTHROPIC_JSON: reask_anthropic_json,
-        Mode.COHERE_TOOLS: reask_cohere_tools,
-        Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,  # Same Function
-        Mode.GEMINI_TOOLS: reask_gemini_tools,
-        Mode.GEMINI_JSON: reask_gemini_json,
-        Mode.VERTEXAI_TOOLS: reask_vertexai_tools,
-        Mode.VERTEXAI_JSON: reask_vertexai_json,
-        Mode.TOOLS: reask_tools,
-        Mode.TOOLS_STRICT: reask_tools,
-        Mode.CEREBRAS_TOOLS: reask_cerebras_tools,
-        Mode.MD_JSON: reask_md_json,
-        Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
-        Mode.FIREWORKS_JSON: reask_fireworks_json,
-        Mode.WRITER_TOOLS: reask_writer_tools,
-        Mode.BEDROCK_JSON: reask_bedrock_json,
-        Mode.PERPLEXITY_JSON: reask_perplexity_json,
-    }
-    reask_function = functions.get(mode, reask_default)
-    return reask_function(
-        kwargs=kwargs, response=response, exception=exception
-    )
+    # Use a more efficient mapping approach with mode groupings to reduce lookup time
+    # Group similar modes that use the same reask function
+    if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_REASONING_TOOLS}:
+        return reask_anthropic_tools(kwargs_copy, response, exception)
+    elif mode == Mode.ANTHROPIC_JSON:
+        return reask_anthropic_json(kwargs_copy, response, exception)
+    elif mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
+        return reask_cohere_tools(kwargs_copy, response, exception)
+    elif mode == Mode.GEMINI_TOOLS:
+        return reask_gemini_tools(kwargs_copy, response, exception)
+    elif mode == Mode.GEMINI_JSON:
+        return reask_gemini_json(kwargs_copy, response, exception)
+    elif mode == Mode.VERTEXAI_TOOLS:
+        return reask_vertexai_tools(kwargs_copy, response, exception)
+    elif mode == Mode.VERTEXAI_JSON:
+        return reask_vertexai_json(kwargs_copy, response, exception)
+    elif mode in {Mode.TOOLS, Mode.TOOLS_STRICT}:
+        return reask_tools(kwargs_copy, response, exception)
+    elif mode == Mode.CEREBRAS_TOOLS:
+        return reask_cerebras_tools(kwargs_copy, response, exception)
+    elif mode == Mode.MD_JSON:
+        return reask_md_json(kwargs_copy, response, exception)
+    elif mode == Mode.FIREWORKS_TOOLS:
+        return reask_fireworks_tools(kwargs_copy, response, exception)
+    elif mode == Mode.FIREWORKS_JSON:
+        return reask_fireworks_json(kwargs_copy, response, exception)
+    elif mode == Mode.WRITER_TOOLS:
+        return reask_writer_tools(kwargs_copy, response, exception)
+    elif mode == Mode.BEDROCK_JSON:
+        return reask_bedrock_json(kwargs_copy, response, exception)
+    elif mode == Mode.PERPLEXITY_JSON:
+        return reask_perplexity_json(kwargs_copy, response, exception)
+    else:
+        return reask_default(kwargs_copy, response, exception)
