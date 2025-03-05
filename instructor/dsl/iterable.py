@@ -106,6 +106,7 @@ class IterableBase:
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
+                        Mode.PERPLEXITY_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
@@ -147,6 +148,7 @@ class IterableBase:
                         Mode.JSON_SCHEMA,
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
+                        Mode.PERPLEXITY_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk

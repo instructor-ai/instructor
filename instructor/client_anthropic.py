@@ -59,13 +59,11 @@ def from_anthropic(
         TypeError: If enable_prompt_caching is True and client is not Anthropic or AsyncAnthropic
         AssertionError: If mode is not ANTHROPIC_JSON or ANTHROPIC_TOOLS
     """
-    assert (
-        mode
-        in {
-            instructor.Mode.ANTHROPIC_JSON,
-            instructor.Mode.ANTHROPIC_TOOLS,
-        }
-    ), "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
+    assert mode in {
+        instructor.Mode.ANTHROPIC_JSON,
+        instructor.Mode.ANTHROPIC_TOOLS,
+        instructor.Mode.ANTHROPIC_REASONING_TOOLS,
+    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS, instructor.Mode.ANTHROPIC_REASONING_TOOLS}"
 
     assert isinstance(
         client,

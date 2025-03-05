@@ -24,7 +24,9 @@ def reask_anthropic_tools(
     kwargs = kwargs.copy()
     from anthropic.types import Message
 
-    assert isinstance(response, Message), "Response must be a Anthropic Message"
+    assert isinstance(
+        response, Message
+    ), "Response must be a Anthropic Message"
 
     assistant_content = []
     tool_use_id = None
@@ -71,7 +73,9 @@ def reask_anthropic_json(
     kwargs = kwargs.copy()
     from anthropic.types import Message
 
-    assert isinstance(response, Message), "Response must be a Anthropic Message"
+    assert isinstance(
+        response, Message
+    ), "Response must be a Anthropic Message"
 
     reask_msg = {
         "role": "user",
@@ -120,14 +124,18 @@ def reask_gemini_tools(
                 glm.Part(
                     function_response=glm.FunctionResponse(
                         name=response.parts[0].function_call.name,
-                        response={"error": f"Validation Error(s) found:\n{exception}"},
+                        response={
+                            "error": f"Validation Error(s) found:\n{exception}"
+                        },
                     )
                 ),
             ],
         },
         {
             "role": "user",
-            "parts": ["Recall the function arguments correctly and fix the errors"],
+            "parts": [
+                "Recall the function arguments correctly and fix the errors"
+            ],
         },
     ]
     kwargs["contents"].extend(reask_msgs)
@@ -253,6 +261,27 @@ def reask_md_json(
     return kwargs
 
 
+def reask_bedrock_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [response["output"]["message"]]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": [
+                {
+                    "text": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}"
+                },
+            ],
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
 def reask_default(
     kwargs: dict[str, Any],
     response: Any,
@@ -272,7 +301,9 @@ def reask_default(
     return kwargs
 
 
-def reask_fireworks_tools(kwargs: dict[str, Any], response: Any, exception: Exception):
+def reask_fireworks_tools(
+    kwargs: dict[str, Any], response: Any, exception: Exception
+):
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     for tool_call in response.choices[0].message.tool_calls:
@@ -326,6 +357,24 @@ def reask_writer_tools(
     return kwargs
 
 
+def reask_perplexity_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """Handle reasking for Perplexity JSON mode."""
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": f"Correct your JSON ONLY RESPONSE, based on the following errors:\n{exception}",
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
 def handle_reask_kwargs(
     kwargs: dict[str, Any],
     mode: Mode,
@@ -336,6 +385,7 @@ def handle_reask_kwargs(
 
     functions = {
         Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
+        Mode.ANTHROPIC_REASONING_TOOLS: reask_anthropic_tools,
         Mode.ANTHROPIC_JSON: reask_anthropic_json,
         Mode.COHERE_TOOLS: reask_cohere_tools,
         Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,  # Same Function
@@ -350,6 +400,10 @@ def handle_reask_kwargs(
         Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
         Mode.FIREWORKS_JSON: reask_fireworks_json,
         Mode.WRITER_TOOLS: reask_writer_tools,
+        Mode.BEDROCK_JSON: reask_bedrock_json,
+        Mode.PERPLEXITY_JSON: reask_perplexity_json,
     }
     reask_function = functions.get(mode, reask_default)
-    return reask_function(kwargs=kwargs, response=response, exception=exception)
+    return reask_function(
+        kwargs=kwargs, response=response, exception=exception
+    )

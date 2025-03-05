@@ -129,13 +129,17 @@ extra_css:
 nav:
   - Introduction:
     - Structured Outputs for LLMs: 'index.md'
-    - Why use Instructor?: 'why.md'
-    - Help with Instructor: 'help.md'
-    - Newsletter: 'newsletter.md'
+    - Getting Started: 'getting-started.md'
     - Installation: 'installation.md'
-    - Contributing: 'contributing.md'
+    - Why use Instructor?: 'why.md'
+    - Architecture: 'architecture.md'
+    - Mode Comparison: 'modes-comparison.md'
     - Philosophy: 'concepts/philosophy.md'
     - API Reference: 'api.md'
+    - FAQ: 'faq.md'
+    - Help with Instructor: 'help.md'
+    - Contributing: 'contributing.md'
+    - Newsletter: 'newsletter.md'
   - Cookbook:
     - Cookbooks: 'examples/index.md'
     - "Recursive Schema Examples": 'examples/recursive.md'
@@ -210,9 +214,11 @@ nav:
   - Integrations:
     - Overview: 'integrations/index.md'
     - Anthropic: 'integrations/anthropic.md'
+    - Anyscale: 'integrations/anyscale.md'
     - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
+    - Databricks: 'integrations/databricks.md'
     - Cortex: 'integrations/cortex.md'
     - Fireworks: 'integrations/fireworks.md'
     - Gemini: 'integrations/google.md'
@@ -231,16 +237,6 @@ nav:
       - "Finetuning GPT-3.5": "cli/finetune.md"
       - "Usage Tracking": "cli/usage.md"
       - "Batch Jobs": "cli/batch.md"
-  - Tutorials:
-    - Overview: 'tutorials/index.md'
-    - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
-    - Tips and Tricks: 'tutorials/2-tips.ipynb'
-    - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
-    - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
-    - Validation: 'tutorials/4-validation.ipynb'
-    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
-    - Chain of Density: 'tutorials/6-chain-of-density.ipynb'
-    - Synthetic Data Generation: 'tutorials/7-synthetic-data-generation.ipynb'
   - Jobs Board (External):
     - Jobs: 'jobs.md'
   - Prompt Design:
@@ -311,9 +307,11 @@ plugins:
          hub/ollama.md: integrations/ollama.md
          hub/llama-cpp-python.md: integrations/llama-cpp-python.md
          hub/anthropic.md: integrations/anthropic.md
+         hub/anyscale.md: integrations/anyscale.md
          hub/azure.md: integrations/azure.md
          hub/cerebras.md: integrations/cerebras.md
          hub/cohere.md: integrations/cohere.md
+         hub/databricks.md: integrations/databricks.md
          hub/fireworks.md: integrations/fireworks.md
          hub/google.md: integrations/google.md
          hub/groq.md: integrations/groq.md
@@ -329,9 +327,11 @@ plugins:
          'hub/clients/ollama.md': 'integrations/ollama.md'
          'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
          'hub/clients/anthropic.md': 'integrations/anthropic.md'
+         'hub/clients/anyscale.md': 'integrations/anyscale.md'
          'hub/clients/azure.md': 'integrations/azure.md'
          'hub/clients/cerebras.md': 'integrations/cerebras.md'
          'hub/clients/cohere.md': 'integrations/cohere.md'
+         'hub/clients/databricks.md': 'integrations/databricks.md'
          'hub/clients/fireworks.md': 'integrations/fireworks.md'
          'hub/clients/groq.md': 'integrations/groq.md'
          'hub/clients/mistral.md': 'integrations/mistral.md'
@@ -351,9 +351,6 @@ plugins:
          'hub/single_classification.md': 'examples/single_classification.md'
          'hub/tables_from_vision.md': 'examples/tables_from_vision.md'
          'hub/youtube_clips.md': 'examples/youtube_clips.md'
-  - mkdocs-jupyter:
-      ignore_h1_titles: true
-      execute: false
   - social
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\b)(?=[A-Z][a-z])'

@@ -208,7 +208,9 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: str | Path = Field(description="URL or file path of the audio")  # noqa: UP007
+    source: str | Path = Field(
+        description="URL or file path of the audio"
+    )  # noqa: UP007
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded audio data", repr=False
     )
@@ -293,7 +295,11 @@ def convert_contents(
         elif isinstance(content, dict):
             converted_contents.append(content)
         elif isinstance(content, (Image, Audio)):
-            if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
+            if mode in {
+                Mode.ANTHROPIC_JSON,
+                Mode.ANTHROPIC_TOOLS,
+                Mode.ANTHROPIC_REASONING_TOOLS,
+            }:
                 converted_contents.append(content.to_anthropic())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
                 raise NotImplementedError("Gemini is not supported yet")
@@ -339,7 +345,9 @@ def convert_messages(
         }
         if autodetect_images:
             if isinstance(content, list):
-                new_content: list[str | dict[str, Any] | Image | Audio] = []  # noqa: UP007
+                new_content: list[str | dict[str, Any] | Image | Audio] = (
+                    []
+                )  # noqa: UP007
                 for item in content:
                     if isinstance(item, str):
                         new_content.append(Image.autodetect_safely(item))

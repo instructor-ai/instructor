@@ -1,108 +1,174 @@
 ---
-title: Comprehensive Guide to Prompting Techniques
-description: Explore 58 effective prompting techniques categorized for enhanced model performance in AI prompts.
+title: Advanced Prompting Techniques Guide
+description: Research-backed prompting techniques to improve LLM performance with Instructor
 ---
 
-# Prompting Guide
+# Advanced Prompting Techniques
 
-Prompting requires an understanding of techniques to enhance model performance.
+<div class="grid cards" markdown>
 
-The team at [Learn Prompting](https://learnprompting.org) released The [Prompt Report](https://trigaten.github.io/Prompt_Survey_Site) in collaboration with researchers from OpenAI, Microsoft, and Google.
-This report surveys over 1,500 prompting papers and condenses the findings into a list of 58 distinct prompting techniques.
+- :material-lightbulb: **Basic Approaches**
 
-Here are examples of the 58 prompting techniques<sup>*</sup> using `instructor`.
+    Zero-shot and few-shot techniques for immediate improvements
 
-Prompting techniques are separated into the following categories:
-- [Prompting Guide](#prompting-guide)
-  - [Zero-Shot](#zero-shot)
-  - [Few-Shot](#few-shot)
-  - [Thought Generation](#thought-generation)
-      - [Zero Shot](#zero-shot-1)
-      - [Few Shot](#few-shot-1)
-  - [Ensembling](#ensembling)
-  - [Self-Criticism](#self-criticism)
-  - [Decomposition](#decomposition)
+    [:octicons-arrow-right-16: Zero-Shot](#zero-shot) · [:octicons-arrow-right-16: Few-Shot](#few-shot)
 
-Click links to learn about each method and how to apply them in prompts.
+- :material-brain: **Reasoning Methods**
 
-## Zero-Shot
-How do we increase the performance of our model without any examples?
+    Techniques to improve model reasoning and problem-solving
 
-1. [Use Emotional Language](zero_shot/emotion_prompting.md)
-2. [Assign a Role](zero_shot/role_prompting.md)
-3. [Define a Style](zero_shot/style_prompting.md)
-4. [Auto-Refine The Prompt](zero_shot/s2a.md)
-5. [Simulate a Perspective](zero_shot/simtom.md)
-6. [Clarify Ambiguous Information](zero_shot/rar.md)
-7. [Ask Model To Repeat Query](zero_shot/re2.md)
-8. [Generate Follow-Up Questions](zero_shot/self_ask.md)
+    [:octicons-arrow-right-16: Thought Generation](#thought-generation) · [:octicons-arrow-right-16: Decomposition](#decomposition)
 
-## Few-Shot
+- :material-check-all: **Verification**
 
-How do we choose effective examples to include in our prompt?
+    Methods for self-assessment and correction
 
-1. [Auto-Generate Examples](few_shot/example_generation/sg_icl.md)
-2. [Re-Order Examples](few_shot/example_ordering.md)
-3. [Choose Examples Similar to the Query (KNN)](few_shot/exemplar_selection/knn.md)
-4. [Choose Examples Similar to the Query (Vote-K)](few_shot/exemplar_selection/vote_k.md)
+    [:octicons-arrow-right-16: Self-Criticism](#self-criticism)
 
-## Thought Generation
+- :material-group: **Collaboration**
 
-How do we encourage our model to mimic human-like reasoning?
+    Ensemble techniques for aggregating multiple model outputs
 
-## Zero Shot {#zero-shot-1}
+    [:octicons-arrow-right-16: Ensembling](#ensembling)
 
-1. [Auto-Generate Chain-Of-Thought Examples](thought_generation/chain_of_thought_zero_shot/analogical_prompting.md)
-2. [First Ask a Higher-Level Question](thought_generation/chain_of_thought_zero_shot/step_back_prompting.md)
-3. [Encourage Analysis](thought_generation/chain_of_thought_zero_shot/thread_of_thought.md)
-4. [Encourage Structural Reasoning](thought_generation/chain_of_thought_zero_shot/tab_cot.md)
+</div>
 
-## Few Shot {#few-shot-1}
-5. [Annotate Only Uncertain Examples](thought_generation/chain_of_thought_few_shot/active_prompt.md)
-6. [Choose Diverse Examples](thought_generation/chain_of_thought_few_shot/auto_cot.md)
-7. [Choose Complex Examples](thought_generation/chain_of_thought_few_shot/complexity_based.md)
-8. [Include Incorrect Demonstrations](thought_generation/chain_of_thought_few_shot/contrastive.md)
-9. [Choose Similar, Auto-Generated, High-Certainty Chain-Of-Thought Reasonings](thought_generation/chain_of_thought_few_shot/memory_of_thought.md)
-10. [Choose the Most Certain Reasoning](thought_generation/chain_of_thought_few_shot/uncertainty_routed_cot.md)
-11. [Generate Template-Based Prompts](thought_generation/chain_of_thought_few_shot/prompt_mining.md)
+This guide presents 58 research-backed prompting techniques mapped to Instructor implementations. Based on [The Prompt Report](https://trigaten.github.io/Prompt_Survey_Site) by [Learn Prompting](https://learnprompting.org) which analyzed over 1,500 academic papers on prompting.
 
-## Ensembling
+## Zero-Shot {#zero-shot}
 
-How can we use multiple prompts and aggregate their responses?
+These techniques improve model performance without examples:
 
-1. [Build a Set of Consistent, Diverse Examples](ensembling/cosp.md)
-2. [Batch In-Context Examples](ensembling/dense.md)
-3. [Verify Individual Reasoning Steps](ensembling/diverse.md)
-4. [Maximize Information Between Input and Output](ensembling/max_mutual_information.md)
-5. [Merge Multiple Chains-Of-Thought](ensembling/meta_cot.md)
-6. [Use Specialized Experts](ensembling/more.md)
-7. [Choose The Most Consistent Reasoning](ensembling/self_consistency.md)
-8. [Choose The Most Consistent Reasioning (Universal)](ensembling/universal_self_consistency.md)
-9. [Use Task-Specific Example Selection](ensembling/usp.md)
-10. [Paraphrase The Prompt](ensembling/prompt_paraphrasing.md)
+| Technique | Description | Use Case |
+|-----------|-------------|----------|
+| [Emotional Language](zero_shot/emotion_prompting.md) | Add emotional tone to prompts | Creative writing, empathetic responses |
+| [Role Assignment](zero_shot/role_prompting.md) | Give the model a specific role | Expert knowledge, specialized perspectives |
+| [Style Definition](zero_shot/style_prompting.md) | Specify writing style | Content with particular tone or format |
+| [Prompt Refinement](zero_shot/s2a.md) | Automatic prompt optimization | Iterative improvement of results |
+| [Perspective Simulation](zero_shot/simtom.md) | Have the model adopt viewpoints | Multiple stakeholder analysis |
+| [Ambiguity Clarification](zero_shot/rar.md) | Identify and resolve unclear aspects | Improving precision of responses |
+| [Query Repetition](zero_shot/re2.md) | Ask model to restate the task | Better task understanding |
+| [Follow-Up Generation](zero_shot/self_ask.md) | Generate clarifying questions | Deep exploration of topics |
 
-## Self-Criticism
+## Few-Shot {#few-shot}
 
-How can a model verify or critique its own response?
+Techniques for effectively using examples in prompts:
 
-1. [Generate Verification Questions](self_criticism/chain_of_verification.md)
-2. [Ask If the Answer is Correct](self_criticism/self_calibration.md)
-3. [Generate Feedback and Auto-Improve](self_criticism/self_refine.md)
-4. [Score Multiple Candidate Solutions](self_criticism/self_verification.md)
-5. [Reconstruct The Problem](self_criticism/reversecot.md)
-6. [Generate Possible Steps](self_criticism/cumulative_reason.md)
+| Technique | Description | Use Case |
+|-----------|-------------|----------|
+| [Example Generation](few_shot/example_generation/sg_icl.md) | Automatically create examples | Domains with limited example data |
+| [Example Ordering](few_shot/example_ordering.md) | Optimal sequencing of examples | Improved pattern recognition |
+| [KNN Example Selection](few_shot/exemplar_selection/knn.md) | Choose examples similar to query | Domain-specific accuracy |
+| [Vote-K Selection](few_shot/exemplar_selection/vote_k.md) | Advanced similarity-based selection | Complex pattern matching |
 
-## Decomposition
+## Thought Generation {#thought-generation}
 
-How can we break down complex problems? How do we solve subproblems?
+Methods to encourage human-like reasoning in models:
 
-1. [Implement Subproblems As Functions](decomposition/decomp.md)
-2. [Use Natural and Symbolic Language](decomposition/faithful_cot.md)
-3. [Solve Increasingly Complex Subproblems](decomposition/least_to_most.md)
-4. [Generate a Plan](decomposition/plan_and_solve.md)
-5. [Use Code As Reasoning](decomposition/program_of_thought.md)
-6. [Recursively Solve Subproblems](decomposition/recurs_of_thought.md)
-7. [Generate a Skeleton](decomposition/skeleton_of_thought.md)
-8. [Search Through Subproblems](decomposition/tree-of-thought.md)
+### Zero-Shot Reasoning
 
-<sup id="ref-asterisk">\*</sup>: [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)
+| Technique | Description | Use Case |
+|-----------|-------------|----------|
+| [Analogical CoT](thought_generation/chain_of_thought_zero_shot/analogical_prompting.md) | Generate reasoning using analogies | Complex problem-solving |
+| [Step-Back Prompting](thought_generation/chain_of_thought_zero_shot/step_back_prompting.md) | Consider higher-level questions first | Scientific and abstract reasoning |
+| [Thread of Thought](thought_generation/chain_of_thought_zero_shot/thread_of_thought.md) | Encourage step-by-step analysis | Detailed explanation generation |
+| [Tabular CoT](thought_generation/chain_of_thought_zero_shot/tab_cot.md) | Structure reasoning in table format | Multi-factor analysis |
+
+### Few-Shot Reasoning
+
+| Technique | Description | Use Case |
+|-----------|-------------|----------|
+| [Active Prompting](thought_generation/chain_of_thought_few_shot/active_prompt.md) | Annotate uncertain examples | Improved accuracy on edge cases |
+| [Auto-CoT](thought_generation/chain_of_thought_few_shot/auto_cot.md) | Choose diverse examples | Broad domain coverage |
+| [Complexity-Based CoT](thought_generation/chain_of_thought_few_shot/complexity_based.md) | Use complex examples | Challenging problem types |
+| [Contrastive CoT](thought_generation/chain_of_thought_few_shot/contrastive.md) | Include correct and incorrect cases | Error detection and avoidance |
+| [Memory of Thought](thought_generation/chain_of_thought_few_shot/memory_of_thought.md) | Use high-certainty examples | Reliability in critical applications |
+| [Uncertainty-Routed CoT](thought_generation/chain_of_thought_few_shot/uncertainty_routed_cot.md) | Select the most certain reasoning path | Decision-making under uncertainty |
+| [Prompt Mining](thought_generation/chain_of_thought_few_shot/prompt_mining.md) | Generate templated prompts | Efficient prompt engineering |
+
+## Ensembling {#ensembling}
+
+Techniques for combining multiple prompts or responses:
+
+| Technique | Description | Use Case |
+|-----------|-------------|----------|
+| [Consistent, Diverse Sets](ensembling/cosp.md) | Build consistent example sets | Stable performance |
+| [Batched In-Context Examples](ensembling/dense.md) | Efficient example batching | Performance optimization |
+| [Step Verification](ensembling/diverse.md) | Validate individual steps | Complex workflows |
+| [Maximizing Mutual Information](ensembling/max_mutual_information.md) | Information theory optimization | Information-dense outputs |
+| [Meta-CoT](ensembling/meta_cot.md) | Merge multiple reasoning chains | Complex problem-solving |
+| [Specialized Experts](ensembling/more.md) | Use different "expert" prompts | Multi-domain tasks |
+| [Self-Consistency](ensembling/self_consistency.md) | Choose most consistent reasoning | Logical accuracy |
+| [Universal Self-Consistency](ensembling/universal_self_consistency.md) | Domain-agnostic consistency | General knowledge tasks |
+| [Task-Specific Selection](ensembling/usp.md) | Choose examples per task | Specialized domain tasks |
+| [Prompt Paraphrasing](ensembling/prompt_paraphrasing.md) | Use variations of the same prompt | Robust outputs |
+
+## Self-Criticism {#self-criticism}
+
+Methods for models to verify or improve their own responses:
+
+| Technique | Description | Use Case |
+|-----------|-------------|----------|
+| [Chain of Verification](self_criticism/chain_of_verification.md) | Generate verification questions | Fact-checking, accuracy |
+| [Self-Calibration](self_criticism/self_calibration.md) | Ask if answer is correct | Confidence estimation |
+| [Self-Refinement](self_criticism/self_refine.md) | Auto-generate feedback and improve | Iterative improvement |
+| [Self-Verification](self_criticism/self_verification.md) | Score multiple solutions | Quality assessment |
+| [Reverse CoT](self_criticism/reversecot.md) | Reconstruct the problem | Complex reasoning verification |
+| [Cumulative Reasoning](self_criticism/cumulative_reason.md) | Generate possible steps | Thorough analysis |
+
+## Decomposition {#decomposition}
+
+Techniques for breaking down complex problems:
+
+| Technique | Description | Use Case |
+|-----------|-------------|----------|
+| [Functional Decomposition](decomposition/decomp.md) | Implement subproblems as functions | Modular problem-solving |
+| [Faithful CoT](decomposition/faithful_cot.md) | Use natural and symbolic language | Mathematical reasoning |
+| [Least-to-Most](decomposition/least_to_most.md) | Solve increasingly complex subproblems | Educational applications |
+| [Plan and Solve](decomposition/plan_and_solve.md) | Generate a structured plan | Project planning |
+| [Program of Thought](decomposition/program_of_thought.md) | Use code for reasoning | Algorithmic problems |
+| [Recursive Thought](decomposition/recurs_of_thought.md) | Recursively solve subproblems | Hierarchical problems |
+| [Skeleton of Thought](decomposition/skeleton_of_thought.md) | Generate outline structure | Writing, planning |
+| [Tree of Thought](decomposition/tree-of-thought.md) | Search through possible paths | Decision trees, exploration |
+
+## Implementation with Instructor
+
+All these prompting techniques can be implemented with Instructor by:
+
+1. Defining appropriate Pydantic models that capture the expected structure
+2. Incorporating the prompting technique in your model docstrings or field descriptions
+3. Using the patched LLM client with your response model
+
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel, Field
+
+# Example implementing Chain of Thought with a field
+class ReasonedAnswer(BaseModel):
+    """Answer the following question with detailed reasoning."""
+    
+    chain_of_thought: str = Field(
+        description="Step-by-step reasoning process to solve the problem"
+    )
+    final_answer: str = Field(
+        description="The final conclusion after reasoning"
+    )
+
+client = instructor.from_openai(OpenAI())
+
+response = client.chat.completions.create(
+    model="gpt-4",
+    response_model=ReasonedAnswer,
+    messages=[
+        {"role": "user", "content": "What is the cube root of 27?"}
+    ]
+)
+
+print(f"Reasoning: {response.chain_of_thought}")
+print(f"Answer: {response.final_answer}")
+```
+
+## References
+
+<sup>\*</sup> Based on [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608)

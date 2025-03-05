@@ -1,6 +1,14 @@
+---
+title: Union Types in Instructor
+description: Learn how to use Union types to handle multiple possible response types in Instructor
+---
+
 # Working with Union Types in Instructor
 
-This guide explains how to work with union types in Instructor, allowing you to handle multiple possible response types from language models.
+This guide explains how to work with union types in Instructor, allowing you to handle multiple possible response types from language models. Union types are particularly useful when you need the LLM to choose between different response formats or action types.
+
+!!! note "Union vs. union"
+    The content from the original `union.md` page has been consolidated into this more comprehensive guide. That page showed a basic example of using Union types for multiple action types.
 
 ## Basic Union Types
 
@@ -60,10 +68,12 @@ class User(BaseModel):
 
 ## Best Practices
 
-1. **Type Hints**: Use proper type hints for clarity
-2. **Discriminators**: Add discriminator fields for complex unions
-3. **Validation**: Add validators for union fields
-4. **Documentation**: Document expected types clearly
+1. **Type Hints**: Use proper type hints for clarity and better IDE support
+2. **Discriminators**: Add discriminator fields (like `type`) for complex unions to help the LLM choose correctly
+3. **Validation**: Add validators for union fields to ensure the data is valid
+4. **Documentation**: Document expected types clearly in your models with docstrings
+5. **Field Names**: Use descriptive field names to guide the model's output
+6. **Examples**: Include examples in your Pydantic models to help the LLM understand the expected format
 
 ## Common Patterns
 
@@ -104,6 +114,60 @@ class ImageContent(BaseModel):
 
 class Message(BaseModel):
     content: List[Union[TextContent, ImageContent]]
+```
+
+## Dynamic Action Selection with Unions
+
+You can use Union types to write "agents" that dynamically choose actions by selecting an output class. For example, in a search and lookup function:
+
+```python
+from pydantic import BaseModel
+from typing import Union
+
+
+class Search(BaseModel):
+    query: str
+
+    def execute(self):
+        # Implementation for search
+        return f"Searching for: {self.query}"
+
+
+class Lookup(BaseModel):
+    key: str
+
+    def execute(self):
+        # Implementation for lookup
+        return f"Looking up key: {self.key}"
+
+
+class Action(BaseModel):
+    action: Union[Search, Lookup]
+
+    def execute(self):
+        return self.action.execute()
+```
+
+With this pattern, the LLM can decide whether to perform a search or a lookup based on the user's input:
+
+```python
+import instructor
+from openai import OpenAI
+
+client = instructor.from_openai(OpenAI())
+
+# Let the LLM decide what action to take
+result = client.chat.completions.create(
+    model="gpt-4",
+    response_model=Action,
+    messages=[
+        {"role": "system", "content": "You're an assistant that helps search or lookup information."},
+        {"role": "user", "content": "Find information about climate change"}
+    ]
+)
+
+# Execute the chosen action
+print(result.execute())  # Likely outputs: "Searching for: climate change"
 ```
 
 ## Integration with Instructor
