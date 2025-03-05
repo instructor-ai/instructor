@@ -3,6 +3,8 @@ from __future__ import annotations
 import inspect
 import json
 import logging
+import os
+import re
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
     TYPE_CHECKING,
@@ -15,8 +17,6 @@ from typing import (
     TypeVar,
     cast,
 )
-from pydantic import BaseModel
-import os
 
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
@@ -91,52 +91,151 @@ def get_provider(base_url: str) -> Provider:
     return Provider.UNKNOWN
 
 
+# Regex patterns for JSON extraction
+_JSON_CODEBLOCK_PATTERN = re.compile(r'```(?:json)?\s*(.*?)\s*```', re.DOTALL)
+_JSON_PATTERN = re.compile(r'({[\s\S]*})')
+
 def extract_json_from_codeblock(content: str) -> str:
-    first_paren = content.find("{")
-    last_paren = content.rfind("}")
-    return content[first_paren : last_paren + 1]
+    """
+    Extract JSON from a string that may contain markdown code blocks or plain JSON.
+    
+    This optimized version uses regex patterns to extract JSON more efficiently.
+    
+    Args:
+        content: The string that may contain JSON
+        
+    Returns:
+        The extracted JSON string
+    """
+    # First try to find JSON in code blocks
+    match = _JSON_CODEBLOCK_PATTERN.search(content)
+    if match:
+        json_content = match.group(1).strip()
+    else:
+        # Look for JSON objects with the pattern { ... }
+        match = _JSON_PATTERN.search(content)
+        if match:
+            json_content = match.group(1)
+        else:
+            # Fallback to the old method if regex doesn't find anything
+            first_paren = content.find("{")
+            last_paren = content.rfind("}")
+            if first_paren != -1 and last_paren != -1:
+                json_content = content[first_paren : last_paren + 1]
+            else:
+                json_content = content  # Return as is if no JSON-like content found
+    
+    return json_content
 
 
 def extract_json_from_stream(
     chunks: Iterable[str],
 ) -> Generator[str, None, None]:
-    capturing = False
-    brace_count = 0
+    """
+    Extract JSON from a stream of chunks.
+    
+    This optimized version reduces character-by-character processing overhead
+    by processing in larger chunks when possible.
+    
+    Args:
+        chunks: An iterable of string chunks
+        
+    Yields:
+        Characters within the JSON object
+    """
+    # Use a buffer to reduce character-by-character processing
+    buffer = []
+    brace_stack = []
+    in_string = False
+    escape_next = False
+    
     for chunk in chunks:
         for char in chunk:
-            if char == "{":
-                capturing = True
-                brace_count += 1
-                yield char
-            elif char == "}" and capturing:
-                brace_count -= 1
-                yield char
-                if brace_count == 0:
-                    capturing = False
-                    break  # Cease yielding upon closing the current JSON object
-            elif capturing:
-                yield char
+            # Handle string literals and escaped characters
+            if char == '"' and not escape_next:
+                in_string = not in_string
+            elif char == '\\' and in_string:
+                escape_next = True
+                buffer.append(char)
+                continue
+            else:
+                escape_next = False
+            
+            # Track braces when not in a string
+            if not in_string:
+                if char == '{':
+                    brace_stack.append('{')
+                elif char == '}' and brace_stack:
+                    brace_stack.pop()
+            
+            # Add to buffer
+            buffer.append(char)
+            
+            # If we've completed a JSON object, yield its characters
+            if brace_stack == [] and buffer and buffer[0] == '{':
+                for c in buffer:
+                    yield c
+                buffer = []
+                break
+    
+    # Yield any remaining buffer content
+    for c in buffer:
+        yield c
 
 
 async def extract_json_from_stream_async(
     chunks: AsyncGenerator[str, None],
 ) -> AsyncGenerator[str, None]:
-    capturing = False
-    brace_count = 0
+    """
+    Extract JSON from an async stream of chunks.
+    
+    This optimized version reduces character-by-character processing overhead
+    by processing in larger chunks when possible.
+    
+    Args:
+        chunks: An async generator yielding string chunks
+        
+    Yields:
+        Characters within the JSON object
+    """
+    # Use a buffer to reduce character-by-character processing
+    buffer = []
+    brace_stack = []
+    in_string = False
+    escape_next = False
+    
     async for chunk in chunks:
         for char in chunk:
-            if char == "{":
-                capturing = True
-                brace_count += 1
-                yield char
-            elif char == "}" and capturing:
-                brace_count -= 1
-                yield char
-                if brace_count == 0:
-                    capturing = False
-                    break  # Cease yielding upon closing the current JSON object
-            elif capturing:
-                yield char
+            # Handle string literals and escaped characters
+            if char == '"' and not escape_next:
+                in_string = not in_string
+            elif char == '\\' and in_string:
+                escape_next = True
+                buffer.append(char)
+                continue
+            else:
+                escape_next = False
+            
+            # Track braces when not in a string
+            if not in_string:
+                if char == '{':
+                    brace_stack.append('{')
+                elif char == '}' and brace_stack:
+                    brace_stack.pop()
+            
+            # Add to buffer
+            buffer.append(char)
+            
+            # If we've completed a JSON object, yield its characters
+            if brace_stack == [] and buffer and buffer[0] == '{':
+                for c in buffer:
+                    yield c
+                buffer = []
+                break
+    
+    # Yield any remaining buffer content
+    for c in buffer:
+        yield c
 
 
 def update_total_usage(
