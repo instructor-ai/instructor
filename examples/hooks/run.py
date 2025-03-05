@@ -13,7 +13,6 @@ and parsing process. This can be useful for:
 import instructor
 import openai
 import pydantic
-from typing import List
 
 
 class User(pydantic.BaseModel):
@@ -55,7 +54,7 @@ def main():
     stats = CompletionStats()
 
     # Define hook handlers
-    def log_completion_kwargs(*args, **kwargs):
+    def log_completion_kwargs(_, **kwargs):
         """Handler for completion:kwargs hook."""
         stats.total_completions += 1
         print(
@@ -93,7 +92,7 @@ def main():
     client.on("completion:response", log_completion_response)
     client.on("completion:error", log_completion_error)
     client.on(
-        "completion:last_attempt", lambda err: print(f"🔄 Last retry attempt failed")
+        "completion:last_attempt", lambda _: print(f"🔄 Last retry attempt failed")
     )
     client.on("parse:error", log_parse_error)
 
@@ -125,7 +124,8 @@ def main():
     print("\n--- Example 3: Multiple Hooks ---")
 
     # Add another hook for completion:kwargs that counts message tokens
-    def count_input_tokens(*args, **kwargs):
+    def count_input_tokens(_, **kwargs):
+        """Handler for counting approximate tokens in input messages."""
         if "messages" in kwargs:
             total_chars = sum(len(msg.get("content", "")) for msg in kwargs["messages"])
             # Rough approximation of tokens (not accurate)
