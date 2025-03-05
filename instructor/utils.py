@@ -12,9 +12,9 @@ from typing import (
     Callable,
     Generic,
     Protocol,
-    Union,
     TypedDict,
     TypeVar,
+    Union,
 )
 
 from openai.types import CompletionUsage as OpenAIUsage
@@ -27,12 +27,12 @@ from openai.types.chat import (
 if TYPE_CHECKING:
     from anthropic.types import Usage as AnthropicUsage
 
+from enum import Enum
+from pydantic import BaseModel
 
 logger = logging.getLogger("instructor")
 R_co = TypeVar("R_co", covariant=True)
 T_Model = TypeVar("T_Model", bound="Response")
-
-from enum import Enum
 
 
 class Response(Protocol):
