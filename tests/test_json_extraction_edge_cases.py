@@ -4,7 +4,7 @@ Tests for edge cases in JSON extraction functionality.
 import json
 import asyncio
 import pytest
-from typing import List, Dict, Optional, Any, AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from instructor.utils import extract_json_from_codeblock, extract_json_from_stream, extract_json_from_stream_async
 

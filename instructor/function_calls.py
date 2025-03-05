@@ -2,8 +2,8 @@
 import json
 import logging
 import re
-from functools import lru_cache, wraps
-from typing import Annotated, Any, Callable, Dict, Optional, TypeVar, cast
+from functools import wraps
+from typing import Annotated, Any, Optional, TypeVar, cast
 from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (
@@ -68,7 +68,7 @@ def _extract_text_content(completion: Any) -> str:
 def _validate_model_from_json(
     cls: type[Model], 
     json_str: str, 
-    validation_context: Optional[Dict[str, Any]] = None, 
+    validation_context: Optional[dict[str, Any]] = None, 
     strict: Optional[bool] = None
 ) -> Model:
     """Validate model from JSON string with appropriate error handling."""

@@ -3,7 +3,6 @@ Tests for the improved JSON extraction functionality.
 """
 import json
 import pytest
-from typing import List, Dict, Any
 
 from instructor.utils import extract_json_from_codeblock, extract_json_from_stream
 from instructor.function_calls import _extract_text_content, _validate_model_from_json
@@ -13,7 +12,7 @@ from pydantic import BaseModel
 class Person(BaseModel):
     name: str
     age: int
-    skills: List[str] = []
+    skills: list[str] = []
 
 
 class TestJSONExtraction:
