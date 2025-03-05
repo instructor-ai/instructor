@@ -15,7 +15,6 @@ from typing import (
     Union,
     TypedDict,
     TypeVar,
-    cast,
 )
 
 from openai.types import CompletionUsage as OpenAIUsage
@@ -92,18 +91,19 @@ def get_provider(base_url: str) -> Provider:
 
 
 # Regex patterns for JSON extraction
-_JSON_CODEBLOCK_PATTERN = re.compile(r'```(?:json)?\s*(.*?)\s*```', re.DOTALL)
-_JSON_PATTERN = re.compile(r'({[\s\S]*})')
+_JSON_CODEBLOCK_PATTERN = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL)
+_JSON_PATTERN = re.compile(r"({[\s\S]*})")
+
 
 def extract_json_from_codeblock(content: str) -> str:
     """
     Extract JSON from a string that may contain markdown code blocks or plain JSON.
-    
+
     This optimized version uses regex patterns to extract JSON more efficiently.
-    
+
     Args:
         content: The string that may contain JSON
-        
+
     Returns:
         The extracted JSON string
     """
@@ -124,7 +124,7 @@ def extract_json_from_codeblock(content: str) -> str:
                 json_content = content[first_paren : last_paren + 1]
             else:
                 json_content = content  # Return as is if no JSON-like content found
-    
+
     return json_content
 
 
@@ -133,13 +133,13 @@ def extract_json_from_stream(
 ) -> Generator[str, None, None]:
     """
     Extract JSON from a stream of chunks.
-    
+
     This optimized version reduces character-by-character processing overhead
     by processing in larger chunks when possible.
-    
+
     Args:
         chunks: An iterable of string chunks
-        
+
     Yields:
         Characters within the JSON object
     """
@@ -148,36 +148,36 @@ def extract_json_from_stream(
     brace_stack = []
     in_string = False
     escape_next = False
-    
+
     for chunk in chunks:
         for char in chunk:
             # Handle string literals and escaped characters
             if char == '"' and not escape_next:
                 in_string = not in_string
-            elif char == '\\' and in_string:
+            elif char == "\\" and in_string:
                 escape_next = True
                 buffer.append(char)
                 continue
             else:
                 escape_next = False
-            
+
             # Track braces when not in a string
             if not in_string:
-                if char == '{':
-                    brace_stack.append('{')
-                elif char == '}' and brace_stack:
+                if char == "{":
+                    brace_stack.append("{")
+                elif char == "}" and brace_stack:
                     brace_stack.pop()
-            
+
             # Add to buffer
             buffer.append(char)
-            
+
             # If we've completed a JSON object, yield its characters
-            if brace_stack == [] and buffer and buffer[0] == '{':
+            if brace_stack == [] and buffer and buffer[0] == "{":
                 for c in buffer:
                     yield c
                 buffer = []
                 break
-    
+
     # Yield any remaining buffer content
     for c in buffer:
         yield c
@@ -188,13 +188,13 @@ async def extract_json_from_stream_async(
 ) -> AsyncGenerator[str, None]:
     """
     Extract JSON from an async stream of chunks.
-    
+
     This optimized version reduces character-by-character processing overhead
     by processing in larger chunks when possible.
-    
+
     Args:
         chunks: An async generator yielding string chunks
-        
+
     Yields:
         Characters within the JSON object
     """
@@ -203,36 +203,36 @@ async def extract_json_from_stream_async(
     brace_stack = []
     in_string = False
     escape_next = False
-    
+
     async for chunk in chunks:
         for char in chunk:
             # Handle string literals and escaped characters
             if char == '"' and not escape_next:
                 in_string = not in_string
-            elif char == '\\' and in_string:
+            elif char == "\\" and in_string:
                 escape_next = True
                 buffer.append(char)
                 continue
             else:
                 escape_next = False
-            
+
             # Track braces when not in a string
             if not in_string:
-                if char == '{':
-                    brace_stack.append('{')
-                elif char == '}' and brace_stack:
+                if char == "{":
+                    brace_stack.append("{")
+                elif char == "}" and brace_stack:
                     brace_stack.pop()
-            
+
             # Add to buffer
             buffer.append(char)
-            
+
             # If we've completed a JSON object, yield its characters
-            if brace_stack == [] and buffer and buffer[0] == '{':
+            if brace_stack == [] and buffer and buffer[0] == "{":
                 for c in buffer:
                     yield c
                 buffer = []
                 break
-    
+
     # Yield any remaining buffer content
     for c in buffer:
         yield c
@@ -246,33 +246,23 @@ def update_total_usage(
         return None
 
     response_usage = getattr(response, "usage", None)
-    if isinstance(response_usage, OpenAIUsage) and isinstance(
-        total_usage, OpenAIUsage
-    ):
+    if isinstance(response_usage, OpenAIUsage) and isinstance(total_usage, OpenAIUsage):
         total_usage.completion_tokens += response_usage.completion_tokens or 0
         total_usage.prompt_tokens += response_usage.prompt_tokens or 0
         total_usage.total_tokens += response_usage.total_tokens or 0
         if (rtd := response_usage.completion_tokens_details) and (
             ttd := total_usage.completion_tokens_details
         ):
-            ttd.audio_tokens = (ttd.audio_tokens or 0) + (
-                rtd.audio_tokens or 0
-            )
+            ttd.audio_tokens = (ttd.audio_tokens or 0) + (rtd.audio_tokens or 0)
             ttd.reasoning_tokens = (ttd.reasoning_tokens or 0) + (
                 rtd.reasoning_tokens or 0
             )
         if (rpd := response_usage.prompt_tokens_details) and (
             tpd := total_usage.prompt_tokens_details
         ):
-            tpd.audio_tokens = (tpd.audio_tokens or 0) + (
-                rpd.audio_tokens or 0
-            )
-            tpd.cached_tokens = (tpd.cached_tokens or 0) + (
-                rpd.cached_tokens or 0
-            )
-        response.usage = (
-            total_usage  # Replace each response usage with the total usage
-        )
+            tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
+            tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
+        response.usage = total_usage  # Replace each response usage with the total usage
         return response
 
     # Anthropic usage.
@@ -301,9 +291,7 @@ def update_total_usage(
     except ImportError:
         pass
 
-    logger.debug(
-        "No compatible response.usage found, token usage not updated."
-    )
+    logger.debug("No compatible response.usage found, token usage not updated.")
     return response
 
 
@@ -344,45 +332,43 @@ def is_async(func: Callable[..., Any]) -> bool:
     return is_coroutine
 
 
-def merge_consecutive_messages(
-    messages: list[dict[str, Any]]
-) -> list[dict[str, Any]]:
+def merge_consecutive_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Merge consecutive messages from the same role into a single message.
-    
+
     This optimized version pre-allocates the result list and minimizes operations.
-    
+
     Args:
         messages: List of message dictionaries to merge
-        
+
     Returns:
         List of merged message dictionaries
     """
     if not messages:
         return []
-        
+
     # Pre-allocate result list with estimated size (worst case: no merges happen)
     message_count = len(messages)
     new_messages = []
-    
+
     # Detect whether all messages have a flat content (i.e. all string)
     # Some providers require content to be a string, so we need to check that and behave accordingly
     # Fast path: avoid checking all messages if the first few have mixed content types
     flat_string = True
-    for i, m in enumerate(messages[:min(10, message_count)]):
+    for _i, m in enumerate(messages[: min(10, message_count)]):
         if not isinstance(m.get("content", ""), str):
             flat_string = False
             break
-    
+
     # Only check all messages if we haven't determined it's not flat_string
     if flat_string and message_count > 10:
         flat_string = all(isinstance(m.get("content", ""), str) for m in messages[10:])
-    
+
     # Process messages with a single loop
     for message in messages:
         role = message.get("role", "user")
         new_content = message.get("content", "")
-        
+
         # Transform string content to list if needed
         if not flat_string and isinstance(new_content, str):
             new_content = [{"type": "text", "text": new_content}]
@@ -430,26 +416,26 @@ class classproperty(Generic[R_co]):
 def get_message_content(message: ChatCompletionMessageParam) -> list[Any]:
     """
     Extract content from a message and ensure it's returned as a list.
-    
+
     This optimized version handles different message formats more efficiently.
-    
+
     Args:
         message: A message in ChatCompletionMessageParam format
-        
+
     Returns:
         The message content as a list
     """
     # Fast path for empty message
     if not message:
         return [""]
-        
+
     # Get content with default empty string
     content = message.get("content", "")
-    
+
     # Fast path for common content types
     if isinstance(content, list):
         return content if content else [""]
-    
+
     # Return single item list with content (could be string, None, or other)
     return [content if content is not None else ""]
 
@@ -459,20 +445,20 @@ def transform_to_gemini_prompt(
 ) -> list[dict[str, Any]]:
     """
     Transform messages from OpenAI format to Gemini format.
-    
+
     This optimized version reduces redundant processing and improves
     handling of system messages.
-    
+
     Args:
         messages_chatgpt: Messages in OpenAI format
-        
+
     Returns:
         Messages in Gemini format
     """
     # Fast path for empty messages
     if not messages_chatgpt:
         return []
-    
+
     # Process system messages first (collect all system messages)
     system_prompts = []
     for message in messages_chatgpt:
@@ -480,33 +466,32 @@ def transform_to_gemini_prompt(
             content = message.get("content", "")
             if content:  # Only add non-empty system prompts
                 system_prompts.append(content)
-    
+
     # Format system prompt if we have any
     system_prompt = ""
     if system_prompts:
         # Handle multiple system prompts by joining them
         system_prompt = "\n\n".join(filter(None, system_prompts))
-    
+
     # Count non-system messages to pre-allocate result list
     message_count = sum(1 for m in messages_chatgpt if m.get("role") != "system")
     messages_gemini = []
-    
+
     # Role mapping for faster lookups
     role_map = {
         "user": "user",
         "assistant": "model",
     }
-    
+
     # Process non-system messages in one pass
     for message in messages_chatgpt:
         role = message.get("role", "")
         if role in role_map:
             gemini_role = role_map[role]
-            messages_gemini.append({
-                "role": gemini_role,
-                "parts": get_message_content(message)
-            })
-    
+            messages_gemini.append(
+                {"role": gemini_role, "parts": get_message_content(message)}
+            )
+
     # Add system prompt if we have one
     if system_prompt:
         if messages_gemini:
@@ -517,10 +502,7 @@ def transform_to_gemini_prompt(
                 first_message["parts"].insert(0, f"*{system_prompt}*")
         else:
             # Create a new user message just for the system prompt
-            messages_gemini.append({
-                "role": "user",
-                "parts": [f"*{system_prompt}*"]
-            })
+            messages_gemini.append({"role": "user", "parts": [f"*{system_prompt}*"]})
 
     return messages_gemini
 
@@ -562,27 +544,25 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
 
     schema = add_enum_format(schema)
 
-    return FunctionSchema(**schema).model_dump(
-        exclude_none=True, exclude_unset=True
-    )
+    return FunctionSchema(**schema).model_dump(exclude_none=True, exclude_unset=True)
 
 
 def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     """
     Update keyword arguments for Gemini API from OpenAI format.
-    
+
     This optimized version reduces redundant operations and uses
     efficient data transformations.
-    
+
     Args:
         kwargs: Dictionary of keyword arguments to update
-        
+
     Returns:
         Updated dictionary of keyword arguments
     """
     # Make a copy of kwargs to avoid modifying the original
     result = kwargs.copy()
-    
+
     # Mapping of OpenAI args to Gemini args - defined as constant
     # for quicker lookup without recreating the dictionary on each call
     OPENAI_TO_GEMINI_MAP = {
@@ -592,30 +572,30 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         "top_p": "top_p",
         "stop": "stop_sequences",
     }
-    
+
     # Update generation_config if present
     if "generation_config" in result:
         gen_config = result["generation_config"]
-        
+
         # Bulk process the mapping with fewer conditionals
         for openai_key, gemini_key in OPENAI_TO_GEMINI_MAP.items():
             if openai_key in gen_config:
                 val = gen_config.pop(openai_key)
                 if val is not None:  # Only set if value is not None
                     gen_config[gemini_key] = val
-    
+
     # Transform messages format if messages key exists
     if "messages" in result:
         # Transform messages and store them under "contents" key
         result["contents"] = transform_to_gemini_prompt(result.pop("messages"))
-    
+
     # Handle safety settings - import here to avoid circular imports
     from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
-    
+
     # Create or get existing safety settings
     safety_settings = result.get("safety_settings", {})
     result["safety_settings"] = safety_settings
-    
+
     # Define default safety thresholds - these are static and can be
     # defined once rather than recreating the dict on each call
     DEFAULT_SAFETY_THRESHOLDS = {
@@ -623,7 +603,7 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
     }
-    
+
     # Update safety settings with defaults if needed (more efficient loop)
     for category, threshold in DEFAULT_SAFETY_THRESHOLDS.items():
         current = safety_settings.get(category)
@@ -632,7 +612,7 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         # BLOCK_NONE = 0, BLOCK_LOW_AND_ABOVE = 1, BLOCK_MEDIUM_AND_ABOVE = 2, BLOCK_ONLY_HIGH = 3
         if current is None or current > threshold:
             safety_settings[category] = threshold
-    
+
     return result
 
 
@@ -652,20 +632,20 @@ def combine_system_messages(
 ) -> Union[str, list[SystemMessage]]:  # noqa: UP007
     """
     Combine existing and new system messages.
-    
+
     This optimized version uses a more direct approach with fewer branches.
-    
+
     Args:
         existing_system: Existing system message(s) or None
         new_system: New system message(s) to add
-        
+
     Returns:
         Combined system message(s)
     """
     # Fast path for None existing_system
     if existing_system is None:
         return new_system
-    
+
     # Fast path for same types (most common case)
     if type(existing_system) is type(new_system):
         if isinstance(existing_system, str):
@@ -674,7 +654,7 @@ def combine_system_messages(
         else:
             # Both are lists, concatenate
             return existing_system + new_system
-    
+
     # Convert string to SystemMessage list as needed
     if isinstance(existing_system, str):
         # existing is string, new is list
@@ -684,32 +664,30 @@ def combine_system_messages(
         return existing_system + [SystemMessage(type="text", text=new_system)]
 
 
-def extract_system_messages(
-    messages: list[dict[str, Any]]
-) -> list[SystemMessage]:
+def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:
     """
     Extract system messages from a list of messages.
-    
+
     This optimized version pre-allocates the result list and
     reduces function call overhead.
-    
+
     Args:
         messages: List of messages to extract system messages from
-        
+
     Returns:
         List of system messages
     """
     # Fast path for empty messages
     if not messages:
         return []
-    
+
     # First count system messages to pre-allocate result list
     system_count = sum(1 for m in messages if m.get("role") == "system")
-    
+
     # If no system messages, return empty list
     if system_count == 0:
         return []
-    
+
     # Helper function to convert a message content to SystemMessage
     def convert_message(content: Any) -> SystemMessage:
         if isinstance(content, str):
@@ -718,18 +696,18 @@ def extract_system_messages(
             return SystemMessage(**content)
         else:
             raise ValueError(f"Unsupported content type: {type(content)}")
-    
+
     # Process system messages
     result: list[SystemMessage] = []
-    
+
     for message in messages:
         if message.get("role") == "system":
             content = message.get("content")
-            
+
             # Skip empty content
             if not content:
                 continue
-                
+
             # Handle list or single content
             if isinstance(content, list):
                 # Process each item in the list
@@ -739,5 +717,5 @@ def extract_system_messages(
             else:
                 # Process single content
                 result.append(convert_message(content))
-    
+
     return result

@@ -1,8 +1,6 @@
 """
 Tests for message processing optimizations.
 """
-import pytest
-from typing import List, Dict, Any, Union
 
 from instructor.utils import (
     merge_consecutive_messages,
@@ -197,11 +195,7 @@ class TestUpdateGeminiKwargs:
 
     def test_transform_messages(self):
         """Test transforming messages to Gemini format."""
-        kwargs = {
-            "messages": [
-                {"role": "user", "content": "Hello"}
-            ]
-        }
+        kwargs = {"messages": [{"role": "user", "content": "Hello"}]}
         result = update_gemini_kwargs(kwargs)
         assert "contents" in result
         assert "messages" not in result
@@ -218,7 +212,7 @@ class TestUpdateGeminiKwargs:
                 "n": 3,
                 "top_p": 0.9,
                 "stop": ["END"],
-            }
+            },
         }
         result = update_gemini_kwargs(kwargs)
         assert "generation_config" in result
@@ -241,15 +235,18 @@ class TestUpdateGeminiKwargs:
     def test_existing_safety_settings(self):
         """Test respecting existing safety settings."""
         from google.generativeai.types import HarmCategory, HarmBlockThreshold
-        
+
         kwargs = {
             "messages": [{"role": "user", "content": "Hello"}],
             "safety_settings": {
                 HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
-            }
+            },
         }
         result = update_gemini_kwargs(kwargs)
-        assert result["safety_settings"][HarmCategory.HARM_CATEGORY_HATE_SPEECH] == HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
+        assert (
+            result["safety_settings"][HarmCategory.HARM_CATEGORY_HATE_SPEECH]
+            == HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
+        )
 
 
 class TestSystemMessages:
@@ -316,9 +313,10 @@ class TestSystemMessages:
     def test_extract_system_messages_list(self):
         """Test extracting list system messages."""
         messages = [
-            {"role": "system", "content": [
-                {"type": "text", "text": "You are an AI assistant"}
-            ]},
+            {
+                "role": "system",
+                "content": [{"type": "text", "text": "You are an AI assistant"}],
+            },
             {"role": "user", "content": "Hello"},
         ]
         result = extract_system_messages(messages)
