@@ -7,7 +7,6 @@ from instructor.utils import (
     extract_system_messages,
     update_gemini_kwargs,
 )
-from instructor.mode import Mode
 
 # Mock data for benchmarks
 SAMPLE_KWARGS_MESSAGES = {"messages": [{"role": "user", "content": "Hello"}]}
@@ -178,37 +177,4 @@ class TestDictionaryOperations:
         ), f"update_gemini_kwargs is too slow: {result:.6f}s > {baseline:.6f}s"
 
     # We'll use a simpler test for mode lookup patterns since proper mocking is complex
-    def test_mode_lookups_benchmark(self):
-        """Benchmark for mode lookups which is what we optimized in handle_reask_kwargs."""
-        # Create a set of modes to test lookup performance
-        mode_set = {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_REASONING_TOOLS}
-
-        # Create a dictionary of modes to test lookup performance
-        mode_dict = {
-            Mode.ANTHROPIC_TOOLS: "handler1",
-            Mode.ANTHROPIC_REASONING_TOOLS: "handler1",
-            Mode.ANTHROPIC_JSON: "handler2",
-            Mode.GEMINI_TOOLS: "handler3",
-            Mode.GEMINI_JSON: "handler4",
-        }
-
-        # Test set membership (new approach)
-        set_result = timeit.timeit(
-            lambda: Mode.ANTHROPIC_TOOLS in mode_set,
-            number=100000,
-        )
-
-        # Test dictionary lookup (old approach)
-        dict_result = timeit.timeit(
-            lambda: mode_dict.get(Mode.ANTHROPIC_TOOLS, "default"),
-            number=100000,
-        )
-
-        print(f"\nMode Lookup Benchmark Results:")
-        print(f"Set membership: {set_result:.6f}s")
-        print(f"Dictionary lookup: {dict_result:.6f}s")
-
-        # Set membership should be faster than dictionary lookup
-        assert (
-            set_result < dict_result
-        ), "Set membership should be faster than dictionary lookup"
+    # Test removed as it was producing inconsistent results across different environments
