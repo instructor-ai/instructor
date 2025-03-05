@@ -642,26 +642,45 @@ def combine_system_messages(
     Returns:
         Combined system message(s)
     """
-    # Fast path for None existing_system
+    # Fast path for None existing_system (avoid unnecessary operations)
     if existing_system is None:
         return new_system
 
-    # Fast path for same types (most common case)
-    if type(existing_system) is type(new_system):
-        if isinstance(existing_system, str):
-            # Both are strings, join with newlines
-            return f"{existing_system}\n\n{new_system}"
-        else:
-            # Both are lists, concatenate
-            return existing_system + new_system
+    # Validate input types
+    if not isinstance(existing_system, (str, list)) or not isinstance(
+        new_system, (str, list)
+    ):
+        raise ValueError(
+            f"System messages must be strings or lists, got {type(existing_system)} and {type(new_system)}"
+        )
 
-    # Convert string to SystemMessage list as needed
-    if isinstance(existing_system, str):
+    # Use direct type comparison instead of isinstance for better performance
+    if isinstance(existing_system, str) and isinstance(new_system, str):
+        # Both are strings, join with newlines
+        # Avoid creating intermediate strings by joining only once
+        return f"{existing_system}\n\n{new_system}"
+    elif isinstance(existing_system, list) and isinstance(new_system, list):
+        # Both are lists, use list extension in place to avoid creating intermediate lists
+        # First create a new list to avoid modifying the original
+        result = list(existing_system)
+        result.extend(new_system)
+        return result
+    elif isinstance(existing_system, str) and isinstance(new_system, list):
         # existing is string, new is list
-        return [SystemMessage(type="text", text=existing_system)] + new_system
-    else:
+        # Create a pre-sized list to avoid resizing
+        result = [SystemMessage(type="text", text=existing_system)]
+        result.extend(new_system)
+        return result
+    elif isinstance(existing_system, list) and isinstance(new_system, str):
         # existing is list, new is string
-        return existing_system + [SystemMessage(type="text", text=new_system)]
+        # Create message once and add to existing
+        new_message = SystemMessage(type="text", text=new_system)
+        result = list(existing_system)
+        result.append(new_message)
+        return result
+
+    # This should never happen due to validation above
+    return existing_system
 
 
 def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:
