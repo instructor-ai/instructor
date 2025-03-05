@@ -25,9 +25,11 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> dict[st
         return gm.Content(
             role=message.role,
             parts=[
-                gm.Part.from_text(apply_template(part.text, context))
-                if hasattr(part, "text")
-                else part
+                (
+                    gm.Part.from_text(apply_template(part.text, context))
+                    if hasattr(part, "text")
+                    else part
+                )
                 for part in message.parts
             ],
         )

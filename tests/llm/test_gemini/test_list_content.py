@@ -30,7 +30,7 @@ def test_list_of_strings():
         {
             "name": "Chris",
             "age": 27,
-        }
+        },
     ]
 
     prompt = """
@@ -57,4 +57,3 @@ def test_list_of_strings():
     assert "JASON" in names, "'JASON' should be in the list"
     assert "ELIZABETH" in names, "'ELIZABETH' should be in the list"
     assert "CHRIS" in names, "'CHRIS' should be in the list"
-

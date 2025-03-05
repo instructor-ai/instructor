@@ -3,13 +3,13 @@ from pytest_examples import find_examples, CodeExample, EvalExample
 import glob
 import os
 
-exclusions = [
-    'ollama.md',
-    'watsonx.md',
-    'local_classification.md'
-]
+exclusions = ["ollama.md", "watsonx.md", "local_classification.md"]
 
-markdown_files = [file for file in glob.glob("docs/examples/*.md") if os.path.basename(file) not in exclusions]
+markdown_files = [
+    file
+    for file in glob.glob("docs/examples/*.md")
+    if os.path.basename(file) not in exclusions
+]
 
 code_examples = []
 

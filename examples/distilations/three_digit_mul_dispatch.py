@@ -17,7 +17,7 @@ instructions = Instructions(
     log_handlers=[
         logging.FileHandler("math_finetunes.jsonl"),
     ],
-    openai_client=client
+    openai_client=client,
 )
 
 

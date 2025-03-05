@@ -69,8 +69,6 @@ async def situate_context(doc: str, chunk: str) -> SituatedContext:
     return response
 
 
-
-
 def chunking_function(
     doc: str, chunk_size: int = 1000, overlap: int = 200
 ) -> list[str]:

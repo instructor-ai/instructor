@@ -13,13 +13,13 @@ Instructor works with many different LLM providers, allowing you to use structur
 
     Leading AI providers with comprehensive features
 
-    [:octicons-arrow-right-16: OpenAI](./openai.md) · [:octicons-arrow-right-16: Azure](./azure.md) · [:octicons-arrow-right-16: Anthropic](./anthropic.md) · [:octicons-arrow-right-16: Google](./google.md) · [:octicons-arrow-right-16: Vertex AI](./vertex.md)
+    [:octicons-arrow-right-16: OpenAI](./openai.md) · [:octicons-arrow-right-16: Azure](./azure.md) · [:octicons-arrow-right-16: Anthropic](./anthropic.md) · [:octicons-arrow-right-16: Google](./google.md) · [:octicons-arrow-right-16: Vertex AI](./vertex.md) · [:octicons-arrow-right-16: AWS Bedrock](./bedrock.md)
 
 - :material-cloud-outline: **Additional Cloud Providers**
 
     Other commercial AI providers with specialized offerings
 
-    [:octicons-arrow-right-16: Cohere](./cohere.md) · [:octicons-arrow-right-16: Mistral](./mistral.md) · [:octicons-arrow-right-16: DeepSeek](./deepseek.md) · [:octicons-arrow-right-16: Together AI](./together.md) · [:octicons-arrow-right-16: Groq](./groq.md) · [:octicons-arrow-right-16: Fireworks](./fireworks.md) · [:octicons-arrow-right-16: Cerebras](./cerebras.md) · [:octicons-arrow-right-16: Writer](./writer.md)
+    [:octicons-arrow-right-16: Cohere](./cohere.md) · [:octicons-arrow-right-16: Mistral](./mistral.md) · [:octicons-arrow-right-16: DeepSeek](./deepseek.md) · [:octicons-arrow-right-16: Together AI](./together.md) · [:octicons-arrow-right-16: Groq](./groq.md) · [:octicons-arrow-right-16: Fireworks](./fireworks.md) · [:octicons-arrow-right-16: Cerebras](./cerebras.md) · [:octicons-arrow-right-16: Writer](./writer.md) · [:octicons-arrow-right-16: Perplexity](./perplexity.md)
 
 
 - :material-open-source-initiative: **Open Source**
@@ -58,8 +58,11 @@ Providers support different methods for generating structured outputs:
 |------|-------------|-----------|
 | `TOOLS` | Uses OpenAI-style tools/function calling | OpenAI, Anthropic, Mistral |
 | `PARALLEL_TOOLS` | Multiple simultaneous tool calls | OpenAI |
-| `JSON` | Direct JSON response generation | OpenAI, Gemini, Cohere |
+| `JSON` | Direct JSON response generation | OpenAI, Gemini, Cohere, Perplexity |
 | `MD_JSON` | JSON embedded in markdown | Most providers |
+| `BEDROCK_TOOLS` | AWS Bedrock function calling | AWS Bedrock |
+| `BEDROCK_JSON` | AWS Bedrock JSON generation | AWS Bedrock |
+| `PERPLEXITY_JSON` | Perplexity JSON generation | Perplexity |
 
 See the [Modes Comparison](../modes-comparison.md) guide for details.
 

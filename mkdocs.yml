@@ -214,13 +214,28 @@ nav:
     - Templating: 'concepts/templating.md'
   - Integrations:
     - Overview: 'integrations/index.md'
+    # Major cloud providers
+    - OpenAI: 'integrations/openai.md'
+    - Azure OpenAI: 'integrations/azure.md'
     - Anthropic: 'integrations/anthropic.md'
+    - Gemini: 'integrations/google.md'
+    - AWS Bedrock: 'integrations/bedrock.md'
+    - Vertex AI: 'integrations/vertex.md'
+    
+    # Fast inference providers
+    - Groq: 'integrations/groq.md'
+    - Fireworks: 'integrations/fireworks.md'
+    - Together: 'integrations/together.md'
     - Anyscale: 'integrations/anyscale.md'
+    
+    # Other commercial providers
+    - AWS Bedrock: 'integrations/bedrock.md'
     - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
     - Databricks: 'integrations/databricks.md'
     - Cortex: 'integrations/cortex.md'
+    - DeepSeek: 'integrations/deepseek.md'
     - Fireworks: 'integrations/fireworks.md'
     - Gemini: 'integrations/google.md'
     - Groq: 'integrations/groq.md'
@@ -229,10 +244,10 @@ nav:
     - Mistral: 'integrations/mistral.md'
     - Ollama: 'integrations/ollama.md'
     - OpenAI: 'integrations/openai.md'
+    - Perplexity: 'integrations/perplexity.md'
     - Together: 'integrations/together.md'
     - Vertex AI: 'integrations/vertex.md'
     - Writer: 'integrations/writer.md'
-    - DeepSeek: 'integrations/deepseek.md'
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
@@ -310,6 +325,7 @@ plugins:
          hub/anthropic.md: integrations/anthropic.md
          hub/anyscale.md: integrations/anyscale.md
          hub/azure.md: integrations/azure.md
+         hub/bedrock.md: integrations/bedrock.md
          hub/cerebras.md: integrations/cerebras.md
          hub/cohere.md: integrations/cohere.md
          hub/databricks.md: integrations/databricks.md
@@ -319,6 +335,7 @@ plugins:
          hub/litellm.md: integrations/litellm.md
          hub/mistral.md: integrations/mistral.md
          hub/openai.md: integrations/openai.md
+         hub/perplexity.md: integrations/perplexity.md
          hub/together.md: integrations/together.md
          hub/vertex.md: integrations/vertex.md
          hub/vertexai.md: integrations/vertex.md  # Handle old vertexai.md references
@@ -330,6 +347,7 @@ plugins:
          'hub/clients/anthropic.md': 'integrations/anthropic.md'
          'hub/clients/anyscale.md': 'integrations/anyscale.md'
          'hub/clients/azure.md': 'integrations/azure.md'
+         'hub/clients/bedrock.md': 'integrations/bedrock.md'
          'hub/clients/cerebras.md': 'integrations/cerebras.md'
          'hub/clients/cohere.md': 'integrations/cohere.md'
          'hub/clients/databricks.md': 'integrations/databricks.md'
@@ -337,6 +355,7 @@ plugins:
          'hub/clients/groq.md': 'integrations/groq.md'
          'hub/clients/mistral.md': 'integrations/mistral.md'
          'hub/clients/openai.md': 'integrations/openai.md'
+         'hub/clients/perplexity.md': 'integrations/perplexity.md'
          'hub/clients/together.md': 'integrations/together.md'
          'hub/clients/vertex.md': 'integrations/vertex.md'
          'hub/clients/vertexai.md': 'integrations/vertex.md'

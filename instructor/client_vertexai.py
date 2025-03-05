@@ -14,20 +14,22 @@ def _create_gemini_json_schema(model: BaseModel):
     # Add type check to ensure we have a concrete model class
     if get_origin(model) is not None:
         raise TypeError(f"Expected concrete model class, got type hint {model}")
-        
+
     schema = model.model_json_schema()
     schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],
         "properties": schema_without_refs["properties"],
-        "required": schema_without_refs["required"]
-        if "required" in schema_without_refs
-        else [],  # TODO: Temporary Fix for Iterables which throw an error when their tasks field is specified in the required field
+        "required": (
+            schema_without_refs["required"] if "required" in schema_without_refs else []
+        ),  # TODO: Temporary Fix for Iterables which throw an error when their tasks field is specified in the required field
     }
     return gemini_schema
 
 
-def _create_vertexai_tool(models: Union[BaseModel, list[BaseModel], type]) -> gm.Tool:  # noqa: UP007
+def _create_vertexai_tool(
+    models: BaseModel | list[BaseModel] | type,
+) -> gm.Tool:  # noqa: UP007
     """Creates a tool with function declarations for single model or list of models"""
     # Handle Iterable case first
     if get_origin(models) is not None:
@@ -100,8 +102,9 @@ def vertexai_function_response_parser(
 
 
 def vertexai_process_response(
-    _kwargs: dict[str, Any], model: Union[BaseModel, list[BaseModel], type] # noqa: UP007
-):  
+    _kwargs: dict[str, Any],
+    model: Union[BaseModel, list[BaseModel], type],  # noqa: UP007
+):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
 
