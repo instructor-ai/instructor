@@ -179,7 +179,7 @@ if __name__ == "__main__":
             {
                 "id": 2,
                 "subtasks": [1],
-                "task": "Identify the adjacent countries of Jan's home " "country",
+                "task": "Identify the adjacent countries of Jan's home country",
             },
             {
                 "id": 3,
@@ -191,7 +191,7 @@ if __name__ == "__main__":
             {
                 "id": 5,
                 "subtasks": [4],
-                "task": "Identify the adjacent countries of Jason's home " "country",
+                "task": "Identify the adjacent countries of Jason's home country",
             },
             {
                 "id": 6,

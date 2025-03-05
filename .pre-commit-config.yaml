@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.7 # Ruff version
+    rev: v0.9.9 # Ruff version
     hooks:
       - id: ruff # Run the linter.
         name: Run Linter Check (Ruff)

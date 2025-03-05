@@ -63,7 +63,9 @@ def from_anthropic(
         instructor.Mode.ANTHROPIC_JSON,
         instructor.Mode.ANTHROPIC_TOOLS,
         instructor.Mode.ANTHROPIC_REASONING_TOOLS,
-    }, "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS, instructor.Mode.ANTHROPIC_REASONING_TOOLS}"
+    }, (
+        "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS, instructor.Mode.ANTHROPIC_REASONING_TOOLS}"
+    )
 
     assert isinstance(
         client,
@@ -75,7 +77,9 @@ def from_anthropic(
             anthropic.AsyncAnthropicBedrock,
             anthropic.AsyncAnthropicVertex,
         ),
-    ), "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
+    ), (
+        "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
+    )
 
     if beta:
         create = client.beta.messages.create

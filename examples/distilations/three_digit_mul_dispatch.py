@@ -41,7 +41,7 @@ if __name__ == "__main__":
         a = random.randint(100, 999)
         b = random.randint(100, 999)
         result = fn(a, b)
-        print(f"{a} * {b} = {result.result}, expected {a*b}")
+        print(f"{a} * {b} = {result.result}, expected {a * b}")
     """
     972 * 508 = 493056, expected 493776
     145 * 369 = 53505, expected 53505
