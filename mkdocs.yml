@@ -204,6 +204,7 @@ nav:
     - Prompt Caching: 'concepts/prompt_caching.md'
     - Logging: 'concepts/logging.md'
     - Distillation: "concepts/distillation.md"
+    - Dictionary Operations: 'concepts/dictionary_operations.md'
     - Union: 'concepts/union.md'
     - Unions: 'concepts/unions.md'
     - Validation: 'concepts/validation.md'

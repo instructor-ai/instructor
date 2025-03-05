@@ -12,9 +12,9 @@ from typing import (
     Callable,
     Generic,
     Protocol,
-    Union,
     TypedDict,
     TypeVar,
+    Union,
 )
 
 from openai.types import CompletionUsage as OpenAIUsage
@@ -27,12 +27,12 @@ from openai.types.chat import (
 if TYPE_CHECKING:
     from anthropic.types import Usage as AnthropicUsage
 
+from enum import Enum
+from pydantic import BaseModel
 
 logger = logging.getLogger("instructor")
 R_co = TypeVar("R_co", covariant=True)
 T_Model = TypeVar("T_Model", bound="Response")
-
-from enum import Enum
 
 
 class Response(Protocol):
@@ -132,10 +132,16 @@ def extract_json_from_stream(
     chunks: Iterable[str],
 ) -> Generator[str, None, None]:
     """
-    Extract JSON from a stream of chunks.
+    Extract JSON from a stream of chunks, handling JSON in code blocks.
 
-    This optimized version reduces character-by-character processing overhead
-    by processing in larger chunks when possible.
+    This optimized version extracts JSON from markdown code blocks or plain JSON
+    by implementing a state machine approach.
+
+    The state machine tracks several states:
+    - Whether we're inside a code block (```json ... ```)
+    - Whether we've started tracking a JSON object
+    - Whether we're inside a string literal
+    - The stack of open braces to properly identify the JSON structure
 
     Args:
         chunks: An iterable of string chunks
@@ -143,54 +149,128 @@ def extract_json_from_stream(
     Yields:
         Characters within the JSON object
     """
-    # Use a buffer to reduce character-by-character processing
-    buffer = []
-    brace_stack = []
+    # State flags
+    in_codeblock = False
+    codeblock_delimiter_count = 0
+    json_started = False
     in_string = False
     escape_next = False
+    brace_stack = []
+    buffer = []
+
+    # Track potential codeblock start/end
+    codeblock_buffer = []
 
     for chunk in chunks:
         for char in chunk:
-            # Handle string literals and escaped characters
-            if char == '"' and not escape_next:
-                in_string = not in_string
-            elif char == "\\" and in_string:
-                escape_next = True
+            # Track codeblock delimiters (```)
+            if not in_codeblock and char == "`":
+                codeblock_buffer.append(char)
+                if len(codeblock_buffer) == 3:
+                    in_codeblock = True
+                    codeblock_delimiter_count = 0
+                    codeblock_buffer = []
+                continue
+            elif len(codeblock_buffer) > 0 and char != "`":
+                # Reset if we see something other than backticks
+                codeblock_buffer = []
+
+            # If we're in a codeblock but haven't started JSON yet
+            if in_codeblock and not json_started:
+                # Track end of codeblock
+                if char == "`":
+                    codeblock_delimiter_count += 1
+                    if codeblock_delimiter_count == 3:
+                        in_codeblock = False
+                        codeblock_delimiter_count = 0
+                    continue
+                elif codeblock_delimiter_count > 0:
+                    codeblock_delimiter_count = (
+                        0  # Reset if we see something other than backticks
+                    )
+
+                # Look for the start of JSON
+                if char == "{":
+                    json_started = True
+                    brace_stack.append("{")
+                    buffer.append(char)
+                # Skip other characters until we find the start of JSON
+                continue
+
+            # If we've started tracking JSON
+            if json_started:
+                # Handle string literals and escaped characters
+                if char == '"' and not escape_next:
+                    in_string = not in_string
+                elif char == "\\" and in_string:
+                    escape_next = True
+                    buffer.append(char)
+                    continue
+                else:
+                    escape_next = False
+
+                # Track end of codeblock if we're in one
+                if in_codeblock and not in_string:
+                    if char == "`":
+                        codeblock_delimiter_count += 1
+                        if codeblock_delimiter_count == 3:
+                            # End of codeblock means end of JSON
+                            in_codeblock = False
+                            # Yield the buffer without the closing backticks
+                            for c in buffer:
+                                yield c
+                            buffer = []
+                            json_started = False
+                            break
+                        continue
+                    elif codeblock_delimiter_count > 0:
+                        codeblock_delimiter_count = 0
+
+                # Track braces when not in a string
+                if not in_string:
+                    if char == "{":
+                        brace_stack.append("{")
+                    elif char == "}" and brace_stack:
+                        brace_stack.pop()
+                        # If we've completed a JSON object, yield its characters
+                        if not brace_stack:
+                            buffer.append(char)
+                            for c in buffer:
+                                yield c
+                            buffer = []
+                            json_started = False
+                            break
+
+                # Add character to buffer
                 buffer.append(char)
                 continue
-            else:
-                escape_next = False
 
-            # Track braces when not in a string
-            if not in_string:
-                if char == "{":
-                    brace_stack.append("{")
-                elif char == "}" and brace_stack:
-                    brace_stack.pop()
+            # If we're not in a codeblock and haven't started JSON, look for standalone JSON
+            if not in_codeblock and not json_started and char == "{":
+                json_started = True
+                brace_stack.append("{")
+                buffer.append(char)
 
-            # Add to buffer
-            buffer.append(char)
-
-            # If we've completed a JSON object, yield its characters
-            if brace_stack == [] and buffer and buffer[0] == "{":
-                for c in buffer:
-                    yield c
-                buffer = []
-                break
-
-    # Yield any remaining buffer content
-    for c in buffer:
-        yield c
+    # Yield any remaining buffer content if we have valid JSON
+    if json_started and buffer:
+        for c in buffer:
+            yield c
 
 
 async def extract_json_from_stream_async(
     chunks: AsyncGenerator[str, None],
 ) -> AsyncGenerator[str, None]:
     """
-    Extract JSON from an async stream of chunks.
+    Extract JSON from an async stream of chunks, handling JSON in code blocks.
 
-    This optimized version reduces character-by-character processing overhead
-    by processing in larger chunks when possible.
+    This optimized version extracts JSON from markdown code blocks or plain JSON
+    by implementing a state machine approach.
+
+    The state machine tracks several states:
+    - Whether we're inside a code block (```json ... ```)
+    - Whether we've started tracking a JSON object
+    - Whether we're inside a string literal
+    - The stack of open braces to properly identify the JSON structure
 
     Args:
         chunks: An async generator yielding string chunks
@@ -198,44 +278,112 @@ async def extract_json_from_stream_async(
     Yields:
         Characters within the JSON object
     """
-    # Use a buffer to reduce character-by-character processing
-    buffer = []
-    brace_stack = []
+    # State flags
+    in_codeblock = False
+    codeblock_delimiter_count = 0
+    json_started = False
     in_string = False
     escape_next = False
+    brace_stack = []
+    buffer = []
+
+    # Track potential codeblock start/end
+    codeblock_buffer = []
 
     async for chunk in chunks:
         for char in chunk:
-            # Handle string literals and escaped characters
-            if char == '"' and not escape_next:
-                in_string = not in_string
-            elif char == "\\" and in_string:
-                escape_next = True
+            # Track codeblock delimiters (```)
+            if not in_codeblock and char == "`":
+                codeblock_buffer.append(char)
+                if len(codeblock_buffer) == 3:
+                    in_codeblock = True
+                    codeblock_delimiter_count = 0
+                    codeblock_buffer = []
+                continue
+            elif len(codeblock_buffer) > 0 and char != "`":
+                # Reset if we see something other than backticks
+                codeblock_buffer = []
+
+            # If we're in a codeblock but haven't started JSON yet
+            if in_codeblock and not json_started:
+                # Track end of codeblock
+                if char == "`":
+                    codeblock_delimiter_count += 1
+                    if codeblock_delimiter_count == 3:
+                        in_codeblock = False
+                        codeblock_delimiter_count = 0
+                    continue
+                elif codeblock_delimiter_count > 0:
+                    codeblock_delimiter_count = (
+                        0  # Reset if we see something other than backticks
+                    )
+
+                # Look for the start of JSON
+                if char == "{":
+                    json_started = True
+                    brace_stack.append("{")
+                    buffer.append(char)
+                # Skip other characters until we find the start of JSON
+                continue
+
+            # If we've started tracking JSON
+            if json_started:
+                # Handle string literals and escaped characters
+                if char == '"' and not escape_next:
+                    in_string = not in_string
+                elif char == "\\" and in_string:
+                    escape_next = True
+                    buffer.append(char)
+                    continue
+                else:
+                    escape_next = False
+
+                # Track end of codeblock if we're in one
+                if in_codeblock and not in_string:
+                    if char == "`":
+                        codeblock_delimiter_count += 1
+                        if codeblock_delimiter_count == 3:
+                            # End of codeblock means end of JSON
+                            in_codeblock = False
+                            # Yield the buffer without the closing backticks
+                            for c in buffer:
+                                yield c
+                            buffer = []
+                            json_started = False
+                            break
+                        continue
+                    elif codeblock_delimiter_count > 0:
+                        codeblock_delimiter_count = 0
+
+                # Track braces when not in a string
+                if not in_string:
+                    if char == "{":
+                        brace_stack.append("{")
+                    elif char == "}" and brace_stack:
+                        brace_stack.pop()
+                        # If we've completed a JSON object, yield its characters
+                        if not brace_stack:
+                            buffer.append(char)
+                            for c in buffer:
+                                yield c
+                            buffer = []
+                            json_started = False
+                            break
+
+                # Add character to buffer
                 buffer.append(char)
                 continue
-            else:
-                escape_next = False
 
-            # Track braces when not in a string
-            if not in_string:
-                if char == "{":
-                    brace_stack.append("{")
-                elif char == "}" and brace_stack:
-                    brace_stack.pop()
+            # If we're not in a codeblock and haven't started JSON, look for standalone JSON
+            if not in_codeblock and not json_started and char == "{":
+                json_started = True
+                brace_stack.append("{")
+                buffer.append(char)
 
-            # Add to buffer
-            buffer.append(char)
-
-            # If we've completed a JSON object, yield its characters
-            if brace_stack == [] and buffer and buffer[0] == "{":
-                for c in buffer:
-                    yield c
-                buffer = []
-                break
-
-    # Yield any remaining buffer content
-    for c in buffer:
-        yield c
+    # Yield any remaining buffer content if we have valid JSON
+    if json_started and buffer:
+        for c in buffer:
+            yield c
 
 
 def update_total_usage(
@@ -642,26 +790,45 @@ def combine_system_messages(
     Returns:
         Combined system message(s)
     """
-    # Fast path for None existing_system
+    # Fast path for None existing_system (avoid unnecessary operations)
     if existing_system is None:
         return new_system
 
-    # Fast path for same types (most common case)
-    if type(existing_system) is type(new_system):
-        if isinstance(existing_system, str):
-            # Both are strings, join with newlines
-            return f"{existing_system}\n\n{new_system}"
-        else:
-            # Both are lists, concatenate
-            return existing_system + new_system
+    # Validate input types
+    if not isinstance(existing_system, (str, list)) or not isinstance(
+        new_system, (str, list)
+    ):
+        raise ValueError(
+            f"System messages must be strings or lists, got {type(existing_system)} and {type(new_system)}"
+        )
 
-    # Convert string to SystemMessage list as needed
-    if isinstance(existing_system, str):
+    # Use direct type comparison instead of isinstance for better performance
+    if isinstance(existing_system, str) and isinstance(new_system, str):
+        # Both are strings, join with newlines
+        # Avoid creating intermediate strings by joining only once
+        return f"{existing_system}\n\n{new_system}"
+    elif isinstance(existing_system, list) and isinstance(new_system, list):
+        # Both are lists, use list extension in place to avoid creating intermediate lists
+        # First create a new list to avoid modifying the original
+        result = list(existing_system)
+        result.extend(new_system)
+        return result
+    elif isinstance(existing_system, str) and isinstance(new_system, list):
         # existing is string, new is list
-        return [SystemMessage(type="text", text=existing_system)] + new_system
-    else:
+        # Create a pre-sized list to avoid resizing
+        result = [SystemMessage(type="text", text=existing_system)]
+        result.extend(new_system)
+        return result
+    elif isinstance(existing_system, list) and isinstance(new_system, str):
         # existing is list, new is string
-        return existing_system + [SystemMessage(type="text", text=new_system)]
+        # Create message once and add to existing
+        new_message = SystemMessage(type="text", text=new_system)
+        result = list(existing_system)
+        result.append(new_message)
+        return result
+
+    # This should never happen due to validation above
+    return existing_system
 
 
 def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:
