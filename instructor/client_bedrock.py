@@ -9,8 +9,9 @@ from instructor.client import AsyncInstructor, Instructor
 
 @overload  # type: ignore
 def from_bedrock(
-    client: boto3.client,
+    client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
+    async_client: bool = False,
     **kwargs: Any,
 ) -> Instructor:
     ...
@@ -18,8 +19,9 @@ def from_bedrock(
 
 @overload  # type: ignore
 def from_bedrock(
-    client: boto3.client,
+    client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
+    async_client: bool = True, 
     **kwargs: Any,
 ) -> AsyncInstructor:
     ...
@@ -37,6 +39,7 @@ def handle_bedrock_json(
 def from_bedrock(
     client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_JSON,
+    async_client: bool = False,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     assert (
@@ -52,10 +55,19 @@ def from_bedrock(
     ), "Client must be an instance of boto3.client"
     create = client.converse  # Example method, replace with actual method
 
-    return Instructor(
-        client=client,
-        create=instructor.patch(create=create, mode=mode),
-        provider=instructor.Provider.BEDROCK,
-        mode=mode,
-        **kwargs,
-    )
+    if async_client:
+        return AsyncInstructor(
+            client=client,
+            create=instructor.patch(create=create, mode=mode),
+            provider=instructor.Provider.BEDROCK,
+            mode=mode,
+            **kwargs,
+        )
+    else:
+        return Instructor(
+            client=client,
+            create=instructor.patch(create=create, mode=mode),
+            provider=instructor.Provider.BEDROCK,
+            mode=mode,
+            **kwargs,
+        )
