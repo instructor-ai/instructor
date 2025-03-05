@@ -30,14 +30,13 @@ user, completion = client.chat.completions.create_with_completion(
 print(completion.usage)
 """
 CompletionUsage(
-    completion_tokens=9,
+    completion_tokens=10,
     prompt_tokens=82,
-    total_tokens=91,
+    total_tokens=92,
     completion_tokens_details=CompletionTokensDetails(
         audio_tokens=0, reasoning_tokens=0
     ),
-    prompt_tokens_details=None,
-    prompt_token_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
+    prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
 )
 """
 ```
