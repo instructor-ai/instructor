@@ -74,6 +74,7 @@ MODEL_COSTS = {
     "text-embedding-3-small": 0.00002 / 1000,
     "text-embedding-3-large": 0.00013 / 1000,
     "text-embedding-ada-002": 0.00010 / 1000,
+    "text-embedding-ada-002-v2": 0.00010 / 1000,
 }
 
 
