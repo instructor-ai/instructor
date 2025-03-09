@@ -7,13 +7,13 @@ description: "Learn how to use Instructor with OpenRouter to access multiple LLM
 
 OpenRouter provides a unified API to access multiple LLM providers, allowing you to easily switch between different models. This guide shows you how to use Instructor with OpenRouter for type-safe, validated responses across various LLM providers.
 
+To set Provider specific configuration on the `openai` client, make sure to use the `extra_body` kwarg.
+
 ## Quick Start
 
 ⚠️ **Important**: Make sure that the model you're using has support for `Tool Calling` and/or `Structured Outputs` in the [OpenRouter models listing](https://openrouter.ai/models)
 
 Instructor works with OpenRouter through the OpenAI client, so you don't need to install anything extra beyond the base package.
-
-However, OpenRouter exposes [additional configuration options which can only be set using a manual request](https://openrouter.ai/docs/features/provider-routing#requiring-providers-to-support-all-parameters-beta) such as provider routing preferences and more. If those are important to you, you might not be able to use instructor with it for now.
 
 ## Simple User Example (Sync)
 
@@ -47,6 +47,7 @@ resp = client.chat.completions.create(
         },
     ],
     response_model=User,
+    extra_body={"provider": {"require_parameters": True}},
 )
 
 print(resp)
@@ -84,6 +85,7 @@ async def extract_user():
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
         response_model=User,
+        extra_body={"provider": {"require_parameters": True}},
     )
     return user
 
@@ -137,6 +139,7 @@ user = client.chat.completions.create(
         """,
         },
     ],
+    extra_body={"provider": {"require_parameters": True}},
     response_model=User,
 )
 
@@ -188,6 +191,7 @@ user = client.chat.completions.create(
         },
     ],
     response_model=User,
+    extra_body={"provider": {"require_parameters": True}},
 )
 
 print(user)
