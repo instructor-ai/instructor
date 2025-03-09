@@ -33,6 +33,7 @@ Instructor works with many different LLM providers, allowing you to use structur
     Unified interfaces for multiple providers
 
     [:octicons-arrow-right-16: LiteLLM](./litellm.md)
+    [:octicons-arrow-right-16: OpenRouter](./openrouter.md)
 
 </div>
 

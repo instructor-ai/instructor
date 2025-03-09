@@ -248,6 +248,8 @@ nav:
     - Together: 'integrations/together.md'
     - Vertex AI: 'integrations/vertex.md'
     - Writer: 'integrations/writer.md'
+    - OpenRouter: 'integrations/openrouter.md'
+    
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"

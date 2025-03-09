@@ -56,6 +56,7 @@ class Mode(enum.Enum):
     BEDROCK_TOOLS = "bedrock_tools"
     BEDROCK_JSON = "bedrock_json"
     PERPLEXITY_JSON = "perplexity_json"
+    OPENROUTER_STRUCTURED_OUTPUTS = "openrouter_structured_outputs"
 
     # Classification helpers
     @classmethod
@@ -77,6 +78,7 @@ class Mode(enum.Enum):
             cls.FIREWORKS_TOOLS,
             cls.WRITER_TOOLS,
             cls.BEDROCK_TOOLS,
+            cls.OPENROUTER_STRUCTURED_OUTPUTS,
         }
 
     @classmethod
@@ -95,6 +97,7 @@ class Mode(enum.Enum):
             cls.FIREWORKS_JSON,
             cls.BEDROCK_JSON,
             cls.PERPLEXITY_JSON,
+            cls.OPENROUTER_STRUCTURED_OUTPUTS,
         }
 
     @classmethod
