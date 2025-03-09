@@ -748,7 +748,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     return response_model
 
 
-def handle_openrouter_tools_strict(
+def handle_openrouter_structured_outputs(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
     schema = response_model.model_json_schema()
@@ -842,7 +842,7 @@ def handle_response_model(
         Mode.BEDROCK_JSON: handle_bedrock_json,
         Mode.BEDROCK_TOOLS: handle_bedrock_tools,
         Mode.PERPLEXITY_JSON: handle_perplexity_json,
-        Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_tools_strict,
+        Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
     }
 
     if mode in mode_handlers:

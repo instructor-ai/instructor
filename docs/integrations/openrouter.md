@@ -11,7 +11,9 @@ OpenRouter provides a unified API to access multiple LLM providers, allowing you
 
 ⚠️ **Important**: Make sure that the model you're using has support for `Tool Calling` and/or `Structured Outputs` in the [OpenRouter models listing](https://openrouter.ai/models)
 
-Instructor works with OpenRouter through the OpenAI client, so you don't need to install anything extra beyond the base package:
+Instructor works with OpenRouter through the OpenAI client, so you don't need to install anything extra beyond the base package.
+
+However, OpenRouter exposes [additional configuration options which can only be set using a manual request](https://openrouter.ai/docs/features/provider-routing#requiring-providers-to-support-all-parameters-beta) such as provider routing preferences and more. If those are important to you, you might not be able to use instructor with it for now.
 
 ## Simple User Example (Sync)
 
@@ -143,6 +145,8 @@ print(user)
 ```
 
 ## Structured Outputs (Sync)
+
+⚠️ **Important**: Check that your chosen model supports `Structured Outputs` in the [OpenRouter models listing](https://openrouter.ai/models). Structured Outputs is a subset of Tool Calling that constrains the model's output to match your schema in order to produce valid JSON Schema.
 
 Instructor also supports Structured Outputs with OpenRouter as documented in their API [here](https://openrouter.ai/docs/features/structured-outputs). Note that the following User model will throw an error if we use the OpenAI GPT-4o model like `openai/gpt-4o-2024-11-20` because OpenAI does not support using a regex pattern as part of their structured output schema.
 
