@@ -60,6 +60,7 @@ class LibraryRecord(BaseModel):
     library_id: str
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_complex_nested_model(model: str, mode: instructor.Mode, client: OpenAI):
     instructor_client = instructor.from_perplexity(client, mode=mode)

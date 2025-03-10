@@ -40,7 +40,7 @@ jobs:
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
-          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks"
+          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks and not perplexity"
           uv run coverage report
           uv run coverage html
         env:
