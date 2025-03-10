@@ -56,6 +56,7 @@ class Provider(Enum):
     UNKNOWN = "unknown"
     BEDROCK = "bedrock"
     PERPLEXITY = "perplexity"
+    OPENROUTER = "openrouter"
 
 
 def get_provider(base_url: str) -> Provider:
@@ -87,6 +88,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.WRITER
     elif "perplexity" in str(base_url):
         return Provider.PERPLEXITY
+    elif "openrouter" in str(base_url):
+        return Provider.OPENROUTER
     return Provider.UNKNOWN
 
 

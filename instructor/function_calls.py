@@ -221,6 +221,13 @@ class OpenAISchema(BaseModel):
         if mode == Mode.WRITER_TOOLS:
             return cls.parse_writer_tools(completion, validation_context, strict)
 
+        if not completion.choices:
+            # This helps catch errors from OpenRouter
+            if hasattr(completion, "error"):
+                raise ValueError(completion.error)
+
+            raise ValueError("No completion choices found")
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
@@ -245,6 +252,7 @@ class OpenAISchema(BaseModel):
             Mode.CEREBRAS_JSON,
             Mode.FIREWORKS_JSON,
             Mode.PERPLEXITY_JSON,
+            Mode.OPENROUTER_STRUCTURED_OUTPUTS,
         }:
             return cls.parse_json(completion, validation_context, strict)
 

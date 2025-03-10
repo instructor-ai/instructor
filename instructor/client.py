@@ -513,6 +513,13 @@ def from_openai(
             stacklevel=2,
         )
 
+    if provider in {Provider.OPENROUTER}:
+        assert mode in {
+            instructor.Mode.TOOLS,
+            instructor.Mode.OPENROUTER_STRUCTURED_OUTPUTS,
+            instructor.Mode.JSON,
+        }
+
     if provider in {Provider.ANYSCALE, Provider.TOGETHER}:
         assert mode in {
             instructor.Mode.TOOLS,
