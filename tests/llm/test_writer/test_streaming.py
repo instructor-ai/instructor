@@ -43,7 +43,10 @@ def test_writer_partial_model(model: str, mode: instructor.Mode):
         max_retries=2,
         stream=True,
         messages=[
-            {"role": "user", "content": "Extract a user from this sentence : {{ name }} is {{ age }} years old"},
+            {
+                "role": "user",
+                "content": "Extract a user from this sentence : {{ name }} is {{ age }} years old",
+            },
         ],
         context={"name": "Jason", "age": 12},
     )

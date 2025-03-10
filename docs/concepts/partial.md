@@ -10,14 +10,18 @@ description: Learn to utilize field-level streaming with Instructor and OpenAI f
     If the data structure you're using has literal values, you need to make sure to import the `PartialLiteralMixin` mixin.
 
     ```python
+    from typing import Literal
+    from pydantic import BaseModel
     from instructor.dsl.partial import PartialLiteralMixin
+
 
     class User(BaseModel, PartialLiteralMixin):
         name: str
         age: int
         category: Literal["admin", "user", "guest"]
 
-    // The rest of your code below
+
+    # The rest of your code below
     ```
 
     This is because `jiter` throws an error otherwise if it encounters a incomplete Literal value while it's being streamed in
@@ -44,7 +48,7 @@ If we streamed json out from OpenAI, we would only be able to parse when the obj
 ```
 {"name": "Jo
 {"name": "John", "ag
-{"name": "John", "age":
+{"name": "John", "age:
 {"name": "John", "age": 25} # Completed
 ```
 
@@ -184,11 +188,11 @@ async def print_partial_results():
         print(m)
         #> name=None age=None
         #> name=None age=None
-        #> name=None age=None
-        #> name=None age=12
-        #> name=None age=12
-        #> name=None age=12
-        #> name='' age=12
+        #> name='' age=None
+        #> name='Jason' age=None
+        #> name='Jason' age=None
+        #> name='Jason' age=None
+        #> name='Jason' age=None
         #> name='Jason' age=12
         #> name='Jason' age=12
 

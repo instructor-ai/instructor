@@ -13,7 +13,8 @@ def from_mistral(
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     use_async: Literal[True] = True,
     **kwargs: Any,
-) -> instructor.AsyncInstructor: ...
+) -> instructor.AsyncInstructor:
+    ...
 
 
 @overload
@@ -22,7 +23,9 @@ def from_mistral(
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     use_async: Literal[False] = False,
     **kwargs: Any,
-) -> instructor.Instructor: ...
+) -> instructor.Instructor:
+    ...
+
 
 def from_mistral(
     client: Mistral,
@@ -33,8 +36,6 @@ def from_mistral(
     assert mode in {
         instructor.Mode.MISTRAL_TOOLS,
     }, "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
-
-    
 
     assert isinstance(
         client, Mistral

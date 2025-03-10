@@ -14,18 +14,23 @@ from openai import pydantic_function_tool
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, create_model
 
+# from instructor.client_bedrock import handle_bedrock_json
 from instructor.mode import Mode
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import (
-    ParallelBase, 
-    ParallelModel, 
-    handle_parallel_model, 
+    ParallelBase,
+    ParallelModel,
+    handle_parallel_model,
     get_types_array,
     VertexAIParallelBase,
-    VertexAIParallelModel
+    VertexAIParallelModel,
 )
 from instructor.dsl.partial import PartialBase
-from instructor.dsl.simple_type import AdapterBase, ModelAdapter, is_simple_type
+from instructor.dsl.simple_type import (
+    AdapterBase,
+    ModelAdapter,
+    is_simple_type,
+)
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.utils import (
     merge_consecutive_messages,
@@ -183,6 +188,7 @@ def process_response(
         return model.content
 
     model._raw_response = response
+
     return model
 
 
@@ -357,6 +363,30 @@ def handle_anthropic_tools(
     return response_model, new_kwargs
 
 
+def handle_anthropic_reasoning_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
+
+    response_model, new_kwargs = handle_anthropic_tools(response_model, new_kwargs)
+
+    # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
+    # Reasoning does not allow forced tool use
+    new_kwargs["tool_choice"] = {"type": "auto"}
+
+    # But add a message recommending only to use the tools if they are relevant
+    implict_forced_tool_message = dedent(
+        f"""
+        Return only the tool call and no additional text.
+        """
+    )
+    new_kwargs["system"] = combine_system_messages(
+        new_kwargs.get("system"),
+        [{"type": "text", "text": implict_forced_tool_message}],
+    )
+    return response_model, new_kwargs
+
+
 def handle_anthropic_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
@@ -383,7 +413,8 @@ def handle_anthropic_json(
     )
 
     new_kwargs["system"] = combine_system_messages(
-        new_kwargs.get("system"), [{"type": "text", "text": json_schema_message}]
+        new_kwargs.get("system"),
+        [{"type": "text", "text": json_schema_message}],
     )
 
     return response_model, new_kwargs
@@ -498,17 +529,16 @@ def handle_vertexai_parallel_tools(
     assert (
         new_kwargs.get("stream", False) is False
     ), "stream=True is not supported when using PARALLEL_TOOLS mode"
-    
+
     from instructor.client_vertexai import vertexai_process_response
-    
+
     # Extract concrete types before passing to vertexai_process_response
     model_types = list(get_types_array(response_model))
     contents, tools, tool_config = vertexai_process_response(new_kwargs, model_types)
-    
     new_kwargs["contents"] = contents
     new_kwargs["tools"] = tools
     new_kwargs["tool_config"] = tool_config
-    
+
     return VertexAIParallelModel(typehint=response_model), new_kwargs
 
 
@@ -536,6 +566,42 @@ def handle_vertexai_json(
 
     new_kwargs["contents"] = contents
     new_kwargs["generation_config"] = generation_config
+    return response_model, new_kwargs
+
+
+def handle_bedrock_json(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    json_message = dedent(
+        f"""
+        As a genius expert, your task is to understand the content and provide
+        the parsed objects in json that match the following json_schema:\n
+
+        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+        Make sure to return an instance of the JSON, not the schema itself 
+        and don't include any other text in the response apart from the json
+        """
+    )
+    system_message = new_kwargs.pop("system", None)
+    if not system_message:
+        new_kwargs["system"] = [{"text": json_message}]
+    else:
+        if not isinstance(system_message, list):
+            raise ValueError(
+                """system must be a list of SystemMessage refer 
+                https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse.html
+                """
+            )
+        system_message.append({"text": json_message})
+        new_kwargs["system"] = system_message
+
+    return response_model, new_kwargs
+
+
+def handle_bedrock_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
     return response_model, new_kwargs
 
 
@@ -612,7 +678,7 @@ The output must be a valid JSON object that `{response_model.__name__}.model_val
 
 
 def handle_writer_tools(
-        response_model: type[T], new_kwargs: dict[str, Any]
+    response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
     new_kwargs["tools"] = [
         {
@@ -621,6 +687,17 @@ def handle_writer_tools(
         }
     ]
     new_kwargs["tool_choice"] = "auto"
+    return response_model, new_kwargs
+
+
+def handle_perplexity_json(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs["response_format"] = {
+        "type": "json_schema",
+        "json_schema": {"schema": response_model.model_json_schema()},
+    }
+
     return response_model, new_kwargs
 
 
@@ -691,6 +768,7 @@ def handle_response_model(
     """
 
     new_kwargs = kwargs.copy()
+    # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 
     if response_model is None:
@@ -732,6 +810,7 @@ def handle_response_model(
         Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
         Mode.JSON_SCHEMA: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA),  # type: ignore
         Mode.ANTHROPIC_TOOLS: handle_anthropic_tools,
+        Mode.ANTHROPIC_REASONING_TOOLS: handle_anthropic_reasoning_tools,
         Mode.ANTHROPIC_JSON: handle_anthropic_json,
         Mode.COHERE_JSON_SCHEMA: handle_cohere_json_schema,
         Mode.COHERE_TOOLS: handle_cohere_tools,
@@ -744,6 +823,9 @@ def handle_response_model(
         Mode.FIREWORKS_JSON: handle_fireworks_json,
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
         Mode.WRITER_TOOLS: handle_writer_tools,
+        Mode.BEDROCK_JSON: handle_bedrock_json,
+        Mode.BEDROCK_TOOLS: handle_bedrock_tools,
+        Mode.PERPLEXITY_JSON: handle_perplexity_json,
     }
 
     if mode in mode_handlers:

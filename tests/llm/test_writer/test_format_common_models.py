@@ -8,8 +8,10 @@ class User(BaseModel):
     first_name: str
     age: int
 
+
 class UserList(BaseModel):
     items: list[User]
+
 
 import pytest
 from itertools import product
@@ -18,6 +20,7 @@ import instructor
 import enum
 
 from typing import Literal
+
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_writer_format_literal(model: str, mode: instructor.Mode):
@@ -134,6 +137,7 @@ async def test_writer_format_async(mode: instructor.Mode, model: str):
     assert response.first_name == "Yan"
     assert response.age == 27
 
+
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_writer_format_list_of_strings(mode: instructor.Mode, model: str):
     client = instructor.from_writer(
@@ -153,7 +157,7 @@ def test_writer_format_list_of_strings(mode: instructor.Mode, model: str):
         {
             "name": "Chris",
             "age": 27,
-        }
+        },
     ]
 
     prompt = """

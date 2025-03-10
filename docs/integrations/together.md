@@ -11,7 +11,7 @@ authors:
   - jxnl
 ---
 
-# Structured outputs with Together AI, a complete guide w/ instructor
+# Structured outputs with Together AI, a complete guide with instructor
 
 This guide demonstrates how to use Together AI with Instructor to generate structured outputs. You'll learn how to use function calling with Together's models to create type-safe responses.
 

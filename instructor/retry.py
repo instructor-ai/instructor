@@ -10,7 +10,10 @@ from instructor.exceptions import InstructorRetryException
 from instructor.hooks import Hooks
 from instructor.mode import Mode
 from instructor.reask import handle_reask_kwargs
-from instructor.process_response import process_response, process_response_async
+from instructor.process_response import (
+    process_response,
+    process_response_async,
+)
 from instructor.utils import update_total_usage
 from instructor.validators import AsyncValidationError
 from openai.types.chat import ChatCompletion
@@ -106,9 +109,15 @@ def extract_messages(kwargs: dict[str, Any]) -> Any:
     Returns:
         Any: Extracted messages.
     """
-    return kwargs.get(
-        "messages", kwargs.get("contents", kwargs.get("chat_history", []))
-    )
+    # Directly check for keys in an efficient order (most common first)
+    # instead of nested get() calls which are inefficient
+    if "messages" in kwargs:
+        return kwargs["messages"]
+    if "contents" in kwargs:
+        return kwargs["contents"]
+    if "chat_history" in kwargs:
+        return kwargs["chat_history"]
+    return []
 
 
 def retry_sync(
@@ -146,6 +155,9 @@ def retry_sync(
     total_usage = initialize_usage(mode)
     max_retries = initialize_retrying(max_retries, is_async=False)
 
+    # Pre-extract stream flag to avoid repeated lookup
+    stream = kwargs.get("stream", False)
+
     try:
         response = None
         for attempt in max_retries:
@@ -158,13 +170,14 @@ def retry_sync(
                     response = update_total_usage(
                         response=response, total_usage=total_usage
                     )
+
                     return process_response(  # type: ignore
                         response=response,
                         response_model=response_model,
                         validation_context=context,
                         strict=strict,
                         mode=mode,
-                        stream=kwargs.get("stream", False),
+                        stream=stream,
                     )
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Parse error: {e}")
@@ -183,9 +196,9 @@ def retry_sync(
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             #! deprecate messages soon
-            messages=kwargs.get(
-                "messages", kwargs.get("contents", kwargs.get("chat_history", []))
-            ),
+            messages=extract_messages(
+                kwargs
+            ),  # Use the optimized function instead of nested lookups
             create_kwargs=kwargs,
             total_usage=total_usage,
         ) from e
@@ -226,6 +239,9 @@ async def retry_async(
     total_usage = initialize_usage(mode)
     max_retries = initialize_retrying(max_retries, is_async=True)
 
+    # Pre-extract stream flag to avoid repeated lookup
+    stream = kwargs.get("stream", False)
+
     try:
         response = None
         async for attempt in max_retries:
@@ -245,9 +261,13 @@ async def retry_async(
                         validation_context=context,
                         strict=strict,
                         mode=mode,
-                        stream=kwargs.get("stream", False),
+                        stream=stream,
                     )
-                except (ValidationError, JSONDecodeError, AsyncValidationError) as e:
+                except (
+                    ValidationError,
+                    JSONDecodeError,
+                    AsyncValidationError,
+                ) as e:
                     logger.debug(f"Parse error: {e}")
                     hooks.emit_parse_error(e)
                     kwargs = handle_reask_kwargs(
@@ -264,9 +284,9 @@ async def retry_async(
             last_completion=response,
             n_attempts=attempt.retry_state.attempt_number,
             #! deprecate messages soon
-            messages=kwargs.get(
-                "messages", kwargs.get("contents", kwargs.get("chat_history", []))
-            ),
+            messages=extract_messages(
+                kwargs
+            ),  # Use the optimized function instead of nested lookups
             create_kwargs=kwargs,
             total_usage=total_usage,
         ) from e

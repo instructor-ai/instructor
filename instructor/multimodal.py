@@ -293,7 +293,11 @@ def convert_contents(
         elif isinstance(content, dict):
             converted_contents.append(content)
         elif isinstance(content, (Image, Audio)):
-            if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
+            if mode in {
+                Mode.ANTHROPIC_JSON,
+                Mode.ANTHROPIC_TOOLS,
+                Mode.ANTHROPIC_REASONING_TOOLS,
+            }:
                 converted_contents.append(content.to_anthropic())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
                 raise NotImplementedError("Gemini is not supported yet")

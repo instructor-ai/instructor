@@ -295,6 +295,37 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+### Using Perplexity Sonar Models
+
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_perplexity(OpenAI(base_url="https://api.perplexity.ai"))
+
+resp = client.chat.completions.create(
+    model="sonar",
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
 ### Using Litellm
 
 ```python
@@ -520,7 +551,21 @@ Here's a quick list of commands that you can run to get started. We're using `uv
 
 2. `uv run pytest` : This runs the tests in `pytest`. If you're pushing up a new PR, make sure that you've written some tests and that they're passing locally for you
 
-We use `ruff` and `pyright` for linting and type checking so make sure those are passing when you push up a PR. You can check pyright by running `uv run pyright` and ruff with `uv run ruff check` locally.
+We use `ruff` for linting and formatting, `pyright` for type checking. 
+
+Make sure these are passing when you push up a PR:
+
+- Linting: `uv run ruff check`
+- Formatting: `uv run ruff format`
+
+### Pre-commit Hooks
+
+We use pre-commit hooks to ensure code quality. To set up pre-commit hooks:
+
+1. Install pre-commit: `pip install pre-commit`
+2. Set up the hooks: `pre-commit install`
+
+This will automatically run Black and Ruff formatters, as well as Ruff linting checks before each commit, ensuring your code meets our style guidelines.
 
 ## CLI
 

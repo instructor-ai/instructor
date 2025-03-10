@@ -1,17 +1,23 @@
 ---
-title: Enhancing OpenAI Client Functionality with New Keywords
-description: Learn how to use new keywords for backward compatibility in the OpenAI client, improving functionality and structured output.
+title: Patching Client Libraries for Structured Output
+description: Learn how Instructor enhances LLM client libraries with structured output capabilities through patching.
 ---
 
 # Patching
 
-Instructor enhances client functionality with three new keywords for backwards compatibility. This allows use of the enhanced client as usual, with structured output benefits.
+Instructor enhances LLM client functionality by patching them with additional capabilities for structured outputs. This allows you to use the enhanced client as usual, while gaining structured output benefits.
 
-- `response_model`: Defines the response type for `chat.completions.create`.
-- `max_retries`: Determines retry attempts for failed `chat.completions.create` validations.
-- `validation_context`: Provides extra context to the validation process.
+## Core Patching Features
 
-The default mode is `instructor.Mode.TOOLS` which is the recommended mode for OpenAI clients. This mode is the most stable and is the most recommended for OpenAI clients. The other modes are for other clients and are not recommended for OpenAI clients.
+Instructor adds three key parameters to the client's `chat.completions.create` method:
+
+- `response_model`: Defines the expected response type (Pydantic model or simple type)
+- `max_retries`: Controls how many retry attempts should be made if validation fails
+- `validation_context`: Provides additional context for validation hooks
+
+## Patching Modes
+
+The default mode is `instructor.Mode.TOOLS` which is the recommended mode for OpenAI clients. Different providers support different modes based on their capabilities.
 
 ## Tool Calling
 

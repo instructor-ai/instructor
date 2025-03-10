@@ -1,9 +1,9 @@
 ---
-title: Structured Outputs with Writer
+title: Structured Outputs with Writer, a complete guide with instructor
 description: Learn how to use Writer for structured outputs using their latest Palmyra-X-004 model for more reliable system outputs
 ---
 
-# Structured Outputs with Writer
+# Structured Outputs with Writer, a complete guide with instructor
 
 This guide demonstrates how to use Writer for structured outputs using their latest Palmyra-X-004 model for more reliable system outputs.
 

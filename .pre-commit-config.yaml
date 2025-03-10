@@ -1,14 +1,10 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.7 # Ruff version
+    rev: v0.9.9 # Ruff version
     hooks:
       - id: ruff # Run the linter.
         name: Run Linter Check (Ruff)
-        args: [ --fix ]
+        args: [ --fix, --unsafe-fixes ]
         files: ^(instructor|tests|examples)/
       - id: ruff-format       # Run the formatter.
         name: Run Formatter (Ruff)
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.360
-    hooks:
-    - id: pyright

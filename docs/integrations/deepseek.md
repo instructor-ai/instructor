@@ -1,9 +1,9 @@
 ---
-title: "Structured outputs with DeepSeek, a complete guide w/ instructor"
+title: "Structured outputs with DeepSeek, a complete guide with instructor"
 description: "Learn how to use Instructor with DeepSeek's models for type-safe, structured outputs."
 ---
 
-# DeepSeek Integration with Instructor
+# Structured outputs with DeepSeek, a complete guide with instructor
 
 DeepSeek is a Chinese company that provides AI models and services. They're most notable for the deepseek coder and chat model and most recently, the R1 reasoning model.
 

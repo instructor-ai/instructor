@@ -1,6 +1,7 @@
 import pytest
 from pytest_examples import CodeExample, EvalExample
 
+
 @pytest.mark.skip(reason="Hub functionality is being removed")
 def test_format_blog(example: CodeExample, eval_example: EvalExample) -> None:
     """This test is being skipped as the hub functionality is being removed."""

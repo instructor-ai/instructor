@@ -1,4 +1,4 @@
-from __future__ import annotations
+from __future__ import annotations  # type: ignore
 
 from typing import Any, overload
 
@@ -14,7 +14,8 @@ def from_cerebras(
     client: Cerebras,
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     **kwargs: Any,
-) -> Instructor: ...
+) -> Instructor:
+    ...
 
 
 @overload
@@ -22,7 +23,8 @@ def from_cerebras(
     client: AsyncCerebras,
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     **kwargs: Any,
-) -> AsyncInstructor: ...
+) -> AsyncInstructor:
+    ...
 
 
 def from_cerebras(

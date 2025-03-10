@@ -59,13 +59,13 @@ def from_anthropic(
         TypeError: If enable_prompt_caching is True and client is not Anthropic or AsyncAnthropic
         AssertionError: If mode is not ANTHROPIC_JSON or ANTHROPIC_TOOLS
     """
-    assert (
-        mode
-        in {
-            instructor.Mode.ANTHROPIC_JSON,
-            instructor.Mode.ANTHROPIC_TOOLS,
-        }
-    ), "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS}"
+    assert mode in {
+        instructor.Mode.ANTHROPIC_JSON,
+        instructor.Mode.ANTHROPIC_TOOLS,
+        instructor.Mode.ANTHROPIC_REASONING_TOOLS,
+    }, (
+        "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS, instructor.Mode.ANTHROPIC_REASONING_TOOLS}"
+    )
 
     assert isinstance(
         client,
@@ -77,7 +77,9 @@ def from_anthropic(
             anthropic.AsyncAnthropicBedrock,
             anthropic.AsyncAnthropicVertex,
         ),
-    ), "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
+    ), (
+        "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
+    )
 
     if beta:
         create = client.beta.messages.create

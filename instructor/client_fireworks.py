@@ -14,7 +14,8 @@ def from_fireworks(
     client: Fireworks,
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     **kwargs: Any,
-) -> Instructor: ...
+) -> Instructor:
+    ...
 
 
 @overload
@@ -22,7 +23,8 @@ def from_fireworks(
     client: AsyncFireworks,
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     **kwargs: Any,
-) -> AsyncInstructor: ...
+) -> AsyncInstructor:
+    ...
 
 
 def from_fireworks(

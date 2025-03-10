@@ -32,9 +32,9 @@ def from_writer(
         instructor.Mode.WRITER_TOOLS,
     }, "Mode must be instructor.Mode.WRITER_TOOLS"
 
-    assert isinstance(
-        client, (Writer, AsyncWriter)
-    ), "Client must be an instance of Writer or AsyncWriter"
+    assert isinstance(client, (Writer, AsyncWriter)), (
+        "Client must be an instance of Writer or AsyncWriter"
+    )
 
     if isinstance(client, Writer):
         return instructor.Instructor(
