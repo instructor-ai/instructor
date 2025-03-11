@@ -13,8 +13,7 @@ def from_mistral(
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     use_async: Literal[True] = True,
     **kwargs: Any,
-) -> instructor.AsyncInstructor:
-    ...
+) -> instructor.AsyncInstructor: ...
 
 
 @overload
@@ -23,8 +22,7 @@ def from_mistral(
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
     use_async: Literal[False] = False,
     **kwargs: Any,
-) -> instructor.Instructor:
-    ...
+) -> instructor.Instructor: ...
 
 
 def from_mistral(
@@ -35,6 +33,7 @@ def from_mistral(
 ) -> instructor.Instructor | instructor.AsyncInstructor:
     assert mode in {
         instructor.Mode.MISTRAL_TOOLS,
+        instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS,
     }, "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
 
     assert isinstance(
@@ -44,7 +43,12 @@ def from_mistral(
     if not use_async:
         return instructor.Instructor(
             client=client,
-            create=instructor.patch(create=client.chat.complete, mode=mode),
+            create=instructor.patch(
+                create=client.chat.parse
+                if mode == instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS
+                else client.chat.complete,
+                mode=mode,
+            ),
             provider=instructor.Provider.MISTRAL,
             mode=mode,
             **kwargs,
@@ -53,7 +57,12 @@ def from_mistral(
     else:
         return instructor.AsyncInstructor(
             client=client,
-            create=instructor.patch(create=client.chat.complete_async, mode=mode),
+            create=instructor.patch(
+                create=client.chat.parse_async
+                if mode == instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS
+                else client.chat.complete_async,
+                mode=mode,
+            ),
             provider=instructor.Provider.MISTRAL,
             mode=mode,
             **kwargs,
