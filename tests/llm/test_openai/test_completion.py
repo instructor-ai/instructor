@@ -28,6 +28,23 @@ def test_create_with_completion():
     assert isinstance(completion, ChatCompletion)
 
 
+def test_create_with_completion_bool():
+    client = OpenAI()
+    client = instructor.from_openai(client)
+
+    response, completion = client.chat.completions.create_with_completion(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": "Is paris the capital of France?"}],
+        response_model=bool,  # type: ignore
+    )
+
+    # Verify we got a valid response
+    assert isinstance(response, bool)
+    assert response is True
+
+    assert isinstance(completion, ChatCompletion)
+
+
 @pytest.mark.asyncio
 async def test_create_with_completion_async():
     client = AsyncOpenAI()
