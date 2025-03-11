@@ -47,9 +47,7 @@ def from_mistral(
         return instructor.Instructor(
             client=client,
             create=instructor.patch(
-                create=client.chat.parse
-                if mode == instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS
-                else client.chat.complete,
+                create=client.chat.complete,
                 mode=mode,
             ),
             provider=instructor.Provider.MISTRAL,
@@ -61,9 +59,7 @@ def from_mistral(
         return instructor.AsyncInstructor(
             client=client,
             create=instructor.patch(
-                create=client.chat.parse_async
-                if mode == instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS
-                else client.chat.complete_async,
+                create=client.chat.complete_async,
                 mode=mode,
             ),
             provider=instructor.Provider.MISTRAL,

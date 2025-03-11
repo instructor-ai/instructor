@@ -236,7 +236,9 @@ class OpenAISchema(BaseModel):
             return cls.parse_functions(completion, validation_context, strict)
 
         if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
-            return cls.parse_mistral_structured_outputs(completion)
+            return cls.parse_mistral_structured_outputs(
+                completion, validation_context, strict
+            )
 
         if mode in {
             Mode.TOOLS,
@@ -490,6 +492,8 @@ class OpenAISchema(BaseModel):
     def parse_mistral_structured_outputs(
         cls: type[BaseModel],
         completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
     ) -> BaseModel:
         if not completion.choices or len(completion.choices) > 1:
             raise ValueError(
@@ -498,14 +502,9 @@ class OpenAISchema(BaseModel):
 
         message = completion.choices[0].message
 
-        if message.parsed is None:
-            raise ValueError("You must output a valid Pydantic model from the response")
-
-        parsed_response = message.parsed
-        assert isinstance(
-            parsed_response, cls
-        ), f"Parsed response is not of type {cls.__name__}"
-        return parsed_response
+        return cls.model_validate_json(
+            message.content, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_json(

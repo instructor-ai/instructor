@@ -265,7 +265,9 @@ def handle_mistral_tools(
 def handle_mistral_structured_outputs(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    new_kwargs["response_format"] = response_model
+    from mistralai.extra import response_format_from_pydantic_model
+
+    new_kwargs["response_format"] = response_format_from_pydantic_model(response_model)
     new_kwargs.pop("tools", None)
     new_kwargs.pop("response_model", None)
     return response_model, new_kwargs

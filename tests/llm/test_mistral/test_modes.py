@@ -12,7 +12,6 @@ class User(BaseModel):
 @pytest.mark.parametrize("mode", modes)
 @pytest.mark.parametrize("model", models)
 def test_mistral_structured_outputs_sync(client, model, mode):
-    # Apply instructor patch with MISTRAL_STRUCTURED_OUTPUTS mode
     patched_client = instructor.from_mistral(client, mode=mode)
 
     # Test extracting structured data
