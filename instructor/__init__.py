@@ -106,3 +106,8 @@ if importlib.util.find_spec("openai") is not None:
     from .client_perplexity import from_perplexity
 
     __all__ += ["from_perplexity"]
+
+if importlib.util.find_spec("google") is not None:
+    from .client_genai import from_genai
+
+    __all__ += ["from_genai"]
