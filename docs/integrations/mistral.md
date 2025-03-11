@@ -40,6 +40,26 @@ Instructor provides two modes for working with Mistral:
 1. `instructor.Mode.MISTRAL_TOOLS`: Uses Mistral's function calling API to return structured outputs (default)
 2. `instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS`: Uses Mistral's structured output capabilities
 
+To set the mode for your mistral client, simply use the code snippet below
+
+```python
+import os
+from pydantic import BaseModel
+from mistralai import Mistral
+from instructor import from_mistral
+
+
+# Initialize with API key
+client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
+
+# Enable instructor patches for Mistral client
+instructor_client = from_mistral(
+    client=client,
+    # Set the mode here
+    mode=Mode.MISTRAL_TOOLS,
+)
+```
+
 ## Simple User Example (Sync)
 
 ```python
@@ -60,14 +80,13 @@ client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 # Enable instructor patches for Mistral client
 instructor_client = from_mistral(
     client=client,
-    model="mistral-large-latest",
     mode=Mode.MISTRAL_TOOLS,
-    max_tokens=1000,
 )
 
 # Extract a single user
 user = instructor_client.chat.completions.create(
     response_model=UserDetails,
+    model="mistral-large-latest",
     messages=[{"role": "user", "content": "Jason is 25 years old"}],
     temperature=0,
 )
@@ -99,7 +118,6 @@ client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 # Enable instructor patches for async Mistral client
 instructor_client = from_mistral(
     client=client,
-    model="mistral-large-latest",
     mode=Mode.MISTRAL_TOOLS,
     use_async=True,
 )
@@ -109,6 +127,7 @@ async def extract_user():
         response_model=User,
         messages=[{"role": "user", "content": "Jack is 28 years old."}],
         temperature=0,
+        model="mistral-large-latest",
     )
     return user
 
@@ -145,7 +164,6 @@ client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 # Enable instructor patches for Mistral client
 instructor_client = from_mistral(
     client=client,
-    model="mistral-large-latest",
     mode=Mode.MISTRAL_TOOLS,
 )
 
