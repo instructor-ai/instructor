@@ -36,6 +36,8 @@ from instructor.utils import (
     merge_consecutive_messages,
     extract_system_messages,
     combine_system_messages,
+    map_to_gemini_function_schema,
+    convert_to_genai_messages,
 )
 from instructor.multimodal import convert_messages
 
@@ -527,7 +529,6 @@ def handle_genai_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
     from google.genai import types
-    from instructor.utils import map_to_gemini_function_schema
 
     schema = map_to_gemini_function_schema(response_model.model_json_schema())
     function_definition = types.FunctionDeclaration(
@@ -545,7 +546,7 @@ def handle_genai_tools(
         ),
     )
 
-    new_kwargs["contents"] = new_kwargs["messages"]
+    new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)

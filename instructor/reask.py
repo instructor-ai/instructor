@@ -373,6 +373,31 @@ def reask_perplexity_json(
     return kwargs
 
 
+def reask_genai_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    from google.genai import types
+
+    kwargs = kwargs.copy()
+    function_call = response.candidates[0].content.parts[0].function_call
+    kwargs["contents"].append(
+        types.ModelContent(
+            parts=[
+                types.Part.from_function_call(
+                    name=function_call.name,
+                    args=function_call.args,
+                ),
+                types.Part.from_text(
+                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+                ),
+            ]
+        ),
+    )
+    return kwargs
+
+
 def handle_reask_kwargs(
     kwargs: dict[str, Any],
     mode: Mode,
@@ -414,5 +439,7 @@ def handle_reask_kwargs(
         return reask_bedrock_json(kwargs_copy, response, exception)
     elif mode == Mode.PERPLEXITY_JSON:
         return reask_perplexity_json(kwargs_copy, response, exception)
+    elif mode == Mode.GENAI_TOOLS:
+        return reask_genai_tools(kwargs_copy, response, exception)
     else:
         return reask_default(kwargs_copy, response, exception)

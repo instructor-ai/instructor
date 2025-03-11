@@ -890,3 +890,58 @@ def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessag
                 result.append(convert_message(content))
 
     return result
+
+
+def convert_to_genai_messages(
+    messages: list[Union[str, dict[str, Any], list[dict[str, Any]]]],  # noqa: UP007
+) -> list[dict[str, Any]]:
+    """
+    Convert a list of messages to a list of dictionaries in the format expected by the Gemini API.
+
+    This optimized version pre-allocates the result list and
+    reduces function call overhead.
+    """
+    from google.genai import types
+
+    result: list[types.Content] = []
+
+    for message in messages:
+        # We assume this is the user's message and we don't need to convert it
+        if isinstance(message, str):
+            result.append(
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=message)],
+                )
+            )
+        elif isinstance(message, types.Content):
+            result.append(message)
+        elif isinstance(message, dict):
+            assert "role" in message
+            assert "content" in message
+
+            if message["role"] == "system":
+                continue
+
+            if message["role"] not in {"user", "model"}:
+                raise ValueError(f"Unsupported role: {message['role']}")
+
+            content_parts = []
+
+            for content_item in message["content"]:
+                if isinstance(content_item, str):
+                    content_parts.append(types.Part.from_text(text=content_item))
+                else:
+                    raise ValueError(
+                        f"Unsupported content item type: {type(content_item)}"
+                    )
+            result.append(
+                types.Content(
+                    role=message["role"],
+                    parts=content_parts,
+                )
+            )
+        else:
+            raise ValueError(f"Unsupported message type: {type(message)}")
+
+    return result
