@@ -262,6 +262,15 @@ def handle_mistral_tools(
     return response_model, new_kwargs
 
 
+def handle_mistral_structured_outputs(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs["response_format"] = response_model
+    new_kwargs.pop("tools", None)
+    new_kwargs.pop("response_model", None)
+    return response_model, new_kwargs
+
+
 def handle_json_o1(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
@@ -821,6 +830,7 @@ def handle_response_model(
         Mode.TOOLS_STRICT: handle_tools_strict,
         Mode.TOOLS: handle_tools,
         Mode.MISTRAL_TOOLS: handle_mistral_tools,
+        Mode.MISTRAL_STRUCTURED_OUTPUTS: handle_mistral_structured_outputs,
         Mode.JSON_O1: handle_json_o1,
         Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON),  # type: ignore
         Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
