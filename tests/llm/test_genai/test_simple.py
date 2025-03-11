@@ -1,6 +1,5 @@
 import pytest
 from pydantic import BaseModel
-import google.genai as genai
 import instructor
 from .util import models, modes
 
