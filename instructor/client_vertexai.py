@@ -149,7 +149,7 @@ def from_vertexai(
 def from_vertexai(
     client: gm.GenerativeModel,
     mode: instructor.Mode = instructor.Mode.VERTEXAI_TOOLS,
-    _async: Literal[True] = True,
+    _async: Literal[False] = False,
     **kwargs: Any,
 ) -> instructor.Instructor:  #
     ...
