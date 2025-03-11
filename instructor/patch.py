@@ -188,7 +188,7 @@ def patch(  # type: ignore
             response_model=response_model, mode=mode, **kwargs
         )  # type: ignore
 
-        new_kwargs = handle_templating(new_kwargs, context)
+        new_kwargs = handle_templating(new_kwargs, mode=mode, context=context)
 
         response = retry_sync(
             func=func,  # type: ignore
