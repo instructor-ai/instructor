@@ -1,5 +1,4 @@
 # conftest.py
-from openai import AsyncOpenAI, OpenAI
 import pytest
 import os
 from mistralai import Mistral
