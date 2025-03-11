@@ -894,7 +894,7 @@ def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessag
 
 def extract_genai_system_message(
     messages: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
+) -> str:
     """
     Extract system messages from a list of messages.
 
@@ -908,9 +908,9 @@ def extract_genai_system_message(
         elif isinstance(message, dict):
             if message.get("role") == "system":
                 if isinstance(message.get("content"), str):
-                    system_messages += message.get("content") + "\n\n"
+                    system_messages += message.get("content", "") + "\n\n"
                 elif isinstance(message.get("content"), list):
-                    for item in message.get("content"):
+                    for item in message.get("content", []):
                         if isinstance(item, str):
                             system_messages += item + "\n\n"
 
@@ -919,7 +919,7 @@ def extract_genai_system_message(
 
 def convert_to_genai_messages(
     messages: list[Union[str, dict[str, Any], list[dict[str, Any]]]],  # noqa: UP007
-) -> list[dict[str, Any]]:
+) -> list[Any]:
     """
     Convert a list of messages to a list of dictionaries in the format expected by the Gemini API.
 
