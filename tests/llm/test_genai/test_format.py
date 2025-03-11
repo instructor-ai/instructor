@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import instructor
 from .util import models, modes
 from itertools import product
+from google import genai
 
 
 class User(BaseModel):
@@ -65,6 +66,31 @@ def test_system_kwarg(client, model, mode):
                 "role": "user",
                 "content": "Make sure that the response is a list of users",
             },
+        ],
+        response_model=Users,
+    )
+    assert isinstance(response, Users)
+    assert len(response.users) > 0
+    assert response.users[0].name == "Ivan"
+    assert response.users[0].age == 28
+
+
+@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("mode", modes)
+def test_system_kwarg(client, model, mode):
+    client = instructor.from_genai(client, mode=mode)
+    response = client.chat.completions.create(
+        model=model,
+        system="Ivan is 28 years old",
+        messages=[
+            genai.types.Content(
+                role="user",
+                parts=[
+                    genai.types.Part.from_text(
+                        text="Make sure that the response is a list of users"
+                    )
+                ],
+            ),
         ],
         response_model=Users,
     )
