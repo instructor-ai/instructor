@@ -62,7 +62,7 @@ async def test_create_with_completion_async():
         _async=True,
     )
 
-    resp = await client.chat.completions.create(  # type: ignore
+    resp, completion = await client.chat.completions.create_with_completion(  # type: ignore
         messages=[
             {
                 "role": "user",
@@ -76,4 +76,4 @@ async def test_create_with_completion_async():
     assert resp.name == "Jason"
     assert resp.age == 25
 
-    # assert isinstance(completion, GenerationResponse)
+    assert isinstance(completion, GenerationResponse)
