@@ -2,6 +2,7 @@ import pytest
 from pydantic import BaseModel
 import instructor
 from .util import models, modes
+from itertools import product
 
 
 class User(BaseModel):
@@ -98,3 +99,30 @@ def test_system_prompt_list(client, model, mode):
     assert len(response.users) > 0
     assert response.users[0].name == "Ivan"
     assert response.users[0].age == 28
+
+
+@pytest.mark.parametrize("model, mode, is_list", product(models, modes, [True, False]))
+def test_format_string(client, model: str, mode: instructor.Mode, is_list: bool):
+    client = instructor.from_genai(client, mode=mode)
+
+    content = (
+        ["Extract {{name}} is {{age}} years old."]
+        if is_list
+        else "Extract {{name}} is {{age}} years old."
+    )
+
+    resp = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": content,
+            }
+        ],
+        response_model=User,
+        context={"name": "Jason", "age": 25},
+    )
+
+    assert isinstance(resp, User)
+    assert resp.name == "Jason"
+    assert resp.age == 25
