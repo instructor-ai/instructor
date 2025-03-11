@@ -31,10 +31,13 @@ def from_mistral(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert mode in {
-        instructor.Mode.MISTRAL_TOOLS,
-        instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS,
-    }, "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
+    assert (
+        mode
+        in {
+            instructor.Mode.MISTRAL_TOOLS,
+            instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS,
+        }
+    ), f"Mode must be one of {instructor.Mode.MISTRAL_TOOLS, instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS}"
 
     assert isinstance(
         client, Mistral
