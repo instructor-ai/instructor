@@ -177,6 +177,7 @@ user = instructor_client.chat.completions.create(
             and has a summer house at 456 Beach Rd, Miami, USA
         """}
     ],
+    model="mistral-large-latest",
     temperature=0,
 )
 
