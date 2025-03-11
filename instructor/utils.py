@@ -892,6 +892,31 @@ def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessag
     return result
 
 
+def extract_genai_system_message(
+    messages: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """
+    Extract system messages from a list of messages.
+
+    We expect an explicit system messsage for this provider.
+    """
+    system_messages = ""
+
+    for message in messages:
+        if isinstance(message, str):
+            continue
+        elif isinstance(message, dict):
+            if message.get("role") == "system":
+                if isinstance(message.get("content"), str):
+                    system_messages += message.get("content") + "\n\n"
+                elif isinstance(message.get("content"), list):
+                    for item in message.get("content"):
+                        if isinstance(item, str):
+                            system_messages += item + "\n\n"
+
+    return system_messages
+
+
 def convert_to_genai_messages(
     messages: list[Union[str, dict[str, Any], list[dict[str, Any]]]],  # noqa: UP007
 ) -> list[dict[str, Any]]:
@@ -926,21 +951,31 @@ def convert_to_genai_messages(
             if message["role"] not in {"user", "model"}:
                 raise ValueError(f"Unsupported role: {message['role']}")
 
-            content_parts = []
-
-            for content_item in message["content"]:
-                if isinstance(content_item, str):
-                    content_parts.append(types.Part.from_text(text=content_item))
-                else:
-                    raise ValueError(
-                        f"Unsupported content item type: {type(content_item)}"
+            if isinstance(message["content"], str):
+                result.append(
+                    types.Content(
+                        role=message["role"],
+                        parts=[types.Part.from_text(text=message["content"])],
                     )
-            result.append(
-                types.Content(
-                    role=message["role"],
-                    parts=content_parts,
                 )
-            )
+
+            elif isinstance(message["content"], list):
+                content_parts = []
+
+                for content_item in message["content"]:
+                    if isinstance(content_item, str):
+                        content_parts.append(types.Part.from_text(text=content_item))
+                    else:
+                        raise ValueError(
+                            f"Unsupported content item type: {type(content_item)}"
+                        )
+
+                result.append(
+                    types.Content(
+                        role=message["role"],
+                        parts=content_parts,
+                    )
+                )
         else:
             raise ValueError(f"Unsupported message type: {type(message)}")
 

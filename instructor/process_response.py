@@ -38,6 +38,7 @@ from instructor.utils import (
     combine_system_messages,
     map_to_gemini_function_schema,
     convert_to_genai_messages,
+    extract_genai_system_message,
 )
 from instructor.multimodal import convert_messages
 
@@ -537,7 +538,16 @@ def handle_genai_tools(
         parameters=schema,
     )
 
+    # We support the system message if you declare a system kwarg or if you pass a system message in the messages
+    if new_kwargs.get("system"):
+        system_message = new_kwargs.pop("system")
+    elif new_kwargs.get("messages"):
+        system_message = extract_genai_system_message(new_kwargs["messages"])
+    else:
+        system_message = None
+
     new_kwargs["config"] = types.GenerateContentConfig(
+        system_instruction=system_message,
         tools=[types.Tool(function_declarations=[function_definition])],
         tool_config=types.ToolConfig(
             function_calling_config=types.FunctionCallingConfig(
