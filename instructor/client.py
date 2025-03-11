@@ -189,6 +189,11 @@ class Instructor:
             **kwargs,
         )
 
+        if isinstance(response, AdapterBase):
+            return response.content  # type: ignore
+
+        return response
+
     @overload
     def create_partial(
         self: AsyncInstructor,
@@ -410,6 +415,11 @@ class AsyncInstructor(Instructor):
             hooks=self.hooks,
             **kwargs,
         )
+
+        if isinstance(response, AdapterBase):
+            return response.content  # type: ignore
+
+        return response
 
     async def create_partial(  # type: ignore[override]
         self,
