@@ -3,6 +3,7 @@ from __future__ import annotations
 import openai
 import inspect
 import instructor
+from instructor.dsl.simple_type import AdapterBase
 from .utils import Provider, get_provider
 from openai.types.chat import ChatCompletionMessageParam
 from typing import (
@@ -328,6 +329,7 @@ class Instructor:
         **kwargs: Any,
     ) -> tuple[T, Any] | Awaitable[tuple[T, Any]]:
         kwargs = self.handle_kwargs(kwargs)
+
         model = self.create_fn(
             messages=messages,
             response_model=response_model,
@@ -338,6 +340,10 @@ class Instructor:
             hooks=self.hooks,
             **kwargs,
         )
+
+        if isinstance(model, AdapterBase):
+            return model.content, model._raw_response  # type: ignore
+
         return model, model._raw_response
 
     def handle_kwargs(self, kwargs: dict[str, Any]) -> dict[str, Any]:
@@ -464,7 +470,7 @@ class AsyncInstructor(Instructor):
         **kwargs: Any,
     ) -> tuple[T, Any]:
         kwargs = self.handle_kwargs(kwargs)
-        response = await self.create_fn(
+        model = await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
             context=context,
@@ -474,7 +480,10 @@ class AsyncInstructor(Instructor):
             hooks=self.hooks,
             **kwargs,
         )
-        return response, response._raw_response
+        if isinstance(model, AdapterBase):
+            return model.content, model._raw_response  # type: ignore
+
+        return model, model._raw_response
 
 
 @overload
