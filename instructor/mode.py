@@ -31,6 +31,7 @@ class Mode(enum.Enum):
 
     # Mistral modes
     MISTRAL_TOOLS = "mistral_tools"
+    MISTRAL_STRUCTURED_OUTPUTS = "mistral_structured_outputs"
 
     # Vertex AI & Google modes
     VERTEXAI_TOOLS = "vertexai_tools"
@@ -79,6 +80,7 @@ class Mode(enum.Enum):
             cls.WRITER_TOOLS,
             cls.BEDROCK_TOOLS,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
+            cls.MISTRAL_STRUCTURED_OUTPUTS,
         }
 
     @classmethod
@@ -98,6 +100,7 @@ class Mode(enum.Enum):
             cls.BEDROCK_JSON,
             cls.PERPLEXITY_JSON,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
+            cls.MISTRAL_STRUCTURED_OUTPUTS,
         }
 
     @classmethod
