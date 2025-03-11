@@ -49,6 +49,7 @@ class Provider(Enum):
     MISTRAL = "mistral"
     COHERE = "cohere"
     GEMINI = "gemini"
+    GENAI = "genai"
     DATABRICKS = "databricks"
     CEREBRAS = "cerebras"
     FIREWORKS = "fireworks"

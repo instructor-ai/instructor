@@ -523,6 +523,36 @@ def handle_gemini_tools(
     return response_model, new_kwargs
 
 
+def handle_genai_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    from google.genai import types
+    from instructor.utils import map_to_gemini_function_schema
+
+    schema = map_to_gemini_function_schema(response_model.model_json_schema())
+    function_definition = types.FunctionDeclaration(
+        name=response_model.__name__,
+        description=response_model.__doc__,
+        parameters=schema,
+    )
+
+    new_kwargs["config"] = types.GenerateContentConfig(
+        tools=[types.Tool(function_declarations=[function_definition])],
+        tool_config=types.ToolConfig(
+            function_calling_config=types.FunctionCallingConfig(
+                mode="ANY", allowed_function_names=[response_model.__name__]
+            ),
+        ),
+    )
+
+    new_kwargs["contents"] = new_kwargs["messages"]
+
+    new_kwargs.pop("response_model", None)
+    new_kwargs.pop("messages", None)
+
+    return response_model, new_kwargs
+
+
 def handle_vertexai_parallel_tools(
     response_model: type[Iterable[T]], new_kwargs: dict[str, Any]
 ) -> tuple[VertexAIParallelBase, dict[str, Any]]:
@@ -832,6 +862,7 @@ def handle_response_model(
         Mode.COHERE_TOOLS: handle_cohere_tools,
         Mode.GEMINI_JSON: handle_gemini_json,
         Mode.GEMINI_TOOLS: handle_gemini_tools,
+        Mode.GENAI_TOOLS: handle_genai_tools,
         Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
         Mode.VERTEXAI_JSON: handle_vertexai_json,
         Mode.CEREBRAS_JSON: handle_cerebras_json,

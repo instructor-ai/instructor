@@ -215,6 +215,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.GEMINI_TOOLS:
             return cls.parse_gemini_tools(completion, validation_context, strict)
 
+        if mode == Mode.GENAI_TOOLS:
+            return cls.parse_genai_tools(completion, validation_context, strict)
+
         if mode == Mode.COHERE_JSON_SCHEMA:
             return cls.parse_cohere_json_schema(completion, validation_context, strict)
 
@@ -257,6 +260,28 @@ class OpenAISchema(BaseModel):
             return cls.parse_json(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
+
+    @classmethod
+    def parse_genai_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        from google.genai import types
+
+        assert isinstance(completion, types.GenerateContentResponse)
+        assert len(completion.candidates) == 1
+
+        assert (
+            len(completion.candidates[0].content.parts) == 1
+        ), f"Instructor does not support multiple function calls, use List[Model] instead"
+
+        function_call = completion.candidates[0].content.parts[0].function_call
+        assert function_call.name == cls.openai_schema["name"]
+        return cls.model_validate(
+            obj=function_call.args, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_cohere_json_schema(
