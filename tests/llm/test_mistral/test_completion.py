@@ -15,7 +15,7 @@ def test_create_with_completion():
     client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
     client = instructor.from_mistral(client, mode=instructor.Mode.MISTRAL_TOOLS)
 
-    users, completion = client.chat.completions.create_with_completion(
+    users, completion = client.chat.completions.create_with_completion(  # type: ignore
         model="mistral-large-latest",
         messages=[{"role": "user", "content": "Ivan is 28, Jack is 29 and John is 30"}],
         response_model=list[User],

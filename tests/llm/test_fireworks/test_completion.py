@@ -3,7 +3,6 @@ from fireworks.client import Fireworks, AsyncFireworks
 from fireworks.client.chat_completion import ChatCompletionResponse
 from pydantic import BaseModel
 import instructor
-from .util import modes
 
 
 class User(BaseModel):

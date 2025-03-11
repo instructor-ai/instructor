@@ -17,7 +17,7 @@ def test_create_with_completion():
     client = GenerativeModel(model_name="gemini-1.5-flash")
     client = instructor.from_gemini(client)
 
-    users, completion = client.messages.create_with_completion(
+    users, completion = client.messages.create_with_completion(  # type: ignore
         messages=[{"role": "user", "content": "Ivan is 28, Jack is 29 and John is 30"}],
         response_model=list[User],
     )

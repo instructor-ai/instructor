@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Union, get_origin
+from typing import Any, Union, get_origin, overload, Literal
 
 from vertexai.preview.generative_models import ToolConfig  # type: ignore
 import vertexai.generative_models as gm  # type: ignore
@@ -133,6 +133,26 @@ def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
     )
 
     return contents, generation_config
+
+
+@overload
+def from_vertexai(
+    client: gm.GenerativeModel,
+    mode: instructor.Mode = instructor.Mode.VERTEXAI_TOOLS,
+    _async: Literal[True] = True,
+    **kwargs: Any,
+) -> instructor.AsyncInstructor:  #
+    ...
+
+
+@overload
+def from_vertexai(
+    client: gm.GenerativeModel,
+    mode: instructor.Mode = instructor.Mode.VERTEXAI_TOOLS,
+    _async: Literal[True] = True,
+    **kwargs: Any,
+) -> instructor.Instructor:  #
+    ...
 
 
 def from_vertexai(
