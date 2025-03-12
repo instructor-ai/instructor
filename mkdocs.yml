@@ -129,6 +129,7 @@ extra_css:
 nav:
   - Introduction:
     - Structured Outputs for LLMs: 'index.md'
+    - Start Here (Beginners): 'start-here.md'
     - Getting Started: 'getting-started.md'
     - Installation: 'installation.md'
     - Why use Instructor?: 'why.md'
@@ -141,7 +142,8 @@ nav:
     - Contributing: 'contributing.md'
     - Newsletter: 'newsletter.md'
   - Cookbook:
-    - Cookbooks: 'examples/index.md'
+    - Overview: 'examples/index.md'
+    - Example Browser: 'examples/browser.md'
     - "Recursive Schema Examples": 'examples/recursive.md'
     - "Enhancing Text Classification": 'examples/classification.md'
     - "Local Classification with Llama-cpp": 'examples/local_classification.md'
