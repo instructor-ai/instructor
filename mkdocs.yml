@@ -143,7 +143,6 @@ nav:
     - Newsletter: 'newsletter.md'
   - Cookbook:
     - Overview: 'examples/index.md'
-    - Example Browser: 'examples/browser.md'
     - "Recursive Schema Examples": 'examples/recursive.md'
     - "Enhancing Text Classification": 'examples/classification.md'
     - "Local Classification with Llama-cpp": 'examples/local_classification.md'
