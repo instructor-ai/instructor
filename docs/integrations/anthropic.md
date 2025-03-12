@@ -66,10 +66,10 @@ try:
         ],
         response_model=User,
     )
-    
+
     # Print the result as formatted JSON
     print(user_response.model_dump_json(indent=2))
-    
+
     # Expected output:
     # {
     #   "name": "John Doe",
@@ -90,7 +90,8 @@ except instructor.exceptions.InstructorError as e:
 except Exception as e:
     print(f"Unexpected error: {e}")
 ```
-```
+
+````
 
 ### Beta API Features
 
@@ -101,7 +102,7 @@ client = instructor.from_anthropic(
     anthropic.Anthropic(),
     beta=True  # Enable beta API features
 )
-```
+````
 
 This allows you to access beta features like PDF support and other experimental capabilities. For more information about available beta features, refer to [Anthropic's documentation](https://docs.anthropic.com/claude/docs/beta-features).
 
@@ -153,7 +154,7 @@ try:
         max_tokens=4096,
     ):
         print(f"Current state: {partial_user}")
-        
+
     # Expected output:
     # > Current state: name='Jason' age=None bio=None
     # > Current state: name='Jason' age=25 bio='Jason is a 25-year-old with an adventurous spirit and a love for technology. He is'
@@ -196,7 +197,7 @@ try:
         model="claude-3-haiku-20240307",  # Use latest stable model
         messages=[
             {
-                "role": "system", 
+                "role": "system",
                 "content": "Extract all users from the provided text into structured format."
             },
             {
@@ -216,7 +217,7 @@ try:
     # Process each user as it's extracted
     for user in users:
         print(user)
-        
+
     # Expected output:
     # > name='Jason' age=25
     # > name='Sarah' age=30
@@ -302,16 +303,16 @@ try:
             response_model=Character,
             max_tokens=1000,
         )
-        
+
         # Process the result
         print(f"Character: {resp.name}")
         print(f"Description: {resp.description}")
-        
+
         # The completion contains the raw response
         print(f"Raw completion length: {len(completion)}")
-        
+
     # Note: Second iteration should be faster due to cache hit
-    
+
 except Exception as e:
     print(f"Error: {e}")
 ```
@@ -349,7 +350,7 @@ client = instructor.from_anthropic(
 try:
     # Configure cache control for images
     cache_control = {"type": "ephemeral"}
-    
+
     # Make a request with cached images
     response = client.chat.completions.create(
         model="claude-3-haiku-20240307",  # Use latest stable model
@@ -365,14 +366,14 @@ try:
                     "What is in these two images?",
                     # Remote image with caching
                     {
-                        "type": "image", 
-                        "source": "https://example.com/image.jpg", 
+                        "type": "image",
+                        "source": "https://example.com/image.jpg",
                         "cache_control": cache_control
                     },
                     # Local image with caching
                     {
-                        "type": "image", 
-                        "source": "path/to/image.jpg", 
+                        "type": "image",
+                        "source": "path/to/image.jpg",
                         "cache_control": cache_control
                     },
                 ]
@@ -380,14 +381,52 @@ try:
         ],
         autodetect_images=True  # Automatically handle image content
     )
-    
+
     # Process the results
     print(f"Description: {response.content_description}")
     print(f"Objects: {', '.join(response.objects)}")
     print(f"Scene type: {response.scene_type}")
-    
+
     # Subsequent identical requests will use cached images
-    
+
 except Exception as e:
     print(f"Error during image analysis: {e}")
 ```
+
+## Thinking
+
+Anthropic recently released support for extended thinking with their `sonnet-3.7` model series. In instructor, we support getting a validated tool call with the `instructor.Mode.ANTHROPIC_REASONING_TOOLS` Mode as seen below.
+
+```python
+from anthropic import Anthropic
+import instructor
+from pydantic import BaseModel
+
+
+class Answer(BaseModel):
+    answer: float
+
+
+client = Anthropic()
+client = instructor.from_anthropic(client, mode=instructor.Mode.ANTHROPIC_REASONING_TOOLS)
+response = client.chat.completions.create(
+    model="claude-3-7-sonnet-latest",
+    response_model=Answer,
+    messages=[
+        {
+            "role": "user",
+            "content": "Which is larger, 9.11 or 9.8",
+        },
+    ],
+    temperature=1,
+    max_tokens=2000,
+    thinking={"type": "enabled", "budget_tokens": 1024},
+)
+
+
+# Assertions to validate the response
+assert isinstance(response, Answer)
+assert response.answer == 9.8
+```
+
+This then returns the response as a validated `Answer` object.
