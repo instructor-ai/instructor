@@ -15,6 +15,44 @@ Validation in Instructor ensures that the output from language models matches yo
 - Type safety
 - Business logic enforcement
 
+### Validation Flow
+
+The following diagram illustrates how validation works in Instructor:
+
+```mermaid
+flowchart TD
+    A[Define Pydantic Model] --> B[Send Request to LLM]
+    B --> C[LLM Generates Response]
+    C --> D{Validate Response}
+    
+    D -->|Valid| E[Return Pydantic Object]
+    D -->|Invalid| F{Auto-Retry Enabled?}
+    
+    F -->|Yes| G[Send Error Context to LLM]
+    F -->|No| H[Raise ValidationError]
+    
+    G --> I[LLM Generates New Response]
+    I --> J{Validate Again}
+    
+    J -->|Valid| E
+    J -->|Invalid| K{Max Retries Reached?}
+    
+    K -->|No| G
+    K -->|Yes| H
+    
+    classDef success fill:#d4edda,stroke:#c3e6cb,color:#155724;
+    classDef error fill:#f8d7da,stroke:#f5c6cb,color:#721c24;
+    classDef process fill:#e2f0fb,stroke:#b8daff,color:#004085;
+    classDef decision fill:#fff3cd,stroke:#ffeeba,color:#856404;
+    
+    class A,B,C,G,I process
+    class D,F,J,K decision
+    class E success
+    class H error
+```
+
+This process ensures that the LLM output conforms to your defined schema, with built-in retry mechanisms to handle validation failures.
+
 ## Basic Validation
 
 Instructor uses Pydantic for validation, which provides:
