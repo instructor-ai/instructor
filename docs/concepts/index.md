@@ -7,41 +7,6 @@ description: Core concepts and features of the Instructor library
 
 This section explains the core concepts and features of the Instructor library, organized by category to help you find what you need.
 
-## Concept Map
-
-The following diagram shows how the core concepts in Instructor relate to each other:
-
-```mermaid
-graph TD
-    LLM[LLM Provider] --> |patched with| Instructor
-    
-    subgraph "Core Concepts"
-        Instructor --> |uses| Models[Models & Schemas]
-        Models --> |applies| Validation
-        Models --> |defines| Types[Type System]
-        Validation --> |triggers| Retrying
-    end
-    
-    subgraph "Processing & Streaming"
-        Instructor --> |enables| Streaming
-        Streaming --> |types| Partial[Partial Objects]
-        Streaming --> |types| Iterable[Iterable Collections]
-        Instructor --> |provides| RawResponse[Raw Responses]
-    end
-    
-    subgraph "Extensions & Optimization"
-        Instructor --> |supports| Hooks
-        Instructor --> |integrates with| FastAPI
-        Instructor --> |uses| Caching
-        Instructor --> |enables| Parallel[Parallel Processing]
-        Instructor --> |supports| Templating
-    end
-    
-    User[Your Code] --> |creates| Models
-    User --> |uses| Instructor
-    Instructor --> |returns| StructuredOutput[Structured Outputs]
-```
-
 ## Core Concepts
 
 These are the fundamental concepts you need to understand to use Instructor effectively:
