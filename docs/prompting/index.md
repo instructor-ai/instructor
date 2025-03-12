@@ -35,6 +35,74 @@ description: Research-backed prompting techniques to improve LLM performance wit
 
 This guide presents 58 research-backed prompting techniques mapped to Instructor implementations. Based on [The Prompt Report](https://trigaten.github.io/Prompt_Survey_Site) by [Learn Prompting](https://learnprompting.org) which analyzed over 1,500 academic papers on prompting.
 
+## Prompting Technique Map
+
+The following diagram shows how different prompting techniques relate to each other and when to use them:
+
+```mermaid
+flowchart TD
+    A[Choose Prompting Technique] --> B{Have Examples?}
+    
+    B -->|No| C[Zero-Shot Techniques]
+    B -->|Yes| D[Few-Shot Techniques]
+    
+    C --> C1[Role Prompting]
+    C --> C2[Emotional Language]
+    C --> C3[Style Definition]
+    C --> C4[Follow-Up Generation]
+    
+    D --> D1[Example Ordering]
+    D --> D2[Example Selection]
+    D --> D3[Example Generation]
+    
+    A --> E{Need Reasoning?}
+    
+    E -->|Yes| F[Thought Generation]
+    F --> F1[Chain of Thought]
+    F --> F2[Step-Back Prompting]
+    F --> F3[Thread of Thought]
+    
+    A --> G{Complex Problem?}
+    
+    G -->|Yes| H[Decomposition]
+    H --> H1[Least-to-Most]
+    H --> H2[Tree of Thought]
+    H --> H3[Plan and Solve]
+    
+    A --> I{Need Verification?}
+    
+    I -->|Yes| J[Self-Criticism]
+    J --> J1[Self-Verification]
+    J --> J2[Chain of Verification]
+    J --> J3[Self-Refinement]
+    
+    A --> K{Want Multiple Perspectives?}
+    
+    K -->|Yes| L[Ensembling]
+    L --> L1[Self-Consistency]
+    L --> L2[Meta-CoT]
+    L --> L3[Specialized Experts]
+    
+    classDef category fill:#e2f0fb,stroke:#b8daff,color:#004085;
+    classDef technique fill:#d4edda,stroke:#c3e6cb,color:#155724;
+    classDef decision fill:#fff3cd,stroke:#ffeeba,color:#856404;
+    
+    class A,C,D,F,H,J,L category
+    class C1,C2,C3,C4,D1,D2,D3,F1,F2,F3,H1,H2,H3,J1,J2,J3,L1,L2,L3 technique
+    class B,E,G,I,K decision
+```
+
+## When to Use Each Technique
+
+| Goal | Recommended Techniques |
+|------|------------------------|
+| Improve accuracy | Chain of Thought, Self-Verification, Self-Consistency |
+| Handle complex problems | Decomposition, Tree of Thought, Least-to-Most |
+| Generate creative content | Role Prompting, Emotional Language, Style Definition |
+| Verify factual correctness | Chain of Verification, Self-Calibration |
+| Optimize with few examples | KNN Example Selection, Active Prompting |
+| Handle uncertainty | Uncertainty-Routed CoT, Self-Consistency |
+
 ## Zero-Shot {#zero-shot}
 
 These techniques improve model performance without examples:

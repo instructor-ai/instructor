@@ -7,6 +7,41 @@ description: Core concepts and features of the Instructor library
 
 This section explains the core concepts and features of the Instructor library, organized by category to help you find what you need.
 
+## Concept Map
+
+The following diagram shows how the core concepts in Instructor relate to each other:
+
+```mermaid
+graph TD
+    LLM[LLM Provider] --> |patched with| Instructor
+    
+    subgraph "Core Concepts"
+        Instructor --> |uses| Models[Models & Schemas]
+        Models --> |applies| Validation
+        Models --> |defines| Types[Type System]
+        Validation --> |triggers| Retrying
+    end
+    
+    subgraph "Processing & Streaming"
+        Instructor --> |enables| Streaming
+        Streaming --> |types| Partial[Partial Objects]
+        Streaming --> |types| Iterable[Iterable Collections]
+        Instructor --> |provides| RawResponse[Raw Responses]
+    end
+    
+    subgraph "Extensions & Optimization"
+        Instructor --> |supports| Hooks
+        Instructor --> |integrates with| FastAPI
+        Instructor --> |uses| Caching
+        Instructor --> |enables| Parallel[Parallel Processing]
+        Instructor --> |supports| Templating
+    end
+    
+    User[Your Code] --> |creates| Models
+    User --> |uses| Instructor
+    Instructor --> |returns| StructuredOutput[Structured Outputs]
+```
+
 ## Core Concepts
 
 These are the fundamental concepts you need to understand to use Instructor effectively:
@@ -76,12 +111,30 @@ Instructor is built around a few key ideas that work together:
 3. **Validate and Retry**: Automatically validate responses and retry if necessary.
 4. **Process Streams**: Handle streaming responses for real-time updates.
 
-For example, a typical workflow might involve:
+### Typical Workflow
 
-1. Define a Pydantic model for your output structure
-2. Patch your LLM client using `instructor.from_provider()`
-3. Make requests with the `response_model` parameter
-4. Process validated Pydantic objects
+```mermaid
+sequenceDiagram
+    participant User as Your Code
+    participant Instructor
+    participant LLM as LLM Provider
+    
+    User->>Instructor: Define Pydantic model
+    User->>Instructor: Patch LLM client 
+    User->>Instructor: Create completion with response_model
+    Instructor->>LLM: Send structured request 
+    LLM->>Instructor: Return LLM response
+    Instructor->>Instructor: Validate against model
+    
+    alt Validation Success
+        Instructor->>User: Return validated Pydantic object
+    else Validation Failure
+        Instructor->>LLM: Retry with error context
+        LLM->>Instructor: Return new response
+        Instructor->>Instructor: Validate again
+        Instructor->>User: Return validated object or error
+    end
+```
 
 ## What to Read Next
 
@@ -91,3 +144,8 @@ For example, a typical workflow might involve:
 - To optimize your application, look at [Caching](./caching.md) and [Usage Tokens](./usage.md)
 
 For practical examples of these concepts, visit the [Cookbook](../examples/index.md) section.
+
+!!! see-also "See Also"
+    - [Getting Started Guide](../getting-started.md) - Begin your journey with Instructor
+    - [Examples](../examples/index.md) - Practical implementations of these concepts
+    - [Integrations](../integrations/index.md) - Connect with different LLM providers
