@@ -235,6 +235,11 @@ class OpenAISchema(BaseModel):
             Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
 
+        if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+            return cls.parse_mistral_structured_outputs(
+                completion, validation_context, strict
+            )
+
         if mode in {
             Mode.TOOLS,
             Mode.MISTRAL_TOOLS,
@@ -481,6 +486,24 @@ class OpenAISchema(BaseModel):
             tool_call.function.arguments,  # type: ignore
             context=validation_context,
             strict=strict,
+        )
+
+    @classmethod
+    def parse_mistral_structured_outputs(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        if not completion.choices or len(completion.choices) > 1:
+            raise ValueError(
+                "Instructor does not support multiple tool calls, use list[Model] instead"
+            )
+
+        message = completion.choices[0].message
+
+        return cls.model_validate_json(
+            message.content, context=validation_context, strict=strict
         )
 
     @classmethod

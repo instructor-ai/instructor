@@ -373,6 +373,52 @@ def reask_perplexity_json(
     return kwargs
 
 
+def reask_mistral_structured_outputs(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [
+        {
+            "role": "assistant",
+            "content": response.choices[0].message.content,
+        }
+    ]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": (
+                f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+            ),
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def reask_mistral_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+    for tool_call in response.choices[0].message.tool_calls:
+        reask_msgs.append(
+            {
+                "role": "tool",  # type: ignore
+                "tool_call_id": tool_call.id,
+                "name": tool_call.function.name,
+                "content": (
+                    f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+                ),
+            }
+        )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
 def handle_reask_kwargs(
     kwargs: dict[str, Any],
     mode: Mode,
@@ -414,5 +460,9 @@ def handle_reask_kwargs(
         return reask_bedrock_json(kwargs_copy, response, exception)
     elif mode == Mode.PERPLEXITY_JSON:
         return reask_perplexity_json(kwargs_copy, response, exception)
+    elif mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+        return reask_mistral_structured_outputs(kwargs_copy, response, exception)
+    elif mode == Mode.MISTRAL_TOOLS:
+        return reask_mistral_tools(kwargs_copy, response, exception)
     else:
         return reask_default(kwargs_copy, response, exception)
