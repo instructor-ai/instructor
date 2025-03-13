@@ -32,9 +32,13 @@ def from_genai(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert mode in {
-        instructor.Mode.GENAI_TOOLS,
-    }, "Mode must be one of {instructor.Mode.GENAI_TOOLS}"
+    assert (
+        mode
+        in {
+            instructor.Mode.GENAI_TOOLS,
+            instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+        }
+    ), "Mode must be one of {instructor.Mode.GENAI_TOOLS, instructor.Mode.GENAI_STRUCTURED_OUTPUTS}"
 
     assert isinstance(
         client,

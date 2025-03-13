@@ -15,7 +15,7 @@ def process_message(
     message: dict[str, Any], context: dict[str, Any], mode: Mode
 ) -> dict[str, Any]:
     """Process a single message, applying templates to its content."""
-    if mode == Mode.GENAI_TOOLS:
+    if mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
         from google.genai import types
 
         return types.Content(

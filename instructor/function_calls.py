@@ -212,6 +212,11 @@ class OpenAISchema(BaseModel):
         if mode == Mode.GEMINI_JSON:
             return cls.parse_gemini_json(completion, validation_context, strict)
 
+        if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+            return cls.parse_genai_structured_outputs(
+                completion, validation_context, strict
+            )
+
         if mode == Mode.GEMINI_TOOLS:
             return cls.parse_gemini_tools(completion, validation_context, strict)
 
@@ -260,6 +265,17 @@ class OpenAISchema(BaseModel):
             return cls.parse_json(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
+
+    @classmethod
+    def parse_genai_structured_outputs(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        return cls.model_validate_json(
+            completion.text, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_genai_tools(
