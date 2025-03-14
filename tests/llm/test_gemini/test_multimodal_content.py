@@ -61,7 +61,7 @@ def test_audio_compatability_multiple_messages():
         response_model=Description,
         messages=[
             {"role": "user", "content": "Please transcribe this recording:"},
-            {"role": "user", "content": file},
+            {"role": "user", "content": file},  # type: ignore
         ],
     )
 
