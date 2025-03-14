@@ -368,8 +368,8 @@ class Partial(Generic[T_Model]):
 
     def __new__(
         cls,
-        *args: object,  # noqa :ARG003
-        **kwargs: object,  # noqa :ARG003
+        *args: object,  # noqa
+        **kwargs: object,  # noqa
     ) -> Partial[T_Model]:
         """Cannot instantiate.
 
