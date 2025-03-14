@@ -28,6 +28,19 @@ V = TypeVar("V")
 # OpenAI source: https://platform.openai.com/docs/guides/vision/what-type-of-files-can-i-upload
 # Anthropic source: https://docs.anthropic.com/en/docs/build-with-claude/vision#ensuring-image-quality
 VALID_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+VALID_AUDIO_MIME_TYPES = [
+    "audio/aac",
+    "audio/flac",
+    "audio/mp3",
+    "audio/m4a",
+    "audio/mpeg",
+    "audio/mpga",
+    "audio/mp4",
+    "audio/opus",
+    "audio/pcm",
+    "audio/wav",
+    "audio/webm",
+]
 CacheControlType = Mapping[str, str]
 OptionalCacheControlType = Optional[CacheControlType]
 
@@ -262,25 +275,37 @@ class Audio(BaseModel):
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded audio data", repr=False
     )
+    media_type: str = Field(description="MIME type of the audio")
 
     @classmethod
     def from_url(cls, url: str) -> Audio:
         """Create an Audio instance from a URL."""
-        assert url.endswith(".wav"), "Audio must be in WAV format"
-
         response = requests.get(url)
+        content_type = response.headers.get("content-type")
+        assert (
+            content_type in VALID_AUDIO_MIME_TYPES
+        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+
         data = base64.b64encode(response.content).decode("utf-8")
-        return cls(source=url, data=data)
+        return cls(source=url, data=data, media_type=content_type)
 
     @classmethod
     def from_path(cls, path: Union[str, Path]) -> Audio:  # noqa: UP007
         """Create an Audio instance from a file path."""
         path = Path(path)
         assert path.is_file(), f"Audio file not found: {path}"
-        assert path.suffix.lower() == ".wav", "Audio must be in WAV format"
+
+        mime_type = mimetypes.guess_type(str(path))[0]
+
+        if mime_type == "audio/x-wav":
+            mime_type = "audio/wav"
+
+        assert (
+            mime_type in VALID_AUDIO_MIME_TYPES
+        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
-        return cls(source=str(path), data=data)
+        return cls(source=str(path), data=data, media_type=mime_type)
 
     def to_openai(self) -> dict[str, Any]:
         """Convert the Audio instance to OpenAI's API format."""
@@ -291,6 +316,13 @@ class Audio(BaseModel):
 
     def to_anthropic(self) -> dict[str, Any]:
         raise NotImplementedError("Anthropic is not supported yet")
+
+    def to_genai(self):
+        from google.genai import types
+
+        return types.Part.from_bytes(
+            data=base64.b64decode(self.data), mime_type=self.media_type
+        )
 
 
 class ImageWithCacheControl(Image):

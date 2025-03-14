@@ -17,6 +17,7 @@ from typing import (
     Union,
 )
 
+from instructor.multimodal import Image, Audio
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,

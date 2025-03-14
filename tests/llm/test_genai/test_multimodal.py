@@ -11,9 +11,9 @@ class ImageDescription(BaseModel):
 
 
 curr_file = os.path.dirname(__file__)
-file_path = os.path.join(curr_file, "../../assets/image.jpg")
-
-print(file_path)
+image_file = os.path.join(curr_file, "../../assets/image.jpg")
+audio_file = os.path.join(curr_file, "../../assets/gettysburg.wav")
+audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
 
 
 @pytest.mark.parametrize("model", models)
@@ -27,7 +27,7 @@ def test_local_file_image(client, model, mode):
                 "role": "user",
                 "content": [
                     "What is shown in this image?",
-                    instructor.Image.from_path(file_path),
+                    instructor.Image.from_path(image_file),
                 ],
             }
         ],
@@ -86,10 +86,60 @@ def test_instructor_image(client, model, mode):
         messages=[
             {
                 "role": "user",
-                "content": ["Analyze this image", file_path],
+                "content": ["Analyze this image", image_file],
             }
         ],
         response_model=ImageDescription,
     )
     assert isinstance(response, ImageDescription)
     assert len(response.items) > 0
+
+
+@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("mode", modes)
+def test_audio_from_path(client, model, mode):
+    client = instructor.from_genai(client, mode=mode)
+
+    class AudioResponse(BaseModel):
+        response: str
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    "What is this about?",
+                    instructor.Audio.from_path(audio_file),
+                ],
+            }
+        ],
+        response_model=AudioResponse,
+    )
+    assert isinstance(response, AudioResponse)
+    assert len(response.response) > 0
+
+
+@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("mode", modes)
+def test_audio_from_url(client, model, mode):
+    client = instructor.from_genai(client, mode=mode)
+
+    class AudioResponse(BaseModel):
+        response: str
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    "What is this about?",
+                    instructor.Audio.from_url(audio_url),
+                ],
+            }
+        ],
+        response_model=AudioResponse,
+    )
+    assert isinstance(response, AudioResponse)
+    assert len(response.response) > 0
