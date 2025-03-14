@@ -925,7 +925,10 @@ def handle_response_model(
         )
 
     # For Google GenAI package
-    if "contents" in new_kwargs:
+    if "contents" in new_kwargs and mode in {
+        Mode.GENAI_STRUCTURED_OUTPUTS,
+        Mode.GENAI_TOOLS,
+    }:
         new_kwargs["contents"] = convert_genai_messages(new_kwargs["contents"], mode)
 
     logger.debug(
