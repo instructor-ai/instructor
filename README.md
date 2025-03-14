@@ -581,6 +581,20 @@ We also provide some added CLI functionality for easy convenience:
 
 This project is licensed under the terms of the MIT License.
 
+## Citation
+
+If you use Instructor in your research, please cite it using the following BibTeX:
+
+```bibtex
+@software{liu2024instructor,
+  author = {Jason Liu and Contributors},
+  title = {Instructor: A library for structured outputs from large language models},
+  url = {https://github.com/instructor-ai/instructor},
+  year = {2024},
+  month = {3}
+}
+```
+
 # Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
