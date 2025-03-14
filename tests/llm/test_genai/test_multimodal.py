@@ -3,7 +3,6 @@ import pytest
 from pydantic import BaseModel
 import os
 from .util import models, modes
-from instructor.multimodal import Image
 
 
 class ImageDescription(BaseModel):
@@ -28,7 +27,7 @@ def test_local_file_image(client, model, mode):
                 "content": [
                     "What is shown in this image?",
                     instructor.Image.from_path(image_file),
-                ],
+                ],  # type: ignore
             }
         ],
         response_model=ImageDescription,
@@ -50,7 +49,7 @@ def test_remote_url_image(client, model, mode):
                 "content": [
                     "Describe this image in detail",
                     "gs://generativeai-downloads/images/scones.jpg",
-                ],
+                ],  # type: ignore
             }
         ],
         response_model=ImageDescription,
@@ -68,7 +67,7 @@ def test_gs_url_image(client, model, mode):
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "user", "content": ["What do you see in this image?", image_url]}
+            {"role": "user", "content": ["What do you see in this image?", image_url]}  # type: ignore
         ],
         response_model=ImageDescription,
     )
@@ -87,7 +86,7 @@ def test_instructor_image(client, model, mode):
             {
                 "role": "user",
                 "content": ["Analyze this image", image_file],
-            }
+            }  # type: ignore
         ],
         response_model=ImageDescription,
     )
@@ -111,7 +110,7 @@ def test_audio_from_path(client, model, mode):
                 "content": [
                     "What is this about?",
                     instructor.Audio.from_path(audio_file),
-                ],
+                ],  # type: ignore
             }
         ],
         response_model=AudioResponse,
@@ -136,7 +135,7 @@ def test_audio_from_url(client, model, mode):
                 "content": [
                     "What is this about?",
                     instructor.Audio.from_url(audio_url),
-                ],
+                ],  # type: ignore
             }
         ],
         response_model=AudioResponse,

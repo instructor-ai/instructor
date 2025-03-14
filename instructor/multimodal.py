@@ -321,7 +321,8 @@ class Audio(BaseModel):
         from google.genai import types
 
         return types.Part.from_bytes(
-            data=base64.b64decode(self.data), mime_type=self.media_type
+            data=base64.b64decode(self.data),  # type: ignore
+            mime_type=self.media_type,
         )
 
 
@@ -480,6 +481,10 @@ def convert_genai_messages(
         # Cast to list of Parts
         content = cast(types.Content, content)
         converted_contents: list[types.Part] = []
+
+        if not content.parts:
+            raise ValueError("Content parts are empty")
+
         # Now we need to support a few cases
         for content_part in content.parts:
             if content_part.text:
