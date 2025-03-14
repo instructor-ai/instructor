@@ -40,7 +40,7 @@ from instructor.utils import (
     convert_to_genai_messages,
     extract_genai_system_message,
 )
-from instructor.multimodal import convert_messages
+from instructor.multimodal import convert_messages, convert_genai_messages
 
 logger = logging.getLogger("instructor")
 
@@ -923,6 +923,11 @@ def handle_response_model(
             mode,
             autodetect_images=autodetect_images,
         )
+
+    # For Google GenAI package
+    if "contents" in new_kwargs:
+        new_kwargs["contents"] = convert_genai_messages(new_kwargs["contents"], mode)
+
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
         extra={

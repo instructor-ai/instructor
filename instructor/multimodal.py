@@ -66,6 +66,8 @@ class Image(BaseModel):
                 return cls.from_base64(source)
             elif source.startswith(("http://", "https://")):
                 return cls.from_url(source)
+            elif source.startswith("gs://"):
+                return cls.from_gs_url(source)
             elif Path(source).is_file():
                 return cls.from_path(source)
             else:
@@ -105,6 +107,26 @@ class Image(BaseModel):
             media_type=media_type,
             data=encoded,
         )
+
+    @classmethod
+    def from_gs_url(cls, data_uri: str) -> Image:
+        if not data_uri.startswith("gs://"):
+            raise ValueError("URL must start with gs://")
+
+        public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
+
+        try:
+            response = requests.get(public_url)
+            response.raise_for_status()
+            media_type = response.headers.get("Content-Type")
+            if media_type not in VALID_MIME_TYPES:
+                raise ValueError(f"Unsupported image format: {media_type}")
+
+            data = base64.b64encode(response.content).decode("utf-8")
+
+            return cls(source=data_uri, media_type=media_type, data=data)
+        except requests.RequestException as e:
+            raise ValueError(f"We only support public images for now") from e
 
     @classmethod  # Caching likely unnecessary
     def from_raw_base64(cls, data: str) -> Image:
@@ -201,6 +223,34 @@ class Image(BaseModel):
                 "type": "image_url",
                 "image_url": {"url": f"data:{self.media_type};base64,{data}"},
             }
+        else:
+            raise ValueError("Image data is missing for base64 encoding.")
+
+    def to_genai(self):
+        from google.genai import types
+
+        # Google Cloud Storage
+        if isinstance(self.source, str) and self.source.startswith("gs://"):
+            return types.Part.from_bytes(
+                data=self.data,  # type: ignore
+                mime_type=self.media_type,
+            )
+
+        # URL
+        if isinstance(self.source, str) and self.source.startswith(
+            ("http://", "https://")
+        ):
+            return types.Part.from_bytes(
+                data=requests.get(self.source).content,
+                mime_type=self.media_type,
+            )
+
+        if self.data or self.is_base64(str(self.source)):
+            data = self.data or str(self.source).split(",", 1)[1]
+            return types.Part.from_bytes(
+                data=base64.b64decode(data), mime_type=self.media_type
+            )  # type: ignore
+
         else:
             raise ValueError("Image data is missing for base64 encoding.")
 
@@ -372,3 +422,46 @@ def convert_messages(
                 {"role": role, "content": converted_content, **other_kwargs}
             )
     return converted_messages  # type: ignore
+
+
+def convert_genai_messages(
+    contents: list[Any],
+    mode: Mode,
+):
+    """
+    Convert Typed Contents to the appropriate format based on the specified mode.
+    """
+    from google.genai import types
+
+    if mode not in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
+        raise ValueError(
+            f"Unsupported mod of {mode}. This should only be used for the Google GenAI SDK"
+        )
+
+    result: list[types.Content] = []
+    for content in contents:
+        # We only want to do the conversion for the Image type
+        if not isinstance(content, types.Content):
+            raise ValueError(
+                f"Unsupported content type: {type(content)}. This should only be used for the Google types"
+            )
+        # Cast to list of Parts
+        content = cast(types.Content, content)
+        converted_contents: list[types.Part] = []
+        # Now we need to support a few cases
+        for content_part in content.parts:
+            if content_part.text:
+                # Detect if the text is an image
+                converted_item = Image.autodetect_safely(content_part.text)
+                if isinstance(converted_item, Image):
+                    converted_contents.append(converted_item.to_genai())
+                    continue
+
+                # If it's not an image or audio, we just return the text
+                converted_contents.append(content_part)
+            else:
+                converted_contents.append(content_part)
+
+        result.append(types.Content(parts=converted_contents))
+
+    return result

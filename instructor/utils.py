@@ -965,6 +965,8 @@ def convert_to_genai_messages(
                 for content_item in message["content"]:
                     if isinstance(content_item, str):
                         content_parts.append(types.Part.from_text(text=content_item))
+                    elif isinstance(content_item, (Image, Audio)):
+                        content_parts.append(content_item.to_genai())
                     else:
                         raise ValueError(
                             f"Unsupported content item type: {type(content_item)}"
