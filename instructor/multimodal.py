@@ -457,19 +457,13 @@ def convert_messages(
     return converted_messages  # type: ignore
 
 
-def convert_genai_messages(
+def extract_genai_multimodal_content(
     contents: list[Any],
-    mode: Mode,
 ):
     """
     Convert Typed Contents to the appropriate format based on the specified mode.
     """
     from google.genai import types
-
-    if mode not in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
-        raise ValueError(
-            f"Unsupported mode of {mode}. This should only be used for the Google GenAI SDK"
-        )
 
     result: list[types.Content] = []
     for content in contents:
