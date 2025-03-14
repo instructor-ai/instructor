@@ -468,7 +468,7 @@ def convert_genai_messages(
 
     if mode not in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
         raise ValueError(
-            f"Unsupported mod of {mode}. This should only be used for the Google GenAI SDK"
+            f"Unsupported mode of {mode}. This should only be used for the Google GenAI SDK"
         )
 
     result: list[types.Content] = []
