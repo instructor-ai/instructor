@@ -461,7 +461,7 @@ def extract_genai_multimodal_content(
     contents: list[Any],
 ):
     """
-    Convert Typed Contents to the appropriate format based on the specified mode.
+    Convert Typed Contents to the appropriate format for Google GenAI.
     """
     from google.genai import types
 
