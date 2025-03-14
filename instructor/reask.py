@@ -395,8 +395,31 @@ def reask_genai_tools(
             ]
         ),
     )
-  
-  
+    return kwargs
+
+
+def reask_genai_structured_outputs(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    from google.genai import types
+
+    kwargs = kwargs.copy()
+    kwargs["contents"].append(
+        types.Content(
+            role="user",
+            parts=[
+                types.Part.from_text(
+                    text=f"Validation Error found:\n{exception}\n when parsing the following response:\n{response.text}\nRecall the function correctly, fix the errors"
+                ),
+            ],
+        ),
+    )
+
+    return kwargs
+
+
 def reask_mistral_structured_outputs(
     kwargs: dict[str, Any],
     response: Any,
@@ -486,6 +509,8 @@ def handle_reask_kwargs(
         return reask_perplexity_json(kwargs_copy, response, exception)
     elif mode == Mode.GENAI_TOOLS:
         return reask_genai_tools(kwargs_copy, response, exception)
+    elif mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+        return reask_genai_structured_outputs(kwargs_copy, response, exception)
     elif mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
         return reask_mistral_structured_outputs(kwargs_copy, response, exception)
     elif mode == Mode.MISTRAL_TOOLS:
