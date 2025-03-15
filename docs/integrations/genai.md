@@ -62,12 +62,29 @@ print(response)  # User(name='Jason', age=25)
 Genai supports multiple message formats, and Instructor seamlessly works with all of them. This flexibility allows you to use whichever format is most convenient for your application:
 
 ```python
+from google import genai
+import instructor
+from pydantic import BaseModel
+from google.genai import types
+
+# Define your Pydantic model
+class User(BaseModel):
+    name: str
+    age: int
+
+# Initialize and patch the client
+client = genai.Client()
+client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+
 # Single string (converted to user message)
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
     messages="Jason is 25 years old",
     response_model=User,
 )
+
+print(response)
+# > name='Jason' age=25
 
 # Standard format
 response = client.chat.completions.create(
@@ -78,17 +95,23 @@ response = client.chat.completions.create(
     response_model=User,
 )
 
+print(response)
+# > name='Jason' age=25
+
 # Using genai's Content type
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
     messages=[
         genai.types.Content(
             role="user",
-            parts=[genai.types.Part.from_text("Jason is 25 years old")]
+            parts=[genai.types.Part.from_text(text="Jason is 25 years old")]
         )
     ],
     response_model=User,
 )
+
+print(response)
+# > name='Jason' age=25
 ```
 
 ### System Messages
@@ -96,23 +119,43 @@ response = client.chat.completions.create(
 System messages help set context and instructions for the model. With Gemini models, you can provide system messages in two different ways:
 
 ```python
+from google import genai
+import instructor
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = genai.Client()
+client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+
 # As a parameter
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
-    system="You are a data extraction assistant",
-    messages=[{"role": "user", "content": "Jason is 25 years old"}],
+    system="Jason is 25 years old",
+    messages=[{"role": "user", "content": "You are a data extraction assistant"}],
     response_model=User,
 )
+
+print(response)
+# > name='Jason' age=25
 
 # Or as a message with role "system"
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
     messages=[
-        {"role": "system", "content": "You are a data extraction assistant"},
-        {"role": "user", "content": "Jason is 25 years old"}
+        {"role": "system", "content": "Jason is 25 years old"},
+        {"role": "user", "content": "You are a data extraction assistant"},
     ],
     response_model=User,
 )
+
+print(response)
+# > name='Jason' age=25
+
 ```
 
 ## Template Variables
