@@ -493,6 +493,6 @@ def extract_genai_multimodal_content(
             else:
                 converted_contents.append(content_part)
 
-        result.append(types.Content(parts=converted_contents))
+        result.append(types.Content(parts=converted_contents, role=content.role))
 
     return result
