@@ -1,8 +1,8 @@
 ---
 draft: False
-date: 2025-03-11
-title: "Structured outputs with Google's genai library, a complete guide w/ instructor"
-description: "Complete guide to using Instructor with Google's Generative AI (Gemini). Learn how to generate structured, type-safe outputs with Gemini models."
+date: 2025-03-15
+title: "Structured outputs with Google's genai SDK"
+description: "Learn how to use Instructor with Google's Generative AI SDK to extract structured data from Gemini models."
 slug: genai
 tags:
   - patching
@@ -10,127 +10,118 @@ authors:
   - instructor
 ---
 
-# Structured outputs with Google Generative AI (Gemini), a complete guide w/ instructor
+# Structured Outputs with Google's genai SDK
 
-!!! warning "Recommended Library"
+!!! info "Recommended SDK"
 
-    We recommend using the `genai` library where possible to use the Gemini models. This is because it provides a unified interface for both the VertexAI and Gemini Developer APIs. It is also actively maintained and will be the default recomendation moving forward
+    The `genai` SDK is Google's recommended Python client for working with Gemini models. It provides a unified interface for both the Gemini API and Vertex AI. For detailed setup instructions, including how to use it with Vertex AI, please refer to the [official Google AI documentation for the GenAI SDK](https://googleapis.github.io/python-genai/).
 
-This guide demonstrates how to use Google's Generative AI (Gemini) with Instructor to generate structured outputs. You'll learn how to use function calling with Gemini models to create type-safe responses.
+This guide demonstrates how to use Instructor with Google's `genai` SDK to extract structured data from Gemini models.
 
-Gemini is Google's family of multimodal large language models, with Gemini 1.5 supporting long context windows and function calling capabilities. Gemini's function calling makes it possible to obtain structured outputs using JSON schema.
+We currently have two modes for Gemini
 
-## Quick Start
+- `Mode.GENAI_TOOLS` : This leverages function calling under the hood and returns a structured response
+- `Mode.GENAI_STRUCTURED_OUTPUTS` : This provides Gemini with a JSON Schema that it will use to respond in a structured format with
 
-To use Instructor with Google's Generative AI, you'll need to install the required packages:
+## Installation
 
 ```bash
 pip install "instructor[google-genai]"
 ```
 
-## Gemini API Setup Guide
+## Basic Usage
 
-### Option 1: Google AI Studio / Gemini API
-
-Set up your API key for direct access to Gemini models through Google AI Studio:
-
-#### Method 1: Environment Variable
-
-```bash
-export GOOGLE_API_KEY='your-api-key-here'
-```
-
-#### Method 2: Direct Client Configuration
+Getting started with Instructor and the genai SDK is straightforward. Just create a Pydantic model defining your output structure, patch the genai client, and make your request with a response_model parameter:
 
 ```python
-import google.generativeai as genai
-import instructor
-from pydantic import BaseModel
-
-# Initialize the client with your API key
-client = genai.Client(api_key='YOUR_GEMINI_API_KEY')
-```
-
-### Option 2: Vertex AI (for Google Cloud customers)
-
-Use Vertex AI to access Gemini models with enterprise features and integrations:
-
-#### Step 1: Set Environment Variables
-
-```bash
-# Configure Vertex AI access
-export GOOGLE_GENAI_USE_VERTEXAI=true
-export GOOGLE_CLOUD_PROJECT='your-project-id'
-export GOOGLE_CLOUD_LOCATION='us-central1'  # Or your preferred region
-```
-
-#### Step 2: Create Vertex AI Client
-
-```python
-import google.generativeai as genai
-import instructor
-from pydantic import BaseModel
-
-# Initialize the client with Vertex AI configuration
-client = genai.Client(
-    vertexai=True,
-    project='your-project-id',
-    location='us-central1'  # Must match your GOOGLE_CLOUD_LOCATION
-)
-```
-
-### Additional Notes
-
-- For Vertex AI, ensure you have the necessary IAM permissions set up for your project
-- API keys for Google AI Studio can be created at [https://aistudio.google.com/]
-- Vertex AI and the Gemini Developer APIs require an active Google Cloud project with billing enabled
-
-## Simple User Example (Sync)
-
-```python
-import os
 from google import genai
 import instructor
 from pydantic import BaseModel
 
-client = genai.Client()
-
-# Enable instructor patches for Google Generative AI client
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
-
+# Define your Pydantic model
 class User(BaseModel):
     name: str
     age: int
 
-class Users(BaseModel):
-    users: list[User]
+# Initialize and patch the client
+client = genai.Client()
+client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
 
-# Create structured output
+# Extract structured data
 response = client.chat.completions.create(
-    model="gemini-1.5-flash",
-    messages=[
-        {"role": "user", "content": "Extract: Jason is 25 years old"},
-    ],
-    response_model=Users,
+    model="gemini-2.0-flash-001",
+    messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
+    response_model=User,
+)
+
+print(response)  # User(name='Jason', age=25)
+```
+
+## Message Formatting
+
+Genai supports multiple message formats, and Instructor seamlessly works with all of them. This flexibility allows you to use whichever format is most convenient for your application:
+
+```python
+from google import genai
+import instructor
+from pydantic import BaseModel
+from google.genai import types
+
+# Define your Pydantic model
+class User(BaseModel):
+    name: str
+    age: int
+
+# Initialize and patch the client
+client = genai.Client()
+client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+
+# Single string (converted to user message)
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages="Jason is 25 years old",
+    response_model=User,
 )
 
 print(response)
-#> Users(users=[User(name='Jason', age=25)])
+# > name='Jason' age=25
+
+# Standard format
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        {"role": "user", "content": "Jason is 25 years old"}
+    ],
+    response_model=User,
+)
+
+print(response)
+# > name='Jason' age=25
+
+# Using genai's Content type
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        genai.types.Content(
+            role="user",
+            parts=[genai.types.Part.from_text(text="Jason is 25 years old")]
+        )
+    ],
+    response_model=User,
+)
+
+print(response)
+# > name='Jason' age=25
 ```
 
-## Simple User Example (Async)
+### System Messages
+
+System messages help set context and instructions for the model. With Gemini models, you can provide system messages in two different ways:
 
 ```python
-import os
 from google import genai
 import instructor
 from pydantic import BaseModel
-import asyncio
-
-client = genai.Client()
-
-# Enable instructor patches for async Google Generative AI client
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS, use_async=True)
 
 
 class User(BaseModel):
@@ -138,219 +129,354 @@ class User(BaseModel):
     age: int
 
 
-class Users(BaseModel):
-    users: list[User]
+client = genai.Client()
+client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+
+# As a parameter
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    system="Jason is 25 years old",
+    messages=[{"role": "user", "content": "You are a data extraction assistant"}],
+    response_model=User,
+)
+
+print(response)
+# > name='Jason' age=25
+
+# Or as a message with role "system"
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        {"role": "system", "content": "Jason is 25 years old"},
+        {"role": "user", "content": "You are a data extraction assistant"},
+    ],
+    response_model=User,
+)
+
+print(response)
+# > name='Jason' age=25
+
+```
+
+## Template Variables
+
+Template variables make it easy to reuse prompts with different values. This is particularly useful for dynamic content or when testing different inputs:
+
+```python
+from google import genai
+import instructor
+from pydantic import BaseModel
+from google.genai import types
+
+
+# Define your Pydantic model
+class User(BaseModel):
+    name: str
+    age: int
+
+
+# Initialize and patch the client
+client = genai.Client()
+client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+
+# Single string (converted to user message)
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=["{{name}} is {{ age }} years old"],
+    response_model=User,
+    context={
+        "name": "Jason",
+        "age": 25,
+    },
+)
+
+print(response)
+# > name='Jason' age=25
+
+# Standard format
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[{"role": "user", "content": "{{ name }} is {{ age }} years old"}],
+    response_model=User,
+    context={
+        "name": "Jason",
+        "age": 25,
+    },
+)
+
+print(response)
+# > name='Jason' age=25
+
+# Using genai's Content type
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        genai.types.Content(
+            role="user",
+            parts=[genai.types.Part.from_text(text="{{name}} is {{age}} years old")],
+        )
+    ],
+    response_model=User,
+    context={
+        "name": "Jason",
+        "age": 25,
+    },
+)
+
+print(response)
+# > name='Jason' age=25
+```
+
+## Validation and Retries
+
+Instructor can automatically retry requests when validation fails, ensuring you get properly formatted data. This is especially helpful when enforcing specific data requirements:
+
+```python
+from typing import Annotated
+from pydantic import AfterValidator, BaseModel
+import instructor
+from google import genai
+
+
+def uppercase_validator(v: str) -> str:
+    if v.islower():
+        raise ValueError("Name must be ALL CAPS")
+    return v
+
+
+class UserDetail(BaseModel):
+    name: Annotated[str, AfterValidator(uppercase_validator)]
+    age: int
+
+
+client = instructor.from_genai(genai.Client())
+
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[{"role": "user", "content": "Extract: jason is 25 years old"}],
+    response_model=UserDetail,
+    max_retries=3,
+)
+
+print(response)  # UserDetail(name='JASON', age=25)
+```
+
+## Multimodal Capabilities
+
+Gemini models excel at processing different types of media. Instructor makes it easy to extract structured data from multimodal inputs.
+
+### Image Processing
+
+Extract structured information from images with the same ease as text:
+
+```python
+from pydantic import BaseModel
+import instructor
+from google import genai
+
+
+class ImageDescription(BaseModel):
+    objects: list[str]
+    scene: str
+
+
+client = instructor.from_genai(genai.Client())
+
+# Method 1 : Using a local file path
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Describe this image",
+                "./scones.jpg",  # Local path
+            ],
+        }
+    ],
+    response_model=ImageDescription,
+)
+print(response)
+#> objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
+
+# Method 2 : Using instructor's image method to explicitly load an image
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Describe this image",
+                instructor.Image.from_path("path/to/image.jpg"),  # Helper
+            ],
+        }
+    ],
+    response_model=ImageDescription,
+)
+print(response)
+#> objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
+
+# Method 3 : Providing a image url
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Describe this image",
+                "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg",  # URL
+            ]
+        }
+    ],
+    response_model=ImageDescription,
+)
+print(response)
+#> objects=['blueberries'] scene='blueberry field'
+```
+
+### Audio Processing
+
+Process audio files and extract structured data from their content:
+
+```python
+from pydantic import BaseModel
+import instructor
+from google import genai
+from google.genai import types
+
+
+class ImageDescription(BaseModel):
+    objects: list[str]
+    scene: str
+
+
+client = instructor.from_genai(genai.Client())
+
+
+class AudioContent(BaseModel):
+    summary: str
+
+# Method 1 : Reading from a path itself
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    system="You are a helpful assistant that can extract and summarise the content of an audio file according to the schema provided. You must return a function call with the schema provided.",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract and summarise the content of this audio",
+                instructor.Audio.from_path("./pixel.mp3"),
+            ],
+        }
+    ],
+    response_model=AudioContent,
+)
+print(response)
+# > summary='The Made by Google podcast discusses the Pixel feature drops with Aisha Sharif and DeCarlos Love. They discuss the importance of devices improving over time and the inte...
+
+# Method 2 : Using a url
+
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    system="You are a helpful assistant that can extract and summarise the content of an audio file according to the schema provided. You must return a function call with the schema provided.",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract and summarise the content of this audio",
+                instructor.Audio.from_url(
+                    "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
+                ),
+            ],
+        }
+    ],
+    response_model=AudioContent,
+)
+print(response)
+#> summary="Abraham Lincoln's Gettysburg Address, beginning with 'Four score and seven years ago' and discussing the Civil War's test of a nation dedicated to equality"
+```
+
+## Streaming Responses
+
+> **Note:** Streaming functionality is currently only available when using the `Mode.GENAI_STRUCTURED_OUTPUTS` mode with Gemini models. Other modes like `tools` do not support streaming at this time.
+
+Streaming allows you to process responses incrementally rather than waiting for the complete result. This is extremely useful for making UI changes feel instant and responsive.
+
+### Partial Streaming
+
+Receive a stream of complete, validated objects as they're generated:
+
+```python
+from pydantic import BaseModel
+import instructor
+from google import genai
+
+
+client = instructor.from_genai(
+    genai.Client(), mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
+)
+
+
+class Person(BaseModel):
+    name: str
+    age: int
+
+
+class PersonList(BaseModel):
+    people: list[Person]
+
+
+stream = client.chat.completions.create_partial(
+    model="gemini-2.0-flash-001",
+    system="You are a helpful assistant. You must return a function call with the schema provided.",
+    messages=[
+        {
+            "role": "user",
+            "content": "Ivan is 20 years old, Jason is 25 years old, and John is 30 years old",
+        }
+    ],
+    response_model=PersonList,
+)
+
+for extraction in stream:
+    print(extraction)
+    # > people=[PartialPerson(name='Ivan', age=None)]
+    # > people=[PartialPerson(name='Ivan', age=20), PartialPerson(name='Jason', age=25), PartialPerson(name='John', age=None)]
+    # > people=[PartialPerson(name='Ivan', age=20), PartialPerson(name='Jason', age=25), PartialPerson(name='John', age=30)]
+
+```
+
+## Async Support
+
+Instructor provides full async support for the genai SDK, allowing you to make non-blocking requests in async applications:
+
+```python
+import asyncio
+
+import instructor
+from google import genai
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
 
 
 async def extract_user():
+    client = genai.Client()
+    client = instructor.from_genai(
+        client, mode=instructor.Mode.GENAI_TOOLS, use_async=True
+    )
+
     response = await client.chat.completions.create(
-        model="gemini-1.5-flash",
-        messages=[
-            {"role": "user", "content": "Extract: Jason is 25 years old"},
-        ],
-        response_model=Users,
+        model="gemini-2.0-flash-001",
+        messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
+        response_model=User,
     )
     return response
 
 
-# Run async function
-users = asyncio.run(extract_user())
-print(users)
-# > Users(users=[User(name='Jason', age=25)])
-
+print(asyncio.run(extract_user()))
+#> name = Jason age= 25
 ```
-
-## Formatting Messages
-
-While we recommend using the OpenAI Chat Completions API message format, we support a broad range of potential message types at the moment as seen below.
-
-**Note** : If you'd like to prefill or add some assistant messages, you must use the `model` role as per Gemini's API specification.
-
-### Single String
-
-Instructor supports various message formats with Gemini:
-
-```python
-import os
-from google import genai
-import instructor
-from pydantic import BaseModel
-
-client = genai.Client()
-
-# Enable instructor patches for Google Generative AI client
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
-
-class User(BaseModel):
-    name: str
-    age: int
-
-class Users(BaseModel):
-    users: list[User]
-
-# Using a simple string as the message
-response = client.chat.completions.create(
-    model="gemini-1.5-flash",
-    messages=["Ivan is 28 years old"],
-    response_model=Users,
-)
-
-print(response)
-#> Users(users=[User(name='Ivan', age=28)])
-```
-
-## Using System Messages
-
-We've chosen to deal with system messages by concatenating all of the system messages that you provide. This is because Gemini only supports a single system message and so this is a deliberate choice.
-
-We offer two main ways to format system messages
-
-1. Using a kwarg of `system`
-2. Using a message with a role of `system`
-
-These are mutually exclusive and if you provide a kwarg of `system`, that will take precedence over the message with a role of `system`
-
-### Using A Message
-
-You can use one or more messages with a role of `system`
-
-```python
-import os
-from google import genai
-import instructor
-from pydantic import BaseModel
-
-client = genai.Client()
-
-# Enable instructor patches for Google Generative AI client
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
-
-class User(BaseModel):
-    name: str
-    age: int
-
-class Users(BaseModel):
-    users: list[User]
-
-response = client.chat.completions.create(
-    model="gemini-1.5-flash",
-    messages=[
-        {
-            "role": "system",
-            "content": "Ivan is 28 years old",
-        },
-        {
-            "role": "user",
-            "content": "Extract all users",
-        },
-    ],
-    response_model=Users,
-)
-
-print(response)
-#> Users(users=[User(name='Ivan', age=28)])
-```
-
-### Using a Keyword Argument
-
-You can also use a keyword argument
-
-```python
-import os
-from google import genai
-import instructor
-from pydantic import BaseModel
-
-client = genai.Client()
-
-# Enable instructor patches for Google Generative AI client
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
-
-class User(BaseModel):
-    name: str
-    age: int
-
-class Users(BaseModel):
-    users: list[User]
-
-response = client.chat.completions.create(
-    model="gemini-1.5-flash",
-    system="Ivan is 28 years old",
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract all users",
-        },
-    ],
-    response_model=Users,
-)
-
-print(response)
-#> Users(users=[User(name='Ivan', age=28)])
-```
-
-## Messages
-
-When it comes to messages, we support the normal messages format, using `genai.types.Content` and also using a string as input. Strings will always be converted to user messages by default.
-
-```python
-from google import genai
-import instructor
-from pydantic import BaseModel
-
-
-client = genai.Client()
-
-# Enable instructor patches for Google Generative AI client
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-class Users(BaseModel):
-    users: list[User]
-
-
-# Combining all three message formats in a single call
-response = client.chat.completions.create(
-    model="gemini-1.5-flash",
-    messages=[
-        # Format 1: Simple string
-        "Ivan is 28 years old",
-        # Format 2: Standard chat completion message format
-        {
-            "role": "user",
-            "content": "Tiffany is 20 years old",
-        },
-        # Format 3: Using genai's Content type
-        genai.types.Content(
-            role="user",
-            parts=[genai.types.Part.from_text(text="Jason is 25 years old")],
-        ),
-    ],
-    response_model=Users,
-)
-
-print(response)
-#> users=[User(name='Ivan', age=28), User(name='Tiffany', age=20), User(name='Jason', age=25)]
-```
-
-## Instructor Modes
-
-For Google Generative AI, Instructor currently supports:
-
-- `instructor.Mode.GENAI_TOOLS`: This uses Google's function calling API to return structured outputs to the client.
-
-## Related Resources
-
-- [Google Generative AI Documentation](https://googleapis.github.io/python-genai/#provide-a-list-types-content)
-- [Instructor Core Concepts](../concepts/index.md)
-- [Type Validation Guide](../concepts/validation.md)
-- [Advanced Usage Examples](../examples/index.md)
-
-## Updates and Compatibility
-
-Instructor maintains compatibility with the latest Google Generative AI API versions and models. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
