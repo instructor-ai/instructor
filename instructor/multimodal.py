@@ -123,6 +123,9 @@ class Image(BaseModel):
 
     @classmethod
     def from_gs_url(cls, data_uri: str) -> Image:
+        """
+        Create an Image instance from a Google Cloud Storage URL.
+        """
         if not data_uri.startswith("gs://"):
             raise ValueError("URL must start with gs://")
 
@@ -240,6 +243,9 @@ class Image(BaseModel):
             raise ValueError("Image data is missing for base64 encoding.")
 
     def to_genai(self):
+        """
+        Convert the Image instance to Google GenAI's API format.
+        """
         from google.genai import types
 
         # Google Cloud Storage
@@ -318,6 +324,9 @@ class Audio(BaseModel):
         raise NotImplementedError("Anthropic is not supported yet")
 
     def to_genai(self):
+        """
+        Convert the Audio instance to Google GenAI's API format.
+        """
         from google.genai import types
 
         return types.Part.from_bytes(
