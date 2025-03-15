@@ -114,41 +114,55 @@ response = client.chat.completions.create(
 Template variables make it easy to reuse prompts with different values. This is particularly useful for dynamic content or when testing different inputs:
 
 ```python
-import instructor
 from google import genai
-from google.genai import types
+import instructor
 from pydantic import BaseModel
 
 
+# Define your Pydantic model
 class User(BaseModel):
     name: str
     age: int
 
 
-client = instructor.from_genai(genai.Client())
+# Initialize and patch the client
+client = genai.Client()
+client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
 
+# Single string (converted to user message)
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
-    messages=[
-        {"role": "user", "content": "{{name}} is {{age}} years old"},
-
-    ],
+    messages=["Jason is 25 years old"],
     response_model=User,
-    context={"name": "Jason", "age": 25},
 )
 
-# We also support template variables using the default sdk
+print(response)
+#> name='Jason' age=25
+
+# Standard format
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
+    messages=[{"role": "user", "content": "Jason is 25 years old"}],
     response_model=User,
+)
+
+print(response)
+#> name='Jason' age=25
+
+# Using genai's Content type
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
     messages=[
-        types.Content(
+        genai.types.Content(
             role="user",
-            parts=[types.Part.from_text(text="Extract {{name}} is {{age}} years old")],
-        ),  # type: ignore
+            parts=[genai.types.Part.from_text(text="Jason is 25 years old")],
+        )
     ],
-    context={"name": "Jason", "age": 25},
+    response_model=User,
 )
+
+print(response)
+#> name='Jason' age=25
 ```
 
 ## Validation and Retries
@@ -158,15 +172,22 @@ Instructor can automatically retry requests when validation fails, ensuring you 
 ```python
 from typing import Annotated
 from pydantic import AfterValidator, BaseModel
+import instructor
+from google import genai
+
 
 def uppercase_validator(v: str) -> str:
     if v.islower():
         raise ValueError("Name must be ALL CAPS")
     return v
 
+
 class UserDetail(BaseModel):
     name: Annotated[str, AfterValidator(uppercase_validator)]
     age: int
+
+
+client = instructor.from_genai(genai.Client())
 
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
@@ -189,27 +210,66 @@ Extract structured information from images with the same ease as text:
 ```python
 from pydantic import BaseModel
 import instructor
+from google import genai
+
 
 class ImageDescription(BaseModel):
     objects: list[str]
     scene: str
 
+
+client = instructor.from_genai(genai.Client())
+
+# Method 1 : Using a local file path
 response = client.chat.completions.create(
-    model="gemini-1.5-pro",
+    model="gemini-2.0-flash-001",
     messages=[
         {
             "role": "user",
             "content": [
                 "Describe this image",
-                # Image can be provided as:
-                "path/to/image.jpg",  # Local path
+                "./scones.jpg",  # Local path
+            ],
+        }
+    ],
+    response_model=ImageDescription,
+)
+print(response)
+#> objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
+
+# Method 2 : Using instructor's image method to explicitly load an image
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Describe this image",
                 instructor.Image.from_path("path/to/image.jpg"),  # Helper
-                "https://example.com/image.jpg",  # URL
+            ],
+        }
+    ],
+    response_model=ImageDescription,
+)
+print(response)
+#> objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
+
+# Method 3 : Providing a image url
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Describe this image",
+                "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg",  # URL
             ]
         }
     ],
     response_model=ImageDescription,
 )
+print(response)
+#> objects=['blueberries'] scene='blueberry field'
 ```
 
 ### Audio Processing
@@ -219,77 +279,109 @@ Process audio files and extract structured data from their content:
 ```python
 from pydantic import BaseModel
 import instructor
+from google import genai
+from google.genai import types
+
+
+class ImageDescription(BaseModel):
+    objects: list[str]
+    scene: str
+
+
+client = instructor.from_genai(genai.Client())
+
 
 class AudioContent(BaseModel):
-    transcript: str
-    speakers: int
+    summary: str
 
+# Method 1 : Reading from a path itself
 response = client.chat.completions.create(
-    model="gemini-1.5-pro",
+    model="gemini-2.0-flash-001",
+    system="You are a helpful assistant that can extract and summarise the content of an audio file according to the schema provided. You must return a function call with the schema provided.",
     messages=[
         {
             "role": "user",
             "content": [
-                "Transcribe this audio",
-                instructor.Audio.from_path("path/to/audio.wav"),
-                # Or from URL:
-                instructor.Audio.from_url("https://example.com/audio.wav")
-            ]
+                "Extract and summarise the content of this audio",
+                instructor.Audio.from_path("./pixel.mp3"),
+            ],
         }
     ],
     response_model=AudioContent,
 )
+print(response)
+# > summary='The Made by Google podcast discusses the Pixel feature drops with Aisha Sharif and DeCarlos Love. They discuss the importance of devices improving over time and the inte...
+
+# Method 2 : Using a url
+
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    system="You are a helpful assistant that can extract and summarise the content of an audio file according to the schema provided. You must return a function call with the schema provided.",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract and summarise the content of this audio",
+                instructor.Audio.from_url(
+                    "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
+                ),
+            ],
+        }
+    ],
+    response_model=AudioContent,
+)
+print(response)
+#> summary="Abraham Lincoln's Gettysburg Address, beginning with 'Four score and seven years ago' and discussing the Civil War's test of a nation dedicated to equality"
 ```
 
 ## Streaming Responses
 
-Streaming allows you to process responses incrementally rather than waiting for the complete result. Instructor provides two powerful streaming approaches with Gemini models.
+> **Note:** Streaming functionality is currently only available when using the `Mode.GENAI_STRUCTURED_OUTPUTS` mode with Gemini models. Other modes like `tools` do not support streaming at this time.
 
-### Iterable Streaming (Multiple Objects)
+Streaming allows you to process responses incrementally rather than waiting for the complete result. This is extremely useful for making UI changes feel instant and responsive.
+
+### Partial Streaming
 
 Receive a stream of complete, validated objects as they're generated:
 
 ```python
-from collections.abc import Iterable
 from pydantic import BaseModel
+import instructor
+from google import genai
+
+
+client = instructor.from_genai(
+    genai.Client(), mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
+)
+
 
 class Person(BaseModel):
     name: str
     age: int
 
-stream = client.chat.completions.create(
+
+class PersonList(BaseModel):
+    people: list[Person]
+
+
+stream = client.chat.completions.create_partial(
     model="gemini-2.0-flash-001",
-    messages=[{"role": "user", "content": "Generate three different people"}],
-    response_model=Iterable[Person],
-    stream=True,
+    system="You are a helpful assistant. You must return a function call with the schema provided.",
+    messages=[
+        {
+            "role": "user",
+            "content": "Ivan is 20 years old, Jason is 25 years old, and John is 30 years old",
+        }
+    ],
+    response_model=PersonList,
 )
 
-for person in stream:
-    print(f"Received: {person}")
-```
+for extraction in stream:
+    print(extraction)
+    # > people=[PartialPerson(name='Ivan', age=None)]
+    # > people=[PartialPerson(name='Ivan', age=20), PartialPerson(name='Jason', age=25), PartialPerson(name='John', age=None)]
+    # > people=[PartialPerson(name='Ivan', age=20), PartialPerson(name='Jason', age=25), PartialPerson(name='John', age=30)]
 
-### Partial Streaming (Field-by-Field)
-
-Watch a single complex object being built field-by-field in real time:
-
-```python
-from instructor.dsl.partial import Partial
-from pydantic import BaseModel
-
-class Person(BaseModel):
-    name: str
-    occupation: str
-    skills: list[str]
-
-stream = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
-    messages=[{"role": "user", "content": "Create a profile for a developer"}],
-    response_model=Partial[Person],
-    stream=True,
-)
-
-for partial_person in stream:
-    print(f"Current state: {partial_person}")
 ```
 
 ## Async Support
@@ -299,9 +391,21 @@ Instructor provides full async support for the genai SDK, allowing you to make n
 ```python
 import asyncio
 
+import instructor
+from google import genai
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
 async def extract_user():
     client = genai.Client()
-    client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS, use_async=True)
+    client = instructor.from_genai(
+        client, mode=instructor.Mode.GENAI_TOOLS, use_async=True
+    )
 
     response = await client.chat.completions.create(
         model="gemini-2.0-flash-001",
@@ -310,5 +414,7 @@ async def extract_user():
     )
     return response
 
-user = asyncio.run(extract_user())
+
+print(asyncio.run(extract_user()))
+#> name = Jason age= 25
 ```

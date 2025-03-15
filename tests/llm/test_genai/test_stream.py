@@ -13,22 +13,6 @@ class UserExtract(BaseModel):
     age: int
 
 
-@pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
-def test_iterable_model(model, mode, stream, client):
-    client = instructor.from_genai(client, mode=mode)
-    model = client.chat.completions.create(
-        model=model,
-        response_model=Iterable[UserExtract],
-        max_retries=2,
-        stream=stream,
-        messages=[
-            {"role": "user", "content": "Make two up people"},
-        ],
-    )
-    for m in model:  # type: ignore
-        assert isinstance(m, UserExtract)
-
-
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_partial_model(model, mode, client):
     client = instructor.from_genai(client, mode=mode)
