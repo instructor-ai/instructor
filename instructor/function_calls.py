@@ -292,8 +292,11 @@ class OpenAISchema(BaseModel):
         assert (
             len(completion.candidates[0].content.parts) == 1
         ), f"Instructor does not support multiple function calls, use List[Model] instead"
-
         function_call = completion.candidates[0].content.parts[0].function_call
+        assert (
+            function_call is not None
+        ), f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
+
         assert function_call.name == cls.openai_schema["name"]
         return cls.model_validate(
             obj=function_call.args, context=validation_context, strict=strict

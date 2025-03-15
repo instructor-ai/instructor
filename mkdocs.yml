@@ -219,6 +219,7 @@ nav:
     - Azure OpenAI: 'integrations/azure.md'
     - Anthropic: 'integrations/anthropic.md'
     - Gemini: 'integrations/google.md'
+    - Google GenAI: 'integrations/genai.md'
     - AWS Bedrock: 'integrations/bedrock.md'
     - Vertex AI: 'integrations/vertex.md'
     
@@ -333,6 +334,7 @@ plugins:
          hub/databricks.md: integrations/databricks.md
          hub/fireworks.md: integrations/fireworks.md
          hub/google.md: integrations/google.md
+         hub/genai.md: integrations/genai.md
          hub/groq.md: integrations/groq.md
          hub/litellm.md: integrations/litellm.md
          hub/mistral.md: integrations/mistral.md
