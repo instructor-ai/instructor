@@ -123,6 +123,7 @@ Template variables make it easy to reuse prompts with different values. This is 
 from google import genai
 import instructor
 from pydantic import BaseModel
+from google.genai import types
 
 
 # Define your Pydantic model
@@ -138,22 +139,30 @@ client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
 # Single string (converted to user message)
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
-    messages=["Jason is 25 years old"],
+    messages=["{{name}} is {{ age }} years old"],
     response_model=User,
+    context={
+        "name": "Jason",
+        "age": 25,
+    },
 )
 
 print(response)
-#> name='Jason' age=25
+# > name='Jason' age=25
 
 # Standard format
 response = client.chat.completions.create(
     model="gemini-2.0-flash-001",
-    messages=[{"role": "user", "content": "Jason is 25 years old"}],
+    messages=[{"role": "user", "content": "{{ name }} is {{ age }} years old"}],
     response_model=User,
+    context={
+        "name": "Jason",
+        "age": 25,
+    },
 )
 
 print(response)
-#> name='Jason' age=25
+# > name='Jason' age=25
 
 # Using genai's Content type
 response = client.chat.completions.create(
@@ -161,14 +170,18 @@ response = client.chat.completions.create(
     messages=[
         genai.types.Content(
             role="user",
-            parts=[genai.types.Part.from_text(text="Jason is 25 years old")],
+            parts=[genai.types.Part.from_text(text="{{name}} is {{age}} years old")],
         )
     ],
     response_model=User,
+    context={
+        "name": "Jason",
+        "age": 25,
+    },
 )
 
 print(response)
-#> name='Jason' age=25
+# > name='Jason' age=25
 ```
 
 ## Validation and Retries
