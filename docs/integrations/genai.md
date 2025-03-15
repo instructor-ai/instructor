@@ -13,9 +13,15 @@ authors:
 # Structured Outputs with Google's genai SDK
 
 !!! info "Recommended SDK"
-The `genai` SDK is Google's recommended Python client for working with Gemini models. It provides a unified interface for both the Gemini API and Vertex AI. For detailed setup instructions, including how to use it with Vertex AI, please refer to the [official Google AI documentation for the GenAI SDK](https://googleapis.github.io/python-genai/).
+
+    The `genai` SDK is Google's recommended Python client for working with Gemini models. It provides a unified interface for both the Gemini API and Vertex AI. For detailed setup instructions, including how to use it with Vertex AI, please refer to the [official Google AI documentation for the GenAI SDK](https://googleapis.github.io/python-genai/).
 
 This guide demonstrates how to use Instructor with Google's `genai` SDK to extract structured data from Gemini models.
+
+We currently have two modes for Gemini
+
+- `Mode.GENAI_TOOLS` : This leverages function calling under the hood and returns a structured response
+- `Mode.GENAI_STRUCTURED_OUTPUTS` : This provides Gemini with a JSON Schema that it will use to respond in a structured format with
 
 ## Installation
 
