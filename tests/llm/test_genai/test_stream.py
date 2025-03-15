@@ -25,7 +25,7 @@ def test_iterable_model(model, mode, stream, client):
             {"role": "user", "content": "Make two up people"},
         ],
     )
-    for m in model:
+    for m in model:  # type: ignore
         assert isinstance(m, UserExtract)
 
 
@@ -43,9 +43,9 @@ def test_partial_model(model, mode, client):
         context={"name": "Jason", "age": 12},
     )
     final_model = None
-    for m in model:
+    for m in model:  # type: ignore
         assert isinstance(m, UserExtract)
         final_model = m
-
+    assert isinstance(final_model, UserExtract)
     assert final_model.age == 12
     assert final_model.name == "Jason"
