@@ -29,7 +29,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run Continuous Integration Action
-        uses: astral-sh/ruff-action@v1
+        uses: astral-sh/ruff-action@v3
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
