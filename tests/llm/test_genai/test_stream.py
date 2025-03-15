@@ -1,5 +1,4 @@
 from itertools import product
-from collections.abc import Iterable
 from pydantic import BaseModel
 import pytest
 import instructor
