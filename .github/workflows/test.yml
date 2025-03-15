@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Gemini Tests
         if: matrix.python-version == '3.11'
-        run: uv run pytest tests/llm/test_gemini
+        run: uv run pytest tests/llm/test_genai
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
