@@ -1,6 +1,7 @@
 from typing import Callable, Optional
 
 from openai import OpenAI
+import google.generativeai as genai
 from pydantic import Field
 
 from instructor.function_calls import OpenAISchema
@@ -69,9 +70,9 @@ def llm_validator(
     """
 
     def llm(v: str) -> str:
-        resp = client.chat.completions.create(
-            response_model=Validator,
-            messages=[
+        args = {
+            "response_model": Validator,
+            "messages": [
                 {
                     "role": "system",
                     "content": "You are a world class validation model. Capable to determine if the following value is valid for the statement, if it is not, explain why and suggest a new value.",
@@ -81,9 +82,10 @@ def llm_validator(
                     "content": f"Does `{v}` follow the rules: {statement}",
                 },
             ],
-            model=model,
-            temperature=temperature,
-        )
+            # Conditionally add keys based on the client type
+            **({"model": model, "temperature": temperature} if not isinstance(client.client, genai.GenerativeModel) else {})
+        }
+        resp = client.chat.completions.create(**args)
 
         # If the response is  not valid, return the reason, this could be used in
         # the future to generate a better response, via reasking mechanism.
