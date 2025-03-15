@@ -396,6 +396,41 @@ print(response)
 #> summary="Abraham Lincoln's Gettysburg Address, beginning with 'Four score and seven years ago' and discussing the Civil War's test of a nation dedicated to equality"
 ```
 
+## Using Files
+
+Our API integration also supports the use of files
+
+```python
+from google import genai
+import instructor
+from pydantic import BaseModel
+
+
+class Summary(BaseModel):
+    summary: str
+
+
+client = genai.Client()
+client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+
+file1 = client.files.upload(
+    file="./gettysburg.wav",
+)
+
+# As a parameter
+response = client.chat.completions.create(
+    model="gemini-2.0-flash-001",
+    system="Summarise the audio file.",
+    messages=[
+        file1,
+    ],
+    response_model=Summary,
+)
+
+print(response)
+# > summary="Abraham Lincoln's Gettysburg Address commences by stating that 87 years prior, the founding fathers created a new nation based on liberty and equality. It goes on to say that the Civil War is testing whether a nation so conceived can survive."
+```
+
 ## Streaming Responses
 
 > **Note:** Streaming functionality is currently only available when using the `Mode.GENAI_STRUCTURED_OUTPUTS` mode with Gemini models. Other modes like `tools` do not support streaming at this time.

@@ -942,6 +942,8 @@ def convert_to_genai_messages(
             )
         elif isinstance(message, types.Content):
             result.append(message)
+        elif isinstance(message, types.File):
+            result.append(message)
         elif isinstance(message, dict):
             assert "role" in message
             assert "content" in message

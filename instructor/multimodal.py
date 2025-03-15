@@ -476,6 +476,11 @@ def extract_genai_multimodal_content(
 
     result: list[types.Content] = []
     for content in contents:
+        # Check for Files
+        if isinstance(content, types.File):
+            result.append(content)
+            continue
+
         # We only want to do the conversion for the Image type
         if not isinstance(content, types.Content):
             raise ValueError(
