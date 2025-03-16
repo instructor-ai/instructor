@@ -17,6 +17,7 @@ from typing import (
     Union,
 )
 
+from instructor.multimodal import Image, Audio
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
@@ -941,6 +942,8 @@ def convert_to_genai_messages(
             )
         elif isinstance(message, types.Content):
             result.append(message)
+        elif isinstance(message, types.File):
+            result.append(message)
         elif isinstance(message, dict):
             assert "role" in message
             assert "content" in message
@@ -965,6 +968,8 @@ def convert_to_genai_messages(
                 for content_item in message["content"]:
                     if isinstance(content_item, str):
                         content_parts.append(types.Part.from_text(text=content_item))
+                    elif isinstance(content_item, (Image, Audio)):
+                        content_parts.append(content_item.to_genai())
                     else:
                         raise ValueError(
                             f"Unsupported content item type: {type(content_item)}"

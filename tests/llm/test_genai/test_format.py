@@ -4,6 +4,7 @@ import instructor
 from .util import models, modes
 from itertools import product
 from google import genai
+from google.genai import types
 
 
 class User(BaseModel):
@@ -125,6 +126,28 @@ def test_system_prompt_list(client, model, mode):
     assert len(response.users) > 0
     assert response.users[0].name == "Ivan"
     assert response.users[0].age == 28
+
+
+@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("mode", modes)
+def test_format_genai_typed(client, model, mode):
+    client = instructor.from_genai(client, mode=mode)
+    response = client.chat.completions.create(
+        model=model,
+        response_model=User,
+        messages=[
+            types.Content(
+                role="user",
+                parts=[
+                    types.Part.from_text(text="Extract {{name}} is {{age}} years old")
+                ],
+            ),  # type: ignore
+        ],
+        context={"name": "Jason", "age": 25},
+    )
+    assert isinstance(response, User)
+    assert response.name == "Jason"
+    assert response.age == 25
 
 
 @pytest.mark.parametrize("model, mode, is_list", product(models, modes, [True, False]))

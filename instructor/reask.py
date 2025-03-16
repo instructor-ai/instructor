@@ -398,6 +398,26 @@ def reask_genai_tools(
     return kwargs
 
 
+def reask_genai_structured_outputs(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    from google.genai import types
+
+    kwargs = kwargs.copy()
+    kwargs["contents"].append(
+        types.ModelContent(
+            parts=[
+                types.Part.from_text(
+                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors in the following attempt:\n{response.text}"
+                ),
+            ]
+        ),
+    )
+    return kwargs
+
+
 def handle_reask_kwargs(
     kwargs: dict[str, Any],
     mode: Mode,
@@ -441,5 +461,7 @@ def handle_reask_kwargs(
         return reask_perplexity_json(kwargs_copy, response, exception)
     elif mode == Mode.GENAI_TOOLS:
         return reask_genai_tools(kwargs_copy, response, exception)
+    elif mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+        return reask_genai_structured_outputs(kwargs_copy, response, exception)
     else:
         return reask_default(kwargs_copy, response, exception)

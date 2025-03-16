@@ -7,7 +7,7 @@
 # --------------------------------------------------------------------------------
 
 from __future__ import annotations
-
+import json
 from jiter import from_json
 from pydantic import BaseModel, create_model
 from typing import Union
@@ -272,12 +272,14 @@ class PartialBase(Generic[T_Model]):
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
+                if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+                    yield chunk.text
+                if mode == Mode.GENAI_TOOLS:
+                    fc = chunk.candidates[0].content.parts[0].function_call.args
+                    yield json.dumps(fc)
                 if mode == Mode.GEMINI_JSON:
                     yield chunk.text
                 if mode == Mode.GEMINI_TOOLS:
-                    # Gemini seems to return the entire function_call and not a chunk?
-                    import json
-
                     resp = chunk.candidates[0].content.parts[0].function_call
                     resp_dict = type(resp).to_dict(resp)  # type:ignore
                     if "args" in resp_dict:
@@ -368,8 +370,8 @@ class Partial(Generic[T_Model]):
 
     def __new__(
         cls,
-        *args: object,  # noqa :ARG003
-        **kwargs: object,  # noqa :ARG003
+        *args: object,  # noqa
+        **kwargs: object,  # noqa
     ) -> Partial[T_Model]:
         """Cannot instantiate.
 
