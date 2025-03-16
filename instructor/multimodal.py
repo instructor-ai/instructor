@@ -473,7 +473,6 @@ def extract_genai_multimodal_content(
     Convert Typed Contents to the appropriate format for Google GenAI.
     """
     from google.genai import types
-    from typing import Union
 
     result: list[Union[types.Content, types.File]] = []  # noqa: UP007
     for content in contents:
