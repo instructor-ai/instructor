@@ -1819,8 +1819,8 @@ requires-dist = [
     { name = "jsonref", marker = "extra == 'google-generativeai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'vertexai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "litellm", marker = "extra == 'test-docs'", specifier = ">=1.35.31,<2.0.0" },
-    { name = "mistralai", marker = "extra == 'mistral'", specifier = ">=1.0.3,<2.0.0" },
-    { name = "mistralai", marker = "extra == 'test-docs'", specifier = ">=1.0.3,<2.0.0" },
+    { name = "mistralai", marker = "extra == 'mistral'", specifier = ">=1.5.1,<2.0.0" },
+    { name = "mistralai", marker = "extra == 'test-docs'", specifier = ">=1.5.1,<2.0.0" },
     { name = "openai", specifier = ">=1.52.0,<2.0.0" },
     { name = "openai", marker = "extra == 'perplexity'", specifier = ">=1.52.0,<2.0.0" },
     { name = "pandas", marker = "extra == 'test-docs'", specifier = ">=2.2.0,<3.0.0" },
@@ -1871,7 +1871,7 @@ google-generativeai = [
 ]
 groq = [{ name = "groq", specifier = ">=0.4.2,<0.14.0" }]
 litellm = [{ name = "litellm", specifier = ">=1.35.31,<2.0.0" }]
-mistral = [{ name = "mistralai", specifier = ">=1.0.3,<2.0.0" }]
+mistral = [{ name = "mistralai", specifier = ">=1.5.1,<2.0.0" }]
 perplexity = [{ name = "openai", specifier = ">=1.52.0,<2.0.0" }]
 test-docs = [
     { name = "anthropic", specifier = "==0.47.2" },
@@ -1884,7 +1884,7 @@ test-docs = [
     { name = "graphviz", specifier = ">=0.20.3,<1.0.0" },
     { name = "groq", specifier = ">=0.4.2,<0.14.0" },
     { name = "litellm", specifier = ">=1.35.31,<2.0.0" },
-    { name = "mistralai", specifier = ">=1.0.3,<2.0.0" },
+    { name = "mistralai", specifier = ">=1.5.1,<2.0.0" },
     { name = "pandas", specifier = ">=2.2.0,<3.0.0" },
     { name = "phonenumbers", specifier = ">=8.13.33,<9.0.0" },
     { name = "pydantic-extra-types", specifier = ">=2.6.0,<3.0.0" },
