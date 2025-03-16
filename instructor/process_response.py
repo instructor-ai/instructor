@@ -40,7 +40,7 @@ from instructor.utils import (
     convert_to_genai_messages,
     extract_genai_system_message,
 )
-from instructor.multimodal import convert_messages
+from instructor.multimodal import convert_messages, extract_genai_multimodal_content
 
 logger = logging.getLogger("instructor")
 
@@ -539,6 +539,7 @@ def handle_genai_structured_outputs(
         system_message = None
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
+    new_kwargs["contents"] = extract_genai_multimodal_content(new_kwargs["contents"])
     new_kwargs["config"] = types.GenerateContentConfig(
         system_instruction=system_message,
         response_mime_type="application/json",
@@ -581,6 +582,7 @@ def handle_genai_tools(
     )
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
+    new_kwargs["contents"] = extract_genai_multimodal_content(new_kwargs["contents"])
 
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)
@@ -923,6 +925,7 @@ def handle_response_model(
             mode,
             autodetect_images=autodetect_images,
         )
+
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
         extra={
