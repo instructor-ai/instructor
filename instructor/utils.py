@@ -928,8 +928,9 @@ def convert_to_genai_messages(
     reduces function call overhead.
     """
     from google.genai import types
+    from typing import Union
 
-    result: list[types.Content] = []
+    result: list[Union[types.Content, types.File]] = []  # noqa: UP007
 
     for message in messages:
         # We assume this is the user's message and we don't need to convert it
