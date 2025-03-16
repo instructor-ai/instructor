@@ -133,7 +133,7 @@ wheels = [
 
 [[package]]
 name = "anthropic"
-version = "0.47.2"
+version = "0.48.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -144,9 +144,9 @@ dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/64/65/175bf024bd9866ef96470620e164dcf8c3e0a2892178e59d1532465c8315/anthropic-0.47.2.tar.gz", hash = "sha256:452f4ca0c56ffab8b6ce9928bf8470650f88106a7001b250895eb65c54cfa44c", size = 208066 }
+sdist = { url = "https://files.pythonhosted.org/packages/20/e3/dba5eb132666517178488295305854304794367c4126e8261d2843b540f0/anthropic-0.48.0.tar.gz", hash = "sha256:5e94b571a3874295b6c8600d3797875abdca18946a9ade68b6aa0408caa31cad", size = 209603 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/92/ad/feddd3ed83804b7f05c90b343e2d9df8f4a28028d6820c1a034de79dcdab/anthropic-0.47.2-py3-none-any.whl", hash = "sha256:61b712a56308fce69f04d92ba0230ab2bc187b5bce17811d400843a8976bb67f", size = 239536 },
+    { url = "https://files.pythonhosted.org/packages/82/4b/9d2a167bd6c3db8391e0ae2853f94244667c557cc10a6d05898fde2f6ead/anthropic-0.48.0-py3-none-any.whl", hash = "sha256:e2495a07d14484f3219a5c0b902a63f9df8c2b3bd358f68b5ee86f1e89d1ba81", size = 242356 },
 ]
 
 [[package]]
@@ -1645,7 +1645,7 @@ wheels = [
 
 [[package]]
 name = "instructor"
-version = "1.7.3"
+version = "1.7.4"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
@@ -1680,6 +1680,7 @@ fireworks-ai = [
 ]
 google-genai = [
     { name = "google-genai" },
+    { name = "jsonref" },
 ]
 google-generativeai = [
     { name = "google-generativeai" },
@@ -1751,6 +1752,7 @@ fireworks-ai = [
 ]
 google-genai = [
     { name = "google-genai" },
+    { name = "jsonref" },
 ]
 google-generativeai = [
     { name = "google-generativeai" },
@@ -1802,7 +1804,7 @@ writer = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.1,<4.0.0" },
-    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.47.2" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.48.0" },
     { name = "boto3", marker = "extra == 'bedrock'", specifier = ">=1.34.0,<2.0.0" },
     { name = "cerebras-cloud-sdk", marker = "extra == 'cerebras-cloud-sdk'", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", marker = "extra == 'cohere'", specifier = ">=5.1.8,<6.0.0" },
@@ -1816,6 +1818,7 @@ requires-dist = [
     { name = "groq", marker = "extra == 'groq'", specifier = ">=0.4.2,<0.14.0" },
     { name = "jinja2", specifier = ">=3.1.4,<4.0.0" },
     { name = "jiter", specifier = ">=0.6.1,<0.9" },
+    { name = "jsonref", marker = "extra == 'google-genai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'google-generativeai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'vertexai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "litellm", marker = "extra == 'test-docs'", specifier = ">=1.35.31,<2.0.0" },
@@ -1838,7 +1841,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-anthropic = [{ name = "anthropic", specifier = "==0.47.2" }]
+anthropic = [{ name = "anthropic", specifier = "==0.48.0" }]
 bedrock = [{ name = "boto3", specifier = ">=1.34.0,<2.0.0" }]
 cerebras-cloud-sdk = [{ name = "cerebras-cloud-sdk", specifier = ">=1.5.0,<2.0.0" }]
 cohere = [{ name = "cohere", specifier = ">=5.1.8,<6.0.0" }]
@@ -1864,7 +1867,10 @@ docs = [
     { name = "pytest-examples", specifier = ">=0.0.15" },
 ]
 fireworks-ai = [{ name = "fireworks-ai", specifier = ">=0.15.4,<1.0.0" }]
-google-genai = [{ name = "google-genai", specifier = ">=1.5.0" }]
+google-genai = [
+    { name = "google-genai", specifier = ">=1.5.0" },
+    { name = "jsonref", specifier = ">=1.1.0,<2.0.0" },
+]
 google-generativeai = [
     { name = "google-generativeai", specifier = ">=0.8.2,<1.0.0" },
     { name = "jsonref", specifier = ">=1.1.0,<2.0.0" },
@@ -1874,7 +1880,7 @@ litellm = [{ name = "litellm", specifier = ">=1.35.31,<2.0.0" }]
 mistral = [{ name = "mistralai", specifier = ">=1.5.1,<2.0.0" }]
 perplexity = [{ name = "openai", specifier = ">=1.52.0,<2.0.0" }]
 test-docs = [
-    { name = "anthropic", specifier = "==0.47.2" },
+    { name = "anthropic", specifier = "==0.48.0" },
     { name = "cerebras-cloud-sdk", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", specifier = ">=5.1.8,<6.0.0" },
     { name = "datasets", specifier = ">=3.0.1,<4.0.0" },
