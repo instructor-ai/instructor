@@ -928,7 +928,6 @@ def convert_to_genai_messages(
     reduces function call overhead.
     """
     from google.genai import types
-    from typing import Union
 
     result: list[Union[types.Content, types.File]] = []  # noqa: UP007
 
