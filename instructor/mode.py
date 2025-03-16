@@ -39,6 +39,8 @@ class Mode(enum.Enum):
     VERTEXAI_PARALLEL_TOOLS = "vertexai_parallel_tools"
     GEMINI_JSON = "gemini_json"
     GEMINI_TOOLS = "gemini_tools"
+    GENAI_TOOLS = "genai_tools"
+    GENAI_STRUCTURED_OUTPUTS = "genai_structured_outputs"
 
     # Cohere modes
     COHERE_TOOLS = "cohere_tools"
