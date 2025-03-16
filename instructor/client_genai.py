@@ -11,7 +11,7 @@ import instructor
 @overload
 def from_genai(
     client: Client,
-    mode: instructor.Mode = instructor.Mode.GEMINI_JSON,
+    mode: instructor.Mode = instructor.Mode.GENAI_TOOLS,
     use_async: Literal[True] = True,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
