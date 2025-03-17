@@ -43,26 +43,30 @@ def from_mistral(
         client, Mistral
     ), "Client must be an instance of mistralai.Mistral"
 
-    if not use_async:
-        return instructor.Instructor(
+    if use_async:
+
+        async def async_wrapper(*args: Any, **kwargs: Any):  # type:ignore
+            if kwargs.pop("stream", False):
+                return await client.chat.stream_async(*args, **kwargs)  # type:ignore
+            return await client.chat.complete_async(*args, **kwargs)  # type:ignore
+
+        return instructor.AsyncInstructor(
             client=client,
-            create=instructor.patch(
-                create=client.chat.complete,
-                mode=mode,
-            ),
+            create=instructor.patch(create=async_wrapper, mode=mode),
             provider=instructor.Provider.MISTRAL,
             mode=mode,
             **kwargs,
         )
 
-    else:
-        return instructor.AsyncInstructor(
-            client=client,
-            create=instructor.patch(
-                create=client.chat.complete_async,
-                mode=mode,
-            ),
-            provider=instructor.Provider.MISTRAL,
-            mode=mode,
-            **kwargs,
-        )
+    def sync_wrapper(*args: Any, **kwargs: Any):  # type:ignore
+        if kwargs.pop("stream", False):
+            return client.chat.stream(*args, **kwargs)  # type:ignore
+        return client.chat.complete(*args, **kwargs)  # type:ignore
+
+    return instructor.Instructor(
+        client=client,
+        create=instructor.patch(create=sync_wrapper, mode=mode),
+        provider=instructor.Provider.MISTRAL,
+        mode=mode,
+        **kwargs,
+    )
