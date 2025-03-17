@@ -34,6 +34,7 @@ Instructor works with many different LLM providers, allowing you to use structur
     [:octicons-arrow-right-16: Cerebras](./cerebras.md)      · 
     [:octicons-arrow-right-16: Writer](./writer.md)          · 
     [:octicons-arrow-right-16: Perplexity](./perplexity.md)
+    [:octicons-arrow-right-16: Sambanova](./sambanova.md)
 
 - :material-open-source-initiative: **Open Source**
 

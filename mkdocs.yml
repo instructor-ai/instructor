@@ -180,7 +180,7 @@ nav:
     - "Table Extraction from Images": 'examples/tables_from_vision.md'
     - "YouTube Clip Analysis": 'examples/youtube_clips.md'
   - Blog:
-    - "blog/index.md"
+      - "blog/index.md"
   - Concepts:
     - Overview: 'concepts/index.md'
     - Models: 'concepts/models.md'
@@ -251,6 +251,7 @@ nav:
     - Vertex AI: 'integrations/vertex.md'
     - Writer: 'integrations/writer.md'
     - OpenRouter: 'integrations/openrouter.md'
+    - SambaNova: 'integrations/sambanova.md'
     
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
@@ -258,7 +259,7 @@ nav:
       - "Usage Tracking": "cli/usage.md"
       - "Batch Jobs": "cli/batch.md"
   - Jobs Board (External):
-    - Jobs: 'jobs.md'
+      - Jobs: "jobs.md"
   - Prompt Design:
     - "prompting/index.md"
     - Zero-Shot:
