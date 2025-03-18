@@ -11,6 +11,7 @@ import os
 from vertexai.generative_models import GenerativeModel
 from writerai import Writer
 from fireworks.client import Fireworks
+from google.genai import Client as GoogleGenaiClient
 
 
 class User(BaseModel):
@@ -65,6 +66,10 @@ clients = [
     {
         "client": instructor.from_cerebras(Cerebras()),
         "model": "llama-3.3-70b",
+    },
+    {
+        "client": instructor.from_genai(GoogleGenaiClient()),
+        "model": "gemini-2.0-flash",
     },
 ]
 
