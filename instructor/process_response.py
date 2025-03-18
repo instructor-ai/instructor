@@ -100,7 +100,6 @@ async def process_response_async(
         strict=strict,
         mode=mode,
     )
-    model._raw_response = response
 
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
@@ -111,7 +110,7 @@ async def process_response_async(
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
         return model
-
+    model._raw_response = response
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
         return model
@@ -176,8 +175,6 @@ def process_response(
         mode=mode,
     )
 
-    model._raw_response = response
-
     # ? This really hints at the fact that we need a better way of
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
@@ -187,6 +184,8 @@ def process_response(
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
         return model
+
+    model._raw_response = response
 
     if isinstance(model, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
