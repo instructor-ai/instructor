@@ -4,12 +4,12 @@ Cursor rules are configuration files that help guide AI-assisted development in 
 
 ## What is Cursor?
 
-Cursor is an AI-powered IDE that helps developers write, understand, and maintain code more efficiently. It integrates AI capabilities directly into the development workflow, providing features like:
+[Cursor](https://www.cursor.com/) is an AI-powered IDE that helps developers write, understand, and maintain code more efficiently. It integrates AI capabilities directly into the development workflow, providing features like:
 
 - AI-assisted code completion
 - Natural language code generation
 - Intelligent code explanations
-- Automated refactoring suggestions
+- Automated refactoring suggestion
 
 ## Understanding Cursor Rules
 
