@@ -31,16 +31,16 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
 
-#       - name: Run GenAI Tests
-#         if: matrix.python-version == '3.11'
-#         run: uv run pytest tests/llm/test_genai
-#         env:
-#           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      - name: Run GenAI Tests
+        if: matrix.python-version == '3.11'
+        run: uv run pytest tests/llm/test_genai
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
-          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks and not perplexity and not mistral"
+          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks and not perplexity and not mistral and not test_completion_create.py"
           uv run coverage report
           uv run coverage html
         env:
