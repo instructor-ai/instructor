@@ -178,7 +178,7 @@ class Instructor:
     ) -> T | Any | Awaitable[T] | Awaitable[Any]:
         kwargs = self.handle_kwargs(kwargs)
 
-        return self.create_fn(
+        response = self.create_fn(
             response_model=response_model,
             messages=messages,
             max_retries=max_retries,
@@ -405,7 +405,7 @@ class AsyncInstructor(Instructor):
         **kwargs: Any,
     ) -> T | Any:
         kwargs = self.handle_kwargs(kwargs)
-        return await self.create_fn(
+        response = await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
             context=context,
