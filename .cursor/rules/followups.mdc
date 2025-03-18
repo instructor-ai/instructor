@@ -1,7 +1,7 @@
 ---
 description: when working together agent
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 Make sure to come up with follow-up hot keys. They should be thoughtful and actionable and result in small additional code changes based on the context that you have available.
 
