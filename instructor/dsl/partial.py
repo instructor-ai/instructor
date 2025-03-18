@@ -7,7 +7,6 @@
 # --------------------------------------------------------------------------------
 
 from __future__ import annotations
-import json
 from jiter import from_json
 from pydantic import BaseModel, create_model
 from typing import Union
