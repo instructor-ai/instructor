@@ -278,6 +278,14 @@ class PartialBase(Generic[T_Model]):
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    import json
+
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
                 if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
                     yield chunk.text
                 if mode == Mode.GENAI_TOOLS:
@@ -338,6 +346,14 @@ class PartialBase(Generic[T_Model]):
                     if not chunk.data.choices[0].delta.tool_calls:
                         continue
                     yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    import json
+
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()

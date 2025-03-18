@@ -2,7 +2,6 @@ from typing import Any, Optional, cast, ClassVar
 from collections.abc import AsyncGenerator, Generator, Iterable
 
 from pydantic import BaseModel, Field, create_model
-
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
@@ -20,7 +19,7 @@ class IterableBase:
         if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream(json_chunks)
 
-        if mode in {Mode.MISTRAL_TOOLS}:
+        if mode in {Mode.VERTEXAI_TOOLS, Mode.MISTRAL_TOOLS}:
             import json
 
             response = next(json_chunks)
@@ -45,7 +44,7 @@ class IterableBase:
         if mode == Mode.MD_JSON:
             json_chunks = extract_json_from_stream_async(json_chunks)
 
-        if mode in {Mode.MISTRAL_TOOLS}:
+        if mode in {Mode.MISTRAL_TOOLS, Mode.VERTEXAI_TOOLS}:
             return cls.tasks_from_mistral_chunks(json_chunks, **kwargs)
 
         return cls.tasks_from_chunks_async(json_chunks, **kwargs)
@@ -119,6 +118,14 @@ class IterableBase:
                     yield chunk.delta.partial_json
                 if mode == Mode.GEMINI_JSON:
                     yield chunk.text
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    import json
+
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
                 if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
                     yield chunk.data.choices[0].delta.content
                 if mode == Mode.MISTRAL_TOOLS:
@@ -176,6 +183,14 @@ class IterableBase:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    import json
+
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
                 if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
                     yield chunk.data.choices[0].delta.content
                 if mode == Mode.MISTRAL_TOOLS:
