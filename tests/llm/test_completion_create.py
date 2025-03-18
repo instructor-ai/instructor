@@ -85,7 +85,6 @@ def test_completion_create(response_model_and_prompt_item, kwargs):  #
     response_model, prompt = response_model_and_prompt_item
 
     if kwargs.get("model", None) == "palmyra-x-004" and response_model == bool:
-        print("Skipping Writer model")
         pytest.skip("Palmyra-X-004 does not support boolean response models")
         return
 
