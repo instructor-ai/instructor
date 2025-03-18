@@ -7,6 +7,7 @@
 # --------------------------------------------------------------------------------
 
 from __future__ import annotations
+import json
 from jiter import from_json
 from pydantic import BaseModel, create_model
 from typing import Union
@@ -280,8 +281,6 @@ class PartialBase(Generic[T_Model]):
                 if mode == Mode.VERTEXAI_JSON:
                     yield chunk.candidates[0].content.parts[0].text
                 if mode == Mode.VERTEXAI_TOOLS:
-                    import json
-
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
@@ -348,8 +347,6 @@ class PartialBase(Generic[T_Model]):
                 if mode == Mode.VERTEXAI_JSON:
                     yield chunk.candidates[0].content.parts[0].text
                 if mode == Mode.VERTEXAI_TOOLS:
-                    import json
-
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
