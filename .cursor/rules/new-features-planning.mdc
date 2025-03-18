@@ -7,4 +7,4 @@ alwaysApply: true
 - When being asked to make new features, make sure that you check out from main a new branch and make incremental commit
 - If the feature is very large, create a temporary `todo.md`
 - And start a pull request using `gh`
-- Make sure to include that the pull request was written by cursor
+- Make sure to include `This PR was written by [Cursor](cursor.com)
