@@ -25,7 +25,7 @@ jobs:
         run: uv sync --all-extras
       - name: Run tests
         if: matrix.python-version != '3.11'
-        run: uv run pytest tests/ --ignore=tests/llm/test_completion_methods/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai and not mistral and'
+        run: uv run pytest tests/ --ignore=tests/llm/test_completion_methods/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai and not mistral'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
