@@ -17,6 +17,7 @@ from typing import (
     Union,
 )
 
+from instructor.multimodal import Image, Audio
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
@@ -49,6 +50,7 @@ class Provider(Enum):
     MISTRAL = "mistral"
     COHERE = "cohere"
     GEMINI = "gemini"
+    GENAI = "genai"
     DATABRICKS = "databricks"
     CEREBRAS = "cerebras"
     FIREWORKS = "fireworks"
@@ -887,5 +889,99 @@ def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessag
             else:
                 # Process single content
                 result.append(convert_message(content))
+
+    return result
+
+
+def extract_genai_system_message(
+    messages: list[dict[str, Any]],
+) -> str:
+    """
+    Extract system messages from a list of messages.
+
+    We expect an explicit system messsage for this provider.
+    """
+    system_messages = ""
+
+    for message in messages:
+        if isinstance(message, str):
+            continue
+        elif isinstance(message, dict):
+            if message.get("role") == "system":
+                if isinstance(message.get("content"), str):
+                    system_messages += message.get("content", "") + "\n\n"
+                elif isinstance(message.get("content"), list):
+                    for item in message.get("content", []):
+                        if isinstance(item, str):
+                            system_messages += item + "\n\n"
+
+    return system_messages
+
+
+def convert_to_genai_messages(
+    messages: list[Union[str, dict[str, Any], list[dict[str, Any]]]],  # noqa: UP007
+) -> list[Any]:
+    """
+    Convert a list of messages to a list of dictionaries in the format expected by the Gemini API.
+
+    This optimized version pre-allocates the result list and
+    reduces function call overhead.
+    """
+    from google.genai import types
+
+    result: list[Union[types.Content, types.File]] = []  # noqa: UP007
+
+    for message in messages:
+        # We assume this is the user's message and we don't need to convert it
+        if isinstance(message, str):
+            result.append(
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=message)],
+                )
+            )
+        elif isinstance(message, types.Content):
+            result.append(message)
+        elif isinstance(message, types.File):
+            result.append(message)
+        elif isinstance(message, dict):
+            assert "role" in message
+            assert "content" in message
+
+            if message["role"] == "system":
+                continue
+
+            if message["role"] not in {"user", "model"}:
+                raise ValueError(f"Unsupported role: {message['role']}")
+
+            if isinstance(message["content"], str):
+                result.append(
+                    types.Content(
+                        role=message["role"],
+                        parts=[types.Part.from_text(text=message["content"])],
+                    )
+                )
+
+            elif isinstance(message["content"], list):
+                content_parts = []
+
+                for content_item in message["content"]:
+                    if isinstance(content_item, str):
+                        content_parts.append(types.Part.from_text(text=content_item))
+                    elif isinstance(content_item, (Image, Audio)):
+                        content_parts.append(content_item.to_genai())
+                    else:
+                        raise ValueError(
+                            f"Unsupported content item type: {type(content_item)}"
+                        )
+
+                result.append(
+                    types.Content(
+                        role=message["role"],
+                        parts=content_parts,
+                    )
+                )
+        else:
+            raise ValueError(f"Unsupported message type: {type(message)}")
 
     return result

@@ -1,7 +1,7 @@
 import pytest
 from jinja2.exceptions import SecurityError
-
 from instructor.templating import handle_templating
+from instructor import Mode
 
 
 def test_handle_insecure_template():
@@ -15,14 +15,14 @@ def test_handle_insecure_template():
             ]
         }
         context = {"variable": "test"}
-        handle_templating(kwargs, context)
+        handle_templating(kwargs, Mode.TOOLS, context)
 
 
 def test_handle_templating_with_context():
     kwargs = {"messages": [{"role": "user", "content": "Hello {{ name }}!"}]}
     context = {"name": "Alice"}
 
-    result = handle_templating(kwargs, context)
+    result = handle_templating(kwargs, Mode.TOOLS, context)
 
     assert result == {"messages": [{"role": "user", "content": "Hello Alice!"}]}
 
@@ -30,7 +30,7 @@ def test_handle_templating_with_context():
 def test_handle_templating_without_context():
     kwargs = {"messages": [{"role": "user", "content": "Hello {{ name }}!"}]}
 
-    result = handle_templating(kwargs)
+    result = handle_templating(kwargs, Mode.TOOLS)
 
     assert result == kwargs
 
@@ -43,7 +43,7 @@ def test_handle_templating_with_anthropic_format():
     }
     context = {"name": "Bob"}
 
-    result = handle_templating(kwargs, context)
+    result = handle_templating(kwargs, Mode.TOOLS, context)
 
     assert result == {
         "messages": [
@@ -64,7 +64,7 @@ def test_handle_templating_with_mixed_content():
     }
     context = {"name": "Charlie"}
 
-    result = handle_templating(kwargs, context)
+    result = handle_templating(kwargs, Mode.TOOLS, context)
 
     assert result == {
         "messages": [
@@ -98,7 +98,7 @@ def test_handle_templating_with_secret_context():
         )
     }
 
-    result = handle_templating(kwargs, context)
+    result = handle_templating(kwargs, Mode.TOOLS, context)
 
     assert result == {
         "messages": [
@@ -120,7 +120,7 @@ def test_handle_templating_with_cohere_format():
     }
     context = {"name": "David"}
 
-    result = handle_templating(kwargs, context)
+    result = handle_templating(kwargs, Mode.TOOLS, context)
 
     assert result == {
         "message": "Hello David!",
@@ -136,7 +136,7 @@ def test_handle_templating_with_gemini_format():
     }
     context = {"name": "Eve"}
 
-    result = handle_templating(kwargs, context)
+    result = handle_templating(kwargs, Mode.TOOLS, context)
 
     assert result == {
         "contents": [{"role": "user", "parts": ["Hello Eve!", "How are you Eve?"]}]

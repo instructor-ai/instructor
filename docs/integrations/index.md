@@ -13,20 +13,35 @@ Instructor works with many different LLM providers, allowing you to use structur
 
     Leading AI providers with comprehensive features
 
-    [:octicons-arrow-right-16: OpenAI](./openai.md) · [:octicons-arrow-right-16: Azure](./azure.md) · [:octicons-arrow-right-16: Anthropic](./anthropic.md) · [:octicons-arrow-right-16: Google](./google.md) · [:octicons-arrow-right-16: Vertex AI](./vertex.md) · [:octicons-arrow-right-16: AWS Bedrock](./bedrock.md)
+    [:octicons-arrow-right-16: OpenAI](./openai.md)          · 
+    [:octicons-arrow-right-16: Azure](./azure.md)            · 
+    [:octicons-arrow-right-16: Anthropic](./anthropic.md)    · 
+    [:octicons-arrow-right-16: Google.GenerativeAI](./google.md)          · 
+    [:octicons-arrow-right-16: Vertex AI](./vertex.md)       · 
+    [:octicons-arrow-right-16: AWS Bedrock](./bedrock.md)    · 
+    [:octicons-arrow-right-16: Google.GenAI](./genai.md)
 
 - :material-cloud-outline: **Additional Cloud Providers**
 
     Other commercial AI providers with specialized offerings
 
-    [:octicons-arrow-right-16: Cohere](./cohere.md) · [:octicons-arrow-right-16: Mistral](./mistral.md) · [:octicons-arrow-right-16: DeepSeek](./deepseek.md) · [:octicons-arrow-right-16: Together AI](./together.md) · [:octicons-arrow-right-16: Groq](./groq.md) · [:octicons-arrow-right-16: Fireworks](./fireworks.md) · [:octicons-arrow-right-16: Cerebras](./cerebras.md) · [:octicons-arrow-right-16: Writer](./writer.md) · [:octicons-arrow-right-16: Perplexity](./perplexity.md)
-
+    [:octicons-arrow-right-16: Cohere](./cohere.md)          · 
+    [:octicons-arrow-right-16: Mistral](./mistral.md)        · 
+    [:octicons-arrow-right-16: DeepSeek](./deepseek.md)      · 
+    [:octicons-arrow-right-16: Together AI](./together.md)    · 
+    [:octicons-arrow-right-16: Groq](./groq.md)              · 
+    [:octicons-arrow-right-16: Fireworks](./fireworks.md)    · 
+    [:octicons-arrow-right-16: Cerebras](./cerebras.md)      · 
+    [:octicons-arrow-right-16: Writer](./writer.md)          · 
+    [:octicons-arrow-right-16: Perplexity](./perplexity.md)
+    [:octicons-arrow-right-16: Sambanova](./sambanova.md)
 
 - :material-open-source-initiative: **Open Source**
 
     Run open-source models locally or in the cloud
 
-    [:octicons-arrow-right-16: Ollama](./ollama.md) · [:octicons-arrow-right-16: llama-cpp-python](./llama-cpp-python.md) 
+    [:octicons-arrow-right-16: Ollama](./ollama.md)                  · 
+    [:octicons-arrow-right-16: llama-cpp-python](./llama-cpp-python.md)
     
 - :material-router-wireless: **Routing**
 
