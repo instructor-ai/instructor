@@ -1,9 +1,8 @@
 from itertools import product
-from collections.abc import Iterable
 from pydantic import BaseModel
 import pytest
 import instructor
-from instructor.dsl.partial import Partial, PartialLiteralMixin
+from instructor.dsl.partial import Partial
 
 from .util import models, modes
 
