@@ -86,7 +86,7 @@ clients = [
         for client in clients
     ],
 )
-def test_completion_create(response_model_and_prompt_item, kwargs):  #
+def test_completions_sync(response_model_and_prompt_item, kwargs):  #
     response_model, prompt = response_model_and_prompt_item
 
     if kwargs.get("model", None) == "palmyra-x-004" and response_model == bool:
@@ -102,7 +102,7 @@ def test_completion_create(response_model_and_prompt_item, kwargs):  #
 
 
 @pytest.mark.parametrize("kwargs", clients)
-def test_completion_create_list(kwargs):
+def test_completions_sync_list(kwargs):
     response, completion = kwargs["client"].chat.completions.create_with_completion(
         response_model=list[User],
         messages=[
