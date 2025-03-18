@@ -62,7 +62,6 @@ def test_partial_model(model, mode):
     )
     iterations = 0
     for chunk in response_stream:
-        print(chunk)
         assert isinstance(chunk, UserExtract)
         iterations += 1
     assert iterations >= 1
