@@ -188,6 +188,7 @@ nav:
     - Lists and Arrays: 'concepts/lists.md'
     - Prompting: 'concepts/prompting.md'
     - Multimodal : 'concepts/multimodal.md'
+    - PDF Support: 'concepts/pdf.md'
     - Retrying: 'concepts/retrying.md'
     - Patching: 'concepts/patching.md'
     - Hooks: 'concepts/hooks.md'
