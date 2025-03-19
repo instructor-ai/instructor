@@ -46,6 +46,10 @@ class IterableBase(Generic[T]):
                 if not json_response.get("tasks"):
                     return
 
+                # Check if task_type is None before using it
+                if cls.task_type is None:
+                    raise ValueError("task_type is not defined for this class")
+
                 for item in json_response["tasks"]:
                     yield cast(T, cls.task_type.model_validate(item))
             except (json.JSONDecodeError, KeyError, AttributeError) as e:
@@ -104,9 +108,13 @@ class IterableBase(Generic[T]):
                 if not json_response.get("tasks"):
                     continue
 
+                # Check if task_type is None before using it
+                if cls.task_type is None:
+                    raise ValueError("task_type is not defined for this class")
+
                 for item in json_response["tasks"]:
                     yield cast(T, cls.task_type.model_validate(item, **kwargs))
-            except (json.JSONDecodeError, KeyError) as e:
+            except (json.JSONDecodeError, KeyError, AttributeError, ValueError) as e:
                 # Skip malformed chunks instead of crashing
                 continue
 
@@ -136,7 +144,10 @@ class IterableBase(Generic[T]):
 
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                assert cls.task_type is not None
+                # The assert already checks for None, but let's be explicit for the type checker
+                if cls.task_type is None:
+                    continue
+
                 try:
                     obj = cast(
                         T, cls.task_type.model_validate_json(task_json, **kwargs)
@@ -172,7 +183,10 @@ class IterableBase(Generic[T]):
 
             task_json, potential_object = cls.get_object(potential_object, 0)
             if task_json:
-                assert cls.task_type is not None
+                # The assert already checks for None, but let's be explicit for the type checker
+                if cls.task_type is None:
+                    continue
+
                 try:
                     obj = cast(
                         T, cls.task_type.model_validate_json(task_json, **kwargs)
