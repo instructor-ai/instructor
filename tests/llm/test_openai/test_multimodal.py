@@ -1,11 +1,12 @@
 import pytest
-from instructor.multimodal import Image, Audio
+from instructor.multimodal import Image, Audio, PDF
 import instructor
 from pydantic import Field, BaseModel
 from itertools import product
 from .util import models, modes
 import requests
 from pathlib import Path
+import base64
 
 
 audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
@@ -139,3 +140,33 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
     )
 
     assert response.choices[0].message.content.startswith("This is an image")
+
+
+def test_pdf_to_openai_format():
+    # Test with URL
+    pdf = PDF(source="https://example.com/test.pdf", media_type="application/pdf")
+    result = pdf.to_openai()
+    assert result == {
+        "type": "document_url",
+        "document_url": {"url": "https://example.com/test.pdf"},
+    }
+
+    # Test with base64 data
+    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    b64_data = base64.b64encode(pdf_content).decode("utf-8")
+    pdf = PDF(
+        source=f"data:application/pdf;base64,{b64_data}",
+        media_type="application/pdf",
+        data=b64_data,
+    )
+    result = pdf.to_openai()
+    assert result == {
+        "type": "document_url",
+        "document_url": {"url": f"data:application/pdf;base64,{b64_data}"},
+    }
+
+
+def test_pdf_missing_data():
+    pdf = PDF(source="local.pdf", media_type="application/pdf")
+    with pytest.raises(ValueError, match="PDF data is missing for base64 encoding"):
+        pdf.to_openai()
