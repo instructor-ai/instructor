@@ -33,6 +33,6 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run tests
-        run: poetry run pytest tests/llm/test_openai/docs
+        run: uv run pytest tests/llm/test_openai/docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

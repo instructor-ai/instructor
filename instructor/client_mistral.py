@@ -24,6 +24,7 @@ def from_mistral(
     **kwargs: Any,
 ) -> instructor.Instructor: ...
 
+
 def from_mistral(
     client: Mistral,
     mode: instructor.Mode = instructor.Mode.MISTRAL_TOOLS,
@@ -32,28 +33,43 @@ def from_mistral(
 ) -> instructor.Instructor | instructor.AsyncInstructor:
     assert mode in {
         instructor.Mode.MISTRAL_TOOLS,
-    }, "Mode be one of {instructor.Mode.MISTRAL_TOOLS}"
+        instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS,
+    }, (
+        f"Mode must be one of {instructor.Mode.MISTRAL_TOOLS, instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS}"
+    )
 
-    
+    assert isinstance(client, Mistral), (
+        "Client must be an instance of mistralai.Mistral"
+    )
 
-    assert isinstance(
-        client, Mistral
-    ), "Client must be an instance of mistralai.Mistral"
+    if use_async:
 
-    if not use_async:
-        return instructor.Instructor(
-            client=client,
-            create=instructor.patch(create=client.chat.complete, mode=mode),
-            provider=instructor.Provider.MISTRAL,
-            mode=mode,
-            **kwargs,
-        )
+        async def async_wrapper(
+            *args: Any, **kwargs: dict[str, Any]
+        ):  # Handler for async streaming
+            if kwargs.pop("stream", False):
+                return await client.chat.stream_async(*args, **kwargs)
+            return await client.chat.complete_async(*args, **kwargs)
 
-    else:
         return instructor.AsyncInstructor(
             client=client,
-            create=instructor.patch(create=client.chat.complete_async, mode=mode),
+            create=instructor.patch(create=async_wrapper, mode=mode),
             provider=instructor.Provider.MISTRAL,
             mode=mode,
             **kwargs,
         )
+
+    def sync_wrapper(
+        *args: Any, **kwargs: dict[str, Any]
+    ):  # Handler for sync streaming
+        if kwargs.pop("stream", False):
+            return client.chat.stream(*args, **kwargs)
+        return client.chat.complete(*args, **kwargs)
+
+    return instructor.Instructor(
+        client=client,
+        create=instructor.patch(create=sync_wrapper, mode=mode),
+        provider=instructor.Provider.MISTRAL,
+        mode=mode,
+        **kwargs,
+    )

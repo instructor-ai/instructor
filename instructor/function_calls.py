@@ -1,6 +1,7 @@
 # type: ignore
 import json
 import logging
+import re
 from functools import wraps
 from typing import Annotated, Any, Optional, TypeVar, cast
 from docstring_parser import parse
@@ -23,8 +24,75 @@ from instructor.utils import (
 
 
 T = TypeVar("T")
+Model = TypeVar("Model", bound=BaseModel)
 
 logger = logging.getLogger("instructor")
+
+# No schema cache
+
+
+# Utility functions for common JSON parsing operations
+def _handle_incomplete_output(completion: Any) -> None:
+    """Check if a completion was incomplete and raise appropriate exception."""
+    if (
+        hasattr(completion, "choices")
+        and completion.choices[0].finish_reason == "length"
+    ):
+        raise IncompleteOutputException(last_completion=completion)
+
+    # Handle Anthropic format
+    if hasattr(completion, "stop_reason") and completion.stop_reason == "max_tokens":
+        raise IncompleteOutputException(last_completion=completion)
+
+
+def _extract_text_content(completion: Any) -> str:
+    """Extract text content from various completion formats."""
+    # OpenAI format
+    if hasattr(completion, "choices"):
+        return completion.choices[0].message.content or ""
+
+    # Simple text format
+    if hasattr(completion, "text"):
+        return completion.text
+
+    # Anthropic format
+    if hasattr(completion, "content"):
+        text_blocks = [c for c in completion.content if c.type == "text"]
+        if text_blocks:
+            return text_blocks[0].text
+
+    # Bedrock format
+    if isinstance(completion, dict) and "output" in completion:
+        try:
+            return completion.get("output").get("message").get("content")[0].get("text")
+        except (AttributeError, IndexError):
+            pass
+
+    return ""
+
+
+def _validate_model_from_json(
+    cls: type[Model],
+    json_str: str,
+    validation_context: Optional[dict[str, Any]] = None,
+    strict: Optional[bool] = None,
+) -> Model:
+    """Validate model from JSON string with appropriate error handling."""
+    try:
+        if strict:
+            return cls.model_validate_json(
+                json_str, context=validation_context, strict=True
+            )
+        else:
+            # Allow control characters
+            parsed = json.loads(json_str, strict=False)
+            return cls.model_validate(parsed, context=validation_context, strict=False)
+    except json.JSONDecodeError as e:
+        logger.debug(f"JSON decode error: {e}")
+        raise ValueError(f"Failed to parse JSON: {e}") from e
+    except Exception as e:
+        logger.debug(f"Model validation error: {e}")
+        raise
 
 
 class OpenAISchema(BaseModel):
@@ -75,9 +143,11 @@ class OpenAISchema(BaseModel):
 
     @classproperty
     def anthropic_schema(cls) -> dict[str, Any]:
+        # Generate the Anthropic schema based on the OpenAI schema to avoid redundant schema generation
+        openai_schema = cls.openai_schema
         return {
-            "name": cls.openai_schema["name"],
-            "description": cls.openai_schema["description"],
+            "name": openai_schema["name"],
+            "description": openai_schema["description"],
             "input_schema": cls.model_json_schema(),
         }
 
@@ -85,11 +155,16 @@ class OpenAISchema(BaseModel):
     def gemini_schema(cls) -> Any:
         import google.generativeai.types as genai_types
 
+        # Use OpenAI schema
+        openai_schema = cls.openai_schema
+
+        # Transform to Gemini format
         function = genai_types.FunctionDeclaration(
-            name=cls.openai_schema["name"],
-            description=cls.openai_schema["description"],
-            parameters=map_to_gemini_function_schema(cls.openai_schema["parameters"]),
+            name=openai_schema["name"],
+            description=openai_schema["description"],
+            parameters=map_to_gemini_function_schema(openai_schema["parameters"]),
         )
+
         return function
 
     @classmethod
@@ -112,11 +187,18 @@ class OpenAISchema(BaseModel):
         Returns:
             cls (OpenAISchema): An instance of the class
         """
+
         if mode == Mode.ANTHROPIC_TOOLS:
+            return cls.parse_anthropic_tools(completion, validation_context, strict)
+
+        if mode == Mode.ANTHROPIC_TOOLS or mode == Mode.ANTHROPIC_REASONING_TOOLS:
             return cls.parse_anthropic_tools(completion, validation_context, strict)
 
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
+
+        if mode == Mode.BEDROCK_JSON:
+            return cls.parse_bedrock_json(completion, validation_context, strict)
 
         if mode in {Mode.VERTEXAI_TOOLS, Mode.GEMINI_TOOLS}:
             return cls.parse_vertexai_tools(completion, validation_context)
@@ -130,8 +212,16 @@ class OpenAISchema(BaseModel):
         if mode == Mode.GEMINI_JSON:
             return cls.parse_gemini_json(completion, validation_context, strict)
 
+        if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+            return cls.parse_genai_structured_outputs(
+                completion, validation_context, strict
+            )
+
         if mode == Mode.GEMINI_TOOLS:
             return cls.parse_gemini_tools(completion, validation_context, strict)
+
+        if mode == Mode.GENAI_TOOLS:
+            return cls.parse_genai_tools(completion, validation_context, strict)
 
         if mode == Mode.COHERE_JSON_SCHEMA:
             return cls.parse_cohere_json_schema(completion, validation_context, strict)
@@ -139,12 +229,24 @@ class OpenAISchema(BaseModel):
         if mode == Mode.WRITER_TOOLS:
             return cls.parse_writer_tools(completion, validation_context, strict)
 
+        if not completion.choices:
+            # This helps catch errors from OpenRouter
+            if hasattr(completion, "error"):
+                raise ValueError(completion.error)
+
+            raise ValueError("No completion choices found")
+
         if completion.choices[0].finish_reason == "length":
             raise IncompleteOutputException(last_completion=completion)
 
         if mode == Mode.FUNCTIONS:
             Mode.warn_mode_functions_deprecation()
             return cls.parse_functions(completion, validation_context, strict)
+
+        if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+            return cls.parse_mistral_structured_outputs(
+                completion, validation_context, strict
+            )
 
         if mode in {
             Mode.TOOLS,
@@ -162,10 +264,48 @@ class OpenAISchema(BaseModel):
             Mode.JSON_O1,
             Mode.CEREBRAS_JSON,
             Mode.FIREWORKS_JSON,
+            Mode.PERPLEXITY_JSON,
+            Mode.OPENROUTER_STRUCTURED_OUTPUTS,
         }:
             return cls.parse_json(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
+
+    @classmethod
+    def parse_genai_structured_outputs(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        return cls.model_validate_json(
+            completion.text, context=validation_context, strict=strict
+        )
+
+    @classmethod
+    def parse_genai_tools(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        from google.genai import types
+
+        assert isinstance(completion, types.GenerateContentResponse)
+        assert len(completion.candidates) == 1
+
+        assert (
+            len(completion.candidates[0].content.parts) == 1
+        ), f"Instructor does not support multiple function calls, use List[Model] instead"
+        function_call = completion.candidates[0].content.parts[0].function_call
+        assert (
+            function_call is not None
+        ), f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
+
+        assert function_call.name == cls.openai_schema["name"]
+        return cls.model_validate(
+            obj=function_call.args, context=validation_context, strict=strict
+        )
 
     @classmethod
     def parse_cohere_json_schema(
@@ -225,7 +365,9 @@ class OpenAISchema(BaseModel):
             assert isinstance(completion, Message)
             if completion.stop_reason == "max_tokens":
                 raise IncompleteOutputException(last_completion=completion)
-            text = completion.content[0].text
+            # Find the first text block
+            text_blocks = [c for c in completion.content if c.type == "text"]
+            text = text_blocks[0].text
 
         extra_text = extract_json_from_codeblock(text)
 
@@ -238,6 +380,25 @@ class OpenAISchema(BaseModel):
             parsed = json.loads(extra_text, strict=False)
             # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
             return cls.model_validate(parsed, context=validation_context, strict=False)
+
+    @classmethod
+    def parse_bedrock_json(
+        cls: type[BaseModel],
+        completion: Any,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        if isinstance(completion, dict):
+            text = completion.get("output").get("message").get("content")[0].get("text")
+
+            match = re.search(r"```?json(.*?)```?", text, re.DOTALL)
+            if match:
+                text = match.group(1).strip()
+
+            text = re.sub(r"```?json|\\n", "", text).strip()
+        else:
+            text = completion.text
+        return cls.model_validate_json(text, context=validation_context, strict=strict)
 
     @classmethod
     def parse_gemini_json(
@@ -372,30 +533,60 @@ class OpenAISchema(BaseModel):
         )
 
     @classmethod
+    def parse_mistral_structured_outputs(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        if not completion.choices or len(completion.choices) > 1:
+            raise ValueError(
+                "Instructor does not support multiple tool calls, use list[Model] instead"
+            )
+
+        message = completion.choices[0].message
+
+        return cls.model_validate_json(
+            message.content, context=validation_context, strict=strict
+        )
+
+    @classmethod
     def parse_json(
         cls: type[BaseModel],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        message = completion.choices[0].message.content or ""
-        message = extract_json_from_codeblock(message)
+        """Parse JSON mode responses using the optimized extraction and validation."""
+        # Check for incomplete output
+        _handle_incomplete_output(completion)
 
-        return cls.model_validate_json(
-            message,
-            context=validation_context,
-            strict=strict,
-        )
+        # Extract text from the response
+        message = _extract_text_content(completion)
+        if not message:
+            # Fallback for OpenAI format if _extract_text_content doesn't handle it
+            message = completion.choices[0].message.content or ""
+
+        # Extract JSON from the text
+        json_content = extract_json_from_codeblock(message)
+
+        # Validate the model from the JSON
+        return _validate_model_from_json(cls, json_content, validation_context, strict)
 
 
 def openai_schema(cls: type[BaseModel]) -> OpenAISchema:
+    """
+    Wrap a Pydantic model class to add OpenAISchema functionality.
+    """
     if not issubclass(cls, BaseModel):
         raise TypeError("Class must be a subclass of pydantic.BaseModel")
 
+    # Create the wrapped model
     schema = wraps(cls, updated=())(
         create_model(
             cls.__name__ if hasattr(cls, "__name__") else str(cls),
             __base__=(cls, OpenAISchema),
         )
     )
+
     return cast(OpenAISchema, schema)

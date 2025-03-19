@@ -129,15 +129,20 @@ extra_css:
 nav:
   - Introduction:
     - Structured Outputs for LLMs: 'index.md'
-    - Why use Instructor?: 'why.md'
-    - Help with Instructor: 'help.md'
-    - Newsletter: 'newsletter.md'
+    - Start Here (Beginners): 'start-here.md'
+    - Getting Started: 'getting-started.md'
     - Installation: 'installation.md'
-    - Contributing: 'contributing.md'
+    - Why use Instructor?: 'why.md'
+    - Architecture: 'architecture.md'
+    - Mode Comparison: 'modes-comparison.md'
     - Philosophy: 'concepts/philosophy.md'
     - API Reference: 'api.md'
+    - FAQ: 'faq.md'
+    - Help with Instructor: 'help.md'
+    - Contributing: 'contributing.md'
+    - Newsletter: 'newsletter.md'
   - Cookbook:
-    - Cookbooks: 'examples/index.md'
+    - Overview: 'examples/index.md'
     - "Recursive Schema Examples": 'examples/recursive.md'
     - "Enhancing Text Classification": 'examples/classification.md'
     - "Local Classification with Llama-cpp": 'examples/local_classification.md'
@@ -175,7 +180,7 @@ nav:
     - "Table Extraction from Images": 'examples/tables_from_vision.md'
     - "YouTube Clip Analysis": 'examples/youtube_clips.md'
   - Blog:
-    - "blog/index.md"
+      - "blog/index.md"
   - Concepts:
     - Overview: 'concepts/index.md'
     - Models: 'concepts/models.md'
@@ -200,6 +205,7 @@ nav:
     - Prompt Caching: 'concepts/prompt_caching.md'
     - Logging: 'concepts/logging.md'
     - Distillation: "concepts/distillation.md"
+    - Dictionary Operations: 'concepts/dictionary_operations.md'
     - Union: 'concepts/union.md'
     - Unions: 'concepts/unions.md'
     - Validation: 'concepts/validation.md'
@@ -209,11 +215,29 @@ nav:
     - Templating: 'concepts/templating.md'
   - Integrations:
     - Overview: 'integrations/index.md'
+    # Major cloud providers
+    - OpenAI: 'integrations/openai.md'
+    - Azure OpenAI: 'integrations/azure.md'
     - Anthropic: 'integrations/anthropic.md'
+    - Gemini: 'integrations/google.md'
+    - Google GenAI: 'integrations/genai.md'
+    - AWS Bedrock: 'integrations/bedrock.md'
+    - Vertex AI: 'integrations/vertex.md'
+    
+    # Fast inference providers
+    - Groq: 'integrations/groq.md'
+    - Fireworks: 'integrations/fireworks.md'
+    - Together: 'integrations/together.md'
+    - Anyscale: 'integrations/anyscale.md'
+    
+    # Other commercial providers
+    - AWS Bedrock: 'integrations/bedrock.md'
     - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
+    - Databricks: 'integrations/databricks.md'
     - Cortex: 'integrations/cortex.md'
+    - DeepSeek: 'integrations/deepseek.md'
     - Fireworks: 'integrations/fireworks.md'
     - Gemini: 'integrations/google.md'
     - Groq: 'integrations/groq.md'
@@ -222,27 +246,20 @@ nav:
     - Mistral: 'integrations/mistral.md'
     - Ollama: 'integrations/ollama.md'
     - OpenAI: 'integrations/openai.md'
+    - Perplexity: 'integrations/perplexity.md'
     - Together: 'integrations/together.md'
     - Vertex AI: 'integrations/vertex.md'
     - Writer: 'integrations/writer.md'
-    - DeepSeek: 'integrations/deepseek.md'
+    - OpenRouter: 'integrations/openrouter.md'
+    - SambaNova: 'integrations/sambanova.md'
+    
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
       - "Usage Tracking": "cli/usage.md"
       - "Batch Jobs": "cli/batch.md"
-  - Tutorials:
-    - Overview: 'tutorials/index.md'
-    - Tutorials (Notebooks): 'tutorials/1-introduction.ipynb'
-    - Tips and Tricks: 'tutorials/2-tips.ipynb'
-    - Applications RAG: 'tutorials/3-0-applications-rag.ipynb'
-    - Applications RAG - 2: 'tutorials/3-1-validation-rag.ipynb'
-    - Validation: 'tutorials/4-validation.ipynb'
-    - Knowledge Graphs: 'tutorials/5-knowledge-graphs.ipynb'
-    - Chain of Density: 'tutorials/6-chain-of-density.ipynb'
-    - Synthetic Data Generation: 'tutorials/7-synthetic-data-generation.ipynb'
   - Jobs Board (External):
-    - Jobs: 'jobs.md'
+      - Jobs: "jobs.md"
   - Prompt Design:
     - "prompting/index.md"
     - Zero-Shot:
@@ -307,19 +324,25 @@ plugins:
   - redirects:
       redirect_maps:
          jobs.md: https://jobs.applied-llms.org/
+         llm.txt: llm.txt
          # LLM client redirects
          hub/ollama.md: integrations/ollama.md
          hub/llama-cpp-python.md: integrations/llama-cpp-python.md
          hub/anthropic.md: integrations/anthropic.md
+         hub/anyscale.md: integrations/anyscale.md
          hub/azure.md: integrations/azure.md
+         hub/bedrock.md: integrations/bedrock.md
          hub/cerebras.md: integrations/cerebras.md
          hub/cohere.md: integrations/cohere.md
+         hub/databricks.md: integrations/databricks.md
          hub/fireworks.md: integrations/fireworks.md
          hub/google.md: integrations/google.md
+         hub/genai.md: integrations/genai.md
          hub/groq.md: integrations/groq.md
          hub/litellm.md: integrations/litellm.md
          hub/mistral.md: integrations/mistral.md
          hub/openai.md: integrations/openai.md
+         hub/perplexity.md: integrations/perplexity.md
          hub/together.md: integrations/together.md
          hub/vertex.md: integrations/vertex.md
          hub/vertexai.md: integrations/vertex.md  # Handle old vertexai.md references
@@ -329,13 +352,17 @@ plugins:
          'hub/clients/ollama.md': 'integrations/ollama.md'
          'hub/clients/llama-cpp-python.md': 'integrations/llama-cpp-python.md'
          'hub/clients/anthropic.md': 'integrations/anthropic.md'
+         'hub/clients/anyscale.md': 'integrations/anyscale.md'
          'hub/clients/azure.md': 'integrations/azure.md'
+         'hub/clients/bedrock.md': 'integrations/bedrock.md'
          'hub/clients/cerebras.md': 'integrations/cerebras.md'
          'hub/clients/cohere.md': 'integrations/cohere.md'
+         'hub/clients/databricks.md': 'integrations/databricks.md'
          'hub/clients/fireworks.md': 'integrations/fireworks.md'
          'hub/clients/groq.md': 'integrations/groq.md'
          'hub/clients/mistral.md': 'integrations/mistral.md'
          'hub/clients/openai.md': 'integrations/openai.md'
+         'hub/clients/perplexity.md': 'integrations/perplexity.md'
          'hub/clients/together.md': 'integrations/together.md'
          'hub/clients/vertex.md': 'integrations/vertex.md'
          'hub/clients/vertexai.md': 'integrations/vertex.md'
@@ -351,9 +378,6 @@ plugins:
          'hub/single_classification.md': 'examples/single_classification.md'
          'hub/tables_from_vision.md': 'examples/tables_from_vision.md'
          'hub/youtube_clips.md': 'examples/youtube_clips.md'
-  - mkdocs-jupyter:
-      ignore_h1_titles: true
-      execute: false
   - social
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\b)(?=[A-Z][a-z])'

@@ -32,9 +32,9 @@ def from_groq(
         instructor.Mode.TOOLS,
     }, "Mode be one of {instructor.Mode.JSON, instructor.Mode.TOOLS}"
 
-    assert isinstance(
-        client, (groq.Groq, groq.AsyncGroq)
-    ), "Client must be an instance of groq.GROQ"
+    assert isinstance(client, (groq.Groq, groq.AsyncGroq)), (
+        "Client must be an instance of groq.GROQ"
+    )
 
     if isinstance(client, groq.Groq):
         return instructor.Instructor(

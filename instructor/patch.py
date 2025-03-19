@@ -156,7 +156,7 @@ def patch(  # type: ignore
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )  # type: ignore
-        new_kwargs = handle_templating(new_kwargs, context)
+        new_kwargs = handle_templating(new_kwargs, mode=mode, context=context)
 
         response = await retry_async(
             func=func,  # type:ignore
@@ -183,12 +183,12 @@ def patch(  # type: ignore
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
         context = handle_context(context, validation_context)
-
+        # print(f"instructor.patch: patched_function {func.__name__}")
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )  # type: ignore
 
-        new_kwargs = handle_templating(new_kwargs, context)
+        new_kwargs = handle_templating(new_kwargs, mode=mode, context=context)
 
         response = retry_sync(
             func=func,  # type: ignore
@@ -228,6 +228,8 @@ def apatch(client: AsyncOpenAI, mode: Mode = Mode.TOOLS) -> AsyncOpenAI:
     import warnings
 
     warnings.warn(
-        "apatch is deprecated, use patch instead", DeprecationWarning, stacklevel=2
+        "apatch is deprecated, use patch instead",
+        DeprecationWarning,
+        stacklevel=2,
     )
     return patch(client, mode=mode)

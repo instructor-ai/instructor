@@ -8,8 +8,8 @@ import requests
 from pathlib import Path
 
 
-audio_url = "https://www2.cs.uic.edu/~i101/SoundFiles/gettysburg.wav"
-image_url = "https://retail.degroot-inc.com/wp-content/uploads/2024/01/AS_Blueberry_Patriot_1-605x605.jpg"
+audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
+image_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 
 
 def gettysburg_audio():
@@ -42,10 +42,10 @@ def test_multimodal_audio_description(audio_file, client):
                 "content": [
                     "Where's this excerpt from?",
                     audio_file,
-                ],
+                ],  # type: ignore
             },
         ],
-        audio={"voice": "alloy", "format": "wav"},
+        audio={"voice": "alloy", "format": "wav"},  # type: ignore
     )
 
 
@@ -71,7 +71,7 @@ def test_multimodal_image_description(model, mode, client):
                 "content": [
                     "What is this?",
                     Image.from_url(image_url),
-                ],
+                ],  # type: ignore
             },
         ],
     )
@@ -101,10 +101,10 @@ def test_multimodal_image_description_autodetect(model, mode, client):
                 "content": [
                     "What is this?",
                     image_url,
-                ],
+                ],  # type: ignore
             },
         ],
-        autodetect_images=True,
+        autodetect_images=True,  # type: ignore
     )
 
     # Assertions to validate the response

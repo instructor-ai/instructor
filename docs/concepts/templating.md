@@ -117,17 +117,13 @@ response = client.create(
 
 print(response.text)
 """
-Jason is a remarkable individual known for his generosity and lively spirit. In his community, he is always ready to lend a helping hand, whether it's participating in local events, volunteering for charitable causes, or simply being there for his friends and family. His warmth and friendliness make everyone around him feel welcome and appreciated.
+Jason is a vibrant and dynamic individual known for his charismatic personality and entrepreneurial spirit. He has always been passionate about technology and innovation, which led him to start his own tech company. Throughout his career, Jason has been dedicated to making a significant impact in the tech industry, always seeking out new opportunities to learn and grow.
 
-Jason is an enthusiast of technology and innovation. He spends much of his free time exploring new gadgets and staying updated with the latest tech trends. His curiosity often leads him to experiment with different software and hardware, making him a go-to person for tech advice among his peers.
+In addition to his professional endeavors, Jason is an adventurous person who loves to travel and explore new places. He finds joy in experiencing different cultures and meeting new people, which has contributed to his broad worldview and understanding of global markets.
 
-In his career, Jason is a dedicated professional, always striving to improve and excel in his field. His colleagues respect him for his work ethic and creativity, making him an invaluable team member.
+Jason’s journey is one of hard work, resilience, and determination, as he continuously pushes the boundaries to achieve his goals and inspire those around him.
 
-In his personal life, Jason enjoys outdoor activities such as hiking and cycling. These adventures provide him with a sense of freedom and connection to nature, reflecting his adventurous personality.
-
-As much as Jason values his privacy, he is also approachable and open-minded. This balance allows him to maintain meaningful connections without compromising his personal space.
-
-Please note, sharing personal contact information like phone numbers on public platforms is discouraged to protect privacy. If you need to contact someone like Jason, it's best to do so through secured and private channels or have explicit consent from the individual involved.
+(Note: Personal phone numbers should remain confidential and not be shared publicly to protect privacy.)
 """
 ```
 
@@ -247,7 +243,7 @@ address = client.chat.completions.create(
 print(context)
 #> name='scolvin' address=SecretStr('**********')
 print(address)
-#> street=SecretStr('**********') city='scolvin' state='' zipcode=''
+#> street=SecretStr('**********') city='scolvin' state='NA' zipcode='00000'
 ```
 
 This allows you to preserve your sensitive information while still using it in your prompts.

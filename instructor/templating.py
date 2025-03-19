@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Any
 from textwrap import dedent
-
+from instructor.mode import Mode
 from jinja2.sandbox import SandboxedEnvironment
 
 
@@ -11,8 +11,23 @@ def apply_template(text: str, context: dict[str, Any]) -> str:
     return dedent(SandboxedEnvironment().from_string(text).render(**context))
 
 
-def process_message(message: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
+def process_message(
+    message: dict[str, Any], context: dict[str, Any], mode: Mode
+) -> dict[str, Any]:
     """Process a single message, applying templates to its content."""
+    if mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
+        from google.genai import types
+
+        return types.Content(
+            role=message.role,
+            parts=[
+                types.Part.from_text(text=apply_template(part.text, context))
+                if hasattr(part, "text")
+                else part
+                for part in message.parts
+            ],
+        )
+
     # VertexAI Support
     if (
         hasattr(message, "parts")
@@ -25,9 +40,11 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> dict[st
         return gm.Content(
             role=message.role,
             parts=[
-                gm.Part.from_text(apply_template(part.text, context))
-                if hasattr(part, "text")
-                else part
+                (
+                    gm.Part.from_text(apply_template(part.text, context))
+                    if hasattr(part, "text")
+                    else part
+                )
                 for part in message.parts
             ],
         )
@@ -63,7 +80,7 @@ def process_message(message: dict[str, Any], context: dict[str, Any]) -> dict[st
 
 
 def handle_templating(
-    kwargs: dict[str, Any], context: dict[str, Any] | None = None
+    kwargs: dict[str, Any], mode: Mode, context: dict[str, Any] | None = None
 ) -> dict[str, Any]:
     """
     Handle templating for messages using the provided context.
@@ -91,7 +108,8 @@ def handle_templating(
     if "message" in new_kwargs:
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)
         new_kwargs["chat_history"] = [
-            process_message(message, context) for message in new_kwargs["chat_history"]
+            process_message(message, context, mode)
+            for message in new_kwargs["chat_history"]
         ]
 
         return new_kwargs
@@ -108,12 +126,13 @@ def handle_templating(
 
     if "messages" in new_kwargs:
         new_kwargs["messages"] = [
-            process_message(message, context) for message in messages
+            process_message(message, context, mode) for message in messages
         ]
 
     elif "contents" in new_kwargs:
         new_kwargs["contents"] = [
-            process_message(content, context) for content in new_kwargs["contents"]
+            process_message(content, context, mode)
+            for content in new_kwargs["contents"]
         ]
 
     return new_kwargs

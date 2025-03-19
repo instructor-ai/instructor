@@ -41,9 +41,9 @@ def from_cohere(
         instructor.Mode.COHERE_JSON_SCHEMA,
     }, "Mode be one of {COHERE_TOOLS, COHERE_JSON_SCHEMA}"
 
-    assert isinstance(
-        client, (cohere.Client, cohere.AsyncClient)
-    ), "Client must be an instance of cohere.Cohere or cohere.AsyncCohere"
+    assert isinstance(client, (cohere.Client, cohere.AsyncClient)), (
+        "Client must be an instance of cohere.Cohere or cohere.AsyncCohere"
+    )
 
     if isinstance(client, cohere.Client):
         return instructor.Instructor(

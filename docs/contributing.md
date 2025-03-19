@@ -3,33 +3,355 @@ title: Contribute to Instructor: Evals, Issues, and Pull Requests
 description: Join us in enhancing the Instructor library with evals, report issues, and submit pull requests on GitHub. Collaborate and contribute!
 ---
 
-We would love for you to contribute to `Instructor`.
+# Contributing to Instructor
 
-## [Evals](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals)
+We welcome contributions to Instructor! This page covers the different ways you can help improve the library.
 
-We invite you to contribute evals in pytest as a way to monitor the quality of the openai models and the instructor library. To get started check out the [jxnl/instructor/tests/llm/test_openai/evals](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals) and contribute your own evals in the form of pytest tests. These evals will be run once a week and the results will be posted.
+## Ways to Contribute
 
-## Issues
+### Evaluation Tests (Evals)
 
-If you find a bug, please file an issue on [our issue tracker on GitHub](https://github.com/jxnl/instructor/issues).
+Evals help us monitor the quality of both the OpenAI models and the Instructor library. To contribute:
 
-To help us reproduce the bug, please provide a minimal reproducible example, including a code snippet and the full error message.
+1. **Explore Existing Evals**: Check out [our evals directory](https://github.com/instructor-ai/instructor/tree/main/tests/llm/test_openai/evals)
+2. **Create a New Eval**: Add new pytest tests that evaluate specific capabilities or edge cases
+3. **Follow the Pattern**: Structure your eval similar to existing ones
+4. **Submit a PR**: We'll review and incorporate your eval
 
-1. The `response_model` you are using.
-2. The `messages` you are using.
-3. The `model` you are using.
+Evals are run weekly, and results are tracked to monitor performance over time.
 
-## Pull Requests
+### Reporting Issues
 
-We welcome pull requests! There is plenty to do, and we are happy to discuss any contributions you would like to make.
+If you encounter a bug or problem, please [file an issue on GitHub](https://github.com/instructor-ai/instructor/issues) with:
 
-If it is not a small change, please start by [filing an issue](https://github.com/jxnl/instructor/issues) first.
+1. A clear, descriptive title
+2. Detailed information including:
+   - The `response_model` you're using
+   - The `messages` you sent
+   - The `model` you're using
+   - Steps to reproduce the issue
+   - Expected vs. actual behavior
+   - Your environment details (Python version, OS, package versions)
 
-If you need ideas, you can check out the [help wanted](https://github.com/jxnl/instructor/labels/help%20wanted) or [good first issue](https://github.com/jxnl/instructor/labels/good%20first%20issue) labels.
+### Contributing Code
 
-[Grit](https://docs.grit.io/) is used to enforce best practices. You can run `grit check` to check your code before submitting a pull request.
+We welcome pull requests! Here's the process:
 
-# Contributors
+1. **For Small Changes**: Feel free to submit a PR directly
+2. **For Larger Changes**: [Start with an issue](https://github.com/instructor-ai/instructor/issues) to discuss approach
+3. **Looking for Ideas?** Check issues labeled [help wanted](https://github.com/instructor-ai/instructor/labels/help%20wanted) or [good first issue](https://github.com/instructor-ai/instructor/labels/good%20first%20issue)
+
+## Setting Up Your Development Environment
+
+### Using UV (Recommended)
+
+UV is a fast Python package installer and resolver that makes development easier.
+
+1. **Install UV** (official method):
+   ```bash
+   # macOS/Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Windows PowerShell
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
+
+2. **Install Project in Development Mode**:
+   ```bash
+   # Clone the repository
+   git clone https://github.com/YOUR-USERNAME/instructor.git
+   cd instructor
+   
+   # Install with development dependencies 
+   uv pip install -e ".[dev,docs]"
+   ```
+
+3. **Adding New Dependencies**:
+   ```bash
+   # Add a regular dependency
+   uv pip install some-package
+   
+   # Install a specific version
+   uv pip install "some-package>=1.0.0,<2.0.0"
+   ```
+
+4. **Common UV Commands**:
+   ```bash
+   # Update UV itself
+   uv self update
+   
+   # Create a requirements file
+   uv pip freeze > requirements.txt
+   ```
+
+### Using Poetry
+
+Poetry provides comprehensive dependency management and packaging.
+
+1. **Install Poetry**:
+   ```bash
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   # Clone the repository
+   git clone https://github.com/YOUR-USERNAME/instructor.git
+   cd instructor
+   
+   # Install with development dependencies
+   poetry install --with dev,docs
+   ```
+
+3. **Working with Poetry**:
+   ```bash
+   # Activate virtual environment
+   poetry shell
+   
+   # Run a command in the virtual environment
+   poetry run pytest
+   
+   # Add a dependency
+   poetry add package-name
+   
+   # Add a development dependency
+   poetry add --group dev package-name
+   ```
+
+## Adding Support for New LLM Providers
+
+Instructor uses optional dependencies to support different LLM providers. To add a new provider:
+
+1. **Add Dependencies to pyproject.toml**:
+   ```toml
+   [project.optional-dependencies]
+   # Add your provider
+   my-provider = ["my-provider-sdk>=1.0.0,<2.0.0"]
+   
+   [dependency-groups]
+   # Mirror in dependency groups
+   my-provider = ["my-provider-sdk>=1.0.0,<2.0.0"]
+   ```
+
+2. **Create Provider Client**:
+   - Create a new file at `instructor/clients/client_myprovider.py`
+   - Implement `from_myprovider` function that patches the provider's client
+
+3. **Add Tests**: Create tests in `tests/llm/test_myprovider/`
+
+4. **Document Installation**:
+   ```bash
+   # Installation command for your provider
+   uv pip install "instructor[my-provider]"
+   # or with poetry
+   poetry install --with my-provider
+   ```
+
+5. **Write Documentation**:
+   - Add a new markdown file in `docs/integrations/` for your provider
+   - Update `mkdocs.yml` to include your new page
+   - Make sure to include a complete example
+
+## Development Workflow
+
+1. **Fork the Repository**: Create your own fork of the project
+2. **Clone and Set Up**:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/instructor.git
+   cd instructor
+   git remote add upstream https://github.com/instructor-ai/instructor.git
+   ```
+3. **Create a Branch**:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+4. **Make Changes, Test, and Commit**:
+   ```bash
+   # Run tests
+   pytest tests/ -k 'not llm and not openai'  # Skip LLM tests for faster local dev
+   
+   # Commit changes
+   git add .
+   git commit -m "Your descriptive commit message"
+   ```
+5. **Keep Updated and Push**:
+   ```bash
+   git fetch upstream
+   git rebase upstream/main
+   git push origin feature/your-feature-name
+   ```
+6. **Create a Pull Request**: Submit your PR with a clear description of changes
+
+## Using Cursor to Build PRs
+
+[Cursor](https://cursor.sh) is an AI-powered code editor that can help you contribute to Instructor.
+
+1. **Getting Started with Cursor**:
+   - Download Cursor from [cursor.sh](https://cursor.sh)
+   - Open the Instructor project in Cursor
+   - Cursor will automatically detect our rules in `.cursor/rules/`
+
+2. **Using Cursor Rules**:
+   - `new-features-planning`: Helps plan and structure new features
+   - `simple-language`: Guidelines for writing clear documentation
+   - `documentation-sync`: Ensures documentation stays in sync with code changes
+
+3. **Creating PRs with Cursor**:
+   - Use Cursor's Git integration to create a new branch
+   - Make your changes with AI assistance
+   - Create a PR with:
+     ```bash
+     # Use GitHub CLI to create the PR
+     gh pr create -t "Your feature title" -b "Description of your changes" -r jxnl,ivanleomk
+     ```
+   - Add `This PR was written by [Cursor](https://cursor.sh)` to your PR description
+
+4. **Benefits of Using Cursor**:
+   - AI helps generate code that follows our style guidelines
+   - Simplifies PR creation process
+   - Helps maintain documentation standards
+
+## Code Style Guidelines
+
+We use the following tools to maintain code quality:
+
+- **Ruff**: For linting and formatting
+- **PyRight**: For type checking
+- **Pre-commit**: For automatic checks before committing
+
+```bash
+# Install pre-commit hooks
+pip install pre-commit
+pre-commit install
+```
+
+Key style guidelines:
+- Use strict typing
+- Follow import order: standard lib → third-party → local
+- Use snake_case for functions/variables, PascalCase for classes
+- Write comprehensive docstrings for public API functions
+
+### Conventional Comments
+
+When reviewing code or writing commit messages, we use conventional comments to make feedback clearer:
+
+```
+<label>: <subject>
+
+<description>
+```
+
+Common labels:
+- **praise:** highlights something positive
+- **suggestion:** proposes a change or improvement 
+- **question:** asks for clarification
+- **issue:** points out a problem that needs fixing
+- **todo:** notes something to be addressed later
+- **fix:** resolves an issue
+
+Examples:
+
+```
+suggestion: use a validator for this field
+This would ensure the value is always properly formatted.
+
+question: why not use async processing here?
+I'm curious if this would improve performance.
+
+fix: correct the parameter type
+It should be an OpenAI client instance, not a string.
+```
+
+This format helps everyone understand the purpose and importance of each comment. Visit [conventionalcomments.org](https://conventionalcomments.org/) to learn more.
+
+### Conventional Commits
+
+We use conventional commit messages to make our project history clear and generate automated changelogs. A conventional commit has this structure:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer]
+```
+
+#### Common Types
+
+- **feat**: New feature
+- **fix**: Bug fix
+- **docs**: Documentation changes
+- **style**: Formatting changes
+- **refactor**: Code change that neither fixes a bug nor adds a feature
+- **test**: Adding or fixing tests
+- **chore**: Maintenance tasks
+
+#### Examples
+
+```
+feat(openai): add streaming response support
+
+fix(anthropic): resolve tool calling response format
+
+docs: update installation instructions
+
+test(evals): add new recursive schema test cases
+```
+
+For breaking changes, add an exclamation mark before the colon:
+
+```
+feat(api)!: change return type of from_openai function
+```
+
+Using conventional commits helps automatically generate release notes and makes the project history easier to navigate.
+
+For more details, see the [Conventional Commits specification](https://www.conventionalcommits.org/).
+
+## Documentation Contributions
+
+Documentation improvements are highly valued:
+
+1. **Docs Structure**: All documentation is in Markdown in the `docs/` directory
+2. **Adding New Pages**: When adding a new page, include it in `mkdocs.yml` in the right section
+3. **Local Preview**: Run `mkdocs serve` to preview changes locally
+4. **Style Guidelines**:
+   - Write at a grade 10 reading level (simple, clear language)
+   - Include working code examples
+   - Add links to related documentation
+   - Use consistent formatting
+   - Make sure each code example is complete with imports
+
+Example of a good documentation code block:
+
+```python
+# Complete example with imports
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+# Define your model
+class Person(BaseModel):
+    name: str
+    age: int
+    
+# Create the patched client
+client = instructor.from_openai(OpenAI())
+
+# Use the model
+person = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    response_model=Person,
+    messages=[
+        {"role": "user", "content": "Extract: John Doe is 25 years old"}
+    ]
+)
+
+print(person.name)  # "John Doe"
+print(person.age)   # 25
+```
+
+## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -40,22 +362,35 @@ If you need ideas, you can check out the [help wanted](https://github.com/jxnl/i
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-<a href="https://github.com/jxnl/instructor/graphs/contributors">
+<a href="https://github.com/instructor-ai/instructor/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jxnl/instructor" />
 </a>
 
-## Additional Resources
+## Documentation Resources
 
-To enhance your understanding of the documentation, here are some useful references:
+When working on documentation, these resources may be helpful:
 
-> Learn more in the [mkdocs serve documentation](https://www.mkdocs.org/commands/serve/) and make sure to install the necessary dependencies listed in `requirements-doc.txt` before running the command.
+- **mkdocs serve**: Preview documentation locally. Install dependencies from `requirements-doc.txt` first.
 
-- **mkdocs serve:** The `mkdocs serve` command is used to preview your documentation locally during the development phase. When you run this command in your terminal, MkDocs starts a development server, allowing you to view and interact with your documentation in a web browser. This is helpful for checking how your changes look before publishing the documentation.
+- **hl_lines in Code Blocks**: Highlight specific lines in a code block to draw attention:
+  ````markdown
+  ```python hl_lines="2 3"
+  def example():
+      # This line is highlighted
+      # This line is also highlighted
+      return "normal line"
+  ```
+  ````
 
-- **hl_lines in Code Blocks:** The `hl_lines` feature in code blocks allows you to highlight specific lines within the code block. This is useful for drawing attention to particular lines of code when explaining examples or providing instructions. You can specify the lines to highlight using the `hl_lines` option in your code block configuration. For more details and examples, you can refer to the [hl_lines documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#syntax-highlighting).
+- **Admonitions**: Create styled callout boxes for important information:
+  ```markdown
+  !!! note "Optional Title"
+      This is a note admonition.
+  
+  !!! warning
+      This is a warning.
+  ```
 
-- **Admonitions:** Admonitions are a way to visually emphasize or call attention to certain pieces of information in your documentation. They come in various styles, such as notes, warnings, tips, etc. Admonitions provide a structured and consistent way to present important content. For usage examples and details on incorporating admonitions into your documentation, you can refer to the [admonitions documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#admonitions).
+For more documentation features, check the [MkDocs Material documentation](https://squidfunk.github.io/mkdocs-material/).
 
-For more details about the documentation structure and features, refer to the [MkDocs Material documentation](https://squidfunk.github.io/mkdocs-material/).
-
-Thank you for your contributions, and happy coding!
+Thank you for your contributions to Instructor!

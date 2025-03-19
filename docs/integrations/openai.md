@@ -1,9 +1,9 @@
 ---
-title: "Structured outputs with OpenAI, a complete guide w/ instructor"
+title: "Structured outputs with OpenAI, a complete guide with instructor"
 description: "Learn how to use Instructor with OpenAI's models for type-safe, structured outputs. Complete guide with examples and best practices for GPT-4 and other OpenAI models."
 ---
 
-# OpenAI Integration with Instructor
+# Structured outputs with OpenAI, a complete guide with instructor
 
 OpenAI is the primary integration for Instructor, offering robust support for structured outputs with GPT-3.5, GPT-4, and future models. This guide covers everything you need to know about using OpenAI with Instructor for type-safe, validated responses.
 

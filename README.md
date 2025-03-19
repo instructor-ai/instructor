@@ -295,6 +295,37 @@ assert resp.name == "Jason"
 assert resp.age == 25
 ```
 
+### Using Perplexity Sonar Models
+
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_perplexity(OpenAI(base_url="https://api.perplexity.ai"))
+
+resp = client.chat.completions.create(
+    model="sonar",
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        }
+    ],
+    response_model=User,
+)
+
+assert isinstance(resp, User)
+assert resp.name == "Jason"
+assert resp.age == 25
+```
+
 ### Using Litellm
 
 ```python
@@ -512,15 +543,142 @@ We invite you to contribute to evals in `pytest` as a way to monitor the quality
 
 ## Contributing
 
-If you want to help, checkout some of the issues marked as `good-first-issue` or `help-wanted` found [here](https://github.com/jxnl/instructor/labels/good%20first%20issue). They could be anything from code improvements, a guest blog post, or a new cookbook.
+We welcome contributions to Instructor! Whether you're fixing bugs, adding features, improving documentation, or writing blog posts, your help is appreciated.
 
-Here's a quick list of commands that you can run to get started. We're using `uv` to manage our dependencies so make sure you have that installed.
+### Getting Started
 
-1. `uv sync --all-extras --group <dependency groups you'd like to install>`: This should install all the dependencies for the project using `uv`, make sure to install the specific dependencies that you'd like to install
+If you're new to the project, check out issues marked as [`good-first-issue`](https://github.com/jxnl/instructor/labels/good%20first%20issue) or [`help-wanted`](https://github.com/jxnl/instructor/labels/help%20wanted). These could be anything from code improvements, a guest blog post, or a new cookbook.
 
-2. `uv run pytest` : This runs the tests in `pytest`. If you're pushing up a new PR, make sure that you've written some tests and that they're passing locally for you
+### Setting Up the Development Environment
 
-We use `ruff` and `pyright` for linting and type checking so make sure those are passing when you push up a PR. You can check pyright by running `uv run pyright` and ruff with `uv run ruff check` locally.
+1. **Fork and clone the repository**
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/instructor.git
+   cd instructor
+   ```
+
+2. **Set up the development environment**
+   
+   We use `uv` to manage dependencies, which provides faster package installation and dependency resolution than traditional tools. If you don't have `uv` installed, [install it first](https://github.com/astral-sh/uv).
+   
+   ```bash
+   # Create and activate a virtual environment
+   uv venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   
+   # Install dependencies with all extras 
+   # You can specify specific groups if needed
+   uv sync --all-extras --group dev
+   
+   # Or for a specific integration
+   # uv sync --all-extras --group dev,anthropic
+   ```
+
+3. **Install pre-commit hooks**
+   
+   We use pre-commit hooks to ensure code quality:
+   
+   ```bash
+   uv pip install pre-commit
+   pre-commit install
+   ```
+   
+   This will automatically run Ruff formatters and linting checks before each commit, ensuring your code meets our style guidelines.
+
+### Running Tests
+
+Tests help ensure that your contributions don't break existing functionality:
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run specific tests
+uv run pytest tests/path/to/test_file.py
+
+# Run tests with coverage reporting
+uv run pytest --cov=instructor
+```
+
+When submitting a PR, make sure to write tests for any new functionality and verify that all tests pass locally.
+
+### Code Style and Quality Requirements
+
+We maintain high code quality standards to keep the codebase maintainable and consistent:
+
+- **Formatting and Linting**: We use `ruff` for code formatting and linting, and `pyright` for type checking.
+  ```bash
+  # Check code formatting
+  uv run ruff format --check
+  
+  # Apply formatting
+  uv run ruff format
+  
+  # Run linter
+  uv run ruff check
+  
+  # Fix auto-fixable linting issues
+  uv run ruff check --fix
+  ```
+
+- **Type Hints**: All new code should include proper type hints.
+
+- **Documentation**: Code should be well-documented with docstrings and comments where appropriate.
+
+Make sure these checks pass when you submit a PR:
+- Linting: `uv run ruff check`
+- Formatting: `uv run ruff format`
+- Type checking: `uv run pyright`
+
+### Development Workflow
+
+1. **Create a branch for your changes**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes and commit them**
+   ```bash
+   git add .
+   git commit -m "Your descriptive commit message"
+   ```
+
+3. **Keep your branch updated with the main repository**
+   ```bash
+   git remote add upstream https://github.com/instructor-ai/instructor.git
+   git fetch upstream
+   git rebase upstream/main
+   ```
+
+4. **Push your changes**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+### Pull Request Process
+
+1. **Create a Pull Request** from your fork to the main repository.
+
+2. **Fill out the PR template** with a description of your changes, relevant issue numbers, and any other information that would help reviewers understand your contribution.
+
+3. **Address review feedback** and make any requested changes.
+
+4. **Wait for CI checks** to pass. The PR will be reviewed by maintainers once all checks are green.
+
+5. **Merge**: Once approved, a maintainer will merge your PR.
+
+### Contributing to Evals
+
+We encourage contributions to our evaluation tests. See the [Evals documentation](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals#how-to-contribute-writing-and-running-evaluation-tests) for details on writing and running evaluation tests.
+
+### Pre-commit Hooks
+
+We use pre-commit hooks to ensure code quality. To set up pre-commit hooks:
+
+1. Install pre-commit: `pip install pre-commit`
+2. Set up the hooks: `pre-commit install`
+
+This will automatically run Ruff formatters and linting checks before each commit, ensuring your code meets our style guidelines.
 
 ## CLI
 
@@ -535,6 +693,20 @@ We also provide some added CLI functionality for easy convenience:
 ## License
 
 This project is licensed under the terms of the MIT License.
+
+## Citation
+
+If you use Instructor in your research, please cite it using the following BibTeX:
+
+```bibtex
+@software{liu2024instructor,
+  author = {Jason Liu and Contributors},
+  title = {Instructor: A library for structured outputs from large language models},
+  url = {https://github.com/instructor-ai/instructor},
+  year = {2024},
+  month = {3}
+}
+```
 
 # Contributors
 

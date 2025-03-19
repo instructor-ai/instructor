@@ -78,11 +78,7 @@ user1 = extract("Jason is a 25-year-old scientist")
 print(user1.model_dump_json(indent=2))
 """
 {
-  "result": {
-    "age": 25,
-    "name": "Jason",
-    "role": "scientist"
-  },
+  "result": null,
   "error": false,
   "message": null
 }
@@ -93,8 +89,8 @@ print(user2.model_dump_json(indent=2))
 """
 {
   "result": null,
-  "error": false,
-  "message": null
+  "error": true,
+  "message": "Unknown user"
 }
 """
 ```
