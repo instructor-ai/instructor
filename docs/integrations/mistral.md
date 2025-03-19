@@ -195,9 +195,125 @@ print(user)
 
 ## Streaming Support
 
-Currently, Instructor's streaming capabilities (`create_partial` and `create_iterable`) are not fully implemented for Mistral. These features are available for OpenAI and some other providers, but support for Mistral streaming is planned for future releases.
+Instructor now supports streaming capabilities with Mistral! You can use both `create_partial` for incremental model building and `create_iterable` for streaming collections.
 
-If streaming is critical for your application, consider using OpenAI or another supported provider that has streaming capabilities.
+### Streaming Partial Responses
+
+```python
+from pydantic import BaseModel
+import instructor
+from mistralai import Mistral
+from instructor.dsl.partial import Partial
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+# Initialize with API key
+client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
+
+# Enable instructor patches for Mistral client
+instructor_client = instructor.from_mistral(client)
+
+# Stream partial responses
+model = instructor_client.chat.completions.create(
+    model="mistral-large-latest",
+    response_model=Partial[UserExtract],
+    stream=True,
+    messages=[
+        {"role": "user", "content": "Jason Liu is 25 years old"},
+    ],
+)
+
+for partial_user in model:
+    print(f"Received update: {partial_user}")
+# Output might show:
+# Received update: UserExtract(name='Jason', age=None)
+# Received update: UserExtract(name='Jason Liu', age=None)
+# Received update: UserExtract(name='Jason Liu', age=25)
+```
+
+### Streaming Iterable Collections
+
+```python
+from pydantic import BaseModel
+import instructor
+from mistralai import Mistral
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+# Initialize with API key
+client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
+
+# Enable instructor patches for Mistral client
+instructor_client = instructor.from_mistral(client)
+
+# Stream iterable responses
+users = instructor_client.chat.completions.create_iterable(
+    model="mistral-large-latest",
+    response_model=UserExtract,
+    messages=[
+        {"role": "user", "content": "Make up two people"},
+    ],
+)
+
+for user in users:
+    print(f"Generated user: {user}")
+# Output:
+# Generated user: UserExtract(name='Emily Johnson', age=32)
+# Generated user: UserExtract(name='Michael Chen', age=28)
+```
+
+### Async Streaming
+
+You can also use async versions of both streaming approaches:
+
+```python
+import asyncio
+from pydantic import BaseModel
+import instructor
+from mistralai import Mistral
+from instructor.dsl.partial import Partial
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+# Initialize client with async support
+client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
+instructor_client = instructor.from_mistral(client, use_async=True)
+
+async def stream_partial():
+    model = await instructor_client.chat.completions.create(
+        model="mistral-large-latest",
+        response_model=Partial[UserExtract],
+        stream=True,
+        messages=[
+            {"role": "user", "content": "Jason Liu is 25 years old"},
+        ],
+    )
+    
+    async for partial_user in model:
+        print(f"Received update: {partial_user}")
+
+async def stream_iterable():
+    users = instructor_client.chat.completions.create_iterable(
+        model="mistral-large-latest",
+        response_model=UserExtract,
+        messages=[
+            {"role": "user", "content": "Make up two people"},
+        ],
+    )
+    
+    async for user in users:
+        print(f"Generated user: {user}")
+
+# Run async functions
+asyncio.run(stream_partial())
+asyncio.run(stream_iterable())
+```
 
 ## Related Resources
 

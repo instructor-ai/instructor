@@ -2,7 +2,6 @@ from typing import Any, Optional, cast, ClassVar
 from collections.abc import AsyncGenerator, Generator, Iterable
 
 from pydantic import BaseModel, Field, create_model
-
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
@@ -20,6 +19,20 @@ class IterableBase:
         if mode in {Mode.MD_JSON, Mode.GEMINI_TOOLS}:
             json_chunks = extract_json_from_stream(json_chunks)
 
+        if mode in {Mode.VERTEXAI_TOOLS, Mode.MISTRAL_TOOLS}:
+            import json
+
+            response = next(json_chunks)
+            if not response:
+                return
+
+            json_response = json.loads(response)
+            if not json_response["tasks"]:
+                return
+
+            for item in json_response["tasks"]:
+                yield cls.task_type.model_validate(item)  # type: ignore
+
         yield from cls.tasks_from_chunks(json_chunks, **kwargs)
 
     @classmethod
@@ -31,7 +44,29 @@ class IterableBase:
         if mode == Mode.MD_JSON:
             json_chunks = extract_json_from_stream_async(json_chunks)
 
+        if mode in {Mode.MISTRAL_TOOLS, Mode.VERTEXAI_TOOLS}:
+            return cls.tasks_from_mistral_chunks(json_chunks, **kwargs)
+
         return cls.tasks_from_chunks_async(json_chunks, **kwargs)
+
+    @classmethod
+    async def tasks_from_mistral_chunks(
+        cls, json_chunks: AsyncGenerator[str, None]
+    ) -> AsyncGenerator[BaseModel, None]:
+        """Process streaming chunks from Mistral and VertexAI.
+
+        Handles the specific JSON format used by these providers when streaming."""
+        import json
+
+        async for chunk in json_chunks:
+            if not chunk:
+                continue
+            json_response = json.loads(chunk)
+            if not json_response["tasks"]:
+                continue
+
+            for item in json_response["tasks"]:
+                yield cls.task_type.model_validate(item)  # type: ignore
 
     @classmethod
     def tasks_from_chunks(
@@ -86,6 +121,20 @@ class IterableBase:
                     yield chunk.delta.partial_json
                 if mode == Mode.GEMINI_JSON:
                     yield chunk.text
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    import json
+
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                    yield chunk.data.choices[0].delta.content
+                if mode == Mode.MISTRAL_TOOLS:
+                    if not chunk.data.choices[0].delta.tool_calls:
+                        continue
+                    yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
                 if mode == Mode.GEMINI_TOOLS:
                     # Gemini seems to return the entire function_call and not a chunk?
                     import json
@@ -137,6 +186,20 @@ class IterableBase:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    import json
+
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                    yield chunk.data.choices[0].delta.content
+                if mode == Mode.MISTRAL_TOOLS:
+                    if not chunk.data.choices[0].delta.tool_calls:
+                        continue
+                    yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()
@@ -265,7 +328,7 @@ def IterableModel(
         if description is None
         else description
     )
-    assert issubclass(
-        new_cls, OpenAISchema
-    ), "The new class should be a subclass of OpenAISchema"
+    assert issubclass(new_cls, OpenAISchema), (
+        "The new class should be a subclass of OpenAISchema"
+    )
     return new_cls
