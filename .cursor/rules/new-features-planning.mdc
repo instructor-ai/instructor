@@ -8,6 +8,9 @@ alwaysApply: true
 - If the feature is very large, create a temporary `todo.md`
 - And start a pull request using `gh`
 - Make sure to include `This PR was written by [Cursor](mdc:https:/cursor.sh)`
+- Add default reviewers:
+    - Use `gh pr edit <id> --add-reviewer jxnlco,ivanleomk`
+    - Or include `-r jxnlco,ivanleomk` when creating the PR
 - use `gh pr view <id> --comments | cat` to view all the comments
 - For PR updates:
     - Do not directly commit to an existing PR branch
