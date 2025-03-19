@@ -7,4 +7,12 @@ alwaysApply: true
 - When being asked to make new features, make sure that you check out from main a new branch and make incremental commits
 - If the feature is very large, create a temporary `todo.md`
 - And start a pull request using `gh`
-- Make sure to include `This PR was written by [Cursor](https://cursor.sh)`
+- Make sure to include `This PR was written by [Cursor](mdc:https:/cursor.sh)`
+- use `gh pr view <id> --comments | cat` to view all the comments
+- For PR updates:
+    - Do not directly commit to an existing PR branch
+    - Instead, create a new PR that builds on top of the original PR's branch
+    - This creates a "stacked PR" pattern where:
+        1. The original PR (base) contains the initial changes
+        2. The new PR (stack) contains only the review-related updates
+        3. Once the base PR is merged, the stack can be rebased onto main 
