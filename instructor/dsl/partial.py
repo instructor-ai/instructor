@@ -130,9 +130,9 @@ class PartialBase(Generic[T_Model]):
     @cache
     def get_partial_model(cls) -> type[T_Model]:
         """Return a partial model we can use to validate partial results."""
-        assert issubclass(
-            cls, BaseModel
-        ), f"{cls.__name__} must be a subclass of BaseModel"
+        assert issubclass(cls, BaseModel), (
+            f"{cls.__name__} must be a subclass of BaseModel"
+        )
 
         model_name = (
             cls.__name__
@@ -265,6 +265,10 @@ class PartialBase(Generic[T_Model]):
     def extract_json(
         completion: Iterable[Any], mode: Mode
     ) -> Generator[str, None, None]:
+        """Extract JSON chunks from various LLM provider streaming responses.
+
+        Each provider has a different structure for streaming responses that needs
+        specific handling to extract the relevant JSON data."""
         for chunk in completion:
             try:
                 if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
