@@ -63,6 +63,16 @@ Currently, the following rules are defined:
   - Focus on small, contextual code changes
   - Suggestions should be thoughtful and actionable
 
+### `documentation-sync.mdc`
+- **Purpose**: Maintains documentation consistency with code changes
+- **Applies to**: Python and Markdown files (*.py, *.md)
+- **Auto Apply**: Yes
+- **Key Requirements**:
+  - Update docs when code changes
+  - Add new markdown files to mkdocs.yml
+  - Keep API documentation current
+  - Maintain documentation quality standards
+
 ## Creating New Rules
 
 To create a new rule:
