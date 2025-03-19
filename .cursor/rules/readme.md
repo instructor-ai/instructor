@@ -9,7 +9,7 @@ Cursor rules are configuration files that help guide AI-assisted development in 
 - AI-assisted code completion
 - Natural language code generation
 - Intelligent code explanations
-- Automated refactoring suggestion
+- Automated refactoring suggestions
 
 ## Understanding Cursor Rules
 
@@ -29,6 +29,7 @@ Currently, the following rules are defined:
 ### `simple-language.mdc`
 - **Purpose**: Ensures documentation is written at a grade 10 reading level
 - **Applies to**: Markdown files (*.md)
+- **Auto Apply**: No
 - **Key Requirements**: 
   - Write at grade 10 reading level
   - Ensure code blocks are self-contained with complete imports
@@ -36,26 +37,36 @@ Currently, the following rules are defined:
 ### `new-features-planning.mdc`
 - **Purpose**: Guides feature implementation workflow
 - **Applies to**: Python files (*.py)
+- **Auto Apply**: Yes
 - **Key Requirements**:
   - Create new branch from main
   - Make incremental commits
   - Create todo.md for large features
   - Start pull requests using gh
-  - Include Cursor attribution in PRs
+  - Include "This PR was written by [Cursor](cursor.com)" in PRs
 
 ### `followups.mdc`
 - **Purpose**: Ensures thoughtful follow-up suggestions
 - **Applies to**: All files
+- **Auto Apply**: Yes
 - **Key Requirements**:
-  - Generate actionable hotkey suggestions
+  - Generate actionable hotkey suggestions using [J], [K], [L]
   - Focus on small, contextual code changes
+  - Suggestions should be thoughtful and actionable
 
 ## Creating New Rules
 
 To create a new rule:
 
 1. Create a `.mdc` file in `.cursor/rules/`
-2. Add YAML frontmatter with required metadata
+2. Add YAML frontmatter with required metadata:
+   ```yaml
+   ---
+   description: when to apply this rule
+   globs: file patterns to match
+   alwaysApply: true/false
+   ---
+   ```
 3. Write clear, specific instructions in Markdown
 4. Test the rule with relevant file types
 
