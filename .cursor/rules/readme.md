@@ -4,7 +4,7 @@ Cursor rules are configuration files that help guide AI-assisted development in 
 
 ## What is Cursor?
 
-[Cursor](https://www.cursor.com/) is an AI-powered IDE that helps developers write, understand, and maintain code more efficiently. It integrates AI capabilities directly into the development workflow, providing features like:
+[Cursor](https://cursor.sh) is an AI-powered IDE that helps developers write, understand, and maintain code more efficiently. It integrates AI capabilities directly into the development workflow, providing features like:
 
 - AI-assisted code completion
 - Natural language code generation
@@ -13,12 +13,18 @@ Cursor rules are configuration files that help guide AI-assisted development in 
 
 ## Understanding Cursor Rules
 
-Cursor rules are defined in `.mdc` files within the `.cursor/rules` directory. Each rule file contains:
+Cursor rules are defined in `.mdc` files within the `.cursor/rules` directory. Each rule file follows a specific naming convention: lowercase names with the `.mdc` extension (e.g., `simple-language.mdc`).
+
+Each rule file contains:
 
 1. **Metadata Header**: YAML frontmatter that defines:
-   - `description`: When the rule should be applied
-   - `globs`: File patterns the rule applies to
-   - `alwaysApply`: Whether the rule should be applied automatically
+   ```yaml
+   ---
+   description: when to apply this rule
+   globs: file patterns to match (e.g., "*.py", "*.md", or "*" for all files)
+   alwaysApply: true/false  # whether to apply automatically
+   ---
+   ```
 
 2. **Rule Content**: Markdown-formatted instructions that guide the AI's behavior
 
@@ -42,15 +48,18 @@ Currently, the following rules are defined:
   - Create new branch from main
   - Make incremental commits
   - Create todo.md for large features
-  - Start pull requests using gh
-  - Include "This PR was written by [Cursor](cursor.com)" in PRs
+  - Start pull requests using GitHub CLI (`gh`)
+  - Include "This PR was written by [Cursor](https://cursor.sh)" in PRs
 
 ### `followups.mdc`
 - **Purpose**: Ensures thoughtful follow-up suggestions
 - **Applies to**: All files
 - **Auto Apply**: Yes
 - **Key Requirements**:
-  - Generate actionable hotkey suggestions using [J], [K], [L]
+  - Generate actionable hotkey suggestions using:
+    - [J]: First follow-up action
+    - [K]: Second follow-up action
+    - [L]: Third follow-up action
   - Focus on small, contextual code changes
   - Suggestions should be thoughtful and actionable
 
@@ -58,7 +67,7 @@ Currently, the following rules are defined:
 
 To create a new rule:
 
-1. Create a `.mdc` file in `.cursor/rules/`
+1. Create a `.mdc` file in `.cursor/rules/` using lowercase naming
 2. Add YAML frontmatter with required metadata:
    ```yaml
    ---
@@ -77,3 +86,5 @@ To create a new rule:
 - Test rules thoroughly before committing
 - Document any special requirements or dependencies
 - Update rules as project needs evolve
+- Use consistent file naming (lowercase with .mdc extension)
+- Ensure globs patterns are explicit and documented
