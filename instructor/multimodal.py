@@ -41,6 +41,7 @@ VALID_AUDIO_MIME_TYPES = [
     "audio/wav",
     "audio/webm",
 ]
+VALID_PDF_MIME_TYPES = ["application/pdf"]
 CacheControlType = Mapping[str, str]
 OptionalCacheControlType = Optional[CacheControlType]
 
@@ -55,6 +56,16 @@ class ImageParams(ImageParamsBase, total=False):
 
 
 class Image(BaseModel):
+    """A class for handling image data across different AI providers.
+
+    Supports loading images from URLs, file paths, or base64 data.
+    Automatically converts between different provider formats (OpenAI, Anthropic, Google).
+
+    For provider-specific details, see:
+    - OpenAI Vision Guide: https://platform.openai.com/docs/guides/vision
+    - Anthropic Vision Guide: https://docs.anthropic.com/claude/docs/vision
+    """
+
     source: Union[str, Path] = Field(  # noqa: UP007
         description="URL, file path, or base64 data of the image"
     )
@@ -275,7 +286,14 @@ class Image(BaseModel):
 
 
 class Audio(BaseModel):
-    """Represents an audio that can be loaded from a URL or file path."""
+    """A class for handling audio data across different AI providers.
+
+    Currently only supported by OpenAI.
+    Supports loading audio from URLs or file paths.
+
+    For provider-specific details, see:
+    - OpenAI Audio Guide: https://platform.openai.com/docs/guides/speech-to-text
+    """
 
     source: str | Path = Field(description="URL or file path of the audio")  # noqa: UP007
     data: Union[str, None] = Field(  # noqa: UP007
@@ -288,9 +306,9 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         response = requests.get(url)
         content_type = response.headers.get("content-type")
-        assert (
-            content_type in VALID_AUDIO_MIME_TYPES
-        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        assert content_type in VALID_AUDIO_MIME_TYPES, (
+            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        )
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -306,9 +324,9 @@ class Audio(BaseModel):
         if mime_type == "audio/x-wav":
             mime_type = "audio/wav"
 
-        assert (
-            mime_type in VALID_AUDIO_MIME_TYPES
-        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        assert mime_type in VALID_AUDIO_MIME_TYPES, (
+            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        )
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
@@ -510,3 +528,198 @@ def extract_genai_multimodal_content(
         result.append(types.Content(parts=converted_contents, role=content.role))
 
     return result
+
+
+class PDFParamsBase(TypedDict):
+    type: Literal["document"]
+    source: str
+
+
+class PDFParams(PDFParamsBase, total=False):
+    cache_control: CacheControlType
+
+
+class PDF(BaseModel):
+    """A class for handling PDF documents across different AI providers.
+
+    Supports loading PDFs from URLs, file paths, or base64 data.
+    Automatically converts between different provider formats.
+
+    For provider-specific details, see:
+    - OpenAI File Understanding: https://platform.openai.com/docs/guides/vision/file-understanding
+    - Anthropic Document Analysis: https://docs.anthropic.com/claude/docs/vision#document-analysis
+    """
+
+    source: str | Path = Field(description="URL, file path, or base64 data of the PDF")
+    media_type: str = Field(
+        description="MIME type of the PDF", default="application/pdf"
+    )
+    data: str | None = Field(None, description="Base64 encoded PDF data", repr=False)
+
+    @classmethod
+    def autodetect(cls, source: str | Path) -> PDF:
+        """Attempt to autodetect a PDF from a source string or Path.
+
+        Args:
+            source (Union[str,path]): The source string or path.
+        Returns:
+            A PDF if the source is detected to be a valid PDF.
+        Raises:
+            ValueError: If the source is not detected to be a valid PDF.
+        """
+        if isinstance(source, str):
+            if cls.is_base64(source):
+                return cls.from_base64(source)
+            elif source.startswith(("http://", "https://")):
+                return cls.from_url(source)
+            elif source.startswith("gs://"):
+                return cls.from_gs_url(source)
+            elif Path(source).is_file():
+                return cls.from_path(source)
+            else:
+                return cls.from_raw_base64(source)
+        elif isinstance(source, Path):
+            return cls.from_path(source)
+
+        raise ValueError("Unable to determine PDF type or unsupported PDF format")
+
+    @classmethod
+    def is_base64(cls, s: str) -> bool:
+        return bool(re.match(r"^data:application/pdf;base64,", s))
+
+    @classmethod
+    def from_base64(cls, data_uri: str) -> PDF:
+        header, encoded = data_uri.split(",", 1)
+        media_type = header.split(":")[1].split(";")[0]
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+        return cls(
+            source=data_uri,
+            media_type=media_type,
+            data=encoded,
+        )
+
+    @classmethod
+    def from_gs_url(cls, data_uri: str) -> PDF:
+        """Create a PDF instance from a Google Cloud Storage URL."""
+        if not data_uri.startswith("gs://"):
+            raise ValueError("URL must start with gs://")
+
+        public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
+
+        try:
+            response = requests.get(public_url)
+            response.raise_for_status()
+            media_type = response.headers.get("Content-Type")
+            if media_type not in VALID_PDF_MIME_TYPES:
+                raise ValueError(f"Unsupported PDF format: {media_type}")
+
+            data = base64.b64encode(response.content).decode("utf-8")
+            return cls(source=data_uri, media_type=media_type, data=data)
+        except requests.RequestException as e:
+            raise ValueError("We only support public PDFs for now") from e
+
+    @classmethod
+    def from_raw_base64(cls, data: str) -> PDF:
+        try:
+            decoded = base64.b64decode(data)
+            # Check if it's a valid PDF by looking for the PDF header
+            if decoded.startswith(b"%PDF-"):
+                return cls(
+                    source=data,
+                    media_type="application/pdf",
+                    data=data,
+                )
+            raise ValueError("Invalid PDF format")
+        except Exception as e:
+            raise ValueError("Invalid or unsupported base64 PDF data") from e
+
+    @classmethod
+    @lru_cache
+    def from_url(cls, url: str) -> PDF:
+        if cls.is_base64(url):
+            return cls.from_base64(url)
+
+        parsed_url = urlparse(url)
+        media_type, _ = mimetypes.guess_type(parsed_url.path)
+
+        if not media_type:
+            try:
+                response = requests.head(url, allow_redirects=True)
+                media_type = response.headers.get("Content-Type")
+            except requests.RequestException as e:
+                raise ValueError("Failed to fetch PDF from URL") from e
+
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+        return cls(source=url, media_type=media_type, data=None)
+
+    @classmethod
+    @lru_cache
+    def from_path(cls, path: str | Path) -> PDF:
+        path = Path(path)
+        if not path.is_file():
+            raise FileNotFoundError(f"PDF file not found: {path}")
+
+        if path.stat().st_size == 0:
+            raise ValueError("PDF file is empty")
+
+        media_type, _ = mimetypes.guess_type(str(path))
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+
+        data = base64.b64encode(path.read_bytes()).decode("utf-8")
+        return cls(source=path, media_type=media_type, data=data)
+
+    @staticmethod
+    @lru_cache
+    def url_to_base64(url: str) -> str:
+        """Cachable helper method for getting PDF url and encoding to base64."""
+        response = requests.get(url)
+        response.raise_for_status()
+        data = base64.b64encode(response.content).decode("utf-8")
+        return data
+
+    def to_anthropic(self) -> dict[str, Any]:
+        """Convert to Anthropic's document format."""
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            return {
+                "type": "document",
+                "source": {
+                    "type": "url",
+                    "url": self.source,
+                },
+            }
+        else:
+            if not self.data:
+                self.data = self.url_to_base64(str(self.source))
+
+            return {
+                "type": "document",
+                "source": {
+                    "type": "base64",
+                    "media_type": self.media_type,
+                    "data": self.data,
+                },
+            }
+
+    def to_openai(self) -> dict[str, Any]:
+        """Convert to OpenAI's document format."""
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            return {"type": "document_url", "document_url": {"url": self.source}}
+        elif self.data or self.is_base64(str(self.source)):
+            data = self.data or str(self.source).split(",", 1)[1]
+            return {
+                "type": "document_url",
+                "document_url": {"url": f"data:{self.media_type};base64,{data}"},
+            }
+        else:
+            raise ValueError("PDF data is missing for base64 encoding.")
