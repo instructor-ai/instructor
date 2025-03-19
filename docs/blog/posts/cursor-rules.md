@@ -16,15 +16,15 @@ tags:
   - Best Practices
 ---
 
-# Elevating Git Practices with Cursor Rules: A New Era for Instructor Contributors
+# Elevating Git Practices with Cursor Rules
 
-In the world of AI-assisted coding, the way we interact with version control is rapidly evolving. Many developers have embraced what Jason Liu aptly calls "vibe coding" — a more fluid, AI-assisted approach to software development. However, this new paradigm brings unique challenges, particularly when it comes to Git best practices. I'm excited to share how Instructor is addressing these challenges through the adoption of Cursor rules, and why this matters for everyone looking to contribute to the project.
+In the world of AI-assisted coding, the way we interact with version control is changing quickly. Many developers have embraced what I call "vibe coding" — a more fluid, AI-assisted approach to software development. However, this new way of working brings unique challenges, especially when it comes to Git best practices. I'm excited to share how we're addressing these challenges in Instructor through the adoption of Cursor rules, and why this matters for everyone looking to contribute to the project.
 
 <!-- more -->
 
 ## The Git Challenge in the Age of AI Coding
 
-As Jason Liu points out in his blog post [Version Control for the Vibe Coder (Part 1)](https://jxnl.co/writing/2025/03/18/version-control-for-the-vibe-coder-part-1/), there's often a disconnect between traditional Git workflows and AI-assisted coding:
+In my blog post [Version Control for the Vibe Coder (Part 1)](https://jxnl.co/writing/2025/03/18/version-control-for-the-vibe-coder-part-1/), I pointed out the disconnect between traditional Git workflows and AI-assisted coding:
 
 > "Imagine this: you open Cursor, ask it to build a feature in YOLO-mode, and let it rip. You feel great as you watch code materialize... until you realize you haven't made a single commit, your branch is a mess, and you have no idea how to organize these changes for review."
 
@@ -32,9 +32,9 @@ This scenario is all too familiar. When coding with AI assistants like Cursor, w
 
 ## Enter Cursor Rules: Bringing Structure to Vibe Coding
 
-Instructor has recently adopted Cursor rules — a powerful feature that helps standardize Git workflows directly within the Cursor environment. These rules are simple markdown files stored in the `.cursor/rules` directory that provide consistent guidance to Cursor AI when working with your codebase.
+We've recently adopted Cursor rules in Instructor — a powerful feature that helps standardize Git workflows directly within the Cursor environment. These rules are simple markdown files stored in the `.cursor/rules` directory that provide consistent guidance to Cursor AI when working with your codebase.
 
-As Jason explains in [Version Control for the Vibe Coder (Part 2)](https://jxnl.co/writing/2025/03/18/version-control-for-the-vibe-coder-part-2/):
+As I explained in [Version Control for the Vibe Coder (Part 2)](https://jxnl.co/writing/2025/03/18/version-control-for-the-vibe-coder-part-2/):
 
 > "Add rules to `.cursor/rules` to instruct Cursor clearly and repeatedly... The real key to success with Git is much simpler: Make Small, Frequent Commits... Let Cursor Handle the Rest."
 
@@ -42,7 +42,7 @@ This approach perfectly balances the freedom of AI-assisted coding with the stru
 
 ## How Instructor's Cursor Rules Make Contributing Easier
 
-If you're looking to contribute to Instructor, the new Cursor rules implementation will significantly improve your experience. Here's how:
+If you're looking to contribute to Instructor, our new Cursor rules implementation will significantly improve your experience. Here's how:
 
 ### 1. Standardized Branching and Commits
 
@@ -54,11 +54,11 @@ The rules guide Cursor to automatically suggest proper branching strategies and 
 
 ### 2. Streamlined PR Workflow
 
-Instructor's Cursor rules also define best practices for creating and managing pull requests:
+Our Cursor rules also define best practices for creating and managing pull requests:
 
 - Automatically formatting PR descriptions
 - Including appropriate reviewers
-- Using stacked PRs for complex features (as detailed in Jason's Part 2 blog post)
+- Using stacked PRs for complex features (as detailed in my Part 2 blog post)
 
 ### 3. Documentation Integration
 
@@ -78,7 +78,7 @@ The best part? You don't need to memorize all the Git commands or project standa
 
 ## Stacked PRs: A Game Changer for Complex Features
 
-One particularly valuable practice encouraged by Instructor's Cursor rules is the use of stacked PRs. As Jason explains:
+One particularly valuable practice encouraged by our Cursor rules is the use of stacked PRs. As I explain:
 
 > "Stacked pull requests are a powerful workflow for building complex features incrementally. Instead of one massive PR, you create a series of smaller, dependent PRs that build upon each other."
 
@@ -100,12 +100,16 @@ Perhaps the most significant benefit of Cursor rules is how they keep the human 
 - Commit history tells a clear story
 - Contributors get proper credit for their work
 
-## Try It Yourself
+## I Invite You to Try It Yourself
 
-If you're interested in contributing to Instructor, I highly recommend giving Cursor a try. The combination of AI-assisted coding with structured Git practices through Cursor rules creates an exceptional development experience that makes contributing both more productive and more enjoyable.
+I personally invite you to try making a PR to Instructor with small, incremental changes. The combination of AI-assisted coding with structured Git practices through Cursor rules creates an exceptional development experience that makes contributing both more productive and more enjoyable.
 
-The next time you want to fix a bug or add a feature to Instructor, open it in Cursor and let the rules guide you through the process. You'll find that making a PR becomes a much more streamlined experience, allowing you to focus on what matters most: writing great code.
+Start small - maybe fix a typo in the documentation or add a simple example to the cookbook. Open the repository in Cursor and let the rules guide you through creating a clean, well-structured PR. You'll find that the process becomes much more streamlined, allowing you to focus on what matters most: writing great code.
 
-As Jason aptly concludes: "Remember: The most important Git skill is making regular, small commits. Everything else - bisecting, stacked PRs, complex rebases - these are just tools that Cursor can handle for you."
+Remember: "The most important Git skill is making regular, small commits. Everything else - bisecting, stacked PRs, complex rebases - these are just tools that Cursor can handle for you."
 
-With Instructor's adoption of Cursor rules, you can now enjoy the best of both worlds: the creative freedom of AI-assisted coding with the structure and discipline needed for effective collaboration. Happy coding! 
+With Instructor's adoption of Cursor rules, you can now enjoy the best of both worlds: the creative freedom of AI-assisted coding with the structure and discipline needed for effective collaboration.
+
+If you're interested in adding Cursor rules to your own open source libraries, I'm happy to help! Feel free to reach out to me on Twitter at [@jxnlco](https://twitter.com/jxnlco) and I can share more about our implementation and lessons learned.
+
+Happy coding! 
