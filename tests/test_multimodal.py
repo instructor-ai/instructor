@@ -1,8 +1,11 @@
 import pytest
 from pathlib import Path
-from instructor.multimodal import Image, convert_contents, convert_messages
+from instructor.multimodal import Image, Audio, PDF, convert_contents, convert_messages
 from instructor.mode import Mode
 from unittest.mock import patch, MagicMock
+import base64
+import os
+import requests
 
 
 @pytest.fixture
@@ -319,7 +322,7 @@ def test_image_autodetect(input_data, expected_type, expected_media_type, reques
     with (
         patch("pathlib.Path.is_file", return_value=True),
         patch("pathlib.Path.stat", return_value=MagicMock(st_size=1000)),
-        patch("pathlib.Path.read_bytes", return_value=b"fake image data"),
+        patch("pathlib.Path.read_bytes", return_value=b"fake image data")),
         patch("requests.head") as mock_head,
     ):
         mock_head.return_value = MagicMock(
@@ -373,3 +376,143 @@ def test_raw_base64_autodetect_png(base64_png):
     image = Image.autodetect(raw_base_64)
     assert image.media_type == "image/png"
     assert image.source == image.data == raw_base_64
+
+
+# PDF Tests
+def test_pdf_from_path(tmp_path):
+    # Create a simple PDF file for testing
+    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    pdf_path = tmp_path / "test.pdf"
+    pdf_path.write_bytes(pdf_content)
+    
+    pdf = PDF.from_path(pdf_path)
+    assert pdf.media_type == "application/pdf"
+    assert pdf.source == pdf_path
+    assert pdf.data == base64.b64encode(pdf_content).decode("utf-8")
+
+def test_pdf_from_base64():
+    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    b64_data = base64.b64encode(pdf_content).decode("utf-8")
+    data_uri = f"data:application/pdf;base64,{b64_data}"
+    
+    pdf = PDF.from_base64(data_uri)
+    assert pdf.media_type == "application/pdf"
+    assert pdf.source == data_uri
+    assert pdf.data == b64_data
+
+def test_pdf_from_raw_base64():
+    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    b64_data = base64.b64encode(pdf_content).decode("utf-8")
+    
+    pdf = PDF.from_raw_base64(b64_data)
+    assert pdf.media_type == "application/pdf"
+    assert pdf.source == b64_data
+    assert pdf.data == b64_data
+
+def test_pdf_from_invalid_base64():
+    with pytest.raises(ValueError):
+        PDF.from_raw_base64("invalid base64 data")
+
+def test_pdf_from_nonexistent_path():
+    with pytest.raises(FileNotFoundError):
+        PDF.from_path("nonexistent.pdf")
+
+def test_pdf_from_empty_file(tmp_path):
+    empty_pdf = tmp_path / "empty.pdf"
+    empty_pdf.touch()
+    
+    with pytest.raises(ValueError):
+        PDF.from_path(empty_pdf)
+
+def test_pdf_to_anthropic_url():
+    pdf = PDF(source="https://example.com/test.pdf", media_type="application/pdf")
+    result = pdf.to_anthropic()
+    
+    assert result == {
+        "type": "document",
+        "source": {
+            "type": "url",
+            "url": "https://example.com/test.pdf",
+        },
+    }
+
+def test_pdf_to_anthropic_base64(tmp_path):
+    # Create a test PDF
+    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    pdf_path = tmp_path / "test.pdf"
+    pdf_path.write_bytes(pdf_content)
+    
+    pdf = PDF.from_path(pdf_path)
+    result = pdf.to_anthropic()
+    
+    assert result == {
+        "type": "document",
+        "source": {
+            "type": "base64",
+            "media_type": "application/pdf",
+            "data": base64.b64encode(pdf_content).decode("utf-8"),
+        },
+    }
+
+def test_pdf_to_openai_url():
+    pdf = PDF(source="https://example.com/test.pdf", media_type="application/pdf")
+    result = pdf.to_openai()
+    
+    assert result == {
+        "type": "document_url",
+        "document_url": {
+            "url": "https://example.com/test.pdf"
+        },
+    }
+
+def test_pdf_to_openai_base64(tmp_path):
+    # Create a test PDF
+    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    pdf_path = tmp_path / "test.pdf"
+    pdf_path.write_bytes(pdf_content)
+    
+    pdf = PDF.from_path(pdf_path)
+    result = pdf.to_openai()
+    
+    expected_data = base64.b64encode(pdf_content).decode("utf-8")
+    assert result == {
+        "type": "document_url",
+        "document_url": {
+            "url": f"data:application/pdf;base64,{expected_data}"
+        },
+    }
+
+def test_pdf_autodetect(tmp_path):
+    # Test file path
+    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    pdf_path = tmp_path / "test.pdf"
+    pdf_path.write_bytes(pdf_content)
+    
+    pdf = PDF.autodetect(pdf_path)
+    assert isinstance(pdf, PDF)
+    assert pdf.media_type == "application/pdf"
+    
+    # Test URL
+    pdf = PDF.autodetect("https://example.com/test.pdf")
+    assert isinstance(pdf, PDF)
+    assert pdf.media_type == "application/pdf"
+    
+    # Test base64
+    b64_data = base64.b64encode(pdf_content).decode("utf-8")
+    data_uri = f"data:application/pdf;base64,{b64_data}"
+    pdf = PDF.autodetect(data_uri)
+    assert isinstance(pdf, PDF)
+    assert pdf.media_type == "application/pdf"
+
+def test_convert_contents_with_pdf():
+    pdf = PDF(source="https://example.com/test.pdf", media_type="application/pdf")
+    
+    # Test OpenAI format
+    result = convert_contents(pdf, Mode.OPENAI_JSON)
+    assert isinstance(result, list)
+    assert result[0]["type"] == "document_url"
+    
+    # Test Anthropic format
+    result = convert_contents(pdf, Mode.ANTHROPIC_JSON)
+    assert isinstance(result, list)
+    assert result[0]["type"] == "document"
