@@ -53,6 +53,9 @@ class IterableBase:
     async def tasks_from_mistral_chunks(
         cls, json_chunks: AsyncGenerator[str, None]
     ) -> AsyncGenerator[BaseModel, None]:
+        """Process streaming chunks from Mistral and VertexAI.
+
+        Handles the specific JSON format used by these providers when streaming."""
         import json
 
         async for chunk in json_chunks:
@@ -325,7 +328,7 @@ def IterableModel(
         if description is None
         else description
     )
-    assert issubclass(
-        new_cls, OpenAISchema
-    ), "The new class should be a subclass of OpenAISchema"
+    assert issubclass(new_cls, OpenAISchema), (
+        "The new class should be a subclass of OpenAISchema"
+    )
     return new_cls
