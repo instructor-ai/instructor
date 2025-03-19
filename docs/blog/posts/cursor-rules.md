@@ -4,7 +4,7 @@ authors:
 categories:
   - Contributing
 comments: true
-date: 2023-03-20
+date: 2025-03-18
 description:
   Learn how Instructor's Cursor rules improve Git workflows for contributors, making AI-assisted coding more organized.
 draft: false
@@ -16,7 +16,7 @@ tags:
   - Best Practices
 ---
 
-# Using Cursor Rules to Improve Git Practices
+# Instructor Adopting Cursor Rules
 
 AI-assisted coding is changing how we use version control. Many developers now use what I call "vibe coding" — coding with AI help. This creates new challenges with Git. Today I'll share how we're using Cursor rules in Instructor to solve these problems.
 
