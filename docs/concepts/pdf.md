@@ -10,7 +10,7 @@ Instructor makes it easy to work with PDF documents in your AI applications. The
 !!! note "Provider Documentation"
     For more details on how different providers handle PDFs, see:
     
-    - [OpenAI PDF Files Guide](https://platform.openai.com/docs/guides/pdf-files?api-mode
+    - [OpenAI PDF Files Guide](https://platform.openai.com/docs/guides/pdf-files?api-mode)
     - [Anthropic Claude PDF Support](https://docs.anthropic.com/en/docs/build-with-claude/pdf-support)
 
 ## Basic Usage
