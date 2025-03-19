@@ -264,6 +264,50 @@ It should be an OpenAI client instance, not a string.
 
 This format helps everyone understand the purpose and importance of each comment. Visit [conventionalcomments.org](https://conventionalcomments.org/) to learn more.
 
+### Conventional Commits
+
+We use conventional commit messages to make our project history clear and generate automated changelogs. A conventional commit has this structure:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer]
+```
+
+#### Common Types
+
+- **feat**: New feature
+- **fix**: Bug fix
+- **docs**: Documentation changes
+- **style**: Formatting changes
+- **refactor**: Code change that neither fixes a bug nor adds a feature
+- **test**: Adding or fixing tests
+- **chore**: Maintenance tasks
+
+#### Examples
+
+```
+feat(openai): add streaming response support
+
+fix(anthropic): resolve tool calling response format
+
+docs: update installation instructions
+
+test(evals): add new recursive schema test cases
+```
+
+For breaking changes, add an exclamation mark before the colon:
+
+```
+feat(api)!: change return type of from_openai function
+```
+
+Using conventional commits helps automatically generate release notes and makes the project history easier to navigate.
+
+For more details, see the [Conventional Commits specification](https://www.conventionalcommits.org/).
+
 ## Documentation Contributions
 
 Documentation improvements are highly valued:

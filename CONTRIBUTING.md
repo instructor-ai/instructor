@@ -22,6 +22,9 @@ Thank you for considering contributing to Instructor! This document provides gui
     - [Contributing to Evals](#contributing-to-evals)
   - [Code Style Guidelines](#code-style-guidelines)
     - [Conventional Comments](#conventional-comments)
+    - [Conventional Commits](#conventional-commits)
+      - [Types](#types)
+      - [Examples](#examples)
   - [Testing](#testing)
   - [Branch and Release Process](#branch-and-release-process)
   - [Using Cursor for PR Creation](#using-cursor-for-pr-creation)
@@ -278,6 +281,52 @@ The client should accept OpenAI instances, not strings.
 ```
 
 For more details, see the [Conventional Comments specification](https://conventionalcomments.org/).
+
+### Conventional Commits
+
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification for commit messages. This helps us generate changelogs and understand the changes at a glance.
+
+The commit message should be structured as follows:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+#### Types
+
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation only changes
+- **style**: Changes that do not affect the meaning of the code (white-space, formatting, etc)
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **perf**: A code change that improves performance
+- **test**: Adding missing tests or correcting existing tests
+- **build**: Changes that affect the build system or external dependencies
+- **ci**: Changes to our CI configuration files and scripts
+
+#### Examples
+
+```
+feat(openai): add support for response_format parameter
+
+fix(anthropic): correct tool calling format in Claude client
+
+docs: improve installation instructions for various providers
+
+test(evals): add evaluation for recursive schema handling
+```
+
+Breaking changes should be indicated by adding `!` after the type/scope:
+
+```
+feat(api)!: change parameter order in from_openai factory function
+```
+
+Including a scope is recommended when changes affect a specific part of the codebase (e.g., a specific provider, feature, or component).
 
 ## Testing
 
