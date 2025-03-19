@@ -26,7 +26,7 @@ alwaysApply: true
     ## Testing
     How this was tested
 
-    This PR was written by [Cursor](mdc:cursor.com)
+    This PR was written by [Cursor](cursor.com)
     EOF
     )" -r jxnl,ivanleomk
     ```
