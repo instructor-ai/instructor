@@ -5,9 +5,33 @@ alwaysApply: true
 ---
 
 - When being asked to make new features, make sure that you check out from main a new branch and make incremental commits
+  - Use conventional commit format: `<type>(<scope>): <description>`
+    - Types: feat, fix, docs, style, refactor, perf, test, chore
+    - Example: `feat(validation): add email validation function` 
+    - Keep commits focused on a single change
+    - Write descriptive commit messages in imperative mood
+  - Use `git commit -m "type(scope): subject" -m "body" -m "footer"` for multiline commits
 - If the feature is very large, create a temporary `todo.md`
 - And start a pull request using `gh`
-- Make sure to include `This PR was written by [Cursor](mdc:cursor.com)`
+  - Create PRs with multiline bodies using:
+    ```bash
+    gh pr create --title "feat(component): add new feature" --body "$(cat <<EOF
+    ## Description
+    Detailed explanation of the changes
+
+    ## Changes
+    - List important changes
+    - Another change
+
+    ## Testing
+    How this was tested
+
+    This PR was written by [Cursor](https://cursor.com)
+    EOF
+    )" -r jxnl,ivanleomk
+    ```
+  - Or use the `-F` flag with a file: `gh pr create -F pr_body.md`
+- Make sure to include `This PR was written by [Cursor](https://cursor.com)`
 - Add default reviewers:
     - Use `gh pr edit <id> --add-reviewer jxnl,ivanleomk`
     - Or include `-r jxnl,ivanleomk` when creating the PR
