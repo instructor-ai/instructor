@@ -1,5 +1,5 @@
 ---
-description: when asked to implement new features or clientsthe2`
+description: when asked to implement new features or clients
 globs: *.py
 alwaysApply: true
 ---
@@ -7,7 +7,7 @@ alwaysApply: true
 - When being asked to make new features, make sure that you check out from main a new branch and make incremental commits
 - If the feature is very large, create a temporary `todo.md`
 - And start a pull request using `gh`
-- Make sure to include `This PR was written by [Cursor](mdc:https:/cursor.sh)`
+- Make sure to include `This PR was written by [Cursor](mdc:cursor.com)`
 - Add default reviewers:
     - Use `gh pr edit <id> --add-reviewer jxnl,ivanleomk`
     - Or include `-r jxnl,ivanleomk` when creating the PR
