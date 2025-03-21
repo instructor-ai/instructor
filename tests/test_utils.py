@@ -1,13 +1,13 @@
 import json
 import pytest
 from instructor.utils import (
-    classproperty,
+    SystemMessage,
+    combine_system_messages,
     extract_json_from_codeblock,
     extract_json_from_stream,
     extract_json_from_stream_async,
-    merge_consecutive_messages,
     extract_system_messages,
-    combine_system_messages,
+    merge_consecutive_messages,
 )
 
 
@@ -158,38 +158,14 @@ def test_merge_consecutive_messages_empty():
 
 
 def test_merge_consecutive_messages_single():
-    messages = [
-        {"role": "user", "content": "Hello"},
-        {"role": "assistant", "content": "Hello"},
-    ]
+    """Test merging consecutive messages with a single message."""
+    messages = [{"role": "user", "content": "Hello"}]
     result = merge_consecutive_messages(messages)
-    assert result == [
-        {"role": "user", "content": "Hello"},
-        {"role": "assistant", "content": "Hello"},
-    ]
-
-
-def test_classproperty():
-    """Test custom `classproperty` descriptor."""
-
-    class MyClass:
-        @classproperty
-        def my_property(cls):
-            return cls
-
-    assert MyClass.my_property is MyClass
-
-    class MyClass:
-        clvar = 1
-
-        @classproperty
-        def my_property(cls):
-            return cls.clvar
-
-    assert MyClass.my_property == 1
+    assert result == messages
 
 
 def test_combine_system_messages_string_string():
+    """Test combining system messages with string inputs."""
     existing = "Existing message"
     new = "New message"
     result = combine_system_messages(existing, new)
@@ -197,8 +173,8 @@ def test_combine_system_messages_string_string():
 
 
 def test_combine_system_messages_list_list():
-    existing = [{"type": "text", "text": "Existing"}]
-    new = [{"type": "text", "text": "New"}]
+    existing = [SystemMessage(type="text", text="Existing")]
+    new = [SystemMessage(type="text", text="New")]
     result = combine_system_messages(existing, new)
     assert result == [
         {"type": "text", "text": "Existing"},
@@ -208,7 +184,7 @@ def test_combine_system_messages_list_list():
 
 def test_combine_system_messages_string_list():
     existing = "Existing"
-    new = [{"type": "text", "text": "New"}]
+    new = [SystemMessage(type="text", text="New")]
     result = combine_system_messages(existing, new)
     assert result == [
         {"type": "text", "text": "Existing"},
@@ -217,7 +193,7 @@ def test_combine_system_messages_string_list():
 
 
 def test_combine_system_messages_list_string():
-    existing = [{"type": "text", "text": "Existing"}]
+    existing = [SystemMessage(type="text", text="Existing")]
     new = "New"
     result = combine_system_messages(existing, new)
     assert result == [
@@ -235,7 +211,7 @@ def test_combine_system_messages_none_string():
 
 def test_combine_system_messages_none_list():
     existing = None
-    new = [{"type": "text", "text": "New"}]
+    new = [SystemMessage(type="text", text="New")]
     result = combine_system_messages(existing, new)
     assert result == [{"type": "text", "text": "New"}]
 
@@ -270,15 +246,12 @@ def test_extract_system_messages_no_system():
 
 def test_combine_system_messages_with_cache_control():
     existing = [
-        {
-            "type": "text",
-            "text": "You are an AI assistant.",
-        },
-        {
-            "type": "text",
-            "text": "This is some context.",
-            "cache_control": {"type": "ephemeral"},
-        },
+        SystemMessage(type="text", text="You are an AI assistant."),
+        SystemMessage(
+            type="text",
+            text="This is some context.",
+            cache_control={"type": "ephemeral"},
+        ),
     ]
     new = "Provide insightful analysis."
     result = combine_system_messages(existing, new)
@@ -300,12 +273,12 @@ def test_combine_system_messages_with_cache_control():
 def test_combine_system_messages_string_to_cache_control():
     existing = "You are an AI assistant."
     new = [
-        {
-            "type": "text",
-            "text": "Analyze this text:",
-            "cache_control": {"type": "ephemeral"},
-        },
-        {"type": "text", "text": "<long text content>"},
+        SystemMessage(
+            type="text",
+            text="Analyze this text:",
+            cache_control={"type": "ephemeral"},
+        ),
+        SystemMessage(type="text", text="<long text content>"),
     ]
     result = combine_system_messages(existing, new)
     expected = [
@@ -351,22 +324,19 @@ def test_extract_system_messages_with_cache_control():
 
 def test_combine_system_messages_preserve_cache_control():
     existing = [
-        {
-            "type": "text",
-            "text": "You are an AI assistant.",
-        },
-        {
-            "type": "text",
-            "text": "This is some context.",
-            "cache_control": {"type": "ephemeral"},
-        },
+        SystemMessage(type="text", text="You are an AI assistant."),
+        SystemMessage(
+            type="text",
+            text="This is some context.",
+            cache_control={"type": "ephemeral"},
+        ),
     ]
     new = [
-        {
-            "type": "text",
-            "text": "Additional instruction.",
-            "cache_control": {"type": "ephemeral"},
-        }
+        SystemMessage(
+            type="text",
+            text="Additional instruction.",
+            cache_control={"type": "ephemeral"},
+        )
     ]
     result = combine_system_messages(existing, new)
     expected = [

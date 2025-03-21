@@ -17,7 +17,6 @@ from pydantic import (
 from instructor.exceptions import IncompleteOutputException
 from instructor.mode import Mode
 from instructor.utils import (
-    classproperty,
     extract_json_from_codeblock,
     map_to_gemini_function_schema,
 )
@@ -96,10 +95,9 @@ def _validate_model_from_json(
 
 
 class OpenAISchema(BaseModel):
-    # Ignore classproperty, since Pydantic doesn't understand it like it would a normal property.
-    model_config = ConfigDict(ignored_types=(classproperty,))
+    model_config = ConfigDict()
 
-    @classproperty
+    @classmethod
     def openai_schema(cls) -> dict[str, Any]:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
@@ -141,22 +139,22 @@ class OpenAISchema(BaseModel):
             "parameters": parameters,
         }
 
-    @classproperty
+    @classmethod
     def anthropic_schema(cls) -> dict[str, Any]:
         # Generate the Anthropic schema based on the OpenAI schema to avoid redundant schema generation
-        openai_schema = cls.openai_schema
+        openai_schema = cls.openai_schema()
         return {
             "name": openai_schema["name"],
             "description": openai_schema["description"],
             "input_schema": cls.model_json_schema(),
         }
 
-    @classproperty
+    @classmethod
     def gemini_schema(cls) -> Any:
         import google.generativeai.types as genai_types
 
         # Use OpenAI schema
-        openai_schema = cls.openai_schema
+        openai_schema = cls.openai_schema()
 
         # Transform to Gemini format
         function = genai_types.FunctionDeclaration(
@@ -294,15 +292,15 @@ class OpenAISchema(BaseModel):
         assert isinstance(completion, types.GenerateContentResponse)
         assert len(completion.candidates) == 1
 
-        assert (
-            len(completion.candidates[0].content.parts) == 1
-        ), f"Instructor does not support multiple function calls, use List[Model] instead"
+        assert len(completion.candidates[0].content.parts) == 1, (
+            f"Instructor does not support multiple function calls, use List[Model] instead"
+        )
         function_call = completion.candidates[0].content.parts[0].function_call
-        assert (
-            function_call is not None
-        ), f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
+        assert function_call is not None, (
+            f"Please return your response as a function call with the schema {cls.openai_schema()} and the name {cls.openai_schema()['name']}"
+        )
 
-        assert function_call.name == cls.openai_schema["name"]
+        assert function_call.name == cls.openai_schema()["name"]
         return cls.model_validate(
             obj=function_call.args, context=validation_context, strict=strict
         )
@@ -314,9 +312,9 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ):
-        assert hasattr(
-            completion, "text"
-        ), "Completion is not of type NonStreamedChatResponse"
+        assert hasattr(completion, "text"), (
+            "Completion is not of type NonStreamedChatResponse"
+        )
         return cls.model_validate_json(
             completion.text, context=validation_context, strict=strict
         )
@@ -475,12 +473,12 @@ class OpenAISchema(BaseModel):
     ) -> BaseModel:
         message = completion.choices[0].message
         tool_calls = message.tool_calls
-        assert (
-            len(tool_calls) == 1
-        ), "Instructor does not support multiple tool calls, use List[Model] instead"
-        assert (
-            tool_calls[0].function.name == cls.openai_schema["name"]
-        ), "Tool name does not match"
+        assert len(tool_calls) == 1, (
+            "Instructor does not support multiple tool calls, use List[Model] instead"
+        )
+        assert tool_calls[0].function.name == cls.openai_schema()["name"], (
+            "Tool name does not match"
+        )
         return cls.model_validate_json(
             tool_calls[0].function.arguments,
             context=validation_context,
@@ -496,7 +494,7 @@ class OpenAISchema(BaseModel):
     ) -> BaseModel:
         message = completion.choices[0].message
         assert (
-            message.function_call.name == cls.openai_schema["name"]  # type: ignore[index]
+            message.function_call.name == cls.openai_schema()["name"]  # type: ignore[index]
         ), "Function name does not match"
         return cls.model_validate_json(
             message.function_call.arguments,  # type: ignore[attr-defined]
@@ -516,15 +514,15 @@ class OpenAISchema(BaseModel):
         # trying to fix this by adding a check
 
         if hasattr(message, "refusal"):
-            assert (
-                message.refusal is None
-            ), f"Unable to generate a response due to {message.refusal}"
-        assert (
-            len(message.tool_calls or []) == 1
-        ), f"Instructor does not support multiple tool calls, use List[Model] instead"
+            assert message.refusal is None, (
+                f"Unable to generate a response due to {message.refusal}"
+            )
+        assert len(message.tool_calls or []) == 1, (
+            f"Instructor does not support multiple tool calls, use List[Model] instead"
+        )
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
-            tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
+            tool_call.function.name == cls.openai_schema()["name"]  # type: ignore[index]
         ), "Tool name does not match"
         return cls.model_validate_json(
             tool_call.function.arguments,  # type: ignore

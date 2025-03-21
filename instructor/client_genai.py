@@ -1,9 +1,18 @@
 # type: ignore
 from __future__ import annotations
 
+import logging
 from typing import Any, Literal, overload
 
-from google.genai import Client
+logger = logging.getLogger("instructor")
+
+try:
+    from google.genai import Client
+
+    HAS_GENAI = True
+except ImportError:
+    logger.debug("google.genai not found. GenAI functionality will not be available.")
+    HAS_GENAI = False
 
 import instructor
 
@@ -32,13 +41,12 @@ def from_genai(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert (
-        mode
-        in {
-            instructor.Mode.GENAI_TOOLS,
-            instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
-        }
-    ), "Mode must be one of {instructor.Mode.GENAI_TOOLS, instructor.Mode.GENAI_STRUCTURED_OUTPUTS}"
+    assert mode in {
+        instructor.Mode.GENAI_TOOLS,
+        instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+    }, (
+        "Mode must be one of {instructor.Mode.GENAI_TOOLS, instructor.Mode.GENAI_STRUCTURED_OUTPUTS}"
+    )
 
     assert isinstance(
         client,
