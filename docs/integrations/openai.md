@@ -100,7 +100,6 @@ print(user)
 ## Nested Example
 
 ```python
-from pydantic import BaseModel
 from typing import List
 import os
 from openai import OpenAI
