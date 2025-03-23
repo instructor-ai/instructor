@@ -73,6 +73,8 @@ class Image(BaseModel):
                 return cls.from_url(source)
             if source.startswith("gs://"):
                 return cls.from_gs_url(source)
+            # Since detecting the max length of a file universally cross-platform is difficult,
+            # we'll just try/catch the Path conversion and file check
             try:
                 path = Path(source)
                 if path.is_file():
