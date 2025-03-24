@@ -1,7 +1,8 @@
-from typing import Any, Optional, cast, ClassVar
 from collections.abc import AsyncGenerator, Generator, Iterable
+from typing import Any, ClassVar, Optional, cast
 
 from pydantic import BaseModel, Field, create_model
+
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
@@ -200,6 +201,8 @@ class IterableBase:
                     if not chunk.data.choices[0].delta.tool_calls:
                         continue
                     yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
+                if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+                    yield chunk.text
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()
