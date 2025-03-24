@@ -17,7 +17,7 @@ class UserExtract(BaseModel):
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_partial_model(model, mode, client):
     client = instructor.from_genai(client, mode=mode)
-    model = client.chat.completions.create_partial(
+    model = client.chat.completions.create(
         model=model,
         response_model=Partial[UserExtract],
         max_retries=2,
@@ -40,7 +40,7 @@ def test_partial_model(model, mode, client):
 @pytest.mark.asyncio
 async def test_partial_model_async(client, model, mode):
     client = instructor.from_genai(client, mode=mode, use_async=True)
-    response_stream = client.chat.completions.create_partial(
+    response_stream = client.chat.completions.create(
         model=model,
         response_model=Partial[UserExtract],
         max_retries=2,
