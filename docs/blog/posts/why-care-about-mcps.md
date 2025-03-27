@@ -1,179 +1,126 @@
 ---
+title: Understanding Model Context Protocol (MCP)
+date: 2025-03-27
+description: A comprehensive look at the Model Context Protocol (MCP), its architecture, benefits, and comparison with OpenAPI
 authors:
   - ivanleomk
-categories:
-  - OpenAI
-comments: true
-date: 2025-03-27
-description: What's the big deal with OpenAI releasing MCP support
-draft: false
 tags:
   - LLM
-  - MCPs
+  - MCP
+  - Standards
 ---
 
-# Are Structured Outputs still relevant with MCPs?
+# What is the MCP ( Model Context Protocol)
 
 With [OpenAI joining Anthropic in supporting the Model Context Protocol (MCP)](https://x.com/sama/status/1904957253456941061), we're witnessing a unified standard for language models to interact with external systems. This creates exciting opportunities for multi-LLM architectures where specialized AI applications work in parallel—discovering tools, handing off tasks, and accessing powerful capabilities through standardized interfaces.
 
-This makes the structured outputs provided by Instructor more relevant than ever as MCP adoption accelerates. We need reliable results, especially as these MCP applications get more complex. From inconsistent outputs across providers to exhibit unpredictable tool invocation patterns and even practical limits on how many tools models can effectively manage, reliability is key.
-
-In short rather than diminishing the need for structured outputs, MCPs make them more essential than ever. By providing a validation layer that ensures consistent outputs across different LLM providers, Instructor enables truly composable AI systems where multiple specialized agents can collaborate reliably on complex workflows.
-
 <!-- more -->
 
-## Market Signals: Growing Adoption
-
-The adoption curve for MCP has been remarkably steep since its introduction
-
-- [Almost 3000 community-built MCP servers have emerged in just a few months](https://smithery.ai)
-- Major platforms like Zed, Cursor, Perser, and Windsurf have become MCP Hosts
-- Companies including Cloudflare have released official [MCP suport with features such as OAuth](https://blog.cloudflare.com/remote-model-context-protocol-servers-mcp/) for developers to start building great applications.
-
-Just take a look at this chart by the [Latent Space Podcast](https://www.latent.space/p/why-mcp-won)
-
-![](./img/mcp_stars.webp)
-
-With both OpenAI and Anthropic supporting MCP, we now have a unified approach spanning the two most advanced AI model providers. This critical mass suggests MCP is positioned to become the dominant standard for AI tool integration.
-
-## What is MCP and why does it matter
+## What is MCP and Why Does It Matter?
 
 MCP is an open protocol developed by Anthropic that standardizes how AI models and applications interact with external tools, data sources, and systems. It solves the fragmentation problem where teams build custom implementations for AI integrations by providing a standardized interface layer.
 
-There are three components to the MCP ecosystem
+There are three components to the MCP ecosystem:
 
-1. Hosts: Programs like Claude Desktop, IDEs, or AI tools that want to access data through MCP
-2. Clients: Protocol clients that maintain 1:1 connections with servers
-3. Servers: Lightweight programs that each expose specific capabilities through the standardized Model Context Protocol
+1. **Hosts**: Programs like Claude Desktop, IDEs, or AI tools that want to access data via MCP clients
+2. **Clients**: Protocol clients that maintain 1:1 connections with servers
+3. **Servers**: Lightweight programs that each expose specific capabilities through the standardized Model Context Protocol
 
-We can see this below in the diagram from the official MCP documentation
+![MCP Architecture](./img/mcp_architecture.png)
 
-![](./img/mcp_architecture.png)
+When interacting with Clients, Hosts have access to two primary options: **Tools**, which are model-controlled functions that retrieve or modify data, and **Resources**, which are application-controlled data like files.
 
-When interacting with Clients, Hosts have access to the following options
+There's also the intention of eventually allowing servers themselves to have the capability of requesting completions/approval from Clients and Hosts while executing their tasks [through the `sampling` endpoint](https://modelcontextprotocol.io/docs/concepts/sampling).
 
-1. Tools (model-controlled functions that retrieve or modify data)
-2. Resources (application-controlled data like files)
+### The Integration Problem MCP Solves
 
-There's also the intention of allowing servers themselves also have the capability of requesting completions/approval from Clients and Hosts while executing their tasks [through the `sampling` endpoint](https://modelcontextprotocol.io/docs/concepts/sampling).
+Before MCP, integrating AI applications with external tools and systems created what's known as an "M×N problem". If you have M different AI applications (Claude, ChatGPT, custom agents, etc.) and N different tools/systems (GitHub, Slack, Asana, databases, etc.), you would need to build M×N different integrations. This leads to duplicated effort across teams, inconsistent implementations, and a maintenance burden that grows quadratically.
 
-This standardization means any MCP-compatible client can connect to any MCP server without additional work, eliminating the "N times M" integration problem. Before MCP, integrating AI applications with external tools and systems created what's known as an "M×N problem":
-
-- If you have M different AI applications (Claude, ChatGPT, custom agents, etc.)
-- And N different tools/systems (GitHub, Slack, Asana, databases, etc.)
-- You would need to build M×N different integrations
-
-This leads to:
-
-1. Duplicated effort across teams
-2. Inconsistent implementations
-3. Maintenance burden that grows quadratically
-
-MCP transforms this into an "M+N problem":
-
-1. Tool creators build N MCP servers (one for each system)
-2. Application developers build M MCP clients (one for each AI application)
-3. The total integration work becomes M+N instead of M×N
+MCP transforms this into an "M+N problem". Tool creators build N MCP servers (one for each system), while application developers build M MCP clients (one for each AI application). The total integration work becomes M+N instead of M×N.
 
 This means a team can build a GitHub MCP server once, and it will work with any MCP-compatible client. Similarly, once you've built an MCP-compatible agent, it can immediately work with all existing MCP servers without additional integration work.
 
-The advantages extend beyond just integration efficiency:
+## Market Signals: Growing Adoption
 
-1. **Future-proofing**: As MCP becomes more widely adopted, servers built today will be compatible with tomorrow's clients
-2. **Reduced fragmentation**: Instead of building custom implementations for each AI platform, you can focus on a single standard
-3. **Composability**: MCP servers can be chained together, allowing for complex workflows and agent systems
-4. **Remote capabilities**: The upcoming support for remote-hosted MCP servers will vastly expand distribution possibilities
+The adoption curve for MCP has been remarkably steep since its introduction. [Almost 3000 community-built MCP servers have emerged in just a few months](https://smithery.ai), showing the strong developer interest in this standard. Major platforms like Zed, Cursor, Perser, and Windsurf have become MCP Hosts, integrating the protocol into their core offerings. Companies including Cloudflare have released official [MCP support with features such as OAuth](https://blog.cloudflare.com/remote-model-context-protocol-servers-mcp/) for developers to start building great applications.
 
-## Moving Beyond Simple Actions to Semantic Tasks
+![MCP Stars Growth](./img/mcp_stars.webp)
 
-As MCP integrations mature, we're moving toward a paradigm shift in how tools are presented to models. Rather than just exposing simple action-based tools (add-branch, delete-branch, create-PR), we'll increasingly build MCP clients that understand higher-level tasks and goals.
+With both OpenAI and Anthropic supporting MCP, we now have a unified approach spanning the two most advanced AI model providers. This critical mass suggests MCP is positioned to become the dominant standard for AI tool integration.
 
-Instructor makes this possible by providing validated structured outputs for a variety of differnet providers, making it simple and easy for you to choose the best model for your task and know with confidence the ability of your MCP server to handle these tasks.
+## MCP vs OpenAPI Specification
 
-```python
-import instructor
-from openai import OpenAI
-from pydantic import BaseModel
-from typing import Union, Literal, List
-import pytest
+While MCP and OpenAPI are both standards for API interfaces, they have different purposes and approaches. Here's a simplified comparison of the key differences:
 
-# Define structured models for different git actions
-class GitCommit(BaseModel):
-    action_type: Literal["commit"]
-    message: str
-    files: List[str] = []
+| Aspect            | OpenAPI Specification                                | Model Context Protocol (MCP)                                                      |
+| ----------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **Primary Users** | Human developers interacting with web APIs           | AI models and agents discovering and using tools                                  |
+| **Architecture**  | Centralized specification in a single JSON/YAML file | Distributed system with hosts, clients, and servers allowing dynamic discovery    |
+| **Use Cases**     | Documenting RESTful services for human consumption   | Enabling AI models to autonomously find and use tools with semantic understanding |
 
-class GitPR(BaseModel):
-    action_type: Literal["create_pr"]
-    title: str
-    description: str
-    branch_name: str
+These two standards serve complementary purposes in the modern tech ecosystem. While OpenAPI excels at documenting traditional web services for human developers, MCP is purpose-built for the emerging AI agent landscape, providing rich semantic context that makes tools discoverable and usable by language models.
 
-class GitMerge(BaseModel):
-    action_type: Literal["merge"]
-    source_branch: str
-    target_branch: str
-    commit_message: str
-
-class GitLog(BaseModel):
-    action_type: Literal["log"]
-    num_commits: int = 1
-    branch: str = "current"
-
-# Union type for all possible git actions
-GitAction = Union[GitCommit, GitPR, GitMerge, GitLog]
-
-# Test cases with expected action types
-test_cases = [
-    ("Create a PR for the features I've been working on", GitPR),
-    ("Commit everything in the current directory", GitCommit),
-    ("Merge my branch into main after checking tests pass", GitMerge),
-    ("Show me what changed in the last 3 commits", GitLog)
-]
-
-# Validate that our model correctly interprets semantic tasks
-def test_git_task_interpretation():
-    client = instructor.from_openai(OpenAI())
-
-    for query, expected_type in test_cases:
-        action = client.chat.completions.create(
-            model="gpt-4o-mini",
-            response_model=GitAction,
-            messages=[
-                {"role": "system", "content": "Interpret git-related tasks and return the appropriate structured action"},
-                {"role": "user", "content": query}
-            ]
-        )
-
-        assert isinstance(action, expected_type), f"Failed on: {query}. Got {type(action)} instead of {expected_type}"
-        print(f"✓ Correctly mapped '{query}' to {action.action_type} action")
-
-        # We can also validate specific fields are properly populated
-        if isinstance(action, GitCommit):
-            assert action.message, "Commit message should not be empty"
-        elif isinstance(action, GitPR):
-            assert action.title and action.description, "PR should have title and description"
-```
-
-This approach delivers three crucial benefits for MCP developers:
-
-1. **Testability**: You can systematically verify how your system maps natural language to specific structured actions
-2. **Consistency**: The same semantic intents produce consistent structured outputs across different LLM providers
-3. **Transparency**: Action requests and interpretations can be logged and analyzed to improve system performance
-
-By combining MCP's standardized protocol with Instructor's structured output validation, you can build robust integration layers that understand natural language task descriptions while maintaining enterprise-grade reliability.
-
-Throw in some synthetic data to fuzz and test the capabilities of our model and you now have a way to systematically improve and quantify the impact of every component of your MCP server.
+Most organizations will likely maintain both: OpenAPI specifications for their developer-facing services and MCP interfaces for AI-enabled applications, creating bridges between these worlds as needed.
 
 ## Getting Started With MCP Development
 
-Now that we've briefly talked a bit about where MCPs are headed and why you should care about them, let's see some simple examples on how to get started. We'll go through three here - Claude Desktop, Cursor and the OpenAI Agent SDK.
+The learning curve for MCP is relatively gentle—many servers are less than 200 lines of code and can be built in under an hour. Here are several ways you can start using MCP in existing environments:
 
-The learning curve for MCP is relatively gentle—many servers are less than 200 lines of code and can be built in under an hour. Before diving into building custom servers, let's look at how you can get started by leveraging existing MCP integrations.
+### Claude Desktop
 
-### Agent SDK
+Claude Desktop now supports MCP integrations, allowing Claude to access up-to-date information through tools. You can add these MCPs by going to Claude's Settings and editing the configuration.
 
-OpenAI's Agent SDK now supports MCP servers using the `MCPServer` class. This allows you to connect your agents to local Git repositories and other tools. In the example below, we've provided our agent with a `git` MCP server, allowing it to access information about the local github repository.
+![Claude Desktop MCP Settings](./img/claude_desktop_screenshot.png)
+
+For example, you can install Firecrawl's MCP using the following configuration:
+
+```json
+{
+  "mcpServers": {
+    "mcp-server-firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}
+```
+
+This allows Claude to crawl websites and get up-to-date information:
+
+![Claude Desktop Using MCP](./img/claude_desktop_mcp.png)
+
+### Cursor Integration
+
+Cursor provides support for MCPs through a simple configuration file. Create a `.cursor/mcp.json` file with your desired MCP servers:
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<Personal Access Token Goes Here>"
+      }
+    }
+  }
+}
+```
+
+Enable the MCP option in Cursor Settings:
+
+![Cursor MCP Support](./img/cursor_mcp_support.png)
+
+Then use Cursor's Agent with your MCP servers:
+
+![Cursor MCP Agent](./img/cursor_mcp_agent.png)
+
+### OpenAI Agent SDK
+
+OpenAI's Agent SDK now supports MCP servers using the `MCPServer` class, allowing you to connect agents to local tools and resources:
 
 ```python
 import asyncio
@@ -181,7 +128,6 @@ import shutil
 
 from agents import Agent, Runner, trace
 from agents.mcp import MCPServer, MCPServerStdio
-
 
 async def run(mcp_server: MCPServer, directory_path: str):
     agent = Agent(
@@ -203,7 +149,6 @@ async def run(mcp_server: MCPServer, directory_path: str):
     result = await Runner.run(starting_agent=agent, input=message)
     print(result.final_output)
 
-
 async def main():
     # Ask the user for the directory path
     directory_path = input("Please enter the path to the git repository: ")
@@ -215,7 +160,6 @@ async def main():
         with trace(workflow_name="MCP Git Example"):
             await run(server, directory_path)
 
-
 if __name__ == "__main__":
     if not shutil.which("uvx"):
         raise RuntimeError(
@@ -223,71 +167,14 @@ if __name__ == "__main__":
         )
 
     asyncio.run(main())
-
 ```
 
-We can now use the Agents SDK to understand our local git repository and what changes we've introduced as seen below.
+This allows the agent to understand local git repositories:
 
-![](./img/agent_mcp_example.png)
+![Agent MCP Example](./img/agent_mcp_example.png)
 
-### Claude Desktop
+## Conclusion
 
-Claude Desktop now supports MCP integrations, allowing Claude to access up-to-date information through tools like Firecrawl. You can add these MCPs by going to Claude's Settings and editing the configuration there
+For developers and organizations, the question isn't if you should build for MCPs but when. As the ecosystem matures, early adopters will have a significant advantage in integrating AI capabilities into their existing systems and workflows. This is especially true with the upcoming MCP registry by Anthropic, incoming support for remote MCP server hosting, and OAuth integrations that will help build richer and more personal integrations.
 
-![](./img/claude_desktop_screenshot.png)
-
-This is incredibly useful and allows you to point Claude to specific websites or urls to get up to date information. You can install Firecrawl's MCP by using the following configuration
-
-```
-{
-  "mcpServers": {
-    "mcp-server-firecrawl": {
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
-      "env": {
-        "FIRECRAWL_API_KEY": "YOUR_API_KEY_HERE",
-      }
-    }
-  }
-}
-```
-
-Here we see an example where I've used Claude Desktop to crawl a korean blog article on a restaurant called Song Heng in Paris. It then translates it for me and provides a one page summary of what the blog was about.
-
-![](./img/claude_desktop_mcp.png)
-
-### Cursor Integration
-
-Cursor now provides support for MCPs. To do so, just create a simple `.cursor/mcp.json` file and add the following code snippet in
-
-```
-{
-  "mcpServers": {
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "<Personal Access Token Goes Here>"
-      }
-    }
-  }
-}
-```
-
-You should then see this under the MCP Option in your Cursor Settings. Make sure that it's enabled before proceeding with the next step.
-
-![](./img/cursor_mcp_support.png)
-
-Once you've done so, you can then use Cursor's Agent to use these new MCP servers that you've defined.
-
-![](./img/cursor_mcp_agent.png)
-
-In the example above, I've provided a simple github MCP to ask some questions about the issues from the `instructor-ai` repository. But you can really do a lot more, for instance, you can provide a `pupeteer` MCP to allow your model to interact with a web browser for instance to see how your frontend code looks like when it gets rendered to fix it automatically.
-
-## The Conclusion
-
-For developers and organisations, the questions isn't if you should build for MCPs but when. As the ecosystem matures, early adopters will have a significant advantage in integrating AI capabilities into their existing systems and workflows. This is especially true with the upcoming MCP registry by Anthropic, incoming support for remote MCP server hosting and auth.
-
-Instructor provides you with a simple but reliable way to build complex MCP tooling. Give us a try today and see how structured validation transforms your MCP implementations from brittle proofs-of-concept into production-ready systems that maintain reliability.
-
-All it takes is a simple `pip install instructor`.
+The standardization provided by MCP will likely drive the next wave of AI integration, making it possible to build complex, multi-agent systems that leverage the best capabilities from different providers through a unified interface.
