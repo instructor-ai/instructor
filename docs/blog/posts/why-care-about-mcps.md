@@ -10,7 +10,7 @@ tags:
   - Standards
 ---
 
-# What is the MCP ( Model Context Protocol)
+# What is MCP
 
 With [OpenAI joining Anthropic in supporting the Model Context Protocol (MCP)](https://x.com/sama/status/1904957253456941061), we're witnessing a unified standard for language models to interact with external systems. This creates exciting opportunities for multi-LLM architectures where specialized AI applications work in parallel—discovering tools, handing off tasks, and accessing powerful capabilities through standardized interfaces.
 
