@@ -118,6 +118,8 @@ Then use Cursor's Agent with your MCP servers:
 
 ![Cursor MCP Agent](./img/cursor_mcp_agent.png)
 
+In the example above, I've provided a simple github MCP to ask some questions about the issues from the `instructor-ai` repository. But you can really do a lot more, for instance, you can provide a `puppeteer` MCP to allow your model to interact with a web browser for instance to see how your frontend code looks like when it gets rendered to fix it automatically.
+
 ### OpenAI Agent SDK
 
 OpenAI's Agent SDK now supports MCP servers using the `MCPServer` class, allowing you to connect agents to local tools and resources:
