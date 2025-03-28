@@ -32,13 +32,12 @@ def from_genai(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert (
-        mode
-        in {
-            instructor.Mode.GENAI_TOOLS,
-            instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
-        }
-    ), "Mode must be one of {instructor.Mode.GENAI_TOOLS, instructor.Mode.GENAI_STRUCTURED_OUTPUTS}"
+    assert mode in {
+        instructor.Mode.GENAI_TOOLS,
+        instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+    }, (
+        "Mode must be one of {instructor.Mode.GENAI_TOOLS, instructor.Mode.GENAI_STRUCTURED_OUTPUTS}"
+    )
 
     assert isinstance(
         client,
@@ -49,7 +48,7 @@ def from_genai(
 
         async def async_wrapper(*args: Any, **kwargs: Any):  # type:ignore
             if kwargs.pop("stream", False):
-                return client.aio.models.generate_content_stream(*args, **kwargs)  # type:ignore
+                return await client.aio.models.generate_content_stream(*args, **kwargs)  # type:ignore
             return await client.aio.models.generate_content(*args, **kwargs)  # type:ignore
 
         return instructor.AsyncInstructor(
