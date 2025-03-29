@@ -263,6 +263,10 @@ print(response)  # UserDetail(name='JASON', age=25)
 
 ## Multimodal Capabilities
 
+!!! info "Autodetect Images"
+
+    For convenient handling of images, you can enable automatic image conversion using the `autodetect_images` parameter. When enabled, Instructor will automatically detect and convert file paths and HTTP URLs provided as strings into the appropriate format required by the Google GenAI SDK. This makes working with images seamless and straightforward. ( see examples below )
+
 Gemini models excel at processing different types of media. Instructor makes it easy to extract structured data from multimodal inputs.
 
 ### Image Processing
@@ -290,14 +294,15 @@ response = client.chat.completions.create(
             "role": "user",
             "content": [
                 "Describe this image",
-                "./scones.jpg",  # Local path
+                "./image.jpg",  # Local path
             ],
         }
     ],
+    autodetect_images=True,
     response_model=ImageDescription,
 )
 print(response)
-#> objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
+# > objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
 
 # Method 2 : Using instructor's image method to explicitly load an image
 response = client.chat.completions.create(
@@ -307,14 +312,14 @@ response = client.chat.completions.create(
             "role": "user",
             "content": [
                 "Describe this image",
-                instructor.Image.from_path("path/to/image.jpg"),  # Helper
+                instructor.Image.from_path("./image.jpg"),  # Helper
             ],
         }
     ],
     response_model=ImageDescription,
 )
 print(response)
-#> objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
+# > objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
 
 # Method 3 : Providing a image url
 response = client.chat.completions.create(
@@ -325,13 +330,14 @@ response = client.chat.completions.create(
             "content": [
                 "Describe this image",
                 "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg",  # URL
-            ]
+            ],
         }
     ],
+    autodetect_images=True,
     response_model=ImageDescription,
 )
 print(response)
-#> objects=['blueberries'] scene='blueberry field'
+# > objects=['blueberries'] scene='blueberry field'
 ```
 
 ### Audio Processing
