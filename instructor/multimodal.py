@@ -64,28 +64,27 @@ class Image(BaseModel):
     )
 
     @classmethod
-    def autodetect(cls, source: Union[str, Path]) -> Image:  # noqa: UP007
-        """Attempt to autodetect an image from a source string or Path.
-
-        Args:
-            source (Union[str,path]): The source string or path.
-        Returns:
-            An Image if the source is detected to be a valid image.
-        Raises:
-            ValueError: If the source is not detected to be a valid image.
-        """
+    def autodetect(cls, source: str | Path) -> Image:
+        """Attempt to autodetect an image from a source string or Path."""
         if isinstance(source, str):
             if cls.is_base64(source):
                 return cls.from_base64(source)
-            elif source.startswith(("http://", "https://")):
+            if source.startswith(("http://", "https://")):
                 return cls.from_url(source)
-            elif source.startswith("gs://"):
+            if source.startswith("gs://"):
                 return cls.from_gs_url(source)
-            elif Path(source).is_file():
-                return cls.from_path(source)
-            else:
-                return cls.from_raw_base64(source)
-        elif isinstance(source, Path):
+            # Since detecting the max length of a file universally cross-platform is difficult,
+            # we'll just try/catch the Path conversion and file check
+            try:
+                path = Path(source)
+                if path.is_file():
+                    return cls.from_path(path)
+            except OSError:
+                pass  # Fall through to raw base64 attempt
+
+            return cls.from_raw_base64(source)
+
+        if isinstance(source, Path):
             return cls.from_path(source)
 
         raise ValueError("Unable to determine image type or unsupported image format")
@@ -288,9 +287,9 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         response = requests.get(url)
         content_type = response.headers.get("content-type")
-        assert (
-            content_type in VALID_AUDIO_MIME_TYPES
-        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        assert content_type in VALID_AUDIO_MIME_TYPES, (
+            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        )
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -306,9 +305,9 @@ class Audio(BaseModel):
         if mime_type == "audio/x-wav":
             mime_type = "audio/wav"
 
-        assert (
-            mime_type in VALID_AUDIO_MIME_TYPES
-        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        assert mime_type in VALID_AUDIO_MIME_TYPES, (
+            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        )
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
@@ -468,6 +467,7 @@ def convert_messages(
 
 def extract_genai_multimodal_content(
     contents: list[Any],
+    autodetect_images: bool = True,
 ):
     """
     Convert Typed Contents to the appropriate format for Google GenAI.
@@ -495,7 +495,7 @@ def extract_genai_multimodal_content(
 
         # Now we need to support a few cases
         for content_part in content.parts:
-            if content_part.text:
+            if content_part.text and autodetect_images:
                 # Detect if the text is an image
                 converted_item = Image.autodetect_safely(content_part.text)
                 if isinstance(converted_item, Image):
