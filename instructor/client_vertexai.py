@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Union, get_origin
+from typing import Any, Union, get_origin, overload, Literal
 
 from vertexai.preview.generative_models import ToolConfig  # type: ignore
 import vertexai.generative_models as gm  # type: ignore
@@ -135,6 +135,26 @@ def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
     return contents, generation_config
 
 
+@overload
+def from_vertexai(
+    client: gm.GenerativeModel,
+    mode: instructor.Mode = instructor.Mode.VERTEXAI_TOOLS,
+    _async: Literal[True] = True,
+    **kwargs: Any,
+) -> instructor.AsyncInstructor:  #
+    ...
+
+
+@overload
+def from_vertexai(
+    client: gm.GenerativeModel,
+    mode: instructor.Mode = instructor.Mode.VERTEXAI_TOOLS,
+    _async: Literal[False] = False,
+    **kwargs: Any,
+) -> instructor.Instructor:  #
+    ...
+
+
 def from_vertexai(
     client: gm.GenerativeModel,
     mode: instructor.Mode = instructor.Mode.VERTEXAI_TOOLS,
@@ -151,11 +171,18 @@ def from_vertexai(
         client, gm.GenerativeModel
     ), "Client must be an instance of vertexai.generative_models.GenerativeModel"
 
-    create = client.generate_content_async if _async else client.generate_content
+    if _async:
+        return instructor.AsyncInstructor(
+            client=client,
+            create=instructor.patch(create=client.generate_content_async, mode=mode),
+            provider=instructor.Provider.VERTEXAI,
+            mode=mode,
+            **kwargs,
+        )
 
     return instructor.Instructor(
         client=client,
-        create=instructor.patch(create=create, mode=mode),
+        create=instructor.patch(create=client.generate_content, mode=mode),
         provider=instructor.Provider.VERTEXAI,
         mode=mode,
         **kwargs,
