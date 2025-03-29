@@ -467,6 +467,7 @@ def convert_messages(
 
 def extract_genai_multimodal_content(
     contents: list[Any],
+    autodetect_images: bool = True,
 ):
     """
     Convert Typed Contents to the appropriate format for Google GenAI.
@@ -494,7 +495,7 @@ def extract_genai_multimodal_content(
 
         # Now we need to support a few cases
         for content_part in content.parts:
-            if content_part.text:
+            if content_part.text and autodetect_images:
                 # Detect if the text is an image
                 converted_item = Image.autodetect_safely(content_part.text)
                 if isinstance(converted_item, Image):
