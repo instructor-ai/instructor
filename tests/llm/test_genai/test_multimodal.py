@@ -189,15 +189,11 @@ def test_autodetect_images_sync(client, model, mode, autodetect_images):
         messages=[
             {
                 "role": "system",
-                "content": "Return true if you have an image that you can describe visually in your prompt? This does not include image paths or urls that might point to URLs. ",
+                "content": "Return true if you are provided with an image that you can describe visually in your prompt. This does not include image paths or urls that might point to URLs. ",
             },
             {
                 "role": "user",
-                "content": long_message + long_message,
-            },
-            {
-                "role": "user",
-                "content": ["./image.png"],
+                "content": [image_file],
             },
         ],
         response_model=bool,
@@ -219,15 +215,11 @@ async def test_autodetect_images_async(client, model, mode, autodetect_images):
         messages=[
             {
                 "role": "system",
-                "content": "Return true if you have an image that you can describe visually in your prompt? This does not include image paths or urls that might point to URLs. ",
+                "content": "Return true if you are provided with an image that you can describe visually in your prompt. This does not include image paths or urls that might point to URLs. ",
             },
             {
                 "role": "user",
-                "content": long_message + long_message,
-            },
-            {
-                "role": "user",
-                "content": ["./image.png"],
+                "content": [image_file],
             },
         ],
         response_model=bool,
