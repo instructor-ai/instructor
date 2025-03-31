@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import Any, ClassVar, Optional, cast
-
+import json
 from pydantic import BaseModel, Field, create_model
 
 from instructor.function_calls import OpenAISchema
@@ -21,8 +21,6 @@ class IterableBase:
             json_chunks = extract_json_from_stream(json_chunks)
 
         if mode in {Mode.VERTEXAI_TOOLS, Mode.MISTRAL_TOOLS}:
-            import json
-
             response = next(json_chunks)
             if not response:
                 return
@@ -57,7 +55,6 @@ class IterableBase:
         """Process streaming chunks from Mistral and VertexAI.
 
         Handles the specific JSON format used by these providers when streaming."""
-        import json
 
         async for chunk in json_chunks:
             if not chunk:
@@ -81,13 +78,15 @@ class IterableBase:
                 if "[" in chunk:
                     started = True
                     potential_object = chunk[chunk.find("[") + 1 :]
-                continue
 
-            task_json, potential_object = cls.get_object(potential_object, 0)
-            if task_json:
-                assert cls.task_type is not None
-                obj = cls.task_type.model_validate_json(task_json, **kwargs)
-                yield obj
+            while True:
+                task_json, potential_object = cls.get_object(potential_object, 0)
+                if task_json:
+                    assert cls.task_type is not None
+                    obj = cls.task_type.model_validate_json(task_json, **kwargs)
+                    yield obj
+                else:
+                    break
 
     @classmethod
     async def tasks_from_chunks_async(
@@ -101,13 +100,15 @@ class IterableBase:
                 if "[" in chunk:
                     started = True
                     potential_object = chunk[chunk.find("[") + 1 :]
-                continue
 
-            task_json, potential_object = cls.get_object(potential_object, 0)
-            if task_json:
-                assert cls.task_type is not None
-                obj = cls.task_type.model_validate_json(task_json, **kwargs)
-                yield obj
+            while True:
+                task_json, potential_object = cls.get_object(potential_object, 0)
+                if task_json:
+                    assert cls.task_type is not None
+                    obj = cls.task_type.model_validate_json(task_json, **kwargs)
+                    yield obj
+                else:
+                    break
 
     @staticmethod
     def extract_json(
@@ -125,8 +126,6 @@ class IterableBase:
                 if mode == Mode.VERTEXAI_JSON:
                     yield chunk.candidates[0].content.parts[0].text
                 if mode == Mode.VERTEXAI_TOOLS:
-                    import json
-
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
@@ -136,7 +135,16 @@ class IterableBase:
                     if not chunk.data.choices[0].delta.tool_calls:
                         continue
                     yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
-                if mode == Mode.GEMINI_TOOLS:
+
+                if mode in {Mode.GENAI_TOOLS}:
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+
+                if mode in {Mode.GENAI_STRUCTURED_OUTPUTS}:
+                    yield chunk.candidates[0].content.parts[0].text
+
+                if mode in {Mode.GEMINI_TOOLS}:
                     # Gemini seems to return the entire function_call and not a chunk?
                     import json
 
@@ -190,8 +198,6 @@ class IterableBase:
                 if mode == Mode.VERTEXAI_JSON:
                     yield chunk.candidates[0].content.parts[0].text
                 if mode == Mode.VERTEXAI_TOOLS:
-                    import json
-
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
@@ -203,6 +209,10 @@ class IterableBase:
                     yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
                 if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
                     yield chunk.text
+                if mode in {Mode.GENAI_TOOLS}:
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()
