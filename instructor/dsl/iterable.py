@@ -140,7 +140,6 @@ class IterableBase:
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
-
                 if mode in {Mode.GENAI_STRUCTURED_OUTPUTS}:
                     yield chunk.candidates[0].content.parts[0].text
 
