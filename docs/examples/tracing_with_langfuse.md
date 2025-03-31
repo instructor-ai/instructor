@@ -18,9 +18,9 @@ First, let's start by installing the necessary dependencies.
 pip install langfuse instructor
 ```
 
-It is easy to use instructor with Langfuse. We use the [Langfuse OpenAI intgeration](https://langfuse.com/docs/integrations/openai) and simply patch the client with instructor. This works with both synchronous and asynchronous clients.
+It is easy to use instructor with Langfuse. We use the [Langfuse OpenAI Integration](https://langfuse.com/docs/integrations/openai) and simply patch the client with instructor. This works with both synchronous and asynchronous clients.
 
-### Langfuse-Instructor integration with sychnronous OpenAI client
+### Langfuse-Instructor integration with synchronous OpenAI client
 
 ```python
 import instructor
@@ -115,7 +115,7 @@ Here's a [public link](https://cloud.langfuse.com/project/cloramnkj0002jz088vzn1
 
 ## Example
 
-In this example, we first classify customer feedback into categories like `PRAISE`, `SUGGESTION`, `BUG` and `QUESTION`, and further scores the relvance of each feedback to the business on a scale of 0.0 to 1.0. In this case, we use the asynchronous OpenAI client `AsyncOpenAI` to classify and evaluate the feedback.
+In this example, we first classify customer feedback into categories like `PRAISE`, `SUGGESTION`, `BUG` and `QUESTION`, and further scores the relevance of each feedback to the business on a scale of 0.0 to 1.0. In this case, we use the asynchronous OpenAI client `AsyncOpenAI` to classify and evaluate the feedback.
 
 ```python
 from enum import Enum
