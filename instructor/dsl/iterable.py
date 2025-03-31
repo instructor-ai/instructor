@@ -145,9 +145,6 @@ class IterableBase:
                     yield chunk.candidates[0].content.parts[0].text
 
                 if mode in {Mode.GEMINI_TOOLS}:
-                    # Gemini seems to return the entire function_call and not a chunk?
-                    import json
-
                     resp = chunk.candidates[0].content.parts[0].function_call
                     resp_dict = type(resp).to_dict(resp)  # type:ignore
 
