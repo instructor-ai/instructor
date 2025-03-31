@@ -21,13 +21,14 @@ If you want to get updates on new features and tips on how to use Instructor, yo
 
 ## Advanced Topics
 
-1. [Query Understanding: Beyond Embeddings](posts/rag-and-beyond.md)
-2. [Achieving GPT-4 Level Summaries with GPT-3.5-turbo](posts/chain-of-density.md)
-3. [Basics of Guardrails and Validation in AI Models](posts/validation-part1.md)
-4. [Validating Citations in AI-Generated Content](posts/citations.md)
-5. [Fine-tuning and Distillation in AI Models](posts/distilation-part1.md)
-6. [Enhancing OpenAI Client Observability with LangSmith](posts/langsmith.md)
-7. [Logfire Integration with Pydantic](posts/logfire.md)
+1. [Instructor Implements llms.txt](posts/llms-txt-adoption.md)
+2. [Query Understanding: Beyond Embeddings](posts/rag-and-beyond.md)
+3. [Achieving GPT-4 Level Summaries with GPT-3.5-turbo](posts/chain-of-density.md)
+4. [Basics of Guardrails and Validation in AI Models](posts/validation-part1.md)
+5. [Validating Citations in AI-Generated Content](posts/citations.md)
+6. [Fine-tuning and Distillation in AI Models](posts/distilation-part1.md)
+7. [Enhancing OpenAI Client Observability with LangSmith](posts/langsmith.md)
+8. [Logfire Integration with Pydantic](posts/logfire.md)
 
 ## AI Development and Optimization
 
