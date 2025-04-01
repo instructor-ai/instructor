@@ -305,9 +305,9 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         response = requests.get(url)
         content_type = response.headers.get("content-type")
-        assert content_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        assert (
+            content_type in VALID_AUDIO_MIME_TYPES
+        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -323,9 +323,9 @@ class Audio(BaseModel):
         if mime_type == "audio/x-wav":
             mime_type = "audio/wav"
 
-        assert mime_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        assert (
+            mime_type in VALID_AUDIO_MIME_TYPES
+        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
@@ -392,7 +392,7 @@ def convert_contents(
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
-    if isinstance(contents, (Image, Audio)) or isinstance(contents, dict):
+    if isinstance(contents, (Image, Audio, PDF)) or isinstance(contents, dict):
         contents = [contents]
 
     converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
@@ -401,7 +401,8 @@ def convert_contents(
             converted_contents.append({"type": "text", "text": content})
         elif isinstance(content, dict):
             converted_contents.append(content)
-        elif isinstance(content, (Image, Audio)):
+
+        elif isinstance(content, (Image, Audio, PDF)):
             if mode in {
                 Mode.ANTHROPIC_JSON,
                 Mode.ANTHROPIC_TOOLS,
@@ -574,10 +575,18 @@ class PDF(BaseModel):
                 return cls.from_url(source)
             elif source.startswith("gs://"):
                 return cls.from_gs_url(source)
-            elif Path(source).is_file():
-                return cls.from_path(source)
-            else:
-                return cls.from_raw_base64(source)
+
+            try:
+                if Path(source).is_file():
+                    return cls.from_path(source)
+            except FileNotFoundError:
+                raise ValueError("PDF file not found")
+            except OSError as e:
+                if e.errno == 63:  # File name too long
+                    raise ValueError("PDF file name too long") from e
+                raise ValueError("Unable to read PDF file") from e
+
+            return cls.from_raw_base64(source)
         elif isinstance(source, Path):
             return cls.from_path(source)
 
@@ -714,12 +723,27 @@ class PDF(BaseModel):
             and self.source.startswith(("http://", "https://"))
             and not self.data
         ):
-            return {"type": "document_url", "document_url": {"url": self.source}}
+            # Fetch the file from URL and convert to base64
+            response = requests.get(self.source)
+            response.raise_for_status()
+            data = base64.b64encode(response.content).decode("utf-8")
+            return {
+                "type": "file",
+                "file": {
+                    "filename": self.source,
+                    "file_data": f"data:{self.media_type};base64,{data}",
+                },
+            }
         elif self.data or self.is_base64(str(self.source)):
             data = self.data or str(self.source).split(",", 1)[1]
             return {
-                "type": "document_url",
-                "document_url": {"url": f"data:{self.media_type};base64,{data}"},
+                "type": "file",
+                "file": {
+                    "filename": self.source
+                    if isinstance(self.source, str)
+                    else str(self.source),
+                    "file_data": f"data:{self.media_type};base64,{data}",
+                },
             }
         else:
             raise ValueError("PDF data is missing for base64 encoding.")

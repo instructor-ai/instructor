@@ -7,10 +7,17 @@ from .util import models, modes
 import requests
 from pathlib import Path
 import base64
+import os
 
 
 audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
 image_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
+
+pdf_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+curr_file = os.path.dirname(__file__)
+pdf_path = os.path.join(curr_file, "../../assets/invoice.pdf")
+pdf_base64 = base64.b64encode(open(pdf_path, "rb").read()).decode("utf-8")
+pdf_base64_string = f"data:application/pdf;base64,{pdf_base64}"
 
 
 def gettysburg_audio():
@@ -142,31 +149,44 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
     assert response.choices[0].message.content.startswith("This is an image")
 
 
-def test_pdf_to_openai_format():
-    # Test with URL
-    pdf = PDF(source="https://example.com/test.pdf", media_type="application/pdf")
-    result = pdf.to_openai()
-    assert result == {
-        "type": "document_url",
-        "document_url": {"url": "https://example.com/test.pdf"},
-    }
-
-    # Test with base64 data
-    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
-    b64_data = base64.b64encode(pdf_content).decode("utf-8")
-    pdf = PDF(
-        source=f"data:application/pdf;base64,{b64_data}",
-        media_type="application/pdf",
-        data=b64_data,
-    )
-    result = pdf.to_openai()
-    assert result == {
-        "type": "document_url",
-        "document_url": {"url": f"data:application/pdf;base64,{b64_data}"},
-    }
-
-
 def test_pdf_missing_data():
     pdf = PDF(source="local.pdf", media_type="application/pdf")
     with pytest.raises(ValueError, match="PDF data is missing for base64 encoding"):
         pdf.to_openai()
+
+
+class LineItem(BaseModel):
+    name: str
+    price: int
+    quantity: int
+
+
+class Reciept(BaseModel):
+    total: int
+    items: list[str]
+
+
+@pytest.mark.parametrize("pdf_source", [pdf_path, pdf_url, pdf_base64_string])
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_multimodal_pdf_file(model, mode, client, pdf_source):
+    client = instructor.from_openai(client, mode=mode)
+    response = client.chat.completions.create(
+        model=model,  # Ensure this is a vision-capable model
+        messages=[
+            {
+                "role": "system",
+                "content": "Extract the total and items from the invoice",
+            },
+            {
+                "role": "user",
+                "content": instructor.multimodal.PDF.autodetect(pdf_source),
+            },
+        ],
+        max_tokens=1000,
+        temperature=1,
+        autodetect_images=False,
+        response_model=Reciept,
+    )
+
+    assert response.total == 220
+    assert len(response.items) == 2
