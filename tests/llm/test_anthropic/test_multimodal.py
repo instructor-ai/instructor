@@ -237,7 +237,7 @@ def test_multimodal_pdf_file(mode, client, pdf_source):
             },
             {
                 "role": "user",
-                "content": instructor.multimodal.PDF.autodetect(pdf_source),
+                "content": PDF.autodetect(pdf_source),
             },
         ],
         max_tokens=1000,
