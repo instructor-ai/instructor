@@ -580,8 +580,8 @@ class PDF(BaseModel):
             try:
                 if Path(source).is_file():
                     return cls.from_path(source)
-            except FileNotFoundError:
-                raise ValueError("PDF file not found")
+            except FileNotFoundError as err:
+                raise ValueError("PDF file not found") from err
             except OSError as e:
                 if e.errno == 63:  # File name too long
                     raise ValueError("PDF file name too long") from e

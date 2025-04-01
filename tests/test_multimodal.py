@@ -1,11 +1,9 @@
 import pytest
 from pathlib import Path
-from instructor.multimodal import Image, Audio, PDF, convert_contents, convert_messages
+from instructor.multimodal import Image, PDF, convert_contents, convert_messages
 from instructor.mode import Mode
 from unittest.mock import patch, MagicMock
 import base64
-import os
-import requests
 
 
 @pytest.fixture
