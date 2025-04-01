@@ -414,7 +414,7 @@ def convert_contents(
                 Mode.MISTRAL_STRUCTURED_OUTPUTS,
                 Mode.MISTRAL_TOOLS,
             } and isinstance(content, PDF):
-                converted_contents.append(content.to_mistral())
+                converted_contents.append(content.to_mistral())  # type: ignore
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
                 raise NotImplementedError("Gemini is not supported yet")
             else:
@@ -634,8 +634,8 @@ class PDF(BaseModel):
         file = client.files.get(name=file_name)
         if file.source == types.FileSource.UPLOADED and file.state == FileState.ACTIVE:
             return cls(
-                source=file.uri,
-                media_type=file.mime_type,
+                source=file.uri,  # type: ignore
+                media_type=file.mime_type,  # type: ignore
                 data=None,
             )
         else:
