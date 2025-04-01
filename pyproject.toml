@@ -16,7 +16,7 @@ dependencies = [
     "requests<3.0.0,>=2.32.3",
 ]
 name = "instructor"
-version = "1.7.4"
+version = "1.7.8"
 description = "structured outputs for llm"
 readme = "README.md"
 
@@ -71,6 +71,7 @@ writer = ["writer-sdk<2.0.0,>=1.2.0"]
 bedrock = ["boto3<2.0.0,>=1.34.0"]
 mistral = ["mistralai<2.0.0,>=1.5.1"]
 perplexity = ["openai<2.0.0,>=1.52.0"]
+google-genai=["google-genai>=1.5.0","jsonref<2.0.0,>=1.1.0"]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"
@@ -135,3 +136,4 @@ cohere = ["cohere<6.0.0,>=5.1.8"]
 cerebras_cloud_sdk = ["cerebras-cloud-sdk<2.0.0,>=1.5.0"]
 fireworks-ai = ["fireworks-ai<1.0.0,>=0.15.4"]
 writer = ["writer-sdk<2.0.0,>=1.2.0"]
+google-genai=["google-genai>=1.5.0","jsonref<2.0.0,>=1.1.0",]

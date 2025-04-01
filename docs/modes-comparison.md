@@ -229,11 +229,15 @@ client = instructor.from_gemini(
 | Gemini     | GEMINI_TOOLS | GEMINI_JSON |
 | Vertex AI  | VERTEXAI_TOOLS | VERTEXAI_JSON |
 | Cohere     | COHERE_TOOLS | JSON, MD_JSON |
-| Mistral    | - | JSON, MD_JSON |
+| Mistral    | MISTRAL_TOOLS | MISTRAL_STRUCTURED_OUTPUTS |
 | Anyscale   | - | JSON, MD_JSON, JSON_SCHEMA |
 | Databricks | TOOLS | JSON, MD_JSON |
 | Together   | - | JSON, MD_JSON |
-| Fireworks  | - | JSON, MD_JSON |
+| Fireworks  | FIREWORKS_TOOLS | FIREWORKS_JSON |
+| Cerebras   | - | CEREBRAS_JSON |
+| Writer     | WRITER_TOOLS | JSON |
+| Perplexity | - | PERPLEXITY_JSON |
+| GenAI      | GENAI_TOOLS | GENAI_STRUCTURED_OUTPUTS |
 | LiteLLM    | (depends on provider) | (depends on provider) |
 
 ## Best Practices

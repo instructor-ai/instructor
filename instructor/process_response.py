@@ -36,8 +36,11 @@ from instructor.utils import (
     merge_consecutive_messages,
     extract_system_messages,
     combine_system_messages,
+    map_to_gemini_function_schema,
+    convert_to_genai_messages,
+    extract_genai_system_message,
 )
-from instructor.multimodal import convert_messages
+from instructor.multimodal import convert_messages, extract_genai_multimodal_content
 
 logger = logging.getLogger("instructor")
 
@@ -534,6 +537,69 @@ def handle_gemini_tools(
     return response_model, new_kwargs
 
 
+def handle_genai_structured_outputs(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    from google.genai import types
+
+    if new_kwargs.get("system"):
+        system_message = new_kwargs.pop("system")
+    elif new_kwargs.get("messages"):
+        system_message = extract_genai_system_message(new_kwargs["messages"])
+    else:
+        system_message = None
+
+    new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
+
+    new_kwargs["config"] = types.GenerateContentConfig(
+        system_instruction=system_message,
+        response_mime_type="application/json",
+        response_schema=response_model,
+    )
+    new_kwargs.pop("response_model", None)
+    new_kwargs.pop("messages", None)
+
+    return response_model, new_kwargs
+
+
+def handle_genai_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    from google.genai import types
+
+    schema = map_to_gemini_function_schema(response_model.model_json_schema())
+    function_definition = types.FunctionDeclaration(
+        name=response_model.__name__,
+        description=response_model.__doc__,
+        parameters=schema,
+    )
+
+    # We support the system message if you declare a system kwarg or if you pass a system message in the messages
+    if new_kwargs.get("system"):
+        system_message = new_kwargs.pop("system")
+    elif new_kwargs.get("messages"):
+        system_message = extract_genai_system_message(new_kwargs["messages"])
+    else:
+        system_message = None
+
+    new_kwargs["config"] = types.GenerateContentConfig(
+        system_instruction=system_message,
+        tools=[types.Tool(function_declarations=[function_definition])],
+        tool_config=types.ToolConfig(
+            function_calling_config=types.FunctionCallingConfig(
+                mode="ANY", allowed_function_names=[response_model.__name__]
+            ),
+        ),
+    )
+
+    new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
+
+    new_kwargs.pop("response_model", None)
+    new_kwargs.pop("messages", None)
+
+    return response_model, new_kwargs
+
+
 def handle_vertexai_parallel_tools(
     response_model: type[Iterable[T]], new_kwargs: dict[str, Any]
 ) -> tuple[VertexAIParallelBase, dict[str, Any]]:
@@ -844,6 +910,8 @@ def handle_response_model(
         Mode.COHERE_TOOLS: handle_cohere_tools,
         Mode.GEMINI_JSON: handle_gemini_json,
         Mode.GEMINI_TOOLS: handle_gemini_tools,
+        Mode.GENAI_TOOLS: handle_genai_tools,
+        Mode.GENAI_STRUCTURED_OUTPUTS: handle_genai_structured_outputs,
         Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
         Mode.VERTEXAI_JSON: handle_vertexai_json,
         Mode.CEREBRAS_JSON: handle_cerebras_json,
@@ -868,6 +936,12 @@ def handle_response_model(
             mode,
             autodetect_images=autodetect_images,
         )
+
+    if mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
+        new_kwargs["contents"] = extract_genai_multimodal_content(
+            new_kwargs["contents"], autodetect_images
+        )
+
     logger.debug(
         f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
         extra={

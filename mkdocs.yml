@@ -143,6 +143,7 @@ nav:
     - Newsletter: 'newsletter.md'
   - Cookbook:
     - Overview: 'examples/index.md'
+    - "Audio Information Extraction": 'examples/audio_extraction.md'
     - "Recursive Schema Examples": 'examples/recursive.md'
     - "Enhancing Text Classification": 'examples/classification.md'
     - "Local Classification with Llama-cpp": 'examples/local_classification.md'
@@ -180,7 +181,7 @@ nav:
     - "Table Extraction from Images": 'examples/tables_from_vision.md'
     - "YouTube Clip Analysis": 'examples/youtube_clips.md'
   - Blog:
-    - "blog/index.md"
+      - "blog/index.md"
   - Concepts:
     - Overview: 'concepts/index.md'
     - Models: 'concepts/models.md'
@@ -220,6 +221,7 @@ nav:
     - Azure OpenAI: 'integrations/azure.md'
     - Anthropic: 'integrations/anthropic.md'
     - Gemini: 'integrations/google.md'
+    - Google GenAI: 'integrations/genai.md'
     - AWS Bedrock: 'integrations/bedrock.md'
     - Vertex AI: 'integrations/vertex.md'
     
@@ -250,6 +252,7 @@ nav:
     - Vertex AI: 'integrations/vertex.md'
     - Writer: 'integrations/writer.md'
     - OpenRouter: 'integrations/openrouter.md'
+    - SambaNova: 'integrations/sambanova.md'
     
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
@@ -257,7 +260,7 @@ nav:
       - "Usage Tracking": "cli/usage.md"
       - "Batch Jobs": "cli/batch.md"
   - Jobs Board (External):
-    - Jobs: 'jobs.md'
+      - Jobs: "jobs.md"
   - Prompt Design:
     - "prompting/index.md"
     - Zero-Shot:
@@ -322,6 +325,7 @@ plugins:
   - redirects:
       redirect_maps:
          jobs.md: https://jobs.applied-llms.org/
+         llms.txt: llms.txt
          # LLM client redirects
          hub/ollama.md: integrations/ollama.md
          hub/llama-cpp-python.md: integrations/llama-cpp-python.md
@@ -334,6 +338,7 @@ plugins:
          hub/databricks.md: integrations/databricks.md
          hub/fireworks.md: integrations/fireworks.md
          hub/google.md: integrations/google.md
+         hub/genai.md: integrations/genai.md
          hub/groq.md: integrations/groq.md
          hub/litellm.md: integrations/litellm.md
          hub/mistral.md: integrations/mistral.md

@@ -8,28 +8,30 @@
 
 from __future__ import annotations
 
-from jiter import from_json
-from pydantic import BaseModel, create_model
-from typing import Union
-import types
+import json
+import re
 import sys
-from pydantic.fields import FieldInfo
-from typing import (
-    Any,
-    Generic,
-    get_args,
-    get_origin,
-    NoReturn,
-    Optional,
-    TypeVar,
-)
+import types
 from collections.abc import AsyncGenerator, Generator, Iterable
 from copy import deepcopy
 from functools import cache
+from typing import (
+    Any,
+    Generic,
+    NoReturn,
+    Optional,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+)
+
+from jiter import from_json
+from pydantic import BaseModel, create_model
+from pydantic.fields import FieldInfo
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
-import re
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
@@ -130,9 +132,9 @@ class PartialBase(Generic[T_Model]):
     @cache
     def get_partial_model(cls) -> type[T_Model]:
         """Return a partial model we can use to validate partial results."""
-        assert issubclass(
-            cls, BaseModel
-        ), f"{cls.__name__} must be a subclass of BaseModel"
+        assert issubclass(cls, BaseModel), (
+            f"{cls.__name__} must be a subclass of BaseModel"
+        )
 
         model_name = (
             cls.__name__
@@ -265,19 +267,37 @@ class PartialBase(Generic[T_Model]):
     def extract_json(
         completion: Iterable[Any], mode: Mode
     ) -> Generator[str, None, None]:
+        """Extract JSON chunks from various LLM provider streaming responses.
+
+        Each provider has a different structure for streaming responses that needs
+        specific handling to extract the relevant JSON data."""
         for chunk in completion:
             try:
+                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                    yield chunk.data.choices[0].delta.content
+                if mode == Mode.MISTRAL_TOOLS:
+                    if not chunk.data.choices[0].delta.tool_calls:
+                        continue
+                    yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
                 if mode == Mode.ANTHROPIC_JSON:
                     if json_chunk := chunk.delta.text:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+                if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+                    yield chunk.text
+                if mode == Mode.GENAI_TOOLS:
+                    fc = chunk.candidates[0].content.parts[0].function_call.args
+                    yield json.dumps(fc)
                 if mode == Mode.GEMINI_JSON:
                     yield chunk.text
                 if mode == Mode.GEMINI_TOOLS:
-                    # Gemini seems to return the entire function_call and not a chunk?
-                    import json
-
                     resp = chunk.candidates[0].content.parts[0].function_call
                     resp_dict = type(resp).to_dict(resp)  # type:ignore
                     if "args" in resp_dict:
@@ -324,6 +344,30 @@ class PartialBase(Generic[T_Model]):
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
+                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                    yield chunk.data.choices[0].delta.content
+                if mode == Mode.MISTRAL_TOOLS:
+                    if not chunk.data.choices[0].delta.tool_calls:
+                        continue
+                    yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
+                if mode == Mode.VERTEXAI_JSON:
+                    yield chunk.candidates[0].content.parts[0].text
+                if mode == Mode.VERTEXAI_TOOLS:
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+                if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+                    yield chunk.text
+                if mode == Mode.GENAI_TOOLS:
+                    fc = chunk.candidates[0].content.parts[0].function_call.args
+                    yield json.dumps(fc)
+                if mode == Mode.GEMINI_JSON:
+                    yield chunk.text
+                if mode == Mode.GEMINI_TOOLS:
+                    resp = chunk.candidates[0].content.parts[0].function_call
+                    resp_dict = type(resp).to_dict(resp)  # type:ignore
+                    if "args" in resp_dict:
+                        yield json.dumps(resp_dict["args"])
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()
@@ -368,8 +412,8 @@ class Partial(Generic[T_Model]):
 
     def __new__(
         cls,
-        *args: object,  # noqa :ARG003
-        **kwargs: object,  # noqa :ARG003
+        *args: object,  # noqa
+        **kwargs: object,  # noqa
     ) -> Partial[T_Model]:
         """Cannot instantiate.
 
