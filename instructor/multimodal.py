@@ -693,6 +693,7 @@ class PDF(BaseModel):
                     "type": "url",
                     "url": self.source,
                 },
+                "cache_control": {"type": "ephemeral"},
             }
         else:
             if not self.data:
@@ -705,6 +706,7 @@ class PDF(BaseModel):
                     "media_type": self.media_type,
                     "data": self.data,
                 },
+                "cache_control": {"type": "ephemeral"},
             }
 
     def to_openai(self) -> dict[str, Any]:
