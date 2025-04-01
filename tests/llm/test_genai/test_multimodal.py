@@ -3,6 +3,7 @@ import pytest
 from pydantic import BaseModel
 import os
 from .util import models, modes
+import base64
 
 
 class ImageDescription(BaseModel):
@@ -13,6 +14,10 @@ curr_file = os.path.dirname(__file__)
 image_file = os.path.join(curr_file, "../../assets/image.jpg")
 audio_file = os.path.join(curr_file, "../../assets/gettysburg.wav")
 audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
+
+pdf_path = os.path.join(curr_file, "../../assets/invoice.pdf")
+pdf_base64 = base64.b64encode(open(pdf_path, "rb").read()).decode("utf-8")
+pdf_base64_string = f"data:application/pdf;base64,{pdf_base64}"
 
 
 long_message = """
@@ -36,6 +41,83 @@ Donec dapibus eros tortor, ut porta quam elementum sit amet. In quam elit, lobor
 
 Proin a egestas ligula. Suspendisse ultrices, lacus non accumsan vestibulum, quam metus interdum quam, sed pellentesque mi augue sed libero. Sed sed diam eget felis feugiat accumsan viverra quis magna. Nunc condimentum laoreet mattis. Proin id purus vitae felis aliquet condimentum. Nullam augue lectus, vestibulum sed lacus laoreet, suscipit finibus leo. Donec sed justo sapien. Nullam ac imperdiet nisi. Sed nec convallis ante. Integer volutpat sit amet elit vel iaculis. Nam euismod bibendum dolor nec facilisis. Cras ornare risus sed ex aliquam, eu fringilla metus sollicitudin. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 """
+
+
+class Invoice(BaseModel):
+    total: float
+    items: list[str]
+
+
+@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("mode", modes)
+@pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string])
+def test_local_pdf(client, model, mode, pdf_source):
+    client = instructor.from_genai(client, mode=mode)
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    "How much is the invoice?",
+                    instructor.multimodal.PDF.autodetect(pdf_source),
+                ],
+            }
+        ],
+        response_model=Invoice,
+    )
+    assert isinstance(response, Invoice)
+    assert response.total == 220
+    assert len(response.items) == 2
+
+
+@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("mode", modes)
+@pytest.mark.parametrize("pdf_source", [pdf_path])
+def test_genai_existing_file(client, model, mode, pdf_source):
+    file = client.files.upload(file=pdf_source)
+    client = instructor.from_genai(client, mode=mode)
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    "How much is the invoice?",
+                    instructor.multimodal.PDF.from_uploaded_genai_file(file.name),
+                ],
+            }
+        ],
+        response_model=Invoice,
+    )
+    assert isinstance(response, Invoice)
+    assert response.total == 220
+    assert len(response.items) == 2
+
+
+@pytest.mark.parametrize("model", models)
+@pytest.mark.parametrize("mode", modes)
+@pytest.mark.parametrize("pdf_source", [pdf_path])
+def test_genai_file_upload(client, model, mode, pdf_source):
+    client = instructor.from_genai(client, mode=mode)
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    "How much is the invoice?",
+                    instructor.multimodal.PDF.from_local_path_to_genai(
+                        pdf_source, client
+                    ),
+                ],
+            }
+        ],
+        response_model=Invoice,
+    )
+    assert isinstance(response, Invoice)
+    assert response.total == 220
+    assert len(response.items) == 2
 
 
 @pytest.mark.parametrize("model", models)

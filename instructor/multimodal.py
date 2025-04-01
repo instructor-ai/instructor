@@ -504,7 +504,7 @@ def extract_genai_multimodal_content(
         # We only want to do the conversion for the Image type
         if not isinstance(content, types.Content):
             raise ValueError(
-                f"Unsupported content type: {type(content)}. This should only be used for the Google types"
+                f"Unsupported content type: {type(content)}. Each item in the list should be a types.Content"
             )
         # Cast to list of Parts
         content = cast(types.Content, content)
@@ -574,8 +574,6 @@ class PDF(BaseModel):
                 return cls.from_base64(source)
             elif source.startswith(("http://", "https://")):
                 return cls.from_url(source)
-            elif source.startswith("gs://"):
-                return cls.from_gs_url(source)
 
             try:
                 if Path(source).is_file():
@@ -610,23 +608,33 @@ class PDF(BaseModel):
         )
 
     @classmethod
-    def from_gs_url(cls, data_uri: str) -> PDF:
-        """Create a PDF instance from a Google Cloud Storage URL."""
-        if not data_uri.startswith("gs://"):
-            raise ValueError("URL must start with gs://")
+    def from_local_path_to_genai(cls, file_path: str, client):
+        from google.genai.types import FileState
+        import time
 
-        public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
+        file = client.files.upload(file=file_path)
+        while file.state != FileState.ACTIVE:
+            time.sleep(2)
+            file = client.files.get(file.name)
 
-        try:
-            data = convert_url_to_base64(public_url)
-            if data["media_type"] not in VALID_PDF_MIME_TYPES:
-                raise ValueError(f"Unsupported PDF format: {data['media_type']}")
+        return cls(source=file.uri, media_type=file.mime_type, data=None)
 
+    @classmethod
+    def from_uploaded_genai_file(cls, file_name):
+        from google.genai import types
+        from google.genai.types import FileState
+        from google.genai import Client
+
+        client = Client()
+        file = client.files.get(name=file_name)
+        if file.source == types.FileSource.UPLOADED and file.state == FileState.ACTIVE:
             return cls(
-                source=data_uri, media_type=data["media_type"], data=data["content"]
+                source=file.uri,
+                media_type=file.mime_type,
+                data=None,
             )
-        except requests.RequestException as e:
-            raise ValueError("We only support public PDFs for now") from e
+        else:
+            raise ValueError("We only support uploaded PDFs for now")
 
     @classmethod
     def from_raw_base64(cls, data: str) -> PDF:
@@ -738,3 +746,36 @@ class PDF(BaseModel):
             }
         else:
             raise ValueError("PDF data is missing for base64 encoding.")
+
+    def to_genai(self):
+        from google.genai import types
+
+        if (
+            self.source
+            and isinstance(self.source, str)
+            and "https://generativelanguage.googleapis.com/v1beta/files/" in self.source
+        ):
+            return types.Part.from_uri(
+                file_uri=self.source,
+                mime_type=self.media_type,
+            )
+
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            # Fetch the file from URL and convert to base64
+            data = convert_url_to_base64(self.source)["content"]
+            return types.Part.from_bytes(
+                data=base64.b64decode(data),
+                mime_type=self.media_type,
+            )
+
+        if self.data:
+            return types.Part.from_bytes(
+                data=base64.b64decode(self.data),
+                mime_type=self.media_type,
+            )
+
+        raise ValueError("Unsupported PDF format")
