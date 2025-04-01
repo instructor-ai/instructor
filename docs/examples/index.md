@@ -112,6 +112,12 @@ Our cookbooks demonstrate how to use Instructor to solve real-world problems wit
 | [Cost Optimization with Batch API](batch_job_oai.md) | Reduce API costs | Production efficiency |
 | [Few-Shot Learning](examples.md) | Use contextual examples in prompts | Performance tuning |
 
+### Observability & Tracing
+
+| Example | Description | Use Case |
+|---------|-------------|----------|
+| [Langfuse Tracing](tracing_with_langfuse.md) | Open-source LLM engineering | Observability & Debugging
+
 ## Deployment Options
 
 ### Model Providers
