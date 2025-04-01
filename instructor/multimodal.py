@@ -46,6 +46,15 @@ CacheControlType = Mapping[str, str]
 OptionalCacheControlType = Optional[CacheControlType]
 
 
+def convert_url_to_base64(url: str):
+    response = requests.get(url)
+    response.raise_for_status()
+    return {
+        "content": base64.b64encode(response.content).decode("utf-8"),
+        "media_type": response.headers.get("Content-Type"),
+    }
+
+
 class ImageParamsBase(TypedDict):
     type: Literal["image"]
     source: str
@@ -142,15 +151,13 @@ class Image(BaseModel):
         public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
 
         try:
-            response = requests.get(public_url)
-            response.raise_for_status()
-            media_type = response.headers.get("Content-Type")
-            if media_type not in VALID_MIME_TYPES:
-                raise ValueError(f"Unsupported image format: {media_type}")
+            data = convert_url_to_base64(public_url)
+            if data["media_type"] not in VALID_MIME_TYPES:
+                raise ValueError(f"Unsupported image format: {data['media_type']}")
 
-            data = base64.b64encode(response.content).decode("utf-8")
-
-            return cls(source=data_uri, media_type=media_type, data=data)
+            return cls(
+                source=data_uri, media_type=data["media_type"], data=data["content"]
+            )
         except requests.RequestException as e:
             raise ValueError(f"We only support public images for now") from e
 
@@ -214,10 +221,7 @@ class Image(BaseModel):
     @lru_cache
     def url_to_base64(url: str) -> str:
         """Cachable helper method for getting image url and encoding to base64."""
-        response = requests.get(url)
-        response.raise_for_status()
-        data = base64.b64encode(response.content).decode("utf-8")
-        return data
+        return convert_url_to_base64(url)["content"]
 
     def to_anthropic(self) -> dict[str, Any]:
         if (
@@ -303,14 +307,11 @@ class Audio(BaseModel):
     @classmethod
     def from_url(cls, url: str) -> Audio:
         """Create an Audio instance from a URL."""
-        response = requests.get(url)
-        content_type = response.headers.get("content-type")
+        data = convert_url_to_base64(url)
         assert (
-            content_type in VALID_AUDIO_MIME_TYPES
+            data["media_type"] in VALID_AUDIO_MIME_TYPES
         ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-
-        data = base64.b64encode(response.content).decode("utf-8")
-        return cls(source=url, data=data, media_type=content_type)
+        return cls(source=url, data=data["content"], media_type=data["media_type"])
 
     @classmethod
     def from_path(cls, path: Union[str, Path]) -> Audio:  # noqa: UP007
@@ -617,14 +618,13 @@ class PDF(BaseModel):
         public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
 
         try:
-            response = requests.get(public_url)
-            response.raise_for_status()
-            media_type = response.headers.get("Content-Type")
-            if media_type not in VALID_PDF_MIME_TYPES:
-                raise ValueError(f"Unsupported PDF format: {media_type}")
+            data = convert_url_to_base64(public_url)
+            if data["media_type"] not in VALID_PDF_MIME_TYPES:
+                raise ValueError(f"Unsupported PDF format: {data['media_type']}")
 
-            data = base64.b64encode(response.content).decode("utf-8")
-            return cls(source=data_uri, media_type=media_type, data=data)
+            return cls(
+                source=data_uri, media_type=data["media_type"], data=data["content"]
+            )
         except requests.RequestException as e:
             raise ValueError("We only support public PDFs for now") from e
 
@@ -680,15 +680,6 @@ class PDF(BaseModel):
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=path, media_type=media_type, data=data)
 
-    @staticmethod
-    @lru_cache
-    def url_to_base64(url: str) -> str:
-        """Cachable helper method for getting PDF url and encoding to base64."""
-        response = requests.get(url)
-        response.raise_for_status()
-        data = base64.b64encode(response.content).decode("utf-8")
-        return data
-
     def to_anthropic(self) -> dict[str, Any]:
         """Convert to Anthropic's document format."""
         if (
@@ -705,7 +696,7 @@ class PDF(BaseModel):
             }
         else:
             if not self.data:
-                self.data = self.url_to_base64(str(self.source))
+                self.data = convert_url_to_base64(str(self.source))["content"]
 
             return {
                 "type": "document",
@@ -724,9 +715,7 @@ class PDF(BaseModel):
             and not self.data
         ):
             # Fetch the file from URL and convert to base64
-            response = requests.get(self.source)
-            response.raise_for_status()
-            data = base64.b64encode(response.content).decode("utf-8")
+            data = convert_url_to_base64(self.source)["content"]
             return {
                 "type": "file",
                 "file": {
