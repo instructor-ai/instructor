@@ -39,6 +39,7 @@ from instructor.utils import (
     map_to_gemini_function_schema,
     convert_to_genai_messages,
     extract_genai_system_message,
+    convert_to_mistral_messages,
 )
 from instructor.multimodal import convert_messages, extract_genai_multimodal_content
 
@@ -262,6 +263,8 @@ def handle_mistral_tools(
         }
     ]
     new_kwargs["tool_choice"] = "any"
+    new_kwargs["messages"] = convert_to_mistral_messages(new_kwargs["messages"])
+
     return response_model, new_kwargs
 
 
@@ -271,6 +274,7 @@ def handle_mistral_structured_outputs(
     from mistralai.extra import response_format_from_pydantic_model
 
     new_kwargs["response_format"] = response_format_from_pydantic_model(response_model)
+    new_kwargs["messages"] = convert_to_mistral_messages(new_kwargs["messages"])
     new_kwargs.pop("tools", None)
     new_kwargs.pop("response_model", None)
     return response_model, new_kwargs

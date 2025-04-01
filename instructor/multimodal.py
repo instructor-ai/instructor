@@ -410,6 +410,11 @@ def convert_contents(
                 Mode.ANTHROPIC_REASONING_TOOLS,
             }:
                 converted_contents.append(content.to_anthropic())
+            elif mode in {
+                Mode.MISTRAL_STRUCTURED_OUTPUTS,
+                Mode.MISTRAL_TOOLS,
+            } and isinstance(content, PDF):
+                converted_contents.append(content.to_mistral())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
                 raise NotImplementedError("Gemini is not supported yet")
             else:
@@ -779,3 +784,15 @@ class PDF(BaseModel):
             )
 
         raise ValueError("Unsupported PDF format")
+
+    def to_mistral(self):
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            return {
+                "type": "document_url",
+                "document_url": self.source,
+            }
+        raise ValueError("Mistral only supports document URLs for now")

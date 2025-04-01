@@ -17,7 +17,7 @@ from typing import (
     Union,
 )
 
-from instructor.multimodal import Image, Audio
+from instructor.multimodal import Image, Audio, PDF
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
@@ -944,6 +944,7 @@ def convert_to_genai_messages(
             result.append(message)
         elif isinstance(message, types.File):
             result.append(message)
+
         elif isinstance(message, dict):
             assert "role" in message
             assert "content" in message
@@ -962,14 +963,19 @@ def convert_to_genai_messages(
                     )
                 )
 
+            elif isinstance(message["content"], types.Content):
+                result.append(message["content"])
+
             elif isinstance(message["content"], list):
                 content_parts = []
 
                 for content_item in message["content"]:
                     if isinstance(content_item, str):
                         content_parts.append(types.Part.from_text(text=content_item))
-                    elif isinstance(content_item, (Image, Audio)):
+                    elif isinstance(content_item, (Image, Audio, PDF)):
                         content_parts.append(content_item.to_genai())
+                    elif isinstance(content_item, types.Part):
+                        content_parts.append(content_item)
                     else:
                         raise ValueError(
                             f"Unsupported content item type: {type(content_item)}"
@@ -981,6 +987,36 @@ def convert_to_genai_messages(
                         parts=content_parts,
                     )
                 )
+        else:
+            raise ValueError(f"Unsupported message type: {type(message)}")
+
+    return result
+
+
+def convert_to_mistral_messages(messages: list[dict[str, Any]]) -> list[Any]:
+    """
+    Convert a list of messages to a list of dictionaries in the format expected by the Mistral API.
+    """
+    result: list[Any] = []
+
+    for message in messages:
+        if isinstance(message["content"], str):
+            result.append(message["content"])
+        elif isinstance(message["content"], list):
+            content = []
+            for content_part in message["content"]:
+                if isinstance(content_part, str):
+                    content.append(content_part)
+                elif isinstance(content_part, (PDF)):
+                    content.append(content_part)
+                else:
+                    raise ValueError(f"Unsupported content part: {type(content_part)}")
+            result.append(
+                {
+                    "role": message["role"],
+                    "content": content,
+                }
+            )
         else:
             raise ValueError(f"Unsupported message type: {type(message)}")
 
