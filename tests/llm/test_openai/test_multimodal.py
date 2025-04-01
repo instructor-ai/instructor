@@ -161,7 +161,7 @@ class LineItem(BaseModel):
     quantity: int
 
 
-class Reciept(BaseModel):
+class Receipt(BaseModel):
     total: int
     items: list[str]
 
@@ -185,7 +185,7 @@ def test_multimodal_pdf_file(model, mode, client, pdf_source):
         max_tokens=1000,
         temperature=1,
         autodetect_images=False,
-        response_model=Reciept,
+        response_model=Receipt,
     )
 
     assert response.total == 220
