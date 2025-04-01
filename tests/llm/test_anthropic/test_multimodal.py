@@ -5,6 +5,7 @@ from pydantic import Field, BaseModel
 from itertools import product
 from .util import models, modes
 import base64
+import os
 
 
 class ImageDescription(BaseModel):
@@ -13,7 +14,14 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
-image_url = "https://github.com/google-gemini/cookbook/blob/main/examples/assets/castle.png?raw=true"
+audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
+image_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
+
+pdf_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+curr_file = os.path.dirname(__file__)
+pdf_path = os.path.join(curr_file, "../../assets/invoice.pdf")
+pdf_base64 = base64.b64encode(open(pdf_path, "rb").read()).decode("utf-8")
+pdf_base64_string = f"data:application/pdf;base64,{pdf_base64}"
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
@@ -205,51 +213,38 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
     assert response.content[0].text.startswith("This is an image")
 
 
-def test_pdf_to_anthropic_format():
-    # Test with URL
-    pdf = PDF(source="https://example.com/test.pdf", media_type="application/pdf")
-    result = pdf.to_anthropic()
-    assert result == {
-        "type": "document",
-        "source": {
-            "type": "url",
-            "url": "https://example.com/test.pdf",
-        },
-    }
+class LineItem(BaseModel):
+    name: str
+    price: int
+    quantity: int
 
-    # Test with base64 data
-    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
-    b64_data = base64.b64encode(pdf_content).decode("utf-8")
-    pdf = PDF(
-        source=f"data:application/pdf;base64,{b64_data}",
-        media_type="application/pdf",
-        data=b64_data,
+
+class Reciept(BaseModel):
+    total: int
+    items: list[str]
+
+
+@pytest.mark.parametrize("pdf_source", [pdf_path, pdf_url, pdf_base64_string])
+@pytest.mark.parametrize("mode", modes)
+def test_multimodal_pdf_file(mode, client, pdf_source):
+    client = instructor.from_anthropic(client, mode=mode)
+    response = client.chat.completions.create(
+        model="claude-3-5-sonnet-20240620",  # Ensure this is a vision-capable model
+        messages=[
+            {
+                "role": "system",
+                "content": "Extract the total and items from the invoice",
+            },
+            {
+                "role": "user",
+                "content": instructor.multimodal.PDF.autodetect(pdf_source),
+            },
+        ],
+        max_tokens=1000,
+        temperature=1,
+        autodetect_images=False,
+        response_model=Reciept,
     )
-    result = pdf.to_anthropic()
-    assert result == {
-        "type": "document",
-        "source": {
-            "type": "base64",
-            "media_type": "application/pdf",
-            "data": b64_data,
-        },
-    }
 
-
-def test_pdf_url_to_base64():
-    # Mock a URL response
-    pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
-    b64_data = base64.b64encode(pdf_content).decode("utf-8")
-
-    pdf = PDF(source="https://example.com/test.pdf", media_type="application/pdf")
-    pdf.url_to_base64 = lambda x: b64_data  # Mock the URL fetch
-
-    result = pdf.to_anthropic()
-    assert result == {
-        "type": "document",
-        "source": {
-            "type": "base64",
-            "media_type": "application/pdf",
-            "data": b64_data,
-        },
-    }
+    assert response.total == 220
+    assert len(response.items) == 2
