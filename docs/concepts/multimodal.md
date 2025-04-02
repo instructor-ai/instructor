@@ -241,7 +241,7 @@ print(resp)
 
 ## `PDF`
 
-The `PDF` class represents an PDF file that can be loaded from a URL or file path.
+The `PDF` class represents a PDF file that can be loaded from a URL or file path.
 
 It provides methods to create `PDF` instances and is currently supported for OpenAI, Mistral, GenAI and Anthropic client integrations.
 
