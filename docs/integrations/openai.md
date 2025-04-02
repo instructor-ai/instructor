@@ -256,7 +256,7 @@ response = client.chat.completions.create(
                 # Option 1: Direct URL
                 PDF.from_url(url),
                 # Option 2: Local file
-                # PDF.from_file("path/to/local/invoice.pdf"),
+                # PDF.from_path("path/to/local/invoice.pdf"),
                 # Option 3: Base64 string
                 # PDF.from_base64("base64_encoded_string_here")
             ],
