@@ -509,6 +509,44 @@ class PDF(BaseModel):
         else:
             raise ValueError("PDF data is missing for base64 encoding.")
 
+    def to_anthropic(self) -> dict[str, Any]:
+        """Convert to Anthropic's document format."""
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            return {
+                "type": "document",
+                "source": {
+                    "type": "url",
+                    "url": self.source,
+                },
+            }
+        else:
+            if not self.data:
+                self.data = requests.get(str(self.source)).content
+                self.data = base64.b64encode(self.data).decode("utf-8")
+
+            return {
+                "type": "document",
+                "source": {
+                    "type": "base64",
+                    "media_type": self.media_type,
+                    "data": self.data,
+                },
+            }
+
+
+class PdfWithCacheControl(PDF):
+    """PDF with Anthropic prompt caching support."""
+
+    def to_anthropic(self) -> dict[str, Any]:
+        """Override Anthropic return with cache_control."""
+        result = super().to_anthropic()
+        result["cache_control"] = {"type": "ephemeral"}
+        return result
+
 
 def convert_contents(
     contents: Union[  # noqa: UP007
