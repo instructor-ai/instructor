@@ -208,6 +208,8 @@ response = client.chat.completions.create(
                 # Image.from_path("path/to/local/image.jpg")
                 # Option 3: Base64 string
                 # Image.from_base64("base64_encoded_string_here")
+                # Option 4: Autodetect
+                # Image.autodetect(<url|path|base64>)
             ],
         },
     ],
@@ -259,6 +261,8 @@ response = client.chat.completions.create(
                 # PDF.from_path("path/to/local/invoice.pdf"),
                 # Option 3: Base64 string
                 # PDF.from_base64("base64_encoded_string_here")
+                # Option 4: Autodetect
+                # PDF.autodetect(<url|path|base64>)
             ],
         },
     ],
