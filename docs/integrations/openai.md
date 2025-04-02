@@ -176,7 +176,7 @@ Instructor makes it easy to analyse and extract semantic information from images
 
 Let's see an example below with the sample image above where we'll load it in using our `from_url` method.
 
-Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+Note that we support local files and base64 strings too with the `from_path` and the `from_base64` class methods.
 
 ```python
 from instructor.multimodal import Image
@@ -205,7 +205,7 @@ response = client.chat.completions.create(
                 # Option 1: Direct URL with autodetection
                 Image.from_url(url),
                 # Option 2: Local file
-                # Image.from_file("path/to/local/image.jpg")
+                # Image.from_path("path/to/local/image.jpg")
                 # Option 3: Base64 string
                 # Image.from_base64("base64_encoded_string_here")
             ],
@@ -228,7 +228,7 @@ Instructor makes it easy to analyse and extract semantic information from PDFs u
 
 Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method.
 
-Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+Note that we support local files and base64 strings too with the `from_path` and the `from_base64` class methods.
 
 ```python
 from instructor.multimodal import PDF
