@@ -1,5 +1,5 @@
 import pytest
-from instructor.multimodal import Image, PDF, PdfWithCacheControl
+from instructor.multimodal import Image, PDF, PDFWithCacheControl
 import instructor
 from pydantic import Field, BaseModel
 from itertools import product
@@ -265,7 +265,7 @@ def test_multimodal_pdf_file_with_cache_control(mode, client, pdf_source):
             },
             {
                 "role": "user",
-                "content": PdfWithCacheControl.autodetect(pdf_source),
+                "content": PDFWithCacheControl.autodetect(pdf_source),
             },
         ],
         max_tokens=1000,

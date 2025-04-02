@@ -538,7 +538,7 @@ class PDF(BaseModel):
             }
 
 
-class PdfWithCacheControl(PDF):
+class PDFWithCacheControl(PDF):
     """PDF with Anthropic prompt caching support."""
 
     def to_anthropic(self) -> dict[str, Any]:
