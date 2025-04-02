@@ -41,6 +41,7 @@ VALID_AUDIO_MIME_TYPES = [
     "audio/wav",
     "audio/webm",
 ]
+VALID_PDF_MIME_TYPES = ["application/pdf"]
 CacheControlType = Mapping[str, str]
 OptionalCacheControlType = Optional[CacheControlType]
 
@@ -287,9 +288,9 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         response = requests.get(url)
         content_type = response.headers.get("content-type")
-        assert content_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        assert (
+            content_type in VALID_AUDIO_MIME_TYPES
+        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -305,9 +306,9 @@ class Audio(BaseModel):
         if mime_type == "audio/x-wav":
             mime_type = "audio/wav"
 
-        assert mime_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        assert (
+            mime_type in VALID_AUDIO_MIME_TYPES
+        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
@@ -361,6 +362,43 @@ class ImageWithCacheControl(Image):
         return result
 
 
+class PDF(BaseModel):
+    source: str | Path = Field(description="URL, file path, or base64 data of the PDF")
+    media_type: str = Field(
+        description="MIME type of the PDF", default="application/pdf"
+    )
+    data: str | None = Field(None, description="Base64 encoded PDF data", repr=False)
+
+    @classmethod
+    @lru_cache
+    def from_url(cls, url: str) -> PDF:
+        parsed_url = urlparse(url)
+        media_type, _ = mimetypes.guess_type(parsed_url.path)
+
+        if not media_type:
+            try:
+                response = requests.head(url, allow_redirects=True)
+                media_type = response.headers.get("Content-Type")
+            except requests.RequestException as e:
+                raise ValueError("Failed to fetch PDF from URL") from e
+
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+        return cls(source=url, media_type=media_type, data=None)
+
+    def to_mistral(self) -> dict[str, Any]:
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            return {
+                "type": "document_url",
+                "document_url": self.source,
+            }
+        raise ValueError("Mistral only supports document URLs for now")
+
+
 def convert_contents(
     contents: Union[  # noqa: UP007
         str,
@@ -383,7 +421,7 @@ def convert_contents(
             converted_contents.append({"type": "text", "text": content})
         elif isinstance(content, dict):
             converted_contents.append(content)
-        elif isinstance(content, (Image, Audio)):
+        elif isinstance(content, (Image, Audio, PDF)):
             if mode in {
                 Mode.ANTHROPIC_JSON,
                 Mode.ANTHROPIC_TOOLS,
@@ -392,6 +430,11 @@ def convert_contents(
                 converted_contents.append(content.to_anthropic())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
                 raise NotImplementedError("Gemini is not supported yet")
+            elif mode in {
+                Mode.MISTRAL_STRUCTURED_OUTPUTS,
+                Mode.MISTRAL_TOOLS,
+            } and isinstance(content, PDF):
+                converted_contents.append(content.to_mistral())  # type: ignore
             else:
                 converted_contents.append(content.to_openai())
         else:
