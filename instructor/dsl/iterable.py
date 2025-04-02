@@ -1,7 +1,9 @@
 from typing import Any, Generic, Optional, TypeVar, cast, ClassVar
 from collections.abc import AsyncGenerator, Generator, Iterable
-
+from typing import Any, ClassVar, Optional, cast
+import json
 from pydantic import BaseModel, Field, create_model
+
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
@@ -36,7 +38,6 @@ class IterableBase(Generic[T]):
         # Handle Vertexai and Mistral special cases
         if mode in {Mode.VERTEXAI_TOOLS, Mode.MISTRAL_TOOLS}:
             import json
-
             response = next(json_chunks, None)
             if not response:
                 return
@@ -136,7 +137,6 @@ class IterableBase(Generic[T]):
 
         for chunk in json_chunks:
             potential_object += chunk
-
             if not started and "[" in chunk:
                 started = True
                 potential_object = chunk[chunk.find("[") + 1 :]
@@ -175,7 +175,6 @@ class IterableBase(Generic[T]):
 
         async for chunk in json_chunks:
             potential_object += chunk
-
             if not started and "[" in chunk:
                 started = True
                 potential_object = chunk[chunk.find("[") + 1 :]
@@ -298,8 +297,6 @@ class IterableBase(Generic[T]):
                     continue
 
                 if mode == Mode.VERTEXAI_TOOLS:
-                    import json
-
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
@@ -307,7 +304,21 @@ class IterableBase(Generic[T]):
 
                 if mode == Mode.GEMINI_TOOLS:
                     import json
+                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                    yield chunk.data.choices[0].delta.content
+                if mode == Mode.MISTRAL_TOOLS:
+                    if not chunk.data.choices[0].delta.tool_calls:
+                        continue
+                    yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
 
+                if mode in {Mode.GENAI_TOOLS}:
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+                if mode in {Mode.GENAI_STRUCTURED_OUTPUTS}:
+                    yield chunk.candidates[0].content.parts[0].text
+
+                if mode in {Mode.GEMINI_TOOLS}:
                     resp = chunk.candidates[0].content.parts[0].function_call
                     resp_dict = type(resp).to_dict(resp)  # type:ignore
                     if "args" in resp_dict:
@@ -370,8 +381,6 @@ class IterableBase(Generic[T]):
                     continue
 
                 if mode == Mode.VERTEXAI_TOOLS:
-                    import json
-
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
@@ -406,6 +415,49 @@ class IterableBase(Generic[T]):
                 raise NotImplementedError(
                     f"Mode {mode} is not supported for MultiTask streaming"
                 )
+                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                    yield chunk.data.choices[0].delta.content
+                if mode == Mode.MISTRAL_TOOLS:
+                    if not chunk.data.choices[0].delta.tool_calls:
+                        continue
+                    yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
+                if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+                    yield chunk.text
+                if mode in {Mode.GENAI_TOOLS}:
+                    yield json.dumps(
+                        chunk.candidates[0].content.parts[0].function_call.args
+                    )
+                elif chunk.choices:
+                    if mode == Mode.FUNCTIONS:
+                        Mode.warn_mode_functions_deprecation()
+                        if json_chunk := chunk.choices[0].delta.function_call.arguments:
+                            yield json_chunk
+                    elif mode in {
+                        Mode.JSON,
+                        Mode.MD_JSON,
+                        Mode.JSON_SCHEMA,
+                        Mode.CEREBRAS_JSON,
+                        Mode.FIREWORKS_JSON,
+                        Mode.PERPLEXITY_JSON,
+                    }:
+                        if json_chunk := chunk.choices[0].delta.content:
+                            yield json_chunk
+                    elif mode in {
+                        Mode.TOOLS,
+                        Mode.TOOLS_STRICT,
+                        Mode.FIREWORKS_TOOLS,
+                        Mode.WRITER_TOOLS,
+                    }:
+                        if json_chunk := chunk.choices[0].delta.tool_calls:
+                            if json_chunk[0].function.arguments is not None:
+                                yield json_chunk[0].function.arguments
+                    else:
+                        raise NotImplementedError(
+                            f"Mode {mode} is not supported for MultiTask streaming"
+                        )
+            except AttributeError:
+                pass
+
 
     @staticmethod
     def get_object(s: str, stack: int) -> tuple[Optional[str], str]:

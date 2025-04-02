@@ -93,6 +93,57 @@ print(user)  # User(name='Jason', age=25)
 
 ```
 
+## Configuration Options
+
+You can customize the model's behavior using generation configuration parameters. These parameters control aspects like temperature, token limits, and sampling methods. Pass these parameters as a dictionary to the `generation_config` parameter when creating the response.
+
+The most common parameters include:
+- `temperature`: Controls randomness in the output (0.0 to 1.0)
+- `max_tokens`: Maximum number of tokens to generate
+- `top_p`: Nucleus sampling parameter
+- `top_k`: Number of highest probability tokens to consider
+
+For more details on configuration options, see [Google's documentation on Gemini configuration parameters](https://cloud.google.com/vertex-ai/generative-ai/docs/samples/generativeaionvertexai-gemini-pro-config-example){target="_blank"}.
+
+
+```python
+import instructor
+import google.generativeai as genai
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_gemini(
+    client=genai.GenerativeModel(
+        model_name="models/gemini-1.5-flash-latest",
+    ),
+    mode=instructor.Mode.GEMINI_JSON,
+)
+
+# note that client.chat.completions.create will also work
+resp = client.messages.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Extract Jason is 25 years old.",
+        },
+    ],
+    response_model=User,
+    generation_config={
+        "temperature": 0.5,
+        "max_tokens": 1000,
+        "top_p": 1,
+        "top_k": 32,
+    },
+)
+
+print(resp)
+```
+
 ## Nested Example
 
 ```python
