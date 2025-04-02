@@ -172,7 +172,7 @@ Let's see how to use the Image, Audio and PDF classes.
 
 > For a more in-depth walkthrough of the Image component, check out the [docs here](../concepts/multimodal.md)
 
-Instructor makes it easy to analyse and extract semantic information from images using OpenAI's GPT-4o models. [Click here](https://platform.openai.com/docs/models) to check if the model you'd like to use has vison capabilities.
+Instructor makes it easy to analyse and extract semantic information from images using OpenAI's GPT-4o models. [Click here](https://platform.openai.com/docs/models) to check if the model you'd like to use has vision capabilities.
 
 Let's see an example below with the sample image above where we'll load it in using our `from_url` method.
 
