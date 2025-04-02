@@ -402,6 +402,52 @@ print(response)
 #> summary="Abraham Lincoln's Gettysburg Address, beginning with 'Four score and seven years ago' and discussing the Civil War's test of a nation dedicated to equality"
 ```
 
+### PDF Processing
+
+Instructor makes it easy to analyse and extract semantic information from PDFs using the GenAI SDK .
+
+Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import PDF
+from pydantic import BaseModel, Field
+import instructor
+from openai import OpenAI
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_openai(OpenAI())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+# Multiple ways to load an PDF:
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    response_model=Receipt,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                # Option 1: Direct URL
+                PDF.from_url(url),
+                # Option 2: Local file
+                # PDF.from_file("path/to/local/invoice.pdf"),
+                # Option 3: Base64 string
+                # PDF.from_base64("base64_encoded_string_here")
+            ],
+        },
+    ],
+)
+
+print(response)
+# > Receipt(total=220, items=['English Tea', 'Tofu'])
+```
+
 ## Using Files
 
 Our API integration also supports the use of files

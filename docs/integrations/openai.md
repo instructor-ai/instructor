@@ -244,7 +244,7 @@ class Receipt(BaseModel):
 
 client = instructor.from_openai(OpenAI())
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
-# Multiple ways to load an image:
+# Multiple ways to load an PDF:
 response = client.chat.completions.create(
     model="gpt-4o-mini",
     response_model=Receipt,
@@ -256,7 +256,7 @@ response = client.chat.completions.create(
                 # Option 1: Direct URL
                 PDF.from_url(url),
                 # Option 2: Local file
-                # PDF.from_file("path/to/local/image.jpg"),
+                # PDF.from_file("path/to/local/invoice.pdf"),
                 # Option 3: Base64 string
                 # PDF.from_base64("base64_encoded_string_here")
             ],
@@ -314,12 +314,6 @@ response = client.chat.completions.create(
 print(response)
 # > transcript='Four score and seven years ago our fathers..."]
 ```
-
-## Advanced Usage
-
-By abstracting away the specific implementation details to support each modality, we're able to combine Multiple modalities with ease.
-
-Below let's see an example where we're asking the model to write a story based off the audio file and the image it sees as the seting for the story.
 
 ## Streaming Support
 

@@ -613,14 +613,22 @@ class PDF(BaseModel):
         )
 
     @classmethod
-    def from_local_path_to_genai(cls, file_path: str, client):
+    def from_local_path_to_genai(
+        cls, file_path: str, client, max_retries: int = 10, retry_delay: int = 10
+    ):
         from google.genai.types import FileState
         import time
 
         file = client.files.upload(file=file_path)
         while file.state != FileState.ACTIVE:
-            time.sleep(2)
+            time.sleep(retry_delay)
             file = client.files.get(file.name)
+            if max_retries > 0:
+                max_retries -= 1
+            else:
+                raise Exception(
+                    "Max retries reached. File upload has been started but is still pending"
+                )
 
         return cls(source=file.uri, media_type=file.mime_type, data=None)
 
