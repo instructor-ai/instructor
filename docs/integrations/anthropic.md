@@ -415,3 +415,111 @@ assert response.answer == 9.8
 ```
 
 This then returns the response as a validated `Answer` object.
+
+## Multimodal
+
+> We've provided a few different sample files for you to use to test out these new features. All examples below use these files.
+>
+> - (Image) : An image of some blueberry plants [image.jpg](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg)
+> - (PDF) : A sample PDF file which contains a fake invoice [invoice.pdf](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf)
+
+Instructor provides a unified, provider-agnostic interface for working with multimodal inputs like images and PDFs.
+
+With Instructor's multimodal objects, you can easily load media from URLs, local files, or base64 strings using a consistent API that works across different AI providers.
+
+Let's look at how to use multimodal features with Anthropic's Claude models. Note that these models don't support Audio features at the moment.
+
+### Image Analysis
+
+> For a more in-depth walkthrough of the Image component, check out the [docs here](../concepts/multimodal.md)
+
+Instructor makes it easy to analyse and extract semantic information from images using Anthropic's Claude models. [Click here](https://docs.anthropic.com/en/docs/about-claude/models/all-models) to check if the model you'd like to use has vison capabilities.
+
+Let's see an example below with the sample image above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import Image
+from pydantic import BaseModel, Field
+import instructor
+from anthropic import Anthropic
+
+class ImageDescription(BaseModel):
+    objects: list[str] = Field(..., description="The objects in the image")
+    scene: str = Field(..., description="The scene of the image")
+    colors: list[str] = Field(..., description="The colors in the image")
+
+client = instructor.from_anthropic(
+    Anthropic(),
+    mode=instructor.Mode.ANTHROPIC_TOOLS
+)
+
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
+
+response = client.chat.completions.create(
+    model="claude-3-haiku-20240307",
+    response_model=ImageDescription,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "What is in this image?",
+                Image.from_url(url),  # You can also use Image.from_file() or Image.from_base64()
+            ],
+        },
+    ],
+)
+
+print(response)
+# Example output:
+# ImageDescription(
+#     objects=['blueberries', 'leaves'],
+#     scene='A blueberry bush with clusters of ripe blueberries and some unripe ones against a cloudy sky',
+#     colors=['green', 'blue', 'purple', 'white']
+# )
+```
+
+### PDF Analysis
+
+Instructor makes it easy to analyse and extract semantic information from PDFs using Anthropic's Claude models. Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import PDF
+from pydantic import BaseModel
+import instructor
+from anthropic import Anthropic
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_anthropic(Anthropic(), mode=instructor.Mode.ANTHROPIC_TOOLS)
+
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+
+response = client.chat.completions.create(
+    model="claude-3-5-sonnet-20241022",
+    response_model=Receipt,
+    max_tokens=1000,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                PDF.from_url(
+                    url
+                ),  # Also supports PDF.from_file() and PDF.from_base64()
+            ],
+        },
+    ],
+)
+
+print(response)
+# > Receipt(total=220, items=['English Tea', 'Tofu'])
+
+```

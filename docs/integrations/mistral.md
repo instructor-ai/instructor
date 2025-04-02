@@ -294,7 +294,7 @@ async def stream_partial():
             {"role": "user", "content": "Jason Liu is 25 years old"},
         ],
     )
-    
+
     async for partial_user in model:
         print(f"Received update: {partial_user}")
 
@@ -306,7 +306,7 @@ async def stream_iterable():
             {"role": "user", "content": "Make up two people"},
         ],
     )
-    
+
     async for user in users:
         print(f"Generated user: {user}")
 
@@ -326,3 +326,53 @@ asyncio.run(stream_iterable())
 ## Updates and Compatibility
 
 Instructor maintains compatibility with the latest Mistral API versions and models. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates on Mistral integration features.
+
+## Multimodal
+
+Instructor makes it easy to analyse and extract semantic information from PDFs using Mistral's models. Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+
+### PDF Analysis
+
+Instructor makes it easy to analyse and extract semantic information from PDFs using Anthropic's Claude models. Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import PDF
+from pydantic import BaseModel
+import instructor
+from anthropic import Anthropic
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_anthropic(Anthropic(), mode=instructor.Mode.ANTHROPIC_TOOLS)
+
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+
+response = client.chat.completions.create(
+    model="claude-3-5-sonnet-20241022",
+    response_model=Receipt,
+    max_tokens=1000,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                PDF.from_url(
+                    url
+                ),  # Also supports PDF.from_file() and PDF.from_base64()
+            ],
+        },
+    ],
+)
+
+print(response)
+# > Receipt(total=220, items=['English Tea', 'Tofu'])
+
+```

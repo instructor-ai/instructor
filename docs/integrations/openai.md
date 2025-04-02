@@ -83,7 +83,7 @@ class User(BaseModel):
 
 async def extract_user():
     user = await client.chat.completions.create(
-        model="gpt-4-turbo-preview",
+        model="gpt-4o-mini",
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -153,6 +153,173 @@ print(user)
 #>     ]
 #> }
 ```
+
+## Multimodal
+
+> We've provided a few different sample files for you to use to test out these new features. All examples below use these files.
+>
+> - (Audio) : A Recording of the Original Gettysburg Address : [gettysburg.wav](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav)
+> - (Image) : An image of some blueberry plants [image.jpg](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg)
+> - (PDF) : A sample PDF file which contains a fake invoice [invoice.pdf](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf)
+
+Instructor provides a unified, provider-agnostic interface for working with multimodal inputs like images, PDFs, and audio files. With Instructor's multimodal objects, you can easily load media from URLs, local files, or base64 strings using a consistent API that works across different AI providers (OpenAI, Anthropic, Mistral, etc.).
+
+Instructor handles all the provider-specific formatting requirements behind the scenes, ensuring your code remains clean and future-proof as provider APIs evolve.
+
+Let's see how to use the Image, Audio and PDF classes.
+
+### Image
+
+> For a more in-depth walkthrough of the Image component, check out the [docs here](../concepts/multimodal.md)
+
+Instructor makes it easy to analyse and extract semantic information from images using OpenAI's GPT-4o models. [Click here](https://platform.openai.com/docs/models) to check if the model you'd like to use has vison capabilities.
+
+Let's see an example below with the sample image above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import Image
+from pydantic import BaseModel, Field
+import instructor
+from openai import OpenAI
+
+
+class ImageDescription(BaseModel):
+    objects: list[str] = Field(..., description="The objects in the image")
+    scene: str = Field(..., description="The scene of the image")
+    colors: list[str] = Field(..., description="The colors in the image")
+
+
+client = instructor.from_openai(OpenAI())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
+# Multiple ways to load an image:
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    response_model=ImageDescription,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "What is in this image?",
+                # Option 1: Direct URL with autodetection
+                Image.from_url(url),
+                # Option 2: Local file
+                # Image.from_file("path/to/local/image.jpg")
+                # Option 3: Base64 string
+                # Image.from_base64("base64_encoded_string_here")
+            ],
+        },
+    ],
+)
+
+print(response)
+# Example output:
+# ImageDescription(
+#     objects=['blueberries', 'leaves'],
+#     scene='A blueberry bush with clusters of ripe blueberries and some unripe ones against a cloudy sky',
+#     colors=['green', 'blue', 'purple', 'white']
+# )
+```
+
+### PDF
+
+Instructor makes it easy to analyse and extract semantic information from PDFs using OpenAI's GPT-4o models.
+
+Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_file` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import PDF
+from pydantic import BaseModel, Field
+import instructor
+from openai import OpenAI
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_openai(OpenAI())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+# Multiple ways to load an image:
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    response_model=Receipt,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                # Option 1: Direct URL
+                PDF.from_url(url),
+                # Option 2: Local file
+                # PDF.from_file("path/to/local/image.jpg"),
+                # Option 3: Base64 string
+                # PDF.from_base64("base64_encoded_string_here")
+            ],
+        },
+    ],
+)
+
+print(response)
+# > Receipt(total=220, items=['English Tea', 'Tofu'])
+```
+
+### Audio
+
+For transcribing and analyzing audio content:
+
+```python
+from instructor.multimodal import Audio
+from pydantic import BaseModel
+import instructor
+from openai import OpenAI
+
+
+class AudioDescription(BaseModel):
+    transcript: str
+    summary: str
+    speakers: list[str]
+    key_points: list[str]
+
+
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
+
+client = instructor.from_openai(OpenAI())
+
+response = client.chat.completions.create(
+    model="gpt-4o-audio-preview",
+    response_model=AudioDescription,
+    modalities=["text"],
+    audio={"voice": "alloy", "format": "wav"},
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Please transcribe and analyze this audio:",
+                # Multiple loading options:
+                Audio.from_url(url),
+                # Option 2: Local file
+                # Audio.from_file("path/to/local/audio.mp3")
+                # Option 3: Base64
+                # Audio.from_base64("base64_encoded_string_here")
+            ],
+        },
+    ],
+)
+
+print(response)
+# > transcript='Four score and seven years ago our fathers..."]
+```
+
+## Advanced Usage
+
+By abstracting away the specific implementation details to support each modality, we're able to combine Multiple modalities with ease.
+
+Below let's see an example where we're asking the model to write a story based off the audio file and the image it sees as the seting for the story.
 
 ## Streaming Support
 
