@@ -213,7 +213,7 @@ print(response)
 
 If you'd like to cache the PDF and use it across multiple different requests, we support that with the `PdfWithCacheControl` class which we can see below.
 
-```
+```python
 from instructor.multimodal import PdfWithCacheControl
 from pydantic import BaseModel
 import instructor
