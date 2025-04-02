@@ -370,6 +370,86 @@ class PDF(BaseModel):
     data: str | None = Field(None, description="Base64 encoded PDF data", repr=False)
 
     @classmethod
+    def autodetect(cls, source: str | Path) -> PDF:
+        """Attempt to autodetect a PDF from a source string or Path.
+        Args:
+            source (Union[str,path]): The source string or path.
+        Returns:
+            A PDF if the source is detected to be a valid PDF.
+        Raises:
+            ValueError: If the source is not detected to be a valid PDF.
+        """
+        if isinstance(source, str):
+            if cls.is_base64(source):
+                return cls.from_base64(source)
+            elif source.startswith(("http://", "https://")):
+                return cls.from_url(source)
+
+            try:
+                if Path(source).is_file():
+                    return cls.from_path(source)
+            except FileNotFoundError as err:
+                raise ValueError("PDF file not found") from err
+            except OSError as e:
+                if e.errno == 63:  # File name too long
+                    raise ValueError("PDF file name too long") from e
+                raise ValueError("Unable to read PDF file") from e
+
+            return cls.from_raw_base64(source)
+        elif isinstance(source, Path):
+            return cls.from_path(source)
+
+        raise ValueError("Unable to determine PDF type or unsupported PDF format")
+
+    @classmethod
+    def is_base64(cls, s: str) -> bool:
+        return bool(re.match(r"^data:application/pdf;base64,", s))
+
+    @classmethod
+    def from_base64(cls, data_uri: str) -> PDF:
+        header, encoded = data_uri.split(",", 1)
+        media_type = header.split(":")[1].split(";")[0]
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+        return cls(
+            source=data_uri,
+            media_type=media_type,
+            data=encoded,
+        )
+
+    @classmethod
+    @lru_cache
+    def from_path(cls, path: str | Path) -> PDF:
+        path = Path(path)
+        if not path.is_file():
+            raise FileNotFoundError(f"PDF file not found: {path}")
+
+        if path.stat().st_size == 0:
+            raise ValueError("PDF file is empty")
+
+        media_type, _ = mimetypes.guess_type(str(path))
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+
+        data = base64.b64encode(path.read_bytes()).decode("utf-8")
+        return cls(source=path, media_type=media_type, data=data)
+
+    @classmethod
+    def from_raw_base64(cls, data: str) -> PDF:
+        try:
+            decoded = base64.b64decode(data)
+            # Check if it's a valid PDF by looking for the PDF header
+            if decoded.startswith(b"%PDF-"):
+                return cls(
+                    source=data,
+                    media_type="application/pdf",
+                    data=data,
+                )
+            raise ValueError("Invalid PDF format")
+        except Exception as e:
+            raise ValueError("Invalid or unsupported base64 PDF data") from e
+
+    @classmethod
     @lru_cache
     def from_url(cls, url: str) -> PDF:
         parsed_url = urlparse(url)
@@ -398,6 +478,37 @@ class PDF(BaseModel):
             }
         raise ValueError("Mistral only supports document URLs for now")
 
+    def to_openai(self) -> dict[str, Any]:
+        """Convert to OpenAI's document format."""
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            # Fetch the file from URL and convert to base64
+            data = requests.get(self.source)
+            data = base64.b64encode(data.content).decode("utf-8")
+            return {
+                "type": "file",
+                "file": {
+                    "filename": self.source,
+                    "file_data": f"data:{self.media_type};base64,{data}",
+                },
+            }
+        elif self.data or self.is_base64(str(self.source)):
+            data = self.data or str(self.source).split(",", 1)[1]
+            return {
+                "type": "file",
+                "file": {
+                    "filename": self.source
+                    if isinstance(self.source, str)
+                    else str(self.source),
+                    "file_data": f"data:{self.media_type};base64,{data}",
+                },
+            }
+        else:
+            raise ValueError("PDF data is missing for base64 encoding.")
+
 
 def convert_contents(
     contents: Union[  # noqa: UP007
@@ -412,7 +523,7 @@ def convert_contents(
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
-    if isinstance(contents, (Image, Audio)) or isinstance(contents, dict):
+    if isinstance(contents, (Image, Audio, PDF)) or isinstance(contents, dict):
         contents = [contents]
 
     converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
@@ -433,7 +544,7 @@ def convert_contents(
             elif mode in {
                 Mode.MISTRAL_STRUCTURED_OUTPUTS,
                 Mode.MISTRAL_TOOLS,
-            } and isinstance(content, PDF):
+            } and isinstance(content, (PDF)):
                 converted_contents.append(content.to_mistral())  # type: ignore
             else:
                 converted_contents.append(content.to_openai())
