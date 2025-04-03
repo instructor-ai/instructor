@@ -1,6 +1,6 @@
 ---
 title: Seamless Multimodal Interactions with Instructor
-description: Learn how the Image and Audio class in Instructor enables seamless handling of images, audio and text across different AI models.
+description: Learn how the Image, PDF and Audio class in Instructor enables seamless handling of multimodal content across different AI models.
 ---
 
 # Multimodal
