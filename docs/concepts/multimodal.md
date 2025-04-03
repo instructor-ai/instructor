@@ -241,7 +241,9 @@ print(resp)
 
 ## `PDF`
 
-The `Audio` class represents an audio file that can be loaded from a URL or file path. It provides methods to create `PDF` instances and is currently supported for OpenAI, Mistral, GenAI and Anthropic client integrations.
+The `PDF` class represents a PDF file that can be loaded from a URL or file path.
+
+It provides methods to create `PDF` instances and is currently supported for OpenAI, Mistral, GenAI and Anthropic client integrations.
 
 ### Usage
 

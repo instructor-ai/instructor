@@ -17,7 +17,7 @@ from typing import (
     Union,
 )
 
-from instructor.multimodal import Image, Audio
+from instructor.multimodal import PDF, Image, Audio
 from openai.types import CompletionUsage as OpenAIUsage
 from openai.types.chat import (
     ChatCompletion,
@@ -968,7 +968,7 @@ def convert_to_genai_messages(
                 for content_item in message["content"]:
                     if isinstance(content_item, str):
                         content_parts.append(types.Part.from_text(text=content_item))
-                    elif isinstance(content_item, (Image, Audio)):
+                    elif isinstance(content_item, (Image, Audio, PDF)):
                         content_parts.append(content_item.to_genai())
                     else:
                         raise ValueError(
