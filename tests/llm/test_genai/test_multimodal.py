@@ -17,7 +17,7 @@ audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tes
 
 pdf_path = os.path.join(curr_file, "../../assets/invoice.pdf")
 
-
+pdf_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 pdf_base64 = base64.b64encode(open(pdf_path, "rb").read()).decode("utf-8")
 pdf_base64_string = f"data:application/pdf;base64,{pdf_base64}"
 
@@ -222,7 +222,7 @@ async def test_autodetect_images_async(client, model, mode, autodetect_images):
         messages=[
             {
                 "role": "system",
-                "content": "Return true if you are provided with an image that you can describe visually in your prompt. This does not include image paths or urls that might point to URLs. ",
+                "content": "Do you see any blueberries in the context that you've been provided?. ",
             },
             {
                 "role": "user",
@@ -243,7 +243,7 @@ class Invoice(BaseModel):
 
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
-@pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string])
+@pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string, pdf_url])
 def test_local_pdf(client, model, mode, pdf_source):
     client = instructor.from_genai(client, mode=mode)
     response = client.chat.completions.create(
@@ -315,7 +315,7 @@ def test_upload_file_genai_pdf_integration(client, model, mode):
 
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
-@pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string])
+@pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string, pdf_url])
 def test_local_pdf_with_genai_file(client, model, mode, pdf_source):
     client = instructor.from_genai(client, mode=mode)
     response = client.chat.completions.create(
