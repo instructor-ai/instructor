@@ -91,6 +91,173 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 ```
 
+## Multimodal
+
+> We've provided a few different sample files for you to use to test out these new features. All examples below use these files.
+>
+> - (Image) : An image of some blueberry plants [image.jpg](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg)
+> - (PDF) : A sample PDF file which contains a fake invoice [invoice.pdf](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf)
+
+Instructor provides a unified, provider-agnostic interface for working with multimodal inputs like images, PDFs, and audio files. With Instructor's multimodal objects, you can easily load media from URLs, local files, or base64 strings using a consistent API that works across different AI providers (OpenAI, Anthropic, Mistral, etc.).
+
+Instructor handles all the provider-specific formatting requirements behind the scenes, ensuring your code remains clean and future-proof as provider APIs evolve.
+
+Let's see how to use the Image and PDF classes.
+
+### Image
+
+> For a more in-depth walkthrough of the Image component, check out the [docs here](../concepts/multimodal.md)
+
+Instructor makes it easy to analyse and extract semantic information from images using Anthropic's claude models. [Click here](https://docs.anthropic.com/en/docs/about-claude/models/all-models) to check if the model you'd like to use has vison capabilities.
+
+Let's see an example below with the sample image above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_path` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import Image
+from pydantic import BaseModel, Field
+import instructor
+from anthropic import Anthropic
+
+
+class ImageDescription(BaseModel):
+    objects: list[str] = Field(..., description="The objects in the image")
+    scene: str = Field(..., description="The scene of the image")
+    colors: list[str] = Field(..., description="The colors in the image")
+
+
+client = instructor.from_anthropic(Anthropic())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
+# Multiple ways to load an image:
+response = client.chat.completions.create(
+    model="claude-3-5-sonnet-20240620",
+    response_model=ImageDescription,
+    max_tokens=1000,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "What is in this image?",
+                # Option 1: Direct URL with autodetection
+                Image.from_url(url),
+                # Option 2: Local file
+                # Image.from_path("path/to/local/image.jpg")
+                # Option 3: Base64 string
+                # Image.from_base64("base64_encoded_string_here")
+                # Option 4: Autodetect
+                # Image.autodetect(<url|path|base64>)
+            ],
+        },
+    ],
+)
+
+print(response)
+# Example output:
+# ImageDescription(
+#     objects=['blueberries', 'leaves'],
+#     scene='A blueberry bush with clusters of ripe blueberries and some unripe ones against a cloudy sky',
+#     colors=['green', 'blue', 'purple', 'white']
+# )
+
+```
+
+### PDF
+
+Instructor makes it easy to analyse and extract semantic information from PDFs using Anthropic's Claude line of models.
+
+Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_path` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import PDF
+from pydantic import BaseModel, Field
+import instructor
+from anthropic import Anthropic
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_anthropic(Anthropic())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+# Multiple ways to load an PDF:
+response = client.chat.completions.create(
+    model="claude-3-5-sonnet-20240620",
+    response_model=Receipt,
+    max_tokens=1000,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                # Option 1: Direct URL
+                PDF.from_url(url),
+                # Option 2: Local file
+                # PDF.from_path("path/to/local/invoice.pdf"),
+                # Option 3: Base64 string
+                # PDF.from_base64("base64_encoded_string_here")
+                # Option 4: Autodetect
+                # PDF.autodetect(<url|path|base64>)
+            ],
+        },
+    ],
+)
+
+print(response)
+# > Receipt(total=220, items=['English Tea', 'Tofu'])
+```
+
+If you'd like to cache the PDF and use it across multiple different requests, we support that with the `PdfWithCacheControl` class which we can see below.
+
+```python
+from instructor.multimodal import PdfWithCacheControl
+from pydantic import BaseModel
+import instructor
+from anthropic import Anthropic
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_anthropic(Anthropic())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+# Multiple ways to load an PDF:
+response, completion = client.chat.completions.create_with_completion(
+    model="claude-3-5-sonnet-20240620",
+    response_model=Receipt,
+    max_tokens=1000,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                # Option 1: Direct URL
+                PdfWithCacheControl.from_url(url),
+                # Option 2: Local file
+                # PDF.from_path("path/to/local/invoice.pdf"),
+                # Option 3: Base64 string
+                # PDF.from_base64("base64_encoded_string_here")
+                # Option 4: Autodetect
+                # PDF.autodetect(<url|path|base64>)
+            ],
+        },
+    ],
+)
+
+assert (
+    completion.usage.cache_creation_input_tokens > 0
+    or completion.usage.cache_read_input_tokens > 0
+)
+print(response)
+# > Receipt(total=220, items=['English Tea', 'Tofu'])
+```
+
 ## Streaming Support
 
 Instructor has two main ways that you can use to stream responses out
