@@ -217,23 +217,24 @@ def test_autodetect_images_sync(client, model, mode, autodetect_images):
 async def test_autodetect_images_async(client, model, mode, autodetect_images):
     client = instructor.from_genai(client, mode=mode, use_async=True)
 
-    response = await client.chat.completions.create(
-        model=model,
-        messages=[
-            {
-                "role": "system",
-                "content": "Return true if you are provided with an image that you can describe visually in your prompt. This does not include image paths or urls that might point to URLs. ",
-            },
-            {
-                "role": "user",
-                "content": [image_file],
-            },
-        ],
-        response_model=bool,
-        autodetect_images=autodetect_images,
-    )
+    for _ in range(3):
+        response = await client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Return true if you are provided with an image that you can describe visually in your prompt. This does not include image paths or urls that might point to URLs. ",
+                },
+                {
+                    "role": "user",
+                    "content": [image_file],
+                },
+            ],
+            response_model=bool,
+            autodetect_images=autodetect_images,
+        )
 
-    assert autodetect_images == response
+        assert autodetect_images == response
 
 
 class Invoice(BaseModel):
