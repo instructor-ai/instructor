@@ -525,8 +525,8 @@ class PDF(BaseModel):
             }
         else:
             if not self.data:
-                self.data = requests.get(str(self.source)).content
-                self.data = base64.b64encode(self.data).decode("utf-8")
+                self.data = requests.get(str(self.source)).content  # type: ignore
+                self.data = base64.b64encode(self.data).decode("utf-8")  # type: ignore
 
             return {
                 "type": "document",
@@ -586,7 +586,7 @@ class PDFWithGenaiFile(PDF):
         file = client.files.upload(file=file_path)
         while file.state != FileState.ACTIVE:
             time.sleep(retry_delay)
-            file = client.files.get(name=file.name)
+            file = client.files.get(name=file.name)  # type: ignore
             if max_retries > 0:
                 max_retries -= 1
             else:
