@@ -537,6 +537,30 @@ class PDF(BaseModel):
                 },
             }
 
+    def to_genai(self):
+        from google.genai import types
+
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            # Fetch the file from URL and convert to base64
+            data = requests.get(self.source).content
+            data = base64.b64encode(data).decode("utf-8")
+            return types.Part.from_bytes(
+                data=base64.b64decode(data),
+                mime_type=self.media_type,
+            )
+
+        if self.data:
+            return types.Part.from_bytes(
+                data=base64.b64decode(self.data),
+                mime_type=self.media_type,
+            )
+
+        raise ValueError("Unsupported PDF format")
+
 
 class PDFWithCacheControl(PDF):
     """PDF with Anthropic prompt caching support."""
@@ -546,6 +570,64 @@ class PDFWithCacheControl(PDF):
         result = super().to_anthropic()
         result["cache_control"] = {"type": "ephemeral"}
         return result
+
+
+class PDFWithGenaiFile(PDF):
+    @classmethod
+    def from_new_genai_file(
+        cls, file_path: str, retry_delay: int = 10, max_retries: int = 20
+    ) -> PDFWithGenaiFile:
+        """Create a new PDFWithGenaiFile from a file path."""
+        from google.genai.types import FileState
+        import time
+        from google.genai import Client
+
+        client = Client()
+        file = client.files.upload(file=file_path)
+        while file.state != FileState.ACTIVE:
+            time.sleep(retry_delay)
+            file = client.files.get(name=file.name)
+            if max_retries > 0:
+                max_retries -= 1
+            else:
+                raise Exception(
+                    "Max retries reached. File upload has been started but is still pending"
+                )
+
+        return cls(source=file.uri, media_type=file.mime_type, data=None)  # type: ignore
+
+    @classmethod
+    def from_existing_genai_file(cls, file_name: str) -> PDFWithGenaiFile:
+        """Create a new PDFWithGenaiFile from a file URL."""
+        from google.genai import types
+        from google.genai.types import FileState
+        from google.genai import Client
+
+        client = Client()
+        file = client.files.get(name=file_name)
+        if file.source == types.FileSource.UPLOADED and file.state == FileState.ACTIVE:
+            return cls(
+                source=file.uri,  # type: ignore
+                media_type=file.mime_type,  # type: ignore
+                data=None,
+            )
+        else:
+            raise ValueError("We only support uploaded PDFs for now")
+
+    def to_genai(self):
+        from google.genai import types
+
+        if (
+            self.source
+            and isinstance(self.source, str)
+            and "https://generativelanguage.googleapis.com/v1beta/files/" in self.source
+        ):
+            return types.Part.from_uri(
+                file_uri=self.source,
+                mime_type=self.media_type,
+            )
+
+        return super().to_genai()
 
 
 def convert_contents(
@@ -690,6 +772,8 @@ def extract_genai_multimodal_content(
             if content_part.text and autodetect_images:
                 # Detect if the text is an image
                 converted_item = Image.autodetect_safely(content_part.text)
+
+                # We only do autodetection for images for now
                 if isinstance(converted_item, Image):
                     converted_contents.append(converted_item.to_genai())
                     continue
