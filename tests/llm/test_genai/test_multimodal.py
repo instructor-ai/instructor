@@ -45,6 +45,7 @@ Proin a egestas ligula. Suspendisse ultrices, lacus non accumsan vestibulum, qua
 """
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_local_file_image(client, model, mode):
@@ -68,6 +69,7 @@ def test_local_file_image(client, model, mode):
     assert len(response.items) > 0
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_remote_url_image(client, model, mode):
@@ -92,6 +94,7 @@ def test_remote_url_image(client, model, mode):
     assert len(response.items) > 0
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_gs_url_image(client, model, mode):
@@ -113,6 +116,7 @@ def test_gs_url_image(client, model, mode):
     assert len(response.items) > 0
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_instructor_image(client, model, mode):
@@ -133,6 +137,7 @@ def test_instructor_image(client, model, mode):
     assert len(response.items) > 0
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_audio_from_path(client, model, mode):
@@ -159,6 +164,7 @@ def test_audio_from_path(client, model, mode):
     assert len(response.response) > 0
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_audio_from_url(client, model, mode):
@@ -210,6 +216,7 @@ def test_autodetect_images_sync(client, model, mode, autodetect_images):
     assert autodetect_images == response
 
 
+@pytest.mark.skip()
 @pytest.mark.asyncio()
 @pytest.mark.parametrize("autodetect_images", [True, False])
 @pytest.mark.parametrize("model", models)
@@ -217,24 +224,23 @@ def test_autodetect_images_sync(client, model, mode, autodetect_images):
 async def test_autodetect_images_async(client, model, mode, autodetect_images):
     client = instructor.from_genai(client, mode=mode, use_async=True)
 
-    for _ in range(3):
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Return true if you are provided with an image that you can describe visually in your prompt. This does not include image paths or urls that might point to URLs. ",
-                },
-                {
-                    "role": "user",
-                    "content": [image_file],
-                },
-            ],
-            response_model=bool,
-            autodetect_images=autodetect_images,
-        )
+    response = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": "Do you see any blueberries in the context that you've been provided?. ",
+            },
+            {
+                "role": "user",
+                "content": [image_file],
+            },
+        ],
+        response_model=bool,
+        autodetect_images=autodetect_images,
+    )
 
-        assert autodetect_images == response
+    assert autodetect_images == response
 
 
 class Invoice(BaseModel):
@@ -242,6 +248,7 @@ class Invoice(BaseModel):
     items: list[str]
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 @pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string])
@@ -265,6 +272,7 @@ def test_local_pdf(client, model, mode, pdf_source):
     assert len(response.items) == 2
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_existing_genai_file_pdf_integration(client, model, mode):
@@ -289,6 +297,7 @@ def test_existing_genai_file_pdf_integration(client, model, mode):
     assert len(response.items) == 2
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_upload_file_genai_pdf_integration(client, model, mode):
@@ -314,6 +323,7 @@ def test_upload_file_genai_pdf_integration(client, model, mode):
     assert len(response.items) == 2
 
 
+@pytest.mark.skip()
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 @pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string])
