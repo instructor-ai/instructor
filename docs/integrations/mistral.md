@@ -359,7 +359,7 @@ response = client.chat.completions.create(
                 "Extract out the total and line items from the invoice",
                 PDF.from_url(
                     url
-                ),  # Also supports PDF.from_file() and PDF.from_base64()
+                ),  # Also supports PDF.from_path() and PDF.from_base64()
             ],
         },
     ],
