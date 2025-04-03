@@ -5,7 +5,18 @@ description: Learn how the Image and Audio class in Instructor enables seamless 
 
 # Multimodal
 
-Instructor supports multimodal interactions by providing helper classes that are automatically converted to the correct format for different providers, allowing you to work with both text and images in your prompts and responses. This functionality is implemented in the `multimodal.py` module and provides a seamless way to handle images alongside text for various AI models.
+> We've provided a few different sample files for you to use to test out these new features. All examples below use these files.
+>
+> - (Image) : An image of some blueberry plants [image.jpg](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg)
+> - (Audio) : A Recording of the Original Gettysburg Address : [gettysburg.wav](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav)
+> - (PDF) : A sample PDF file which contains a fake invoice [invoice.pdf](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf)
+>   Instructor provides a unified, provider-agnostic interface for working with multimodal inputs like images and PDFs.
+
+Instructor provides a unified, provider-agnostic interface for working with multimodal inputs like images, PDFs, and audio files. With Instructor's multimodal objects, you can easily load media from URLs, local files, or base64 strings using a consistent API that works across different AI providers (OpenAI, Anthropic, Mistral, etc.).
+
+Instructor handles all the provider-specific formatting requirements behind the scenes, ensuring your code remains clean and future-proof as provider APIs evolve.
+
+Let's see how to use the Image, Audio and PDF classes.
 
 ## `Image`
 
@@ -72,22 +83,23 @@ print(response.model_dump_json())
 """
 {"description":"A tray filled with several blueberry muffins, with one muffin prominently in the foreground. The muffins have a golden-brown top and are surrounded by a beige paper liners. Some muffins are partially visible, and fresh blueberries are scattered around the tray.", "objects": ["muffins", "blueberries", "tray", "paper liners"], "colors": ["golden-brown", "blue", "beige"], "text": null}
 """
+```
 
 With autodetect_images=True, you can directly provide URLs or file paths
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    response_model=ImageAnalyzer,
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                "What is in this two images?",
-                "https://static01.nyt.com/images/2017/04/14/dining/14COOKING-RITZ-MUFFINS/14COOKING-RITZ-MUFFINS-jumbo.jpg",
-                "muffin.jpg",  # Using the file we downloaded in the previous example
-            ],
-        }
-    ],
-    autodetect_images=True,
+model="gpt-4o-mini",
+response_model=ImageAnalyzer,
+messages=[
+{
+"role": "user",
+"content": [
+"What is in this two images?",
+"https://static01.nyt.com/images/2017/04/14/dining/14COOKING-RITZ-MUFFINS/14COOKING-RITZ-MUFFINS-jumbo.jpg",
+"muffin.jpg", # Using the file we downloaded in the previous example
+],
+}
+],
+autodetect_images=True,
 )
 
 print(response.model_dump_json())
@@ -98,10 +110,13 @@ print(response.model_dump_json())
 By leveraging Instructor's multimodal capabilities, you can focus on building your application logic without worrying about the intricacies of each provider's image handling format. This not only saves development time but also makes your code more maintainable and adaptable to future changes in AI provider APIs.
 
 ### Anthropic Prompt Caching
+
 Instructor supports Anthropic prompt caching with images. To activate prompt caching, you can pass image content as a dictionary of the form
+
 ```python
 {"type": "image", "source": <path_or_url_or_base64_encoding>, "cache_control": True}
 ```
+
 and set `autodetect_images=True`, or flag it within a constructor such as `instructor.Image.from_path("path/to/image.jpg", cache_control=True)`. For example:
 
 ```python
@@ -165,6 +180,8 @@ print(response.model_dump_json())
 {"description":"A tray of freshly baked blueberry muffins with golden-brown tops in paper liners.", "objects":["muffins","blueberries","tray","paper liners"], "colors":["golden-brown","blue","beige"], "text":null}
 """
 
+```
+
 ## `Audio`
 
 The `Audio` class represents an audio file that can be loaded from a URL or file path. It provides methods to create `Audio` instances but currently only OpenAI supports it. You can create an instance using the `from_path` and `from_url` methods. The `Audio` class will automatically convert it to a base64-encoded image and include it in the API request.
@@ -220,4 +237,48 @@ resp = client.chat.completions.create(
 
 print(resp)
 #> name='Jason' age=20
+```
+
+## `PDF`
+
+The `PDF` class represents a PDF file that can be loaded from a URL or file path.
+
+It provides methods to create `PDF` instances and is currently supported for OpenAI, Mistral, GenAI and Anthropic client integrations.
+
+### Usage
+
+```python
+ from openai import OpenAI
+ import instructor
+ from pydantic import BaseModel
+ from instructor.multimodal import PDF
+
+ # Set up the client
+ url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+ client = instructor.from_openai(OpenAI())
+
+
+ # Create a model for analyzing PDFs
+ class Invoice(BaseModel):
+     total: float
+     items: list[str]
+
+
+ # Load and analyze a PDF
+ response = client.chat.completions.create(
+     model="gpt-4o-mini",
+     response_model=Invoice,
+     messages=[
+         {
+             "role": "user",
+             "content": [
+                 "Analyze this document",
+                 PDF.from_url(url),
+             ],
+         }
+     ],
+ )
+
+ print(response)
+ # > Total = 220, items = ['English Tea', 'Tofu']
 ```

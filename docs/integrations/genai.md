@@ -263,144 +263,221 @@ print(response)  # UserDetail(name='JASON', age=25)
 
 ## Multimodal Capabilities
 
+> We've provided a few different sample files for you to use to test out these new features. All examples below use these files.
+>
+> - (Audio) : A Recording of the Original Gettysburg Address : [gettysburg.wav](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav)
+> - (Image) : An image of some blueberry plants [image.jpg](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg)
+> - (PDF) : A sample PDF file which contains a fake invoice [invoice.pdf](https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf)
+
+Instructor provides a unified, provider-agnostic interface for working with multimodal inputs like images, PDFs, and audio files. With Instructor's multimodal objects, you can easily load media from URLs, local files, or base64 strings using a consistent API that works across different AI providers (OpenAI, Anthropic, Mistral, etc.).
+
+Instructor handles all the provider-specific formatting requirements behind the scenes, ensuring your code remains clean and future-proof as provider APIs evolve.
+
+Let's see how to use the Image, Audio and PDF classes.
+
+### Image Processing
+
 !!! info "Autodetect Images"
 
     For convenient handling of images, you can enable automatic image conversion using the `autodetect_images` parameter. When enabled, Instructor will automatically detect and convert file paths and HTTP URLs provided as strings into the appropriate format required by the Google GenAI SDK. This makes working with images seamless and straightforward. ( see examples below )
 
-Gemini models excel at processing different types of media. Instructor makes it easy to extract structured data from multimodal inputs.
+Instructor makes it easy to analyse and extract semantic information from images using the Gemini series of models. [Click here](https://ai.google.dev/gemini-api/docs/models) to check if the model you'd like to use has vison capabilities.
 
-### Image Processing
+Let's see an example below with the sample image above where we'll load it in using our `from_url` method.
 
-Extract structured information from images with the same ease as text:
+Note that we support local files and base64 strings too with the `from_path` and the `from_base64` class methods.
 
 ```python
-from pydantic import BaseModel
+from instructor.multimodal import Image
+from pydantic import BaseModel, Field
 import instructor
-from google import genai
+from google.genai import Client
 
 
 class ImageDescription(BaseModel):
-    objects: list[str]
-    scene: str
+    objects: list[str] = Field(..., description="The objects in the image")
+    scene: str = Field(..., description="The scene of the image")
+    colors: list[str] = Field(..., description="The colors in the image")
 
 
-client = instructor.from_genai(genai.Client())
-
-# Method 1 : Using a local file path
+client = instructor.from_genai(Client())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
+# Multiple ways to load an image:
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
+    model="gemini-2.0-flash",
+    response_model=ImageDescription,
     messages=[
         {
             "role": "user",
             "content": [
-                "Describe this image",
-                "./image.jpg",  # Local path
+                "What is in this image?",
+                # Option 1: Direct URL with autodetection
+                Image.from_url(url),
+                # Option 2: Local file
+                # Image.from_path("path/to/local/image.jpg")
+                # Option 3: Base64 string
+                # Image.from_base64("base64_encoded_string_here")
+                # Option 4: Autodetect
+                # Image.autodetect(<url|path|base64>)
             ],
-        }
+        },
     ],
-    autodetect_images=True,
-    response_model=ImageDescription,
 )
-print(response)
-# > objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
 
-# Method 2 : Using instructor's image method to explicitly load an image
-response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                "Describe this image",
-                instructor.Image.from_path("./image.jpg"),  # Helper
-            ],
-        }
-    ],
-    response_model=ImageDescription,
-)
 print(response)
-# > objects=['cookies', 'coffee', 'blueberries', 'flowers'] scene='food photography'
+# Example output:
+# ImageDescription(
+#     objects=['blueberries', 'leaves'],
+#     scene='A blueberry bush with clusters of ripe blueberries and some unripe ones against a cloudy sky',
+#     colors=['green', 'blue', 'purple', 'white']
+# )
 
-# Method 3 : Providing a image url
-response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                "Describe this image",
-                "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg",  # URL
-            ],
-        }
-    ],
-    autodetect_images=True,
-    response_model=ImageDescription,
-)
-print(response)
-# > objects=['blueberries'] scene='blueberry field'
 ```
 
 ### Audio Processing
 
-Process audio files and extract structured data from their content:
+Instructor makes it easy to analyse and extract semantic information from Audio files using the Gemini series of models. Let's see an example below with the sample Audio file above where we'll load it in using our `from_url` method.
+
+Note that we support local files and base64 strings too with the `from_path`
 
 ```python
+from instructor.multimodal import Audio
 from pydantic import BaseModel
 import instructor
-from google import genai
-from google.genai import types
+from google.genai import Client
 
 
-class ImageDescription(BaseModel):
-    objects: list[str]
-    scene: str
-
-
-client = instructor.from_genai(genai.Client())
-
-
-class AudioContent(BaseModel):
+class AudioDescription(BaseModel):
+    transcript: str
     summary: str
+    speakers: list[str]
+    key_points: list[str]
 
-# Method 1 : Reading from a path itself
+
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
+
+client = instructor.from_genai(Client())
+
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
-    system="You are a helpful assistant that can extract and summarise the content of an audio file according to the schema provided. You must return a function call with the schema provided.",
+    model="gemini-2.0-flash",
+    response_model=AudioDescription,
     messages=[
         {
             "role": "user",
             "content": [
-                "Extract and summarise the content of this audio",
-                instructor.Audio.from_path("./pixel.mp3"),
+                "Please transcribe and analyze this audio:",
+                # Multiple loading options:
+                Audio.from_url(url),
+                # Option 2: Local file
+                # Audio.from_path("path/to/local/audio.mp3")
             ],
-        }
+        },
     ],
-    response_model=AudioContent,
 )
-print(response)
-# > summary='The Made by Google podcast discusses the Pixel feature drops with Aisha Sharif and DeCarlos Love. They discuss the importance of devices improving over time and the inte...
 
-# Method 2 : Using a url
-
-response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
-    system="You are a helpful assistant that can extract and summarise the content of an audio file according to the schema provided. You must return a function call with the schema provided.",
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                "Extract and summarise the content of this audio",
-                instructor.Audio.from_url(
-                    "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
-                ),
-            ],
-        }
-    ],
-    response_model=AudioContent,
-)
 print(response)
-#> summary="Abraham Lincoln's Gettysburg Address, beginning with 'Four score and seven years ago' and discussing the Civil War's test of a nation dedicated to equality"
+# > transcript='Four score and seven years ago our fathers..."]
 ```
+
+### PDF
+
+Instructor makes it easy to analyse and extract semantic information from PDFs using Gemini's new models.
+
+Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method. With this integration that we're passing in the raw bytes to gemini itself, we also support using the Files api with the `PDFWithGenaiFile` class.
+
+Note that we support local files and base64 strings using this method too with the `from_path` and the `from_base64` class methods.
+
+```python
+from instructor.multimodal import PDF
+from pydantic import BaseModel
+import instructor
+from google.genai import Client
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_genai(Client())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+# Multiple ways to load an PDF:
+response = client.chat.completions.create(
+    model="gemini-2.0-flash",
+    response_model=Receipt,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                # Option 1: Direct URL
+                PDF.from_url(url),
+                # Option 2: Local file
+                # PDF.from_path("path/to/local/invoice.pdf"),
+                # Option 3: Base64 string
+                # PDF.from_base64("base64_encoded_string_here")
+                # Option 4: Autodetect
+                # PDF.autodetect(<url|path|base64>)
+            ],
+        },
+    ],
+)
+
+print(response)
+# > Receipt(total=220, items=['English Tea', 'Tofu'])
+```
+
+We also support the use of PDFs with the Gemini `Files` api with the `PDFWithGenaiFile` that allows you to use existing uploaded files or local files.
+
+Note that the `PdfWithGenaiFile.from_new_genai_file` operation is blocking and you can set the timeout and retry delay that we'll call while we await the upload to be registered as completed.
+
+```python
+PDFWithGenaiFile.from_new_genai_file(
+    "./invoice.pdf",
+    retry_delay=1,  # Time to wait before checking if file is ready to use
+    max_retries=20 # Number of times to check before throwing an error
+),
+```
+
+This makes it easier for you to work with the Gemini files API. You can use this in a normal chat completion as seen below
+
+```python
+from instructor.multimodal import PDFWithGenaiFile
+from pydantic import BaseModel
+import instructor
+from google.genai import Client
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_genai(Client())
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+# Multiple ways to load an PDF:
+response = client.chat.completions.create(
+    model="gemini-2.0-flash",
+    response_model=Receipt,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                # Option 1: Direct URL
+                PDFWithGenaiFile.from_new_genai_file("./invoice.pdf"),
+
+                # Option 2 : Existing Genai File
+                # PDFWithGenaiFile.from_existing_genai_file("invoice.pdf"),
+            ],
+        },
+    ],
+)
+
+print(response)
+```
+
+If you'd like more fine-grained control over the files used, you can also use the `Files` api directly as seen below.
 
 ## Using Files
 
