@@ -184,20 +184,21 @@ nav:
       - "blog/index.md"
   - Concepts:
     - Overview: 'concepts/index.md'
+    - Retrying: 'concepts/retrying.md'
+    - Fields: 'concepts/fields.md'
     - Models: 'concepts/models.md'
+    - Parallel Tools: 'concepts/parallel.md'
+    - Templating: 'concepts/templating.md'
     - Lists and Arrays: 'concepts/lists.md'
     - Prompting: 'concepts/prompting.md'
     - Multimodal : 'concepts/multimodal.md'
-    - Retrying: 'concepts/retrying.md'
     - Patching: 'concepts/patching.md'
     - Hooks: 'concepts/hooks.md'
-    - Fields: 'concepts/fields.md'
     - Types: 'concepts/types.md'
     - TypedDicts: 'concepts/typeddicts.md'
     - Validators: "concepts/reask_validation.md"
     - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
-    - Parallel Tools: 'concepts/parallel.md'
     - Stream Iterable: "concepts/iterable.md"
     - Stream Partial: "concepts/partial.md"
     - Raw Response: 'concepts/raw_response.md'
@@ -213,7 +214,6 @@ nav:
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
-    - Templating: 'concepts/templating.md'
   - Integrations:
     - Overview: 'integrations/index.md'
     # Major cloud providers
