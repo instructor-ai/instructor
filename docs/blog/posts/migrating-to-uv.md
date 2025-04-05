@@ -43,7 +43,7 @@ Most of our heavier jobs like the `Test Python` jobs are running multiple LLM ca
 
 The first thing we did was to use an automated tool to convert our poetry lockfile to a uv compatible lockfile. For this, I followed [this thread](https://x.com/tiangolo/status/1839686030007361803) by Sebastian Ramirez on how to do the conversions.
 
-**Step 1** : Use `uv` to run a `pdm` which will migrate your pyprpoejct.toml and make sure to remove all of the `tool.poetry` sections. You can see the initial `pyproject.toml` [here](https://github.com/instructor-ai/instructor/blob/ad046fbca335b9133a704bed1900cda846caaf7c/pyproject.toml).
+**Step 1** : Use `uv` to run a `pdm` which will migrate your pyproject.toml and make sure to remove all of the `tool.poetry` sections. You can see the initial `pyproject.toml` [here](https://github.com/instructor-ai/instructor/blob/ad046fbca335b9133a704bed1900cda846caaf7c/pyproject.toml).
 
 ```
 uvx pdm import pyproject.toml
