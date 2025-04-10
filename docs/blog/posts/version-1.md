@@ -19,7 +19,7 @@ tags:
 
 # Announcing instructor=1.0.0
 
-Over the past 10 months, we've build up instructor with the [principle](../../why.md) of 'easy to try, and easy to delete'. We accomplished this by patching the openai client with the `instructor` package and adding new arguments like `response_model`, `max_retries`, and `validation_context`. As a result I truely believe isntructor is the [best way](./best_framework.md) to get structured data out of llm apis.
+Over the past 10 months, we've build up instructor with the [principle](../../why.md) of 'easy to try, and easy to delete'. We accomplished this by patching the openai client with the `instructor` package and adding new arguments like `response_model`, `max_retries`, and `validation_context`. As a result I truly believe isntructor is the [best way](./best_framework.md) to get structured data out of llm apis.
 
 But as a result, we've been a bit stuck on getting typing to work well while giving you more control at development time. I'm excited to launch version 1.0.0 which cleans up the api w.r.t. typing without compromising the ease of use.
 
@@ -44,7 +44,7 @@ client = instructor.from_openai(openai.OpenAI())
 
 Except now, any default arguments you want to place into the `create` call will be passed to the client. via kwargs.
 
-IF you know you want to pass in tempurature, seed, or model, you can do so.
+IF you know you want to pass in temperature, seed, or model, you can do so.
 
 ```python
 import openai
@@ -82,7 +82,7 @@ client.chat.completions.create(model="gpt-4", response_model=type[T]) -> T
 client.messages.create(model="gpt-4", response_model=type[T]) -> T
 ```
 
-## Type are infered correctly
+## Type are inferred correctly
 
 This was the dream of instructor but due to the patching of openai, it wasnt possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
 
@@ -110,7 +110,7 @@ user = client.chat.completions.create(
 )
 ```
 
-Now if you use a ID, you can see the type is correctly infered.
+Now if you use a ID, you can see the type is correctly inferred.
 
 ![type](./img/type.png)
 
@@ -221,7 +221,7 @@ for user in user_stream:
     # name='John Doe' age=30
 ```
 
-Notice now that the type infered is `Generator[User, None]`
+Notice now that the type inferred is `Generator[User, None]`
 
 ![generator](./img/generator.png)
 

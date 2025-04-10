@@ -9,7 +9,7 @@ authors:
   - ivanleomk
 ---
 
-Multimodal Language Models like gpt-4o excel at procesing multimodal, enabling us to extract rich, structured metadata from images.
+Multimodal Language Models like gpt-4o excel at processing multimodal, enabling us to extract rich, structured metadata from images.
 
 This is particularly valuable in areas like fashion where we can use these capabilities to understand user style preferences from images and even videos. In this post, we'll see how to use instructor to map images to a given product taxonomy so we can recommend similar products for users.
 

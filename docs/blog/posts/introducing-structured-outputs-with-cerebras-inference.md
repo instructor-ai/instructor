@@ -114,7 +114,7 @@ resp = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Extract all users from this sentence : Chris is 27 and lives in San Francisco, John is 30 and lives in New York while their college roomate Jessica is 26 and lives in London",
+            "content": "Extract all users from this sentence : Chris is 27 and lives in San Francisco, John is 30 and lives in New York while their college roommate Jessica is 26 and lives in London",
         }
     ],
     response_model=Iterable[Person],
