@@ -141,6 +141,56 @@ nav:
     - Help with Instructor: 'help.md'
     - Contributing: 'contributing.md'
     - Newsletter: 'newsletter.md'
+  - Learning:
+    - Overview: 'learning/index.md'
+    - Getting Started with Structured Outputs: 'learning/getting_started/structured_outputs.md'
+    - Your First Extraction: 'learning/getting_started/first_extraction.md'
+    - Understanding Response Models: 'learning/getting_started/response_models.md'
+    - Client Setup: 'learning/getting_started/client_setup.md'
+    - Simple Object Extraction: 'learning/patterns/simple_object.md'
+    - List Extraction: 'learning/patterns/list_extraction.md'
+    - Simple Nested Structure: 'learning/patterns/nested_structure.md'
+    - Field Validation: 'learning/patterns/field_validation.md'
+    - Optional Fields: 'learning/patterns/optional_fields.md'
+    - Prompt Templates: 'learning/patterns/prompt_templates.md'
+    - Streaming Basics: 'learning/streaming/basics.md'
+    - Streaming Lists: 'learning/streaming/lists.md'
+    - Validation Basics: 'learning/validation/basics.md'
+    - Custom Validators: 'learning/validation/custom_validators.md'
+    - Retry Mechanisms: 'learning/validation/retry_mechanisms.md'
+    - Fallback Strategies: 'learning/validation/fallback_strategies.md'
+    - Field-level Validation: 'learning/validation/field_level_validation.md'
+  - Integrations:
+    - Overview: 'integrations/index.md'
+    # Major cloud providers
+    - OpenAI: 'integrations/openai.md'
+    - DeepSeek: 'integrations/deepseek.md'
+    - llama-cpp-python: 'integrations/llama-cpp-python.md'
+    - Gemini: 'integrations/google.md'
+    - Anthropic: 'integrations/anthropic.md'
+    - Azure OpenAI: 'integrations/azure.md'
+    - Google GenAI: 'integrations/genai.md'
+    - AWS Bedrock: 'integrations/bedrock.md'
+    - Vertex AI: 'integrations/vertex.md'
+    
+    # Fast inference providers
+    - Groq: 'integrations/groq.md'
+    - Fireworks: 'integrations/fireworks.md'
+    - Together: 'integrations/together.md'
+    - Anyscale: 'integrations/anyscale.md'
+    
+    # Other commercial providers
+    - Cerebras: 'integrations/cerebras.md'
+    - Cohere: 'integrations/cohere.md'
+    - Databricks: 'integrations/databricks.md'
+    - Cortex: 'integrations/cortex.md'
+    - LiteLLM: 'integrations/litellm.md'
+    - Mistral: 'integrations/mistral.md'
+    - Ollama: 'integrations/ollama.md'
+    - Perplexity: 'integrations/perplexity.md'
+    - Writer: 'integrations/writer.md'
+    - OpenRouter: 'integrations/openrouter.md'
+    - SambaNova: 'integrations/sambanova.md'
   - Cookbook:
     - Overview: 'examples/index.md'
     - "Audio Information Extraction": 'examples/audio_extraction.md'
@@ -180,8 +230,6 @@ nav:
     - "Single Classification Tasks": 'examples/single_classification.md'
     - "Table Extraction from Images": 'examples/tables_from_vision.md'
     - "YouTube Clip Analysis": 'examples/youtube_clips.md'
-  - Blog:
-      - "blog/index.md"
   - Concepts:
     - Overview: 'concepts/index.md'
     - Retrying: 'concepts/retrying.md'
@@ -214,46 +262,8 @@ nav:
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
-  - Integrations:
-    - Overview: 'integrations/index.md'
-    # Major cloud providers
-    - OpenAI: 'integrations/openai.md'
-    - DeepSeek: 'integrations/deepseek.md'
-    - llama-cpp-python: 'integrations/llama-cpp-python.md'
-    - Gemini: 'integrations/google.md'
-    - Anthropic: 'integrations/anthropic.md'
-    - Azure OpenAI: 'integrations/azure.md'
-    - Google GenAI: 'integrations/genai.md'
-    - AWS Bedrock: 'integrations/bedrock.md'
-    - Vertex AI: 'integrations/vertex.md'
-    
-    # Fast inference providers
-    - Groq: 'integrations/groq.md'
-    - Fireworks: 'integrations/fireworks.md'
-    - Together: 'integrations/together.md'
-    - Anyscale: 'integrations/anyscale.md'
-    
-    # Other commercial providers
-    - Cerebras: 'integrations/cerebras.md'
-    - Cohere: 'integrations/cohere.md'
-    - Databricks: 'integrations/databricks.md'
-    - Cortex: 'integrations/cortex.md'
-    - LiteLLM: 'integrations/litellm.md'
-    - Mistral: 'integrations/mistral.md'
-    - Ollama: 'integrations/ollama.md'
-    - Perplexity: 'integrations/perplexity.md'
-    - Writer: 'integrations/writer.md'
-    - OpenRouter: 'integrations/openrouter.md'
-    - SambaNova: 'integrations/sambanova.md'
-    
-  - CLI Reference:
-      - "CLI Reference": "cli/index.md"
-      - "Finetuning GPT-3.5": "cli/finetune.md"
-      - "Usage Tracking": "cli/usage.md"
-      - "Batch Jobs": "cli/batch.md"
-  - Jobs Board (External):
-      - Jobs: "jobs.md"
-  - Prompt Design:
+  
+  - Prompt Engineering:
     - "prompting/index.md"
     - Zero-Shot:
       - Use Emotional Language: 'prompting/zero_shot/emotion_prompting.md'
@@ -313,6 +323,15 @@ nav:
       - Recurs.-of-Thought: 'prompting/decomposition/recurs_of_thought.md'
       - Generate in Parallel: 'prompting/decomposition/skeleton_of_thought.md'
       - Tree-of-Thought: 'prompting/decomposition/tree-of-thought.md'
+  - CLI Reference:
+      - "CLI Reference": "cli/index.md"
+      - "Finetuning GPT-3.5": "cli/finetune.md"
+      - "Usage Tracking": "cli/usage.md"
+      - "Batch Jobs": "cli/batch.md"
+  - Find Jobs (External):
+      - Jobs: "jobs.md"
+  - Blog:
+      - "blog/index.md"
 plugins:
   - redirects:
       redirect_maps:
