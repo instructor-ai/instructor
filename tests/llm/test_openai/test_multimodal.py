@@ -6,10 +6,28 @@ from itertools import product
 from .util import models, modes
 import requests
 from pathlib import Path
-
+import base64
+import os
 
 audio_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
 image_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
+
+pdf_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+curr_file = os.path.dirname(__file__)
+pdf_path = os.path.join(curr_file, "../../assets/invoice.pdf")
+pdf_base64 = base64.b64encode(open(pdf_path, "rb").read()).decode("utf-8")
+pdf_base64_string = f"data:application/pdf;base64,{pdf_base64}"
+
+
+class LineItem(BaseModel):
+    name: str
+    price: int
+    quantity: int
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
 
 
 def gettysburg_audio():
@@ -139,3 +157,27 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
     )
 
     assert response.choices[0].message.content.startswith("This is an image")
+
+
+@pytest.mark.parametrize("pdf_source", [pdf_path, pdf_url, pdf_base64_string])
+@pytest.mark.parametrize("model, mode", product(models, modes))
+def test_multimodal_pdf_file(model, mode, client, pdf_source):
+    client = instructor.from_openai(client, mode=mode)
+    response = client.chat.completions.create(
+        model=model,  # Ensure this is a vision-capable model
+        messages=[
+            {
+                "role": "system",
+                "content": "Extract the total and items from the invoice",
+            },
+            {
+                "role": "user",
+                "content": instructor.multimodal.PDF.autodetect(pdf_source),
+            },
+        ],
+        autodetect_images=False,
+        response_model=Receipt,
+    )
+
+    assert response.total == 220
+    assert len(response.items) == 2

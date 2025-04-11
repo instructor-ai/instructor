@@ -189,7 +189,7 @@ for r in resp:
 
 `instructor` supports multimodal inputs for Gemini models, allowing you to perform tasks like visual question answering, image analysis, and more.
 
-You can see an example of how to use instructor with Gemini to [extract travel recomendations from videos](./multimodal-gemini.md) post.
+You can see an example of how to use instructor with Gemini to [extract travel recommendations from videos](./multimodal-gemini.md) post.
 
 ## What else does Instructor offer?
 

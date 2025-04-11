@@ -184,20 +184,21 @@ nav:
       - "blog/index.md"
   - Concepts:
     - Overview: 'concepts/index.md'
+    - Retrying: 'concepts/retrying.md'
+    - Fields: 'concepts/fields.md'
     - Models: 'concepts/models.md'
+    - Parallel Tools: 'concepts/parallel.md'
+    - Templating: 'concepts/templating.md'
     - Lists and Arrays: 'concepts/lists.md'
     - Prompting: 'concepts/prompting.md'
     - Multimodal : 'concepts/multimodal.md'
-    - Retrying: 'concepts/retrying.md'
     - Patching: 'concepts/patching.md'
     - Hooks: 'concepts/hooks.md'
-    - Fields: 'concepts/fields.md'
     - Types: 'concepts/types.md'
     - TypedDicts: 'concepts/typeddicts.md'
     - Validators: "concepts/reask_validation.md"
     - Usage Tokens: 'concepts/usage.md'
     - Missing: "concepts/maybe.md"
-    - Parallel Tools: 'concepts/parallel.md'
     - Stream Iterable: "concepts/iterable.md"
     - Stream Partial: "concepts/partial.md"
     - Raw Response: 'concepts/raw_response.md'
@@ -213,14 +214,15 @@ nav:
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
-    - Templating: 'concepts/templating.md'
   - Integrations:
     - Overview: 'integrations/index.md'
     # Major cloud providers
     - OpenAI: 'integrations/openai.md'
-    - Azure OpenAI: 'integrations/azure.md'
-    - Anthropic: 'integrations/anthropic.md'
+    - DeepSeek: 'integrations/deepseek.md'
+    - llama-cpp-python: 'integrations/llama-cpp-python.md'
     - Gemini: 'integrations/google.md'
+    - Anthropic: 'integrations/anthropic.md'
+    - Azure OpenAI: 'integrations/azure.md'
     - Google GenAI: 'integrations/genai.md'
     - AWS Bedrock: 'integrations/bedrock.md'
     - Vertex AI: 'integrations/vertex.md'
@@ -232,24 +234,14 @@ nav:
     - Anyscale: 'integrations/anyscale.md'
     
     # Other commercial providers
-    - AWS Bedrock: 'integrations/bedrock.md'
-    - Azure OpenAI: 'integrations/azure.md'
     - Cerebras: 'integrations/cerebras.md'
     - Cohere: 'integrations/cohere.md'
     - Databricks: 'integrations/databricks.md'
     - Cortex: 'integrations/cortex.md'
-    - DeepSeek: 'integrations/deepseek.md'
-    - Fireworks: 'integrations/fireworks.md'
-    - Gemini: 'integrations/google.md'
-    - Groq: 'integrations/groq.md'
     - LiteLLM: 'integrations/litellm.md'
-    - llama-cpp-python: 'integrations/llama-cpp-python.md'
     - Mistral: 'integrations/mistral.md'
     - Ollama: 'integrations/ollama.md'
-    - OpenAI: 'integrations/openai.md'
     - Perplexity: 'integrations/perplexity.md'
-    - Together: 'integrations/together.md'
-    - Vertex AI: 'integrations/vertex.md'
     - Writer: 'integrations/writer.md'
     - OpenRouter: 'integrations/openrouter.md'
     - SambaNova: 'integrations/sambanova.md'

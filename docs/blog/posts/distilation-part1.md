@@ -166,10 +166,10 @@ def fn(a: int, b: int) -> Multiply:
 2.  Don't forget to replace this with your new model id. OpenAI identifies fine tuned models with an id
     of `ft:gpt-3.5-turbo-0613:personal::<id>` under their **Fine-tuning** tab on their dashboard
 
-With this, you can swap the function implementation, making it backward compatible. You can even imagine using the different models for different tasks or validating and runnign evals by using the original function and comparing it to the distillation.
+With this, you can swap the function implementation, making it backward compatible. You can even imagine using the different models for different tasks or validating and running evals by using the original function and comparing it to the distillation.
 
 ## Conclusion
 
-We've seen how `Instructor` can make your life easier, from fine-tuning to distillation. Now if you're thinking wow, I'd love a backend service to do this for continously, you're in luck! Please check out the survey at [useinstructor.com](https://useinstructor.com) and let us know who you are.
+We've seen how `Instructor` can make your life easier, from fine-tuning to distillation. Now if you're thinking wow, I'd love a backend service to do this for continuously, you're in luck! Please check out the survey at [useinstructor.com](https://useinstructor.com) and let us know who you are.
 
 If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!

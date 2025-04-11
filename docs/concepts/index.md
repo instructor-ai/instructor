@@ -16,6 +16,7 @@ These are the fundamental concepts you need to understand to use Instructor effe
 - [Types](./types.md) - Working with different data types in your models
 - [Validation](./validation.md) - Validating LLM outputs against your models
 - [Prompting](./prompting.md) - Creating effective prompts for structured output extraction
+- [Multimodal](./multimodal.md) - Working with Audio Files, Images and PDFs
 
 ## Data Handling and Structures
 

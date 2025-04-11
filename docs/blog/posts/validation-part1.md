@@ -80,7 +80,7 @@ Let's examine how these approaches with an example. Imagine that you run a softw
 
 ## Software 1.0: Introduction to Validations in Pydantic
 
-A simple method could be to compile a list of different words that are often associated with hate speech. For simplicity, let's assume that we've found that the words `Steal` and `Rob` are good predictors of hateful speech from our database. We can modify our validation structure above to accomodate this.
+A simple method could be to compile a list of different words that are often associated with hate speech. For simplicity, let's assume that we've found that the words `Steal` and `Rob` are good predictors of hateful speech from our database. We can modify our validation structure above to accommodate this.
 
 This will throw an error if we pass in a string like `Let's rob the bank!` or `We should steal from the supermarkets`.
 

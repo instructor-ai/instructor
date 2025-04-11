@@ -41,6 +41,7 @@ VALID_AUDIO_MIME_TYPES = [
     "audio/wav",
     "audio/webm",
 ]
+VALID_PDF_MIME_TYPES = ["application/pdf"]
 CacheControlType = Mapping[str, str]
 OptionalCacheControlType = Optional[CacheControlType]
 
@@ -287,9 +288,9 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         response = requests.get(url)
         content_type = response.headers.get("content-type")
-        assert content_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        assert (
+            content_type in VALID_AUDIO_MIME_TYPES
+        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -305,9 +306,9 @@ class Audio(BaseModel):
         if mime_type == "audio/x-wav":
             mime_type = "audio/wav"
 
-        assert mime_type in VALID_AUDIO_MIME_TYPES, (
-            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
-        )
+        assert (
+            mime_type in VALID_AUDIO_MIME_TYPES
+        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
@@ -361,6 +362,274 @@ class ImageWithCacheControl(Image):
         return result
 
 
+class PDF(BaseModel):
+    source: str | Path = Field(description="URL, file path, or base64 data of the PDF")
+    media_type: str = Field(
+        description="MIME type of the PDF", default="application/pdf"
+    )
+    data: str | None = Field(None, description="Base64 encoded PDF data", repr=False)
+
+    @classmethod
+    def autodetect(cls, source: str | Path) -> PDF:
+        """Attempt to autodetect a PDF from a source string or Path.
+        Args:
+            source (Union[str,path]): The source string or path.
+        Returns:
+            A PDF if the source is detected to be a valid PDF.
+        Raises:
+            ValueError: If the source is not detected to be a valid PDF.
+        """
+        if isinstance(source, str):
+            if cls.is_base64(source):
+                return cls.from_base64(source)
+            elif source.startswith(("http://", "https://")):
+                return cls.from_url(source)
+
+            try:
+                if Path(source).is_file():
+                    return cls.from_path(source)
+            except FileNotFoundError as err:
+                raise ValueError("PDF file not found") from err
+            except OSError as e:
+                if e.errno == 63:  # File name too long
+                    raise ValueError("PDF file name too long") from e
+                raise ValueError("Unable to read PDF file") from e
+
+            return cls.from_raw_base64(source)
+        elif isinstance(source, Path):
+            return cls.from_path(source)
+
+        raise ValueError("Unable to determine PDF type or unsupported PDF format")
+
+    @classmethod
+    def is_base64(cls, s: str) -> bool:
+        return bool(re.match(r"^data:application/pdf;base64,", s))
+
+    @classmethod
+    def from_base64(cls, data_uri: str) -> PDF:
+        header, encoded = data_uri.split(",", 1)
+        media_type = header.split(":")[1].split(";")[0]
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+        return cls(
+            source=data_uri,
+            media_type=media_type,
+            data=encoded,
+        )
+
+    @classmethod
+    @lru_cache
+    def from_path(cls, path: str | Path) -> PDF:
+        path = Path(path)
+        if not path.is_file():
+            raise FileNotFoundError(f"PDF file not found: {path}")
+
+        if path.stat().st_size == 0:
+            raise ValueError("PDF file is empty")
+
+        media_type, _ = mimetypes.guess_type(str(path))
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+
+        data = base64.b64encode(path.read_bytes()).decode("utf-8")
+        return cls(source=path, media_type=media_type, data=data)
+
+    @classmethod
+    def from_raw_base64(cls, data: str) -> PDF:
+        try:
+            decoded = base64.b64decode(data)
+            # Check if it's a valid PDF by looking for the PDF header
+            if decoded.startswith(b"%PDF-"):
+                return cls(
+                    source=data,
+                    media_type="application/pdf",
+                    data=data,
+                )
+            raise ValueError("Invalid PDF format")
+        except Exception as e:
+            raise ValueError("Invalid or unsupported base64 PDF data") from e
+
+    @classmethod
+    @lru_cache
+    def from_url(cls, url: str) -> PDF:
+        parsed_url = urlparse(url)
+        media_type, _ = mimetypes.guess_type(parsed_url.path)
+
+        if not media_type:
+            try:
+                response = requests.head(url, allow_redirects=True)
+                media_type = response.headers.get("Content-Type")
+            except requests.RequestException as e:
+                raise ValueError("Failed to fetch PDF from URL") from e
+
+        if media_type not in VALID_PDF_MIME_TYPES:
+            raise ValueError(f"Unsupported PDF format: {media_type}")
+        return cls(source=url, media_type=media_type, data=None)
+
+    def to_mistral(self) -> dict[str, Any]:
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            return {
+                "type": "document_url",
+                "document_url": self.source,
+            }
+        raise ValueError("Mistral only supports document URLs for now")
+
+    def to_openai(self) -> dict[str, Any]:
+        """Convert to OpenAI's document format."""
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            # Fetch the file from URL and convert to base64
+            data = requests.get(self.source)
+            data = base64.b64encode(data.content).decode("utf-8")
+            return {
+                "type": "file",
+                "file": {
+                    "filename": self.source,
+                    "file_data": f"data:{self.media_type};base64,{data}",
+                },
+            }
+        elif self.data or self.is_base64(str(self.source)):
+            data = self.data or str(self.source).split(",", 1)[1]
+            return {
+                "type": "file",
+                "file": {
+                    "filename": self.source
+                    if isinstance(self.source, str)
+                    else str(self.source),
+                    "file_data": f"data:{self.media_type};base64,{data}",
+                },
+            }
+        else:
+            raise ValueError("PDF data is missing for base64 encoding.")
+
+    def to_anthropic(self) -> dict[str, Any]:
+        """Convert to Anthropic's document format."""
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            return {
+                "type": "document",
+                "source": {
+                    "type": "url",
+                    "url": self.source,
+                },
+            }
+        else:
+            if not self.data:
+                self.data = requests.get(str(self.source)).content  # type: ignore
+                self.data = base64.b64encode(self.data).decode("utf-8")  # type: ignore
+
+            return {
+                "type": "document",
+                "source": {
+                    "type": "base64",
+                    "media_type": self.media_type,
+                    "data": self.data,
+                },
+            }
+
+    def to_genai(self):
+        from google.genai import types
+
+        if (
+            isinstance(self.source, str)
+            and self.source.startswith(("http://", "https://"))
+            and not self.data
+        ):
+            # Fetch the file from URL and convert to base64
+            data = requests.get(self.source).content
+            data = base64.b64encode(data).decode("utf-8")
+            return types.Part.from_bytes(
+                data=base64.b64decode(data),
+                mime_type=self.media_type,
+            )
+
+        if self.data:
+            return types.Part.from_bytes(
+                data=base64.b64decode(self.data),
+                mime_type=self.media_type,
+            )
+
+        raise ValueError("Unsupported PDF format")
+
+
+class PDFWithCacheControl(PDF):
+    """PDF with Anthropic prompt caching support."""
+
+    def to_anthropic(self) -> dict[str, Any]:
+        """Override Anthropic return with cache_control."""
+        result = super().to_anthropic()
+        result["cache_control"] = {"type": "ephemeral"}
+        return result
+
+
+class PDFWithGenaiFile(PDF):
+    @classmethod
+    def from_new_genai_file(
+        cls, file_path: str, retry_delay: int = 10, max_retries: int = 20
+    ) -> PDFWithGenaiFile:
+        """Create a new PDFWithGenaiFile from a file path."""
+        from google.genai.types import FileState
+        import time
+        from google.genai import Client
+
+        client = Client()
+        file = client.files.upload(file=file_path)
+        while file.state != FileState.ACTIVE:
+            time.sleep(retry_delay)
+            file = client.files.get(name=file.name)  # type: ignore
+            if max_retries > 0:
+                max_retries -= 1
+            else:
+                raise Exception(
+                    "Max retries reached. File upload has been started but is still pending"
+                )
+
+        return cls(source=file.uri, media_type=file.mime_type, data=None)  # type: ignore
+
+    @classmethod
+    def from_existing_genai_file(cls, file_name: str) -> PDFWithGenaiFile:
+        """Create a new PDFWithGenaiFile from a file URL."""
+        from google.genai import types
+        from google.genai.types import FileState
+        from google.genai import Client
+
+        client = Client()
+        file = client.files.get(name=file_name)
+        if file.source == types.FileSource.UPLOADED and file.state == FileState.ACTIVE:
+            return cls(
+                source=file.uri,  # type: ignore
+                media_type=file.mime_type,  # type: ignore
+                data=None,
+            )
+        else:
+            raise ValueError("We only support uploaded PDFs for now")
+
+    def to_genai(self):
+        from google.genai import types
+
+        if (
+            self.source
+            and isinstance(self.source, str)
+            and "https://generativelanguage.googleapis.com/v1beta/files/" in self.source
+        ):
+            return types.Part.from_uri(
+                file_uri=self.source,
+                mime_type=self.media_type,
+            )
+
+        return super().to_genai()
+
+
 def convert_contents(
     contents: Union[  # noqa: UP007
         str,
@@ -374,7 +643,7 @@ def convert_contents(
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
-    if isinstance(contents, (Image, Audio)) or isinstance(contents, dict):
+    if isinstance(contents, (Image, Audio, PDF)) or isinstance(contents, dict):
         contents = [contents]
 
     converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
@@ -383,7 +652,7 @@ def convert_contents(
             converted_contents.append({"type": "text", "text": content})
         elif isinstance(content, dict):
             converted_contents.append(content)
-        elif isinstance(content, (Image, Audio)):
+        elif isinstance(content, (Image, Audio, PDF)):
             if mode in {
                 Mode.ANTHROPIC_JSON,
                 Mode.ANTHROPIC_TOOLS,
@@ -392,6 +661,11 @@ def convert_contents(
                 converted_contents.append(content.to_anthropic())
             elif mode in {Mode.GEMINI_JSON, Mode.GEMINI_TOOLS}:
                 raise NotImplementedError("Gemini is not supported yet")
+            elif mode in {
+                Mode.MISTRAL_STRUCTURED_OUTPUTS,
+                Mode.MISTRAL_TOOLS,
+            } and isinstance(content, (PDF)):
+                converted_contents.append(content.to_mistral())  # type: ignore
             else:
                 converted_contents.append(content.to_openai())
         else:
@@ -498,6 +772,8 @@ def extract_genai_multimodal_content(
             if content_part.text and autodetect_images:
                 # Detect if the text is an image
                 converted_item = Image.autodetect_safely(content_part.text)
+
+                # We only do autodetection for images for now
                 if isinstance(converted_item, Image):
                     converted_contents.append(converted_item.to_genai())
                     continue

@@ -294,7 +294,7 @@ async def stream_partial():
             {"role": "user", "content": "Jason Liu is 25 years old"},
         ],
     )
-    
+
     async for partial_user in model:
         print(f"Received update: {partial_user}")
 
@@ -306,7 +306,7 @@ async def stream_iterable():
             {"role": "user", "content": "Make up two people"},
         ],
     )
-    
+
     async for user in users:
         print(f"Generated user: {user}")
 
@@ -326,3 +326,45 @@ asyncio.run(stream_iterable())
 ## Updates and Compatibility
 
 Instructor maintains compatibility with the latest Mistral API versions and models. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates on Mistral integration features.
+
+## Multimodal
+
+Instructor makes it easy to analyse and extract semantic information from PDFs using Mistral's models. Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method. Note that for now Mistral only supports document URLs.
+
+```
+from instructor.multimodal import PDF
+from pydantic import BaseModel
+import instructor
+from mistralai import Mistral
+import os
+
+
+class Receipt(BaseModel):
+    total: int
+    items: list[str]
+
+
+client = instructor.from_mistral(Mistral(os.environ["MISTRAL_API_KEY"]))
+
+url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
+
+response = client.chat.completions.create(
+    model="ministral-8b-latest",
+    response_model=Receipt,
+    max_tokens=1000,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Extract out the total and line items from the invoice",
+                PDF.from_url(
+                    url
+                ),  # Also supports PDF.from_path() and PDF.from_base64()
+            ],
+        },
+    ],
+)
+
+print(response)
+# > Receipt(total=220, items=['English Tea', 'Tofu'])
+```

@@ -58,7 +58,7 @@ class User(BaseModel):
 
 # Use the patched client to generate structured output
 user_response = anthropic_client(
-    model="claude-3-haiku-20240307",
+    model="claude-3-7-sonnet-latest",
     max_tokens=1024,
     messages=[
         {
@@ -110,7 +110,7 @@ with open("./book.txt") as f:
 # Make multiple calls using the cached context
 for _ in range(2):
     resp, completion = client.chat.completions.create_with_completion(
-        model="claude-3-haiku-20240307",
+        model="claude-3-7-sonnet-latest",
         messages=[
             {
                 "role": "user",
