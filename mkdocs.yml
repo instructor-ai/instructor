@@ -160,6 +160,45 @@ nav:
     - Retry Mechanisms: 'learning/validation/retry_mechanisms.md'
     - Fallback Strategies: 'learning/validation/fallback_strategies.md'
     - Field-level Validation: 'learning/validation/field_level_validation.md'
+  - Integrations:
+    - Overview: 'integrations/index.md'
+    # Major cloud providers
+    - OpenAI: 'integrations/openai.md'
+    - DeepSeek: 'integrations/deepseek.md'
+    - llama-cpp-python: 'integrations/llama-cpp-python.md'
+    - Gemini: 'integrations/google.md'
+    - Anthropic: 'integrations/anthropic.md'
+    - Azure OpenAI: 'integrations/azure.md'
+    - Google GenAI: 'integrations/genai.md'
+    - AWS Bedrock: 'integrations/bedrock.md'
+    - Vertex AI: 'integrations/vertex.md'
+    
+    # Fast inference providers
+    - Groq: 'integrations/groq.md'
+    - Fireworks: 'integrations/fireworks.md'
+    - Together: 'integrations/together.md'
+    - Anyscale: 'integrations/anyscale.md'
+    
+    # Other commercial providers
+    - AWS Bedrock: 'integrations/bedrock.md'
+    - Azure OpenAI: 'integrations/azure.md'
+    - Cerebras: 'integrations/cerebras.md'
+    - Cohere: 'integrations/cohere.md'
+    - Databricks: 'integrations/databricks.md'
+    - Cortex: 'integrations/cortex.md'
+    - Fireworks: 'integrations/fireworks.md'
+    - Gemini: 'integrations/google.md'
+    - Groq: 'integrations/groq.md'
+    - LiteLLM: 'integrations/litellm.md'
+    - Mistral: 'integrations/mistral.md'
+    - Ollama: 'integrations/ollama.md'
+    - OpenAI: 'integrations/openai.md'
+    - Perplexity: 'integrations/perplexity.md'
+    - Together: 'integrations/together.md'
+    - Vertex AI: 'integrations/vertex.md'
+    - Writer: 'integrations/writer.md'
+    - OpenRouter: 'integrations/openrouter.md'
+    - SambaNova: 'integrations/sambanova.md'
   - Cookbook:
     - Overview: 'examples/index.md'
     - "Audio Information Extraction": 'examples/audio_extraction.md'
@@ -231,46 +270,7 @@ nav:
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
-  - Integrations:
-    - Overview: 'integrations/index.md'
-    # Major cloud providers
-    - OpenAI: 'integrations/openai.md'
-    - DeepSeek: 'integrations/deepseek.md'
-    - llama-cpp-python: 'integrations/llama-cpp-python.md'
-    - Gemini: 'integrations/google.md'
-    - Anthropic: 'integrations/anthropic.md'
-    - Azure OpenAI: 'integrations/azure.md'
-    - Google GenAI: 'integrations/genai.md'
-    - AWS Bedrock: 'integrations/bedrock.md'
-    - Vertex AI: 'integrations/vertex.md'
-    
-    # Fast inference providers
-    - Groq: 'integrations/groq.md'
-    - Fireworks: 'integrations/fireworks.md'
-    - Together: 'integrations/together.md'
-    - Anyscale: 'integrations/anyscale.md'
-    
-    # Other commercial providers
-    - AWS Bedrock: 'integrations/bedrock.md'
-    - Azure OpenAI: 'integrations/azure.md'
-    - Cerebras: 'integrations/cerebras.md'
-    - Cohere: 'integrations/cohere.md'
-    - Databricks: 'integrations/databricks.md'
-    - Cortex: 'integrations/cortex.md'
-    - Fireworks: 'integrations/fireworks.md'
-    - Gemini: 'integrations/google.md'
-    - Groq: 'integrations/groq.md'
-    - LiteLLM: 'integrations/litellm.md'
-    - Mistral: 'integrations/mistral.md'
-    - Ollama: 'integrations/ollama.md'
-    - OpenAI: 'integrations/openai.md'
-    - Perplexity: 'integrations/perplexity.md'
-    - Together: 'integrations/together.md'
-    - Vertex AI: 'integrations/vertex.md'
-    - Writer: 'integrations/writer.md'
-    - OpenRouter: 'integrations/openrouter.md'
-    - SambaNova: 'integrations/sambanova.md'
-    
+  
   - CLI Reference:
       - "CLI Reference": "cli/index.md"
       - "Finetuning GPT-3.5": "cli/finetune.md"
