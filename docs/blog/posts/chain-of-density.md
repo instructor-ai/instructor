@@ -366,7 +366,7 @@ def summarize_article(article: str, summary_steps: int = 3):
     **automatic type coercion of our outputs and automatic retries for invalid outputs**
     out of the box!
 
-2.  We first generate an initial summary. Note here that we explictly ask for a summary that has
+2.  We first generate an initial summary. Note here that we explicitly ask for a summary that has
     80 words and is lengthy with overly verbose fillers in the system prompt
 
 3.  We slightly modify the original system prompt used in the original paper to perform a rewrite of the summary.
@@ -511,7 +511,7 @@ We'll be comparing the following models in 3 ways using 20 articles that were no
 
 `GPT-3.5 (Vanilla)`
 
-: This is a GPT 3.5 model that we asked to generate entity-dense summaries which were concise. Summaries were generated in a single pass targetting about 80-90 tokens.
+: This is a GPT 3.5 model that we asked to generate entity-dense summaries which were concise. Summaries were generated in a single pass targeting about 80-90 tokens.
 
 | Model              | Mean Latency (s) | Mean Entity Density |
 | ------------------ | ---------------- | ------------------- |

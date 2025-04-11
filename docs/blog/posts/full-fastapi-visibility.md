@@ -20,13 +20,13 @@ tags:
 
 # Why Logfire is a perfect fit for FastAPI + Instructor
 
-Logfire is a new tool that provides key insight into your application with Open Telemtry. Instead of using ad-hoc print statements, Logfire helps to profile every part of your application and is integrated directly into Pydantic and FastAPI, two popular libraries amongst Instructor users.
+Logfire is a new tool that provides key insight into your application with Open Telemetry. Instead of using ad-hoc print statements, Logfire helps to profile every part of your application and is integrated directly into Pydantic and FastAPI, two popular libraries amongst Instructor users.
 
 In short, this is the secret sauce to help you get your application to the finish line and beyond. We'll show you how to easily integrate Logfire into FastAPI, one of the most popular choices amongst users of Instructor using two examples
 
 1. Data Extraction from a single User Query
 2. Using `asyncio` to process multiple users in parallel
-3. Streaming multiple objects using an `Iterable` so that they're avaliable on demand
+3. Streaming multiple objects using an `Iterable` so that they're available on demand
 
 <!-- more -->
 
@@ -249,7 +249,7 @@ curl -X 'POST' \
 }'
 ```
 
-This is all logged in Logfire as seen below. We have complete visiblity into the performance of our entire application and it's pretty clear that a large chunk of the latency is taken up by the OpenAI Call.
+This is all logged in Logfire as seen below. We have complete visibility into the performance of our entire application and it's pretty clear that a large chunk of the latency is taken up by the OpenAI Call.
 
 We could also potentially separate the logs into more graunular levels by creating a new span for each instance of `extract_user` created.
 
@@ -274,11 +274,11 @@ Let's add a new endpoint to our server to see how this might work
 
     @app.post("/extract", response_class=StreamingResponse)
     async def extract(data: UserData):
-        supressed_client = AsyncOpenAI()
+        suppressed_client = AsyncOpenAI()
         logfire.instrument_openai(
-            supressed_client, suppress_other_instrumentation=False
+            suppressed_client, suppress_other_instrumentation=False
         )  # (1)!
-        client = instructor.from_openai(supressed_client)
+        client = instructor.from_openai(suppressed_client)
         users = await client.chat.completions.create(
             model="gpt-3.5-turbo",
             response_model=Iterable[UserDetail],
@@ -299,7 +299,7 @@ Let's add a new endpoint to our server to see how this might work
         return StreamingResponse(generate(), media_type="text/event-stream")
     ```
 
-    1. Note that we supress instrumentation to print out the stream objects. This has to do with the parsing of partials in Instructor.
+    1. Note that we suppress instrumentation to print out the stream objects. This has to do with the parsing of partials in Instructor.
 
 === "Full File"
 
@@ -367,9 +367,9 @@ Let's add a new endpoint to our server to see how this might work
 
     @app.post("/extract", response_class=StreamingResponse)
     async def extract(data: UserData):
-        supressed_client = AsyncOpenAI()
-        logfire.instrument_openai(supressed_client, suppress_other_instrumentation=False)
-        client = instructor.from_openai(supressed_client)
+        suppressed_client = AsyncOpenAI()
+        logfire.instrument_openai(suppressed_client, suppress_other_instrumentation=False)
+        client = instructor.from_openai(suppressed_client)
         users = await client.chat.completions.create(
             model="gpt-3.5-turbo",
             response_model=Iterable[UserDetail],

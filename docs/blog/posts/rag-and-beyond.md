@@ -72,7 +72,7 @@ Instructor uses Pydantic to simplify the interaction between the programmer and 
 
 ## Case Study 1: Metaphor Systems
 
-Take [Metaphor Systems](https://metaphor.systems), which turns natural language queries into their custom search-optimized query. If you take a look web UI you'll notice that they have an auto-prompt option, which uses function calls to furthur optimize your query using a language model, and turns it into a fully specified metaphor systems query.
+Take [Metaphor Systems](https://metaphor.systems), which turns natural language queries into their custom search-optimized query. If you take a look web UI you'll notice that they have an auto-prompt option, which uses function calls to further optimize your query using a language model, and turns it into a fully specified metaphor systems query.
 
 <figure markdown>
 ![Metaphor Systems](img/meta.png)

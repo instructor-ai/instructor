@@ -175,7 +175,7 @@ for message in messages:
         print(e)
 ```
 
-With Logfire, we can capture the entirety of the validation proccess. As seen below, we have access to not only the original input data, but also the schema that was being used, the errors that were thrown and even the exact field that threw the error.
+With Logfire, we can capture the entirety of the validation process. As seen below, we have access to not only the original input data, but also the schema that was being used, the errors that were thrown and even the exact field that threw the error.
 
 ![Logfire Validation](img/validation-logfire.png)
 
@@ -228,7 +228,7 @@ MarkdownDataFrame = Annotated[
     WithJsonSchema(  # (3)!
         {
             "type": "string",
-            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be seperate",
+            "description": "The markdown representation of the table, each one should be tidy, do not try to join tables that should be separate",
         }
     ),
 ]

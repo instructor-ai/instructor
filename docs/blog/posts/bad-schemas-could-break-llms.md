@@ -254,7 +254,7 @@ class AnswerWithNecessaryCalculationAndFinalChoice(BaseModel):
 
 What’s interesting about these results is that the difference in performance for JSON mode with multiple response models is far greater than that of Tool Calling.
 
-The worst perfoming response model for JSON mode was `AssumptionBasedAnswer` which scored 65% on the GSM8k while the worst performing response for Tool Calling was `AssumptionBasedAnswer` that scored 78.5% on our benchmarks. This means that the variation in performance for JSON mode was almost 50% larger than that of Tool Calling.
+The worst performing response model for JSON mode was `AssumptionBasedAnswer` which scored 65% on the GSM8k while the worst performing response for Tool Calling was `AssumptionBasedAnswer` that scored 78.5% on our benchmarks. This means that the variation in performance for JSON mode was almost 50% larger than that of Tool Calling.
 
 What’s also interesting is that different response models impacted each response mode differently. For Tool Calling, `AnswerWithNecessaryCalculationAndFinalChoice` was the best performing response model while for JSON mode, it was `ErrorAwareCalculation` and `Answer`.
 
@@ -332,7 +332,7 @@ class Equations(BaseModel):
     )
 ```
 
-This allows us to combine a LLM’s expressiveness with the performance of a deterministic system, in this case a python interpreter. As we continue to implement more complex systems wiht these models, the key isn’t going to be just toggling JSON mode and praying for the best. Instead, we need robust evaluation sets for testing the impact of different response models, prompt changes and other permutations.
+This allows us to combine a LLM’s expressiveness with the performance of a deterministic system, in this case a python interpreter. As we continue to implement more complex systems with these models, the key isn’t going to be just toggling JSON mode and praying for the best. Instead, we need robust evaluation sets for testing the impact of different response models, prompt changes and other permutations.
 
 ## Try Instructor Today
 
