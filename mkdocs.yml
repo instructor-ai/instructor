@@ -271,14 +271,7 @@ nav:
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
   
-  - CLI Reference:
-      - "CLI Reference": "cli/index.md"
-      - "Finetuning GPT-3.5": "cli/finetune.md"
-      - "Usage Tracking": "cli/usage.md"
-      - "Batch Jobs": "cli/batch.md"
-  - Jobs Board (External):
-      - Jobs: "jobs.md"
-  - Prompt Design:
+  - Prompt Engineering:
     - "prompting/index.md"
     - Zero-Shot:
       - Use Emotional Language: 'prompting/zero_shot/emotion_prompting.md'
@@ -338,6 +331,13 @@ nav:
       - Recurs.-of-Thought: 'prompting/decomposition/recurs_of_thought.md'
       - Generate in Parallel: 'prompting/decomposition/skeleton_of_thought.md'
       - Tree-of-Thought: 'prompting/decomposition/tree-of-thought.md'
+  - CLI Reference:
+      - "CLI Reference": "cli/index.md"
+      - "Finetuning GPT-3.5": "cli/finetune.md"
+      - "Usage Tracking": "cli/usage.md"
+      - "Batch Jobs": "cli/batch.md"
+  - Find Jobs (External):
+      - Jobs: "jobs.md"
   - Blog:
       - "blog/index.md"
 plugins:
