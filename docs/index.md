@@ -12,19 +12,7 @@ _Structured outputs powered by llms. Designed for simplicity, transparency, and 
 [![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
 [![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
 
-## Citation
 
-If you use Instructor in your research or project, please cite it using:
-
-```bibtex
-@software{liu2024instructor,
-  author = {Jason Liu and Contributors},
-  title = {Instructor: A library for structured outputs from large language models},
-  url = {https://github.com/instructor-ai/instructor},
-  year = {2024},
-  month = {3}
-}
-```
 
 Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./integrations/together.md), [Ollama](./integrations/ollama.md), and [llama-cpp-python](./integrations/llama-cpp-python.md).
 
@@ -480,6 +468,19 @@ If you want to see all the integrations, check out the [integrations guide](./in
 
     [See more :material-arrow-right:](./integrations/fireworks.md){: .md-button }
 
+## Citation
+
+If you use Instructor in your research or project, please cite it using:
+
+```bibtex
+@software{liu2024instructor,
+  author = {Jason Liu and Contributors},
+  title = {Instructor: A library for structured outputs from large language models},
+  url = {https://github.com/instructor-ai/instructor},
+  year = {2024},
+  month = {3}
+}
+```
 
 ## Why use Instructor?
 
