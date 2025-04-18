@@ -1,0 +1,43 @@
+system_message: "You are an expert classification system designed to analyze user inputs and categorize them into predefined labels. Your task is to carefully examine each input and determine which category it belongs to based on the provided definitions and examples. Focus on the semantic meaning and intent behind the text, not just keywords. Provide accurate classifications even for ambiguous or edge cases."
+label_definitions:
+  - label: "question"
+    description: "The user is asking for information or clarification on a topic."
+    examples:
+      examples_positive:
+        - "What is machine learning?"
+        - "How do I use the Instructor library?"
+        - "Can you explain Pydantic models?"
+        - "What's the difference between Claude and GPT?"
+      examples_negative:
+        - "I wonder if you could book me a flight to New York."
+        - "Could you help me with my code, please?"
+        - "Would you mind writing a poem about AI?"
+        - "Do you think you could send an email to marketing@example.com?"
+
+  - label: "scheduling"
+    description: "The user is asking for the assistant to perform a task or take action."
+    examples:
+      examples_positive:
+        - "Book a meeting with the team for tomorrow at 2pm."
+        - "Schedule my dentist appointment for next Friday."
+        - "Set up a call with the client on Monday morning."
+        - "Add a reminder for my doctor's appointment on the 15th."
+      examples_negative:
+        - "When was the last time France had an election?"
+        - "I need to remember my mother's birthday is on Thursday."
+        - "The conference starts at 9am tomorrow, will you be attending?"
+        - "How long does it typically take to complete this task by Friday?"
+
+  - label: "coding"
+    description: "The user is asking for the assistant to perform a task or take action."
+    examples:
+      examples_positive:
+        - "Write a Python function to sort a list."
+        - "Help me debug this JavaScript code."
+        - "How do I implement a binary search tree?"
+        - "Can you explain how to use async/await in Python?"
+      examples_negative:
+        - "I read an article about Python snakes yesterday."
+        - "My computer keeps crashing when I open too many tabs."
+        - "What's the best programming language to learn if I'm interested in AI?"
+        - "Could you compile a list of common functions people use in spreadsheets?"
