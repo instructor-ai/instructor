@@ -45,6 +45,8 @@ class ClassificationDefinition(BaseModel):
         labels = tuple(ld.label for ld in self.label_definitions)
 
         class ClassificationModel(BaseModel):
+            """Single‑label classification model. Only use a single label from the provided examples."""
+
             label: Literal[labels]  # type: ignore
 
         return ClassificationModel
@@ -53,6 +55,8 @@ class ClassificationDefinition(BaseModel):
         labels = tuple(ld.label for ld in self.label_definitions)
 
         class MultiClassificationModel(BaseModel):
+            """Multi‑label classification model. Only use labels from the provided examples."""
+
             labels: list[Literal[labels]]  # type: ignore
 
         return MultiClassificationModel
