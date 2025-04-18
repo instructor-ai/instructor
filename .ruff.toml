@@ -53,7 +53,6 @@ unfixable = [
   "T201",
   "T203",
 ]
-ignore-init-module-imports = true
 
 [lint.extend-per-file-ignores]
 "instructor/distil.py" = ["ARG002"]
