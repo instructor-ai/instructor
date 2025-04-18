@@ -60,8 +60,19 @@ def is_simple_type(
         # ! This is a workaround for now, we should fix this in later PRs
         return False
 
-    if typing.get_origin(response_model) in {typing.Iterable, Partial}:
-        # These are reserved for streaming types, would be nice to
+    # Get the origin of the response model
+    origin = typing.get_origin(response_model)
+
+    # Handle Python 3.10 special case for list[int | str] type patterns
+    # In Python 3.10, list[int | str] has an origin of typing.Iterable
+    # but we still want to treat it as a simple type
+    if origin in {typing.Iterable, Partial}:
+        # Check if it's a list with Union type arguments (like list[int | str])
+        args = typing.get_args(response_model)
+        if args and len(args) == 1 and typing.get_origin(args[0]) is typing.Union:
+            # This is a list with a Union type, which should be treated as a simple type
+            return True
+        # Otherwise, it's a streaming type
         return False
 
     if response_model in {
@@ -73,7 +84,7 @@ def is_simple_type(
         return True
 
     # If the response_model is a simple type like annotated
-    if typing.get_origin(response_model) in {
+    if origin in {
         typing.Annotated,
         typing.Literal,
         typing.Union,
