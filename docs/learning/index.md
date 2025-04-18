@@ -14,6 +14,9 @@ This section contains straightforward examples for using Instructor to extract s
   * [Optional Fields](patterns/optional_fields.md) - Handle missing information
   * [Field Validation](patterns/field_validation.md) - Add basic validation
   * [Prompt Templates](patterns/prompt_templates.md) - Improve extraction with templates
+  * [Async Processing](patterns/async_processing.md) - Use async for efficiency
+  * [Batch Processing](patterns/batch_processing.md) - Handle multiple items
+  * [Caching Techniques](patterns/caching_techniques.md) - Optimize with caching
 ## [Validation](#validation)
   * [Validation Basics](validation/basics.md) - Core validation concepts
   * [Field-level Validation](validation/field_level_validation.md) - Validate specific fields
@@ -22,3 +25,8 @@ This section contains straightforward examples for using Instructor to extract s
 ## [Streaming](#streaming)
   * [Streaming Basics](streaming/basics.md) - Get results as they generate
   * [Streaming Lists](streaming/lists.md) - Stream collections of data
+
+## [Advanced Topics](#advanced-topics)
+  * [Hooks](hooks.md) - Add callbacks for monitoring and debugging
+  * [Parallel Tool Calling](parallel_tool_calling.md) - Run multiple tool calls concurrently
+  * [FastAPI Integration](fastapi_integration.md) - Integrate with FastAPI endpoints

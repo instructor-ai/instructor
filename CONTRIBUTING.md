@@ -167,6 +167,68 @@ Instructor uses optional dependencies to support different LLM providers. When a
    ```
 
 2. **Create Provider Client**: Implement your provider client in `instructor/clients/client_myprovider.py`
+    - Follow the patterns in `instructor/client_anthropic.py`, `instructor/client_bedrock.py`, and `instructor/client_cerebras.py`.
+    - Export a `from_<provider>` function accepting both sync and async client instances and returning `Instructor` or `AsyncInstructor`.
+    - Use `@overload` decorators to provide correct type hints for sync and async variants.
+    - Assert that the provided `mode` is valid for your provider and that `client` is an instance of the expected SDK classes.
+    - Use `instructor.patch(create=client_method, mode=mode)` to wrap the provider's API call.
+    - Return `AsyncInstructor` for async clients and `Instructor` for sync clients based on `isinstance` checks.
+    - Include a docstring with Args, Returns, and Raises sections documenting parameters and behavior.
+
+    **Example implementation in `instructor/clients/client_myprovider.py`:**
+
+    ```python
+    from __future__ import annotations
+
+    import myprovider
+    import instructor
+    from typing import overload, Any
+    from instructor.client import Instructor, AsyncInstructor
+
+    @overload
+    def from_myprovider(
+        client: myprovider.Client,
+        mode: instructor.Mode = instructor.Mode.MYPROVIDER_TOOLS,
+        **kwargs: Any,
+    ) -> Instructor: ...
+
+    @overload
+    def from_myprovider(
+        client: myprovider.AsyncClient,
+        mode: instructor.Mode = instructor.Mode.MYPROVIDER_TOOLS,
+        **kwargs: Any,
+    ) -> AsyncInstructor: ...
+
+    def from_myprovider(
+        client: myprovider.Client | myprovider.AsyncClient,
+        mode: instructor.Mode = instructor.Mode.MYPROVIDER_TOOLS,
+        **kwargs: Any,
+    ) -> Instructor | AsyncInstructor:
+        """Create an Instructor instance for MyProvider."""
+        assert mode in {instructor.Mode.MYPROVIDER_TOOLS}, "Mode must be MYPROVIDER_TOOLS"
+        assert isinstance(client, (myprovider.Client, myprovider.AsyncClient)), "Client must be a sync or async MyProvider client"
+        # Determine create method based on client type
+        create_method = client.chat.complete if hasattr(client, 'chat') else client.chat_create
+        if isinstance(client, myprovider.AsyncClient):
+            return AsyncInstructor(
+                client=client,
+                create=instructor.patch(create=create_method, mode=mode),
+                provider=instructor.Provider.MYPROVIDER,
+                mode=mode,
+                **kwargs,
+            )
+        return Instructor(
+            client=client,
+            create=instructor.patch(create=create_method, mode=mode),
+            provider=instructor.Provider.MYPROVIDER,
+            mode=mode,
+            **kwargs,
+        )
+    ```
+    You can find reference implementations in:
+    - `instructor/client_anthropic.py`
+    - `instructor/client_bedrock.py`
+    - `instructor/client_cerebras.py`
 
 3. **Add Tests**: Create tests in `tests/llm/test_myprovider/`
 
