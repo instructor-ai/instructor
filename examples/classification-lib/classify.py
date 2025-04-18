@@ -40,7 +40,7 @@ except ModuleNotFoundError:  # pragma: no cover – allow running without tqdm
     tqdm_async = _AsyncTqdmShim  # type: ignore  # pylint: disable=invalid-name
 
 
-from .schema import ClassificationDefinition
+from schema import ClassificationDefinition
 
 
 class Classifier:

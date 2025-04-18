@@ -1,0 +1,22 @@
+# Test Evaluation Configuration
+
+# Models to evaluate
+models:
+  - "gpt-3.5-turbo"
+
+# Classification definition
+definition_path: "../../tests/intent_classification.yaml"
+
+# Evaluation sets to run
+eval_sets:
+  - "../datasets/test_evalset.yaml"
+
+# Analysis parameters
+bootstrap_samples: 100
+confidence_level: 0.95
+
+# Parallel processing 
+n_jobs: 2
+
+# Output directory for results
+output_dir: "unified_results"

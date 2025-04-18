@@ -1,0 +1,26 @@
+# Model Comparison Configuration
+
+# Models to compare
+models:
+  - "gpt-3.5-turbo"
+  - "gpt-4o-mini"
+
+# Number of parallel jobs to run
+n_jobs: 4
+
+# Output directory for results
+output_dir: "comparison_results"
+
+# Classification definition file
+definition_path: "../tests/intent_classification.yaml"
+
+# Evaluation sets to run
+eval_sets:
+  - "../tests/example_evalset.yaml"
+  - "complex_evalset.yaml"
+
+# Visualization options
+visualizations:
+  - "accuracy_bar_chart"
+  - "f1_score_comparison"
+  - "confusion_matrices"

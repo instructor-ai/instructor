@@ -152,9 +152,43 @@ print(result.label)  # -> "question"
 results = await async_classifier.batch_predict(["What is ML?", "Help me with Python"], n_jobs=2)
 ```
 
+## Evaluation
+
+You can evaluate your classifiers on test data to measure accuracy and other metrics:
+
+```python
+from schema import EvalSet
+from classify import Classifier
+from eval import evaluate_classifier, display_evaluation_results
+
+# Load an evaluation set from YAML
+eval_set = EvalSet.from_yaml("tests/example_evalset.yaml")
+
+# Run evaluation
+result = evaluate_classifier(classifier, eval_set)
+
+# Display results with Rich
+display_evaluation_results(result, detailed=True)
+```
+
+Example YAML format for evaluation sets:
+
+```yaml
+name: "Example Classification Evaluation Set"
+description: "Test set for evaluating the classifier"
+classification_type: "single"  # or "multi"
+examples:
+  - text: "What is the capital of France?"
+    expected_label: "question"
+  
+  - text: "Schedule a meeting for tomorrow at 3pm."
+    expected_label: "scheduling"
+```
+
 ## Roadmap
 
 - [x] Async support
+- [x] Evaluation framework with metrics
 - [ ] Streaming classification
 
 Contributions are welcome! Feel free to open an issue or pull request.

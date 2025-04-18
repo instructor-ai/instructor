@@ -1,0 +1,49 @@
+name: "Example Classification Evaluation Set"
+description: "Test set for evaluating the classifier against the three labels in intent_classification.yaml"
+classification_type: "single"
+examples:
+  - text: "What is the capital of France?"
+    expected_label: "question"
+  
+  - text: "How do I calculate the area of a circle?"
+    expected_label: "question"
+  
+  - text: "Tell me about quantum computing."
+    expected_label: "question"
+  
+  - text: "When was the first computer invented?"
+    expected_label: "question"
+  
+  - text: "Schedule a meeting with the team for tomorrow at 3pm."
+    expected_label: "scheduling"
+  
+  - text: "Set up a call with the client on Friday."
+    expected_label: "scheduling"
+  
+  - text: "Add a dentist appointment to my calendar for next week."
+    expected_label: "scheduling"
+  
+  - text: "I need to create a meeting for the project kickoff."
+    expected_label: "scheduling"
+  
+  - text: "Write a Python function to sort a list."
+    expected_label: "coding"
+  
+  - text: "How do I use async/await in JavaScript?"
+    expected_label: "coding"
+  
+  - text: "Debug this SQL query: SELECT * FROM users WHERE id = 5;"
+    expected_label: "coding"
+  
+  - text: "Help me understand how to implement a binary search tree."
+    expected_label: "coding"
+  
+  # Some edge cases
+  - text: "When should I schedule time to learn Python?"
+    expected_label: "scheduling"  # This is ambiguous between scheduling and coding
+  
+  - text: "What's the best time to schedule programming tutorials?"
+    expected_label: "question"  # Could be question or scheduling
+  
+  - text: "Can you explain how to code a scheduling algorithm?"
+    expected_label: "coding"  # Could be coding or scheduling

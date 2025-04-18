@@ -1,0 +1,27 @@
+# Evaluation Harness Configuration
+
+# Default model to use for evaluations
+default_model: "gpt-3.5-turbo"
+
+# Number of parallel jobs to run
+n_jobs: 4
+
+# Whether to use async mode
+async_mode: false
+
+# Output directory for results
+output_dir: "results"
+
+# Classification definition file
+definition_path: "../tests/intent_classification.yaml"
+
+# Evaluation sets to run
+eval_sets:
+  - "../tests/example_evalset.yaml"
+  
+# Optional model comparison
+# Uncomment to compare multiple models on the same eval sets
+# compare_models:
+#   - "gpt-3.5-turbo"
+#   - "gpt-4o-mini"
+#   - "gpt-4o"

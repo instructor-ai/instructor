@@ -1,0 +1,12 @@
+name: "Test Classification Evaluation Set"
+description: "Small test set for quick evaluation"
+classification_type: "single"
+examples:
+  - text: "What's the difference between Python 2 and Python 3?"
+    expected_label: "question"
+  
+  - text: "Book a team lunch for next Tuesday at noon."
+    expected_label: "scheduling"
+  
+  - text: "Can you show me how to implement a REST API in Flask?"
+    expected_label: "coding"

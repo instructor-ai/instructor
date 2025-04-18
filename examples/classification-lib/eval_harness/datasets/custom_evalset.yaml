@@ -1,0 +1,37 @@
+name: "Custom Classification Evaluation Set"
+description: "Custom evaluation set for the three labels in intent_classification.yaml"
+classification_type: "single"
+examples:
+  - text: "What's the difference between Python 2 and Python 3?"
+    expected_label: "question"
+  
+  - text: "Can you explain the concept of recursion in programming?"
+    expected_label: "question"
+  
+  - text: "What are the main features of React.js?"
+    expected_label: "question"
+  
+  - text: "Book a team lunch for next Tuesday at noon."
+    expected_label: "scheduling"
+  
+  - text: "Please send a calendar invite for the quarterly review."
+    expected_label: "scheduling"
+  
+  - text: "Let's plan our next sprint planning session."
+    expected_label: "scheduling"
+  
+  - text: "Can you show me how to implement a REST API in Flask?"
+    expected_label: "coding"
+  
+  - text: "Help me optimize this database query for better performance."
+    expected_label: "coding"
+  
+  - text: "I need help fixing this CSS layout issue."
+    expected_label: "coding"
+  
+  # Some challenging examples
+  - text: "When should I use asynchronous programming patterns?"
+    expected_label: "question"  # This is ambiguous between question and coding
+  
+  - text: "How do I schedule my code to run at specific times?"
+    expected_label: "coding"  # This mixes scheduling and coding concepts

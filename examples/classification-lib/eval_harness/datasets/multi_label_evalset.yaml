@@ -1,0 +1,33 @@
+name: "Multi-label Classification Evaluation Set"
+description: "Evaluation set for multi-label classification with the three labels in intent_classification.yaml"
+classification_type: "multi"
+examples:
+  - text: "When should I schedule time to learn Python?"
+    expected_labels: ["question", "scheduling", "coding"]
+  
+  - text: "Can you help me schedule a meeting to discuss coding problems?"
+    expected_labels: ["scheduling", "coding"]
+  
+  - text: "What's the best approach to debugging asynchronous code?"
+    expected_labels: ["question", "coding"]
+  
+  - text: "Should I schedule my team meetings on Monday or Friday?"
+    expected_labels: ["question", "scheduling"]
+  
+  - text: "Write a Python script to auto-generate meeting calendar events."
+    expected_labels: ["coding", "scheduling"]
+  
+  - text: "How do I implement a scheduling algorithm in JavaScript?"
+    expected_labels: ["question", "coding"]
+  
+  - text: "Could you explain how to optimize code for performance?"
+    expected_labels: ["question", "coding"]
+  
+  - text: "What's the best time to schedule pair programming sessions?"
+    expected_labels: ["question", "scheduling", "coding"]
+  
+  - text: "Can you create a coding tutorial for our team meeting tomorrow?"
+    expected_labels: ["coding", "scheduling"]
+  
+  - text: "Help me understand the difference between synchronous and asynchronous programming."
+    expected_labels: ["question", "coding"]

@@ -1,0 +1,24 @@
+# Unified Evaluation Configuration
+
+# Models to evaluate
+models:
+  - "gpt-3.5-turbo"
+  - "gpt-4o-mini"
+
+# Classification definition
+definition_path: "../../tests/intent_classification.yaml"
+
+# Evaluation sets to run
+eval_sets:
+  - "../datasets/custom_evalset.yaml"
+  - "../datasets/complex_evalset.yaml"
+
+# Analysis parameters
+bootstrap_samples: 1000
+confidence_level: 0.95
+
+# Parallel processing 
+n_jobs: 4
+
+# Output directory for results
+output_dir: "unified_results"
