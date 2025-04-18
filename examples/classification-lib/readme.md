@@ -4,7 +4,7 @@ A **fluent, type‑safe API** for text classification built on top of
 [Instructor](https://github.com/jxnl/instructor/) and the OpenAI Chat
 Completion API.
 
-> ⚠️ *The current helper functions are **synchronous only**. Async wrappers and
+> Both synchronous and asynchronous APIs are fully supported.
 
 ---
 
@@ -131,9 +131,30 @@ like VS Code provide auto‑completion and type checking.
 
 ---
 
+## Async Support
+
+```python
+from classify import AsyncClassifier
+from openai import AsyncOpenAI
+
+# Create an async classifier with AsyncOpenAI client
+async_classifier = (
+    AsyncClassifier(definition)
+    .with_client(AsyncOpenAI())
+    .with_model("gpt-4o-mini")
+)
+
+# Async prediction
+result = await async_classifier.predict("What is machine learning?")
+print(result.label)  # -> "question"
+
+# Async batch prediction
+results = await async_classifier.batch_predict(["What is ML?", "Help me with Python"], n_jobs=2)
+```
+
 ## Roadmap
 
-- [ ] Async support (`await classifier.apredict(...)`)
+- [x] Async support
 - [ ] Streaming classification
 
 Contributions are welcome! Feel free to open an issue or pull request.

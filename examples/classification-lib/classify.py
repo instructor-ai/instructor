@@ -152,16 +152,20 @@ class Classifier:
 
         return messages, context
 
-    def predict(self, text: str) -> BaseModel:
-        """Single‑label prediction – returns an instance of the generated model ``T``."""
+    def _validate_client(self):
+        """Validate that client is set and appropriate for the method type."""
         if not self.client:
             raise ValueError("Client not set. Use `.with_client()` first.")
-
-        messages, context = self._build_messages(text)
         if isinstance(self.client, instructor.AsyncInstructor):
             raise ValueError(
                 "AsyncInstructor cannot be used with synchronous methods. Use AsyncClassifier instead."
             )
+
+    def predict(self, text: str) -> BaseModel:
+        """Single‑label prediction – returns an instance of the generated model ``T``."""
+        self._validate_client()
+
+        messages, context = self._build_messages(text)
         result = self.client.chat.completions.create(
             model=self.model_name,
             response_model=self._classification_model,
@@ -172,14 +176,9 @@ class Classifier:
 
     def predict_multi(self, text: str) -> BaseModel:
         """Multi‑label prediction – returns an instance of the generated model ``M``."""
-        if not self.client:
-            raise ValueError("Client not set. Use `.with_client()` first.")
+        self._validate_client()
 
         messages, context = self._build_messages(text)
-        if isinstance(self.client, instructor.AsyncInstructor):
-            raise ValueError(
-                "AsyncInstructor cannot be used with synchronous methods. Use AsyncClassifier instead."
-            )
         result = self.client.chat.completions.create(
             model=self.model_name,
             response_model=self._multi_classification_model,
@@ -196,9 +195,7 @@ class Classifier:
         self, texts: list[str], n_jobs: int | None = None
     ) -> list[BaseModel]:
         """Run :py:meth:`predict` over multiple texts in parallel."""
-        assert self.client is not None and self.model_name is not None, (
-            "Client and model name must be set. Use `.with_client()` and `.with_model()` first."
-        )
+        self._validate_client()
 
         if not texts:
             return []
@@ -224,6 +221,7 @@ class Classifier:
         threads are used when a custom client is attached, otherwise the
         original *multiprocessing* implementation is retained.
         """
+        self._validate_client()
 
         if not texts:
             return []
@@ -243,15 +241,9 @@ class Classifier:
 
     def predict_with_completion(self, text: str) -> tuple[BaseModel, Any]:
         """Return both the parsed model and the underlying LLM completion."""
-
-        if not self.client:
-            raise ValueError("Client not set. Use `.with_client()` first.")
+        self._validate_client()
 
         messages, context = self._build_messages(text)
-        if isinstance(self.client, instructor.AsyncInstructor):
-            raise ValueError(
-                "AsyncInstructor cannot be used with synchronous methods. Use AsyncClassifier instead."
-            )
         return self.client.chat.completions.create_with_completion(
             model=self.model_name,
             response_model=self._classification_model,
@@ -261,15 +253,9 @@ class Classifier:
 
     def predict_multi_with_completion(self, text: str) -> tuple[BaseModel, Any]:
         """Multi‑label variant with raw completion."""
-
-        if not self.client:
-            raise ValueError("Client not set. Use `.with_client()` first.")
+        self._validate_client()
 
         messages, context = self._build_messages(text)
-        if isinstance(self.client, instructor.AsyncInstructor):
-            raise ValueError(
-                "AsyncInstructor cannot be used with synchronous methods. Use AsyncClassifier instead."
-            )
         return self.client.chat.completions.create_with_completion(
             model=self.model_name,
             response_model=self._multi_classification_model,
@@ -308,11 +294,16 @@ class AsyncClassifier(Classifier):
         self.client = client
         return self
 
+    def _validate_async_client(self):
+        """Validate that async client is set and ready for use."""
+        if not self.client or not self.model_name:
+            raise ValueError(
+                "Client and model name must be set. Use `.with_client()` and `.with_model()` first."
+            )
+
     async def predict(self, text: str) -> BaseModel:  # type: ignore[override]
         """Asynchronously predict a single label for *text*."""
-        assert self.client is not None and self.model_name is not None, (
-            "Client and model name must be set. Use `.with_client()` and `.with_model()` first."
-        )
+        self._validate_async_client()
 
         messages, context = self._build_messages(text)
         return await self.client.chat.completions.create(  # type: ignore[return-value]
@@ -324,10 +315,7 @@ class AsyncClassifier(Classifier):
 
     async def predict_multi(self, text: str) -> BaseModel:  # type: ignore[override]
         """Asynchronously predict multiple labels for *text*."""
-
-        assert self.client is not None and self.model_name is not None, (
-            "Client and model name must be set. Use `.with_client()` and `.with_model()` first."
-        )
+        self._validate_async_client()
 
         messages, context = self._build_messages(text)
         return await self.client.chat.completions.create(  # type: ignore[return-value]
@@ -353,9 +341,7 @@ class AsyncClassifier(Classifier):
         n_jobs:
             Maximum number of concurrent classification jobs.
         """
-        assert self.client is not None and self.model_name is not None, (
-            "Client and model name must be set. Use `.with_client()` and `.with_model()` first."
-        )
+        self._validate_async_client()
         sem = asyncio.Semaphore(n_jobs)
 
         async def _worker(t: str):
@@ -376,9 +362,7 @@ class AsyncClassifier(Classifier):
         self, texts: list[str], *, n_jobs: int = 5
     ) -> list[BaseModel]:
         """Run :py:meth:`predict_multi` concurrently over *texts* using a semaphore."""
-        assert self.client is not None and self.model_name is not None, (
-            "Client and model name must be set. Use `.with_client()` and `.with_model()` first."
-        )
+        self._validate_async_client()
         sem = asyncio.Semaphore(n_jobs)
 
         async def _worker(t: str):
@@ -395,9 +379,7 @@ class AsyncClassifier(Classifier):
             return await asyncio.gather(*tasks)
 
     async def predict_with_completion(self, text: str) -> tuple[BaseModel, Any]:
-        assert self.client is not None and self.model_name is not None, (
-            "Client and model name must be set. Use `.with_client()` and `.with_model()` first."
-        )
+        self._validate_async_client()
 
         messages, context = self._build_messages(text)
         model, completion = await self.client.chat.completions.create_with_completion(  # type: ignore[call-arg]
@@ -409,9 +391,7 @@ class AsyncClassifier(Classifier):
         return model, completion
 
     async def predict_multi_with_completion(self, text: str) -> tuple[BaseModel, Any]:
-        assert self.client is not None and self.model_name is not None, (
-            "Client and model name must be set. Use `.with_client()` and `.with_model()` first."
-        )
+        self._validate_async_client()
 
         messages, context = self._build_messages(text)
         model, completion = await self.client.chat.completions.create_with_completion(  # type: ignore[call-arg]

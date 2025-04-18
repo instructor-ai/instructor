@@ -29,7 +29,7 @@ label_definitions:
         - "How long does it typically take to complete this task by Friday?"
 
   - label: "coding"
-    description: "The user is asking for the assistant to perform a task or take action."
+    description: "The user is asking for help with programming or code-related tasks."
     examples:
       examples_positive:
         - "Write a Python function to sort a list."
