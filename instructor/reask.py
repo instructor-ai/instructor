@@ -372,7 +372,7 @@ def reask_perplexity_json(
     kwargs["messages"].extend(reask_msgs)
     return kwargs
 
-  
+
 def reask_genai_tools(
     kwargs: dict[str, Any],
     response: Any,
@@ -415,7 +415,8 @@ def reask_genai_structured_outputs(
             ]
         ),
     )
-    return kwargs  
+    return kwargs
+
 
 def reask_mistral_structured_outputs(
     kwargs: dict[str, Any],
@@ -461,7 +462,6 @@ def reask_mistral_tools(
         )
     kwargs["messages"].extend(reask_msgs)
     return kwargs
-
 
 
 def handle_reask_kwargs(
