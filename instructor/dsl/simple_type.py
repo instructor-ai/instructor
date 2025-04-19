@@ -66,16 +66,24 @@ def is_simple_type(
     # Handle special case for list[int | str] or list[Union[int, str]] type patterns
     # We need to handle both direct list origins and typing.Iterable origins
     if origin in {typing.Iterable, Partial, list}:
+        # Regular list is a simple type
+        if origin is list:
+            return True
+
         # Check if it's a list with Union type arguments (like list[int | str])
         args = typing.get_args(response_model)
         if args and len(args) == 1:
-            # Check for Union type or Python 3.10+ pipe syntax
-            if typing.get_origin(args[0]) is typing.Union or hasattr(args[0], "__or__"):
+            inner_arg = args[0]
+            # Check for Union type - handle both typing.Union and __origin__ attribute
+            inner_origin = typing.get_origin(inner_arg)
+            if inner_origin is typing.Union or inner_origin == typing.Union:
                 # This is a list with a Union type, which should be treated as a simple type
                 return True
-        # Otherwise, it's a streaming type or a regular list
-        if origin is list:
-            return True
+            # Check for Python 3.10+ pipe syntax if supported
+            if hasattr(inner_arg, "__or__"):
+                return True
+
+        # Otherwise, it's likely a streaming type
         return False
 
     if response_model in {
