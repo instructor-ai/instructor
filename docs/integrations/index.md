@@ -84,7 +84,50 @@ See the [Modes Comparison](../modes-comparison.md) guide for details.
 
 ## Getting Started
 
-To use a provider with Instructor:
+There are two ways to use providers with Instructor:
+
+### 1. Using Provider Initialization (Recommended)
+
+The simplest way to get started is using the provider initialization:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+class UserInfo(BaseModel):
+    name: str
+    age: int
+
+# Initialize any provider with a simple string
+client = instructor.from_provider("openai/gpt-4")
+# Or use async client
+async_client = instructor.from_provider("anthropic/claude-3-sonnet", async_client=True)
+
+# Use the same interface for all providers
+response = client.chat.completions.create(
+    response_model=UserInfo,
+    messages=[{"role": "user", "content": "Your prompt"}]
+)
+```
+
+Supported provider strings:
+- `openai/model-name`: OpenAI models
+- `anthropic/model-name`: Anthropic models
+- `google/model-name`: Google models
+- `mistral/model-name`: Mistral models
+- `cohere/model-name`: Cohere models
+- `perplexity/model-name`: Perplexity models
+- `groq/model-name`: Groq models
+- `writer/model-name`: Writer models
+- `bedrock/model-name`: AWS Bedrock models
+- `cerebras/model-name`: Cerebras models
+- `fireworks/model-name`: Fireworks models
+- `vertexai/model-name`: Vertex AI models
+- `genai/model-name`: Google GenAI models
+
+### 2. Manual Client Setup
+
+Alternatively, you can manually set up the client:
 
 1. Install the required dependencies:
    ```bash

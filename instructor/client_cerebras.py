@@ -14,8 +14,7 @@ def from_cerebras(
     client: Cerebras,
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     **kwargs: Any,
-) -> Instructor:
-    ...
+) -> Instructor: ...
 
 
 @overload
@@ -23,8 +22,7 @@ def from_cerebras(
     client: AsyncCerebras,
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     **kwargs: Any,
-) -> AsyncInstructor:
-    ...
+) -> AsyncInstructor: ...
 
 
 def from_cerebras(
@@ -32,17 +30,16 @@ def from_cerebras(
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    assert (
-        mode
-        in {
-            instructor.Mode.CEREBRAS_TOOLS,
-            instructor.Mode.CEREBRAS_JSON,
-        }
-    ), "Mode must be one of {instructor.Mode.CEREBRAS_TOOLS, instructor.Mode.CEREBRAS_JSON}"
+    assert mode in {
+        instructor.Mode.CEREBRAS_TOOLS,
+        instructor.Mode.CEREBRAS_JSON,
+    }, (
+        "Mode must be one of {instructor.Mode.CEREBRAS_TOOLS, instructor.Mode.CEREBRAS_JSON}"
+    )
 
-    assert isinstance(
-        client, (Cerebras, AsyncCerebras)
-    ), "Client must be an instance of Cerebras or AsyncCerebras"
+    assert isinstance(client, (Cerebras, AsyncCerebras)), (
+        "Client must be an instance of Cerebras or AsyncCerebras"
+    )
 
     if isinstance(client, AsyncCerebras):
         create = client.chat.completions.create

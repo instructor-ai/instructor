@@ -14,8 +14,7 @@ def from_fireworks(
     client: Fireworks,
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     **kwargs: Any,
-) -> Instructor:
-    ...
+) -> Instructor: ...
 
 
 @overload
@@ -23,8 +22,7 @@ def from_fireworks(
     client: AsyncFireworks,
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     **kwargs: Any,
-) -> AsyncInstructor:
-    ...
+) -> AsyncInstructor: ...
 
 
 def from_fireworks(
@@ -32,17 +30,16 @@ def from_fireworks(
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    assert (
-        mode
-        in {
-            instructor.Mode.FIREWORKS_TOOLS,
-            instructor.Mode.FIREWORKS_JSON,
-        }
-    ), "Mode must be one of {instructor.Mode.FIREWORKS_TOOLS, instructor.Mode.FIREWORKS_JSON}"
+    assert mode in {
+        instructor.Mode.FIREWORKS_TOOLS,
+        instructor.Mode.FIREWORKS_JSON,
+    }, (
+        "Mode must be one of {instructor.Mode.FIREWORKS_TOOLS, instructor.Mode.FIREWORKS_JSON}"
+    )
 
-    assert isinstance(
-        client, (AsyncFireworks, Fireworks)
-    ), "Client must be an instance of Fireworks or AsyncFireworks"
+    assert isinstance(client, (AsyncFireworks, Fireworks)), (
+        "Client must be an instance of Fireworks or AsyncFireworks"
+    )
 
     if isinstance(client, AsyncFireworks):
 

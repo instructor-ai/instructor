@@ -57,6 +57,34 @@ print(user_info.age)
 #> 30
 ```
 
+### Provider Initialization
+
+Instructor provides a simple way to work with different providers using a consistent interface:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+class UserInfo(BaseModel):
+    name: str
+    age: int
+
+# Initialize client for any supported provider
+client = instructor.from_provider("openai/gpt-4")  # OpenAI
+client = instructor.from_provider("anthropic/claude-3-sonnet")  # Anthropic
+client = instructor.from_provider("google/gemini-pro")  # Google
+client = instructor.from_provider("mistral/mistral-large")  # Mistral
+# ... and many more providers
+
+# Use the same interface across all providers
+user_info = client.chat.completions.create(
+    response_model=UserInfo,
+    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
+)
+```
+
+The `from_provider` function supports both synchronous and asynchronous usage with `async_client=True`, and works with all supported providers including OpenAI, Anthropic, Google, Mistral, Cohere, Perplexity, Groq, Writer, AWS Bedrock, Cerebras, Fireworks, Vertex AI, and more.
+
 ### Using Hooks
 
 Instructor provides a powerful hooks system that allows you to intercept and log various stages of the LLM interaction process. Here's a simple example demonstrating how to use hooks:
