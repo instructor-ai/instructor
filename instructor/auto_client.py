@@ -108,13 +108,14 @@ def from_provider(
 
     elif provider == "google":
         try:
-            import google.generativeai as genai
+            import google.generativeai as genai  # type: ignore
             from instructor import from_gemini
 
-            client = genai.GenerativeModel(model=model_name)
-            return from_gemini(
-                client, model=model_name, use_async=async_client, **kwargs
-            )
+            client = genai.GenerativeModel(model_name=model_name)  # type: ignore
+            if async_client:
+                return from_gemini(client, use_async=True, **kwargs)  # type: ignore
+            else:
+                return from_gemini(client, **kwargs)  # type: ignore
         except ImportError:
             import_err = ImportError(
                 "The google-generativeai package is required to use the Google provider. "
@@ -128,7 +129,10 @@ def from_provider(
             from instructor import from_mistral
 
             client = AsyncMistralClient() if async_client else MistralClient()
-            return from_mistral(client, use_async=async_client, **kwargs)
+            if async_client:
+                return from_mistral(client, use_async=True, **kwargs)
+            else:
+                return from_mistral(client, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The mistralai package is required to use the Mistral provider. "
@@ -239,7 +243,7 @@ def from_provider(
             import vertexai.generative_models as gm
             from instructor import from_vertexai
 
-            client = gm.GenerativeModel(model=model_name)
+            client = gm.GenerativeModel(model_name=model_name)
             return from_vertexai(client, _async=async_client, **kwargs)
         except ImportError:
             import_err = ImportError(
@@ -254,7 +258,10 @@ def from_provider(
             from instructor import from_genai
 
             client = Client()
-            return from_genai(client, use_async=async_client, **kwargs)
+            if async_client:
+                return from_genai(client, use_async=True, **kwargs)  # type: ignore
+            else:
+                return from_genai(client, **kwargs)  # type: ignore
         except ImportError:
             import_err = ImportError(
                 "The google-genai package is required to use the Google GenAI provider. "

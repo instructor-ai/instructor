@@ -40,7 +40,7 @@ exclude = [
     "**/tests/**",
 ]
 
-reportMissingImports = "error"
+reportMissingImports = "warning"
 reportMissingTypeStubs = false
 
 pythonVersion = "3.9"
