@@ -125,10 +125,10 @@ def from_provider(
 
     elif provider == "mistral":
         try:
-            from mistralai import MistralClient, AsyncMistralClient
+            from mistralai import MistralClient, AsyncMistralClient  # type: ignore
             from instructor import from_mistral
 
-            client = AsyncMistralClient() if async_client else MistralClient()
+            client = AsyncMistralClient() if async_client else MistralClient()  # type: ignore
             if async_client:
                 return from_mistral(client, use_async=True, **kwargs)
             else:
