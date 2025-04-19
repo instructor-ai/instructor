@@ -63,16 +63,19 @@ def is_simple_type(
     # Get the origin of the response model
     origin = typing.get_origin(response_model)
 
-    # Handle Python 3.10 special case for list[int | str] type patterns
-    # In Python 3.10, list[int | str] has an origin of typing.Iterable
-    # but we still want to treat it as a simple type
-    if origin in {typing.Iterable, Partial}:
+    # Handle special case for list[int | str] or list[Union[int, str]] type patterns
+    # We need to handle both direct list origins and typing.Iterable origins
+    if origin in {typing.Iterable, Partial, list}:
         # Check if it's a list with Union type arguments (like list[int | str])
         args = typing.get_args(response_model)
-        if args and len(args) == 1 and typing.get_origin(args[0]) is typing.Union:
-            # This is a list with a Union type, which should be treated as a simple type
+        if args and len(args) == 1:
+            # Check for Union type or Python 3.10+ pipe syntax
+            if typing.get_origin(args[0]) is typing.Union or hasattr(args[0], "__or__"):
+                # This is a list with a Union type, which should be treated as a simple type
+                return True
+        # Otherwise, it's a streaming type or a regular list
+        if origin is list:
             return True
-        # Otherwise, it's a streaming type
         return False
 
     if response_model in {

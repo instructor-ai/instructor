@@ -18,7 +18,7 @@ from instructor.mode import Mode
 )
 def test_provider_parsing(model_string, expected_provider, expected_model):
     """Test that provider strings are parsed correctly."""
-    with patch("instructor.auto_client.from_openai") as mock_from_openai:
+    with patch("instructor.auto_client.instructor.from_openai") as mock_from_openai:
         with patch("instructor.auto_client.openai") as mock_openai:
             # Configure mocks
             mock_instructor = MagicMock()
@@ -60,7 +60,7 @@ def test_unsupported_provider():
 )
 def test_async_parameter(async_param, expected_type):
     """Test that async_client parameter works correctly."""
-    with patch("instructor.auto_client.from_openai") as mock_from_openai:
+    with patch("instructor.auto_client.instructor.from_openai") as mock_from_openai:
         with patch("instructor.auto_client.openai") as mock_openai:
             # Setup mocks
             if async_param:
@@ -86,7 +86,7 @@ def test_async_parameter(async_param, expected_type):
 
 def test_mode_parameter():
     """Test that mode parameter is passed correctly."""
-    with patch("instructor.auto_client.from_openai") as mock_from_openai:
+    with patch("instructor.auto_client.instructor.from_openai") as mock_from_openai:
         with patch("instructor.auto_client.openai") as mock_openai:
             # Call with custom mode
             from_provider("openai/gpt-4", mode=Mode.JSON)
@@ -98,7 +98,7 @@ def test_mode_parameter():
 
 def test_default_mode_used():
     """Test that default mode is used when mode not specified."""
-    with patch("instructor.auto_client.from_openai") as mock_from_openai:
+    with patch("instructor.auto_client.instructor.from_openai") as mock_from_openai:
         with patch("instructor.auto_client.openai") as mock_openai:
             # Call without specifying mode
             from_provider("openai/gpt-4")
@@ -110,7 +110,7 @@ def test_default_mode_used():
 
 def test_additional_kwargs_passed():
     """Test that additional kwargs are passed to provider."""
-    with patch("instructor.auto_client.from_openai") as mock_from_openai:
+    with patch("instructor.auto_client.instructor.from_openai") as mock_from_openai:
         with patch("instructor.auto_client.openai") as mock_openai:
             # Call with additional kwargs
             from_provider("openai/gpt-4", custom_param=123, another_param="test")
@@ -121,11 +121,13 @@ def test_additional_kwargs_passed():
             assert kwargs.get("another_param") == "test"
 
 
-@patch("importlib.util.find_spec", return_value=None)
+@patch("instructor.auto_client.importlib", return_value=None)
 def test_missing_dependency(_):
     """Test that ImportError is raised when required package is missing."""
-    with pytest.raises(ImportError) as excinfo:
-        from_provider("openai/gpt-4")
-    assert "openai package is required" in str(
-        excinfo.value
-    ) or "required package" in str(excinfo.value)
+    # Mock the import to force an ImportError
+    with patch("instructor.auto_client.openai", side_effect=ImportError("Test error")):
+        with pytest.raises(ImportError) as excinfo:
+            from_provider("openai/gpt-4")
+        assert "openai package is required" in str(
+            excinfo.value
+        ) or "required package" in str(excinfo.value)
