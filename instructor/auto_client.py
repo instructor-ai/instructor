@@ -2,27 +2,26 @@ from __future__ import annotations
 from typing import Any, Union, Literal, overload
 from instructor.client import AsyncInstructor, Instructor
 import instructor
-from instructor.mode import Mode
 
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
 
-# Default modes for each provider
-DEFAULT_MODES: dict[str, Mode] = {
-    "openai": Mode.OPENAI_FUNCTIONS,
-    "anthropic": Mode.ANTHROPIC_TOOLS,
-    "google": Mode.GEMINI_JSON,
-    "mistral": Mode.MISTRAL_TOOLS,
-    "cohere": Mode.COHERE_TOOLS,
-    "perplexity": Mode.JSON,
-    "groq": Mode.GROQ_TOOLS,
-    "writer": Mode.WRITER_JSON,
-    "bedrock": Mode.ANTHROPIC_TOOLS,  # Default for Claude on Bedrock
-    "cerebras": Mode.CEREBRAS_TOOLS,
-    "fireworks": Mode.TOOLS,
-    "vertexai": Mode.VERTEXAI_TOOLS,
-    "genai": Mode.GENAI_STRUCTURED,
-}
+# List of supported providers
+supported_providers = [
+    "openai",
+    "anthropic",
+    "google",
+    "mistral",
+    "cohere",
+    "perplexity",
+    "groq",
+    "writer",
+    "bedrock",
+    "cerebras",
+    "fireworks",
+    "vertexai",
+    "genai",
+]
 
 
 @overload
@@ -40,7 +39,7 @@ def from_provider(
 def from_provider(
     model: str,
     async_client: bool = False,
-    mode: instructor.Mode | None = None,
+    mode: instructor.Mode | None = None,  # noqa: ARG001
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     """Create an Instructor client from a model string.
@@ -77,17 +76,13 @@ def from_provider(
         )
         raise format_err from None
 
-    # Use default mode if not specified
-    if mode is None and provider in DEFAULT_MODES:
-        mode = DEFAULT_MODES[provider]
-
     if provider == "openai":
         try:
             import openai
             from instructor import from_openai
 
             client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
-            return from_openai(client, model=model_name, mode=mode, **kwargs)
+            return from_openai(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The openai package is required to use the OpenAI provider. "
@@ -103,7 +98,7 @@ def from_provider(
             client = (
                 anthropic.AsyncAnthropic() if async_client else anthropic.Anthropic()
             )
-            return from_anthropic(client, model=model_name, mode=mode, **kwargs)
+            return from_anthropic(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The anthropic package is required to use the Anthropic provider. "
@@ -112,84 +107,162 @@ def from_provider(
             raise import_err from None
 
     elif provider == "google":
-        import google.generativeai as genai
-        from instructor import from_gemini
+        try:
+            import google.generativeai as genai
+            from instructor import from_gemini
 
-        client = genai.GenerativeModel(model=model_name)
-        return from_gemini(client, model=model_name, use_async=async_client, **kwargs)
+            client = genai.GenerativeModel(model=model_name)
+            return from_gemini(
+                client, model=model_name, use_async=async_client, **kwargs
+            )
+        except ImportError:
+            import_err = ImportError(
+                "The google-generativeai package is required to use the Google provider. "
+                "Install it with `pip install google-generativeai`."
+            )
+            raise import_err from None
 
     elif provider == "mistral":
-        from mistralai import MistralClient, AsyncMistralClient
-        from instructor import from_mistral
+        try:
+            from mistralai import MistralClient, AsyncMistralClient
+            from instructor import from_mistral
 
-        client = AsyncMistralClient() if async_client else MistralClient()
-        return from_mistral(client, use_async=async_client, **kwargs)
+            client = AsyncMistralClient() if async_client else MistralClient()
+            return from_mistral(client, use_async=async_client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The mistralai package is required to use the Mistral provider. "
+                "Install it with `pip install mistralai`."
+            )
+            raise import_err from None
 
     elif provider == "cohere":
-        import cohere
-        from instructor import from_cohere
+        try:
+            import cohere
+            from instructor import from_cohere
 
-        client = cohere.AsyncClient() if async_client else cohere.Client()
-        return from_cohere(client, **kwargs)
+            client = cohere.AsyncClient() if async_client else cohere.Client()
+            return from_cohere(client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The cohere package is required to use the Cohere provider. "
+                "Install it with `pip install cohere`."
+            )
+            raise import_err from None
 
     elif provider == "perplexity":
-        import openai
-        from instructor import from_perplexity
+        try:
+            import openai
+            from instructor import from_perplexity
 
-        client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
-        return from_perplexity(client, **kwargs)
+            client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
+            return from_perplexity(client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The openai package is required to use the Perplexity provider. "
+                "Install it with `pip install openai`."
+            )
+            raise import_err from None
 
     elif provider == "groq":
-        import groq
-        from instructor import from_groq
+        try:
+            import groq
+            from instructor import from_groq
 
-        client = groq.AsyncGroq() if async_client else groq.Groq()
-        return from_groq(client, **kwargs)
+            client = groq.AsyncGroq() if async_client else groq.Groq()
+            return from_groq(client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The groq package is required to use the Groq provider. "
+                "Install it with `pip install groq`."
+            )
+            raise import_err from None
 
     elif provider == "writer":
-        from writerai import AsyncWriter, Writer
-        from instructor import from_writer
+        try:
+            from writerai import AsyncWriter, Writer
+            from instructor import from_writer
 
-        client = AsyncWriter() if async_client else Writer()
-        return from_writer(client, **kwargs)
+            client = AsyncWriter() if async_client else Writer()
+            return from_writer(client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The writerai package is required to use the Writer provider. "
+                "Install it with `pip install writerai`."
+            )
+            raise import_err from None
 
     elif provider == "bedrock":
-        import boto3
-        from instructor import from_bedrock
+        try:
+            import boto3
+            from instructor import from_bedrock
 
-        client = boto3.client("bedrock-runtime")
-        return from_bedrock(client, **kwargs)
+            client = boto3.client("bedrock-runtime")
+            return from_bedrock(client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The boto3 package is required to use the AWS Bedrock provider. "
+                "Install it with `pip install boto3`."
+            )
+            raise import_err from None
 
     elif provider == "cerebras":
-        from cerebras.cloud.sdk import AsyncCerebras, Cerebras
-        from instructor import from_cerebras
+        try:
+            from cerebras.cloud.sdk import AsyncCerebras, Cerebras
+            from instructor import from_cerebras
 
-        client = AsyncCerebras() if async_client else Cerebras()
-        return from_cerebras(client, **kwargs)
+            client = AsyncCerebras() if async_client else Cerebras()
+            return from_cerebras(client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The cerebras package is required to use the Cerebras provider. "
+                "Install it with `pip install cerebras`."
+            )
+            raise import_err from None
 
     elif provider == "fireworks":
-        from fireworks.client import AsyncFireworks, Fireworks
-        from instructor import from_fireworks
+        try:
+            from fireworks.client import AsyncFireworks, Fireworks
+            from instructor import from_fireworks
 
-        client = AsyncFireworks() if async_client else Fireworks()
-        return from_fireworks(client, **kwargs)
+            client = AsyncFireworks() if async_client else Fireworks()
+            return from_fireworks(client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The fireworks-ai package is required to use the Fireworks provider. "
+                "Install it with `pip install fireworks-ai`."
+            )
+            raise import_err from None
 
     elif provider == "vertexai":
-        import vertexai.generative_models as gm
-        from instructor import from_vertexai
+        try:
+            import vertexai.generative_models as gm
+            from instructor import from_vertexai
 
-        client = gm.GenerativeModel(model=model_name)
-        return from_vertexai(client, _async=async_client, **kwargs)
+            client = gm.GenerativeModel(model=model_name)
+            return from_vertexai(client, _async=async_client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The google-cloud-aiplatform package is required to use the VertexAI provider. "
+                "Install it with `pip install google-cloud-aiplatform`."
+            )
+            raise import_err from None
 
     elif provider == "genai":
-        from google.genai import Client
-        from instructor import from_genai
+        try:
+            from google.genai import Client
+            from instructor import from_genai
 
-        client = Client()
-        return from_genai(client, use_async=async_client, **kwargs)
+            client = Client()
+            return from_genai(client, use_async=async_client, **kwargs)
+        except ImportError:
+            import_err = ImportError(
+                "The google-genai package is required to use the Google GenAI provider. "
+                "Install it with `pip install google-genai`."
+            )
+            raise import_err from None
 
     else:
-        supported_providers = ", ".join(sorted(DEFAULT_MODES.keys()))
         raise ValueError(
             f"Unsupported provider: {provider}. "
             f"Supported providers are: {supported_providers}"
