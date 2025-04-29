@@ -3,10 +3,8 @@ from __future__ import annotations
 from typing import Literal, Union
 from collections.abc import Iterable
 from pydantic import BaseModel
-from itertools import product
 import pytest
 import instructor
-from .util import models, modes
 
 
 class Weather(BaseModel):
