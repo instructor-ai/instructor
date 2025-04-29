@@ -1,6 +1,5 @@
-import unittest
 import pytest
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import instructor
 from google.genai import Client
