@@ -12,7 +12,10 @@ from typing import (
     Union,
     Literal,
     Any,
+    get_origin,
+    get_args,
 )
+from collections.abc import Iterable
 from tenacity import (
     AsyncRetrying,
     Retrying,
@@ -394,6 +397,19 @@ class AsyncInstructor(Instructor):
         **kwargs: Any,
     ) -> T | Any:
         kwargs = self.handle_kwargs(kwargs)
+
+        # Check if the response model is an iterable type
+        if get_origin(response_model) in {Iterable}:
+            return self.create_iterable(
+                messages=messages,
+                response_model=get_args(response_model)[0],
+                max_retries=max_retries,
+                validation_context=validation_context,
+                context=context,
+                strict=strict,
+                **kwargs,
+            )
+
         return await self.create_fn(
             response_model=response_model,
             validation_context=validation_context,
