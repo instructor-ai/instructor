@@ -9,6 +9,8 @@ class TestSimpleTypeFix(unittest.TestCase):
     def test_list_with_union_type(self):
         """Test that list[int | str] is correctly identified as a simple type."""
         # This is the type that was failing in Python 3.10
+        if sys.version_info < (3, 10):
+            self.skipTest("Union pipe syntax is only available in Python 3.10+")
         response_model = list[int | str]
         self.assertTrue(
             is_simple_type(response_model),
