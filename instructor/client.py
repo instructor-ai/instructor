@@ -15,7 +15,6 @@ from typing import (
     get_origin,
     get_args,
 )
-from collections.abc import Iterable
 from tenacity import (
     AsyncRetrying,
     Retrying,
@@ -403,6 +402,7 @@ class AsyncInstructor(Instructor):
             get_origin(response_model) in {Iterable}
             and get_args(response_model)
             and get_args(response_model)[0] is not None
+            and self.mode not in {instructor.Mode.PARALLEL_TOOLS, instructor.Mode.VERTEXAI_PARALLEL_TOOLS}
         ):
             return self.create_iterable(
                 messages=messages,

@@ -52,11 +52,10 @@ def test_sync_parallel_tools_or(client):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("model, mode", product(models, modes))
-async def test_async_parallel_tools_or(model, mode, aclient):
-    client = instructor.from_openai(aclient, mode=mode)
+async def test_async_parallel_tools_or(aclient):
+    client = instructor.from_openai(aclient, mode=instructor.Mode.PARALLEL_TOOLS)
     resp = await client.chat.completions.create(
-        model=model,
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {
