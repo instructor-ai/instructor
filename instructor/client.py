@@ -399,7 +399,11 @@ class AsyncInstructor(Instructor):
         kwargs = self.handle_kwargs(kwargs)
 
         # Check if the response model is an iterable type
-        if get_origin(response_model) in {Iterable}:
+        if (
+            get_origin(response_model) in {Iterable}
+            and get_args(response_model)
+            and get_args(response_model)[0] is not None
+        ):
             return self.create_iterable(
                 messages=messages,
                 response_model=get_args(response_model)[0],
