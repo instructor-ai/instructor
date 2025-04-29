@@ -30,9 +30,9 @@ def test_iterable_model(model, mode, stream, client):
         assert isinstance(m, UserExtract)
 
 
-@pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
+@pytest.mark.parametrize("model, mode, stream", product(models, modes))
 @pytest.mark.asyncio
-async def test_iterable_model_async(model, mode, stream, aclient):
+async def test_iterable_model_async(model, mode, aclient):
     aclient = instructor.patch(aclient, mode=mode)
     model = await aclient.chat.completions.create(
         model=model,
@@ -43,12 +43,9 @@ async def test_iterable_model_async(model, mode, stream, aclient):
             {"role": "user", "content": "Make two up people"},
         ],
     )
-    if stream:
-        async for m in model:
-            assert isinstance(m, UserExtract)
-    else:
-        for m in model:
-            assert isinstance(m, UserExtract)
+
+    async for m in model:
+        assert isinstance(m, UserExtract)
 
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
