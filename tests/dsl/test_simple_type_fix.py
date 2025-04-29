@@ -1,7 +1,7 @@
 import sys
 import unittest
 from typing import Union, List  # noqa: UP035
-
+from typing import get_origin, get_args
 from instructor.dsl.simple_type import is_simple_type
 
 
@@ -14,7 +14,7 @@ class TestSimpleTypeFix(unittest.TestCase):
         response_model = list[int | str]
         self.assertTrue(
             is_simple_type(response_model),
-            f"list[int | str] should be a simple type in Python {sys.version_info.major}.{sys.version_info.minor}",
+            f"list[int | str] should be a simple type in Python {sys.version_info.major}.{sys.version_info.minor}. Instead it was identified as {type(response_model)} with origin {get_origin(response_model)} and args {get_args(response_model)}",
         )
 
     def test_list_with_union_type_alternative_syntax(self):
