@@ -30,15 +30,14 @@ def test_iterable_model(model, mode, stream, client):
         assert isinstance(m, UserExtract)
 
 
-@pytest.mark.parametrize("model, mode, stream", product(models, modes))
+@pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
 async def test_iterable_model_async(model, mode, aclient):
-    aclient = instructor.patch(aclient, mode=mode)
+    aclient = instructor.from_openai(aclient, mode=mode)
     model = await aclient.chat.completions.create(
         model=model,
         response_model=Iterable[UserExtract],
         max_retries=2,
-        stream=stream,
         messages=[
             {"role": "user", "content": "Make two up people"},
         ],
