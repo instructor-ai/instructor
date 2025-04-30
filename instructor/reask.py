@@ -372,7 +372,7 @@ def reask_perplexity_json(
     kwargs["messages"].extend(reask_msgs)
     return kwargs
 
-  
+
 def reask_genai_tools(
     kwargs: dict[str, Any],
     response: Any,
@@ -406,16 +406,24 @@ def reask_genai_structured_outputs(
     from google.genai import types
 
     kwargs = kwargs.copy()
+
+    genai_response = (
+        response.text
+        if response and hasattr(response, "text")
+        else "You must generate a response to the user's request that is consistent with the response model"
+    )
+
     kwargs["contents"].append(
         types.ModelContent(
             parts=[
                 types.Part.from_text(
-                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors in the following attempt:\n{response.text}"
+                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors in the following attempt:\n{genai_response}"
                 ),
             ]
         ),
     )
-    return kwargs  
+    return kwargs
+
 
 def reask_mistral_structured_outputs(
     kwargs: dict[str, Any],
@@ -461,7 +469,6 @@ def reask_mistral_tools(
         )
     kwargs["messages"].extend(reask_msgs)
     return kwargs
-
 
 
 def handle_reask_kwargs(
