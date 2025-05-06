@@ -38,6 +38,15 @@ jobs:
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
+      - name: Run Auto Client
+        if: matrix.python-version != '3.11'
+        run: uv run pytest tests/test_auto_client.py
+        env:
+          INSTRUCTOR_ENV: CI
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
