@@ -172,7 +172,6 @@ def ask_ai(question: str, context: str) -> QuestionAnswer:
 
 ## Example
 
-dd
 Here's an example of using these classes and functions to ask a question and validate the answer.
 
 ```python
