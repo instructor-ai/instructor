@@ -406,11 +406,18 @@ def reask_genai_structured_outputs(
     from google.genai import types
 
     kwargs = kwargs.copy()
+
+    genai_response = (
+        response.text
+        if response and hasattr(response, "text")
+        else "You must generate a response to the user's request that is consistent with the response model"
+    )
+
     kwargs["contents"].append(
         types.ModelContent(
             parts=[
                 types.Part.from_text(
-                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors in the following attempt:\n{response.text}"
+                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors in the following attempt:\n{genai_response}"
                 ),
             ]
         ),
