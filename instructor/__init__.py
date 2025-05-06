@@ -22,6 +22,7 @@ from .client import (
     from_litellm,
     Provider,
 )
+from .auto_client import from_provider
 
 __all__ = [
     "Instructor",
@@ -29,6 +30,7 @@ __all__ = [
     "Audio",
     "from_openai",
     "from_litellm",
+    "from_provider",
     "AsyncInstructor",
     "Provider",
     "OpenAISchema",
