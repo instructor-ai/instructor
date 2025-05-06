@@ -35,7 +35,7 @@ PROVIDERS = [
 def should_skip_provider(provider_string: str) -> bool:
     import os
 
-    if os.getenv("CI") == True:
+    if os.getenv("INSTRUCTOR_ENV") == "CI":
         return provider_string not in [
             "cohere/command-r-plus",
             "google/gemini-2.0-flash",
@@ -144,7 +144,7 @@ def test_additional_kwargs_passed():
     from instructor.exceptions import InstructorRetryException
     import os
 
-    if os.getenv("CI") == True:
+    if os.getenv("INSTRUCTOR_ENV") == "CI":
         pytest.skip("Skipping test on CI")
         return
 
