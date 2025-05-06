@@ -18,7 +18,7 @@ USER_EXTRACTION_PROMPT = {
 
 # --- Providers to test (from main.py) ---
 PROVIDERS = [
-    "anthropic/claude-3-5-sonnet-latest",
+    "anthropic/claude-3-5-haiku-latest",
     "google/gemini-2.0-flash",
     "openai/gpt-4o-mini",
     "mistral/ministral-8b-latest",
@@ -32,10 +32,25 @@ PROVIDERS = [
 ]
 
 
-# --- Sync test ---
+def should_skip_provider(provider_string: str) -> bool:
+    import os
+
+    if os.getenv("CI") == True:
+        return provider_string not in [
+            "cohere/command-r-plus",
+            "google/gemini-2.0-flash",
+            "openai/gpt-4o-mini",
+        ]
+    return False
+
+
 @pytest.mark.parametrize("provider_string", PROVIDERS)
 def test_user_extraction_sync(provider_string):
     """Test user extraction for each provider (sync)."""
+
+    if should_skip_provider(provider_string):
+        pytest.skip(f"Skipping provider {provider_string} on CI")
+        return
 
     try:
         client = from_provider(provider_string)  # type: ignore[arg-type]
@@ -50,50 +65,23 @@ def test_user_extraction_sync(provider_string):
         pytest.skip(f"Provider {provider_string} not available or failed: {e}")
 
 
-# --- Async test ---
-import asyncio
-
-
 @pytest.mark.parametrize("provider_string", PROVIDERS)
 @pytest.mark.asyncio
-def test_user_extraction_async(provider_string):
+async def test_user_extraction_async(provider_string):
     """Test user extraction for each provider (async)."""
 
-    try:
-        client = from_provider(provider_string, async_client=True)  # type: ignore[arg-type]
+    if should_skip_provider(provider_string):
+        pytest.skip(f"Skipping provider {provider_string} on CI")
+        return
 
-        async def run():
-            response = await client.chat.completions.create(
-                messages=[USER_EXTRACTION_PROMPT],  # type: ignore[arg-type]
-                response_model=User,
-            )
-            assert isinstance(response, User)
-            assert response.name.lower() == "ivan"
-            assert response.age == 28
-
-        asyncio.get_event_loop().run_until_complete(run())
-    except Exception as e:
-        pytest.skip(f"Provider {provider_string} not available or failed: {e}")
-
-
-@pytest.mark.parametrize(
-    "model_string, expected_provider, expected_model",
-    [
-        ("openai/gpt-4", "openai", "gpt-4"),
-        ("anthropic/claude-3-sonnet", "anthropic", "claude-3-sonnet"),
-        ("google/gemini-pro", "google", "gemini-pro"),
-        ("mistral/mistral-large", "mistral", "mistral-large"),
-    ],
-)
-def test_provider_parsing(model_string, expected_provider, expected_model):
-    """Test that provider strings are parsed correctly."""
-    # Only test the parsing functionality, not the provider-specific code
-    try:
-        provider, model = model_string.split("/", 1)
-        assert provider == expected_provider
-        assert model == expected_model
-    except ValueError:
-        pytest.fail("Failed to parse provider string")
+    client = from_provider(provider_string, async_client=True)  # type: ignore[arg-type]
+    response = await client.chat.completions.create(
+        messages=[USER_EXTRACTION_PROMPT],  # type: ignore[arg-type]
+        response_model=User,
+    )
+    assert isinstance(response, User)
+    assert response.name.lower() == "ivan"
+    assert response.age == 28
 
 
 def test_invalid_provider_format():
@@ -110,33 +98,71 @@ def test_unsupported_provider():
     assert "Unsupported provider" in str(excinfo.value)
 
 
-# Skip other tests as they require more complex mocking
-# We'll focus on basic functionality tests only
-@pytest.mark.skip("Integration test that requires OpenAI")
-def test_async_parameter():
-    """Test that async_client parameter works correctly."""
-    pass
-
-
-@pytest.mark.skip("Integration test that requires provider setup")
 def test_mode_parameter():
     """Test that mode parameter is passed correctly."""
-    pass
+    import instructor
+    from pydantic import Field
+    from instructor.exceptions import InstructorRetryException
+
+    client = from_provider("openai/gpt-4o-mini", mode=instructor.Mode.TOOLS_STRICT)
+
+    class User(BaseModel):
+        name: str
+        phone_number: str = Field(pattern=r"^\+?[1-9]\d{1,14}$")
+
+    with pytest.raises(InstructorRetryException) as excinfo:
+        resp = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Ivan is 28 and his phone number is +1234567890",
+                }
+            ],  # type: ignore[arg-type]
+            response_model=User,
+        )
+
+    assert "'properties', 'phone_number'), 'pattern' is not permitted." in str(
+        excinfo.value
+    ), f"{excinfo.value}"
+
+    client = from_provider("openai/gpt-4o-mini")
+    resp = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": "Ivan is 28 and his phone number is +1234567890",
+            }
+        ],  # type: ignore[arg-type]
+        response_model=User,
+    )
+    assert resp.phone_number == "+1234567890"
 
 
-@pytest.mark.skip("Integration test that requires provider setup")
-def test_default_mode_used():
-    """Test that default mode is used when mode not specified."""
-    pass
-
-
-@pytest.mark.skip("Integration test that requires provider setup")
 def test_additional_kwargs_passed():
     """Test that additional kwargs are passed to provider."""
-    pass
+    import instructor
+    from instructor.exceptions import InstructorRetryException
+    import os
 
+    if os.getenv("CI") == True:
+        pytest.skip("Skipping test on CI")
+        return
 
-@pytest.mark.skip("Mocking imports is complex and brittle")
-def test_missing_dependency():
-    """Test that ImportError is raised when required package is missing."""
-    pass
+    client = instructor.from_provider(
+        "anthropic/claude-3-5-haiku-latest", max_tokens=10
+    )
+
+    with pytest.raises(InstructorRetryException) as excinfo:
+        client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Generate a sentence with 20 characters",
+                }
+            ],
+            response_model=str,
+        )
+
+    assert "The output is incomplete due to a max_tokens length limit" in str(
+        excinfo.value
+    )
