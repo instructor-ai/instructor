@@ -6,6 +6,7 @@ import instructor
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
 
+
 # List of supported providers
 supported_providers = [
     "openai",
@@ -20,7 +21,7 @@ supported_providers = [
     "cerebras",
     "fireworks",
     "vertexai",
-    "genai",
+    "generative-ai",
 ]
 
 
@@ -82,7 +83,12 @@ def from_provider(
             from instructor import from_openai
 
             client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
-            return from_openai(client, model=model_name, **kwargs)
+            return from_openai(
+                client,
+                model=model_name,
+                mode=mode if mode else instructor.Mode.TOOLS,
+                **kwargs,
+            )
         except ImportError:
             import_err = ImportError(
                 "The openai package is required to use the OpenAI provider. "
@@ -98,7 +104,15 @@ def from_provider(
             client = (
                 anthropic.AsyncAnthropic() if async_client else anthropic.Anthropic()
             )
-            return from_anthropic(client, model=model_name, **kwargs)
+            return from_anthropic(
+                client,
+                model=model_name,
+                mode=mode if mode else instructor.Mode.ANTHROPIC_TOOLS,
+                max_tokens=4096
+                if kwargs.get("max_tokens") is None
+                else kwargs.get("max_tokens"),
+                **kwargs,
+            )
         except ImportError:
             import_err = ImportError(
                 "The anthropic package is required to use the Anthropic provider. "
@@ -108,31 +122,44 @@ def from_provider(
 
     elif provider == "google":
         try:
-            import google.generativeai as genai  # type: ignore
-            from instructor import from_gemini
+            import google.genai as genai  # type: ignore
+            from instructor import from_genai
 
-            client = genai.GenerativeModel(model_name=model_name)  # type: ignore
+            client = genai.Client(
+                vertexai=False
+                if kwargs.get("vertexai") is None
+                else kwargs.get("vertexai"),
+                **kwargs,
+            )  # type: ignore
             if async_client:
-                return from_gemini(client, use_async=True, **kwargs)  # type: ignore
+                return from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
             else:
-                return from_gemini(client, **kwargs)  # type: ignore
+                return from_genai(client, model=model_name, **kwargs)  # type: ignore
         except ImportError:
             import_err = ImportError(
-                "The google-generativeai package is required to use the Google provider. "
-                "Install it with `pip install google-generativeai`."
+                "The google-genai package is required to use the Google provider. "
+                "Install it with `pip install google-genai`."
             )
             raise import_err from None
 
     elif provider == "mistral":
         try:
-            from mistralai import MistralClient, AsyncMistralClient  # type: ignore
+            from mistralai import Mistral  # type: ignore
             from instructor import from_mistral
+            import os
 
-            client = AsyncMistralClient() if async_client else MistralClient()  # type: ignore
-            if async_client:
-                return from_mistral(client, use_async=True, **kwargs)
+            if os.environ.get("MISTRAL_API_KEY"):
+                client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
             else:
-                return from_mistral(client, **kwargs)
+                raise ValueError(
+                    "MISTRAL_API_KEY is not set. "
+                    "Set it with `export MISTRAL_API_KEY=<your-api-key>`."
+                )
+
+            if async_client:
+                return from_mistral(client, model=model_name, use_async=True, **kwargs)
+            else:
+                return from_mistral(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The mistralai package is required to use the Mistral provider. "
@@ -158,9 +185,28 @@ def from_provider(
         try:
             import openai
             from instructor import from_perplexity
+            import os
 
-            client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
-            return from_perplexity(client, **kwargs)
+            if os.environ.get("PERPLEXITY_API_KEY"):
+                api_key = os.environ.get("PERPLEXITY_API_KEY")
+            elif kwargs.get("api_key"):
+                api_key = kwargs.get("api_key")
+            else:
+                raise ValueError(
+                    "PERPLEXITY_API_KEY is not set. "
+                    "Set it with `export PERPLEXITY_API_KEY=<your-api-key>` or pass it as a kwarg api_key=<your-api-key>"
+                )
+
+            client = (
+                openai.AsyncOpenAI(
+                    api_key=api_key, base_url="https://api.perplexity.ai"
+                )
+                if async_client
+                else openai.OpenAI(
+                    api_key=api_key, base_url="https://api.perplexity.ai"
+                )
+            )
+            return from_perplexity(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The openai package is required to use the Perplexity provider. "
@@ -174,7 +220,7 @@ def from_provider(
             from instructor import from_groq
 
             client = groq.AsyncGroq() if async_client else groq.Groq()
-            return from_groq(client, **kwargs)
+            return from_groq(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The groq package is required to use the Groq provider. "
@@ -188,7 +234,7 @@ def from_provider(
             from instructor import from_writer
 
             client = AsyncWriter() if async_client else Writer()
-            return from_writer(client, **kwargs)
+            return from_writer(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The writerai package is required to use the Writer provider. "
@@ -216,7 +262,7 @@ def from_provider(
             from instructor import from_cerebras
 
             client = AsyncCerebras() if async_client else Cerebras()
-            return from_cerebras(client, **kwargs)
+            return from_cerebras(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The cerebras package is required to use the Cerebras provider. "
@@ -230,7 +276,7 @@ def from_provider(
             from instructor import from_fireworks
 
             client = AsyncFireworks() if async_client else Fireworks()
-            return from_fireworks(client, **kwargs)
+            return from_fireworks(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The fireworks-ai package is required to use the Fireworks provider. "
@@ -252,19 +298,19 @@ def from_provider(
             )
             raise import_err from None
 
-    elif provider == "genai":
+    elif provider == "generative-ai":
         try:
-            from google.genai import Client
-            from instructor import from_genai
+            from google.generativeai import GenerativeModel
+            from instructor import from_gemini
 
-            client = Client()
+            client = GenerativeModel(model_name=model_name)
             if async_client:
-                return from_genai(client, use_async=True, **kwargs)  # type: ignore
+                return from_gemini(client, use_async=True, **kwargs)  # type: ignore
             else:
-                return from_genai(client, **kwargs)  # type: ignore
+                return from_gemini(client, **kwargs)  # type: ignore
         except ImportError:
             import_err = ImportError(
-                "The google-genai package is required to use the Google GenAI provider. "
+                "The google-generativeai package is required to use the Google GenAI provider. "
                 "Install it with `pip install google-genai`."
             )
             raise import_err from None
