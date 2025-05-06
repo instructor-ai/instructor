@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, Union, Literal, overload
 from instructor.client import AsyncInstructor, Instructor
 import instructor
+from instructor.models import KnownModelName
 
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
@@ -27,18 +28,34 @@ supported_providers = [
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[True], **kwargs: Any
+    model: KnownModelName,
+    async_client: Literal[True] = True,
+    **kwargs: Any,
 ) -> AsyncInstructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[False], **kwargs: Any
+    model: KnownModelName,
+    async_client: Literal[False] = False,
+    **kwargs: Any,
+) -> Instructor: ...
+
+
+@overload
+def from_provider(
+    model: str, async_client: Literal[True] = True, **kwargs: Any
+) -> AsyncInstructor: ...
+
+
+@overload
+def from_provider(
+    model: str, async_client: Literal[False] = False, **kwargs: Any
 ) -> Instructor: ...
 
 
 def from_provider(
-    model: str,
+    model: str | KnownModelName,
     async_client: bool = False,
     mode: instructor.Mode | None = None,  # noqa: ARG001
     **kwargs: Any,
@@ -104,13 +121,12 @@ def from_provider(
             client = (
                 anthropic.AsyncAnthropic() if async_client else anthropic.Anthropic()
             )
+            max_tokens = kwargs.pop("max_tokens", 4096)
             return from_anthropic(
                 client,
                 model=model_name,
                 mode=mode if mode else instructor.Mode.ANTHROPIC_TOOLS,
-                max_tokens=4096
-                if kwargs.get("max_tokens") is None
-                else kwargs.get("max_tokens"),
+                max_tokens=max_tokens,
                 **kwargs,
             )
         except ImportError:
