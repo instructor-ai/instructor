@@ -31,6 +31,10 @@ pip install "instructor[google-genai]"
 
 ## Basic Usage
 
+!!! warning "Unions and Optionals"
+
+    Gemini doesn't have support for Union and Optional types in the structured outputs and tool calling integrations. We currently throw an error when we detect these in your response model.
+
 Getting started with Instructor and the genai SDK is straightforward. Just create a Pydantic model defining your output structure, patch the genai client, and make your request with a response_model parameter:
 
 ```python
