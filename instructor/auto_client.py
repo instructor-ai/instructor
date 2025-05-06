@@ -55,11 +55,11 @@ def from_provider(
 
 
 def from_provider(
-    model: str | KnownModelName,
+    model: Union[str, KnownModelName],  # noqa: UP007
     async_client: bool = False,
-    mode: instructor.Mode | None = None,  # noqa: ARG001
+    mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
     **kwargs: Any,
-) -> Instructor | AsyncInstructor:
+) -> Union[Instructor, AsyncInstructor]:  # noqa: UP007
     """Create an Instructor client from a model string.
 
     Args:
