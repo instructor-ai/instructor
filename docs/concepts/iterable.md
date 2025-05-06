@@ -3,7 +3,7 @@ title: Extracting Structured Data with Iterable and Streaming in Python
 description: Learn to use Iterable and streaming for structured data extraction with Pydantic and OpenAI in Python.
 ---
 
-# Quick Start Example
+# Multi-Task and Streaming
 
 Using an `Iterable` lets you extract multiple structured objects from a single LLM call, streaming them as they arrive. This is useful for entity extraction, multi-task outputs, and more.
 
@@ -73,7 +73,7 @@ Here's a simple example showing how to extract multiple users from a single sent
 
 We also support more complex extraction patterns such as Unions as you'll see below out of the box. 
 
-??? warning
+???+ warning 
 
     Unions don't work with Gemini because the AnyOf is not supported in the current response schema.
 
@@ -198,7 +198,7 @@ We also support more complex extraction patterns such as Unions as you'll see be
     aclient = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
 
     async def main():
-        results = aclient.chat.completions.create_iterable(
+        results = await aclient.chat.completions.create_iterable(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You must always use tools"},
