@@ -54,5 +54,6 @@ jobs:
           uv run coverage report
           uv run coverage html
         env:
+          INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
