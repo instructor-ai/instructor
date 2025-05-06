@@ -24,7 +24,3 @@ class TestFizzbuzzFix(unittest.TestCase):
             prepared_model,
             "prepare_response_model should not return None for list[int | str]",
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

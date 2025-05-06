@@ -21,29 +21,25 @@ class HookName(Enum):
 class CompletionKwargsHandler(Protocol):
     """Protocol for completion kwargs handlers."""
 
-    def __call__(self, *args: Any, **kwargs: Any) -> None:
-        ...
+    def __call__(self, *args: Any, **kwargs: Any) -> None: ...
 
 
 class CompletionResponseHandler(Protocol):
     """Protocol for completion response handlers."""
 
-    def __call__(self, response: Any) -> None:
-        ...
+    def __call__(self, response: Any) -> None: ...
 
 
 class CompletionErrorHandler(Protocol):
     """Protocol for completion error and last attempt handlers."""
 
-    def __call__(self, error: Exception) -> None:
-        ...
+    def __call__(self, error: Exception) -> None: ...
 
 
 class ParseErrorHandler(Protocol):
     """Protocol for parse error handlers."""
 
-    def __call__(self, error: Exception) -> None:
-        ...
+    def __call__(self, error: Exception) -> None: ...
 
 
 # Type alias for hook name parameter
