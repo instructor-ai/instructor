@@ -1,7 +1,7 @@
 ---
 date: 2025-05-07
 authors:
-    - jason
+    - jxnl 
 categories:
     - tutorials
     - anthropic
@@ -77,7 +77,6 @@ print(response_data.question)
 
 print("\nAnswer:")
 print(response_data.answer)
-
 ```
 
 This approach provides a clean way to get the LLM's answer into a defined Pydantic object. The `examples/anthropic-web-tool/run.py` script reflects this implementation.
