@@ -660,6 +660,21 @@ def transform_to_gemini_prompt(
     return messages_gemini
 
 
+def verify_no_enums(obj: dict[str, Any]) -> bool:
+    """
+    Verify that the object does not contain any enums.
+    """
+    print(obj)
+    for prop_value in obj["properties"].values():
+        if "anyOf" in prop_value:
+            return False
+
+        if "properties" in prop_value and not verify_no_enums(prop_value):
+            return False
+
+    return True
+
+
 def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     """
     Map OpenAPI schema to Gemini properties: gemini function call schemas
@@ -696,6 +711,11 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
             return obj
 
     schema = add_enum_format(schema)
+
+    if not verify_no_enums(schema):
+        raise ValueError(
+            "Gemini does not support Optional types. Please change your function schema"
+        )
 
     return FunctionSchema(**schema).model_dump(exclude_none=True, exclude_unset=True)
 
@@ -914,6 +934,16 @@ def extract_genai_system_message(
                     for item in message.get("content", []):
                         if isinstance(item, str):
                             system_messages += item + "\n\n"
+
+    if system_messages and len(messages) == 1:
+        raise ValueError(
+            "At least one user message must be included. A system message alone is not sufficient."
+        )
+
+    if re.search(r"{{.*?}}|{%.*?%}", system_messages):
+        raise ValueError(
+            "Jinja templating is not supported in system messages with Google GenAI, only user messages."
+        )
 
     return system_messages
 

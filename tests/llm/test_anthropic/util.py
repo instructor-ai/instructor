@@ -1,6 +1,6 @@
 import instructor
 
-models = ["claude-3-haiku-20240307"]
+models = ["claude-3-5-haiku-20241022"]
 modes = [
     instructor.Mode.ANTHROPIC_TOOLS,
 ]

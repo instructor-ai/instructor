@@ -294,13 +294,13 @@ class OpenAISchema(BaseModel):
         assert isinstance(completion, types.GenerateContentResponse)
         assert len(completion.candidates) == 1
 
-        assert (
-            len(completion.candidates[0].content.parts) == 1
-        ), f"Instructor does not support multiple function calls, use List[Model] instead"
+        assert len(completion.candidates[0].content.parts) == 1, (
+            f"Instructor does not support multiple function calls, use List[Model] instead"
+        )
         function_call = completion.candidates[0].content.parts[0].function_call
-        assert (
-            function_call is not None
-        ), f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
+        assert function_call is not None, (
+            f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
+        )
 
         assert function_call.name == cls.openai_schema["name"]
         return cls.model_validate(
@@ -314,9 +314,9 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ):
-        assert hasattr(
-            completion, "text"
-        ), "Completion is not of type NonStreamedChatResponse"
+        assert hasattr(completion, "text"), (
+            "Completion is not of type NonStreamedChatResponse"
+        )
         return cls.model_validate_json(
             completion.text, context=validation_context, strict=strict
         )
@@ -356,6 +356,8 @@ class OpenAISchema(BaseModel):
     ) -> BaseModel:
         from anthropic.types import Message
 
+        last_block = None
+
         if hasattr(completion, "choices"):
             completion = completion.choices[0]
             if completion.finish_reason == "length":
@@ -365,21 +367,32 @@ class OpenAISchema(BaseModel):
             assert isinstance(completion, Message)
             if completion.stop_reason == "max_tokens":
                 raise IncompleteOutputException(last_completion=completion)
-            # Find the first text block
+            # Find the last text block in the completion
+            # this is because the completion is a list of blocks
+            # and the last block is the one that contains the text ideally
+            # this could happen due to things like multiple tool calls
+            # read: https://docs.anthropic.com/en/docs/build-with-claude/tool-use/web-search-tool#response
             text_blocks = [c for c in completion.content if c.type == "text"]
-            text = text_blocks[0].text
+            last_block = text_blocks[-1]
+            # strip (\u0000-\u001F) control characters
+            text = re.sub(r"[\u0000-\u001F]", "", last_block.text)
 
         extra_text = extract_json_from_codeblock(text)
 
         if strict:
-            return cls.model_validate_json(
+            model = cls.model_validate_json(
                 extra_text, context=validation_context, strict=True
             )
         else:
             # Allow control characters.
             parsed = json.loads(extra_text, strict=False)
             # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
-            return cls.model_validate(parsed, context=validation_context, strict=False)
+            model = cls.model_validate(parsed, context=validation_context, strict=False)
+
+        if last_block is not None and hasattr(last_block, "citations"):
+            model.citations = last_block.citations
+
+        return model
 
     @classmethod
     def parse_bedrock_json(
@@ -475,12 +488,12 @@ class OpenAISchema(BaseModel):
     ) -> BaseModel:
         message = completion.choices[0].message
         tool_calls = message.tool_calls
-        assert (
-            len(tool_calls) == 1
-        ), "Instructor does not support multiple tool calls, use List[Model] instead"
-        assert (
-            tool_calls[0].function.name == cls.openai_schema["name"]
-        ), "Tool name does not match"
+        assert len(tool_calls) == 1, (
+            "Instructor does not support multiple tool calls, use List[Model] instead"
+        )
+        assert tool_calls[0].function.name == cls.openai_schema["name"], (
+            "Tool name does not match"
+        )
         return cls.model_validate_json(
             tool_calls[0].function.arguments,
             context=validation_context,
@@ -516,12 +529,12 @@ class OpenAISchema(BaseModel):
         # trying to fix this by adding a check
 
         if hasattr(message, "refusal"):
-            assert (
-                message.refusal is None
-            ), f"Unable to generate a response due to {message.refusal}"
-        assert (
-            len(message.tool_calls or []) == 1
-        ), f"Instructor does not support multiple tool calls, use List[Model] instead"
+            assert message.refusal is None, (
+                f"Unable to generate a response due to {message.refusal}"
+            )
+        assert len(message.tool_calls or []) == 1, (
+            f"Instructor does not support multiple tool calls, use List[Model] instead"
+        )
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]
