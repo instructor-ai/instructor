@@ -1,11 +1,11 @@
 ---
 date: 2025-05-07
 authors:
-    - jxnl 
+  - jxnl
 categories:
-    - tutorials
-    - anthropic
-    - structured-data
+  - tutorials
+  - anthropic
+  - structured-data
 ---
 
 # Using Anthropic's Web Search with Instructor for Real-Time Data
@@ -36,49 +36,54 @@ Now, let's define our Pydantic model for the response:
 
 ```python
 import instructor
-from anthropic import Anthropic
 from pydantic import BaseModel
 
-# Initialize the Anthropic client
-# Make sure your ANTHROPIC_API_KEY environment variable is set
-anthropic_client = Anthropic()
 
-# Patch the client with Instructor
-client = instructor.from_anthropic(anthropic_client, mode=instructor.Mode.ANTHROPIC_JSON)
+# Noticed thhat we use JSON not TOOLS mode
+client = instructor.from_provider(
+    "anthropic/claude-3-7-sonnet-latest",
+    mode=instructor.Mode.ANTHROPIC_JSON,
+    async_client=False,
+)
 
-class Respond(BaseModel):
-    question: str
-    answer: str
+
+class Citation(BaseModel):
+    id: int
+    url: str
+
+
+class Response(BaseModel):
+    citations: list[Citation]
+    response: str
 ```
 
-This `Respond` model is straightforward: it captures the original question and the textual answer provided by the LLM based on its web search.
+This Response model is straightforward. It gets the model to first generate a list of citations for articles that it referenced before generating it's answer.
+
+This helps to ground its response in the sources it retrieved and provide a higher quality response.
 
 Now, we can make the API call:
 
 ```python
-# The rest of your imports and client setup from above...
-# Make sure Respond is defined as above.
-
 response_data, completion_details = client.messages.create_with_completion(
-    model="claude-3-5-sonnet-latest", # Or other supported models like claude-3-7-sonnet
-    max_tokens=1000, # Sufficient for a direct textual answer
     messages=[
-        {"role": "user", "content": "What are the latest results for the UFC and who won?"}
+        {
+            "role": "system",
+            "content": "You are a helpful assistant that summarizes news articles. Your final response should be only contain a single JSON object returned in your final message to the user. Make sure to provide the exact ids for the citations that support the information you provide in the form of inline citations as [1] [2] [3] which correspond to a unique id you generate for a url that you find in the web search tool which is relevant to your final response.",
+        },
+        {
+            "role": "user",
+            "content": "What are the latest results for the UFC and who won? Answer this in a concise response that's under 3 sentences.",
+        },
     ],
-    tools=[{
-            "type": "web_search_20250305", # Correct tool type
-            "name": "web_search",
-            "max_uses": 3 # Limit the number of searches
-        }
-    ],
-    response_model=Respond # Use the simple Respond model
+    tools=[{"type": "web_search_20250305", "name": "web_search", "max_uses": 3}],
+    response_model=Response,
 )
 
-print("Question:")
-print(response_data.question)
-
-print("\nAnswer:")
-print(response_data.answer)
+print("Response:")
+print(response_data.response)
+print("\nCitations:")
+for citation in response_data.citations:
+    print(f"{citation.id}: {citation.url}")
 ```
 
 This approach provides a clean way to get the LLM's answer into a defined Pydantic object. The `examples/anthropic-web-tool/run.py` script reflects this implementation.
@@ -86,31 +91,30 @@ This approach provides a clean way to get the LLM's answer into a defined Pydant
 Expected output (will vary based on real-time web search data):
 
 ```
-Question:
-What are the latest results for the UFC and who won?
+Response:
+The latest UFC event was UFC Fight Night: Sandhagen vs Figueiredo held on May 3, 2025, in Des Moines, Iowa. Cory Sandhagen defeated former champion Deiveson Figueiredo by TKO (knee injury) in the main event, while Reinier de Ridder upset previously undefeated prospect Bo Nickal by TKO in the co-main event [1][2]. The next major UFC event is UFC 315 on May 10, featuring a welterweight championship bout between Belal Muhammad and Jack Della Maddalena [3].
 
-Answer:
-The most recent UFC event was UFC Fight Night: Sandhagen vs Figueiredo on May 3, 2025, 
-where Cory Sandhagen defeated Deiveson Figueiredo via TKO in the second round due to a knee injury. 
-In the co-main event, Reinier de Ridder defeated Bo Nickal, and Daniel Rodriguez won against Santiago 
-Ponzinibbio by third-round stoppage.
+Citations:
+1: https://www.ufc.com/news/main-card-results-highlights-winner-interviews-ufc-fight-night-sandhagen-vs-figueiredo-wells-fargo-arena-des-moines
+2: https://www.mmamania.com/2025/5/4/24423285/ufc-des-moines-results-sooo-about-last-night-sandhagen-vs-figueiredo-espn-mma-bo-nickal
+3: https://en.wikipedia.org/wiki/UFC_315
 ```
 
 ## Key Benefits
 
-*   **Real-Time Information**: Access the latest data directly from the web.
-*   **Structured Output**: Even with a simple model, Instructor ensures the output is a Pydantic object, making it easy to work with programmatically.
-*   **Source Citations**: Claude automatically cites sources, allowing for verification (details in the API response, not shown in this simplified example).
-*   **Reduced Hallucinations**: By relying on web search for factual, up-to-the-minute data, the likelihood of the LLM providing incorrect or outdated information is reduced.
+- **Real-Time Information**: Access the latest data directly from the web.
+- **Structured Output**: Even with a simple model, Instructor ensures the output is a Pydantic object, making it easy to work with programmatically.
+- **Source Citations**: Claude automatically cites sources, allowing for verification (details in the API response, not shown in this simplified example).
+- **Reduced Hallucinations**: By relying on web search for factual, up-to-the-minute data, the likelihood of the LLM providing incorrect or outdated information is reduced.
 
 ## Configuring the Web Search Tool
 
 Anthropic provides several options to configure the web search tool:
 
-*   `max_uses`: Limit the number of searches Claude can perform in a single request.
-*   `allowed_domains`: Restrict searches to a list of specific domains.
-*   `blocked_domains`: Prevent searches on certain domains.
-*   `user_location`: Localize search results by providing an approximate location (city, region, country, timezone).
+- `max_uses`: Limit the number of searches Claude can perform in a single request.
+- `allowed_domains`: Restrict searches to a list of specific domains.
+- `blocked_domains`: Prevent searches on certain domains.
+- `user_location`: Localize search results by providing an approximate location (city, region, country, timezone).
 
 For example, to limit searches to 3 and only allow results from `espn.com` and `ufc.com`:
 
