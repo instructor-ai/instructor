@@ -109,7 +109,7 @@ class UserProfile(BaseModel):
     country: str
 
 async def get_user_profile():
-    # Initialize an asynchronous client
+    # Initialise an asynchronous client
     async_client = instructor.from_provider(
         "openai/gpt-4.1-mini",
         async_client=True
