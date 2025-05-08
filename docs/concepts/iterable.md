@@ -3,170 +3,211 @@ title: Extracting Structured Data with Iterable and Streaming in Python
 description: Learn to use Iterable and streaming for structured data extraction with Pydantic and OpenAI in Python.
 ---
 
-# Multi-task and Streaming
+# Multi-Task and Streaming
 
-A common use case of structured extraction is defining a single schema class and then making another schema to create a list to do multiple extraction
+Using an `Iterable` lets you extract multiple structured objects from a single LLM call, streaming them as they arrive. This is useful for entity extraction, multi-task outputs, and more.
 
-```python
-from typing import List
-from pydantic import BaseModel
+**We recommend using the `create_iterable` method for most use cases.** It's simpler and less error-prone than manually specifying `Iterable[...]` and `stream=True`.
 
+Here's a simple example showing how to extract multiple users from a single sentence. You can use either the recommended `create_iterable` method or the `create` method with `Iterable[User]`:
 
-class User(BaseModel):
-    name: str
-    age: int
+=== "Using `create_iterable` (recommended)"
+    ```python
+    import instructor
+    import openai
+    from pydantic import BaseModel
 
+    client = instructor.from_openai(openai.OpenAI())
 
-class Users(BaseModel):
-    users: List[User]
+    class User(BaseModel):
+        name: str
+        age: int
 
-
-print(Users.model_json_schema())
-"""
-{
-    '$defs': {
-        'User': {
-            'properties': {
-                'name': {'title': 'Name', 'type': 'string'},
-                'age': {'title': 'Age', 'type': 'integer'},
-            },
-            'required': ['name', 'age'],
-            'title': 'User',
-            'type': 'object',
-        }
-    },
-    'properties': {
-        'users': {'items': {'$ref': '#/$defs/User'}, 'title': 'Users', 'type': 'array'}
-    },
-    'required': ['users'],
-    'title': 'Users',
-    'type': 'object',
-}
-"""
-```
-
-Defining a task and creating a list of classes is a common enough pattern that we make this convenient by making use of `Iterable[T]`. This lets us dynamically create a new class that:
-
-1. Has dynamic docstrings and class name based on the task
-2. Support streaming by collecting tokens until a task is received back out.
-
-## Extracting Tasks using Iterable
-
-By using `Iterable` you get a very convenient class with prompts and names automatically defined:
-
-```python
-import instructor
-from openai import OpenAI
-from typing import Iterable
-from pydantic import BaseModel
-
-client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.JSON)
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-users = client.chat.completions.create(
-    model="gpt-3.5-turbo-1106",
-    temperature=0.1,
-    response_model=Iterable[User],
-    stream=False,
-    messages=[
-        {
-            "role": "user",
-            "content": "Consider this data: Jason is 10 and John is 30.\
-                         Correctly segment it into entitites\
-                        Make sure the JSON is correct",
-        },
-    ],
-)
-for user in users:
-    print(user)
-    #> name='Jason' age=10
-    #> name='John' age=30
-```
-
-## Streaming Tasks
-
-We can also generate tasks as the tokens are streamed in by defining an `Iterable[T]` type.
-
-Lets look at an example in action with the same class
-
-```python hl_lines="6 26"
-import instructor
-import openai
-from typing import Iterable
-from pydantic import BaseModel
-
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-users = client.chat.completions.create(
-    model="gpt-4",
-    temperature=0.1,
-    stream=True,
-    response_model=Iterable[User],
-    messages=[
-        {
-            "role": "system",
-            "content": "You are a perfect entity extraction system",
-        },
-        {
-            "role": "user",
-            "content": (f"Extract `Jason is 10 and John is 10`"),
-        },
-    ],
-    max_tokens=1000,
-)
-
-for user in users:
-    print(user)
-    #> name='Jason' age=10
-    #> name='John' age=10
-```
-
-## Asynchronous Streaming
-
-I also just want to call out in this example that `instructor` also supports asynchronous streaming. This is useful when you want to stream a response model and process the results as they come in, but you'll need to use the `async for` syntax to iterate over the results.
-
-```python
-import instructor
-import openai
-from typing import Iterable
-from pydantic import BaseModel
-
-client = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
-
-
-class UserExtract(BaseModel):
-    name: str
-    age: int
-
-
-async def print_iterable_results():
-    model = await client.chat.completions.create(
-        model="gpt-4",
-        response_model=Iterable[UserExtract],
-        max_retries=2,
-        stream=True,
+    resp = client.chat.completions.create_iterable(
+        model="gpt-4o-mini",
         messages=[
-            {"role": "user", "content": "Make two up people"},
+            {
+                "role": "user",
+                "content": "Ivan is 28, lives in Moscow and his friends are Alex, John and Mary who are 25, 30 and 27 respectively",
+            }
         ],
+        response_model=User,
     )
-    async for m in model:
-        print(m)
-        #> name='John Doe' age=30
-        #> name='Jane Smith' age=25
+
+    for user in resp:
+        print(user)
+    ```
+    _Recommended for most use cases. Handles streaming and iteration for you._
+
+=== "Using `create` with `Iterable[User]`"
+    ```python
+    import instructor
+    import openai
+    from pydantic import BaseModel
+    from typing import Iterable
+
+    client = instructor.from_openai(openai.OpenAI())
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+    resp = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": "Ivan is 28, lives in Moscow and his friends are Alex, John and Mary who are 25, 30 and 27 respectively",
+            }
+        ],
+        response_model=Iterable[User],
+    )
+
+    for user in resp:
+        print(user)
+    ```
+    _Use this if you need more manual control or compatibility with legacy code._
+
+---
 
 
-import asyncio
+We also support more complex extraction patterns such as Unions as you'll see below out of the box. 
 
-asyncio.run(print_iterable_results())
-```
+???+ warning 
+
+    Unions don't work with Gemini because the AnyOf is not supported in the current response schema.
+
+## Synchronous Usage
+
+=== "Using `create`"
+
+    ```python
+    import instructor
+    import openai
+    from typing import Iterable, Union, Literal
+    from pydantic import BaseModel
+
+    class Weather(BaseModel):
+        location: str
+        units: Literal["imperial", "metric"]
+
+    class GoogleSearch(BaseModel):
+        query: str
+
+    client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+    results = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You must always use tools"},
+            {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
+        ],
+        response_model=Iterable[Union[Weather, GoogleSearch]],
+        stream=True,
+    )
+
+    for item in results:
+        print(item)
+    ```
+
+=== "Using `create_iterable` (recommended)"
+
+    ```python
+
+    import instructor
+    import openai
+    from typing import Union, Literal
+    from pydantic import BaseModel
+
+    class Weather(BaseModel):
+        location: str
+        units: Literal["imperial", "metric"]
+
+    class GoogleSearch(BaseModel):
+        query: str
+
+    client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+    results = client.chat.completions.create_iterable(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You must always use tools"},
+            {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
+        ],
+        response_model=Union[Weather, GoogleSearch],
+    )
+
+    for item in results:
+        print(item)
+    ```
+
+---
+
+## Asynchronous Usage
+
+=== "Using `create`"
+
+    ```python
+    import instructor
+    import openai
+    from typing import Iterable, Union, Literal
+    from pydantic import BaseModel
+    import asyncio
+
+    class Weather(BaseModel):
+        location: str
+        units: Literal["imperial", "metric"]
+
+    class GoogleSearch(BaseModel):
+        query: str
+
+    aclient = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+
+    async def main():
+        results = await aclient.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You must always use tools"},
+                {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
+            ],
+            response_model=Iterable[Union[Weather, GoogleSearch]],
+            stream=True,
+        )
+        async for item in results:
+            print(item)
+
+    asyncio.run(main())
+    ```
+
+=== "Using `create_iterable` (recommended)"
+
+    ```python
+    import instructor
+    import openai
+    from typing import Union, Literal
+    from pydantic import BaseModel
+    import asyncio
+
+    class Weather(BaseModel):
+        location: str
+        units: Literal["imperial", "metric"]
+
+    class GoogleSearch(BaseModel):
+        query: str
+
+    aclient = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+
+    async def main():
+        results = await aclient.chat.completions.create_iterable(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You must always use tools"},
+                {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
+            ],
+            response_model=Union[Weather, GoogleSearch],
+        )
+        async for item in results:
+            print(item)
+
+    asyncio.run(main())
+    ```

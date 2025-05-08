@@ -1,8 +1,7 @@
 from collections.abc import AsyncGenerator, Generator, Iterable
-from typing import Any, ClassVar, Optional, cast
+from typing import Any, ClassVar, Optional, cast, get_origin, get_args, Union
 import json
 from pydantic import BaseModel, Field, create_model
-
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
@@ -30,7 +29,7 @@ class IterableBase:
                 return
 
             for item in json_response["tasks"]:
-                yield cls.task_type.model_validate(item)  # type: ignore
+                yield cls.extract_cls_task_type(json.dumps(item), **kwargs)
 
         yield from cls.tasks_from_chunks(json_chunks, **kwargs)
 
@@ -50,7 +49,7 @@ class IterableBase:
 
     @classmethod
     async def tasks_from_mistral_chunks(
-        cls, json_chunks: AsyncGenerator[str, None]
+        cls, json_chunks: AsyncGenerator[str, None], **kwargs: Any
     ) -> AsyncGenerator[BaseModel, None]:
         """Process streaming chunks from Mistral and VertexAI.
 
@@ -64,7 +63,8 @@ class IterableBase:
                 continue
 
             for item in json_response["tasks"]:
-                yield cls.task_type.model_validate(item)  # type: ignore
+                obj = cls.extract_cls_task_type(json.dumps(item), **kwargs)
+                yield obj
 
     @classmethod
     def tasks_from_chunks(
@@ -83,7 +83,7 @@ class IterableBase:
                 task_json, potential_object = cls.get_object(potential_object, 0)
                 if task_json:
                     assert cls.task_type is not None
-                    obj = cls.task_type.model_validate_json(task_json, **kwargs)
+                    obj = cls.extract_cls_task_type(task_json, **kwargs)
                     yield obj
                 else:
                     break
@@ -105,10 +105,31 @@ class IterableBase:
                 task_json, potential_object = cls.get_object(potential_object, 0)
                 if task_json:
                     assert cls.task_type is not None
-                    obj = cls.task_type.model_validate_json(task_json, **kwargs)
+                    obj = cls.extract_cls_task_type(task_json, **kwargs)
                     yield obj
                 else:
                     break
+
+    @classmethod
+    def extract_cls_task_type(
+        cls,
+        task_json: str,
+        **kwargs: Any,
+    ):
+        assert cls.task_type is not None
+        if get_origin(cls.task_type) is Union:
+            union_members = get_args(cls.task_type)
+            for member in union_members:
+                try:
+                    obj = member.model_validate_json(task_json, **kwargs)
+                    return obj
+                except Exception:
+                    pass
+        else:
+            return cls.task_type.model_validate_json(task_json, **kwargs)
+        raise ValueError(
+            f"Failed to extract task type with {task_json} for {cls.task_type}"
+        )
 
     @staticmethod
     def extract_json(
@@ -337,7 +358,7 @@ def IterableModel(
         if description is None
         else description
     )
-    assert issubclass(new_cls, OpenAISchema), (
-        "The new class should be a subclass of OpenAISchema"
-    )
+    assert issubclass(
+        new_cls, OpenAISchema
+    ), "The new class should be a subclass of OpenAISchema"
     return new_cls
