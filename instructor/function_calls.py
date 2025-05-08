@@ -389,9 +389,6 @@ class OpenAISchema(BaseModel):
             # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
             model = cls.model_validate(parsed, context=validation_context, strict=False)
 
-        if last_block is not None and hasattr(last_block, "citations"):
-            model.citations = last_block.citations
-
         return model
 
     @classmethod
