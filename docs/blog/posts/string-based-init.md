@@ -1,255 +1,151 @@
 ---
-draft: false
-date: 2024-04-20
 authors:
   - jxnl
+  - ivanleomk
 categories:
-  - Tutorial
+  - instructor
+comments: true
+date: 2025-05-08
+description: Switch between different models and providers with a single string!
+draft: false
+tags:
+  - LLMs
+  - Instructor
 ---
 
-# Unified Provider Interface with String-Based Initialization
+# One String to Rule Them All
 
-Instructor now offers a simplified way to initialize any supported LLM provider with a single consistent interface. This approach makes it easier than ever to switch between different LLM providers while maintaining the same structured output functionality you rely on.
+With instructor 1.8.0, you can now switch between any LLM providers with a single line of code.
 
-## The Problem
+This new unified provider interface lets you initialise any supported provider (Eg. OpenAI, Anthropic, Google ) without modifying any other bits of your existing code.
 
-As the number of LLM providers grows, so does the complexity of initializing and working with different client libraries. Each provider has its own initialization patterns, API structures, and quirks. This leads to code that isn't portable between providers and requires significant refactoring when you want to try a new model.
+<!-- more -->
 
-## The Solution: String-Based Initialization
+## String Initialisation
 
-We've introduced a new unified interface that allows you to initialize any supported provider with a simple string format:
+Let's see this in action below!
 
 ```python
 import instructor
 from pydantic import BaseModel
+from typing import Iterable
 
-class UserInfo(BaseModel):
+# Define your data structure
+class Person(BaseModel):
     name: str
     age: int
 
-# Initialize any provider with a single consistent interface
-client = instructor.from_provider("openai/gpt-4")
-client = instructor.from_provider("anthropic/claude-3-sonnet")
-client = instructor.from_provider("google/gemini-pro")
-client = instructor.from_provider("mistral/mistral-large")
+# Connect to any provider with a single line
+client = instructor.from_provider("google/gemini-1.5-flash")
+
+# Extract structured data
+response = client.chat.completions.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "Alice is 30 and Bob is 25.",
+        }
+    ],
+    response_model=Iterable[Person],
+)
+
+for person in response:
+    print(f"Name: {person.name}, Age: {person.age}")
+# Output:
+# Name: Alice, Age: 30
+# Name: Bob, Age: 25
 ```
 
-The `from_provider` function takes a string in the format `"provider/model-name"` and handles all the details of setting up the appropriate client with the right model. This provides several key benefits:
-
-- **Simplified Initialization**: No need to manually create provider-specific clients
-- **Consistent Interface**: Same syntax works across all providers
-- **Reduced Dependency Exposure**: You don't need to import specific provider libraries in your application code
-- **Easy Experimentation**: Switch between providers with a single line change
-
-## Supported Providers
-
-The string-based initialization currently supports all major providers in the ecosystem:
-
-- OpenAI: `"openai/gpt-4"`, `"openai/gpt-4o"`, `"openai/gpt-3.5-turbo"`
-- Anthropic: `"anthropic/claude-3-opus-20240229"`, `"anthropic/claude-3-sonnet-20240229"`, `"anthropic/claude-3-haiku-20240307"`
-- Google Gemini: `"google/gemini-pro"`, `"google/gemini-pro-vision"`
-- Mistral: `"mistral/mistral-small-latest"`, `"mistral/mistral-medium-latest"`, `"mistral/mistral-large-latest"`
-- Cohere: `"cohere/command"`, `"cohere/command-r"`, `"cohere/command-light"`
-- Perplexity: `"perplexity/sonar-small-online"`, `"perplexity/sonar-medium-online"`
-- Groq: `"groq/llama2-70b-4096"`, `"groq/mixtral-8x7b-32768"`, `"groq/gemma-7b-it"`
-- Writer: `"writer/palmyra-instruct"`, `"writer/palmyra-instruct-v2"`
-- AWS Bedrock: `"bedrock/anthropic.claude-v2"`, `"bedrock/amazon.titan-text-express-v1"`
-- Cerebras: `"cerebras/cerebras-gpt"`, `"cerebras/cerebras-gpt-2.7b"`
-- Fireworks: `"fireworks/llama-v2-70b"`, `"fireworks/firellama-13b"`
-- Vertex AI: `"vertexai/gemini-pro"`, `"vertexai/text-bison"`
-- Google GenAI: `"genai/gemini-pro"`, `"genai/gemini-pro-vision"`
-
-Each provider will be initialized with sensible defaults, but you can also pass additional keyword arguments to customize the configuration. For model-specific details, consult each provider's documentation.
-
-## Async Support
-
-The unified interface fully supports both synchronous and asynchronous clients:
+Switching providers is as simple as changing the string:
 
 ```python
-# Synchronous client (default)
-client = instructor.from_provider("openai/gpt-4")
+# OpenAI
+client = instructor.from_provider("openai/gpt-4o-mini")
 
-# Asynchronous client
-async_client = instructor.from_provider("anthropic/claude-3-sonnet", async_client=True)
-
-# Use like any other async client
-response = await async_client.chat.completions.create(
-    response_model=UserInfo,
-    messages=[{"role": "user", "content": "Extract information about John who is 30 years old"}]
-)
+# Anthropic (with version date)
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
 ```
 
-## Mode Selection
+Experimentation becomes significantly easier with this unified interface.
 
-You can also specify which structured output mode to use with the provider:
+When you want to test how different models perform on the same task, you simply change the provider string rather than rewriting chunks of your codebase.
+
+This makes writing tests and experiments much faster allowing you to spend less time maintaining boilerplate code and more time experimenting to find the optimal model and prompt for your use case.
+
+Behind the scenes, Instructor handles all the complexities of different client libraries. This simplified dependency management means you don't need to worry about compatibility issues or keeping up with the latest changes to each provider's SDK.
+
+### Async Support
+
+When building production applications that need to remain responsive, asynchronous processing is essential. Instructor's unified provider interface supports this workflow with a simple `async_client` keyword during initialization.
+
+```python
+client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
+```
+
+The async implementation works particularly well for web servers, batch processing jobs, or any scenario where you need to extract structured data without blocking your application's main thread.
+
+Here's how you can implement it:
 
 ```python
 import instructor
-from instructor import Mode
-
-# Override the default mode for a provider
-client = instructor.from_provider(
-    "anthropic/claude-3-sonnet", 
-    mode=Mode.ANTHROPIC_TOOLS
-)
-
-# Use JSON mode instead of the default tools mode
-client = instructor.from_provider(
-    "mistral/mistral-large", 
-    mode=Mode.MISTRAL_STRUCTURED_OUTPUTS
-)
-
-# Use reasoning tools instead of regular tools for Anthropic
-client = instructor.from_provider(
-    "anthropic/claude-3-opus", 
-    mode=Mode.ANTHROPIC_REASONING_TOOLS
-)
-```
-
-If not specified, each provider will use its recommended default mode:
-
-- OpenAI: `Mode.OPENAI_FUNCTIONS`
-- Anthropic: `Mode.ANTHROPIC_TOOLS`
-- Google Gemini: `Mode.GEMINI_JSON`
-- Mistral: `Mode.MISTRAL_TOOLS`
-- Cohere: `Mode.COHERE_TOOLS`
-- Perplexity: `Mode.JSON`
-- Groq: `Mode.GROQ_TOOLS`
-- Writer: `Mode.WRITER_JSON`
-- Bedrock: `Mode.ANTHROPIC_TOOLS` (for Claude on Bedrock)
-- Vertex AI: `Mode.VERTEXAI_TOOLS`
-
-You can always customize this based on your specific needs and model capabilities.
-
-## Error Handling
-
-The `from_provider` function includes robust error handling to help you quickly identify and fix issues:
-
-```python
-# Missing dependency
-try:
-    client = instructor.from_provider("anthropic/claude-3-sonnet")
-except ImportError as e:
-    print("Error: Install the anthropic package first")
-    # pip install anthropic
-
-# Invalid provider format
-try:
-    client = instructor.from_provider("invalid-format")
-except ValueError as e:
-    print(e)  # Model string must be in format "provider/model-name"
-
-# Unsupported provider
-try:
-    client = instructor.from_provider("unknown/model")
-except ValueError as e:
-    print(e)  # Unsupported provider: unknown. Supported providers are: ...
-```
-
-The function validates the provider string format, checks if the provider is supported, and ensures the necessary packages are installed.
-
-## Environment Variables
-
-Like the native client libraries, `from_provider` respects environment variables set for each provider:
-
-```python
-# Set environment variables 
-import os
-os.environ["OPENAI_API_KEY"] = "your-openai-key"
-os.environ["ANTHROPIC_API_KEY"] = "your-anthropic-key" 
-os.environ["MISTRAL_API_KEY"] = "your-mistral-key"
-
-# No need to pass API keys directly
-client = instructor.from_provider("openai/gpt-4")
-```
-
-## Troubleshooting
-
-Here are some common issues and solutions when using the unified provider interface:
-
-### Model Not Found Errors
-
-If you receive a 404 error, check that you're using the correct model name format:
-
-```
-Error code: 404 - {'type': 'error', 'error': {'type': 'not_found_error', 'message': 'model: claude-3-haiku'}}
-```
-
-For Anthropic models, always include the version date:
-- ✅ Correct: `anthropic/claude-3-haiku-20240307`
-- ❌ Incorrect: `anthropic/claude-3-haiku`
-
-### Provider-Specific Parameters
-
-Some providers require specific parameters for API calls:
-
-```python
-# Anthropic requires max_tokens
-anthropic_client = instructor.from_provider(
-    "anthropic/claude-3-haiku-20240307", 
-    max_tokens=400  # Required for Anthropic
-)
-
-# Use models with vision capabilities for multimodal content
-gemini_client = instructor.from_provider(
-    "google/gemini-pro-vision"  # Required for image processing
-)
-```
-
-### Working Example
-
-Here's a complete example that demonstrates the automodel functionality with multiple providers:
-
-```python
-import os
+from pydantic import BaseModel
 import asyncio
-import instructor
-from pydantic import BaseModel, Field
 
-class UserInfo(BaseModel):
-    """User information extraction model."""
-    name: str = Field(description="The user's full name")
-    age: int = Field(description="The user's age in years")
-    occupation: str = Field(description="The user's job or profession")
+class UserProfile(BaseModel):
+    name: str
+    country: str
 
-async def main():
-    # Test OpenAI
-    openai_client = instructor.from_provider("openai/gpt-3.5-turbo")
-    openai_result = openai_client.chat.completions.create(
-        response_model=UserInfo,
-        messages=[{"role": "user", "content": "Jane Doe is a 28-year-old data scientist."}]
+async def get_user_profile():
+    # Initialize an asynchronous client
+    async_client = instructor.from_provider(
+        "openai/gpt-4.1-mini",
+        async_client=True
     )
-    print(f"OpenAI result: {openai_result.model_dump()}")
-    
-    # Test Anthropic with async client
-    if os.environ.get("ANTHROPIC_API_KEY"):
-        anthropic_client = instructor.from_provider(
-            model="anthropic/claude-3-haiku-20240307",
-            async_client=True,
-            max_tokens=400  # Required for Anthropic
-        )
-        anthropic_result = await anthropic_client.chat.completions.create(
-            response_model=UserInfo,
-            messages=[{"role": "user", "content": "John Smith is a 35-year-old software engineer."}]
-        )
-        print(f"Anthropic result: {anthropic_result.model_dump()}")
+
+    # Extract data asynchronously
+    profile = await async_client.chat.completions.create(
+        messages=[{"role": "user", "content": "Extract: Maria lives in Spain."}],
+        response_model=UserProfile
+    )
+    print(f"Name: {profile.name}, Country: {profile.country}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(get_user_profile())
 ```
 
-## Conclusion
+### Provider Specific Parameters
 
-String-based initialization is a significant step toward making Instructor even more user-friendly and flexible. It reduces the learning curve for working with multiple providers and makes it easier than ever to experiment with different models.
+Some providers require additional parameters for optimal performance.
 
-Benefits include:
-- Simplified initialization with a consistent interface
-- Automatic selection of appropriate default modes
-- Support for both synchronous and asynchronous clients
-- Clear error messages to quickly identify issues
-- Respect for provider-specific environment variables
-- Comprehensive model selection across the entire LLM ecosystem
+Rather than hiding these options, Instructor allows you to pass them directly through the from_provider function:
+python
 
-Whether you're building a new application or migrating an existing one, the unified provider interface offers a cleaner, more maintainable way to work with structured outputs across the LLM ecosystem.
+```
+# Anthropic requires max tokens
+client = instructor.from_provider(
+    "anthropic/claude-3-sonnet-20240229",
+    max_tokens=1024
+)
+```
 
-Try it today with `instructor.from_provider()` and check out the [complete example code](https://github.com/instructor-ai/instructor/tree/main/examples/automodel) in our repository!
+If you'd like to change this parameter down the line, you can just do so by setting it on the `client.chat.completions.create` function again.
+
+### Type Completion
+
+To make it easy for you to find the right model string, we now ship with auto-complete for these new model-provider initialisation strings.
+
+This is automatically provided for you out of the box when you use the new `from_provider` method as seen below.
+
+![](./img/instructor-autocomplete.png)
+
+Say bye to fiddling around with messy model versioning and get cracking to working on your business logic instead!
+
+## Get Started Today
+
+Upgrade to the latest version and make sure you've installed `1.8.0`.
+
+```
+pip install --upgrade instructor
+```
+
+Check out our [full documentation](https://python.useinstructor.com/) for more examples and supported providers.
