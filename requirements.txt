@@ -110,3 +110,11 @@ urllib3==2.3.0
     # via requests
 yarl==1.18.3
     # via aiohttp
+mkdocs
+cairosvg
+pillow
+mkdocs-minify-plugin
+mkdocstrings 
+mkdocstrings-python 
+mkdocs-jupyter 
+mkdocs-redirects
