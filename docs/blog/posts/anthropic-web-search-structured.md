@@ -14,6 +14,8 @@ Anthropic's new web search tool, when combined with Instructor, provides a power
 
 In this post, we'll explore how to use the `web_search` tool with Instructor to fetch the latest information and structure it into a Pydantic model. Even a simple structure can be very effective for clarity and further processing.
 
+<!-- more -->
+
 ## How it Works
 
 The web search tool enables Claude models to perform web searches during a generation. When you provide the `web_search` tool in your API request, Claude can decide to use it if the prompt requires information it doesn't have. The API then executes the search, provides the results back to Claude, and Claude can then use this information to generate a response. Importantly, Claude will cite its sources from the search results. You can find more details in the [official Anthropic documentation](https://docs.anthropic.com/en/docs/build-with-claude/tool-use/web-search-tool).
@@ -128,4 +130,4 @@ You cannot use `allowed_domains` and `blocked_domains` in the same request.
 
 Combining Anthropic's web search tool with Instructor's structured data capabilities opens up exciting possibilities for building dynamic, information-rich applications. Whether you're tracking sports scores, news updates, or market trends, this powerful duo can help you access and organize real-time web data effectively, even with simple Pydantic models.
 
-Check out the example code in `examples/anthropic-web-tool/run.py` to see this implementation, and refer to the [Anthropic web search documentation](https://docs.anthropic.com/en/docs/build-with-claude/tool-use/web-search-tool) for more in-depth information on the tool's capabilities. 
+Check out the example code in `examples/anthropic-web-tool/run.py` to see this implementation, and refer to the [Anthropic web search documentation](https://docs.anthropic.com/en/docs/build-with-claude/tool-use/web-search-tool) for more in-depth information on the tool's capabilities.
