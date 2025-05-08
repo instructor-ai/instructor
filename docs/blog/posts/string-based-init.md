@@ -46,7 +46,7 @@ class Person(BaseModel):
     age: int
 
 # Connect to any provider with a single line
-client = instructor.from_provider("google/gemini-1.5-flash")
+client = instructor.from_provider("google/gemini-2.0-flash")
 
 # Extract structured data
 response = client.chat.completions.create(
@@ -70,10 +70,10 @@ Switching providers is as simple as changing the string:
 
 ```python
 # OpenAI
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1")
 
 # Anthropic (with version date)
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-20241022")
 ```
 
 With the unified provider interface, you can now easily benchmark different models on the same task. This is crucial when you need to:
@@ -92,7 +92,7 @@ When building production applications that need to remain responsive, asynchrono
 Instructor's unified provider interface supports this workflow with a simple `async_client` keyword during initialization.
 
 ```python
-client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
+client = instructor.from_provider("openai/gpt-4.1", async_client=True)
 ```
 
 The async implementation works particularly well for web servers, batch processing jobs, or any scenario where you need to extract structured data without blocking your application's main thread.
