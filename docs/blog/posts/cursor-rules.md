@@ -18,7 +18,7 @@ tags:
 
 # Instructor Adopting Cursor Rules
 
-AI-assisted coding is changing how we use version control. Many developers now use what I call "vibe coding" — coding with AI help. This creates new challenges with Git. Today I'll share how we're using Cursor rules in Instructor to solve these problems.
+AI-assisted coding is changing how we use version control. Many developers now use what I call "vibe coding" - coding with AI help. This creates new challenges with Git. Today I'll share how we're using Cursor rules in Instructor to solve these problems.
 
 <!-- more -->
 

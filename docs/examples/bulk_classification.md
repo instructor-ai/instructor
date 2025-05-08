@@ -23,9 +23,9 @@ One of the easy things to do is to allow users to define a set of tags in some k
 | 3      | address  | Address              |
 | 4      | Other    | Other information    |
 
-1. **tag_id** — The unique identifier for the tag.
-2. **name** — The name of the tag.
-3. **instructions** — A description of the tag, which can be used as a prompt to describe the tag.
+1. **tag_id** - The unique identifier for the tag.
+2. **name** - The name of the tag.
+3. **instructions** - A description of the tag, which can be used as a prompt to describe the tag.
 
 ## Implementing the Classification
 

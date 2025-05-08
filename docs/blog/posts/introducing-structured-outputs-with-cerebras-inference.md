@@ -35,8 +35,8 @@ To get guaranteed structured outputs with Cerebras Inference, you
 
 <!-- more -->
 
-1. Create a new Instructor client with the `from_cerebras` method
-2. Define a Pydantic model to pass into the `response_model` parameter
+1. Create a new Instructor client with the `from_cerebras` method
+2. Define a Pydantic model to pass into the `response_model` parameter
 3. Get back a validated response exactly as you would expect
 
 You'll also need to install the Cerebras SDK to use the client. You can install it with the command below.
@@ -93,7 +93,7 @@ We support both the `AsyncCerebras` and `Cerebras` clients.
 
 ### Streaming
 
-We also support streaming with the Cerebras client with the `CEREBRAS_JSON` mode so that you can take advantage of Cerebras’s inference speeds and process the response as it comes in.
+We also support streaming with the Cerebras client with the `CEREBRAS_JSON` mode so that you can take advantage of Cerebras’s inference speeds and process the response as it comes in.
 
 ```python
 import instructor

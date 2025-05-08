@@ -5,7 +5,7 @@ description: Learn to implement single-label and multi-label text classification
 
 # Text Classification using OpenAI and Pydantic
 
-This tutorial showcases how to implement text classification tasks—specifically, single-label and multi-label classifications—using the OpenAI API and Pydantic models. For complete examples, check out our [single classification](bulk_classification.md#single-label-classification) and [multi-label classification](bulk_classification.md#multi-label-classification) examples in the cookbook.
+This tutorial showcases how to implement text classification tasks-specifically, single-label and multi-label classifications-using the OpenAI API and Pydantic models. For complete examples, check out our [single classification](bulk_classification.md#single-label-classification) and [multi-label classification](bulk_classification.md#multi-label-classification) examples in the cookbook.
 
 !!! tips "Motivation"
 

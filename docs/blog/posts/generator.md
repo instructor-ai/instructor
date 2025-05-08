@@ -26,7 +26,7 @@ And what makes streaming possible? Generators!
 
 <!-- more -->
 
-In this post, we're going to dive into the cool world of Python generators — these tools are more than just a coding syntax trick. We'll explore Python generators from the ground up and then delve into LLM streaming using the Instructor library.
+In this post, we're going to dive into the cool world of Python generators - these tools are more than just a coding syntax trick. We'll explore Python generators from the ground up and then delve into LLM streaming using the Instructor library.
 
 ## Python Generators: An Efficient Approach to Iterables
 

@@ -12,7 +12,7 @@ tags:
 
 # What is MCP
 
-With [OpenAI joining Anthropic in supporting the Model Context Protocol (MCP)](https://x.com/sama/status/1904957253456941061), we're witnessing a unified standard for language models to interact with external systems. This creates exciting opportunities for multi-LLM architectures where specialized AI applications work in parallel—discovering tools, handing off tasks, and accessing powerful capabilities through standardized interfaces.
+With [OpenAI joining Anthropic in supporting the Model Context Protocol (MCP)](https://x.com/sama/status/1904957253456941061), we're witnessing a unified standard for language models to interact with external systems. This creates exciting opportunities for multi-LLM architectures where specialized AI applications work in parallel-discovering tools, handing off tasks, and accessing powerful capabilities through standardized interfaces.
 
 <!-- more -->
 
@@ -64,7 +64,7 @@ Most organizations will likely maintain both: OpenAPI specifications for their d
 
 ## Getting Started With MCP Development
 
-The learning curve for MCP is relatively gentle—many servers are less than 200 lines of code and can be built in under an hour. Here are several ways you can start using MCP in existing environments:
+The learning curve for MCP is relatively gentle-many servers are less than 200 lines of code and can be built in under an hour. Here are several ways you can start using MCP in existing environments:
 
 ### Claude Desktop
 

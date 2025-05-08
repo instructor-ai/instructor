@@ -175,3 +175,5 @@ wandb/settings
 math_finetunes.jsonl
 
 pr_body.md
+
+check_zero_width_chars.py

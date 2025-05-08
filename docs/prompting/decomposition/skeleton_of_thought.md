@@ -111,7 +111,7 @@ async def main():
     for response in responses:
         print(response.response)
         """
-        Hawaii—a paradise of golden beaches, lush landscapes, and vibrant culture—beckoned us with the promise of adventure and unforgettable experiences. Our journey began the moment we landed on this magical archipelago, ready to explore its unique blend of natural beauty and rich traditions.
+        Hawaii-a paradise of golden beaches, lush landscapes, and vibrant culture-beckoned us with the promise of adventure and unforgettable experiences. Our journey began the moment we landed on this magical archipelago, ready to explore its unique blend of natural beauty and rich traditions.
         """
         """
         The moment we landed in Hawaii, we were greeted with warm aloha spirit, lush tropical landscapes, and the gentle aroma of hibiscus flowers in the air.
