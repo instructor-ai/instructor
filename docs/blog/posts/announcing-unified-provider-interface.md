@@ -1,6 +1,6 @@
 ---
-title: "Effortless LLM Integration: Instructor's Unified Provider Interface"
-date: 2024-07-26
+title: "Instructor's Unified Provider Interface"
+date: 2025-05-08
 authors:
   - jxnl
 description: "Learn about Instructor's new `from_provider` function, a unified interface that simplifies working with multiple LLM providers like OpenAI, Anthropic, Google, and more. Easily switch models, compare outputs, and streamline your multi-provider workflows."
