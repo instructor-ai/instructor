@@ -41,11 +41,9 @@ def validateIsSubClass(response_model: type):
         if len(typing.get_args(response_model)) == 0:
             return False
         return issubclass(typing.get_args(response_model)[0], BaseModel)
-
     try:
         # Add a guard here to prevent issues with GenericAlias
         import types
-
         if isinstance(response_model, types.GenericAlias):
             return False
     except Exception:
