@@ -118,9 +118,9 @@ if __name__ == "__main__":
 Some providers require additional parameters for optimal performance.
 
 Rather than hiding these options, Instructor allows you to pass them directly through the from_provider function:
-python
 
-```
+
+```python
 # Anthropic requires max tokens
 client = instructor.from_provider(
     "anthropic/claude-3-sonnet-20240229",
