@@ -29,6 +29,60 @@ from instructor.hooks import Hooks, HookName
 T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
 
 
+class Response:
+    def __init__(
+        self,
+        create_fn: Callable[..., Any],
+        mode: instructor.Mode,
+        hooks: Hooks,
+        provider: Provider,
+        **kwargs,
+    ):
+        self.create_fn = create_fn
+        self.kwargs = kwargs
+        self.mode = mode
+        self.hooks = hooks
+        self.provider = provider
+
+    def create(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T] | None = None,
+        max_retries: int | Retrying | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs,
+    ) -> T | Any:
+        kwargs = self.handle_kwargs(**kwargs)
+
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.create_fn(
+            response_model=response_model,
+            validation_context=validation_context,
+            context=context,
+            max_retries=max_retries,
+            input=input,
+            strict=strict,
+            hooks=self.hooks,
+            **kwargs,
+        )
+
+    def handle_kwargs(self, **kwargs):
+        for key, value in self.kwargs.items():
+            if key not in kwargs:
+                kwargs[key] = value
+
+        return kwargs
+
+
 class Instructor:
     client: Any | None
     create_fn: Callable[..., Any]
@@ -54,6 +108,19 @@ class Instructor:
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
+
+        if mode in {
+            instructor.Mode.RESPONSES_TOOLS,
+            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        }:
+            assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
+            self.responses = Response(
+                create_fn=instructor.patch(create=client.responses.create, mode=mode),
+                mode=mode,
+                provider=Provider.OPENAI,
+                hooks=self.hooks,
+                **kwargs,
+            )
 
     def on(
         self,
@@ -358,6 +425,7 @@ class AsyncInstructor(Instructor):
     default_model: str | None = None
     provider: Provider
     hooks: Hooks
+    responses: AsyncResponse
 
     def __init__(
         self,
@@ -374,6 +442,7 @@ class AsyncInstructor(Instructor):
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
+        self.responses = AsyncResponse(self)
 
     async def create(  # type: ignore[override]
         self,
@@ -392,7 +461,11 @@ class AsyncInstructor(Instructor):
             get_origin(response_model) in {Iterable}
             and get_args(response_model)
             and get_args(response_model)[0] is not None
-            and self.mode not in {instructor.Mode.PARALLEL_TOOLS, instructor.Mode.VERTEXAI_PARALLEL_TOOLS}
+            and self.mode
+            not in {
+                instructor.Mode.PARALLEL_TOOLS,
+                instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
+            }
         ):
             return self.create_iterable(
                 messages=messages,
@@ -547,6 +620,8 @@ def from_openai(
             instructor.Mode.MD_JSON,
             instructor.Mode.TOOLS_STRICT,
             instructor.Mode.JSON_O1,
+            instructor.Mode.RESPONSES_TOOLS,
+            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }
 
     if isinstance(client, openai.OpenAI):

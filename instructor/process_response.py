@@ -252,6 +252,42 @@ def handle_tools(
     return response_model, new_kwargs
 
 
+def handle_responses_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    if not new_kwargs.get("tools"):
+        new_kwargs["tools"] = []
+
+    new_kwargs["tools"].append(
+        {
+            "type": "function",
+            **response_model.openai_schema,
+        }
+    )
+
+    new_kwargs["tool_choice"] = {
+        "type": "function",
+        "name": response_model.openai_schema["name"],
+    }
+    return response_model, new_kwargs
+
+
+def handle_responses_tools_with_inbuilt_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    if not new_kwargs.get("tools"):
+        new_kwargs["tools"] = []
+
+    new_kwargs["tools"].append(
+        {
+            "type": "function",
+            **response_model.openai_schema,
+        }
+    )
+
+    return response_model, new_kwargs
+
+
 def handle_mistral_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
@@ -926,6 +962,8 @@ def handle_response_model(
         Mode.BEDROCK_TOOLS: handle_bedrock_tools,
         Mode.PERPLEXITY_JSON: handle_perplexity_json,
         Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
+        Mode.RESPONSES_TOOLS: handle_responses_tools,
+        Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: handle_responses_tools_with_inbuilt_tools,
     }
 
     if mode in mode_handlers:
