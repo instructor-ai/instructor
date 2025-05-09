@@ -84,6 +84,60 @@ class Response:
         return kwargs
 
 
+class AsyncResponse:
+    def __init__(
+        self,
+        create_fn: Callable[..., Any],
+        mode: instructor.Mode,
+        hooks: Hooks,
+        provider: Provider,
+        **kwargs,
+    ):
+        self.create_fn = create_fn
+        self.kwargs = kwargs
+        self.mode = mode
+        self.hooks = hooks
+        self.provider = provider
+
+    async def create(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T] | None = None,
+        max_retries: int | Retrying | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs,
+    ) -> T | Any:
+        kwargs = self.handle_kwargs(**kwargs)
+
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return await self.create_fn(
+            response_model=response_model,
+            validation_context=validation_context,
+            context=context,
+            max_retries=max_retries,
+            input=input,
+            strict=strict,
+            hooks=self.hooks,
+            **kwargs,
+        )
+
+    def handle_kwargs(self, **kwargs):
+        for key, value in self.kwargs.items():
+            if key not in kwargs:
+                kwargs[key] = value
+
+        return kwargs
+
+
 class Instructor:
     client: Any | None
     create_fn: Callable[..., Any]
@@ -106,6 +160,7 @@ class Instructor:
         self.mode = mode
         if mode == instructor.Mode.FUNCTIONS:
             instructor.Mode.warn_mode_functions_deprecation()
+
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
@@ -426,7 +481,6 @@ class AsyncInstructor(Instructor):
     default_model: str | None = None
     provider: Provider
     hooks: Hooks
-    responses: AsyncResponse
 
     def __init__(
         self,
@@ -443,6 +497,19 @@ class AsyncInstructor(Instructor):
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
+
+        if mode in {
+            instructor.Mode.RESPONSES_TOOLS,
+            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        }:
+            assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
+            self.responses = Response(
+                create_fn=instructor.patch(create=client.responses.create, mode=mode),
+                mode=mode,
+                provider=Provider.OPENAI,
+                hooks=self.hooks,
+                **kwargs,
+            )
 
     async def create(  # type: ignore[override]
         self,
@@ -586,6 +653,16 @@ def map_chat_completion_to_response(messages, client, *args, **kwargs) -> Any:
     )
 
 
+async def async_map_chat_completion_to_response(
+    messages, client, *args, **kwargs
+) -> Any:
+    return await client.responses.create(
+        *args,
+        input=messages,
+        **kwargs,
+    )
+
+
 def from_openai(
     client: openai.OpenAI | openai.AsyncOpenAI,
     mode: instructor.Mode = instructor.Mode.TOOLS,
@@ -653,7 +730,16 @@ def from_openai(
     if isinstance(client, openai.AsyncOpenAI):
         return AsyncInstructor(
             client=client,
-            create=instructor.patch(create=client.chat.completions.create, mode=mode),
+            create=instructor.patch(
+                create=client.chat.completions.create
+                if mode
+                not in {
+                    instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                    instructor.Mode.RESPONSES_TOOLS,
+                }
+                else partial(async_map_chat_completion_to_response, client=client),
+                mode=mode,
+            ),
             mode=mode,
             provider=provider,
             **kwargs,
