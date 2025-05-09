@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import openai
 import inspect
+from functools import partial
 import instructor
 from .utils import Provider, get_provider
 from openai.types.chat import ChatCompletionMessageParam
@@ -442,7 +443,6 @@ class AsyncInstructor(Instructor):
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
-        self.responses = AsyncResponse(self)
 
     async def create(  # type: ignore[override]
         self,
@@ -578,6 +578,14 @@ def from_openai(
     pass
 
 
+def map_chat_completion_to_response(messages, client, *args, **kwargs) -> Any:
+    return client.responses.create(
+        *args,
+        input=messages,
+        **kwargs,
+    )
+
+
 def from_openai(
     client: openai.OpenAI | openai.AsyncOpenAI,
     mode: instructor.Mode = instructor.Mode.TOOLS,
@@ -627,7 +635,16 @@ def from_openai(
     if isinstance(client, openai.OpenAI):
         return Instructor(
             client=client,
-            create=instructor.patch(create=client.chat.completions.create, mode=mode),
+            create=instructor.patch(
+                create=client.chat.completions.create
+                if mode
+                not in {
+                    instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                    instructor.Mode.RESPONSES_TOOLS,
+                }
+                else partial(map_chat_completion_to_response, client=client),
+                mode=mode,
+            ),
             mode=mode,
             provider=provider,
             **kwargs,
