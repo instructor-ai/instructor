@@ -70,7 +70,7 @@ async def test_multi_user_tools_mode_async(model, mode, aclient):
     client = instructor.patch(
         aclient,
         create=partial(async_map_chat_completion_to_response, client=aclient)
-        if mode == Mode.RESPONSES_TOOLS
+        if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
         else aclient.chat.completions.create,
         mode=mode,
     )
