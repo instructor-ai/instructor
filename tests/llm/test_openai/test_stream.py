@@ -26,8 +26,11 @@ def test_iterable_model(model, mode, stream, client):
             {"role": "user", "content": "Make two up people"},
         ],
     )
+    count = 0
     for m in model:
         assert isinstance(m, UserExtract)
+        count += 1
+    assert count == 2
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
@@ -42,9 +45,11 @@ async def test_iterable_model_async(model, mode, aclient):
             {"role": "user", "content": "Make two up people"},
         ],
     )
-
+    count = 0
     async for m in model:
         assert isinstance(m, UserExtract)
+        count += 1
+    assert count == 2
 
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
@@ -59,8 +64,11 @@ def test_partial_model(model, mode, client):
             {"role": "user", "content": "Jason Liu is 12 years old"},
         ],
     )
+    count = 0
     for m in model:
         assert isinstance(m, UserExtract)
+        count += 1
+    assert count >= 1
 
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
@@ -76,8 +84,11 @@ async def test_partial_model_async(model, mode, aclient):
             {"role": "user", "content": "Jason Liu is 12 years old"},
         ],
     )
+    count = 0
     async for m in model:
         assert isinstance(m, UserExtract)
+        count += 1
+    assert count >= 1
 
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
@@ -225,8 +236,11 @@ async def test_async_iterable_union_model(model, mode, aclient):
         ],
         response_model=Iterable[Union[Weather, GoogleSearch]],
     )
+    count = 0
     async for m in model:
         assert isinstance(m, (Weather, GoogleSearch))
+        count += 1
+    assert count >= 1
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
@@ -261,8 +275,11 @@ def test_iterable_union_model(model, mode, client):
         ],
         response_model=Union[Weather, GoogleSearch],
     )
+    count = 0
     for m in model:
         assert isinstance(m, (Weather, GoogleSearch))
+        count += 1
+    assert count >= 1
 
 
 @pytest.mark.asyncio
@@ -280,5 +297,8 @@ async def test_async_iterable_create_union_model(model, mode, aclient):
         ],
         response_model=Union[Weather, GoogleSearch],
     )
+    count = 0
     async for m in model:
         assert isinstance(m, (Weather, GoogleSearch))
+        count += 1
+    assert count >= 1
