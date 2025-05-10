@@ -258,6 +258,12 @@ def handle_responses_tools(
     schema = pydantic_function_tool(response_model)
     del schema["function"]["strict"]
 
+    tool_definition = {
+        "type": "function",
+        "name": schema["function"]["name"],
+        "parameters": schema["function"]["parameters"],
+    }
+
     if "description" in schema["function"]:
         tool_definition["description"] = schema["function"]["description"]
     else:
