@@ -33,30 +33,20 @@ T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
 class Response:
     def __init__(
         self,
-        create_fn: Callable[..., Any],
-        mode: instructor.Mode,
-        hooks: Hooks,
-        provider: Provider,
-        **kwargs,
+        client: Instructor,
     ):
-        self.create_fn = create_fn
-        self.kwargs = kwargs
-        self.mode = mode
-        self.hooks = hooks
-        self.provider = provider
+        self.client = client
 
     def create(
         self,
         input: str | list[ChatCompletionMessageParam],
         response_model: type[T] | None = None,
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying = 3,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs,
     ) -> T | Any:
-        kwargs = self.handle_kwargs(**kwargs)
-
         if isinstance(input, str):
             input = [
                 {
@@ -65,52 +55,45 @@ class Response:
                 }
             ]
 
-        return self.create_fn(
+        return self.client.create(
             response_model=response_model,
             validation_context=validation_context,
             context=context,
             max_retries=max_retries,
-            input=input,
             strict=strict,
-            hooks=self.hooks,
+            messages=input,
             **kwargs,
         )
 
-    def handle_kwargs(self, **kwargs):
-        for key, value in self.kwargs.items():
-            if key not in kwargs:
-                kwargs[key] = value
-
-        return kwargs
-
-
-class AsyncResponse:
-    def __init__(
+    def create_with_completion(
         self,
-        create_fn: Callable[..., Any],
-        mode: instructor.Mode,
-        hooks: Hooks,
-        provider: Provider,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | Retrying = 3,
         **kwargs,
-    ):
-        self.create_fn = create_fn
-        self.kwargs = kwargs
-        self.mode = mode
-        self.hooks = hooks
-        self.provider = provider
+    ) -> tuple[T, Any]:
+        return self.client.create_with_completion(
+            input=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+
+class AsyncResponse(Response):
+    def __init__(self, client: AsyncInstructor):
+        self.client = client
 
     async def create(
         self,
         input: str | list[ChatCompletionMessageParam],
         response_model: type[T] | None = None,
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying = 3,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs,
     ) -> T | Any:
-        kwargs = self.handle_kwargs(**kwargs)
-
         if isinstance(input, str):
             input = [
                 {
@@ -119,23 +102,36 @@ class AsyncResponse:
                 }
             ]
 
-        return await self.create_fn(
+        return await self.client.create(
             response_model=response_model,
             validation_context=validation_context,
             context=context,
             max_retries=max_retries,
-            input=input,
             strict=strict,
-            hooks=self.hooks,
+            messages=input,
             **kwargs,
         )
 
-    def handle_kwargs(self, **kwargs):
-        for key, value in self.kwargs.items():
-            if key not in kwargs:
-                kwargs[key] = value
-
-        return kwargs
+    async def create_with_completion(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs,
+    ) -> tuple[T, Any]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+        return await self.client.create_with_completion(
+            messages=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
 
 
 class Instructor:
@@ -170,13 +166,7 @@ class Instructor:
             instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }:
             assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
-            self.responses = Response(
-                create_fn=instructor.patch(create=client.responses.create, mode=mode),
-                mode=mode,
-                provider=Provider.OPENAI,
-                hooks=self.hooks,
-                **kwargs,
-            )
+            self.responses = Response(client=self)
 
     def on(
         self,
@@ -503,13 +493,7 @@ class AsyncInstructor(Instructor):
             instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }:
             assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
-            self.responses = Response(
-                create_fn=instructor.patch(create=client.responses.create, mode=mode),
-                mode=mode,
-                provider=Provider.OPENAI,
-                hooks=self.hooks,
-                **kwargs,
-            )
+            self.responses = AsyncResponse(client=self)
 
     async def create(  # type: ignore[override]
         self,
