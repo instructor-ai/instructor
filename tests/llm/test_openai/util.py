@@ -1,6 +1,6 @@
 import instructor
 
-models = ["gpt-4o-mini"]
+models = ["gpt-4.1-mini"]
 modes = [
     # instructor.Mode.TOOLS,
     # instructor.Mode.TOOLS_STRICT,
