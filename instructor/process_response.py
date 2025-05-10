@@ -289,9 +289,6 @@ def handle_responses_tools_with_inbuilt_tools(
 ) -> tuple[type[T], dict[str, Any]]:
     schema = pydantic_function_tool(response_model)
     del schema["function"]["strict"]
-    import pdb
-
-    pdb.set_trace()
 
     tool_definition = {
         "type": "function",
