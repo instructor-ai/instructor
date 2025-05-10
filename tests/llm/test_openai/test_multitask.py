@@ -51,7 +51,7 @@ def test_multi_user(model, mode, client):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("model, mode", product(models, modes))
 async def test_multi_user_tools_mode_async(model, mode, aclient):
-    client = instructor.patch(aclient, mode=mode)
+    client = instructor.from_openai(aclient, mode=mode)
 
     async def stream_extract(input: str) -> Iterable[User]:
         return await client.chat.completions.create(
