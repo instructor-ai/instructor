@@ -41,11 +41,17 @@ def gettysburg_audio():
 
 
 @pytest.mark.parametrize(
-    "audio_file",
-    [Audio.from_url(audio_url), Audio.from_path(gettysburg_audio())],
+    "audio_file, mode",
+    [(Audio.from_url(audio_url), mode) for mode in modes],
 )
-def test_multimodal_audio_description(audio_file, client):
-    client = instructor.from_openai(client)
+def test_multimodal_audio_description(audio_file, mode, client):
+    client = instructor.from_openai(client, mode=mode)
+
+    if client.mode in {
+        instructor.Mode.RESPONSES_TOOLS,
+        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+    }:
+        pytest.skip("Audio isn't supported in responses for now")
 
     class AudioDescription(BaseModel):
         source: str
@@ -156,7 +162,13 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
         autodetect_images=True,
     )
 
-    assert response.choices[0].message.content.startswith("This is an image")
+    if mode not in {
+        instructor.Mode.RESPONSES_TOOLS,
+        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+    }:
+        assert response.choices[0].message.content.startswith("This is an image")
+    else:
+        assert response.output[0].content[0].text
 
 
 @pytest.mark.parametrize("pdf_source", [pdf_path, pdf_url, pdf_base64_string])

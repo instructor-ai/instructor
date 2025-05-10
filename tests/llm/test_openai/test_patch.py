@@ -5,6 +5,7 @@ from typing_extensions import TypedDict
 import pytest
 import instructor
 
+
 from .util import models, modes
 
 
@@ -20,6 +21,12 @@ class UserExtractTypedDict(TypedDict):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_typed_dict(model, mode, client):
+    if mode in {
+        instructor.Mode.RESPONSES_TOOLS,
+        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+    }:
+        pytest.skip("Avoiding testing responses tools with openai")
+
     client = instructor.patch(client, mode=mode)
     model = client.chat.completions.create(
         model=model,
@@ -39,6 +46,12 @@ def test_typed_dict(model, mode, client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_runmodel(model, mode, client):
+    if mode in {
+        instructor.Mode.RESPONSES_TOOLS,
+        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+    }:
+        pytest.skip("Avoiding testing responses tools with openai")
+
     client = instructor.patch(client, mode=mode)
     model = client.chat.completions.create(
         model=model,
@@ -61,6 +74,12 @@ def test_runmodel(model, mode, client):
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
 async def test_runmodel_async(model, mode, aclient):
+    if mode in {
+        instructor.Mode.RESPONSES_TOOLS,
+        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+    }:
+        pytest.skip("Avoiding testing responses tools with openai")
+
     aclient = instructor.patch(aclient, mode=mode)
     model = await aclient.chat.completions.create(
         model=model,
@@ -96,6 +115,11 @@ class UserExtractValidated(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_runmodel_validator(model, mode, client):
+    if mode in {
+        instructor.Mode.RESPONSES_TOOLS,
+        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+    }:
+        pytest.skip("Avoiding testing responses tools with openai")
     client = instructor.patch(client, mode=mode)
     model = client.chat.completions.create(
         model=model,
@@ -117,6 +141,11 @@ def test_runmodel_validator(model, mode, client):
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
 async def test_runmodel_async_validator(model, mode, aclient):
+    if mode in {
+        instructor.Mode.RESPONSES_TOOLS,
+        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+    }:
+        pytest.skip("Avoiding testing responses tools with openai")
     aclient = instructor.patch(aclient, mode=mode)
     model = await aclient.chat.completions.create(
         model=model,

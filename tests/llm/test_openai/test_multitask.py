@@ -17,7 +17,7 @@ Users = Iterable[User]
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multi_user(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     def stream_extract(input: str) -> Iterable[User]:
         return client.chat.completions.create(
@@ -48,10 +48,32 @@ def test_multi_user(model, mode, client):
     assert resp[1].age == 30
 
 
+from typing import Any
+from functools import partial
+
+
+async def async_map_chat_completion_to_response(
+    messages, client, *args, **kwargs
+) -> Any:
+    return await client.responses.create(
+        *args,
+        input=messages,
+        **kwargs,
+    )
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("model, mode", product(models, modes))
 async def test_multi_user_tools_mode_async(model, mode, aclient):
-    client = instructor.patch(aclient, mode=mode)
+    from instructor.mode import Mode
+
+    client = instructor.patch(
+        aclient,
+        create=partial(async_map_chat_completion_to_response, client=aclient)
+        if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
+        else aclient.chat.completions.create,
+        mode=mode,
+    )
 
     async def stream_extract(input: str) -> Iterable[User]:
         return await client.chat.completions.create(
@@ -83,7 +105,7 @@ async def test_multi_user_tools_mode_async(model, mode, aclient):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multi_user_stream(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     def stream_extract(input: str) -> Iterable[User]:
         return client.chat.completions.create(
@@ -118,7 +140,7 @@ def test_multi_user_stream(model, mode, client):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("model, mode", product(models, modes))
 async def test_multi_user_tools_mode_async_stream(model, mode, aclient):
-    client = instructor.patch(aclient, mode=mode)
+    client = instructor.from_openai(aclient, mode=mode)
 
     async def stream_extract(input: str) -> Iterable[User]:
         return await client.chat.completions.create(

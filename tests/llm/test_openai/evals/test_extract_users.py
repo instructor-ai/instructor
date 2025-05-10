@@ -30,7 +30,7 @@ def test_extract(model, data, mode, client):
         pytest.skip(f"{mode} mode is not supported for {model}, skipping test")
 
     # Setting up the client with the instructor patch
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     # Calling the extract function with the provided model, sample data, and mode
     response = client.chat.completions.create(
