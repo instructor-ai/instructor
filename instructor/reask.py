@@ -239,7 +239,8 @@ def reask_responses_tools(
                 ),
             }
         )
-    kwargs["input"].extend(reask_messages)
+
+    kwargs["messages"].extend(reask_messages)
     return kwargs
 
 

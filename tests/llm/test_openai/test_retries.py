@@ -94,18 +94,14 @@ def test_upper_case_tenacity(model, mode, client):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_custom_retry_response_error(model, mode, client):
-    original_key = client.api_key
-    client = instructor.patch(client, mode=mode)
+def test_custom_retry_response_error(model, mode):
+    from openai import OpenAI
 
-    if mode in {
-        instructor.Mode.RESPONSES_TOOLS,
-        instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
-    }:
-        pytest.skip("Avoiding testing responses tools retry with openai")
+    client = OpenAI()
 
     client.api_key = "incorrect_key"
 
+    client = instructor.from_openai(client, mode=mode)
     from openai import AuthenticationError
     from instructor.exceptions import InstructorRetryException
     from tenacity import Retrying, retry_if_not_exception_type, stop_after_attempt
@@ -132,5 +128,3 @@ def test_custom_retry_response_error(model, mode, client):
 
         assert isinstance(root_cause, AuthenticationError)
         assert e.last_completion is None
-    finally:
-        client.api_key = original_key
