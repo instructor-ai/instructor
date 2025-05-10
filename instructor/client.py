@@ -87,6 +87,28 @@ class Response:
             **kwargs,
         )
 
+    def create_iterable(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | Retrying = 3,
+        **kwargs,
+    ) -> Generator[T, None, None]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.client.create_iterable(
+            input=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
 
 class AsyncResponse(Response):
     def __init__(self, client: AsyncInstructor):
@@ -137,6 +159,28 @@ class AsyncResponse(Response):
 
         return await self.client.create_with_completion(
             messages=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+    async def create_iterable(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs,
+    ) -> AsyncGenerator[T, None]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.client.create_iterable(
+            input=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,

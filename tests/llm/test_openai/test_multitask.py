@@ -17,7 +17,7 @@ Users = Iterable[User]
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multi_user(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     def stream_extract(input: str) -> Iterable[User]:
         return client.chat.completions.create(
@@ -83,7 +83,7 @@ async def test_multi_user_tools_mode_async(model, mode, aclient):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multi_user_stream(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     def stream_extract(input: str) -> Iterable[User]:
         return client.chat.completions.create(
@@ -118,7 +118,7 @@ def test_multi_user_stream(model, mode, client):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("model, mode", product(models, modes))
 async def test_multi_user_tools_mode_async_stream(model, mode, aclient):
-    client = instructor.patch(aclient, mode=mode)
+    client = instructor.from_openai(aclient, mode=mode)
 
     async def stream_extract(input: str) -> Iterable[User]:
         return await client.chat.completions.create(

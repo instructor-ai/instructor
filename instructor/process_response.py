@@ -276,14 +276,23 @@ def handle_responses_tools_with_inbuilt_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
     if not new_kwargs.get("tools"):
-        new_kwargs["tools"] = []
-
-    new_kwargs["tools"].append(
-        {
+        new_kwargs["tools"] = [
+            {
+                "type": "function",
+                **response_model.openai_schema,
+            }
+        ]
+        new_kwargs["tool_choice"] = {
             "type": "function",
-            **response_model.openai_schema,
+            "name": response_model.openai_schema["name"],
         }
-    )
+    else:
+        new_kwargs["tools"].append(
+            {
+                "type": "function",
+                **response_model.openai_schema,
+            }
+        )
 
     if new_kwargs.get("max_tokens") is not None:
         new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
