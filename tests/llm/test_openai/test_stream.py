@@ -16,7 +16,7 @@ class UserExtract(BaseModel):
 
 @pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
 def test_iterable_model(model, mode, stream, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
     model = client.chat.completions.create(
         model=model,
         response_model=Iterable[UserExtract],
@@ -49,7 +49,7 @@ async def test_iterable_model_async(model, mode, aclient):
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_partial_model(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
     model = client.chat.completions.create(
         model=model,
         response_model=Partial[UserExtract],
@@ -66,7 +66,7 @@ def test_partial_model(model, mode, client):
 @pytest.mark.parametrize("model,mode", product(models, modes))
 @pytest.mark.asyncio
 async def test_partial_model_async(model, mode, aclient):
-    aclient = instructor.patch(aclient, mode=mode)
+    aclient = instructor.from_openai(aclient, mode=mode)
     model = await aclient.chat.completions.create(
         model=model,
         response_model=Partial[UserExtract],
@@ -86,7 +86,7 @@ def test_literal_partial_mixin(model, mode, client):
         name: str
         age: int
 
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
     resp = client.chat.completions.create(
         model=model,
         response_model=Partial[UserWithMixin],
@@ -147,7 +147,7 @@ async def test_literal_partial_mixin_async(model, mode, aclient):
         name: str
         age: int
 
-    client = instructor.patch(aclient, mode=mode)
+    client = instructor.from_openai(aclient, mode=mode)
     resp = await client.chat.completions.create(
         model=model,
         response_model=Partial[UserWithMixin],
