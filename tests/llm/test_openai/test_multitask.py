@@ -48,10 +48,32 @@ def test_multi_user(model, mode, client):
     assert resp[1].age == 30
 
 
+from typing import Any
+from functools import partial
+
+
+async def async_map_chat_completion_to_response(
+    messages, client, *args, **kwargs
+) -> Any:
+    return await client.responses.create(
+        *args,
+        input=messages,
+        **kwargs,
+    )
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("model, mode", product(models, modes))
 async def test_multi_user_tools_mode_async(model, mode, aclient):
-    client = instructor.from_openai(aclient, mode=mode)
+    from instructor.mode import Mode
+
+    client = instructor.patch(
+        aclient,
+        create=partial(async_map_chat_completion_to_response, client=aclient)
+        if mode == Mode.RESPONSES_TOOLS
+        else aclient.chat.completions.create,
+        mode=mode,
+    )
 
     async def stream_extract(input: str) -> Iterable[User]:
         return await client.chat.completions.create(
