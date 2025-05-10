@@ -333,8 +333,8 @@ class Audio(BaseModel):
             raise ValueError("OpenAI Responses doesn't support audio")
 
         return {
-            "type": "audio_url",
-            "audio_url": {"url": self.source},
+            "type": "input_audio",
+            "input_audio": {"data": self.data, "format": "wav"},
         }
 
     def to_anthropic(self) -> dict[str, Any]:

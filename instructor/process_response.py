@@ -255,10 +255,14 @@ def handle_tools(
 def handle_responses_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
+    schema = pydantic_function_tool(response_model)
+    del schema["function"]["strict"]
     new_kwargs["tools"] = [
         {
             "type": "function",
-            **response_model.openai_schema,
+            "name": schema["function"]["name"],
+            "description": schema["function"]["description"],
+            "parameters": schema["function"]["parameters"],
         }
     ]
 
@@ -275,24 +279,23 @@ def handle_responses_tools(
 def handle_responses_tools_with_inbuilt_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
+    schema = pydantic_function_tool(response_model)
+    del schema["function"]["strict"]
+    tool_definition = {
+        "type": "function",
+        "name": schema["function"]["name"],
+        "description": schema["function"]["description"],
+        "parameters": schema["function"]["parameters"],
+    }
+
     if not new_kwargs.get("tools"):
-        new_kwargs["tools"] = [
-            {
-                "type": "function",
-                **response_model.openai_schema,
-            }
-        ]
+        new_kwargs["tools"] = [tool_definition]
         new_kwargs["tool_choice"] = {
             "type": "function",
             "name": response_model.openai_schema["name"],
         }
     else:
-        new_kwargs["tools"].append(
-            {
-                "type": "function",
-                **response_model.openai_schema,
-            }
-        )
+        new_kwargs["tools"].append(tool_definition)
 
     if new_kwargs.get("max_tokens") is not None:
         new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
