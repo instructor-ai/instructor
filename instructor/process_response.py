@@ -260,6 +260,11 @@ def handle_responses_tools(
 
     if "description" in schema["function"]:
         tool_definition["description"] = schema["function"]["description"]
+    else:
+        tool_definition["description"] = (
+            f"Correctly extracted `{response_model.__name__}` with all "
+            f"the required parameters with correct types"
+        )
 
     new_kwargs["tools"] = [
         {
@@ -296,6 +301,11 @@ def handle_responses_tools_with_inbuilt_tools(
 
     if "description" in schema["function"]:
         tool_definition["description"] = schema["function"]["description"]
+    else:
+        tool_definition["description"] = (
+            f"Correctly extracted `{response_model.__name__}` with all "
+            f"the required parameters with correct types"
+        )
 
     if not new_kwargs.get("tools"):
         new_kwargs["tools"] = [tool_definition]
