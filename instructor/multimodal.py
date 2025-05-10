@@ -331,6 +331,7 @@ class Audio(BaseModel):
         """Convert the Audio instance to OpenAI's API format."""
         if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
             raise ValueError("OpenAI Responses doesn't support audio")
+
         return {
             "type": "audio_url",
             "audio_url": {"url": self.source},
