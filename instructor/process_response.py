@@ -257,11 +257,14 @@ def handle_responses_tools(
 ) -> tuple[type[T], dict[str, Any]]:
     schema = pydantic_function_tool(response_model)
     del schema["function"]["strict"]
+
+    if "description" in schema["function"]:
+        tool_definition["description"] = schema["function"]["description"]
+
     new_kwargs["tools"] = [
         {
             "type": "function",
             "name": schema["function"]["name"],
-            "description": schema["function"]["description"],
             "parameters": schema["function"]["parameters"],
         }
     ]
@@ -281,12 +284,18 @@ def handle_responses_tools_with_inbuilt_tools(
 ) -> tuple[type[T], dict[str, Any]]:
     schema = pydantic_function_tool(response_model)
     del schema["function"]["strict"]
+    import pdb
+
+    pdb.set_trace()
+
     tool_definition = {
         "type": "function",
         "name": schema["function"]["name"],
-        "description": schema["function"]["description"],
         "parameters": schema["function"]["parameters"],
     }
+
+    if "description" in schema["function"]:
+        tool_definition["description"] = schema["function"]["description"]
 
     if not new_kwargs.get("tools"):
         new_kwargs["tools"] = [tool_definition]
