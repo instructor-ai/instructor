@@ -72,6 +72,14 @@ class Response:
         max_retries: int | Retrying = 3,
         **kwargs,
     ) -> tuple[T, Any]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
         return self.client.create_with_completion(
             input=input,
             response_model=response_model,
@@ -126,6 +134,7 @@ class AsyncResponse(Response):
                     "content": input,
                 }
             ]
+
         return await self.client.create_with_completion(
             messages=input,
             response_model=response_model,
