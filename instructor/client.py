@@ -81,7 +81,7 @@ class Response:
             ]
 
         return self.client.create_with_completion(
-            input=input,
+            messages=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
@@ -103,7 +103,29 @@ class Response:
             ]
 
         return self.client.create_iterable(
-            input=input,
+            messages=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+    def create_partial(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | Retrying = 3,
+        **kwargs,
+    ) -> Generator[T, None, None]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.client.create_partial(
+            messages=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
@@ -180,7 +202,7 @@ class AsyncResponse(Response):
             ]
 
         return self.client.create_iterable(
-            input=input,
+            messages=input,
             response_model=response_model,
             max_retries=max_retries,
             **kwargs,
