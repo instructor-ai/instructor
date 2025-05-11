@@ -14,6 +14,7 @@ Instructor works with many different LLM providers, allowing you to use structur
     Leading AI providers with comprehensive features
 
     [:octicons-arrow-right-16: OpenAI](./openai.md)          · 
+    [:octicons-arrow-right-16: OpenAI Responses](./openai-responses.md)          · 
     [:octicons-arrow-right-16: Azure](./azure.md)            · 
     [:octicons-arrow-right-16: Anthropic](./anthropic.md)    · 
     [:octicons-arrow-right-16: Google.GenerativeAI](./google.md)          · 
