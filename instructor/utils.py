@@ -664,7 +664,6 @@ def verify_no_enums(obj: dict[str, Any]) -> bool:
     """
     Verify that the object does not contain any enums.
     """
-    print(obj)
     for prop_value in obj["properties"].values():
         if "anyOf" in prop_value:
             return False

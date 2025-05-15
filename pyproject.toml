@@ -16,7 +16,7 @@ dependencies = [
     "requests<3.0.0,>=2.32.3",
 ]
 name = "instructor"
-version = "1.8.1"
+version = "1.8.2"
 description = "structured outputs for llm"
 readme = "README.md"
 
