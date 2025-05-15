@@ -39,10 +39,10 @@ class User(BaseModel):
 
 
 # Create structured output
-user = client.converse(
+user = client.chat.completions.create(
     modelId="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
-        {"role": "user", "content": "Extract: Jason is 25 years old"},
+        {"role": "user", "content": [{ "text": "Extract: Jason is 25 years old" }]},
     ],
     response_model=User,
 )
@@ -69,7 +69,7 @@ bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client with specific mode
 client = instructor.from_bedrock(
-    bedrock_client, 
+    bedrock_client,
     mode=Mode.BEDROCK_TOOLS
 )
 
@@ -148,4 +148,4 @@ print(user)
 ## Additional Resources
 
 - [AWS Bedrock Documentation](https://docs.aws.amazon.com/bedrock/)
-- [Boto3 Bedrock Client](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock.html) 
+- [Boto3 Bedrock Client](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock.html)
