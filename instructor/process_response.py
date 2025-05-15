@@ -1,29 +1,26 @@
 # type: ignore[all]
 from __future__ import annotations
 
-from collections.abc import Iterable
-from textwrap import dedent
-from typing import Any, TypeVar, get_args, get_origin
-from typing_extensions import ParamSpec
-
 import inspect
 import json
 import logging
+from collections.abc import Iterable
+from textwrap import dedent
+from typing import Any, TypeVar, get_args, get_origin
 
 from openai import pydantic_function_tool
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, create_model
+from typing_extensions import ParamSpec
 
-# from instructor.client_bedrock import handle_bedrock_json
-from instructor.mode import Mode
 from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import (
     ParallelBase,
     ParallelModel,
-    handle_parallel_model,
-    get_types_array,
     VertexAIParallelBase,
     VertexAIParallelModel,
+    get_types_array,
+    handle_parallel_model,
 )
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import (
@@ -32,15 +29,16 @@ from instructor.dsl.simple_type import (
     is_simple_type,
 )
 from instructor.function_calls import OpenAISchema, openai_schema
+from instructor.mode import Mode
+from instructor.multimodal import convert_messages, extract_genai_multimodal_content
 from instructor.utils import (
-    merge_consecutive_messages,
-    extract_system_messages,
     combine_system_messages,
-    map_to_gemini_function_schema,
     convert_to_genai_messages,
     extract_genai_system_message,
+    extract_system_messages,
+    map_to_gemini_function_schema,
+    merge_consecutive_messages,
 )
-from instructor.multimodal import convert_messages, extract_genai_multimodal_content
 
 logger = logging.getLogger("instructor")
 
@@ -206,9 +204,9 @@ def is_typed_dict(cls) -> bool:
 def handle_parallel_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    assert (
-        new_kwargs.get("stream", False) is False
-    ), "stream=True is not supported when using PARALLEL_TOOLS mode"
+    assert new_kwargs.get("stream", False) is False, (
+        "stream=True is not supported when using PARALLEL_TOOLS mode"
+    )
     new_kwargs["tools"] = handle_parallel_model(response_model)
     new_kwargs["tool_choice"] = "auto"
     return ParallelModel(typehint=response_model), new_kwargs
@@ -486,9 +484,9 @@ def handle_fireworks_json(
 def handle_gemini_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    assert (
-        "model" not in new_kwargs
-    ), "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+    assert "model" not in new_kwargs, (
+        "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+    )
 
     from .utils import update_gemini_kwargs
 
@@ -519,9 +517,9 @@ def handle_gemini_json(
 def handle_gemini_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    assert (
-        "model" not in new_kwargs
-    ), "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+    assert "model" not in new_kwargs, (
+        "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+    )
 
     from .utils import update_gemini_kwargs
 
@@ -606,9 +604,9 @@ def handle_genai_tools(
 def handle_vertexai_parallel_tools(
     response_model: type[Iterable[T]], new_kwargs: dict[str, Any]
 ) -> tuple[VertexAIParallelBase, dict[str, Any]]:
-    assert (
-        new_kwargs.get("stream", False) is False
-    ), "stream=True is not supported when using PARALLEL_TOOLS mode"
+    assert new_kwargs.get("stream", False) is False, (
+        "stream=True is not supported when using PARALLEL_TOOLS mode"
+    )
 
     from instructor.client_vertexai import vertexai_process_response
 
@@ -649,9 +647,34 @@ def handle_vertexai_json(
     return response_model, new_kwargs
 
 
+def _prepare_bedrock_converse_kwargs_internal(
+    call_kwargs: dict[str, Any],
+) -> dict[str, Any]:
+    """Minimal processing to support `converse` parameters for the Bedrock client
+
+    See: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse.html
+    """
+    # Bedrock expects 'modelId' over 'model'
+    if "model" in call_kwargs and "modelId" not in call_kwargs:
+        call_kwargs["modelId"] = call_kwargs.pop("model")
+
+    if "messages" in call_kwargs and isinstance(call_kwargs["messages"], list):
+        for message in call_kwargs["messages"]:
+            if isinstance(message, dict) and "content" in message:
+                content = message["content"]
+                if isinstance(content, str):
+                    message["content"] = [{"text": content}]
+                else:
+                    raise NotImplementedError(
+                        "Non-text prompts are not currently supported in the Bedrock provider."
+                    )
+    return call_kwargs
+
+
 def handle_bedrock_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
     json_message = dedent(
         f"""
         As a genius expert, your task is to understand the content and provide
@@ -659,7 +682,7 @@ def handle_bedrock_json(
 
         {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
 
-        Make sure to return an instance of the JSON, not the schema itself 
+        Make sure to return an instance of the JSON, not the schema itself
         and don't include any other text in the response apart from the json
         """
     )
@@ -669,7 +692,7 @@ def handle_bedrock_json(
     else:
         if not isinstance(system_message, list):
             raise ValueError(
-                """system must be a list of SystemMessage refer 
+                """system must be a list of SystemMessage, refer to:
                 https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse.html
                 """
             )
@@ -682,6 +705,7 @@ def handle_bedrock_json(
 def handle_bedrock_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
     return response_model, new_kwargs
 
 
