@@ -1,4 +1,4 @@
-from typing import Optional, Union, Callable, Any, Protocol, TypeVar
+from typing import Optional, Callable, Any, Protocol, TypeVar
 
 T = TypeVar('T')
 
@@ -16,7 +16,7 @@ app = None
 
 try:
     import typer
-    from typer import Typer, launch
+    from typer import launch
     import instructor.cli.jobs as jobs
     import instructor.cli.files as files
     import instructor.cli.usage as usage
@@ -34,7 +34,7 @@ try:
     app.add_typer(batch.app, name="batch", help="Manage OpenAI Batch jobs")
 except ImportError:
     class DummyTyper:
-        def command(self, *args: Any, **kwargs: Any) -> Callable[[T], T]:
+        def command(self, *_args: Any, **_kwargs: Any) -> Callable[[T], T]:
             def decorator(func: T) -> T:
                 return func
             return decorator
