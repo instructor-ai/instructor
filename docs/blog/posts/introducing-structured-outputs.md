@@ -205,9 +205,6 @@ This built-in retry logic allows for targeted correction to the generated respon
 A common use-case is to define a single schema and extract multiple instances of it. With `instructor`, doing this is relatively straightforward by using [our `create_iterable` method](../../concepts/lists.md).
 
 ```python
-
-```
-
 client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS_STRICT)
 
 
