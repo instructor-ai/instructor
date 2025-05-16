@@ -250,6 +250,79 @@ def handle_tools(
     return response_model, new_kwargs
 
 
+def handle_responses_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    schema = pydantic_function_tool(response_model)
+    del schema["function"]["strict"]
+
+    tool_definition = {
+        "type": "function",
+        "name": schema["function"]["name"],
+        "parameters": schema["function"]["parameters"],
+    }
+
+    if "description" in schema["function"]:
+        tool_definition["description"] = schema["function"]["description"]
+    else:
+        tool_definition["description"] = (
+            f"Correctly extracted `{response_model.__name__}` with all "
+            f"the required parameters with correct types"
+        )
+
+    new_kwargs["tools"] = [
+        {
+            "type": "function",
+            "name": schema["function"]["name"],
+            "parameters": schema["function"]["parameters"],
+        }
+    ]
+
+    new_kwargs["tool_choice"] = {
+        "type": "function",
+        "name": response_model.openai_schema["name"],
+    }
+    if new_kwargs.get("max_tokens") is not None:
+        new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
+
+    return response_model, new_kwargs
+
+
+def handle_responses_tools_with_inbuilt_tools(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    schema = pydantic_function_tool(response_model)
+    del schema["function"]["strict"]
+
+    tool_definition = {
+        "type": "function",
+        "name": schema["function"]["name"],
+        "parameters": schema["function"]["parameters"],
+    }
+
+    if "description" in schema["function"]:
+        tool_definition["description"] = schema["function"]["description"]
+    else:
+        tool_definition["description"] = (
+            f"Correctly extracted `{response_model.__name__}` with all "
+            f"the required parameters with correct types"
+        )
+
+    if not new_kwargs.get("tools"):
+        new_kwargs["tools"] = [tool_definition]
+        new_kwargs["tool_choice"] = {
+            "type": "function",
+            "name": response_model.openai_schema["name"],
+        }
+    else:
+        new_kwargs["tools"].append(tool_definition)
+
+    if new_kwargs.get("max_tokens") is not None:
+        new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
+
+    return response_model, new_kwargs
+
+
 def handle_mistral_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
@@ -998,7 +1071,14 @@ def handle_response_model(
                     system_message = extract_system_messages(messages)
                     if system_message:
                         new_kwargs["system"] = system_message
+
             else:
+                if mode in {
+                    Mode.RESPONSES_TOOLS,
+                    Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                } and new_kwargs.get("max_tokens"):
+                    new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
+
                 new_kwargs["messages"] = messages
         return None, new_kwargs
 
@@ -1039,6 +1119,8 @@ def handle_response_model(
         Mode.BEDROCK_TOOLS: handle_bedrock_tools,
         Mode.PERPLEXITY_JSON: handle_perplexity_json,
         Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
+        Mode.RESPONSES_TOOLS: handle_responses_tools,
+        Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: handle_responses_tools_with_inbuilt_tools,
     }
 
     if mode in mode_handlers:

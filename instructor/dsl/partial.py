@@ -132,9 +132,9 @@ class PartialBase(Generic[T_Model]):
     @cache
     def get_partial_model(cls) -> type[T_Model]:
         """Return a partial model we can use to validate partial results."""
-        assert issubclass(cls, BaseModel), (
-            f"{cls.__name__} must be a subclass of BaseModel"
-        )
+        assert issubclass(
+            cls, BaseModel
+        ), f"{cls.__name__} must be a subclass of BaseModel"
 
         model_name = (
             cls.__name__
@@ -290,6 +290,7 @@ class PartialBase(Generic[T_Model]):
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
+
                 if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
                     yield chunk.text
                 if mode == Mode.GENAI_TOOLS:
@@ -302,6 +303,17 @@ class PartialBase(Generic[T_Model]):
                     resp_dict = type(resp).to_dict(resp)  # type:ignore
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
+                elif mode in {
+                    Mode.RESPONSES_TOOLS,
+                    Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                }:
+                    from openai.types.responses import (
+                        ResponseFunctionCallArgumentsDeltaEvent,
+                    )
+
+                    if isinstance(chunk, ResponseFunctionCallArgumentsDeltaEvent):
+                        yield chunk.delta
+
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()
@@ -368,6 +380,17 @@ class PartialBase(Generic[T_Model]):
                     resp_dict = type(resp).to_dict(resp)  # type:ignore
                     if "args" in resp_dict:
                         yield json.dumps(resp_dict["args"])
+
+                if mode in {
+                    Mode.RESPONSES_TOOLS,
+                    Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                }:
+                    from openai.types.responses import (
+                        ResponseFunctionCallArgumentsDeltaEvent,
+                    )
+
+                    if isinstance(chunk, ResponseFunctionCallArgumentsDeltaEvent):
+                        yield chunk.delta
                 elif chunk.choices:
                     if mode == Mode.FUNCTIONS:
                         Mode.warn_mode_functions_deprecation()

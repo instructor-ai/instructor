@@ -24,7 +24,7 @@ class UserDetail(BaseModel):
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio()
 async def test_upper_case_async(model, mode, aclient):
-    client = instructor.patch(aclient, mode=mode)
+    client = instructor.from_openai(aclient, mode=mode)
     response = await client.chat.completions.create(
         model=model,
         response_model=UserDetail,
@@ -39,7 +39,7 @@ async def test_upper_case_async(model, mode, aclient):
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio()
 async def test_upper_case_tenacity_async(model, mode, aclient):
-    client = instructor.patch(aclient, mode=mode)
+    client = instructor.from_openai(aclient, mode=mode)
     from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
 
     retries = AsyncRetrying(
@@ -60,7 +60,7 @@ async def test_upper_case_tenacity_async(model, mode, aclient):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_upper_case(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
     response = client.chat.completions.create(
         model=model,
         response_model=UserDetail,
@@ -74,7 +74,7 @@ def test_upper_case(model, mode, client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_upper_case_tenacity(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
     from tenacity import Retrying, stop_after_attempt, wait_fixed
 
     retries = Retrying(
@@ -94,11 +94,14 @@ def test_upper_case_tenacity(model, mode, client):
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_custom_retry_response_error(model, mode, client):
-    original_key = client.api_key
-    client = instructor.patch(client, mode=mode)
+def test_custom_retry_response_error(model, mode):
+    from openai import OpenAI
+
+    client = OpenAI()
+
     client.api_key = "incorrect_key"
 
+    client = instructor.from_openai(client, mode=mode)
     from openai import AuthenticationError
     from instructor.exceptions import InstructorRetryException
     from tenacity import Retrying, retry_if_not_exception_type, stop_after_attempt
@@ -125,5 +128,3 @@ def test_custom_retry_response_error(model, mode, client):
 
         assert isinstance(root_cause, AuthenticationError)
         assert e.last_completion is None
-    finally:
-        client.api_key = original_key

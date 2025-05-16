@@ -43,7 +43,7 @@ def test_sentiment_analysis(model, data, mode, client):
     }:
         pytest.skip(f"{mode} mode is not supported for {model}, skipping test")
 
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     response = client.chat.completions.create(
         model=model,

@@ -19,7 +19,7 @@ class Order(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_nested(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
     content = """
     Order Details:
     Customer: Jason
@@ -62,7 +62,7 @@ class LibraryRecord(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_complex_nested_model(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
 
     content = """
     Library visit details:

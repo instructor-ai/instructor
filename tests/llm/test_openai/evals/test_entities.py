@@ -87,7 +87,7 @@ The contract can be terminated with a 30-day notice, unless there are outstandin
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_extract(model, mode, client):
-    client = instructor.patch(client, mode=mode)
+    client = instructor.from_openai(client, mode=mode)
     if (mode, model) in {
         (Mode.JSON, "gpt-3.5-turbo"),
         (Mode.JSON, "gpt-4"),
