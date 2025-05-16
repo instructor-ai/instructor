@@ -37,10 +37,16 @@ description: Command-line utilities for monitoring API usage, fine-tuning models
 
 ### Installation
 
-The CLI tools are included with the Instructor package:
+The CLI tools require the CLI dependencies to be installed:
 
 ```bash
-pip install instructor
+pip install "instructor[cli]"
+```
+
+If you've already installed Instructor without the CLI dependencies, you can install them separately:
+
+```bash
+pip install "typer>=0.9.0" "rich>=13.7.0" "aiohttp>=3.9.1"
 ```
 
 ### API Setup
