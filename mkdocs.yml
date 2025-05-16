@@ -134,6 +134,7 @@ nav:
     - Installation: 'installation.md'
     - Why use Instructor?: 'why.md'
     - Architecture: 'architecture.md'
+    - Repository Overview: 'repository-overview.md'
     - Mode Comparison: 'modes-comparison.md'
     - Philosophy: 'concepts/philosophy.md'
     - API Reference: 'api.md'

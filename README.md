@@ -569,6 +569,16 @@ for user in users:
 
 We invite you to contribute to evals in `pytest` as a way to monitor the quality of the OpenAI models and the `instructor` library. To get started check out the evals for [Anthropic](https://github.com/jxnl/instructor/blob/main/tests/llm/test_anthropic/evals/test_simple.py) and [OpenAI](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals#how-to-contribute-writing-and-running-evaluation-tests) and contribute your own evals in the form of pytest tests. These evals will be run once a week and the results will be posted.
 
+## Repository Overview
+
+Below is a quick tour of the repository's main directories. See [docs/repository-overview.md](docs/repository-overview.md) for more details.
+
+- **instructor/** – core library code with clients and utilities.
+- **cli/** – command-line tools for managing jobs and usage.
+- **docs/** – documentation sources for the MkDocs site.
+- **examples/** – cookbook examples showcasing Instructor.
+- **tests/** – unit tests and evaluation suites.
+
 ## Contributing
 
 We welcome contributions to Instructor! Whether you're fixing bugs, adding features, improving documentation, or writing blog posts, your help is appreciated.
