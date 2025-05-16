@@ -706,17 +706,57 @@ def _prepare_bedrock_converse_kwargs_internal(
         else:
             call_kwargs["inferenceConfig"] = inference_config_params
 
-    # Restructure messages content
+    # Process messages for Bedrock: separate system prompts and format text content.
     if "messages" in call_kwargs and isinstance(call_kwargs["messages"], list):
-        for message in call_kwargs["messages"]:
-            if isinstance(message, dict) and "content" in message:
-                content = message["content"]
+        original_input_messages = call_kwargs.pop("messages")
+
+        bedrock_system_list: list[dict[str, Any]] = []
+        bedrock_user_assistant_messages_list: list[dict[str, Any]] = []
+
+        for msg_dict in original_input_messages:
+            if not isinstance(msg_dict, dict):
+                # If an item in the messages list is not a dictionary,
+                # pass it through to the user/assistant messages list as is.
+                # This allows non-standard message items to be handled by subsequent Boto3 validation
+                # or if they represent something other than standard role/content messages.
+                bedrock_user_assistant_messages_list.append(msg_dict)
+                continue
+
+            # Make a copy to avoid modifying the original dict if it's part of a larger structure
+            # or if the original list/dicts are expected to remain unchanged by the caller.
+            current_message_for_api = msg_dict.copy()
+            role = current_message_for_api.get("role")
+            content = current_message_for_api.get(
+                "content"
+            )  # content can be None or other types
+
+            if role == "system":
                 if isinstance(content, str):
-                    message["content"] = [{"text": content}]
-                else:
-                    raise NotImplementedError(
-                        "Non-text prompts are not currently supported in the Bedrock provider."
+                    bedrock_system_list.append({"text": content})
+                else:  # System message content is not a string (could be None, list, int, etc.)
+                    raise ValueError(
+                        "System message content must be a string for Bedrock processing by this handler. "
+                        f"Found type: {type(content)}."
                     )
+            else:  # For user, assistant, or other roles that go into Bedrock's 'messages' list
+                if "content" in current_message_for_api:
+                    if isinstance(content, str):
+                        current_message_for_api["content"] = [{"text": content}]
+                    else:  # Content is not a string (e.g., None, list, int).
+                        # This matches the original behavior which raised for any non-string content.
+                        raise NotImplementedError(
+                            "Non-text prompts are not currently supported in the Bedrock provider."
+                        )
+                # If 'content' key is not in current_message_for_api, message is added as is (e.g. for tool calls without content)
+                bedrock_user_assistant_messages_list.append(current_message_for_api)
+
+        if bedrock_system_list:
+            call_kwargs["system"] = bedrock_system_list
+
+        # Always re-assign the 'messages' key with the processed list.
+        # If original_input_messages was empty or only contained system messages that were extracted,
+        # bedrock_user_assistant_messages_list will be empty, correctly resulting in `messages: []`.
+        call_kwargs["messages"] = bedrock_user_assistant_messages_list
     return call_kwargs
 
 
