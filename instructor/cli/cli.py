@@ -1,4 +1,16 @@
-from typing import Optional, Union, Callable, Any
+from typing import Optional, Union, Callable, Any, Protocol, TypeVar
+
+T = TypeVar('T')
+
+class TyperLike(Protocol):
+    def command(self, *args: Any, **kwargs: Any) -> Callable[[T], T]:
+        ...
+    
+    def add_typer(self, typer_instance: Any, name: str, help: str) -> None:
+        ...
+    
+    def __call__(self) -> Any:
+        ...
 
 app = None
 
@@ -20,29 +32,38 @@ try:
         hub.app, name="hub", help="[DEPRECATED] The instructor hub is no longer available"
     )
     app.add_typer(batch.app, name="batch", help="Manage OpenAI Batch jobs")
+except ImportError:
+    class DummyTyper:
+        def command(self, *args: Any, **kwargs: Any) -> Callable[[T], T]:
+            def decorator(func: T) -> T:
+                return func
+            return decorator
+        
+        def add_typer(self, typer_instance: Any, name: str, help: str) -> None:
+            pass
+            
+        def __call__(self) -> None:
+            pass
     
-    @app.command()
-    def docs(
-        query: Optional[str] = typer.Argument(None, help="Search the documentation"),
-    ) -> None:
-        """
-        Open the instructor documentation website.
-        """
+    app = DummyTyper()
+
+@app.command()
+def docs(
+    query: Optional[str] = None,
+) -> None:
+    """
+    Open the instructor documentation website.
+    """
+    try:
         if query:
             launch(f"https://python.useinstructor.com/?q={query}")
         else:
             launch("https://python.useinstructor.com/")
-            
-except ImportError:
-    def docs(query: Optional[str] = None) -> None:
-        """
-        Open the instructor documentation website.
-        """
+    except NameError:
         pass
 
-
 if __name__ == "__main__":
-    if app is None:
+    if isinstance(app, DummyTyper):
         print("CLI dependencies not installed. Please install instructor with CLI support: pip install instructor[cli]")
     else:
         app()
