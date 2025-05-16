@@ -658,6 +658,55 @@ def _prepare_bedrock_converse_kwargs_internal(
     if "model" in call_kwargs and "modelId" not in call_kwargs:
         call_kwargs["modelId"] = call_kwargs.pop("model")
 
+    # Prepare inferenceConfig for parameters like temperature, maxTokens, etc.
+    inference_config_params = {}
+
+    # Temperature
+    if "temperature" in call_kwargs:
+        inference_config_params["temperature"] = call_kwargs.pop("temperature")
+
+    # Max Tokens (OpenAI uses max_tokens)
+    if "max_tokens" in call_kwargs:
+        inference_config_params["maxTokens"] = call_kwargs.pop("max_tokens")
+    elif "maxTokens" in call_kwargs:  # If Bedrock-style maxTokens is already top-level
+        inference_config_params["maxTokens"] = call_kwargs.pop("maxTokens")
+
+    # Top P (OpenAI uses top_p)
+    if "top_p" in call_kwargs:
+        inference_config_params["topP"] = call_kwargs.pop("top_p")
+    elif "topP" in call_kwargs:  # If Bedrock-style topP is already top-level
+        inference_config_params["topP"] = call_kwargs.pop("topP")
+
+    # Stop Sequences (OpenAI uses 'stop')
+    # Bedrock 'Converse' API expects 'stopSequences'
+    if "stop" in call_kwargs:
+        stop_val = call_kwargs.pop("stop")
+        if isinstance(stop_val, str):
+            inference_config_params["stopSequences"] = [stop_val]
+        elif isinstance(stop_val, list):
+            inference_config_params["stopSequences"] = stop_val
+    elif "stop_sequences" in call_kwargs:
+        inference_config_params["stopSequences"] = call_kwargs.pop("stop_sequences")
+    elif (
+        "stopSequences" in call_kwargs
+    ):  # If Bedrock-style stopSequences is already top-level
+        inference_config_params["stopSequences"] = call_kwargs.pop("stopSequences")
+
+    # If any inference parameters were collected, add them to inferenceConfig
+    # Merge with existing inferenceConfig if user provided one.
+    # User-provided inferenceConfig keys take precedence over top-level params if conflicts.
+    if inference_config_params:
+        if "inferenceConfig" in call_kwargs:
+            # Merge, giving precedence to what's already in call_kwargs["inferenceConfig"]
+            # This could be more sophisticated, but for now, if inferenceConfig is set, assume it's intentional.
+            existing_inference_config = call_kwargs["inferenceConfig"]
+            for key, value in inference_config_params.items():
+                if key not in existing_inference_config:
+                    existing_inference_config[key] = value
+        else:
+            call_kwargs["inferenceConfig"] = inference_config_params
+
+    # Restructure messages content
     if "messages" in call_kwargs and isinstance(call_kwargs["messages"], list):
         for message in call_kwargs["messages"]:
             if isinstance(message, dict) and "content" in message:
