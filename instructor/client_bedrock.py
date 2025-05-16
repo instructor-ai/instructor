@@ -1,8 +1,10 @@
 from __future__ import annotations  # type: ignore
 
-from typing import Any, overload
+from typing import Any, Literal, overload
+
 import boto3
 from botocore.client import BaseClient
+
 import instructor
 from instructor.client import AsyncInstructor, Instructor
 
@@ -11,6 +13,7 @@ from instructor.client import AsyncInstructor, Instructor
 def from_bedrock(
     client: boto3.client,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
+    _async: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
 
@@ -19,6 +22,7 @@ def from_bedrock(
 def from_bedrock(
     client: boto3.client,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
+    _async: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -35,6 +39,7 @@ def handle_bedrock_json(
 def from_bedrock(
     client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_JSON,
+    _async: bool = False,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     assert mode in {
@@ -47,12 +52,25 @@ def from_bedrock(
         client,
         BaseClient,
     ), "Client must be an instance of boto3.client"
-    create = client.converse  # Example method, replace with actual method
 
-    return Instructor(
-        client=client,
-        create=instructor.patch(create=create, mode=mode),
-        provider=instructor.Provider.BEDROCK,
-        mode=mode,
-        **kwargs,
-    )
+    async def async_wrapper(**kwargs: Any):
+        return client.converse(**kwargs)
+
+    create = client.converse
+
+    if _async:
+        return AsyncInstructor(
+            client=client,
+            create=instructor.patch(create=async_wrapper, mode=mode),
+            provider=instructor.Provider.BEDROCK,
+            mode=mode,
+            **kwargs,
+        )
+    else:
+        return Instructor(
+            client=client,
+            create=instructor.patch(create=create, mode=mode),
+            provider=instructor.Provider.BEDROCK,
+            mode=mode,
+            **kwargs,
+        )
