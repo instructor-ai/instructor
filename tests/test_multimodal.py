@@ -3,6 +3,7 @@ from pathlib import Path
 from instructor.multimodal import Image, convert_contents, convert_messages
 from instructor.mode import Mode
 from unittest.mock import patch, MagicMock
+import instructor
 
 
 @pytest.fixture
@@ -50,7 +51,7 @@ def test_image_to_openai():
     image = Image(
         source="http://example.com/image.jpg", media_type="image/jpeg", data=None
     )
-    openai_format = image.to_openai()
+    openai_format = image.to_openai(mode=instructor.Mode.TOOLS)
     assert openai_format["type"] == "image_url"
     assert openai_format["image_url"]["url"] == "http://example.com/image.jpg"
 
@@ -146,7 +147,7 @@ def test_image_to_openai_base64():
     image = Image(
         source="local_file.jpg", media_type="image/jpeg", data="base64encodeddata"
     )
-    openai_format = image.to_openai()
+    openai_format = image.to_openai(mode=instructor.Mode.TOOLS)
     assert openai_format["type"] == "image_url"
     assert openai_format["image_url"]["url"].startswith("data:image/jpeg;base64,")
 
@@ -236,7 +237,7 @@ def test_image_to_openai_with_base64_source(base64_png):
         media_type="image/png",
         data=base64_data,
     )
-    openai_format = image.to_openai()
+    openai_format = image.to_openai(mode=instructor.Mode.TOOLS)
     assert openai_format["type"] == "image_url"
     assert openai_format["image_url"]["url"] == f"data:image/png;base64,{base64_data}"
 

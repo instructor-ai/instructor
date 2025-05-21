@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import openai
 import inspect
+from functools import partial
 import instructor
 from .utils import Provider, get_provider
 from openai.types.chat import ChatCompletionMessageParam
@@ -29,6 +30,185 @@ from instructor.hooks import Hooks, HookName
 T = TypeVar("T", bound=Union[BaseModel, "Iterable[Any]", "Partial[Any]"])
 
 
+class Response:
+    def __init__(
+        self,
+        client: Instructor,
+    ):
+        self.client = client
+
+    def create(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T] | None = None,
+        max_retries: int | Retrying = 3,
+        validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs,
+    ) -> T | Any:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.client.create(
+            response_model=response_model,
+            validation_context=validation_context,
+            context=context,
+            max_retries=max_retries,
+            strict=strict,
+            messages=input,
+            **kwargs,
+        )
+
+    def create_with_completion(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | Retrying = 3,
+        **kwargs,
+    ) -> tuple[T, Any]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.client.create_with_completion(
+            messages=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+    def create_iterable(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | Retrying = 3,
+        **kwargs,
+    ) -> Generator[T, None, None]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.client.create_iterable(
+            messages=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+    def create_partial(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | Retrying = 3,
+        **kwargs,
+    ) -> Generator[T, None, None]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.client.create_partial(
+            messages=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+
+class AsyncResponse(Response):
+    def __init__(self, client: AsyncInstructor):
+        self.client = client
+
+    async def create(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T] | None = None,
+        max_retries: int | AsyncRetrying = 3,
+        validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs,
+    ) -> T | Any:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return await self.client.create(
+            response_model=response_model,
+            validation_context=validation_context,
+            context=context,
+            max_retries=max_retries,
+            strict=strict,
+            messages=input,
+            **kwargs,
+        )
+
+    async def create_with_completion(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs,
+    ) -> tuple[T, Any]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return await self.client.create_with_completion(
+            messages=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+    async def create_iterable(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T],
+        max_retries: int | AsyncRetrying = 3,
+        **kwargs,
+    ) -> AsyncGenerator[T, None]:
+        if isinstance(input, str):
+            input = [
+                {
+                    "role": "user",
+                    "content": input,
+                }
+            ]
+
+        return self.client.create_iterable(
+            messages=input,
+            response_model=response_model,
+            max_retries=max_retries,
+            **kwargs,
+        )
+
+
 class Instructor:
     client: Any | None
     create_fn: Callable[..., Any]
@@ -51,9 +231,17 @@ class Instructor:
         self.mode = mode
         if mode == instructor.Mode.FUNCTIONS:
             instructor.Mode.warn_mode_functions_deprecation()
+
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
+
+        if mode in {
+            instructor.Mode.RESPONSES_TOOLS,
+            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        }:
+            assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
+            self.responses = Response(client=self)
 
     def on(
         self,
@@ -375,6 +563,13 @@ class AsyncInstructor(Instructor):
         self.provider = provider
         self.hooks = hooks or Hooks()
 
+        if mode in {
+            instructor.Mode.RESPONSES_TOOLS,
+            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        }:
+            assert isinstance(client, (openai.OpenAI, openai.AsyncOpenAI))
+            self.responses = AsyncResponse(client=self)
+
     async def create(  # type: ignore[override]
         self,
         response_model: type[T] | None,
@@ -392,7 +587,11 @@ class AsyncInstructor(Instructor):
             get_origin(response_model) in {Iterable}
             and get_args(response_model)
             and get_args(response_model)[0] is not None
-            and self.mode not in {instructor.Mode.PARALLEL_TOOLS, instructor.Mode.VERTEXAI_PARALLEL_TOOLS}
+            and self.mode
+            not in {
+                instructor.Mode.PARALLEL_TOOLS,
+                instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
+            }
         ):
             return self.create_iterable(
                 messages=messages,
@@ -505,6 +704,24 @@ def from_openai(
     pass
 
 
+def map_chat_completion_to_response(messages, client, *args, **kwargs) -> Any:
+    return client.responses.create(
+        *args,
+        input=messages,
+        **kwargs,
+    )
+
+
+async def async_map_chat_completion_to_response(
+    messages, client, *args, **kwargs
+) -> Any:
+    return await client.responses.create(
+        *args,
+        input=messages,
+        **kwargs,
+    )
+
+
 def from_openai(
     client: openai.OpenAI | openai.AsyncOpenAI,
     mode: instructor.Mode = instructor.Mode.TOOLS,
@@ -547,12 +764,23 @@ def from_openai(
             instructor.Mode.MD_JSON,
             instructor.Mode.TOOLS_STRICT,
             instructor.Mode.JSON_O1,
+            instructor.Mode.RESPONSES_TOOLS,
+            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }
 
     if isinstance(client, openai.OpenAI):
         return Instructor(
             client=client,
-            create=instructor.patch(create=client.chat.completions.create, mode=mode),
+            create=instructor.patch(
+                create=client.chat.completions.create
+                if mode
+                not in {
+                    instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                    instructor.Mode.RESPONSES_TOOLS,
+                }
+                else partial(map_chat_completion_to_response, client=client),
+                mode=mode,
+            ),
             mode=mode,
             provider=provider,
             **kwargs,
@@ -561,7 +789,16 @@ def from_openai(
     if isinstance(client, openai.AsyncOpenAI):
         return AsyncInstructor(
             client=client,
-            create=instructor.patch(create=client.chat.completions.create, mode=mode),
+            create=instructor.patch(
+                create=client.chat.completions.create
+                if mode
+                not in {
+                    instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+                    instructor.Mode.RESPONSES_TOOLS,
+                }
+                else partial(async_map_chat_completion_to_response, client=client),
+                mode=mode,
+            ),
             mode=mode,
             provider=provider,
             **kwargs,

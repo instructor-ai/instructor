@@ -222,6 +222,28 @@ def reask_tools(
     return kwargs
 
 
+def reask_responses_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+
+    reask_messages = []
+    for tool_call in response.output:
+        reask_messages.append(
+            {
+                "role": "user",  # type: ignore
+                "content": (
+                    f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors with {tool_call.arguments}"
+                ),
+            }
+        )
+
+    kwargs["messages"].extend(reask_messages)
+    return kwargs
+
+
 def reask_cerebras_tools(
     kwargs: dict[str, Any],
     response: Any,
@@ -500,6 +522,8 @@ def handle_reask_kwargs(
         return reask_tools(kwargs_copy, response, exception)
     elif mode == Mode.CEREBRAS_TOOLS:
         return reask_cerebras_tools(kwargs_copy, response, exception)
+    elif mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
+        return reask_responses_tools(kwargs_copy, response, exception)
     elif mode == Mode.MD_JSON:
         return reask_md_json(kwargs_copy, response, exception)
     elif mode == Mode.FIREWORKS_TOOLS:

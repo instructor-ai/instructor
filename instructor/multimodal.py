@@ -226,19 +226,33 @@ class Image(BaseModel):
             },
         }
 
-    def to_openai(self) -> dict[str, Any]:
+    def to_openai(self, mode: Mode) -> dict[str, Any]:
+        image_type = (
+            "input_image"
+            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
+            else "image_url"
+        )
         if (
             isinstance(self.source, str)
             and self.source.startswith(("http://", "https://"))
             and not self.is_base64(self.source)
         ):
-            return {"type": "image_url", "image_url": {"url": self.source}}
+            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
+                return {"type": "input_image", "image_url": self.source}
+            else:
+                return {"type": image_type, "image_url": {"url": self.source}}
         elif self.data or self.is_base64(str(self.source)):
             data = self.data or str(self.source).split(",", 1)[1]
-            return {
-                "type": "image_url",
-                "image_url": {"url": f"data:{self.media_type};base64,{data}"},
-            }
+            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
+                return {
+                    "type": "input_image",
+                    "image_url": f"data:{self.media_type};base64,{data}",
+                }
+            else:
+                return {
+                    "type": image_type,
+                    "image_url": {"url": f"data:{self.media_type};base64,{data}"},
+                }
         else:
             raise ValueError("Image data is missing for base64 encoding.")
 
@@ -313,8 +327,11 @@ class Audio(BaseModel):
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
 
-    def to_openai(self) -> dict[str, Any]:
+    def to_openai(self, mode: Mode) -> dict[str, Any]:
         """Convert the Audio instance to OpenAI's API format."""
+        if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
+            raise ValueError("OpenAI Responses doesn't support audio")
+
         return {
             "type": "input_audio",
             "input_audio": {"data": self.data, "format": "wav"},
@@ -478,8 +495,14 @@ class PDF(BaseModel):
             }
         raise ValueError("Mistral only supports document URLs for now")
 
-    def to_openai(self) -> dict[str, Any]:
+    def to_openai(self, mode: Mode) -> dict[str, Any]:
         """Convert to OpenAI's document format."""
+        input_file_type = (
+            "input_file"
+            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
+            else "file"
+        )
+
         if (
             isinstance(self.source, str)
             and self.source.startswith(("http://", "https://"))
@@ -488,24 +511,40 @@ class PDF(BaseModel):
             # Fetch the file from URL and convert to base64
             data = requests.get(self.source)
             data = base64.b64encode(data.content).decode("utf-8")
-            return {
-                "type": "file",
-                "file": {
+            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
+                return {
+                    "type": input_file_type,
                     "filename": self.source,
                     "file_data": f"data:{self.media_type};base64,{data}",
-                },
-            }
+                }
+            else:
+                return {
+                    "type": input_file_type,
+                    "file": {
+                        "filename": self.source,
+                        "file_data": f"data:{self.media_type};base64,{data}",
+                    },
+                }
         elif self.data or self.is_base64(str(self.source)):
             data = self.data or str(self.source).split(",", 1)[1]
-            return {
-                "type": "file",
-                "file": {
+            if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
+                return {
+                    "type": input_file_type,
                     "filename": self.source
                     if isinstance(self.source, str)
                     else str(self.source),
                     "file_data": f"data:{self.media_type};base64,{data}",
-                },
-            }
+                }
+            else:
+                return {
+                    "type": input_file_type,
+                    "file": {
+                        "filename": self.source
+                        if isinstance(self.source, str)
+                        else str(self.source),
+                        "file_data": f"data:{self.media_type};base64,{data}",
+                    },
+                }
         else:
             raise ValueError("PDF data is missing for base64 encoding.")
 
@@ -647,9 +686,14 @@ def convert_contents(
         contents = [contents]
 
     converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
+    text_file_type = (
+        "input_text"
+        if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}
+        else "text"
+    )
     for content in contents:
         if isinstance(content, str):
-            converted_contents.append({"type": "text", "text": content})
+            converted_contents.append({"type": text_file_type, "text": content})
         elif isinstance(content, dict):
             converted_contents.append(content)
         elif isinstance(content, (Image, Audio, PDF)):
@@ -667,7 +711,7 @@ def convert_contents(
             } and isinstance(content, (PDF)):
                 converted_contents.append(content.to_mistral())  # type: ignore
             else:
-                converted_contents.append(content.to_openai())
+                converted_contents.append(content.to_openai(mode))
         else:
             raise ValueError(f"Unsupported content type: {type(content)}")
     return converted_contents
