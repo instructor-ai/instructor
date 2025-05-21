@@ -1,6 +1,6 @@
 # Custom Validators
 
-Custom validators allow you to implement specialized validation logic for your structured data extraction. This tutorial will show you how to create and use custom validators with Instructor.
+Custom validators allow you to implement specialized validation logic for your structured data extraction. This tutorial will show you how to create and use custom validators with Instructor, including both rule-based and semantic validators.
 
 ## Basic Custom Validator
 
@@ -9,10 +9,9 @@ Custom validators are functions that validate field values and can be applied us
 ```python
 from pydantic import BaseModel, field_validator
 import instructor
-from openai import OpenAI
 
 # Initialize the client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 class Person(BaseModel):
     name: str
@@ -139,6 +138,61 @@ class Address(BaseModel):
         return value
 ```
 
+## Semantic Validation with LLMs
+
+For complex validation scenarios where rule-based validation is difficult, Instructor provides semantic validation capabilities using LLMs via the `llm_validator` function. For a comprehensive guide on this topic, see the dedicated [Semantic Validation](/concepts/semantic_validation.md) page:
+
+```python
+from typing import Annotated
+from pydantic import BaseModel, BeforeValidator
+import instructor
+from instructor import llm_validator
+
+client = instructor.from_provider("openai/gpt-4o-mini")
+
+class ProductDescription(BaseModel):
+    product_name: str
+    description: Annotated[
+        str,
+        BeforeValidator(
+            llm_validator(
+                "The description must be professional, accurate, and free of hyperbole. " 
+                "It should not make unsubstantiated claims or use superlatives excessively.",
+                client=client
+            )
+        )
+    ]
+
+# This would fail validation because it uses excessive hyperbole
+try:
+    product = ProductDescription(
+        product_name="SuperClean 3000",
+        description="The absolute BEST cleaning product in the world! Will change your life FOREVER! Makes every other cleaning product completely OBSOLETE!"
+    )
+except ValueError as e:
+    print(e)  # The validation error would explain the issue with the hyperbolic language
+```
+
+Semantic validation is particularly useful for validating against criteria that are:
+
+1. **Subjective** - Such as tone, style, or appropriateness
+2. **Contextual** - Requiring understanding of relationships between elements
+3. **Complex** - Where multiple interrelated factors need to be evaluated together
+4. **Hard to formalize** - When rules would be too numerous or complex to express programmatically
+
+Unlike rule-based validators that check against predefined criteria, semantic validators leverage LLMs to evaluate content based on natural language instructions. They can understand nuance and context in ways that traditional validation cannot.
+
+### When to Use Semantic Validation
+
+Consider using semantic validation when:
+
+- You need to enforce style guidelines or content policies
+- Validating natural language content against subjective criteria
+- Checking for consistency across multiple fields or complex relationships
+- Traditional validation would require hundreds of individual rules
+
+Remember that semantic validation requires additional API calls, which adds cost and latency to your application. Use it strategically for high-value validation needs rather than for simple constraints that can be handled with standard validators.
+
 ## Handling Validation Failures
 
 When validation fails, Instructor can handle it in different ways. Learn more about:
@@ -153,6 +207,8 @@ When validation fails, Instructor can handle it in different ways. Learn more ab
 3. **Keep validators focused**: Each validator should have a single responsibility
 4. **Use type hints**: Proper type hints help both Pydantic and Instructor understand your data better
 5. **Consider both validation and transformation**: Validators can both validate and transform data
+6. **Choose appropriate validation type**: Use rule-based validation for simple, objective criteria and semantic validation for complex, subjective, or context-dependent validation
+7. **Balance cost and benefits**: Consider the additional cost and latency of semantic validation against the value it provides
 
 For more information on validation in general, check out the [Validation](/concepts/validation.md) concepts page.
 

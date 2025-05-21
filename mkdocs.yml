@@ -260,6 +260,7 @@ nav:
     - Union: 'concepts/union.md'
     - Unions: 'concepts/unions.md'
     - Validation: 'concepts/validation.md'
+    - Semantic Validation: 'concepts/semantic_validation.md'
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'
