@@ -1,13 +1,30 @@
 from __future__ import annotations
 
-from typing import Any, Union, get_origin
+from typing import Any, Union, get_origin, TYPE_CHECKING
 
-from vertexai.preview.generative_models import ToolConfig  # type: ignore
-import vertexai.generative_models as gm  # type: ignore
+if TYPE_CHECKING:
+    from vertexai.generative_models import Content, Tool
+
+try:
+    from vertexai.preview.generative_models import ToolConfig  # type: ignore
+    import vertexai.generative_models as gm  # type: ignore
+
+    VERTEXAI_AVAILABLE = True
+except ImportError:
+    ToolConfig = None
+    gm = None
+    VERTEXAI_AVAILABLE = False
 from pydantic import BaseModel
 import instructor
 from instructor.dsl.parallel import get_types_array
-import jsonref
+
+try:
+    import jsonref
+
+    JSONREF_AVAILABLE = True
+except ImportError:
+    jsonref = None
+    JSONREF_AVAILABLE = False
 
 
 def _create_gemini_json_schema(model: BaseModel):
@@ -16,7 +33,12 @@ def _create_gemini_json_schema(model: BaseModel):
         raise TypeError(f"Expected concrete model class, got type hint {model}")
 
     schema = model.model_json_schema()
-    schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore
+    if JSONREF_AVAILABLE:
+        schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore
+    else:
+        # If jsonref is not available, use the schema as-is
+        # This may not work correctly with schemas that have $ref fields
+        schema_without_refs = schema
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],
         "properties": schema_without_refs["properties"],
@@ -29,8 +51,10 @@ def _create_gemini_json_schema(model: BaseModel):
 
 def _create_vertexai_tool(
     models: BaseModel | list[BaseModel] | type,
-) -> gm.Tool:  # noqa: UP007
+) -> Tool:  # noqa: UP007
     """Creates a tool with function declarations for single model or list of models"""
+    if not VERTEXAI_AVAILABLE:
+        raise ImportError("vertexai is not installed")
     # Handle Iterable case first
     if get_origin(models) is not None:
         model_list = list(get_types_array(models))  # type: ignore
@@ -52,8 +76,10 @@ def _create_vertexai_tool(
 
 
 def vertexai_message_parser(
-    message: dict[str, str | gm.Part | list[str | gm.Part]],
-) -> gm.Content:
+    message: dict[str, Any],
+) -> Content:
+    if not VERTEXAI_AVAILABLE:
+        raise ImportError("vertexai is not installed")
     if isinstance(message["content"], str):
         return gm.Content(
             role=message["role"],  # type:ignore
@@ -77,8 +103,8 @@ def vertexai_message_parser(
 
 
 def _vertexai_message_list_parser(
-    messages: list[dict[str, str | gm.Part | list[str | gm.Part]]],
-) -> list[gm.Content]:
+    messages: list[dict[str, Any]],
+) -> list[Content]:
     contents = [
         vertexai_message_parser(message) if isinstance(message, dict) else message
         for message in messages
@@ -86,9 +112,7 @@ def _vertexai_message_list_parser(
     return contents
 
 
-def vertexai_function_response_parser(
-    response: gm.GenerationResponse, exception: Exception
-) -> gm.Content:
+def vertexai_function_response_parser(response: Any, exception: Exception) -> Content:
     return gm.Content(
         parts=[
             gm.Part.from_function_response(
@@ -105,6 +129,8 @@ def vertexai_process_response(
     _kwargs: dict[str, Any],
     model: Union[BaseModel, list[BaseModel], type],  # noqa: UP007
 ):
+    if not VERTEXAI_AVAILABLE:
+        raise ImportError("vertexai is not installed")
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
 
@@ -119,6 +145,8 @@ def vertexai_process_response(
 
 
 def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
+    if not VERTEXAI_AVAILABLE:
+        raise ImportError("vertexai is not installed")
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
 

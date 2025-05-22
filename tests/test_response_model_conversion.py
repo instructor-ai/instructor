@@ -8,13 +8,24 @@ modes = [
     instructor.Mode.JSON,
     instructor.Mode.MD_JSON,
     instructor.Mode.GEMINI_JSON,
-    instructor.Mode.VERTEXAI_JSON,
 ]
+
+# Add VERTEXAI_JSON only if vertexai is installed
+try:
+    import vertexai  # noqa: F401
+
+    modes.append(instructor.Mode.VERTEXAI_JSON)
+except ImportError:
+    pass
 
 
 def get_system_prompt(user_tool_definition, mode):
     if mode == instructor.Mode.ANTHROPIC_JSON:
-        return user_tool_definition["system"]
+        system = user_tool_definition["system"]
+        if isinstance(system, list):
+            # For Anthropic, system messages are a list of dicts
+            return " ".join(msg.get("text", "") for msg in system)
+        return system
     elif mode == instructor.Mode.GEMINI_JSON:
         return "\n".join(user_tool_definition["contents"][0]["parts"])
     elif mode == instructor.Mode.VERTEXAI_JSON:

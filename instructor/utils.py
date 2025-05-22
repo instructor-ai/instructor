@@ -762,28 +762,32 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         result["contents"] = transform_to_gemini_prompt(result.pop("messages"))
 
     # Handle safety settings - import here to avoid circular imports
-    from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
+    try:
+        from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
 
-    # Create or get existing safety settings
-    safety_settings = result.get("safety_settings", {})
-    result["safety_settings"] = safety_settings
+        # Create or get existing safety settings
+        safety_settings = result.get("safety_settings", {})
+        result["safety_settings"] = safety_settings
 
-    # Define default safety thresholds - these are static and can be
-    # defined once rather than recreating the dict on each call
-    DEFAULT_SAFETY_THRESHOLDS = {
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-    }
+        # Define default safety thresholds - these are static and can be
+        # defined once rather than recreating the dict on each call
+        DEFAULT_SAFETY_THRESHOLDS = {
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        }
 
-    # Update safety settings with defaults if needed (more efficient loop)
-    for category, threshold in DEFAULT_SAFETY_THRESHOLDS.items():
-        current = safety_settings.get(category)
-        # Only update if not set or less restrictive than default
-        # Note: Lower values are more restrictive in HarmBlockThreshold
-        # BLOCK_NONE = 0, BLOCK_LOW_AND_ABOVE = 1, BLOCK_MEDIUM_AND_ABOVE = 2, BLOCK_ONLY_HIGH = 3
-        if current is None or current > threshold:
-            safety_settings[category] = threshold
+        # Update safety settings with defaults if needed (more efficient loop)
+        for category, threshold in DEFAULT_SAFETY_THRESHOLDS.items():
+            current = safety_settings.get(category)
+            # Only update if not set or less restrictive than default
+            # Note: Lower values are more restrictive in HarmBlockThreshold
+            # BLOCK_NONE = 0, BLOCK_LOW_AND_ABOVE = 1, BLOCK_MEDIUM_AND_ABOVE = 2, BLOCK_ONLY_HIGH = 3
+            if current is None or current > threshold:
+                safety_settings[category] = threshold
+    except ImportError:
+        # If google.generativeai is not installed, skip safety settings
+        pass
 
     return result
 
