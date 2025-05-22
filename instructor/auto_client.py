@@ -30,6 +30,7 @@ supported_providers = [
 def from_provider(
     model: KnownModelName,
     async_client: Literal[True] = True,
+    mode: Union[instructor.Mode, None] = None,  # noqa: UP007
     api_key: Optional[str] = None,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -39,6 +40,7 @@ def from_provider(
 def from_provider(
     model: KnownModelName,
     async_client: Literal[False] = False,
+    mode: Union[instructor.Mode, None] = None,  # noqa: UP007
     api_key: Optional[str] = None,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -46,13 +48,15 @@ def from_provider(
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[True] = True, api_key: Optional[str] = None, **kwargs: Any
+    model: str, async_client: Literal[True] = True, mode: Union[instructor.Mode, None] = None,  # noqa: UP007
+    api_key: Optional[str] = None, **kwargs: Any
 ) -> AsyncInstructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[False] = False, api_key: Optional[str] = None, **kwargs: Any
+    model: str, async_client: Literal[False] = False, mode: Union[instructor.Mode, None] = None,  # noqa: UP007
+    api_key: Optional[str] = None, **kwargs: Any
 ) -> Instructor: ...
 
 
