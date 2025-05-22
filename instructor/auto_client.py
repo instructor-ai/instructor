@@ -1,11 +1,11 @@
 from __future__ import annotations
-from typing import Any, Union, Literal, Optional, overload
+from typing import Any, Literal, overload
 from instructor.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
 
 # Type alias for the return type
-InstructorType = Union[Instructor, AsyncInstructor]
+InstructorType = Instructor | AsyncInstructor
 
 
 # List of supported providers
@@ -30,8 +30,8 @@ supported_providers = [
 def from_provider(
     model: KnownModelName,
     async_client: Literal[True] = True,
-    mode: Union[instructor.Mode, None] = None,  # noqa: UP007
-    api_key: Optional[str] = None,
+    mode: instructor.Mode | None = None,
+    api_key: str | None = None,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -40,33 +40,33 @@ def from_provider(
 def from_provider(
     model: KnownModelName,
     async_client: Literal[False] = False,
-    mode: Union[instructor.Mode, None] = None,  # noqa: UP007
-    api_key: Optional[str] = None,
+    mode: instructor.Mode | None = None,
+    api_key: str | None = None,
     **kwargs: Any,
 ) -> Instructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[True] = True, mode: Union[instructor.Mode, None] = None,  # noqa: UP007
-    api_key: Optional[str] = None, **kwargs: Any
+    model: str, async_client: Literal[True] = True, mode: instructor.Mode | None = None,
+    api_key: str | None = None, **kwargs: Any
 ) -> AsyncInstructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[False] = False, mode: Union[instructor.Mode, None] = None,  # noqa: UP007
-    api_key: Optional[str] = None, **kwargs: Any
+    model: str, async_client: Literal[False] = False, mode: instructor.Mode | None = None,
+    api_key: str | None = None, **kwargs: Any
 ) -> Instructor: ...
 
 
 def from_provider(
-    model: Union[str, KnownModelName],  # noqa: UP007
+    model: str | KnownModelName,
     async_client: bool = False,
-    mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
-    api_key: Optional[str] = None,
+    mode: instructor.Mode | None = None,  # noqa: ARG001
+    api_key: str | None = None,
     **kwargs: Any,
-) -> Union[Instructor, AsyncInstructor]:  # noqa: UP007
+) -> Instructor | AsyncInstructor:
     """Create an Instructor client from a model string.
 
     Args:
