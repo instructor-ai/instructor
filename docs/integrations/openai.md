@@ -438,3 +438,17 @@ Read more about how to use it [here](../examples/batch_job_oai.md)
 ## Updates and Compatibility
 
 Instructor maintains compatibility with the latest OpenAI API versions and models. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
+
+## API Consistency
+
+Starting with version 1.7.0, Instructor provides a consistent API across all providers. The OpenAI integration supports standardized parameter names while maintaining backward compatibility:
+
+```python
+# Legacy parameters (still work but show deprecation warnings)
+client = instructor.from_openai(openai_client, retries=3)
+
+# New standardized parameters
+client = instructor.from_openai(openai_client, max_retries=3)
+```
+
+For more information about the unified API and migration guide, see [API Consistency](../concepts/api_consistency.md).

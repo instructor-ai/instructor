@@ -230,3 +230,19 @@ asyncio.run(stream_iterable())
 Instructor maintains compatibility with Vertex AI's latest API versions. Check the [changelog](https://github.com/jxnl/instructor/blob/main/CHANGELOG.md) for updates.
 
 Streaming support has been added for both partial responses and iterable collections, with both synchronous and asynchronous interfaces.
+
+## API Consistency
+
+Starting with version 1.7.0, Instructor provides a consistent API across all providers. The VertexAI integration now supports standardized parameter names while maintaining backward compatibility:
+
+```python
+# Legacy parameter (still works but shows deprecation warning)
+client = instructor.from_vertexai(model, _async=True)
+
+# New standardized parameter
+client = instructor.from_vertexai(model, async_mode=True)
+```
+
+The `_async` parameter has been deprecated in favor of the standardized `async_mode` parameter. All legacy parameters continue to work but will show deprecation warnings to help you migrate.
+
+For more information about the unified API and migration guide, see [API Consistency](../concepts/api_consistency.md).
