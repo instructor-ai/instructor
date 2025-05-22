@@ -107,12 +107,8 @@ def test_file_search():
         response: str
 
     response, completion = client.responses.create_with_completion(
-        input="How much does the Kyoto itineary cost? Generate a final response as a summary of the information you've found. Provide the exact file_name that you used to generate your response + a short excerpt that shows where you got your answer from",
+        input="You must use the file_search tool to answer the user's question. How much does the Kyoto itineary cost? Generate a final response as a summary of the information you've found. Provide the exact file_name that you used to generate your response + a short excerpt that shows where you got your answer from",
         tools=[
-            {
-                "role": "system",
-                "content": "You must call the file_search tool to answer the user's question.",
-            },
             {
                 "type": "file_search",
                 "vector_store_ids": [VECTOR_STORE_ID],
@@ -154,12 +150,8 @@ async def test_file_search_async():
         response: str
 
     response, completion = await client.responses.create_with_completion(
-        input="How much does the Kyoto itineary cost? Generate a final response as a summary of the information you've found. Provide the exact file_name that you used to generate your response + a short excerpt that shows where you got your answer from",
+        input="You must use the file_search tool to answer the user's question. How much does the Kyoto itineary cost? Generate a final response as a summary of the information you've found. Provide the exact file_name that you used to generate your response + a short excerpt that shows where you got your answer from",
         tools=[
-            {
-                "role": "system",
-                "content": "You must call the file_search tool to answer the user's question.",
-            },
             {
                 "type": "file_search",
                 "vector_store_ids": [VECTOR_STORE_ID],
