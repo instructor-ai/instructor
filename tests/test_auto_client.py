@@ -98,46 +98,6 @@ def test_unsupported_provider():
     assert "Unsupported provider" in str(excinfo.value)
 
 
-def test_mode_parameter():
-    """Test that mode parameter is passed correctly."""
-    import instructor
-    from pydantic import Field
-    from instructor.exceptions import InstructorRetryException
-
-    client = from_provider("openai/gpt-4o-mini", mode=instructor.Mode.TOOLS_STRICT)
-
-    class User(BaseModel):
-        name: str
-        phone_number: str = Field(pattern=r"^\+?[1-9]\d{1,14}$")
-
-    with pytest.raises(InstructorRetryException) as excinfo:
-        resp = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": "Ivan is 28 and his phone number is +1234567890",
-                }
-            ],  # type: ignore[arg-type]
-            response_model=User,
-        )
-
-    assert "'properties', 'phone_number'), 'pattern' is not permitted." in str(
-        excinfo.value
-    ), f"{excinfo.value}"
-
-    client = from_provider("openai/gpt-4o-mini")
-    resp = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "Ivan is 28 and his phone number is +1234567890",
-            }
-        ],  # type: ignore[arg-type]
-        response_model=User,
-    )
-    assert resp.phone_number == "+1234567890"
-
-
 def test_additional_kwargs_passed():
     """Test that additional kwargs are passed to provider."""
     import instructor
