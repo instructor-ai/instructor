@@ -233,6 +233,7 @@ nav:
     - "YouTube Clip Analysis": 'examples/youtube_clips.md'
   - Concepts:
     - Overview: 'concepts/index.md'
+    - Error Handling: 'concepts/error_handling.md'
     - Retrying: 'concepts/retrying.md'
     - Fields: 'concepts/fields.md'
     - Models: 'concepts/models.md'

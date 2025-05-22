@@ -81,7 +81,22 @@ print(response.model_dump_json(indent=2))
 
 ## Catching Retry Exceptions
 
-If you want to catch the retry exceptions, you can do so and access the `last_completion`, `n_attempts` and `messages` attributes.
+If you want to catch the retry exceptions, you can do so and access the `last_completion`, `n_attempts` and `messages` attributes. Instructor provides a comprehensive exception hierarchy for better error handling:
+
+### Exception Hierarchy
+
+```python
+InstructorError  # Base exception for all Instructor-specific errors
+├── IncompleteOutputException  # When LLM output is incomplete due to token limits
+├── InstructorRetryException  # When all retry attempts are exhausted
+├── ValidationError  # When response validation fails
+├── ProviderError  # Provider-specific errors (e.g., API issues)
+├── ConfigurationError  # Configuration-related errors
+├── ModeError  # Invalid mode for a provider
+└── ClientError  # Client initialization/usage errors
+```
+
+### Example: Handling Retry Exceptions
 
 ```python
 from pydantic import BaseModel, field_validator

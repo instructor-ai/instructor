@@ -88,11 +88,12 @@ def from_provider(
     try:
         provider, model_name = model.split("/", 1)
     except ValueError:
-        format_err = ValueError(
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
             'Model string must be in format "provider/model-name" '
             '(e.g. "openai/gpt-4" or "anthropic/claude-3-sonnet")'
-        )
-        raise format_err from None
+        ) from None
 
     if provider == "openai":
         try:
@@ -107,11 +108,12 @@ def from_provider(
                 **kwargs,
             )
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The openai package is required to use the OpenAI provider. "
                 "Install it with `pip install openai`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "anthropic":
         try:
@@ -332,7 +334,9 @@ def from_provider(
             raise import_err from None
 
     else:
-        raise ValueError(
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
             f"Unsupported provider: {provider}. "
             f"Supported providers are: {supported_providers}"
         )
