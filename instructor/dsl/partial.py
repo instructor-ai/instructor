@@ -101,6 +101,19 @@ def _make_field_optional(
 
     annotation = field.annotation
 
+    # Check if the original field is already Optional
+    is_optional = False
+    original_annotation = annotation
+    if get_origin(annotation) is Union:
+        # Check if None is in the union args (meaning it's Optional)
+        union_args = get_args(annotation)
+        if type(None) in union_args:
+            is_optional = True
+            # Get the non-None type from the Union
+            non_none_args = [arg for arg in union_args if arg is not type(None)]
+            if len(non_none_args) == 1:
+                annotation = non_none_args[0]
+
     # Handle generics (like List, Dict, etc.)
     if get_origin(annotation) is not None:
         generic_base = get_origin(annotation)
@@ -111,9 +124,14 @@ def _make_field_optional(
             # For Literal types during streaming, we want to accept:
             # 1. The literal values themselves
             # 2. Any string (to handle partial values during streaming)
-            # 3. None (for optional fields)
-            tmp_field.annotation = Optional[Union[annotation, str]]
-            tmp_field.default = None
+            # 3. None only if the original field was optional
+            if is_optional or field.is_required() is False:
+                tmp_field.annotation = Optional[Union[annotation, str]]
+                tmp_field.default = None
+            else:
+                # Required literal field - don't allow None
+                tmp_field.annotation = Union[annotation, str]
+                tmp_field.default = ""  # Use empty string instead of None
         else:
             # Get the generic base (like List, Dict) and its arguments (like User in List[User])
             modified_args = tuple(
@@ -132,7 +150,11 @@ def _make_field_optional(
         tmp_field.annotation = Optional[Partial[annotation, MakeFieldsOptional]]  # type: ignore[assignment, valid-type]
         tmp_field.default = {}
     else:
-        tmp_field.annotation = Optional[field.annotation]  # type:ignore
+        tmp_field.annotation = (
+            Optional[original_annotation]
+            if original_annotation
+            else Optional[field.annotation]
+        )  # type:ignore
         tmp_field.default = None
 
     return tmp_field.annotation, tmp_field  # type: ignore

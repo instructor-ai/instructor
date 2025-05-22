@@ -210,12 +210,15 @@ def test_literal_partial_streaming():
 
     # Test various streaming scenarios
     test_cases = [
-        ("{}", {"name": None, "status": None, "age": None}),
-        ('{"name": ""}', {"name": "", "status": None, "age": None}),
-        ('{"name": "A"}', {"name": "A", "status": None, "age": None}),
-        ('{"name": "Al"}', {"name": "Al", "status": None, "age": None}),
-        ('{"name": "Ali"}', {"name": "Ali", "status": None, "age": None}),
-        ('{"name": "Alice"}', {"name": "Alice", "status": None, "age": None}),
+        (
+            "{}",
+            {"name": "", "status": "", "age": None},
+        ),  # Required literals default to ""
+        ('{"name": ""}', {"name": "", "status": "", "age": None}),
+        ('{"name": "A"}', {"name": "A", "status": "", "age": None}),
+        ('{"name": "Al"}', {"name": "Al", "status": "", "age": None}),
+        ('{"name": "Ali"}', {"name": "Ali", "status": "", "age": None}),
+        ('{"name": "Alice"}', {"name": "Alice", "status": "", "age": None}),
         (
             '{"name": "Alice", "status": "a"}',
             {"name": "Alice", "status": "a", "age": None},
