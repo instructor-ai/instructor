@@ -253,9 +253,9 @@ def test_literal_field_schema():
     color_schema = schema["properties"]["color"]
     assert "anyOf" in color_schema
 
-    # Should have 3 options: the literal enum, string type, and null
+    # Should have 2 options for required literal: the literal enum and string type
     any_of_options = color_schema["anyOf"]
-    assert len(any_of_options) == 3
+    assert len(any_of_options) == 2  # No null for required fields
 
     # Check for the literal enum option
     has_enum = any(
@@ -267,6 +267,6 @@ def test_literal_field_schema():
     has_string = any(opt.get("type") == "string" for opt in any_of_options)
     assert has_string, "Should have string type option"
 
-    # Check for null type option
+    # Check that there's NO null type option (because it's required)
     has_null = any(opt.get("type") == "null" for opt in any_of_options)
-    assert has_null, "Should have null type option"
+    assert not has_null, "Should NOT have null type option for required field"

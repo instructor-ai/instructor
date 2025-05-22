@@ -126,11 +126,11 @@ def _make_field_optional(
             # 2. Any string (to handle partial values during streaming)
             # 3. None only if the original field was optional
             if is_optional or field.is_required() is False:
-                tmp_field.annotation = Optional[Union[annotation, str]]
+                tmp_field.annotation = Optional[Union[annotation, str]]  # type: ignore[assignment]
                 tmp_field.default = None
             else:
                 # Required literal field - don't allow None
-                tmp_field.annotation = Union[annotation, str]
+                tmp_field.annotation = Union[annotation, str]  # type: ignore[assignment]
                 tmp_field.default = ""  # Use empty string instead of None
         else:
             # Get the generic base (like List, Dict) and its arguments (like User in List[User])
@@ -154,7 +154,7 @@ def _make_field_optional(
             Optional[original_annotation]
             if original_annotation
             else Optional[field.annotation]
-        )  # type:ignore
+        )  # type: ignore[assignment]
         tmp_field.default = None
 
     return tmp_field.annotation, tmp_field  # type: ignore
