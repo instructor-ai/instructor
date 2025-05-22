@@ -23,9 +23,13 @@ def test_web_search(client: OpenAI):
         model="gpt-4.1-mini",
         input=[
             {
+                "role": "system",
+                "content": "You must call the web_search tool to answer the user's question.",
+            },
+            {
                 "role": "user",
                 "content": "What are some of the best places to visit in New York for someone who likes to eat Latin American Food?",
-            }
+            },
         ],
         tools=[{"type": "web_search_preview"}],
         response_model=Summary,
@@ -61,9 +65,13 @@ async def test_web_search_async(aclient: AsyncOpenAI):
         model="gpt-4.1-mini",
         input=[
             {
+                "role": "system",
+                "content": "You must call the web_search tool to answer the user's question.",
+            },
+            {
                 "role": "user",
                 "content": "What are some of the best places to visit in New York for someone who likes to eat Latin American Food?",
-            }
+            },
         ],
         tools=[{"type": "web_search_preview"}],
         max_retries=1,
@@ -102,10 +110,14 @@ def test_file_search():
         input="How much does the Kyoto itineary cost? Generate a final response as a summary of the information you've found. Provide the exact file_name that you used to generate your response + a short excerpt that shows where you got your answer from",
         tools=[
             {
+                "role": "system",
+                "content": "You must call the file_search tool to answer the user's question.",
+            },
+            {
                 "type": "file_search",
                 "vector_store_ids": [VECTOR_STORE_ID],
                 "max_num_results": 2,
-            }
+            },
         ],
         response_model=Response,
         max_retries=1,
@@ -145,10 +157,14 @@ async def test_file_search_async():
         input="How much does the Kyoto itineary cost? Generate a final response as a summary of the information you've found. Provide the exact file_name that you used to generate your response + a short excerpt that shows where you got your answer from",
         tools=[
             {
+                "role": "system",
+                "content": "You must call the file_search tool to answer the user's question.",
+            },
+            {
                 "type": "file_search",
                 "vector_store_ids": [VECTOR_STORE_ID],
                 "max_num_results": 2,
-            }
+            },
         ],
         response_model=Response,
         max_retries=1,
