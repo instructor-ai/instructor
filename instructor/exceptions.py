@@ -86,3 +86,17 @@ class ClientError(InstructorError):
     """Exception raised for client initialization or usage errors."""
 
     pass
+
+
+class ProviderNotFoundError(ProviderError):
+    """Exception raised when a provider is not found in the registry."""
+
+    def __init__(self, provider_name: str, *args: Any, **kwargs: Any):
+        message = f"Provider '{provider_name}' not found in registry"
+        super().__init__(provider_name, message, *args, **kwargs)
+
+
+class InvalidModeError(ModeError):
+    """Exception raised when a mode is not supported by a provider."""
+
+    pass

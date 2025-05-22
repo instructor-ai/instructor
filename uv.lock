@@ -1646,7 +1646,7 @@ wheels = [
 
 [[package]]
 name = "instructor"
-version = "1.8.2"
+version = "1.8.3"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
@@ -1825,7 +1825,7 @@ requires-dist = [
     { name = "litellm", marker = "extra == 'test-docs'", specifier = ">=1.35.31,<2.0.0" },
     { name = "mistralai", marker = "extra == 'mistral'", specifier = ">=1.5.1,<2.0.0" },
     { name = "mistralai", marker = "extra == 'test-docs'", specifier = ">=1.5.1,<2.0.0" },
-    { name = "openai", specifier = ">=1.52.0,<2.0.0" },
+    { name = "openai", specifier = ">=1.70.0,<2.0.0" },
     { name = "openai", marker = "extra == 'perplexity'", specifier = ">=1.52.0,<2.0.0" },
     { name = "pandas", marker = "extra == 'test-docs'", specifier = ">=2.2.0,<3.0.0" },
     { name = "pydantic", specifier = ">=2.8.0,<3.0.0" },
@@ -2985,7 +2985,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.58.1"
+version = "1.81.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -2997,9 +2997,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/27/3c/b1ecce430ed56fa3ac1b0676966d3250aab9c70a408232b71e419ea62148/openai-1.58.1.tar.gz", hash = "sha256:f5a035fd01e141fc743f4b0e02c41ca49be8fab0866d3b67f5f29b4f4d3c0973", size = 343411 }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/89/a1e4f3fa7ca4f7fec90dbf47d93b7cd5ff65924926733af15044e302a192/openai-1.81.0.tar.gz", hash = "sha256:349567a8607e0bcffd28e02f96b5c2397d0d25d06732d90ab3ecbf97abf030f9", size = 456861 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8e/5a/d22cd07f1a99b9e8b3c92ee0c1959188db4318828a3d88c9daac120bdd69/openai-1.58.1-py3-none-any.whl", hash = "sha256:e2910b1170a6b7f88ef491ac3a42c387f08bd3db533411f7ee391d166571d63c", size = 454279 },
+    { url = "https://files.pythonhosted.org/packages/02/66/bcc7f9bf48e8610a33e3b5c96a5a644dad032d92404ea2a5e8b43ba067e8/openai-1.81.0-py3-none-any.whl", hash = "sha256:1c71572e22b43876c5d7d65ade0b7b516bb527c3d44ae94111267a09125f7bae", size = 717529 },
 ]
 
 [[package]]
