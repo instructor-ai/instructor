@@ -1,11 +1,11 @@
 from __future__ import annotations
-from typing import Any, Literal, overload
+from typing import Any, Literal, overload, Union, Optional
 from instructor.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
 
 # Type alias for the return type
-InstructorType = Instructor | AsyncInstructor
+InstructorType = Union[Instructor, AsyncInstructor]
 
 
 # List of supported providers
@@ -30,8 +30,8 @@ supported_providers = [
 def from_provider(
     model: KnownModelName,
     async_client: Literal[True] = True,
-    mode: instructor.Mode | None = None,
-    api_key: str | None = None,
+    mode: Union[instructor.Mode, None] = None,  # noqa: UP007
+    api_key: Optional[str] = None,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -40,33 +40,33 @@ def from_provider(
 def from_provider(
     model: KnownModelName,
     async_client: Literal[False] = False,
-    mode: instructor.Mode | None = None,
-    api_key: str | None = None,
+    mode: Union[instructor.Mode, None] = None,  # noqa: UP007
+    api_key: Optional[str] = None,
     **kwargs: Any,
 ) -> Instructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[True] = True, mode: instructor.Mode | None = None,
-    api_key: str | None = None, **kwargs: Any
+    model: str, async_client: Literal[True] = True, mode: Union[instructor.Mode, None] = None,  # noqa: UP007
+    api_key: Optional[str] = None, **kwargs: Any
 ) -> AsyncInstructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[False] = False, mode: instructor.Mode | None = None,
-    api_key: str | None = None, **kwargs: Any
+    model: str, async_client: Literal[False] = False, mode: Union[instructor.Mode, None] = None,  # noqa: UP007
+    api_key: Optional[str] = None, **kwargs: Any
 ) -> Instructor: ...
 
 
 def from_provider(
-    model: str | KnownModelName,
+    model: Union[str, KnownModelName],  # noqa: UP007
     async_client: bool = False,
-    mode: instructor.Mode | None = None,  # noqa: ARG001
-    api_key: str | None = None,
+    mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
+    api_key: Optional[str] = None,
     **kwargs: Any,
-) -> Instructor | AsyncInstructor:
+) -> Union[Instructor, AsyncInstructor]:  # noqa: UP007
     """Create an Instructor client from a model string.
 
     Args:
@@ -365,10 +365,12 @@ def from_provider(
     elif provider == "generative-ai":
         try:
             from google.generativeai import GenerativeModel
+            import google.generativeai as genai  # Add import for configure
             from instructor import from_gemini
-
+            
             if api_key:
-                client = GenerativeModel(model_name=model_name, api_key=api_key)
+                genai.configure(api_key=api_key)  # Configure API key globally
+                client = GenerativeModel(model_name=model_name)
             else:
                 client = GenerativeModel(model_name=model_name)
                 
