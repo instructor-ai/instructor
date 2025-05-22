@@ -86,14 +86,18 @@ async def test_user_extraction_async(provider_string):
 
 def test_invalid_provider_format():
     """Test that error is raised for invalid provider format."""
-    with pytest.raises(ValueError) as excinfo:
+    from instructor.exceptions import ConfigurationError
+
+    with pytest.raises(ConfigurationError) as excinfo:
         from_provider("invalid-format")
     assert "Model string must be in format" in str(excinfo.value)
 
 
 def test_unsupported_provider():
     """Test that error is raised for unsupported provider."""
-    with pytest.raises(ValueError) as excinfo:
+    from instructor.exceptions import ConfigurationError
+
+    with pytest.raises(ConfigurationError) as excinfo:
         from_provider("unsupported/model")
     assert "Unsupported provider" in str(excinfo.value)
 
