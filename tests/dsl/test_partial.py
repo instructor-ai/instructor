@@ -1,6 +1,6 @@
 # type: ignore[all]
 from pydantic import BaseModel, Field
-from typing import Optional, Union
+from typing import Optional, Union, Literal
 from instructor.dsl.partial import Partial, PartialLiteralMixin
 import pytest
 import instructor
@@ -195,3 +195,75 @@ def test_union_with_nested():
     partial.get_partial_model().model_validate_json(
         '{"a": [{"b": "b"}, {"d": "d"}], "b": [{"b": "b"}], "c": {"d": "d"}, "e": [1, "a"]}'
     )
+
+
+def test_literal_partial_streaming():
+    """Test that Literal types work correctly with Partial during streaming"""
+
+    class UserWithLiteral(BaseModel):
+        name: Literal["Bob", "Alice", "John"]
+        status: Literal["active", "inactive", "pending"]
+        age: int
+
+    partial = Partial[UserWithLiteral]
+    partial_model = partial.get_partial_model()
+
+    # Test various streaming scenarios
+    test_cases = [
+        ("{}", {"name": None, "status": None, "age": None}),
+        ('{"name": ""}', {"name": "", "status": None, "age": None}),
+        ('{"name": "A"}', {"name": "A", "status": None, "age": None}),
+        ('{"name": "Al"}', {"name": "Al", "status": None, "age": None}),
+        ('{"name": "Ali"}', {"name": "Ali", "status": None, "age": None}),
+        ('{"name": "Alice"}', {"name": "Alice", "status": None, "age": None}),
+        (
+            '{"name": "Alice", "status": "a"}',
+            {"name": "Alice", "status": "a", "age": None},
+        ),
+        (
+            '{"name": "Alice", "status": "active"}',
+            {"name": "Alice", "status": "active", "age": None},
+        ),
+        (
+            '{"name": "Alice", "status": "active", "age": 25}',
+            {"name": "Alice", "status": "active", "age": 25},
+        ),
+    ]
+
+    for json_str, expected in test_cases:
+        result = partial_model.model_validate_json(json_str)
+        assert result.model_dump() == expected, f"Failed for {json_str}"
+
+
+def test_literal_field_schema():
+    """Test that Literal fields in Partial models have the correct schema"""
+
+    class ModelWithLiteral(BaseModel):
+        color: Literal["red", "green", "blue"]
+        size: int
+
+    partial = Partial[ModelWithLiteral]
+    partial_model = partial.get_partial_model()
+    schema = partial_model.model_json_schema()
+
+    # Check that the color field allows both literal values and strings
+    color_schema = schema["properties"]["color"]
+    assert "anyOf" in color_schema
+
+    # Should have 3 options: the literal enum, string type, and null
+    any_of_options = color_schema["anyOf"]
+    assert len(any_of_options) == 3
+
+    # Check for the literal enum option
+    has_enum = any(
+        opt.get("enum") == ["red", "green", "blue"] for opt in any_of_options
+    )
+    assert has_enum, "Should have literal enum option"
+
+    # Check for string type option
+    has_string = any(opt.get("type") == "string" for opt in any_of_options)
+    assert has_string, "Should have string type option"
+
+    # Check for null type option
+    has_null = any(opt.get("type") == "null" for opt in any_of_options)
+    assert has_null, "Should have null type option"
