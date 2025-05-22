@@ -32,17 +32,25 @@ def from_genai(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.GENAI_TOOLS,
         instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
-    }, (
-        "Mode must be one of {instructor.Mode.GENAI_TOOLS, instructor.Mode.GENAI_STRUCTURED_OUTPUTS}"
-    )
+    }
 
-    assert isinstance(
-        client,
-        (Client),
-    ), "Client must be an instance of google.genai.Client"
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode), provider="GenAI", valid_modes=[str(m) for m in valid_modes]
+        )
+
+    if not isinstance(client, Client):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of google.genai.Client. "
+            f"Got: {type(client).__name__}"
+        )
 
     if use_async:
 

@@ -92,7 +92,12 @@ def _validate_model_from_json(
         raise ValueError(f"Failed to parse JSON: {e}") from e
     except Exception as e:
         logger.debug(f"Model validation error: {e}")
-        raise
+        # Re-raise with more context
+        from instructor.exceptions import ValidationError as InstructorValidationError
+
+        raise InstructorValidationError(
+            f"Failed to validate model {cls.__name__}: {str(e)}"
+        ) from e
 
 
 class OpenAISchema(BaseModel):
@@ -302,13 +307,13 @@ class OpenAISchema(BaseModel):
         assert isinstance(completion, types.GenerateContentResponse)
         assert len(completion.candidates) == 1
 
-        assert (
-            len(completion.candidates[0].content.parts) == 1
-        ), f"Instructor does not support multiple function calls, use List[Model] instead"
+        assert len(completion.candidates[0].content.parts) == 1, (
+            f"Instructor does not support multiple function calls, use List[Model] instead"
+        )
         function_call = completion.candidates[0].content.parts[0].function_call
-        assert (
-            function_call is not None
-        ), f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
+        assert function_call is not None, (
+            f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
+        )
 
         assert function_call.name == cls.openai_schema["name"]
         return cls.model_validate(
@@ -322,9 +327,9 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ):
-        assert hasattr(
-            completion, "text"
-        ), "Completion is not of type NonStreamedChatResponse"
+        assert hasattr(completion, "text"), (
+            "Completion is not of type NonStreamedChatResponse"
+        )
         return cls.model_validate_json(
             completion.text, context=validation_context, strict=strict
         )
@@ -493,12 +498,12 @@ class OpenAISchema(BaseModel):
     ) -> BaseModel:
         message = completion.choices[0].message
         tool_calls = message.tool_calls
-        assert (
-            len(tool_calls) == 1
-        ), "Instructor does not support multiple tool calls, use List[Model] instead"
-        assert (
-            tool_calls[0].function.name == cls.openai_schema["name"]
-        ), "Tool name does not match"
+        assert len(tool_calls) == 1, (
+            "Instructor does not support multiple tool calls, use List[Model] instead"
+        )
+        assert tool_calls[0].function.name == cls.openai_schema["name"], (
+            "Tool name does not match"
+        )
         return cls.model_validate_json(
             tool_calls[0].function.arguments,
             context=validation_context,
@@ -567,12 +572,12 @@ class OpenAISchema(BaseModel):
         # trying to fix this by adding a check
 
         if hasattr(message, "refusal"):
-            assert (
-                message.refusal is None
-            ), f"Unable to generate a response due to {message.refusal}"
-        assert (
-            len(message.tool_calls or []) == 1
-        ), f"Instructor does not support multiple tool calls, use List[Model] instead"
+            assert message.refusal is None, (
+                f"Unable to generate a response due to {message.refusal}"
+            )
+        assert len(message.tool_calls or []) == 1, (
+            f"Instructor does not support multiple tool calls, use List[Model] instead"
+        )
         tool_call = message.tool_calls[0]  # type: ignore
         assert (
             tool_call.function.name == cls.openai_schema["name"]  # type: ignore[index]

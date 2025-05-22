@@ -204,9 +204,12 @@ def is_typed_dict(cls) -> bool:
 def handle_parallel_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    assert new_kwargs.get("stream", False) is False, (
-        "stream=True is not supported when using PARALLEL_TOOLS mode"
-    )
+    if new_kwargs.get("stream", False):
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
+            "stream=True is not supported when using PARALLEL_TOOLS mode"
+        )
     new_kwargs["tools"] = handle_parallel_model(response_model)
     new_kwargs["tool_choice"] = "auto"
     return ParallelModel(typehint=response_model), new_kwargs
@@ -557,9 +560,12 @@ def handle_fireworks_json(
 def handle_gemini_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    assert "model" not in new_kwargs, (
-        "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
-    )
+    if "model" in new_kwargs:
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
+            "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+        )
 
     from .utils import update_gemini_kwargs
 
@@ -590,9 +596,12 @@ def handle_gemini_json(
 def handle_gemini_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
-    assert "model" not in new_kwargs, (
-        "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
-    )
+    if "model" in new_kwargs:
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
+            "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
+        )
 
     from .utils import update_gemini_kwargs
 
@@ -677,9 +686,12 @@ def handle_genai_tools(
 def handle_vertexai_parallel_tools(
     response_model: type[Iterable[T]], new_kwargs: dict[str, Any]
 ) -> tuple[VertexAIParallelBase, dict[str, Any]]:
-    assert new_kwargs.get("stream", False) is False, (
-        "stream=True is not supported when using PARALLEL_TOOLS mode"
-    )
+    if new_kwargs.get("stream", False):
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
+            "stream=True is not supported when using VERTEXAI_PARALLEL_TOOLS mode"
+        )
 
     from instructor.client_vertexai import vertexai_process_response
 

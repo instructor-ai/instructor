@@ -62,7 +62,9 @@ def initialize_retrying(max_retries: int | Retrying | AsyncRetrying, is_async: b
                 stop=stop_after_attempt(max_retries),
             )
     elif not isinstance(max_retries, (Retrying, AsyncRetrying)):
-        raise ValueError(
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
             "max_retries must be an int or a `tenacity.Retrying`/`tenacity.AsyncRetrying` object"
         )
     return max_retries

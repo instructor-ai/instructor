@@ -141,15 +141,28 @@ def from_vertexai(
     _async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
         instructor.Mode.VERTEXAI_TOOLS,
         instructor.Mode.VERTEXAI_JSON,
-    }, "Mode must be instructor.Mode.VERTEXAI_TOOLS"
+    }
 
-    assert isinstance(
-        client, gm.GenerativeModel
-    ), "Client must be an instance of vertexai.generative_models.GenerativeModel"
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode),
+            provider="VertexAI",
+            valid_modes=[str(m) for m in valid_modes],
+        )
+
+    if not isinstance(client, gm.GenerativeModel):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of vertexai.generative_models.GenerativeModel. "
+            f"Got: {type(client).__name__}"
+        )
 
     create = client.generate_content_async if _async else client.generate_content
 

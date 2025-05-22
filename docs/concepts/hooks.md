@@ -295,12 +295,33 @@ def handle_completion_error(error: Exception) -> None:
     print(f"## Completion error: {error}")
     print(f"Type: {type(error).__name__}")
     print(f"Message: {str(error)}")
+    
+    # Handle specific Instructor exceptions
+    from instructor.exceptions import (
+        IncompleteOutputException,
+        ValidationError,
+        ProviderError
+    )
+    
+    if isinstance(error, IncompleteOutputException):
+        print(f"Output was truncated. Last completion: {error.last_completion}")
+    elif isinstance(error, ValidationError):
+        print("Validation failed - check your model schema")
+    elif isinstance(error, ProviderError):
+        print(f"Provider {error.provider} had an issue")
 
 
 def log_parse_error(error: Exception) -> None:
     print(f"## Parse error: {error}")
     print(f"Type: {type(error).__name__}")
     print(f"Message: {str(error)}")
+    
+    # You can also check for Pydantic validation errors
+    from pydantic import ValidationError as PydanticValidationError
+    if isinstance(error, PydanticValidationError):
+        print("Pydantic validation errors:")
+        for err in error.errors():
+            print(f"  - {err['loc']}: {err['msg']}")
 
 
 # Handler for a custom logger that records how many errors have occurred
@@ -407,6 +428,66 @@ def my_error_handler(error: Exception) -> None:
 handler: CompletionErrorHandler = my_error_handler
 
 client.on("completion:error", handler)
+```
+
+## Error Handling with Hooks
+
+Hooks provide an excellent way to monitor and handle errors consistently across your application. You can use them with Instructor's exception hierarchy for sophisticated error handling:
+
+```python
+from instructor.exceptions import (
+    InstructorError,
+    IncompleteOutputException,
+    InstructorRetryException,
+    ValidationError,
+    ProviderError,
+    ConfigurationError
+)
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ErrorMonitor:
+    def __init__(self):
+        self.error_counts = {
+            "incomplete": 0,
+            "validation": 0,
+            "provider": 0,
+            "retry_exhausted": 0,
+            "other": 0
+        }
+    
+    def handle_error(self, error: Exception):
+        # Log the error with appropriate level
+        if isinstance(error, IncompleteOutputException):
+            self.error_counts["incomplete"] += 1
+            logger.warning(f"Incomplete output: {error}")
+        elif isinstance(error, ValidationError):
+            self.error_counts["validation"] += 1
+            logger.error(f"Validation failed: {error}")
+        elif isinstance(error, ProviderError):
+            self.error_counts["provider"] += 1
+            logger.error(f"Provider error ({error.provider}): {error}")
+        elif isinstance(error, InstructorRetryException):
+            self.error_counts["retry_exhausted"] += 1
+            logger.critical(f"All retries exhausted after {error.n_attempts} attempts")
+        else:
+            self.error_counts["other"] += 1
+            logger.error(f"Unexpected error: {type(error).__name__}: {error}")
+    
+    def get_stats(self):
+        return self.error_counts
+
+# Usage
+monitor = ErrorMonitor()
+client = instructor.from_openai(openai.OpenAI())
+
+client.on("completion:error", monitor.handle_error)
+client.on("parse:error", monitor.handle_error)
+client.on("completion:last_attempt", monitor.handle_error)
+
+# After running your application
+print(f"Error statistics: {monitor.get_stats()}")
 ```
 
 ## Hooks in Testing

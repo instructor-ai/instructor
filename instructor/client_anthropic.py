@@ -56,30 +56,40 @@ def from_anthropic(
         An Instructor instance (sync or async depending on the client type)
 
     Raises:
-        TypeError: If enable_prompt_caching is True and client is not Anthropic or AsyncAnthropic
-        AssertionError: If mode is not ANTHROPIC_JSON or ANTHROPIC_TOOLS
+        ModeError: If mode is not one of the valid Anthropic modes
+        ClientError: If client is not a valid Anthropic client instance
     """
-    assert mode in {
+    valid_modes = {
         instructor.Mode.ANTHROPIC_JSON,
         instructor.Mode.ANTHROPIC_TOOLS,
         instructor.Mode.ANTHROPIC_REASONING_TOOLS,
-    }, (
-        "Mode be one of {instructor.Mode.ANTHROPIC_JSON, instructor.Mode.ANTHROPIC_TOOLS, instructor.Mode.ANTHROPIC_REASONING_TOOLS}"
+    }
+
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode),
+            provider="Anthropic",
+            valid_modes=[str(m) for m in valid_modes],
+        )
+
+    valid_client_types = (
+        anthropic.Anthropic,
+        anthropic.AsyncAnthropic,
+        anthropic.AnthropicBedrock,
+        anthropic.AnthropicVertex,
+        anthropic.AsyncAnthropicBedrock,
+        anthropic.AsyncAnthropicVertex,
     )
 
-    assert isinstance(
-        client,
-        (
-            anthropic.Anthropic,
-            anthropic.AsyncAnthropic,
-            anthropic.AnthropicBedrock,
-            anthropic.AnthropicVertex,
-            anthropic.AsyncAnthropicBedrock,
-            anthropic.AsyncAnthropicVertex,
-        ),
-    ), (
-        "Client must be an instance of {anthropic.Anthropic, anthropic.AsyncAnthropic, anthropic.AnthropicBedrock, anthropic.AsyncAnthropicBedrock,  anthropic.AnthropicVertex, anthropic.AsyncAnthropicVertex}"
-    )
+    if not isinstance(client, valid_client_types):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of one of: {', '.join(t.__name__ for t in valid_client_types)}. "
+            f"Got: {type(client).__name__}"
+        )
 
     if beta:
         create = client.beta.messages.create

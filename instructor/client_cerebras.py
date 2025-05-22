@@ -30,16 +30,27 @@ def from_cerebras(
     mode: instructor.Mode = instructor.Mode.CEREBRAS_TOOLS,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.CEREBRAS_TOOLS,
         instructor.Mode.CEREBRAS_JSON,
-    }, (
-        "Mode must be one of {instructor.Mode.CEREBRAS_TOOLS, instructor.Mode.CEREBRAS_JSON}"
-    )
+    }
 
-    assert isinstance(client, (Cerebras, AsyncCerebras)), (
-        "Client must be an instance of Cerebras or AsyncCerebras"
-    )
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode),
+            provider="Cerebras",
+            valid_modes=[str(m) for m in valid_modes],
+        )
+
+    if not isinstance(client, (Cerebras, AsyncCerebras)):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of Cerebras or AsyncCerebras. "
+            f"Got: {type(client).__name__}"
+        )
 
     if isinstance(client, AsyncCerebras):
         create = client.chat.completions.create

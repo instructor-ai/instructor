@@ -27,14 +27,25 @@ def from_groq(
     mode: instructor.Mode = instructor.Mode.TOOLS,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.JSON,
         instructor.Mode.TOOLS,
-    }, "Mode be one of {instructor.Mode.JSON, instructor.Mode.TOOLS}"
+    }
 
-    assert isinstance(client, (groq.Groq, groq.AsyncGroq)), (
-        "Client must be an instance of groq.GROQ"
-    )
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode), provider="Groq", valid_modes=[str(m) for m in valid_modes]
+        )
+
+    if not isinstance(client, (groq.Groq, groq.AsyncGroq)):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of groq.Groq or groq.AsyncGroq. "
+            f"Got: {type(client).__name__}"
+        )
 
     if isinstance(client, groq.Groq):
         return instructor.Instructor(

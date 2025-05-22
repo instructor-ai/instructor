@@ -69,7 +69,9 @@ def handle_context(
     If neither is provided, return None.
     """
     if context is not None and validation_context is not None:
-        raise ValueError(
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
             "Cannot provide both 'context' and 'validation_context'. Use 'context' instead."
         )
     if validation_context is not None and context is None:
