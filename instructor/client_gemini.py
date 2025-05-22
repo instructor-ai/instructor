@@ -32,15 +32,25 @@ def from_gemini(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.GEMINI_JSON,
         instructor.Mode.GEMINI_TOOLS,
-    }, "Mode must be one of {instructor.Mode.GEMINI_JSON, instructor.Mode.GEMINI_TOOLS}"
+    }
 
-    assert isinstance(
-        client,
-        (genai.GenerativeModel),
-    ), "Client must be an instance of genai.generativemodel"
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode), provider="Gemini", valid_modes=[str(m) for m in valid_modes]
+        )
+
+    if not isinstance(client, genai.GenerativeModel):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of genai.GenerativeModel. "
+            f"Got: {type(client).__name__}"
+        )
 
     if use_async:
         create = client.generate_content_async

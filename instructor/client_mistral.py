@@ -31,16 +31,27 @@ def from_mistral(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.MISTRAL_TOOLS,
         instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS,
-    }, (
-        f"Mode must be one of {instructor.Mode.MISTRAL_TOOLS, instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS}"
-    )
+    }
 
-    assert isinstance(client, Mistral), (
-        "Client must be an instance of mistralai.Mistral"
-    )
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode),
+            provider="Mistral",
+            valid_modes=[str(m) for m in valid_modes],
+        )
+
+    if not isinstance(client, Mistral):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of mistralai.Mistral. "
+            f"Got: {type(client).__name__}"
+        )
 
     if use_async:
 

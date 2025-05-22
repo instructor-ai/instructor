@@ -30,16 +30,27 @@ def from_fireworks(
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.FIREWORKS_TOOLS,
         instructor.Mode.FIREWORKS_JSON,
-    }, (
-        "Mode must be one of {instructor.Mode.FIREWORKS_TOOLS, instructor.Mode.FIREWORKS_JSON}"
-    )
+    }
 
-    assert isinstance(client, (AsyncFireworks, Fireworks)), (
-        "Client must be an instance of Fireworks or AsyncFireworks"
-    )
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode),
+            provider="Fireworks",
+            valid_modes=[str(m) for m in valid_modes],
+        )
+
+    if not isinstance(client, (AsyncFireworks, Fireworks)):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of Fireworks or AsyncFireworks. "
+            f"Got: {type(client).__name__}"
+        )
 
     if isinstance(client, AsyncFireworks):
 

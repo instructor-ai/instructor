@@ -36,14 +36,25 @@ def from_cohere(
     mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
     **kwargs: Any,
 ):
-    assert mode in {
+    valid_modes = {
         instructor.Mode.COHERE_TOOLS,
         instructor.Mode.COHERE_JSON_SCHEMA,
-    }, "Mode be one of {COHERE_TOOLS, COHERE_JSON_SCHEMA}"
+    }
 
-    assert isinstance(client, (cohere.Client, cohere.AsyncClient)), (
-        "Client must be an instance of cohere.Cohere or cohere.AsyncCohere"
-    )
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode), provider="Cohere", valid_modes=[str(m) for m in valid_modes]
+        )
+
+    if not isinstance(client, (cohere.Client, cohere.AsyncClient)):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of cohere.Client or cohere.AsyncClient. "
+            f"Got: {type(client).__name__}"
+        )
 
     if isinstance(client, cohere.Client):
         return instructor.Instructor(

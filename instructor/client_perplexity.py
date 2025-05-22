@@ -36,12 +36,24 @@ def from_perplexity(
     Returns:
         An Instructor client
     """
-    assert mode == instructor.Mode.PERPLEXITY_JSON, "Mode must be PERPLEXITY_JSON"
+    valid_modes = {instructor.Mode.PERPLEXITY_JSON}
 
-    assert isinstance(
-        client,
-        (openai.OpenAI, openai.AsyncOpenAI),
-    ), "Client must be an instance of openai.OpenAI or openai.AsyncOpenAI"
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode),
+            provider="Perplexity",
+            valid_modes=[str(m) for m in valid_modes],
+        )
+
+    if not isinstance(client, (openai.OpenAI, openai.AsyncOpenAI)):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of openai.OpenAI or openai.AsyncOpenAI. "
+            f"Got: {type(client).__name__}"
+        )
 
     if isinstance(client, openai.AsyncOpenAI):
         create = client.chat.completions.create

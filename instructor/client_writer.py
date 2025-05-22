@@ -28,13 +28,24 @@ def from_writer(
     mode: instructor.Mode = instructor.Mode.WRITER_TOOLS,
     **kwargs: Any,
 ) -> instructor.client.Instructor | instructor.client.AsyncInstructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.WRITER_TOOLS,
-    }, "Mode must be instructor.Mode.WRITER_TOOLS"
+    }
 
-    assert isinstance(client, (Writer, AsyncWriter)), (
-        "Client must be an instance of Writer or AsyncWriter"
-    )
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode), provider="Writer", valid_modes=[str(m) for m in valid_modes]
+        )
+
+    if not isinstance(client, (Writer, AsyncWriter)):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of Writer or AsyncWriter. "
+            f"Got: {type(client).__name__}"
+        )
 
     if isinstance(client, Writer):
         return instructor.Instructor(

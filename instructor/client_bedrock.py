@@ -42,16 +42,27 @@ def from_bedrock(
     _async: bool = False,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
-    assert mode in {
+    valid_modes = {
         instructor.Mode.BEDROCK_TOOLS,
         instructor.Mode.BEDROCK_JSON,
-    }, (
-        "Mode must be one of {instructor.Mode.BEDROCK_TOOLS, instructor.Mode.BEDROCK_JSON}"
-    )
-    assert isinstance(
-        client,
-        BaseClient,
-    ), "Client must be an instance of boto3.client"
+    }
+
+    if mode not in valid_modes:
+        from instructor.exceptions import ModeError
+
+        raise ModeError(
+            mode=str(mode),
+            provider="Bedrock",
+            valid_modes=[str(m) for m in valid_modes],
+        )
+
+    if not isinstance(client, BaseClient):
+        from instructor.exceptions import ClientError
+
+        raise ClientError(
+            f"Client must be an instance of boto3.client (BaseClient). "
+            f"Got: {type(client).__name__}"
+        )
 
     async def async_wrapper(**kwargs: Any):
         return client.converse(**kwargs)
