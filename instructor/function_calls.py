@@ -497,15 +497,16 @@ class OpenAISchema(BaseModel):
         strict: Optional[bool] = None,
     ) -> BaseModel:
         message = completion.choices[0].message
-        tool_calls = message.tool_calls
+        tool_calls = message.tool_calls if message.tool_calls else "{}"
         assert len(tool_calls) == 1, (
             "Instructor does not support multiple tool calls, use List[Model] instead"
         )
         assert tool_calls[0].function.name == cls.openai_schema["name"], (
             "Tool name does not match"
         )
+        loaded_args = json.loads(tool_calls[0].function.arguments)
         return cls.model_validate_json(
-            tool_calls[0].function.arguments,
+            json.dumps(loaded_args) if isinstance(loaded_args, dict) else loaded_args,
             context=validation_context,
             strict=strict,
         )

@@ -369,7 +369,11 @@ def reask_writer_tools(
         {
             "role": "user",
             "content": (
-                f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+                f"Validation Error found:\n{exception}\n Fix errors and fill tool call arguments/name "
+                f"correctly. Just update arguments dict values or update name. Don't change the structure"
+                f"of them. You have to call function by passing desired "
+                f"functions name/args as part of special attribute with name tools_calls, "
+                f"not as text in attribute with name content. IT'S IMPORTANT!"
             ),
         }
     )

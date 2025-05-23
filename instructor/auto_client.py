@@ -256,7 +256,7 @@ def from_provider(
         except ImportError:
             import_err = ImportError(
                 "The writerai package is required to use the Writer provider. "
-                "Install it with `pip install writerai`."
+                "Install it with `pip install writer-sdk`."
             )
             raise import_err from None
 

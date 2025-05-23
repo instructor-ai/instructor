@@ -73,7 +73,7 @@ async def test_writer_iterable_model_async(model: str, mode: instructor.Mode):
     )
 
     models = []
-    for m in response:
+    async for m in response:
         assert isinstance(m, UserExtract)
         models += [m]
 
