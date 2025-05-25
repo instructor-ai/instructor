@@ -381,6 +381,24 @@ def reask_writer_tools(
     return kwargs
 
 
+def reask_writer_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": f"Correct your JSON response: {response.choices[0].message.content}, "
+            f"based on the following errors:\n{exception}",
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
 def reask_perplexity_json(
     kwargs: dict[str, Any],
     response: Any,
@@ -536,6 +554,8 @@ def handle_reask_kwargs(
         return reask_fireworks_json(kwargs_copy, response, exception)
     elif mode == Mode.WRITER_TOOLS:
         return reask_writer_tools(kwargs_copy, response, exception)
+    elif mode == Mode.WRITER_JSON:
+        return reask_writer_json(kwargs_copy, response, exception)
     elif mode == Mode.BEDROCK_JSON:
         return reask_bedrock_json(kwargs_copy, response, exception)
     elif mode == Mode.PERPLEXITY_JSON:

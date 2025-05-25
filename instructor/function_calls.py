@@ -234,6 +234,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.WRITER_TOOLS:
             return cls.parse_writer_tools(completion, validation_context, strict)
 
+        if mode == Mode.WRITER_JSON:
+            return cls.parse_writer_json(completion, validation_context, strict)
+
         if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
             return cls.parse_responses_tools(
                 completion,
@@ -510,6 +513,26 @@ class OpenAISchema(BaseModel):
             context=validation_context,
             strict=strict,
         )
+
+    @classmethod
+    def parse_writer_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        _handle_incomplete_output(completion)
+
+        message = completion.choices[0].message.content or ""
+        json_content = extract_json_from_codeblock(message)
+
+        if strict:
+            return cls.model_validate_json(
+                json_content, context=validation_context, strict=True
+            )
+        else:
+            parsed = json.loads(json_content, strict=False)
+            return cls.model_validate(parsed, context=validation_context, strict=False)
 
     @classmethod
     def parse_functions(

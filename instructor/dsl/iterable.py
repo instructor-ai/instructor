@@ -193,6 +193,7 @@ class IterableBase:
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
+                        Mode.WRITER_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
@@ -263,6 +264,7 @@ class IterableBase:
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
+                        Mode.WRITER_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
@@ -379,7 +381,7 @@ def IterableModel(
         if description is None
         else description
     )
-    assert issubclass(
-        new_cls, OpenAISchema
-    ), "The new class should be a subclass of OpenAISchema"
+    assert issubclass(new_cls, OpenAISchema), (
+        "The new class should be a subclass of OpenAISchema"
+    )
     return new_cls

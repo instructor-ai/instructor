@@ -1,6 +1,6 @@
 from itertools import product
 from collections.abc import Iterable
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import pytest
 import instructor
 from writerai import AsyncWriter, Writer
@@ -10,7 +10,9 @@ from .util import models, modes
 
 
 class UserExtract(BaseModel):
-    first_name: str
+    first_name: str = Field(
+        ..., description="Exactly frst name of person. Don't confuse if with full name."
+    )
     age: int
 
 
