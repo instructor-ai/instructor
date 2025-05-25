@@ -51,7 +51,7 @@ def test_writer_classification(
                 "role": "user",
                 "content": f"Classify the following text: {input}. "
                 f"Apply this or another class only in cases when "
-                f"you sure by 100%.",
+                f"when you are 100% sure.",
             },
         ],
     )
@@ -106,7 +106,7 @@ def test_writer_multi_classify(
                 "role": "user",
                 "content": f"Classify the following support ticket: {input} "
                 f"Apply this or another class only in cases when "
-                f"you sure by 100%.",
+                f"when you are 100% sure.",
             },
         ],
     )

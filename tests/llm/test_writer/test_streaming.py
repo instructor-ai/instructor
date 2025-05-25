@@ -11,7 +11,8 @@ from .util import models, modes
 
 class UserExtract(BaseModel):
     first_name: str = Field(
-        ..., description="Exactly frst name of person. Don't confuse if with full name."
+        ...,
+        description="Exactly first name of person. Don't confuse it with the full name.",
     )
     age: int
 
