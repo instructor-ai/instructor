@@ -754,7 +754,7 @@ def update_genai_kwargs(
     for category in HarmCategory:
         if category == HarmCategory.HARM_CATEGORY_UNSPECIFIED:
             continue
-        threshold = safety_settings.get(category, HarmBlockThreshold.BLOCK_NONE)
+        threshold = safety_settings.get(category, HarmBlockThreshold.OFF)
         base_config["safety_settings"].append(
             {
                 "category": category,

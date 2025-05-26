@@ -51,7 +51,7 @@ def test_update_genai_kwargs_safety_settings():
         assert isinstance(setting, dict)
         assert "category" in setting
         assert "threshold" in setting
-        assert setting["threshold"] == HarmBlockThreshold.BLOCK_NONE  # Default
+        assert setting["threshold"] == HarmBlockThreshold.OFF  # Default
 
 
 def test_update_genai_kwargs_with_custom_safety_settings():
@@ -81,7 +81,7 @@ def test_update_genai_kwargs_with_custom_safety_settings():
     # Other categories should use the default
     for setting in result["safety_settings"]:
         if setting["category"] != HarmCategory.HARM_CATEGORY_HATE_SPEECH:
-            assert setting["threshold"] == HarmBlockThreshold.BLOCK_NONE
+            assert setting["threshold"] == HarmBlockThreshold.OFF
 
 
 def test_update_genai_kwargs_none_values():
