@@ -6,7 +6,7 @@ If you want to get updates on new features and tips on how to use Instructor, yo
 
 ## Advanced Topics
 
-1. [Unified Provider Interface in Instructor](posts/unified-provider.md)
+1. [Unified Provider Interface in Instructor](posts/announcing-unified-provider-interface.md)
 2. [Instructor Implements llms.txt](posts/llms-txt-adoption.md)
 3. [Query Understanding: Beyond Embeddings](posts/rag-and-beyond.md)
 4. [Achieving GPT-4 Level Summaries with GPT-3.5-turbo](posts/chain-of-density.md)
