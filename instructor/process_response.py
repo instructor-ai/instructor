@@ -635,9 +635,11 @@ def handle_genai_structured_outputs(
     map_to_gemini_function_schema(response_model.model_json_schema())
 
     new_kwargs["config"] = types.GenerateContentConfig(
-        system_instruction=system_message,
-        response_mime_type="application/json",
-        response_schema=response_model,
+        **{
+            "system_instruction": system_message,
+            "response_mime_type": "application/json",
+            "response_schema": response_model,
+        },
     )
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)
@@ -666,13 +668,15 @@ def handle_genai_tools(
         system_message = None
 
     new_kwargs["config"] = types.GenerateContentConfig(
-        system_instruction=system_message,
-        tools=[types.Tool(function_declarations=[function_definition])],
-        tool_config=types.ToolConfig(
-            function_calling_config=types.FunctionCallingConfig(
-                mode="ANY", allowed_function_names=[response_model.__name__]
+        **{
+            "system_instruction": system_message,
+            "tools": [types.Tool(function_declarations=[function_definition])],
+            "tool_config": types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(
+                    mode="ANY", allowed_function_names=[response_model.__name__]
+                ),
             ),
-        ),
+        },
     )
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
