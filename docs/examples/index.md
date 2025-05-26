@@ -66,7 +66,7 @@ Our cookbooks demonstrate how to use Instructor to solve real-world problems wit
 | [Document Segmentation](document_segmentation.md) | Divide documents into meaningful sections | Long-form content analysis |
 | [Planning and Tasks](planning-tasks.md) | Break down complex queries into subtasks | Project management |
 | [Knowledge Graph Generation](knowledge_graph.md) | Create relationship graphs from text | Information visualization |
-| [Knowledge Graph Building](building_knowledge_graph.md) | Build and query knowledge graphs | Semantic data modeling |
+| [Knowledge Graph Building](../examples/building_knowledge_graphs.md) | Build and query knowledge graphs | Semantic data modeling |
 | [Chain of Density](../tutorials/6-chain-of-density.ipynb) | Implement iterative summarization | Content distillation |
 
 ## Multi-Modal Examples
