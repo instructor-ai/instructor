@@ -719,6 +719,52 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     return FunctionSchema(**schema).model_dump(exclude_none=True, exclude_unset=True)
 
 
+def update_genai_kwargs(
+    kwargs: dict[str, Any], base_config: dict[str, Any]
+) -> dict[str, Any]:
+    """
+    Update keyword arguments for google.genai package from OpenAI format.
+    """
+    from google.genai.types import HarmCategory, HarmBlockThreshold
+
+    new_kwargs = kwargs.copy()
+
+    OPENAI_TO_GEMINI_MAP = {
+        "max_tokens": "max_output_tokens",
+        "temperature": "temperature",
+        "n": "candidate_count",
+        "top_p": "top_p",
+        "stop": "stop_sequences",
+        "seed": "seed",
+        "presence_penalty": "presence_penalty",
+        "frequency_penalty": "frequency_penalty",
+    }
+
+    generation_config = new_kwargs.pop("generation_config", {})
+
+    for openai_key, gemini_key in OPENAI_TO_GEMINI_MAP.items():
+        if openai_key in generation_config:
+            val = generation_config.pop(openai_key)
+            if val is not None:  # Only set if value is not None
+                base_config[gemini_key] = val
+
+    safety_settings = new_kwargs.pop("safety_settings", {})
+    base_config["safety_settings"] = []
+
+    for category in HarmCategory:
+        if category == HarmCategory.HARM_CATEGORY_UNSPECIFIED:
+            continue
+        threshold = safety_settings.get(category, HarmBlockThreshold.BLOCK_NONE)
+        base_config["safety_settings"].append(
+            {
+                "category": category,
+                "threshold": threshold,
+            }
+        )
+
+    return base_config
+
+
 def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     """
     Update keyword arguments for Gemini API from OpenAI format.
