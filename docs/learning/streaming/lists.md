@@ -83,13 +83,13 @@ print(f"\nAll {received_tasks} tasks generated in {elapsed_time:.2f} seconds")
 
 ## Related Resources
 
-- [Streaming Basics](basics.md) - Fundamentals of streaming structured outputs
-- [List Extraction](/learning/patterns/list_extraction.md) - Core concepts for working with lists
-- [Validation Basics](/learning/validation/basics.md) - Understanding validation for streaming
-- [Streaming API](/concepts/streaming.md) - Technical details on the streaming implementation
+- [Streaming Basics](./basics.md) - Fundamentals of streaming structured outputs
+- [List Extraction](../../learning/patterns/list_extraction.md) - Core concepts for working with lists
+- [Validation Basics](../../learning/validation/basics.md) - Understanding validation for streaming
+- [Streaming API](../../concepts/partial.md) - Technical details on the streaming implementation
 
 ## Next Steps
 
-- Learn about [Validation](/learning/validation/basics.md) to ensure your streamed data is valid
-- Explore [Field Validation](/learning/validation/field_level_validation.md) for more control
-- See [Async Support](/concepts/async.md) for integrating streaming with asynchronous code 
+- Learn about [Validation](../../learning/validation/basics.md) to ensure your streamed data is valid
+- Explore [Field Validation](../../learning/validation/field_level_validation.md) for more control
+- See [Async Support](../../integrations/index.md) for integrating streaming with your specific provider when writing asynchronous code 
