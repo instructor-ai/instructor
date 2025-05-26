@@ -7,7 +7,7 @@ This guide explains how to stream lists of structured data with Instructor. Stre
 Here's how to stream a list of structured objects:
 
 ```python
-from typing import List
+from typing import Iterable
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -26,8 +26,7 @@ for book in client.chat.completions.create(
     messages=[
         {"role": "user", "content": "List 5 classic science fiction books"}
     ],
-    response_model=List[Book],  # Note: Using List directly
-    stream=True
+    response_model=Iterable[Book],  
 ):
     print(f"Received: {book.title} by {book.author} ({book.year})")
 ```
@@ -42,7 +41,7 @@ This example shows how to:
 Here's a practical example of streaming a list of tasks with progress tracking:
 
 ```python
-from typing import List
+from typing import Iterable
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -50,11 +49,13 @@ import time
 
 client = instructor.from_openai(OpenAI())
 
+
 class Task(BaseModel):
     title: str = Field(..., description="Task title")
     description: str = Field(..., description="Detailed task description")
     priority: str = Field(..., description="Task priority (High/Medium/Low)")
     estimated_hours: float = Field(..., description="Estimated hours to complete")
+
 
 print("Generating project tasks...")
 start_time = time.time()
@@ -63,22 +64,26 @@ received_tasks = 0
 for task in client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
-        {"role": "user", "content": "Generate a list of 5 tasks for building a personal website"}
+        {
+            "role": "user",
+            "content": "Generate a list of 5 tasks for building a personal website",
+        }
     ],
-    response_model=List[Task],
-    stream=True
+    response_model=Iterable[Task],
+    stream=True,
 ):
     received_tasks += 1
     print(f"\nTask {received_tasks}: {task.title} (Priority: {task.priority})")
     print(f"Description: {task.description[:100]}...")
     print(f"Estimated time: {task.estimated_hours} hours")
-    
+
     # Calculate progress percentage based on expected items
     progress = (received_tasks / 5) * 100
     print(f"Progress: {progress:.0f}%")
 
 elapsed_time = time.time() - start_time
 print(f"\nAll {received_tasks} tasks generated in {elapsed_time:.2f} seconds")
+
 ```
 
 ## Related Resources
