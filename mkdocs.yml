@@ -143,6 +143,7 @@ nav:
     - Contributing: 'contributing.md'
     - Newsletter: 'newsletter.md'
   - Learning:
+    - Installation: 'learning/getting_started/installation.md'
     - Overview: 'learning/index.md'
     - Getting Started with Structured Outputs: 'learning/getting_started/structured_outputs.md'
     - Your First Extraction: 'learning/getting_started/first_extraction.md'
@@ -159,7 +160,6 @@ nav:
     - Validation Basics: 'learning/validation/basics.md'
     - Custom Validators: 'learning/validation/custom_validators.md'
     - Retry Mechanisms: 'learning/validation/retry_mechanisms.md'
-    - Fallback Strategies: 'learning/validation/fallback_strategies.md'
     - Field-level Validation: 'learning/validation/field_level_validation.md'
   - Integrations:
     - Overview: 'integrations/index.md'
@@ -226,6 +226,7 @@ nav:
     - "Batch Classification with LangSmith": 'examples/batch_classification_langsmith.md'
     - "Contact Information Extraction": 'examples/extract_contact_info.md'
     - "Knowledge Graph Building": 'examples/building_knowledge_graph.md'
+    - "Tracing with Langfuse": 'examples/tracing_with_langfuse.md'
     - "Multiple Classification Tasks": 'examples/multiple_classification.md'
     - "Pandas DataFrame Integration": 'examples/pandas_df.md'
     - "Partial Response Streaming": 'examples/partial_streaming.md'
