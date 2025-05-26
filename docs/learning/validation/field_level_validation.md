@@ -34,7 +34,7 @@ class User(BaseModel):
     )
 ```
 
-For more details, see the [Fields](/concepts/fields.md) concepts page.
+For more details, see the [Fields](../../concepts/fields.md) concepts page.
 
 ## Custom Field Validators
 
@@ -120,16 +120,10 @@ Please fix these errors and ensure the response is valid.
 
 ## Related Resources
 
-- [Fields](/concepts/fields.md) - Basic field properties
-- [Custom Validators](custom_validators.md) - Creating custom validation logic
-- [Validation Basics](basics.md) - Fundamental validation concepts
-- [Retry Mechanisms](retry_mechanisms.md) - How validation retries work
-- [Fallback Strategies](fallback_strategies.md) - Handling persistent validation failures
-- [Types](/concepts/types.md) - Understanding data types in Pydantic models
+- [Fields](../../concepts/fields.md) - Basic field properties
+- [Custom Validators](../../concepts/reask_validation.md) - Creating custom validation logic
+- [Validation Basics](../../concepts/validation.md) - Fundamental validation concepts
+- [Retry Mechanisms](../../concepts/retrying.md) - How validation retries work
+- [Fallback Strategies](../../concepts/error_handling.md) - Handling persistent validation failures
+- [Types](../../concepts/types.md) - Understanding data types in Pydantic models
 
-## Next Steps
-
-- Explore [Validation Basics](basics.md)
-- Learn about [Custom Validators](custom_validators.md)
-- Implement [Retry Mechanisms](retry_mechanisms.md)
-- Discover [Fallback Strategies](fallback_strategies.md) 

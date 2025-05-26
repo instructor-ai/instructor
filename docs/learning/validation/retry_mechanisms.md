@@ -53,7 +53,7 @@ In this example, the initial response will likely fail validation because:
 - The price is negative (violating the `gt=0` constraint)
 - Instructor will automatically retry with feedback about these issues
 
-For more details on max_retries configuration, see the [Retrying](/concepts/retrying.md) concepts page.
+For more details on max_retries configuration, see the [Retrying](../../concepts/retrying.md) concepts page.
 
 ## Customizing Retry Behavior
 
@@ -87,7 +87,7 @@ When all retries fail, depending on your configuration:
 1. With `throw_error=True` (default): An exception is raised
 2. With `throw_error=False`: The last failed response is returned, and you can handle it gracefully
 
-For more on handling validation failures, see [Fallback Strategies](fallback_strategies.md).
+For more on handling validation failures, see [Fallback Strategies](../../concepts/error_handling.md).
 
 ## Error Messages and Feedback
 
@@ -165,11 +165,11 @@ except Exception as e:
 
 ## Related Resources
 
-- [Retrying](/concepts/retrying.md) - Core retry concepts
-- [Validation](/concepts/validation.md) - Main validation documentation
-- [Custom Validators](custom_validators.md) - Creating custom validation logic
-- [Fallback Strategies](fallback_strategies.md) - Handling persistent validation failures
-- [Self Critique](/examples/self_critique.md) - Example of model self-correction
+- [Retrying](../../concepts/retrying.md) - Core retry concepts
+- [Validation](../../concepts/validation.md) - Main validation documentation
+- [Custom Validators](../../concepts/reask_validation.md) - Creating custom validation logic
+- [Fallback Strategies](../../concepts/error_handling.md) - Handling persistent validation failures
+- [Self Critique](../../examples/self_critique.md) - Example of model self-correction
 
 ## Next Steps
 

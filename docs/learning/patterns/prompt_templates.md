@@ -160,14 +160,14 @@ review = client.chat.completions.create(
 
 ## Related Resources
 
-- [Simple Object Extraction](simple_object.md) - Extracting basic objects
-- [List Extraction](list_extraction.md) - Working with lists of objects
-- [Optional Fields](optional_fields.md) - Handling optional data
-- [Prompting](/concepts/prompting.md) - General prompting concepts
-- [Templating](/concepts/templating.md) - Advanced template techniques
+- [Simple Object Extraction](./simple_object.md) - Extracting basic objects
+- [List Extraction](./list_extraction.md) - Working with lists of objects
+- [Optional Fields](./optional_fields.md) - Handling optional data
+- [Prompting](../../concepts/prompting.md) - General prompting concepts
+- [Templating](../../concepts/templating.md) - Advanced template techniques
 
 ## Next Steps
 
-- Explore [Field Validation](field_validation.md) for ensuring data quality
-- Try [List Extraction](list_extraction.md) for extracting multiple items
-- Learn about [Nested Structure](nested_structure.md) for complex data 
+- Explore [Field Validation](./field_validation.md) for ensuring data quality
+- Try [List Extraction](./list_extraction.md) for extracting multiple items
+- Learn about [Nested Structure](./nested_structure.md) for complex data 

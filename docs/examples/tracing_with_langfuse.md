@@ -10,7 +10,7 @@ This cookbook shows how to use Langfuse to trace and monitor model calls made wi
 
 ## Setup
 
-> **Note** : Before continuing with this section, make sure that you've signed up for an account with [Langfuse](langfuse.com). You'll need your private and public key to start tracing with Langfuse.
+> **Note** : Before continuing with this section, make sure that you've signed up for an account with [Langfuse](https://langfuse.com). You'll need your private and public key to start tracing with Langfuse.
 
 First, let's start by installing the necessary dependencies.
 
