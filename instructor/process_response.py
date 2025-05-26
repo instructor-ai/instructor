@@ -646,6 +646,8 @@ def handle_genai_structured_outputs(
     new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)
+    new_kwargs.pop("generation_config", None)
+    new_kwargs.pop("safety_settings", None)
 
     return response_model, new_kwargs
 
