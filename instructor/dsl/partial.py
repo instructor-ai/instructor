@@ -132,9 +132,9 @@ class PartialBase(Generic[T_Model]):
     @cache
     def get_partial_model(cls) -> type[T_Model]:
         """Return a partial model we can use to validate partial results."""
-        assert issubclass(
-            cls, BaseModel
-        ), f"{cls.__name__} must be a subclass of BaseModel"
+        assert issubclass(cls, BaseModel), (
+            f"{cls.__name__} must be a subclass of BaseModel"
+        )
 
         model_name = (
             cls.__name__
@@ -189,7 +189,11 @@ class PartialBase(Generic[T_Model]):
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
         for chunk in json_chunks:
-            if len(chunk) > len(potential_object):
+            if (
+                len(chunk) > len(potential_object)
+                and chunk.startswith("{")
+                and chunk.endswith("}")
+            ):
                 potential_object = chunk
             else:
                 potential_object += chunk
@@ -209,7 +213,11 @@ class PartialBase(Generic[T_Model]):
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
         async for chunk in json_chunks:
-            if len(chunk) > len(potential_object):
+            if (
+                len(chunk) > len(potential_object)
+                and chunk.startswith("{")
+                and chunk.endswith("}")
+            ):
                 potential_object = chunk
             else:
                 potential_object += chunk
@@ -326,6 +334,7 @@ class PartialBase(Generic[T_Model]):
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
+                        Mode.WRITER_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
@@ -403,6 +412,7 @@ class PartialBase(Generic[T_Model]):
                         Mode.CEREBRAS_JSON,
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
+                        Mode.WRITER_JSON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk

@@ -84,7 +84,9 @@ async def test_writer_multi_classify(
         messages=[
             {
                 "role": "user",
-                "content": f"Classify the following support ticket: {input}",
+                "content": f"Classify the following support ticket: {input}. "
+                f"Apply this or another class only in cases when "
+                f"you sure by 100%.",
             },
         ],
     )

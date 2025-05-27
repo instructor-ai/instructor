@@ -1,5 +1,5 @@
 from itertools import product
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from writerai import Writer
 import pytest
 
@@ -13,7 +13,7 @@ class Item(BaseModel):
 
 
 class Order(BaseModel):
-    items: list[Item] = Field(..., default_factory=list)
+    items: list[Item]
     customer: str
 
 
@@ -59,7 +59,7 @@ class Book(BaseModel):
 
 
 class LibraryRecord(BaseModel):
-    books: list[Book] = Field(..., default_factory=list)
+    books: list[Book]
     visitor: str
     library_id: str
 

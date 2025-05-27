@@ -60,6 +60,7 @@ class Mode(enum.Enum):
 
     # Other providers
     WRITER_TOOLS = "writer_tools"
+    WRITER_JSON = "writer_json"
     BEDROCK_TOOLS = "bedrock_tools"
     BEDROCK_JSON = "bedrock_json"
     PERPLEXITY_JSON = "perplexity_json"
@@ -103,6 +104,7 @@ class Mode(enum.Enum):
             cls.COHERE_JSON_SCHEMA,
             cls.CEREBRAS_JSON,
             cls.FIREWORKS_JSON,
+            cls.WRITER_JSON,
             cls.BEDROCK_JSON,
             cls.PERPLEXITY_JSON,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
