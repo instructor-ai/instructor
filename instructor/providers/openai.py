@@ -126,19 +126,14 @@ def from_openai(
         )
 
     if isinstance(client, openai.AsyncOpenAI):
-        create_func = client.chat.completions.create
-        if mode in {
-            instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
-            instructor.Mode.RESPONSES_TOOLS,
-        }:
-            create_func = partial(async_map_chat_completion_to_response, client=client)
-            
+        patched_client = instructor.patch(
+            client=client,
+            mode=mode,
+        )
+        
         return instructor.AsyncInstructor(
             client=client,
-            create=instructor.patch(
-                create=create_func,
-                mode=mode,
-            ),
+            create=patched_client.chat.completions.create,
             mode=mode,
             provider=provider,
             **kwargs,

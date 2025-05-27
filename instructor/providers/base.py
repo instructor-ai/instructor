@@ -6,17 +6,16 @@ This module defines the base interface that all provider implementations should 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Protocol, TypeVar, Union
+from typing import Any
 
 import instructor
-from instructor.utils import Provider
 
 
 class ProviderBase(ABC):
     """Base class for all provider implementations."""
     
     @abstractmethod
-    def from_client(self, client: Any, mode: instructor.Mode, **kwargs: Any) -> Union[instructor.Instructor, instructor.AsyncInstructor]:
+    def from_client(self, client: Any, mode: instructor.Mode, **kwargs: Any) -> instructor.Instructor | instructor.AsyncInstructor:
         """
         Create an Instructor instance from a provider client.
         
