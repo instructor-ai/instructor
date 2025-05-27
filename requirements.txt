@@ -12,8 +12,6 @@ anyio==4.8.0
     # via
     #   httpx
     #   openai
-async-timeout==5.0.1
-    # via aiohttp
 attrs==25.1.0
     # via aiohttp
 certifi==2025.1.31
@@ -29,8 +27,6 @@ distro==1.9.0
     # via openai
 docstring-parser==0.16
     # via instructor (pyproject.toml)
-exceptiongroup==1.2.2
-    # via anyio
 frozenlist==1.5.0
     # via
     #   aiohttp
@@ -63,7 +59,7 @@ multidict==6.1.0
     # via
     #   aiohttp
     #   yarl
-openai==1.65.3
+openai==1.82.0
     # via instructor (pyproject.toml)
 propcache==0.3.0
     # via
@@ -100,21 +96,11 @@ typer==0.15.2
 typing-extensions==4.12.2
     # via
     #   anyio
-    #   multidict
     #   openai
     #   pydantic
     #   pydantic-core
-    #   rich
     #   typer
 urllib3==2.3.0
     # via requests
 yarl==1.18.3
     # via aiohttp
-mkdocs
-cairosvg
-pillow
-mkdocs-minify-plugin
-mkdocstrings 
-mkdocstrings-python 
-mkdocs-jupyter 
-mkdocs-redirects
