@@ -419,7 +419,6 @@ class Character(BaseModel):
 client = instructor.from_anthropic(
     Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY")),
     mode=instructor.Mode.ANTHROPIC_TOOLS,
-    enable_prompt_caching=True  # Enable prompt caching
 )
 
 try:
@@ -496,7 +495,6 @@ class ImageAnalyzer(BaseModel):
 client = instructor.from_anthropic(
     Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY")),
     mode=instructor.Mode.ANTHROPIC_TOOLS,
-    enable_prompt_caching=True  # Enable prompt caching
 )
 
 try:

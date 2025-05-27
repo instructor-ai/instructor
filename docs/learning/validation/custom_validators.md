@@ -36,7 +36,7 @@ response = client.chat.completions.create(
 
 If the model returns an age outside the valid range, Instructor will retry the request with specific feedback about the validation failure.
 
-For more information on how Instructor handles validation and retries, see [Validation Basics](basics.md) and the [Retrying](/concepts/retrying.md) concepts page.
+For more information on how Instructor handles validation and retries, see [Validation Basics](../../concepts/validation.md) and the [Retrying](../../concepts/retrying.md) concepts page.
 
 ## Complex Validation
 
@@ -71,7 +71,7 @@ class Employee(BaseModel):
         return self
 ```
 
-For more advanced validation approaches, check out [Field-level Validation](field_level_validation.md) and the [Validators](/concepts/reask_validation.md) concepts page.
+For more advanced validation approaches, check out [Field-level Validation](../../concepts/fields.md) and the [Validators](../../concepts/reask_validation.md) concepts page.
 
 ## Handling Complex Data Types
 
@@ -108,7 +108,7 @@ class Contact(BaseModel):
         return digits_only  # Return the cleaned version
 ```
 
-For a practical example of extraction with validation, see the [Contact Information Extraction](/examples/extract_contact_info.md) example.
+For a practical example of extraction with validation, see the [Contact Information Extraction](../../examples/extract_contact_info.md) example.
 
 ## Using External Services for Validation
 
@@ -140,7 +140,7 @@ class Address(BaseModel):
 
 ## Semantic Validation with LLMs
 
-For complex validation scenarios where rule-based validation is difficult, Instructor provides semantic validation capabilities using LLMs via the `llm_validator` function. For a comprehensive guide on this topic, see the dedicated [Semantic Validation](/concepts/semantic_validation.md) page:
+For complex validation scenarios where rule-based validation is difficult, Instructor provides semantic validation capabilities using LLMs via the `llm_validator` function. For a comprehensive guide on this topic, see the dedicated [Semantic Validation](../../concepts/semantic_validation.md) page:
 
 ```python
 from typing import Annotated
@@ -197,8 +197,8 @@ Remember that semantic validation requires additional API calls, which adds cost
 
 When validation fails, Instructor can handle it in different ways. Learn more about:
 
-- [Retry Mechanisms](retry_mechanisms.md) for automatic retries with feedback
-- [Self-Correction](/examples/self_critique.md) for AI model self-correction techniques
+- [Retry Mechanisms](../../concepts/retrying.md) for automatic retries with feedback
+- [Self-Correction](../../examples/self_critique.md) for AI model self-correction techniques
 
 ## Best Practices for Custom Validators
 
@@ -210,12 +210,12 @@ When validation fails, Instructor can handle it in different ways. Learn more ab
 6. **Choose appropriate validation type**: Use rule-based validation for simple, objective criteria and semantic validation for complex, subjective, or context-dependent validation
 7. **Balance cost and benefits**: Consider the additional cost and latency of semantic validation against the value it provides
 
-For more information on validation in general, check out the [Validation](/concepts/validation.md) concepts page.
+For more information on validation in general, check out the [Validation](../../concepts/validation.md) concepts page.
 
 ## Related Resources
 
-- [Fields](/concepts/fields.md) - Learn about field definitions and properties
-- [Models](/concepts/models.md) - Understand model creation and configuration
-- [Types](/concepts/types.md) - Explore the different data types you can use
+- [Fields](../../concepts/fields.md) - Learn about field definitions and properties
+- [Models](../../concepts/models.md) - Understand model creation and configuration
+- [Types](../../concepts/types.md) - Explore the different data types you can use
 
 Custom validators are a powerful way to ensure the data you extract meets your specific requirements, improving the reliability and quality of structured outputs from LLMs. 

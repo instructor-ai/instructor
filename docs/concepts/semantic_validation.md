@@ -385,7 +385,7 @@ Consider these trade-offs when implementing semantic validation, especially for 
 
 - [Validation in Instructor](./validation.md) - Core validation concepts
 - [Custom Validators](../learning/validation/custom_validators.md) - Creating custom validators
-- [llm_validator API Reference](../api.md#llm_validator) - Full API reference
+- [llm_validator API Reference](../api.md#api-reference) - Full API reference
 
 ---
 

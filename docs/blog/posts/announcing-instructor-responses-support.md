@@ -150,6 +150,6 @@ To start using the new Responses API integration, update to the latest version o
 
 This integration represents a significant step forward in making LLM development more accessible and powerful. We're excited to see what you'll build with these new capabilities.
 
-For more detailed information about using the Responses API with Instructor, check out our [OpenAI Responses API Guide](../integrations/openai-responses.md).
+For more detailed information about using the Responses API with Instructor, check out our [OpenAI Responses API Guide](../../integrations/openai-responses.md).
 
 Happy coding!
