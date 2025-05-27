@@ -25,14 +25,19 @@ from typing import (
 )
 
 import instructor
+import openai
 from instructor.dsl.iterable import IterableModel
 from instructor.dsl.partial import Partial
-from instructor.exceptions import HookError
+from instructor.exceptions import InstructorError
+
+class HookError(InstructorError):
+    """Exception raised for hook-related errors."""
+    pass
 from instructor.function_calls import OpenAISchema
-from instructor.hooks import Hook
+from instructor.hooks import HandlerType
 from instructor.mode import Mode
 from instructor.patch import apatch, patch
-from instructor.utils import Provider, get_provider
+from instructor.utils import Provider, get_provider, is_async
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -71,13 +76,11 @@ class Response(Generic[T]):
         from instructor.process_response import process_response
 
         return process_response(
-            model=model,
-            messages=messages,
-            client=self.client,
-            max_retries=max_retries,
-            validation_context=validation_context,
+            response=kwargs.get("response", None),
+            response_model=model,
             stream=stream,
-            **kwargs,
+            validation_context=validation_context,
+            mode=kwargs.get("mode", Mode.TOOLS),
         )
 
     def create_with_completion(
@@ -103,17 +106,18 @@ class Response(Generic[T]):
         Returns:
             The response from the API and the completion.
         """
-        from instructor.process_response import process_response_with_completion
+        from instructor.process_response import process_response
 
-        return process_response_with_completion(
-            model=model,
-            messages=messages,
-            client=self.client,
-            max_retries=max_retries,
-            validation_context=validation_context,
+        result = process_response(
+            response=kwargs.get("response", None),
+            response_model=model,
             stream=stream,
-            **kwargs,
+            validation_context=validation_context,
+            mode=kwargs.get("mode", Mode.TOOLS),
         )
+        
+        # Return both the result and the completion
+        return result, kwargs.get("completion", None)
 
     def create_iterable(
         self,
@@ -136,15 +140,14 @@ class Response(Generic[T]):
         Returns:
             The iterable response from the API.
         """
-        from instructor.process_response import process_iterable_response
+        from instructor.process_response import process_response
 
-        return process_iterable_response(
-            model=model,
-            messages=messages,
-            client=self.client,
-            max_retries=max_retries,
+        return process_response(
+            response=kwargs.get("response", None),
+            response_model=model,
+            stream=False,  # Iterable models don't use streaming
             validation_context=validation_context,
-            **kwargs,
+            mode=kwargs.get("mode", Mode.TOOLS),
         )
 
     def create_partial(
@@ -168,15 +171,14 @@ class Response(Generic[T]):
         Returns:
             The partial response from the API.
         """
-        from instructor.process_response import process_partial_response
+        from instructor.process_response import process_response
 
-        return process_partial_response(
-            model=model,
-            messages=messages,
-            client=self.client,
-            max_retries=max_retries,
+        return process_response(
+            response=kwargs.get("response", None),
+            response_model=model,
+            stream=False,  # Partial models don't use streaming
             validation_context=validation_context,
-            **kwargs,
+            mode=kwargs.get("mode", Mode.TOOLS),
         )
 
 
@@ -212,13 +214,11 @@ class AsyncResponse(Generic[T]):
         from instructor.process_response import process_response_async
 
         return await process_response_async(
-            model=model,
-            messages=messages,
-            client=self.client,
-            max_retries=max_retries,
-            validation_context=validation_context,
+            response=kwargs.get("response", None),
+            response_model=model,
             stream=stream,
-            **kwargs,
+            validation_context=validation_context,
+            mode=kwargs.get("mode", Mode.TOOLS),
         )
 
     async def create_with_completion(
@@ -244,17 +244,18 @@ class AsyncResponse(Generic[T]):
         Returns:
             The response from the API and the completion.
         """
-        from instructor.process_response import process_response_with_completion_async
+        from instructor.process_response import process_response_async
 
-        return await process_response_with_completion_async(
-            model=model,
-            messages=messages,
-            client=self.client,
-            max_retries=max_retries,
-            validation_context=validation_context,
+        result = await process_response_async(
+            response=kwargs.get("response", None),
+            response_model=model,
             stream=stream,
-            **kwargs,
+            validation_context=validation_context,
+            mode=kwargs.get("mode", Mode.TOOLS),
         )
+        
+        # Return both the result and the completion
+        return result, kwargs.get("completion", None)
 
     async def create_iterable(
         self,
@@ -277,15 +278,14 @@ class AsyncResponse(Generic[T]):
         Returns:
             The iterable response from the API.
         """
-        from instructor.process_response import process_iterable_response_async
+        from instructor.process_response import process_response_async
 
-        return await process_iterable_response_async(
-            model=model,
-            messages=messages,
-            client=self.client,
-            max_retries=max_retries,
+        return await process_response_async(
+            response=kwargs.get("response", None),
+            response_model=model,
+            stream=False,  # Iterable models don't use streaming
             validation_context=validation_context,
-            **kwargs,
+            mode=kwargs.get("mode", Mode.TOOLS),
         )
 
 
@@ -314,10 +314,10 @@ class Instructor:
         self.mode = mode
         self.provider = provider
         self.kwargs = kwargs
-        self.hooks: List[Hook] = []
+        self.hooks: List[HandlerType] = []
         self.responses = Response(client)
 
-    def on(self, hook: Hook) -> None:
+    def on(self, hook: HandlerType) -> None:
         """Add a hook to the client.
 
         Args:
@@ -330,7 +330,7 @@ class Instructor:
             raise HookError(f"Hook {hook} already registered")
         self.hooks.append(hook)
 
-    def off(self, hook: Hook) -> None:
+    def off(self, hook: HandlerType) -> None:
         """Remove a hook from the client.
 
         Args:
@@ -576,7 +576,7 @@ class AsyncInstructor:
         self.mode = mode
         self.provider = provider
         self.kwargs = kwargs
-        self.hooks: List[Hook] = []
+        self.hooks: List[HandlerType] = []
         self.responses = AsyncResponse(client)
 
     async def create(
@@ -770,7 +770,10 @@ def from_litellm(
     else:
         return AsyncInstructor(
             client=None,
-            create=instructor.patch(create=completion, mode=mode),
+            create=instructor.patch(
+                create=completion,
+                mode=mode,
+            ),
             mode=mode,
             **kwargs,
         )
