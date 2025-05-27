@@ -155,7 +155,7 @@ for task in client.chat.completions.create(
     print(f"Received task: {task.description} (Priority: {task.priority}, Deadline: {task.deadline})")
 ```
 
-For more information on streaming, see the [Streaming Basics](/learning/streaming/basics.md) and [Streaming Lists](/learning/streaming/lists.md) guides.
+For more information on streaming, see the [Streaming Basics](../streaming/basics.md) and [Streaming Lists](../streaming/lists.md) guides.
 
 ## List Validation
 
@@ -200,7 +200,7 @@ response = client.chat.completions.create(
 )
 ```
 
-For more on validation, see [Field Validation](field_validation.md) and [Validation Basics](/learning/validation/basics.md).
+For more on validation, see [Field Validation](./field_validation.md) and [Validation Basics](../validation/basics.md).
 
 ## List Constraints
 
@@ -284,17 +284,17 @@ for item in action_items:
     print("---")
 ```
 
-For a more detailed example, see the [Action Items Extraction](/examples/action_items.md) example.
+For a more detailed example, see the [Action Items Extraction](../../examples/action_items.md) example.
 
 ## Related Resources
 
-- [Simple Object Extraction](simple_object.md) - Extracting single objects
-- [Nested Structure](nested_structure.md) - Working with complex nested data
-- [Streaming Lists](/learning/streaming/lists.md) - Streaming list results
-- [Lists and Arrays](/concepts/lists.md) - Concepts related to list extraction
+- [Simple Object Extraction](./simple_object.md) - Extracting single objects
+- [Nested Structure](./nested_structure.md) - Working with complex nested data
+- [Streaming Lists](../streaming/lists.md) - Streaming list results
+- [Lists and Arrays](../../concepts/lists.md) - Concepts related to list extraction
 
 ## Next Steps
 
-- Learn about [Nested Structure](nested_structure.md) for complex data
-- Explore [Streaming Lists](/learning/streaming/lists.md) for handling large lists
-- Check out [Field Validation](field_validation.md) for validation techniques 
+- Learn about [Nested Structure](./nested_structure.md) for complex data
+- Explore [Streaming Lists](../streaming/lists.md) for handling large lists
+- Check out [Field Validation](./field_validation.md) for validation techniques 

@@ -53,7 +53,7 @@ Common Field constraints include:
 | `min_items` | Minimum list items | `min_items=1` |
 | `max_items` | Maximum list items | `max_items=10` |
 
-For more information on field definitions, see the [Fields](/concepts/fields.md) concepts page.
+For more information on field definitions, see the [Fields](../../concepts/fields.md) concepts page.
 
 ## Validation with Field Validators
 
@@ -111,7 +111,7 @@ Field validators can:
 - Transform values
 - Check values against external data sources
 
-For more on custom validators, see the [Custom Validators](/learning/validation/custom_validators.md) guide.
+For more on custom validators, see the [Custom Validators](../validation/custom_validators.md) guide.
 
 ## Model-level Validation
 
@@ -249,7 +249,7 @@ response = client.chat.completions.create(
 )
 ```
 
-For more information on enums, see the [Enums](/concepts/enums.md) concepts page.
+For more information on enums, see the [Enums](../../concepts/enums.md) concepts page.
 
 ## Custom Error Messages
 
@@ -305,7 +305,7 @@ client = instructor.from_openai(
 )
 ```
 
-For more on retries, see the [Retry Mechanisms](/learning/validation/retry_mechanisms.md) guide.
+For more on retries, see the [Retry Mechanisms](../validation/retry_mechanisms.md) guide.
 
 ## Real-world Example: Form Data Validation
 
@@ -373,15 +373,15 @@ class RegistrationForm(BaseModel):
 
 ## Related Resources
 
-- [Validation Basics](/learning/validation/basics.md) - Core validation concepts
-- [Custom Validators](/learning/validation/custom_validators.md) - Creating custom validation logic
-- [Field-level Validation](/learning/validation/field_level_validation.md) - Advanced field validation
-- [Retry Mechanisms](/learning/validation/retry_mechanisms.md) - Handling validation failures
-- [Fields](/concepts/fields.md) - Understanding field definitions
-- [Enums](/concepts/enums.md) - Using enumeration types
+- [Validation Basics](../validation/basics.md) - Core validation concepts
+- [Custom Validators](../validation/custom_validators.md) - Creating custom validation logic
+- [Field-level Validation](../validation/field_level_validation.md) - Advanced field validation
+- [Retry Mechanisms](../validation/retry_mechanisms.md) - Handling validation failures
+- [Fields](../../concepts/fields.md) - Understanding field definitions
+- [Enums](../../concepts/enums.md) - Using enumeration types
 
 ## Next Steps
 
 - Learn about [Optional Fields](optional_fields.md) for handling missing data
-- Explore [Custom Validators](/learning/validation/custom_validators.md) for complex validation
+- Explore [Custom Validators](../validation/custom_validators.md) for complex validation
 - Check out [Nested Structure](nested_structure.md) for complex data relationships 

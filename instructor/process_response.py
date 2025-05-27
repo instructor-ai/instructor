@@ -38,6 +38,7 @@ from instructor.utils import (
     extract_system_messages,
     map_to_gemini_function_schema,
     merge_consecutive_messages,
+    update_genai_kwargs,
 )
 
 logger = logging.getLogger("instructor")
@@ -634,13 +635,19 @@ def handle_genai_structured_outputs(
     # We validate that the schema doesn't contain any optional fields
     map_to_gemini_function_schema(response_model.model_json_schema())
 
-    new_kwargs["config"] = types.GenerateContentConfig(
-        system_instruction=system_message,
-        response_mime_type="application/json",
-        response_schema=response_model,
-    )
+    base_config = {
+        "system_instruction": system_message,
+        "response_mime_type": "application/json",
+        "response_schema": response_model,
+    }
+
+    generation_config = update_genai_kwargs(new_kwargs, base_config)
+
+    new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)
+    new_kwargs.pop("generation_config", None)
+    new_kwargs.pop("safety_settings", None)
 
     return response_model, new_kwargs
 
@@ -665,20 +672,25 @@ def handle_genai_tools(
     else:
         system_message = None
 
-    new_kwargs["config"] = types.GenerateContentConfig(
-        system_instruction=system_message,
-        tools=[types.Tool(function_declarations=[function_definition])],
-        tool_config=types.ToolConfig(
+    base_config = {
+        "system_instruction": system_message,
+        "tools": [types.Tool(function_declarations=[function_definition])],
+        "tool_config": types.ToolConfig(
             function_calling_config=types.FunctionCallingConfig(
                 mode="ANY", allowed_function_names=[response_model.__name__]
             ),
         ),
-    )
+    }
 
+    generation_config = update_genai_kwargs(new_kwargs, base_config)
+
+    new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)
+    new_kwargs.pop("generation_config", None)
+    new_kwargs.pop("safety_settings", None)
 
     return response_model, new_kwargs
 

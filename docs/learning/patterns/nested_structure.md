@@ -233,7 +233,7 @@ class Customer(BaseModel):
         return self
 ```
 
-For more on validation, see [Field Validation](field_validation.md) and [Validation Basics](/learning/validation/basics.md).
+For more on validation, see [Field Validation](field_validation.md) and [Validation Basics](../validation/basics.md).
 
 ## Working with Recursive Structures
 
@@ -283,7 +283,7 @@ response = client.chat.completions.create(
 )
 ```
 
-For more advanced recursive structures, see the [Recursive Structures](/learning/advanced/recursive_structures.md) guide.
+For more advanced recursive structures, see the [Recursive Structures](../../examples/recursive.md) guide.
 
 ## Real-world Example: Organization Structure
 
@@ -355,18 +355,12 @@ response = client.chat.completions.create(
 )
 ```
 
-For more on organizational structures, see the [Dependency Trees](/learning/advanced/dependency_trees.md) guide.
 
 ## Related Resources
 
-- [Simple Object Extraction](simple_object.md) - Extracting basic objects
-- [List Extraction](list_extraction.md) - Working with lists of objects
-- [Optional Fields](optional_fields.md) - Handling optional data
-- [Recursive Structures](/learning/advanced/recursive_structures.md) - Building more complex hierarchies
-- [Field Validation](field_validation.md) - Adding validation to your fields
+- [Simple Object Extraction](./simple_object.md) - Extracting basic objects
+- [List Extraction](./list_extraction.md) - Working with lists of objects
+- [Optional Fields](./optional_fields.md) - Handling optional data
+- [Recursive Structures](../../examples/recursive.md) - Building more complex hierarchies
+- [Field Validation](./field_validation.md) - Adding validation to your fields
 
-## Next Steps
-
-- Explore [Field Validation](field_validation.md) for adding validation
-- Learn about [Optional Fields](optional_fields.md) for handling missing data
-- Check out [Recursive Structures](/learning/advanced/recursive_structures.md) for more complex hierarchies 

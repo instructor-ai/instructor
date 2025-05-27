@@ -6,7 +6,7 @@ If you want to get updates on new features and tips on how to use Instructor, yo
 
 ## Advanced Topics
 
-1. [Unified Provider Interface in Instructor](posts/unified-provider.md)
+1. [Unified Provider Interface in Instructor](posts/announcing-unified-provider-interface.md)
 2. [Instructor Implements llms.txt](posts/llms-txt-adoption.md)
 3. [Query Understanding: Beyond Embeddings](posts/rag-and-beyond.md)
 4. [Achieving GPT-4 Level Summaries with GPT-3.5-turbo](posts/chain-of-density.md)
@@ -37,8 +37,8 @@ If you want to get updates on new features and tips on how to use Instructor, yo
 - [Ollama Integration](../integrations/ollama.md)
 - [llama-cpp-python Integration](../integrations/llama-cpp-python.md)
 - [Together Compute Integration](../integrations/together.md)
-- [Pandas DataFrame Examples](../examples/bulk_classification.md#working-with-dataframes)
-- [Streaming Response Examples](../examples/bulk_classification.md#streaming-responses)
+- [Pandas DataFrame Examples](./posts/tidy-data-from-messy-tables.md#defining-a-custom-type)
+- [Streaming Response Examples](../concepts/partial.md)
 
 ## Media and Resources
 
