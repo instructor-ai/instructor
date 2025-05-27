@@ -18,10 +18,13 @@ from .process_response import handle_parallel_model
 from .client import (
     Instructor,
     AsyncInstructor,
-    from_openai,
+    # Import from_openai from providers package instead
+    # from_openai,
     from_litellm,
     Provider,
 )
+# Import from providers package
+from .providers.openai import from_openai
 from .auto_client import from_provider
 
 __all__ = [

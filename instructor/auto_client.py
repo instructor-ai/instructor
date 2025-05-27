@@ -98,7 +98,8 @@ def from_provider(
     if provider == "openai":
         try:
             import openai
-            from instructor import from_openai
+            # Import from the new providers package
+            from instructor.providers.openai import from_openai
 
             client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
             return from_openai(
