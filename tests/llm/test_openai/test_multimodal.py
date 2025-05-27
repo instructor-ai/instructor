@@ -180,7 +180,7 @@ def test_multimodal_pdf_file(model, mode, client, pdf_source):
         messages=[
             {
                 "role": "system",
-                "content": "Extract the total and items from the invoice",
+                "content": "Extract the total and items from the invoice. Be precise and only extract the final total amount and list of item names.",
             },
             {
                 "role": "user",
@@ -189,6 +189,7 @@ def test_multimodal_pdf_file(model, mode, client, pdf_source):
         ],
         autodetect_images=False,
         response_model=Receipt,
+        temperature=0,  # Add this for consistent responses
     )
 
     assert response.total == 220

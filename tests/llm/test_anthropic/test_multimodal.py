@@ -234,7 +234,7 @@ def test_multimodal_pdf_file(mode, client, pdf_source):
         messages=[
             {
                 "role": "system",
-                "content": "Extract the total and items from the invoice",
+                "content": "Extract the total and items from the invoice. Be precise and only extract the final total amount and list of item names.",
             },
             {
                 "role": "user",
@@ -242,7 +242,7 @@ def test_multimodal_pdf_file(mode, client, pdf_source):
             },
         ],
         max_tokens=1000,
-        temperature=1,
+        temperature=0,  # Changed from 1 to 0 for consistent responses
         autodetect_images=False,
         response_model=Receipt,
     )
