@@ -10,5 +10,5 @@ updates:
     schedule:
       interval: "daily"
     groups:
-      poetry:
+      dependencies:
         patterns: ["*"]
