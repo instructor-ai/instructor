@@ -85,18 +85,21 @@ dev = [
     "jsonref<2.0.0,>=1.1.0",
     "black<25.0.0,>=24.10.0",
     "pytest-examples>=0.0.15",
+    "ruff>=0.8.4",
+    "pre-commit>=4.2.0",
 ]
 docs = [
     "mkdocs<2.0.0,>=1.4.3",
     "mkdocs-material[imaging]<10.0.0,>=9.5.9",
     "mkdocstrings<0.28.0,>=0.26.1",
     "mkdocstrings-python<2.0.0,>=1.11.1",
-    "pytest-examples>=0.0.15",
     "mkdocs-jupyter<0.26.0,>=0.24.6",
     "mkdocs-rss-plugin<2.0.0,>=1.12.0",
     "mkdocs-minify-plugin<1.0.0,>=0.8.0",
     "mkdocs-redirects<2.0.0,>=1.2.1",
     "material>=0.1",
+    "cairosvg>=2.7.1",
+    "pillow>=10.4.0",
 ]
 anthropic = ["anthropic==0.48.0"]
 test-docs = [
@@ -137,3 +140,7 @@ cerebras_cloud_sdk = ["cerebras-cloud-sdk<2.0.0,>=1.5.0"]
 fireworks-ai = ["fireworks-ai<1.0.0,>=0.15.4"]
 writer = ["writer-sdk<2.0.0,>=1.2.0"]
 google-genai=["google-genai>=1.5.0","jsonref<2.0.0,>=1.1.0",]
+examples = [
+    "datasets>=3.2.0",
+    "trafilatura>=2.0.0",
+]

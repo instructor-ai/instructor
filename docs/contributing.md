@@ -80,8 +80,8 @@ UV is a fast Python package installer and resolver that makes development easier
    # Update UV itself
    uv self update
    
-   # Create a requirements file
-   uv pip freeze > requirements.txt
+   # Export dependencies to requirements file (if needed for compatibility)
+   uv export --format requirements-txt > requirements.txt
    ```
 
 ## Adding Support for New LLM Providers
@@ -278,7 +278,7 @@ Documentation improvements are highly valued:
 
 1. **Docs Structure**: All documentation is in Markdown in the `docs/` directory
 2. **Adding New Pages**: When adding a new page, include it in `mkdocs.yml` in the right section
-3. **Local Preview**: Run `mkdocs serve` to preview changes locally
+3. **Local Preview**: Run `uv run mkdocs serve` to preview documentation locally. Make sure you have the docs dependencies installed with `uv sync --extra docs`.
 4. **Style Guidelines**:
    - Write at a grade 10 reading level (simple, clear language)
    - Include working code examples
@@ -315,6 +315,29 @@ print(person.name)  # "John Doe"
 print(person.age)   # 25
 ```
 
+- **hl_lines in Code Blocks**: Highlight specific lines in a code block to draw attention:
+  ````markdown
+  ```python hl_lines="2 3"
+  def example():
+      # This line is highlighted
+      # This line is also highlighted
+      return "normal line"
+  ```
+  ````
+
+- **Admonitions**: Create styled callout boxes for important information:
+  ```markdown
+  !!! note "Optional Title"
+      This is a note admonition.
+  
+  !!! warning
+      This is a warning.
+  ```
+
+For more documentation features, check the [MkDocs Material documentation](https://squidfunk.github.io/mkdocs-material/).
+
+Thank you for your contributions to Instructor!
+
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
@@ -334,7 +357,7 @@ print(person.age)   # 25
 
 When working on documentation, these resources may be helpful:
 
-- **mkdocs serve**: Preview documentation locally. Install dependencies from `requirements-doc.txt` first.
+- **Local Preview**: Run `uv run mkdocs serve` to preview documentation locally. Make sure you have the docs dependencies installed with `uv sync --extra docs`.
 
 - **hl_lines in Code Blocks**: Highlight specific lines in a code block to draw attention:
   ````markdown
