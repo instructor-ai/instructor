@@ -139,7 +139,7 @@ else:
     print("Age: Unknown")
 ```
 
-For more about the `Maybe` type, see the [Missing Concepts](/concepts/maybe.md) page.
+For more about the `Maybe` type, see the [Missing Concepts](../../concepts/maybe.md) page.
 
 ## Handling Optional Values
 
@@ -186,13 +186,13 @@ class ContactInfo(BaseModel):
 
 ## Related Resources
 
-- [Simple Object Extraction](simple_object.md) - Extracting basic objects
-- [Field Validation](field_validation.md) - Adding validation to fields
-- [Nested Structure](nested_structure.md) - Working with complex data
-- [Missing Concepts](/concepts/maybe.md) - Using the Maybe type for uncertain fields
+- [Simple Object Extraction](./simple_object.md) - Extracting basic objects
+- [Field Validation](./field_validation.md) - Adding validation to fields
+- [Nested Structure](./nested_structure.md) - Working with complex data
+- [Missing Concepts](../../concepts/maybe.md) - Using the Maybe type for uncertain fields
 
 ## Next Steps
 
-- Learn about [Field Validation](field_validation.md)
-- Explore [Nested Structure](nested_structure.md) for complex data
-- Check out [Prompt Templates](prompt_templates.md) for crafting prompts 
+- Learn about [Field Validation](./field_validation.md)
+- Explore [Nested Structure](./nested_structure.md) for complex data
+- Check out [Prompt Templates](./prompt_templates.md) for crafting prompts 

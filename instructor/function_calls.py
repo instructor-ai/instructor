@@ -184,8 +184,6 @@ class OpenAISchema(BaseModel):
 
         Parameters:
             completion (openai.ChatCompletion): The response from an openai chat completion
-            throw_error (bool): Whether to throw an error if the function call is not detected
-            context (dict): The context to use for validating the response
             strict (bool): Whether to use strict json parsing
             mode (Mode): The openai completion mode
 
