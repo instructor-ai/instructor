@@ -20,19 +20,14 @@ It stands out for its simplicity, transparency, and user-centric design, built o
 
 [:material-star: Star the Repo](https://github.com/jxnl/instructor){: .md-button .md-button--primary } [:material-book-open-variant: Cookbooks](./examples/index.md){: .md-button } [:material-lightbulb: Prompting Guide](./prompting/index.md){: .md-button }
 
+=== "uv"
+    ```bash
+    uv add instructor
+    ```
+
 === "pip"
     ```bash
     pip install instructor
-    ```
-
-=== "uv"
-    ```bash
-    uv pip install instructor
-    ```
-
-=== "poetry"
-    ```bash
-    poetry add instructor
     ```
 
 If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.

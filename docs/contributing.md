@@ -84,40 +84,6 @@ UV is a fast Python package installer and resolver that makes development easier
    uv pip freeze > requirements.txt
    ```
 
-### Using Poetry
-
-Poetry provides comprehensive dependency management and packaging.
-
-1. **Install Poetry**:
-   ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
-   ```
-
-2. **Install Dependencies**:
-   ```bash
-   # Clone the repository
-   git clone https://github.com/YOUR-USERNAME/instructor.git
-   cd instructor
-   
-   # Install with development dependencies
-   poetry install --with dev,docs
-   ```
-
-3. **Working with Poetry**:
-   ```bash
-   # Activate virtual environment
-   poetry shell
-   
-   # Run a command in the virtual environment
-   poetry run pytest
-   
-   # Add a dependency
-   poetry add package-name
-   
-   # Add a development dependency
-   poetry add --group dev package-name
-   ```
-
 ## Adding Support for New LLM Providers
 
 Instructor uses optional dependencies to support different LLM providers. To add a new provider:
@@ -142,9 +108,7 @@ Instructor uses optional dependencies to support different LLM providers. To add
 4. **Document Installation**:
    ```bash
    # Installation command for your provider
-   uv pip install "instructor[my-provider]"
-   # or with poetry
-   poetry install --with my-provider
+   uv sync --extra my-provider
    ```
 
 5. **Write Documentation**:
@@ -168,7 +132,7 @@ Instructor uses optional dependencies to support different LLM providers. To add
 4. **Make Changes, Test, and Commit**:
    ```bash
    # Run tests
-   pytest tests/ -k 'not llm and not openai'  # Skip LLM tests for faster local dev
+   uv run pytest tests/ -k 'not llm and not openai'  # Skip LLM tests for faster local dev
    
    # Commit changes
    git add .

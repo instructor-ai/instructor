@@ -67,7 +67,9 @@ async def main():
     # Test OpenAI clients
     if os.environ.get("OPENAI_API_KEY"):
         # Sync client
-        openai_client = instructor.from_provider("openai/gpt-3.5-turbo")
+        openai_client = instructor.from_provider(
+            "openai/gpt-3.5-turbo", async_client=False
+        )
         sync_results.append(test_sync_client("OpenAI", openai_client))
 
         # Async client
@@ -84,7 +86,9 @@ async def main():
     if os.environ.get("ANTHROPIC_API_KEY"):
         # Sync client
         anthropic_client = instructor.from_provider(
-            model="anthropic/claude-3-haiku-20240307", max_tokens=400
+            model="anthropic/claude-3-haiku-20240307",
+            async_client=False,
+            max_tokens=400,
         )
         sync_results.append(test_sync_client("Anthropic", anthropic_client))
 
@@ -101,7 +105,7 @@ async def main():
     # Test Cohere clients
     if os.environ.get("COHERE_API_KEY"):
         # Sync client
-        cohere_client = instructor.from_provider("cohere/command")
+        cohere_client = instructor.from_provider("cohere/command", async_client=False)
         sync_results.append(test_sync_client("Cohere", cohere_client))
 
         # Async client
@@ -115,7 +119,9 @@ async def main():
     # Test Mistral clients
     if os.environ.get("MISTRAL_API_KEY"):
         # Sync client
-        mistral_client = instructor.from_provider("mistral/mistral-small")
+        mistral_client = instructor.from_provider(
+            "mistral/mistral-small", async_client=False
+        )
         sync_results.append(test_sync_client("Mistral", mistral_client))
 
         # Async client

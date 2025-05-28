@@ -11,8 +11,6 @@ Thank you for considering contributing to Instructor! This document provides gui
     - [Environment Setup](#environment-setup)
     - [Development Workflow](#development-workflow)
     - [Dependency Management](#dependency-management)
-      - [Using UV](#using-uv)
-      - [Using Poetry](#using-poetry)
     - [Working with Optional Dependencies](#working-with-optional-dependencies)
   - [How to Contribute](#how-to-contribute)
     - [Reporting Bugs](#reporting-bugs)
@@ -51,7 +49,7 @@ By participating in this project, you agree to abide by our code of conduct: tre
    git remote add upstream https://github.com/instructor-ai/instructor.git
    ```
 
-4. **Install UV** (recommended):
+4. **Install UV**:
    ```bash
    # macOS/Linux
    curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -62,19 +60,19 @@ By participating in this project, you agree to abide by our code of conduct: tre
 
 5. **Install Dependencies**:
    ```bash
-   # Using uv (recommended)
-   uv pip install -e ".[dev,docs,test-docs]"
+   # Install project with development dependencies
+   uv sync --all-extras
    
-   # Using poetry
-   poetry install --with dev,docs,test-docs
+   # Or install specific extras only
+   uv sync --extra dev --extra docs --extra test-docs
    
    # For specific providers, add the provider name as an extra
-   # Example: uv pip install -e ".[dev,docs,test-docs,anthropic]"
+   # Example: uv sync --extra dev --extra docs --extra anthropic
    ```
 
 6. **Set up Pre-commit**:
    ```bash
-   pip install pre-commit
+   uv tool install pre-commit
    pre-commit install
    ```
 
@@ -104,51 +102,39 @@ By participating in this project, you agree to abide by our code of conduct: tre
 
 ### Dependency Management
 
-We support both UV and Poetry for dependency management. Choose the tool that works best for you:
-
-#### Using UV
-
-UV is a fast Python package installer and resolver. It's recommended for day-to-day development in Instructor.
+We use **UV** for dependency management. UV is a fast Python package installer and resolver that provides excellent performance and reliability.
 
 ```bash
 # Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install project and development dependencies
-uv pip install -e ".[dev,docs]"
+# Install project and all dependencies
+uv sync --all-extras
 
-# Adding a new dependency (example)
-uv pip install new-package
+# Install with specific extras only
+uv sync --extra dev --extra docs
+
+# Add a new dependency to pyproject.toml
+uv add new-package
+
+# Add a development dependency
+uv add --group dev new-package
+
+# Run commands in the virtual environment
+uv run pytest
+uv run python script.py
+
+# Update dependencies
+uv lock --upgrade
 ```
 
 Key UV commands:
-- `uv pip install -e .` - Install the project in editable mode
-- `uv pip install -e ".[dev]"` - Install with development extras
-- `uv pip freeze > requirements.txt` - Generate requirements file
-- `uv self update` - Update UV to the latest version
-
-#### Using Poetry
-
-Poetry provides more comprehensive dependency management and packaging.
-
-```bash
-# Install Poetry
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Install dependencies including development deps
-poetry install --with dev,docs
-
-# Add a new dependency
-poetry add package-name
-
-# Add a new development dependency
-poetry add --group dev package-name
-```
-
-Key Poetry commands:
-- `poetry shell` - Activate the virtual environment
-- `poetry run python -m pytest` - Run commands within the virtual environment
-- `poetry update` - Update dependencies to their latest versions
+- `uv sync` - Install dependencies from lockfile
+- `uv sync --all-extras` - Install all optional dependencies
+- `uv add package-name` - Add a new dependency
+- `uv run command` - Run commands in the virtual environment
+- `uv lock` - Update the lockfile
+- `uv tool install package` - Install global tools
 
 ### Working with Optional Dependencies
 
@@ -171,11 +157,9 @@ Instructor uses optional dependencies to support different LLM providers. When a
 3. **Add Tests**: Create tests in `tests/llm/test_myprovider/`
 
 4. **Document Installation**: Update the documentation to include installation instructions:
-   ```
+   ```bash
    # Install with your provider support
-   uv pip install "instructor[my-provider]"
-   # or
-   poetry install --with my-provider
+   uv sync --extra my-provider
    ```
 
 ## How to Contribute
@@ -330,21 +314,21 @@ Including a scope is recommended when changes affect a specific part of the code
 
 ## Testing
 
-Run tests using pytest:
+Run tests using uv:
 
 ```bash
 # Run all tests
-pytest tests/
+uv run pytest tests/
 
 # Run specific test
-pytest tests/path_to_test.py::test_name
+uv run pytest tests/path_to_test.py::test_name
 
 # Skip LLM tests (faster for local development)
-pytest tests/ -k 'not llm and not openai'
+uv run pytest tests/ -k 'not llm and not openai'
 
 # Generate coverage report
-coverage run -m pytest tests/ -k "not docs"
-coverage report
+uv run coverage run -m pytest tests/ -k "not docs"
+uv run coverage report
 ```
 
 ## Branch and Release Process

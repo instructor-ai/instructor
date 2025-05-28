@@ -53,7 +53,7 @@ def test_user_extraction_sync(provider_string):
         return
 
     try:
-        client = from_provider(provider_string)  # type: ignore[arg-type]
+        client = from_provider(provider_string, async_client=False)  # type: ignore[arg-type]
         response = client.chat.completions.create(
             messages=[USER_EXTRACTION_PROMPT],  # type: ignore[arg-type]
             response_model=User,
@@ -113,7 +113,7 @@ def test_additional_kwargs_passed():
         return
 
     client = instructor.from_provider(
-        "anthropic/claude-3-5-haiku-latest", max_tokens=10
+        "anthropic/claude-3-5-haiku-latest", async_client=False, max_tokens=10
     )
 
     with pytest.raises(InstructorRetryException) as excinfo:

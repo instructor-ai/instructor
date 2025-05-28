@@ -5,15 +5,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Instructor Development Guide
 
 ## Commands
-- Install deps: `uv pip install -e ".[dev,anthropic]"` or `poetry install --with dev,anthropic`
-- Run tests: `pytest tests/`
-- Run specific test: `pytest tests/path_to_test.py::test_name`
-- Skip LLM tests: `pytest tests/ -k 'not llm and not openai'`
-- Type check: `pyright`
-- Lint: `ruff check instructor examples tests`
-- Format: `ruff format instructor examples tests`
-- Generate coverage: `coverage run -m pytest tests/ -k "not docs"` then `coverage report`
-- Build documentation: `mkdocs serve` (for local preview) or `./build_mkdocs.sh` (for production)
+- Install deps: `uv sync --extra dev --extra anthropic`
+- Run tests: `uv run pytest tests/`
+- Run specific test: `uv run pytest tests/path_to_test.py::test_name`
+- Skip LLM tests: `uv run pytest tests/ -k 'not llm and not openai'`
+- Type check: `uv run pyright`
+- Lint: `uv run ruff check instructor examples tests`
+- Format: `uv run ruff format instructor examples tests`
+- Generate coverage: `uv run coverage run -m pytest tests/ -k "not docs"` then `uv run coverage report`
+- Build documentation: `uv run mkdocs serve` (for local preview) or `./build_mkdocs.sh` (for production)
 
 ## Code Style Guidelines
 - **Typing**: Use strict typing with annotations for all functions and variables
