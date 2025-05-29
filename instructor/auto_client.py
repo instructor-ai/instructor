@@ -3,6 +3,7 @@ from typing import Any, Union, Literal, overload
 from instructor.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
+import os
 
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
@@ -24,6 +25,51 @@ supported_providers = [
     "vertexai",
     "generative-ai",
 ]
+
+
+def get_api_key(provider: str, provided_key: Union[str, None] = None) -> str:  # noqa: UP007
+    """Get API key for a provider with consistent fallback and error handling.
+
+    Args:
+        provider: The provider name (e.g., 'openai', 'anthropic')
+        provided_key: API key provided by user (takes precedence)
+
+    Returns:
+        The API key to use
+
+    Raises:
+        ValueError: If no API key is found
+    """
+    # Map providers to their environment variable names
+    env_var_map = {
+        "openai": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+        "google": "GOOGLE_API_KEY",
+        "mistral": "MISTRAL_API_KEY",
+        "cohere": "COHERE_API_KEY",
+        "perplexity": "PERPLEXITY_API_KEY",
+        "groq": "GROQ_API_KEY",
+        "writer": "WRITER_API_KEY",
+        "cerebras": "CEREBRAS_API_KEY",
+        "fireworks": "FIREWORKS_API_KEY",
+        "generative-ai": "GOOGLE_API_KEY",  # Uses same as google
+    }
+
+    if provider not in env_var_map:
+        raise ValueError(f"Unsupported provider: {provider}")
+
+    # Try provided key first, then environment variable
+    api_key = provided_key or os.environ.get(env_var_map[provider])
+
+    if api_key is None:
+        env_var = env_var_map.get(provider)
+        raise ValueError(
+            f"API key for {provider} is not set. "
+            f"Set it with `export {env_var}=<your-api-key>` "
+            f"or pass it as api_key=<your-api-key> in from_provider()."
+        )
+
+    return api_key
 
 
 @overload
@@ -112,14 +158,12 @@ def from_provider(
             import openai
             from instructor import from_openai
 
-            if api_key:
-                client = (
-                    openai.AsyncOpenAI(api_key=api_key)
-                    if async_client
-                    else openai.OpenAI(api_key=api_key)
-                )
-            else:
-                client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
+            resolved_api_key = get_api_key("openai", api_key)
+            client = (
+                openai.AsyncOpenAI(api_key=resolved_api_key)
+                if async_client
+                else openai.OpenAI(api_key=resolved_api_key)
+            )
 
             return from_openai(
                 client,
@@ -140,18 +184,12 @@ def from_provider(
             import anthropic
             from instructor import from_anthropic
 
-            if api_key:
-                client = (
-                    anthropic.AsyncAnthropic(api_key=api_key)
-                    if async_client
-                    else anthropic.Anthropic(api_key=api_key)
-                )
-            else:
-                client = (
-                    anthropic.AsyncAnthropic()
-                    if async_client
-                    else anthropic.Anthropic()
-                )
+            resolved_api_key = get_api_key("anthropic", api_key)
+            client = (
+                anthropic.AsyncAnthropic(api_key=resolved_api_key)
+                if async_client
+                else anthropic.Anthropic(api_key=resolved_api_key)
+            )
 
             max_tokens = kwargs.pop("max_tokens", 4096)
             return from_anthropic(
@@ -173,21 +211,14 @@ def from_provider(
             import google.genai as genai  # type: ignore
             from instructor import from_genai
 
-            if api_key:
-                client = genai.Client(
-                    vertexai=False
-                    if kwargs.get("vertexai") is None
-                    else kwargs.get("vertexai"),
-                    api_key=api_key,
-                    **kwargs,
-                )  # type: ignore
-            else:
-                client = genai.Client(
-                    vertexai=False
-                    if kwargs.get("vertexai") is None
-                    else kwargs.get("vertexai"),
-                    **kwargs,
-                )
+            resolved_api_key = get_api_key("google", api_key)
+            client = genai.Client(
+                vertexai=False
+                if kwargs.get("vertexai") is None
+                else kwargs.get("vertexai"),
+                api_key=resolved_api_key,
+                **kwargs,
+            )  # type: ignore
 
             if async_client:
                 return from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
@@ -204,18 +235,9 @@ def from_provider(
         try:
             from mistralai import Mistral  # type: ignore
             from instructor import from_mistral
-            import os
 
-            mistral_api_key = api_key or os.environ.get("MISTRAL_API_KEY")
-
-            if mistral_api_key:
-                client = Mistral(api_key=mistral_api_key)
-            else:
-                raise ValueError(
-                    "MISTRAL_API_KEY is not set. "
-                    "Set it with `export MISTRAL_API_KEY=<your-api-key>`"
-                    "or pass it as api_key=<your-api-key> in from_provider()."
-                )
+            resolved_api_key = get_api_key("mistral", api_key)
+            client = Mistral(api_key=resolved_api_key)
 
             if async_client:
                 return from_mistral(client, model=model_name, use_async=True, **kwargs)
@@ -233,14 +255,12 @@ def from_provider(
             import cohere
             from instructor import from_cohere
 
-            if api_key:
-                client = (
-                    cohere.AsyncClient(api_key=api_key)
-                    if async_client
-                    else cohere.Client(api_key=api_key)
-                )
-            else:
-                client = cohere.AsyncClient() if async_client else cohere.Client()
+            resolved_api_key = get_api_key("cohere", api_key)
+            client = (
+                cohere.AsyncClient(api_key=resolved_api_key)
+                if async_client
+                else cohere.Client(api_key=resolved_api_key)
+            )
 
             return from_cohere(client, **kwargs)
         except ImportError:
@@ -254,24 +274,15 @@ def from_provider(
         try:
             import openai
             from instructor import from_perplexity
-            import os
 
-            perplexity_api_key = api_key or os.environ.get("PERPLEXITY_API_KEY")
-
-            if perplexity_api_key is None:
-                raise ValueError(
-                    "PERPLEXITY_API_KEY is not set. "
-                    "Set it with `export PERPLEXITY_API_KEY=<your-api-key>`"
-                    "or pass it as api_key=<your-api-key> in from_provider()."
-                )
-
+            resolved_api_key = get_api_key("perplexity", api_key)
             client = (
                 openai.AsyncOpenAI(
-                    api_key=api_key, base_url="https://api.perplexity.ai"
+                    api_key=resolved_api_key, base_url="https://api.perplexity.ai"
                 )
                 if async_client
                 else openai.OpenAI(
-                    api_key=api_key, base_url="https://api.perplexity.ai"
+                    api_key=resolved_api_key, base_url="https://api.perplexity.ai"
                 )
             )
             return from_perplexity(client, model=model_name, **kwargs)
@@ -287,14 +298,12 @@ def from_provider(
             import groq
             from instructor import from_groq
 
-            if api_key:
-                client = (
-                    groq.AsyncGroq(api_key=api_key)
-                    if async_client
-                    else groq.Groq(api_key=api_key)
-                )
-            else:
-                client = groq.AsyncGroq() if async_client else groq.Groq()
+            resolved_api_key = get_api_key("groq", api_key)
+            client = (
+                groq.AsyncGroq(api_key=resolved_api_key)
+                if async_client
+                else groq.Groq(api_key=resolved_api_key)
+            )
 
             return from_groq(client, model=model_name, **kwargs)
         except ImportError:
@@ -309,14 +318,12 @@ def from_provider(
             from writerai import AsyncWriter, Writer
             from instructor import from_writer
 
-            if api_key:
-                client = (
-                    AsyncWriter(api_key=api_key)
-                    if async_client
-                    else Writer(api_key=api_key)
-                )
-            else:
-                client = AsyncWriter() if async_client else Writer()
+            resolved_api_key = get_api_key("writer", api_key)
+            client = (
+                AsyncWriter(api_key=resolved_api_key)
+                if async_client
+                else Writer(api_key=resolved_api_key)
+            )
 
             return from_writer(client, model=model_name, **kwargs)
         except ImportError:
@@ -356,14 +363,12 @@ def from_provider(
             from cerebras.cloud.sdk import AsyncCerebras, Cerebras
             from instructor import from_cerebras
 
-            if api_key:
-                client = (
-                    AsyncCerebras(api_key=api_key)
-                    if async_client
-                    else Cerebras(api_key=api_key)
-                )
-            else:
-                client = AsyncCerebras() if async_client else Cerebras()
+            resolved_api_key = get_api_key("cerebras", api_key)
+            client = (
+                AsyncCerebras(api_key=resolved_api_key)
+                if async_client
+                else Cerebras(api_key=resolved_api_key)
+            )
 
             return from_cerebras(client, model=model_name, **kwargs)
         except ImportError:
@@ -378,14 +383,12 @@ def from_provider(
             from fireworks.client import AsyncFireworks, Fireworks
             from instructor import from_fireworks
 
-            if api_key:
-                client = (
-                    AsyncFireworks(api_key=api_key)
-                    if async_client
-                    else Fireworks(api_key=api_key)
-                )
-            else:
-                client = AsyncFireworks() if async_client else Fireworks()
+            resolved_api_key = get_api_key("fireworks", api_key)
+            client = (
+                AsyncFireworks(api_key=resolved_api_key)
+                if async_client
+                else Fireworks(api_key=resolved_api_key)
+            )
 
             return from_fireworks(client, model=model_name, **kwargs)
         except ImportError:
@@ -414,8 +417,8 @@ def from_provider(
             import google.generativeai as genai
             from instructor import from_gemini
 
-            if api_key:
-                genai.configure(api_key=api_key)
+            resolved_api_key = get_api_key("generative-ai", api_key)
+            genai.configure(api_key=resolved_api_key)
 
             client = genai.GenerativeModel(model_name=model_name)
 
