@@ -2,7 +2,7 @@
 #    uv pip compile pyproject.toml -o requirements.txt
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.12.2
+aiohttp==3.12.4
     # via instructor (pyproject.toml)
 aiosignal==1.3.2
     # via aiohttp
@@ -59,7 +59,7 @@ multidict==6.4.4
     # via
     #   aiohttp
     #   yarl
-openai==1.82.0
+openai==1.82.1
     # via instructor (pyproject.toml)
 propcache==0.3.1
     # via
