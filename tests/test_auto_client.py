@@ -130,3 +130,68 @@ def test_additional_kwargs_passed():
     assert "The output is incomplete due to a max_tokens length limit" in str(
         excinfo.value
     )
+
+
+@pytest.mark.parametrize(
+    "provider,key_name,model_name",
+    [
+        ("openai", "OPENAI_API_KEY", "gpt-4o-mini"),
+        ("anthropic", "ANTHROPIC_API_KEY", "claude-3-5-haiku-latest"),
+        ("google", "GOOGLE_API_KEY", "gemini-2.0-flash"),
+        ("mistral", "MISTRAL_API_KEY", "ministral-8b-latest"),
+        ("cohere", "COHERE_API_KEY", "command-r-plus"),
+        ("perplexity", "PERPLEXITY_API_KEY", "sonar-pro"),
+        ("groq", "GROQ_API_KEY", "llama-3.1-8b-instant"),
+        ("writer", "WRITER_API_KEY", "palmyra-x5"),
+        ("cerebras", "CEREBRAS_API_KEY", "llama-4-scout-17b-16e-instruct"),
+        (
+            "fireworks",
+            "FIREWORKS_API_KEY",
+            "accounts/fireworks/models/llama4-maverick-instruct-basic",
+        ),
+    ],
+)
+def test_api_key_parameters(provider, key_name, model_name):
+    """Test that api_key parameter is used instead of environment variables."""
+    import instructor
+    import os
+    import pytest
+
+    if os.getenv("INSTRUCTOR_ENV") == "CI" and provider in ["anthropic"]:
+        pytest.skip("Skipping test on CI")
+        return
+
+    # Save original env var
+    original_key = os.environ.get(key_name)
+
+    if not original_key:
+        raise ValueError(
+            f"API key for {provider} is not set. Please set it for the test to run."
+        )
+
+    try:
+        if key_name in os.environ:
+            del os.environ[key_name]
+
+        model = f"{provider}/{model_name}"
+
+        # Should fail without api_key
+        with pytest.raises(ValueError) as excinfo:
+            instructor.from_provider(model)
+
+        assert f"API key for {provider} is not set" in str(excinfo.value)
+
+        # Should work with explicit api_key
+        client = instructor.from_provider(model, api_key=original_key)
+        assert client is not None
+
+        # Test inference
+        response = client.chat.completions.create(
+            messages=[USER_EXTRACTION_PROMPT],  # type: ignore[arg-type]
+            response_model=User,
+        )
+        assert isinstance(response, User)
+
+    finally:
+        # Restore original env var
+        os.environ[key_name] = original_key

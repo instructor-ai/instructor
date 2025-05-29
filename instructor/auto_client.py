@@ -75,7 +75,7 @@ def get_api_key(provider: str, provided_key: Union[str, None] = None) -> str:  #
 @overload
 def from_provider(
     model: KnownModelName,
-    api_key: str | None = None,
+    api_key: Union[str, None] = None,  # noqa: UP007
     async_client: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -84,7 +84,7 @@ def from_provider(
 @overload
 def from_provider(
     model: KnownModelName,
-    api_key: str | None = None,
+    api_key: Union[str, None] = None,  # noqa: UP007
     async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -93,7 +93,7 @@ def from_provider(
 @overload
 def from_provider(
     model: str,
-    api_key: str | None = None,
+    api_key: Union[str, None] = None,  # noqa: UP007
     async_client: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
@@ -102,7 +102,7 @@ def from_provider(
 @overload
 def from_provider(
     model: str,
-    api_key: str | None = None,
+    api_key: Union[str, None] = None,  # noqa: UP007
     async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
@@ -110,7 +110,7 @@ def from_provider(
 
 def from_provider(
     model: Union[str, KnownModelName],  # noqa: UP007
-    api_key: str | None = None,
+    api_key: Union[str, None] = None,  # noqa: UP007
     async_client: bool = False,
     mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
     **kwargs: Any,
@@ -200,22 +200,21 @@ def from_provider(
                 **kwargs,
             )
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The anthropic package is required to use the Anthropic provider. "
                 "Install it with `pip install anthropic`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "google":
         try:
-            import google.genai as genai  # type: ignore
+            from google.genai import Client
             from instructor import from_genai
 
             resolved_api_key = get_api_key("google", api_key)
-            client = genai.Client(
-                vertexai=False
-                if kwargs.get("vertexai") is None
-                else kwargs.get("vertexai"),
+            client = Client(
+                vertexai=kwargs.pop("vertexai", False),
                 api_key=resolved_api_key,
                 **kwargs,
             )  # type: ignore
@@ -262,7 +261,7 @@ def from_provider(
                 else cohere.Client(api_key=resolved_api_key)
             )
 
-            return from_cohere(client, **kwargs)
+            return from_cohere(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The cohere package is required to use the Cohere provider. "
@@ -429,7 +428,7 @@ def from_provider(
         except ImportError:
             import_err = ImportError(
                 "The google-generativeai package is required to use the Google GenAI provider. "
-                "Install it with `pip install google-genai`."
+                "Install it with `pip install google-generativeai`."
             )
             raise import_err from None
 
