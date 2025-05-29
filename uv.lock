@@ -134,7 +134,7 @@ wheels = [
 
 [[package]]
 name = "anthropic"
-version = "0.48.0"
+version = "0.52.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -145,9 +145,9 @@ dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/20/e3/dba5eb132666517178488295305854304794367c4126e8261d2843b540f0/anthropic-0.48.0.tar.gz", hash = "sha256:5e94b571a3874295b6c8600d3797875abdca18946a9ade68b6aa0408caa31cad", size = 209603, upload-time = "2025-02-27T19:36:26.874Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/6b/7d632b680556812f36b663891ccab8f5bf71b61913a3c7332aa7aa2822be/anthropic-0.52.1.tar.gz", hash = "sha256:da4a7c3aeac0170cb45a42dc3369ca1fcf2b3238edf845cb056505d4b0c42fcf", size = 241807, upload-time = "2025-05-28T13:13:40.851Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/82/4b/9d2a167bd6c3db8391e0ae2853f94244667c557cc10a6d05898fde2f6ead/anthropic-0.48.0-py3-none-any.whl", hash = "sha256:e2495a07d14484f3219a5c0b902a63f9df8c2b3bd358f68b5ee86f1e89d1ba81", size = 242356, upload-time = "2025-02-27T19:36:25.209Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/e7/36ad2dc22811ea004e1f511b2f5604fe71a56bdfd3b969b265892d45affa/anthropic-0.52.1-py3-none-any.whl", hash = "sha256:807cee7ebc5503753da0403a77932decf5a4c036041ddda58b4edcdb2a3da551", size = 286076, upload-time = "2025-05-28T13:13:39.052Z" },
 ]
 
 [[package]]
@@ -1805,7 +1805,7 @@ writer = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.1,<4.0.0" },
-    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.48.0" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.52.1" },
     { name = "boto3", marker = "extra == 'bedrock'", specifier = ">=1.34.0,<2.0.0" },
     { name = "cerebras-cloud-sdk", marker = "extra == 'cerebras-cloud-sdk'", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", marker = "extra == 'cohere'", specifier = ">=5.1.8,<6.0.0" },
@@ -1816,9 +1816,9 @@ requires-dist = [
     { name = "google-cloud-aiplatform", marker = "extra == 'vertexai'", specifier = ">=1.53.0,<2.0.0" },
     { name = "google-genai", marker = "extra == 'google-genai'", specifier = ">=1.5.0" },
     { name = "google-generativeai", marker = "extra == 'google-generativeai'", specifier = ">=0.8.2,<1.0.0" },
-    { name = "groq", marker = "extra == 'groq'", specifier = ">=0.4.2,<0.14.0" },
+    { name = "groq", marker = "extra == 'groq'", specifier = ">=0.4.2,<0.26.0" },
     { name = "jinja2", specifier = ">=3.1.4,<4.0.0" },
-    { name = "jiter", specifier = ">=0.6.1,<0.9" },
+    { name = "jiter", specifier = ">=0.6.1,<0.11" },
     { name = "jsonref", marker = "extra == 'google-genai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'google-generativeai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'vertexai'", specifier = ">=1.1.0,<2.0.0" },
@@ -1831,7 +1831,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.8.0,<3.0.0" },
     { name = "pydantic-core", specifier = ">=2.18.0,<3.0.0" },
     { name = "pydantic-extra-types", marker = "extra == 'test-docs'", specifier = ">=2.6.0,<3.0.0" },
-    { name = "redis", marker = "extra == 'test-docs'", specifier = ">=5.0.1,<6.0.0" },
+    { name = "redis", marker = "extra == 'test-docs'", specifier = ">=5.0.1,<7.0.0" },
     { name = "requests", specifier = ">=2.32.3,<3.0.0" },
     { name = "rich", specifier = ">=13.7.0,<15.0.0" },
     { name = "tabulate", marker = "extra == 'test-docs'", specifier = ">=0.9.0,<1.0.0" },
@@ -1843,7 +1843,7 @@ requires-dist = [
 provides-extras = ["test-docs", "anthropic", "groq", "cohere", "google-generativeai", "vertexai", "cerebras-cloud-sdk", "fireworks-ai", "writer", "bedrock", "mistral", "perplexity", "google-genai"]
 
 [package.metadata.requires-dev]
-anthropic = [{ name = "anthropic", specifier = "==0.48.0" }]
+anthropic = [{ name = "anthropic", specifier = "==0.52.1" }]
 bedrock = [{ name = "boto3", specifier = ">=1.34.0,<2.0.0" }]
 cerebras-cloud-sdk = [{ name = "cerebras-cloud-sdk", specifier = ">=1.5.0,<2.0.0" }]
 cohere = [{ name = "cohere", specifier = ">=5.1.8,<6.0.0" }]
@@ -1877,12 +1877,12 @@ google-generativeai = [
     { name = "google-generativeai", specifier = ">=0.8.2,<1.0.0" },
     { name = "jsonref", specifier = ">=1.1.0,<2.0.0" },
 ]
-groq = [{ name = "groq", specifier = ">=0.4.2,<0.14.0" }]
+groq = [{ name = "groq", specifier = ">=0.4.2,<0.26.0" }]
 litellm = [{ name = "litellm", specifier = ">=1.35.31,<2.0.0" }]
 mistral = [{ name = "mistralai", specifier = ">=1.5.1,<2.0.0" }]
 perplexity = [{ name = "openai", specifier = ">=1.52.0,<2.0.0" }]
 test-docs = [
-    { name = "anthropic", specifier = "==0.48.0" },
+    { name = "anthropic", specifier = "==0.52.1" },
     { name = "cerebras-cloud-sdk", specifier = ">=1.5.0,<2.0.0" },
     { name = "cohere", specifier = ">=5.1.8,<6.0.0" },
     { name = "datasets", specifier = ">=3.0.1,<4.0.0" },
@@ -1890,14 +1890,14 @@ test-docs = [
     { name = "fastapi", specifier = ">=0.109.2,<0.116.0" },
     { name = "fireworks-ai", specifier = ">=0.15.4,<1.0.0" },
     { name = "graphviz", specifier = ">=0.20.3,<1.0.0" },
-    { name = "groq", specifier = ">=0.4.2,<0.14.0" },
+    { name = "groq", specifier = ">=0.4.2,<0.26.0" },
     { name = "litellm", specifier = ">=1.35.31,<2.0.0" },
     { name = "mistralai", specifier = ">=1.5.1,<2.0.0" },
     { name = "pandas", specifier = ">=2.2.0,<3.0.0" },
     { name = "phonenumbers", specifier = ">=8.13.33,<9.0.0" },
     { name = "pydantic-extra-types", specifier = ">=2.6.0,<3.0.0" },
     { name = "pydub", specifier = ">=0.25.1,<1.0.0" },
-    { name = "redis", specifier = ">=5.0.1,<6.0.0" },
+    { name = "redis", specifier = ">=5.0.1,<7.0.0" },
     { name = "sqlmodel", specifier = ">=0.0.22,<1.0.0" },
     { name = "tabulate", specifier = ">=0.9.0,<1.0.0" },
     { name = "trafilatura", specifier = ">=1.12.2,<3.0.0" },

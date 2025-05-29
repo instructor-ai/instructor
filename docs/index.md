@@ -1,24 +1,39 @@
 ---
-description: Easily extract structured data like JSON from LLMs with Instructor, designed for simplicity, control, and robust validation.
+title: "Instructor - Python Library for Structured LLM Outputs | OpenAI, Anthropic, Google"
+description: "Get structured data from LLMs with Instructor - the most popular Python library for LLM validation. Supports OpenAI, Anthropic, Google, Ollama, DeepSeek, and 15+ providers. Built on Pydantic with automatic retries, streaming, and type safety."
+keywords: "LLM structured outputs, OpenAI structured data, Pydantic LLM validation, Python LLM library, Anthropic structured outputs, GPT structured data extraction, LLM response validation, AI data extraction, Ollama structured outputs, open source LLM, DeepSeek validation"
 ---
 
-# Instructor, The Most Popular Library for Simple Structured Outputs
+# Instructor: Python's #1 Library for Structured LLM Outputs
 
-_Structured outputs powered by llms. Designed for simplicity, transparency, and control._
+_Extract structured data from any LLM with type safety, validation, and automatic retries._
 
----
+[![PyPI - Version](https://img.shields.io/pypi/v/instructor?style=flat-square&logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/instructor/)
+[![License](https://img.shields.io/github/license/instructor-ai/instructor?style=flat-square&color=blue)](https://github.com/instructor-ai/instructor/blob/main/LICENSE)
+[![GitHub Repo stars](https://img.shields.io/github/stars/instructor-ai/instructor?style=flat-square&logo=github&logoColor=white)](https://github.com/instructor-ai/instructor)
+[![Downloads](https://img.shields.io/pypi/dm/instructor?style=flat-square&logo=pypi&logoColor=white&label=Downloads)](https://pypi.org/project/instructor/)
+[![Discord](https://img.shields.io/discord/1192334452110659664?style=flat-square&logo=discord&logoColor=white&label=Discord)](https://discord.gg/bD9YE9JArw)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=flat-square&logo=twitter&logoColor=white)](https://twitter.com/jxnlco)
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
-[![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
-[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
+## What is Instructor?
 
+Instructor is the **most popular Python library** for extracting structured data from Large Language Models (LLMs). With over **3 million monthly downloads, 11k stars, and 100+ contributors**, it's the go-to solution for developers who need reliable, validated outputs from AI models.
 
+Built on top of **Pydantic**, Instructor provides type-safe data extraction with automatic validation, retries, and streaming support. Whether you're using OpenAI's GPT models, Anthropic's Claude, Google's Gemini, **open source models with Ollama**, **DeepSeek**, or any of 15+ supported providers, Instructor ensures your LLM outputs are always structured and validated.
 
-Instructor makes it easy to get structured data like JSON from LLMs like GPT-3.5, GPT-4, GPT-4-Vision, and open-source models including [Mistral/Mixtral](./integrations/together.md), [Ollama](./integrations/ollama.md), and [llama-cpp-python](./integrations/llama-cpp-python.md).
+## Key Features for LLM Data Extraction
 
-It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
+- **Structured Outputs**: Define Pydantic models to specify exactly what data you want from your LLM
+- **Automatic Retries**: Built-in retry logic when validation fails - no more manual error handling  
+- **Data Validation**: Leverage Pydantic's powerful validation to ensure response quality
+- **Streaming Support**: Real-time processing of partial responses and lists
+- **Multi-Provider**: Works with OpenAI, Anthropic, Google, Mistral, Cohere, Ollama, DeepSeek, and 15+ LLM providers
+- **Type Safety**: Full IDE support with proper type inference and autocompletion
+- **Open Source Support**: Run any open source model locally with Ollama, llama-cpp-python, or vLLM
 
-[:material-star: Star the Repo](https://github.com/jxnl/instructor){: .md-button .md-button--primary } [:material-book-open-variant: Cookbooks](./examples/index.md){: .md-button } [:material-lightbulb: Prompting Guide](./prompting/index.md){: .md-button }
+## Quick Start: Extract Structured Data in 3 Lines
+
+Install Instructor and start extracting structured data immediately:
 
 === "pip"
     ```bash
@@ -27,7 +42,7 @@ It stands out for its simplicity, transparency, and user-centric design, built o
 
 === "uv"
     ```bash
-    uv pip install instructor
+    uv add instructor
     ```
 
 === "poetry"
@@ -35,29 +50,70 @@ It stands out for its simplicity, transparency, and user-centric design, built o
     poetry add instructor
     ```
 
+```python
+import instructor
+from pydantic import BaseModel
+from openai import OpenAI
+
+class Person(BaseModel):
+    name: str
+    age: int
+    occupation: str
+
+client = instructor.from_openai(OpenAI())
+person = client.chat.completions.create(
+    model="gpt-4o-mini",
+    response_model=Person,
+    messages=[{"role": "user", "content": "Extract: John is a 30-year-old software engineer"}]
+)
+print(person)  # Person(name='John', age=30, occupation='software engineer')
+```
+
+## Universal Provider API - One Interface for All LLMs
+
+Instructor's **`from_provider`** function provides a unified interface to work with any LLM provider. Switch between OpenAI, Anthropic, Google, Ollama, DeepSeek, and 15+ providers with the same code:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+class UserInfo(BaseModel):
+    name: str
+    age: int
+
+# Works with any provider - same interface everywhere
+client = instructor.from_provider("openai/gpt-4")        # OpenAI
+client = instructor.from_provider("anthropic/claude-3")   # Anthropic  
+client = instructor.from_provider("google/gemini-pro")    # Google
+client = instructor.from_provider("ollama/llama3")       # Ollama (local)
+client = instructor.from_provider("deepseek/deepseek-chat") # DeepSeek
+
+# Same extraction code works with all providers
+user = client.chat.completions.create(
+    response_model=UserInfo,
+    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
+)
+```
+
+The **`from_provider`** API supports both sync and async usage (`async_client=True`) and automatically handles provider-specific configurations, making it effortless to switch between different LLM services.
+
+## Supported LLM Providers
+
+Instructor works seamlessly with **15+ popular LLM providers**, giving you the flexibility to use any model while maintaining consistent structured output handling. From OpenAI's GPT models to **open source alternatives with Ollama**, **DeepSeek models**, and local inference, get validated data extraction everywhere.
+
+It stands out for its simplicity, transparency, and user-centric design, built on top of Pydantic. Instructor helps you manage [validation context](./concepts/reask_validation.md), retries with [Tenacity](./concepts/retrying.md), and streaming [Lists](./concepts/lists.md) and [Partial](./concepts/partial.md) responses.
+
+[:material-star: Star the Repo](https://github.com/jxnl/instructor){: .md-button .md-button--primary } [:material-book-open-variant: Cookbooks](./examples/index.md){: .md-button } [:material-lightbulb: Prompting Guide](./prompting/index.md){: .md-button }
+
 If you ever get stuck, you can always run `instructor docs` to open the documentation in your browser. It even supports searching for specific topics.
 
 ```bash
 instructor docs [QUERY]
 ```
 
-## Newsletter
+### OpenAI GPT Models - Structured Outputs
 
-If you want to be notified of tips, new blog posts, and research, subscribe to our newsletter. Here's what you can expect:
-
-- Updates on Instructor features and releases
-- Blog posts on AI and structured outputs
-- Tips and tricks from our community
-- Research in the field of LLMs and structured outputs
-- Information on AI development skills with Instructor
-
-Subscribe to our newsletter for updates on AI development. We provide content to keep you informed and help you use Instructor in projects.
-
-<iframe src="https://embeds.beehiiv.com/2faf420d-8480-4b6e-8d6f-9c5a105f917a?slim=true" data-test-id="beehiiv-embed" height="52" width="80%" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
-
-## Getting Started
-
-If you want to see all the integrations, check out the [integrations guide](./integrations/index.md).
+Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Turbo, and GPT-3.5.
 
 === "OpenAI"
     ```bash
@@ -865,3 +921,49 @@ If you want to help out, checkout some of the issues marked as `good-first-issue
 ## License
 
 This project is licensed under the terms of the MIT License.
+
+## Frequently Asked Questions
+
+### How do I get structured data from OpenAI GPT models?
+
+Use Instructor with OpenAI to automatically extract structured data with Pydantic models. Simply define your data structure and let Instructor handle validation and retries.
+
+### What LLM providers work with Instructor?
+
+Instructor supports 15+ providers including OpenAI (GPT-4, ChatGPT), Anthropic (Claude), Google (Gemini), Mistral, Cohere, Groq, **Ollama for open source models**, **DeepSeek**, and many more.
+
+### How does Instructor handle LLM validation errors?
+
+Instructor automatically retries failed requests with detailed error messages, ensuring your structured outputs always match your Pydantic schema.
+
+### Can I use Instructor with local LLM models?
+
+Yes! Instructor works with local models through **Ollama**, llama-cpp-python, and other local inference frameworks. Perfect for running **open source models** like Llama, Mistral, or CodeLlama locally.
+
+### Does Instructor support Ollama for open source models?
+
+Absolutely! Instructor has first-class support for **Ollama**, making it easy to run open source models locally while getting the same structured output validation. Simply point Instructor to your Ollama endpoint.
+
+### How do I use DeepSeek models with Instructor?
+
+Instructor supports **DeepSeek** models through the OpenAI-compatible API. You can use DeepSeek's powerful reasoning capabilities while maintaining full validation and retry logic.
+
+### Is Instructor compatible with async Python code?
+
+Absolutely. Instructor fully supports asyncio with async clients for OpenAI, Anthropic, and other providers.
+
+## Why Choose Instructor for LLM Structured Outputs?
+
+- **🏆 Industry Standard**: Over 1M monthly downloads make it the most trusted Python library for LLM data extraction
+- **⚡ Production Ready**: Built-in error handling, retries, and validation for reliable production deployments  
+- **🔧 Developer Friendly**: Full IDE support with type hints, autocompletion, and comprehensive documentation
+- **🌐 Provider Agnostic**: Switch between LLM providers without changing your code structure
+- **📈 Scalable**: From simple scripts to enterprise applications, Instructor scales with your needs
+
+## Related Topics
+
+- [LLM Response Validation](./concepts/reask_validation.md) - Ensure quality outputs
+- [Streaming LLM Outputs](./concepts/partial.md) - Real-time data processing  
+- [Multi-Provider Setup](./integrations/index.md) - Use any LLM service
+- [Production Deployment](./concepts/retrying.md) - Error handling and retries
+- [Type Safety with Pydantic](./concepts/models.md) - Schema validation
