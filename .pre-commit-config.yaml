@@ -8,3 +8,21 @@ repos:
         files: ^(instructor|tests|examples)/
       - id: ruff-format       # Run the formatter.
         name: Run Formatter (Ruff)
+
+  - repo: local
+    hooks:
+      - id: uv-lock-check
+        name: Check uv.lock is up-to-date
+        entry: uv
+        args: [lock, --check]
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
+        
+      - id: uv-sync-check
+        name: Verify dependencies can be installed
+        entry: uv
+        args: [sync, --check]
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
