@@ -30,6 +30,7 @@ The `from_provider()` function serves as a smart factory for creating LLM client
 - **Instructor Patching**: It automatically applies the Instructor patch to the client, enabling structured outputs, validation, and retry mechanisms.
 - **Sensible Defaults**: It uses recommended `instructor.Mode` settings for each provider, optimized for performance and capabilities such as tool use or JSON mode, where applicable.
 - **Sync and Async Support**: Users can obtain either a synchronous or an asynchronous client by setting the `async_client=True` flag.
+- **Flexible API Key Management**: Accept API keys via environment variables or direct parameter passing.
 
 ## Key Benefits
 
@@ -50,15 +51,23 @@ Internally, `from_provider()` (located in `instructor/auto_client.py`) parses th
 
 # if provider == "openai":
 #     import openai
-#     from instructor import from_openai, Mode
+#     from instructor import from_openai
 #
-#     # 'async_client', 'model_name', 'kwargs' are determined by from_provider
-#     native_client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
+#     # Get API key with fallback to environment variable
+#     resolved_api_key = get_api_key("openai", api_key)
 #
+#     # Initialize client based on async flag
+#     client = (
+#         openai.AsyncOpenAI(api_key=resolved_api_key)
+#         if async_client
+#         else openai.OpenAI(api_key=resolved_api_key)
+#     )
+#
+#     # Return patched client with model and mode settings
 #     return from_openai(
-#         native_client,
+#         client,
 #         model=model_name,
-#         mode=Mode.TOOLS,  # Default mode for OpenAI
+#         mode=mode if mode else instructor.Mode.TOOLS,
 #         **kwargs,
 #     )
 ```
@@ -200,3 +209,73 @@ This unified interface is intended to balance ease of use for common tasks with 
 These are areas where `instructor` can continue to reduce friction for developers working in an increasingly diverse LLM ecosystem.
 
 We encourage you to try `from_provider()` in your projects, particularly when experimenting with multiple LLMs. Feedback and suggestions for additional providers or features are always welcome.
+
+## API Key Management
+
+The `from_provider()` function offers flexible API key management to suit different deployment scenarios:
+
+### Environment Variables (Default)
+
+By default, `from_provider()` respects the standard environment variables for each provider:
+
+```python
+import instructor
+
+# These will use environment variables:
+# OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
+openai_client = instructor.from_provider("openai/gpt-4")
+anthropic_client = instructor.from_provider("anthropic/claude-3-sonnet-20240229")
+```
+
+### Direct API Key Parameter
+
+You can pass API keys directly to the `from_provider()` function:
+
+```python
+import instructor
+
+# Pass API key directly
+client = instructor.from_provider(
+    "openai/gpt-4", 
+    api_key="sk-your-openai-key-here"
+)
+
+# Works with all supported providers
+anthropic_client = instructor.from_provider(
+    "anthropic/claude-3-sonnet-20240229",
+    api_key="sk-ant-your-anthropic-key"
+)
+
+mistral_client = instructor.from_provider(
+    "mistral/mistral-large-latest",
+    api_key="your-mistral-api-key"
+)
+
+# Even with async clients
+async_client = instructor.from_provider(
+    "openai/gpt-4",
+    api_key="sk-your-openai-key-here",
+    async_client=True
+)
+```
+
+This helps to make `from_provider()` provider agnostic as you don't have to pass it into the client constructor.
+
+This also helps to allow your application to work during runtime if you are managing your API keys in some other way than environment variables.
+
+### Priority Order
+
+When both environment variables and direct API keys are provided, the direct API key parameter takes precedence:
+
+```python
+import os
+
+# Even if OPENAI_API_KEY is set in environment
+os.environ["OPENAI_API_KEY"] = "env-key"
+
+# This will use the direct API key instead
+client = instructor.from_provider(
+    "openai/gpt-4", 
+    api_key="direct-key"  # This takes priority
+)
+```
