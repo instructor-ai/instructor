@@ -69,10 +69,6 @@ pydantic==2.11.5
     # via
     #   instructor (pyproject.toml)
     #   openai
-pydantic-core==2.34.1
-    # via
-    #   instructor (pyproject.toml)
-    #   pydantic
 pygments==2.19.1
     # via rich
 requests==2.32.3

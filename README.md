@@ -2,9 +2,12 @@
 
 Instructor is the most popular Python library for working with structured outputs from large language models (LLMs), boasting over 1 million monthly downloads. Built on top of Pydantic, it provides a simple, transparent, and user-friendly API to manage validation, retries, and streaming responses. Get ready to supercharge your LLM workflows with the community's top choice!
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=social)](https://twitter.com/jxnlco)
-[![Discord](https://img.shields.io/discord/1192334452110659664?label=discord)](https://discord.gg/bD9YE9JArw)
-[![Downloads](https://img.shields.io/pypi/dm/instructor.svg)](https://pypi.python.org/pypi/instructor)
+[![PyPI - Version](https://img.shields.io/pypi/v/instructor?style=flat-square&logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/instructor/)
+[![License](https://img.shields.io/github/license/instructor-ai/instructor?style=flat-square&color=blue)](https://github.com/instructor-ai/instructor/blob/main/LICENSE)
+[![GitHub Repo stars](https://img.shields.io/github/stars/instructor-ai/instructor?style=flat-square&logo=github&logoColor=white)](https://github.com/instructor-ai/instructor)
+[![Downloads](https://img.shields.io/pypi/dm/instructor?style=flat-square&logo=pypi&logoColor=white&label=Downloads)](https://pypi.org/project/instructor/)
+[![Discord](https://img.shields.io/discord/1192334452110659664?style=flat-square&logo=discord&logoColor=white&label=Discord)](https://discord.gg/bD9YE9JArw)
+[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=flat-square&logo=twitter&logoColor=white)](https://twitter.com/jxnlco)
 
 ## Want your logo on our website?
 
@@ -23,9 +26,17 @@ If your company uses Instructor a lot, we'd love to have your logo on our websit
 
 Install Instructor with a single command:
 
+**Recommended (using uv):**
+```bash
+uv add instructor
+```
+
+**Alternative (using pip):**
 ```bash
 pip install -U instructor
 ```
+
+> **Note:** We recommend using [uv](https://github.com/astral-sh/uv) for faster package installation and better dependency resolution. If you're contributing to the project, uv is required for development.
 
 Now, let's see Instructor in action with a simple example:
 
@@ -207,7 +218,11 @@ assert resp.age == 25
 
 Make sure to install `cohere` and set your system environment variable with `export CO_API_KEY=<YOUR_COHERE_API_KEY>`.
 
-```
+```bash
+# Using uv (recommended)
+uv add cohere
+
+# Using pip
 pip install cohere
 ```
 
@@ -247,7 +262,11 @@ assert resp.age == 25
 Make sure you [install](https://ai.google.dev/api/python/google/generativeai#setup) the Google AI Python SDK. You should set a `GOOGLE_API_KEY` environment variable with your API key.
 Gemini tool calling also requires `jsonref` to be installed.
 
-```
+```bash
+# Using uv (recommended)
+uv add google-generativeai jsonref
+
+# Using pip
 pip install google-generativeai jsonref
 ```
 
@@ -273,7 +292,11 @@ client = instructor.from_gemini(
 
 Alternatively, you can [call Gemini from the OpenAI client](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/call-gemini-using-openai-library#python). You'll have to setup [`gcloud`](https://cloud.google.com/docs/authentication/provide-credentials-adc#local-dev), get setup on Vertex AI, and install the Google Auth library.
 
-```sh
+```bash
+# Using uv (recommended)
+uv add google-auth
+
+# Using pip
 pip install google-auth
 ```
 
@@ -594,169 +617,3 @@ If you're new to the project, check out issues marked as [`good-first-issue`](ht
    git clone https://github.com/YOUR-USERNAME/instructor.git
    cd instructor
    ```
-
-2. **Set up the development environment**
-   
-   We use `uv` to manage dependencies, which provides faster package installation and dependency resolution than traditional tools. If you don't have `uv` installed, [install it first](https://github.com/astral-sh/uv).
-   
-   ```bash
-   # Create and activate a virtual environment
-   uv venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   
-   # Install dependencies with all extras 
-   # You can specify specific groups if needed
-   uv sync --all-extras --group dev
-   
-   # Or for a specific integration
-   # uv sync --all-extras --group dev,anthropic
-   ```
-
-3. **Install pre-commit hooks**
-   
-   We use pre-commit hooks to ensure code quality:
-   
-   ```bash
-   uv pip install pre-commit
-   pre-commit install
-   ```
-   
-   This will automatically run Ruff formatters and linting checks before each commit, ensuring your code meets our style guidelines.
-
-### Running Tests
-
-Tests help ensure that your contributions don't break existing functionality:
-
-```bash
-# Run all tests
-uv run pytest
-
-# Run specific tests
-uv run pytest tests/path/to/test_file.py
-
-# Run tests with coverage reporting
-uv run pytest --cov=instructor
-```
-
-When submitting a PR, make sure to write tests for any new functionality and verify that all tests pass locally.
-
-### Code Style and Quality Requirements
-
-We maintain high code quality standards to keep the codebase maintainable and consistent:
-
-- **Formatting and Linting**: We use `ruff` for code formatting and linting, and `pyright` for type checking.
-  ```bash
-  # Check code formatting
-  uv run ruff format --check
-  
-  # Apply formatting
-  uv run ruff format
-  
-  # Run linter
-  uv run ruff check
-  
-  # Fix auto-fixable linting issues
-  uv run ruff check --fix
-  ```
-
-- **Type Hints**: All new code should include proper type hints.
-
-- **Documentation**: Code should be well-documented with docstrings and comments where appropriate.
-
-Make sure these checks pass when you submit a PR:
-- Linting: `uv run ruff check`
-- Formatting: `uv run ruff format`
-- Type checking: `uv run pyright`
-
-### Development Workflow
-
-1. **Create a branch for your changes**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **Make your changes and commit them**
-   ```bash
-   git add .
-   git commit -m "Your descriptive commit message"
-   ```
-
-3. **Keep your branch updated with the main repository**
-   ```bash
-   git remote add upstream https://github.com/instructor-ai/instructor.git
-   git fetch upstream
-   git rebase upstream/main
-   ```
-
-4. **Push your changes**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-### Pull Request Process
-
-1. **Create a Pull Request** from your fork to the main repository.
-
-2. **Fill out the PR template** with a description of your changes, relevant issue numbers, and any other information that would help reviewers understand your contribution.
-
-3. **Address review feedback** and make any requested changes.
-
-4. **Wait for CI checks** to pass. The PR will be reviewed by maintainers once all checks are green.
-
-5. **Merge**: Once approved, a maintainer will merge your PR.
-
-### Contributing to Evals
-
-We encourage contributions to our evaluation tests. See the [Evals documentation](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals#how-to-contribute-writing-and-running-evaluation-tests) for details on writing and running evaluation tests.
-
-### Pre-commit Hooks
-
-We use pre-commit hooks to ensure code quality. To set up pre-commit hooks:
-
-1. Install pre-commit: `pip install pre-commit`
-2. Set up the hooks: `pre-commit install`
-
-This will automatically run Ruff formatters and linting checks before each commit, ensuring your code meets our style guidelines.
-
-## CLI
-
-We also provide some added CLI functionality for easy convenience:
-
-- `instructor jobs` : This helps with the creation of fine-tuning jobs with OpenAI. Simple use `instructor jobs create-from-file --help` to get started creating your first fine-tuned GPT-3.5 model
-
-- `instructor files` : Manage your uploaded files with ease. You'll be able to create, delete and upload files all from the command line
-
-- `instructor usage` : Instead of heading to the OpenAI site each time, you can monitor your usage from the CLI and filter by date and time period. Note that usage often takes ~5-10 minutes to update from OpenAI's side
-
-## License
-
-This project is licensed under the terms of the MIT License.
-
-## Citation
-
-If you use Instructor in your research, please cite it using the following BibTeX:
-
-```bibtex
-@software{liu2024instructor,
-  author = {Jason Liu and Contributors},
-  title = {Instructor: A library for structured outputs from large language models},
-  url = {https://github.com/instructor-ai/instructor},
-  year = {2024},
-  month = {3}
-}
-```
-
-# Contributors
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-<a href="https://github.com/instructor-ai/instructor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=instructor-ai/instructor" />
-</a>
