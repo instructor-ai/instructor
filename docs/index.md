@@ -4,7 +4,7 @@ description: "Get structured data from LLMs with Instructor - the most popular P
 keywords: "LLM structured outputs, OpenAI structured data, Pydantic LLM validation, Python LLM library, Anthropic structured outputs, GPT structured data extraction, LLM response validation, AI data extraction, Ollama structured outputs, open source LLM, DeepSeek validation"
 ---
 
-# Instructor: Python's #1 Library for Structured LLM Outputs
+# Instructor: Python's Top Library for Structured LLM Outputs
 
 _Extract structured data from any LLM with type safety, validation, and automatic retries._
 
