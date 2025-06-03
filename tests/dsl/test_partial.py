@@ -7,6 +7,11 @@ import pytest
 import instructor
 from openai import OpenAI, AsyncOpenAI
 
+skip_in_ci = pytest.mark.skipif(
+    os.getenv("INSTRUCTOR_ENV") == "CI",
+    reason="Skipping OpenAI API tests in CI environment"
+)
+
 models = ["gpt-4o-mini"]
 modes = [
     instructor.Mode.TOOLS,
@@ -138,11 +143,8 @@ async def test_async_partial_with_whitespace():
     assert model.model_dump() == {"a": None, "b": {"b": 1}}
 
 
+@skip_in_ci
 def test_summary_extraction():
-    if os.getenv("INSTRUCTOR_ENV") == "CI":
-        pytest.skip("Skipping test on CI")
-        return
-        
     class Summary(BaseModel, PartialLiteralMixin):
         summary: str = Field(description="A detailed summary")
 
@@ -168,12 +170,9 @@ def test_summary_extraction():
     assert updates == 1
 
 
+@skip_in_ci
 @pytest.mark.asyncio
 async def test_summary_extraction_async():
-    if os.getenv("INSTRUCTOR_ENV") == "CI":
-        pytest.skip("Skipping test on CI")
-        return
-        
     class Summary(BaseModel, PartialLiteralMixin):
         summary: str = Field(description="A detailed summary")
 
