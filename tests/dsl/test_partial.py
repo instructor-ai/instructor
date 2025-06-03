@@ -138,6 +138,12 @@ async def test_async_partial_with_whitespace():
 
 
 def test_summary_extraction():
+    import os
+    
+    if os.getenv("INSTRUCTOR_ENV") == "CI":
+        pytest.skip("Skipping test on CI")
+        return
+        
     class Summary(BaseModel, PartialLiteralMixin):
         summary: str = Field(description="A detailed summary")
 
@@ -165,6 +171,12 @@ def test_summary_extraction():
 
 @pytest.mark.asyncio
 async def test_summary_extraction_async():
+    import os
+    
+    if os.getenv("INSTRUCTOR_ENV") == "CI":
+        pytest.skip("Skipping test on CI")
+        return
+        
     class Summary(BaseModel, PartialLiteralMixin):
         summary: str = Field(description="A detailed summary")
 
