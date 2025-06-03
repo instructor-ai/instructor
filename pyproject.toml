@@ -92,6 +92,7 @@ bedrock = ["boto3<2.0.0,>=1.34.0"]
 mistral = ["mistralai<2.0.0,>=1.5.1"]
 perplexity = ["openai<2.0.0,>=1.52.0"]
 google-genai=["google-genai>=1.5.0","jsonref<2.0.0,>=1.1.0"]
+litellm = ["litellm<2.0.0,>=1.35.31"]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"
@@ -117,7 +118,7 @@ docs = [
     "mkdocs-redirects<2.0.0,>=1.2.1",
     "material>=0.1",
 ]
-anthropic = ["anthropic==0.52.1"]
+anthropic = ["anthropic==0.52.1", "xmltodict<0.15,>=0.13"]
 test-docs = [
     "fastapi<0.116.0,>=0.109.2",
     "redis>=5.0.1,<7.0.0",
