@@ -162,9 +162,9 @@ if __name__ == "__main__":
             predicted_code = None
             result = classify_job(description)
             predicted_code = result.code
-            assert (
-                result.code == expected_code
-            ), f"Expected {expected_code}, got {result.code} for description: {description}"
+            assert result.code == expected_code, (
+                f"Expected {expected_code}, got {result.code} for description: {description}"
+            )
             correct += 1
         except Exception as e:
             errors.append(

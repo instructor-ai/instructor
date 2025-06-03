@@ -229,7 +229,7 @@ class Receipt(BaseModel):
 @pytest.mark.parametrize("mode", modes)
 def test_multimodal_pdf_file(mode, client, pdf_source):
     client = instructor.from_anthropic(client, mode=mode)
-    
+
     # Retry logic for flaky LLM responses
     max_retries = 3
     for attempt in range(max_retries):
@@ -250,12 +250,14 @@ def test_multimodal_pdf_file(mode, client, pdf_source):
             autodetect_images=False,
             response_model=Receipt,
         )
-        
+
         if response.total == 220 and len(response.items) == 2:
             break
         elif attempt == max_retries - 1:
-            pytest.fail(f"After {max_retries} attempts, got total={response.total}, items={response.items}, expected total=220, items=2")
-    
+            pytest.fail(
+                f"After {max_retries} attempts, got total={response.total}, items={response.items}, expected total=220, items=2"
+            )
+
     assert response.total == 220
     assert len(response.items) == 2
 

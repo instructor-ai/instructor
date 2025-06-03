@@ -302,9 +302,9 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         response = requests.get(url)
         content_type = response.headers.get("content-type")
-        assert (
-            content_type in VALID_AUDIO_MIME_TYPES
-        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        assert content_type in VALID_AUDIO_MIME_TYPES, (
+            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        )
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -320,9 +320,9 @@ class Audio(BaseModel):
         if mime_type == "audio/x-wav":
             mime_type = "audio/wav"
 
-        assert (
-            mime_type in VALID_AUDIO_MIME_TYPES
-        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        assert mime_type in VALID_AUDIO_MIME_TYPES, (
+            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        )
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)

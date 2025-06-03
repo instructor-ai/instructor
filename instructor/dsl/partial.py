@@ -132,9 +132,9 @@ class PartialBase(Generic[T_Model]):
     @cache
     def get_partial_model(cls) -> type[T_Model]:
         """Return a partial model we can use to validate partial results."""
-        assert issubclass(
-            cls, BaseModel
-        ), f"{cls.__name__} must be a subclass of BaseModel"
+        assert issubclass(cls, BaseModel), (
+            f"{cls.__name__} must be a subclass of BaseModel"
+        )
 
         model_name = (
             cls.__name__

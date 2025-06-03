@@ -617,3 +617,158 @@ If you're new to the project, check out issues marked as [`good-first-issue`](ht
    git clone https://github.com/YOUR-USERNAME/instructor.git
    cd instructor
    ```
+
+2. **Set up the development environment**
+   
+   We use `uv` to manage dependencies, which provides faster package installation and dependency resolution than traditional tools. If you don't have `uv` installed, [install it first](https://github.com/astral-sh/uv).
+   
+   ```bash
+   # Create and activate a virtual environment
+   uv venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   
+   # Install dependencies with all extras 
+   # You can specify specific groups if needed
+   uv sync --all-extras --group dev
+   
+   # Or for a specific integration
+   # uv sync --all-extras --group dev,anthropic
+   ```
+
+3. **Install pre-commit hooks**
+   
+   We use pre-commit hooks to ensure code quality and keep `uv.lock` synchronized:
+   
+   ```bash
+   uv pip install pre-commit
+   pre-commit install
+   ```
+   
+   This will automatically run formatters, linting checks, and dependency validation before each commit.
+
+### Running Tests
+
+Tests help ensure that your contributions don't break existing functionality:
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run specific tests
+uv run pytest tests/path/to/test_file.py
+
+# Run tests with coverage reporting
+uv run pytest --cov=instructor
+```
+
+### Code Style and Quality Requirements
+
+We maintain high code quality standards to keep the codebase maintainable and consistent:
+
+- **Formatting and Linting**: We use `ruff` for code formatting and linting, and `pyright` for type checking.
+  ```bash
+  # Check code formatting
+  uv run ruff format --check
+  
+  # Apply formatting
+  uv run ruff format
+  
+  # Run linter
+  uv run ruff check
+  
+  # Fix auto-fixable linting issues
+  uv run ruff check --fix
+  ```
+
+- **Type Hints**: All new code should include proper type hints.
+
+- **Documentation**: Code should be well-documented with docstrings and comments where appropriate.
+
+Make sure these checks pass when you submit a PR:
+- Linting: `uv run ruff check`
+- Formatting: `uv run ruff format`
+- Type checking: `uv run pyright`
+
+### Development Workflow
+
+1. **Create a branch for your changes**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes and commit them**
+   ```bash
+   git add .
+   git commit -m "Your descriptive commit message"
+   ```
+
+3. **Keep your branch updated with the main repository**
+   ```bash
+   git remote add upstream https://github.com/instructor-ai/instructor.git
+   git fetch upstream
+   git rebase upstream/main
+   ```
+
+4. **Push your changes**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+### Pull Request Process
+
+1. **Create a Pull Request** from your fork to the main repository.
+
+2. **Fill out the PR template** with a description of your changes, relevant issue numbers, and any other information that would help reviewers understand your contribution.
+
+3. **Address review feedback** and make any requested changes.
+
+4. **Wait for CI checks** to pass. The PR will be reviewed by maintainers once all checks are green.
+
+5. **Merge**: Once approved, a maintainer will merge your PR.
+
+### Contributing to Evals
+
+We encourage contributions to our evaluation tests. See the [Evals documentation](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals#how-to-contribute-writing-and-running-evaluation-tests) for details on writing and running evaluation tests.
+
+## CLI
+
+We also provide some added CLI functionality for easy convenience:
+
+- `instructor jobs` : This helps with the creation of fine-tuning jobs with OpenAI. Simply use `instructor jobs create-from-file --help` to get started creating your first fine-tuned GPT-3.5 model
+
+- `instructor files` : Manage your uploaded files with ease. You'll be able to create, delete and upload files all from the command line
+
+- `instructor usage` : Instead of heading to the OpenAI site each time, you can monitor your usage from the CLI and filter by date and time period. Note that usage often takes ~5-10 minutes to update from OpenAI's side
+
+## License
+
+This project is licensed under the terms of the MIT License.
+
+## Citation
+
+If you use Instructor in your research, please cite it using the following BibTeX:
+
+```bibtex
+@software{liu2024instructor,
+  author = {Jason Liu and Contributors},
+  title = {Instructor: A library for structured outputs from large language models},
+  url = {https://github.com/instructor-ai/instructor},
+  year = {2024},
+  month = {3}
+}
+```
+
+# Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+<a href="https://github.com/instructor-ai/instructor/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=instructor-ai/instructor" />
+</a>

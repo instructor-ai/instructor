@@ -167,21 +167,21 @@ def from_vertexai(
 
     if use_async is not None and _async != False:
         from instructor.exceptions import ConfigurationError
-        
+
         raise ConfigurationError(
             "Cannot provide both '_async' and 'use_async'. Use 'use_async' instead."
         )
-        
+
     if _async and use_async is None:
         import warnings
-        
+
         warnings.warn(
             "'_async' is deprecated. Use 'use_async' instead.",
             DeprecationWarning,
             stacklevel=2,
         )
         use_async = _async
-    
+
     is_async = use_async if use_async is not None else _async
 
     create = client.generate_content_async if is_async else client.generate_content

@@ -44,6 +44,7 @@ def validateIsSubClass(response_model: type):
     try:
         # Add a guard here to prevent issues with GenericAlias
         import types
+
         if isinstance(response_model, types.GenericAlias):
             return False
     except Exception:

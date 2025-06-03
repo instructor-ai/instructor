@@ -54,9 +54,9 @@ class VertexAIParallelBase(ParallelBase):
         validation_context: Optional[Any] = None,
         strict: Optional[bool] = None,
     ) -> Generator[BaseModel, None, None]:
-        assert (
-            mode == Mode.VERTEXAI_PARALLEL_TOOLS
-        ), "Mode must be VERTEXAI_PARALLEL_TOOLS"
+        assert mode == Mode.VERTEXAI_PARALLEL_TOOLS, (
+            "Mode must be VERTEXAI_PARALLEL_TOOLS"
+        )
 
         if not response or not response.candidates:
             return

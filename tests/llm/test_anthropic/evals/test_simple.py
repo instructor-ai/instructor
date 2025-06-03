@@ -20,7 +20,9 @@ def test_simple():
 
         @field_validator("name")
         def name_is_uppercase(cls, v: str):
-            assert v.isupper(), f"{v} is not an uppercased string. Note that all characters in {v} must be uppercase (EG. TIM SARAH ADAM)."
+            assert v.isupper(), (
+                f"{v} is not an uppercased string. Note that all characters in {v} must be uppercase (EG. TIM SARAH ADAM)."
+            )
             return v
 
     resp = client.messages.create(

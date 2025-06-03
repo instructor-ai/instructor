@@ -379,7 +379,7 @@ def IterableModel(
         if description is None
         else description
     )
-    assert issubclass(
-        new_cls, OpenAISchema
-    ), "The new class should be a subclass of OpenAISchema"
+    assert issubclass(new_cls, OpenAISchema), (
+        "The new class should be a subclass of OpenAISchema"
+    )
     return new_cls

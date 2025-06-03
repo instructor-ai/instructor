@@ -1663,21 +1663,29 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-anthropic = [
-    { name = "anthropic" },
-    { name = "xmltodict" },
-]
 bedrock = [
     { name = "boto3" },
 ]
-cerebras-cloud-sdk = [
-    { name = "cerebras-cloud-sdk" },
+dev = [
+    { name = "black" },
+    { name = "coverage" },
+    { name = "jsonref" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-examples" },
 ]
-cohere = [
-    { name = "cohere" },
-]
-fireworks-ai = [
-    { name = "fireworks-ai" },
+docs = [
+    { name = "material" },
+    { name = "mkdocs" },
+    { name = "mkdocs-jupyter" },
+    { name = "mkdocs-material", extra = ["imaging"] },
+    { name = "mkdocs-minify-plugin" },
+    { name = "mkdocs-redirects" },
+    { name = "mkdocs-rss-plugin" },
+    { name = "mkdocstrings" },
+    { name = "mkdocstrings-python" },
+    { name = "pytest-examples" },
 ]
 google-genai = [
     { name = "google-genai" },
@@ -1687,8 +1695,8 @@ google-generativeai = [
     { name = "google-generativeai" },
     { name = "jsonref" },
 ]
-groq = [
-    { name = "groq" },
+litellm = [
+    { name = "litellm" },
 ]
 mistral = [
     { name = "mistralai" },
@@ -1697,21 +1705,31 @@ perplexity = [
     { name = "openai" },
 ]
 test-docs = [
+    { name = "anthropic" },
+    { name = "cerebras-cloud-sdk" },
+    { name = "cohere" },
+    { name = "datasets" },
     { name = "diskcache" },
     { name = "fastapi" },
+    { name = "fireworks-ai" },
+    { name = "graphviz" },
+    { name = "groq" },
     { name = "litellm" },
     { name = "mistralai" },
     { name = "pandas" },
+    { name = "phonenumbers" },
     { name = "pydantic-extra-types" },
+    { name = "pydub" },
     { name = "redis" },
+    { name = "sqlmodel" },
     { name = "tabulate" },
+    { name = "trafilatura" },
+    { name = "writer-sdk" },
+    { name = "xmltodict" },
 ]
 vertexai = [
     { name = "google-cloud-aiplatform" },
     { name = "jsonref" },
-]
-writer = [
-    { name = "writer-sdk" },
 ]
 
 [package.dev-dependencies]
@@ -1805,42 +1823,66 @@ writer = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.1,<4.0.0" },
-    { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.52.1" },
+    { name = "anthropic", marker = "extra == 'test-docs'", specifier = "==0.52.1" },
+    { name = "black", marker = "extra == 'dev'", specifier = ">=24.10.0,<25.0.0" },
     { name = "boto3", marker = "extra == 'bedrock'", specifier = ">=1.34.0,<2.0.0" },
-    { name = "cerebras-cloud-sdk", marker = "extra == 'cerebras-cloud-sdk'", specifier = ">=1.5.0,<2.0.0" },
-    { name = "cohere", marker = "extra == 'cohere'", specifier = ">=5.1.8,<6.0.0" },
+    { name = "cerebras-cloud-sdk", marker = "extra == 'test-docs'", specifier = ">=1.5.0,<2.0.0" },
+    { name = "cohere", marker = "extra == 'test-docs'", specifier = ">=5.1.8,<6.0.0" },
+    { name = "coverage", marker = "extra == 'dev'", specifier = ">=7.3.2,<8.0.0" },
+    { name = "datasets", marker = "extra == 'test-docs'", specifier = ">=3.0.1,<4.0.0" },
     { name = "diskcache", marker = "extra == 'test-docs'", specifier = ">=5.6.3,<6.0.0" },
     { name = "docstring-parser", specifier = ">=0.16,<1.0" },
     { name = "fastapi", marker = "extra == 'test-docs'", specifier = ">=0.109.2,<0.116.0" },
-    { name = "fireworks-ai", marker = "extra == 'fireworks-ai'", specifier = ">=0.15.4,<1.0.0" },
+    { name = "fireworks-ai", marker = "extra == 'test-docs'", specifier = ">=0.15.4,<1.0.0" },
     { name = "google-cloud-aiplatform", marker = "extra == 'vertexai'", specifier = ">=1.53.0,<2.0.0" },
     { name = "google-genai", marker = "extra == 'google-genai'", specifier = ">=1.5.0" },
     { name = "google-generativeai", marker = "extra == 'google-generativeai'", specifier = ">=0.8.2,<1.0.0" },
-    { name = "groq", marker = "extra == 'groq'", specifier = ">=0.4.2,<0.26.0" },
+    { name = "graphviz", marker = "extra == 'test-docs'", specifier = ">=0.20.3,<1.0.0" },
+    { name = "groq", marker = "extra == 'test-docs'", specifier = ">=0.4.2,<0.26.0" },
     { name = "jinja2", specifier = ">=3.1.4,<4.0.0" },
     { name = "jiter", specifier = ">=0.6.1,<0.11" },
+    { name = "jsonref", marker = "extra == 'dev'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'google-genai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'google-generativeai'", specifier = ">=1.1.0,<2.0.0" },
     { name = "jsonref", marker = "extra == 'vertexai'", specifier = ">=1.1.0,<2.0.0" },
+    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.35.31,<2.0.0" },
     { name = "litellm", marker = "extra == 'test-docs'", specifier = ">=1.35.31,<2.0.0" },
+    { name = "material", marker = "extra == 'docs'", specifier = ">=0.1" },
     { name = "mistralai", marker = "extra == 'mistral'", specifier = ">=1.5.1,<2.0.0" },
     { name = "mistralai", marker = "extra == 'test-docs'", specifier = ">=1.5.1,<2.0.0" },
+    { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.4.3,<2.0.0" },
+    { name = "mkdocs-jupyter", marker = "extra == 'docs'", specifier = ">=0.24.6,<0.26.0" },
+    { name = "mkdocs-material", extras = ["imaging"], marker = "extra == 'docs'", specifier = ">=9.5.9,<10.0.0" },
+    { name = "mkdocs-minify-plugin", marker = "extra == 'docs'", specifier = ">=0.8.0,<1.0.0" },
+    { name = "mkdocs-redirects", marker = "extra == 'docs'", specifier = ">=1.2.1,<2.0.0" },
+    { name = "mkdocs-rss-plugin", marker = "extra == 'docs'", specifier = ">=1.12.0,<2.0.0" },
+    { name = "mkdocstrings", marker = "extra == 'docs'", specifier = ">=0.26.1,<0.28.0" },
+    { name = "mkdocstrings-python", marker = "extra == 'docs'", specifier = ">=1.11.1,<2.0.0" },
     { name = "openai", specifier = ">=1.70.0,<2.0.0" },
     { name = "openai", marker = "extra == 'perplexity'", specifier = ">=1.52.0,<2.0.0" },
     { name = "pandas", marker = "extra == 'test-docs'", specifier = ">=2.2.0,<3.0.0" },
+    { name = "phonenumbers", marker = "extra == 'test-docs'", specifier = ">=8.13.33,<9.0.0" },
     { name = "pydantic", specifier = ">=2.8.0,<3.0.0" },
     { name = "pydantic-core", specifier = ">=2.18.0,<3.0.0" },
     { name = "pydantic-extra-types", marker = "extra == 'test-docs'", specifier = ">=2.6.0,<3.0.0" },
+    { name = "pydub", marker = "extra == 'test-docs'", specifier = ">=0.25.1,<1.0.0" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = "<2.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.3,<9.0.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24.0,<1.0.0" },
+    { name = "pytest-examples", marker = "extra == 'dev'", specifier = ">=0.0.15" },
+    { name = "pytest-examples", marker = "extra == 'docs'", specifier = ">=0.0.15" },
     { name = "redis", marker = "extra == 'test-docs'", specifier = ">=5.0.1,<7.0.0" },
     { name = "requests", specifier = ">=2.32.3,<3.0.0" },
     { name = "rich", specifier = ">=13.7.0,<15.0.0" },
+    { name = "sqlmodel", marker = "extra == 'test-docs'", specifier = ">=0.0.22,<1.0.0" },
     { name = "tabulate", marker = "extra == 'test-docs'", specifier = ">=0.9.0,<1.0.0" },
     { name = "tenacity", specifier = ">=9.0.0,<10.0.0" },
+    { name = "trafilatura", marker = "extra == 'test-docs'", specifier = ">=1.12.2,<3.0.0" },
     { name = "typer", specifier = ">=0.9.0,<1.0.0" },
-    { name = "writer-sdk", marker = "extra == 'writer'", specifier = ">=1.2.0,<2.0.0" },
-    { name = "xmltodict", marker = "extra == 'anthropic'", specifier = ">=0.13,<0.15" },
+    { name = "writer-sdk", marker = "extra == 'test-docs'", specifier = ">=1.2.0,<2.0.0" },
+    { name = "xmltodict", marker = "extra == 'test-docs'", specifier = ">=0.13,<0.15" },
 ]
-provides-extras = ["test-docs", "anthropic", "groq", "cohere", "google-generativeai", "vertexai", "cerebras-cloud-sdk", "fireworks-ai", "writer", "bedrock", "mistral", "perplexity", "google-genai"]
+provides-extras = ["dev", "docs", "test-docs", "litellm", "google-generativeai", "vertexai", "bedrock", "mistral", "perplexity", "google-genai"]
 
 [package.metadata.requires-dev]
 anthropic = [{ name = "anthropic", specifier = "==0.52.1" }]

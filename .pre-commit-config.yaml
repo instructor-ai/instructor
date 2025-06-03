@@ -19,10 +19,10 @@ repos:
         files: ^(pyproject\.toml|uv\.lock)$
         pass_filenames: false
         
-      - id: uv-sync-check
-        name: Verify dependencies can be installed
-        entry: uv
-        args: [sync, --check]
+      - id: uv-lock-validate
+        name: Validate dependency resolution
+        entry: bash
+        args: ["-c", "uv lock --check && echo 'Dependencies can be resolved correctly'"]
         language: system
         files: ^(pyproject\.toml|uv\.lock)$
         pass_filenames: false

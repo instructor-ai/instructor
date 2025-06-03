@@ -75,9 +75,9 @@ class TestDictionaryOperations:
         # Ensure the optimized version is faster than a baseline (for CI)
         baseline = 0.1  # Adjust based on initial benchmark runs
         for key, time in results.items():
-            assert (
-                time < baseline
-            ), f"extract_messages with {key} is too slow: {time:.6f}s > {baseline:.6f}s"
+            assert time < baseline, (
+                f"extract_messages with {key} is too slow: {time:.6f}s > {baseline:.6f}s"
+            )
 
     def test_combine_system_messages_benchmark(self):
         """Benchmark for combine_system_messages function."""
@@ -127,9 +127,9 @@ class TestDictionaryOperations:
 
         baseline = 0.2  # Adjust based on initial benchmark runs
         for key, time in results.items():
-            assert (
-                time < baseline
-            ), f"combine_system_messages with {key} is too slow: {time:.6f}s > {baseline:.6f}s"
+            assert time < baseline, (
+                f"combine_system_messages with {key} is too slow: {time:.6f}s > {baseline:.6f}s"
+            )
 
     def test_extract_system_messages_benchmark(self):
         """Benchmark for extract_system_messages function."""
@@ -159,9 +159,9 @@ class TestDictionaryOperations:
 
         baseline = 0.2  # Adjust based on initial benchmark runs
         for key, time in results.items():
-            assert (
-                time < baseline
-            ), f"extract_system_messages with {key} is too slow: {time:.6f}s > {baseline:.6f}s"
+            assert time < baseline, (
+                f"extract_system_messages with {key} is too slow: {time:.6f}s > {baseline:.6f}s"
+            )
 
     def test_update_gemini_kwargs_benchmark(self):
         """Benchmark for update_gemini_kwargs function."""
@@ -172,9 +172,9 @@ class TestDictionaryOperations:
 
         print(f"\nUpdate Gemini Kwargs Benchmark Result: {result:.6f}s")
         baseline = 0.2  # Adjust based on initial benchmark runs
-        assert (
-            result < baseline
-        ), f"update_gemini_kwargs is too slow: {result:.6f}s > {baseline:.6f}s"
+        assert result < baseline, (
+            f"update_gemini_kwargs is too slow: {result:.6f}s > {baseline:.6f}s"
+        )
 
     # We'll use a simpler test for mode lookup patterns since proper mocking is complex
     # Test removed as it was producing inconsistent results across different environments

@@ -175,7 +175,7 @@ def test_multimodal_image_description_autodetect_no_response_model(model, mode, 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_multimodal_pdf_file(model, mode, client, pdf_source):
     client = instructor.from_openai(client, mode=mode)
-    
+
     # Retry logic for flaky LLM responses
     max_retries = 3
     for attempt in range(max_retries):
@@ -195,11 +195,13 @@ def test_multimodal_pdf_file(model, mode, client, pdf_source):
             response_model=Receipt,
             temperature=0,  # Keep for consistent responses
         )
-        
+
         if response.total == 220 and len(response.items) == 2:
             break
         elif attempt == max_retries - 1:
-            pytest.fail(f"After {max_retries} attempts, got total={response.total}, items={response.items}, expected total=220, items=2")
-    
+            pytest.fail(
+                f"After {max_retries} attempts, got total={response.total}, items={response.items}, expected total=220, items=2"
+            )
+
     assert response.total == 220
     assert len(response.items) == 2

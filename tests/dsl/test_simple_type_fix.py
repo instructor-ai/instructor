@@ -25,4 +25,3 @@ class TestSimpleTypeFix(unittest.TestCase):
             is_simple_type(response_model),
             f"List[Union[int, str]] should be a simple type in Python {sys.version_info.major}.{sys.version_info.minor}",
         )
-
