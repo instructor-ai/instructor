@@ -145,7 +145,7 @@ def handle_templating(
                         templated_msg["content"] = templated_content
                     templated_messages.append(templated_msg)
                 else:
-                    templated_messages.append(process_message(message, context, mode))
+                    templated_messages.append(process_message(message, context, Mode.TOOLS))
             new_kwargs["messages"] = templated_messages
         else:
             new_kwargs["messages"] = [
