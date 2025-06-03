@@ -1650,12 +1650,15 @@ version = "1.8.3"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
+    { name = "anthropic" },
     { name = "docstring-parser" },
+    { name = "google-genai" },
     { name = "jinja2" },
     { name = "jiter" },
     { name = "openai" },
     { name = "pydantic" },
     { name = "pydantic-core" },
+    { name = "python-dotenv" },
     { name = "requests" },
     { name = "rich" },
     { name = "tenacity" },
@@ -1805,6 +1808,7 @@ writer = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.9.1,<4.0.0" },
+    { name = "anthropic", specifier = ">=0.52.1" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "==0.52.1" },
     { name = "boto3", marker = "extra == 'bedrock'", specifier = ">=1.34.0,<2.0.0" },
     { name = "cerebras-cloud-sdk", marker = "extra == 'cerebras-cloud-sdk'", specifier = ">=1.5.0,<2.0.0" },
@@ -1814,6 +1818,7 @@ requires-dist = [
     { name = "fastapi", marker = "extra == 'test-docs'", specifier = ">=0.109.2,<0.116.0" },
     { name = "fireworks-ai", marker = "extra == 'fireworks-ai'", specifier = ">=0.15.4,<1.0.0" },
     { name = "google-cloud-aiplatform", marker = "extra == 'vertexai'", specifier = ">=1.53.0,<2.0.0" },
+    { name = "google-genai", specifier = ">=1.5.0" },
     { name = "google-genai", marker = "extra == 'google-genai'", specifier = ">=1.5.0" },
     { name = "google-generativeai", marker = "extra == 'google-generativeai'", specifier = ">=0.8.2,<1.0.0" },
     { name = "groq", marker = "extra == 'groq'", specifier = ">=0.4.2,<0.26.0" },
@@ -1831,6 +1836,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.8.0,<3.0.0" },
     { name = "pydantic-core", specifier = ">=2.18.0,<3.0.0" },
     { name = "pydantic-extra-types", marker = "extra == 'test-docs'", specifier = ">=2.6.0,<3.0.0" },
+    { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "redis", marker = "extra == 'test-docs'", specifier = ">=5.0.1,<7.0.0" },
     { name = "requests", specifier = ">=2.32.3,<3.0.0" },
     { name = "rich", specifier = ">=13.7.0,<15.0.0" },
