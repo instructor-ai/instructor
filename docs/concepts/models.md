@@ -55,7 +55,7 @@ Note that fields can also be omitted entirely from being sent to the language mo
 There are some occasions where it is desirable to create a model using runtime information to specify the fields. For this, Pydantic provides the create_model function to allow models to be created on the fly:
 
 ```python
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, create_model, Field
 
 
 class FooModel(BaseModel):
@@ -89,7 +89,7 @@ print(BarModel.model_fields.keys())
     We can then use this information to create the model.
 
     ```python
-    from pydantic import BaseModel, create_model
+    from pydantic import BaseModel, create_model, Field
     from typing import List
 
     types = {
@@ -110,7 +110,7 @@ print(BarModel.model_fields.keys())
     BarModel = create_model(
         'User',
         **{
-            property_name: (types[property_type], description)
+            property_name: (types[property_type], Field(description=description))
             for property_name, property_type, description in cursor
         },
         __base__=BaseModel,
@@ -120,10 +120,10 @@ print(BarModel.model_fields.keys())
     """
     {
         'properties': {
-            'name': {'default': 'The name of the user.', 'title': 'Name', 'type': 'string'},
-            'age': {'default': 'The age of the user.', 'title': 'Age', 'type': 'integer'},
+            'name': {'description': 'The name of the user.', 'title': 'Name', 'type': 'string'},
+            'age': {'description': 'The age of the user.', 'title': 'Age', 'type': 'integer'},
             'email': {
-                'default': 'The email of the user.',
+                'description': 'The email of the user.',
                 'title': 'Email',
                 'type': 'string',
             },
