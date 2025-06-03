@@ -53,7 +53,6 @@ dev = [
     "coverage<8.0.0,>=7.3.2",
     "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
-    "black<25.0.0,>=24.10.0",
     "pytest-examples>=0.0.15",
 ]
 docs = [
@@ -104,7 +103,6 @@ dev = [
     "coverage<8.0.0,>=7.3.2",
     "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
-    "black<25.0.0,>=24.10.0",
     "pytest-examples>=0.0.15",
 ]
 docs = [
