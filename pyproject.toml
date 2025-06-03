@@ -47,6 +47,27 @@ pythonVersion = "3.9"
 pythonPlatform = "Linux"
 
 [project.optional-dependencies]
+dev = [
+    "pytest<9.0.0,>=8.3.3",
+    "pytest-asyncio<1.0.0,>=0.24.0",
+    "coverage<8.0.0,>=7.3.2",
+    "pyright<2.0.0",
+    "jsonref<2.0.0,>=1.1.0",
+    "black<25.0.0,>=24.10.0",
+    "pytest-examples>=0.0.15",
+]
+docs = [
+    "mkdocs<2.0.0,>=1.4.3",
+    "mkdocs-material[imaging]<10.0.0,>=9.5.9",
+    "mkdocstrings<0.28.0,>=0.26.1",
+    "mkdocstrings-python<2.0.0,>=1.11.1",
+    "pytest-examples>=0.0.15",
+    "mkdocs-jupyter<0.26.0,>=0.24.6",
+    "mkdocs-rss-plugin<2.0.0,>=1.12.0",
+    "mkdocs-minify-plugin<1.0.0,>=0.8.0",
+    "mkdocs-redirects<2.0.0,>=1.2.1",
+    "material>=0.1",
+]
 test-docs = [
     "fastapi<0.116.0,>=0.109.2",
     "redis>=5.0.1,<7.0.0",
