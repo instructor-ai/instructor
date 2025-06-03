@@ -1,4 +1,5 @@
 # type: ignore[all]
+import os
 from pydantic import BaseModel, Field
 from typing import Optional, Union
 from instructor.dsl.partial import Partial, PartialLiteralMixin
@@ -138,8 +139,6 @@ async def test_async_partial_with_whitespace():
 
 
 def test_summary_extraction():
-    import os
-    
     if os.getenv("INSTRUCTOR_ENV") == "CI":
         pytest.skip("Skipping test on CI")
         return
@@ -171,8 +170,6 @@ def test_summary_extraction():
 
 @pytest.mark.asyncio
 async def test_summary_extraction_async():
-    import os
-    
     if os.getenv("INSTRUCTOR_ENV") == "CI":
         pytest.skip("Skipping test on CI")
         return
