@@ -305,10 +305,17 @@ class OpenAISchema(BaseModel):
         assert isinstance(completion, types.GenerateContentResponse)
         assert len(completion.candidates) == 1
 
-        assert len(completion.candidates[0].content.parts) == 1, (
+        # Filter out thought parts (parts with thought: true)
+        parts = completion.candidates[0].content.parts
+        non_thought_parts = [
+            part for part in parts 
+            if not (hasattr(part, 'thought') and part.thought)
+        ]
+
+        assert len(non_thought_parts) == 1, (
             f"Instructor does not support multiple function calls, use List[Model] instead"
         )
-        function_call = completion.candidates[0].content.parts[0].function_call
+        function_call = non_thought_parts[0].function_call
         assert function_call is not None, (
             f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
         )
