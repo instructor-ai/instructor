@@ -224,6 +224,7 @@ class Instructor:
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
+        verbose: bool = True,
         **kwargs: Any,
     ):
         self.client = client
@@ -235,6 +236,7 @@ class Instructor:
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
+        self.verbose = verbose
 
         if mode in {
             instructor.Mode.RESPONSES_TOOLS,
@@ -530,6 +532,8 @@ class Instructor:
         for key, value in self.kwargs.items():
             if key not in kwargs:
                 kwargs[key] = value
+        if "verbose" not in kwargs:
+            kwargs["verbose"] = self.verbose
         return kwargs
 
     def __getattr__(self, attr: str) -> Any:
@@ -554,6 +558,7 @@ class AsyncInstructor(Instructor):
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
+        verbose: bool = True,
         **kwargs: Any,
     ):
         self.client = client
@@ -562,6 +567,7 @@ class AsyncInstructor(Instructor):
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
+        self.verbose = verbose
 
         if mode in {
             instructor.Mode.RESPONSES_TOOLS,
@@ -803,6 +809,8 @@ def from_openai(
             provider=provider,
             **kwargs,
         )
+    
+    raise ValueError(f"Unsupported client type: {type(client)}")
 
 
 @overload

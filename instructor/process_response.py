@@ -595,7 +595,7 @@ def handle_gemini_json(
 
 
 def handle_gemini_tools(
-    response_model: type[T], new_kwargs: dict[str, Any]
+    response_model: type[T], new_kwargs: dict[str, Any], verbose: bool = True
 ) -> tuple[type[T], dict[str, Any]]:
     if "model" in new_kwargs:
         from instructor.exceptions import ConfigurationError
@@ -606,7 +606,15 @@ def handle_gemini_tools(
 
     from .utils import update_gemini_kwargs
 
-    new_kwargs["tools"] = [response_model.gemini_schema]
+    if verbose:
+        new_kwargs["tools"] = [response_model.gemini_schema]
+    else:
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+        
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            new_kwargs["tools"] = [response_model.gemini_schema]
+    
     new_kwargs["tool_config"] = {
         "function_calling_config": {
             "mode": "ANY",
@@ -1129,7 +1137,7 @@ def handle_response_model(
         Mode.COHERE_JSON_SCHEMA: handle_cohere_json_schema,
         Mode.COHERE_TOOLS: handle_cohere_tools,
         Mode.GEMINI_JSON: handle_gemini_json,
-        Mode.GEMINI_TOOLS: handle_gemini_tools,
+        Mode.GEMINI_TOOLS: lambda rm, nk: handle_gemini_tools(rm, nk, nk.pop("verbose", True)),
         Mode.GENAI_TOOLS: handle_genai_tools,
         Mode.GENAI_STRUCTURED_OUTPUTS: handle_genai_structured_outputs,
         Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
