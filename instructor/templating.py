@@ -104,6 +104,8 @@ def handle_templating(
 
     new_kwargs = kwargs.copy()
 
+
+
     # Handle Cohere's message field
     if "message" in new_kwargs:
         new_kwargs["message"] = apply_template(new_kwargs["message"], context)

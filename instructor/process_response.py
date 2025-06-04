@@ -622,10 +622,34 @@ def handle_genai_structured_outputs(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
     from google.genai import types
+    from instructor.templating import apply_template
 
+    context = new_kwargs.get("context")
+    
     if new_kwargs.get("system"):
         system_message = new_kwargs.pop("system")
+        if context:
+            system_message = apply_template(system_message, context)
     elif new_kwargs.get("messages"):
+        if context:
+            templated_messages = []
+            for msg in new_kwargs["messages"]:
+                if isinstance(msg, dict) and msg.get("role") == "system":
+                    templated_msg = msg.copy()
+                    if isinstance(msg.get("content"), str):
+                        templated_msg["content"] = apply_template(msg["content"], context)
+                    elif isinstance(msg.get("content"), list):
+                        templated_content = []
+                        for item in msg["content"]:
+                            if isinstance(item, str):
+                                templated_content.append(apply_template(item, context))
+                            else:
+                                templated_content.append(item)
+                        templated_msg["content"] = templated_content
+                    templated_messages.append(templated_msg)
+                else:
+                    templated_messages.append(msg)
+            new_kwargs["messages"] = templated_messages
         system_message = extract_genai_system_message(new_kwargs["messages"])
     else:
         system_message = None
@@ -648,6 +672,7 @@ def handle_genai_structured_outputs(
     new_kwargs.pop("messages", None)
     new_kwargs.pop("generation_config", None)
     new_kwargs.pop("safety_settings", None)
+    new_kwargs.pop("context", None)
 
     return response_model, new_kwargs
 
@@ -656,6 +681,7 @@ def handle_genai_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
     from google.genai import types
+    from instructor.templating import apply_template
 
     schema = map_to_gemini_function_schema(response_model.model_json_schema())
     function_definition = types.FunctionDeclaration(
@@ -664,10 +690,32 @@ def handle_genai_tools(
         parameters=schema,
     )
 
-    # We support the system message if you declare a system kwarg or if you pass a system message in the messages
+    context = new_kwargs.get("context")
+
     if new_kwargs.get("system"):
         system_message = new_kwargs.pop("system")
+        if context:
+            system_message = apply_template(system_message, context)
     elif new_kwargs.get("messages"):
+        if context:
+            templated_messages = []
+            for msg in new_kwargs["messages"]:
+                if isinstance(msg, dict) and msg.get("role") == "system":
+                    templated_msg = msg.copy()
+                    if isinstance(msg.get("content"), str):
+                        templated_msg["content"] = apply_template(msg["content"], context)
+                    elif isinstance(msg.get("content"), list):
+                        templated_content = []
+                        for item in msg["content"]:
+                            if isinstance(item, str):
+                                templated_content.append(apply_template(item, context))
+                            else:
+                                templated_content.append(item)
+                        templated_msg["content"] = templated_content
+                    templated_messages.append(templated_msg)
+                else:
+                    templated_messages.append(msg)
+            new_kwargs["messages"] = templated_messages
         system_message = extract_genai_system_message(new_kwargs["messages"])
     else:
         system_message = None
@@ -691,6 +739,7 @@ def handle_genai_tools(
     new_kwargs.pop("messages", None)
     new_kwargs.pop("generation_config", None)
     new_kwargs.pop("safety_settings", None)
+    new_kwargs.pop("context", None)
 
     return response_model, new_kwargs
 
@@ -1055,7 +1104,7 @@ def handle_openrouter_structured_outputs(
 
 
 def handle_response_model(
-    response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
+    response_model: type[T] | None, mode: Mode = Mode.TOOLS, context: dict[str, Any] | None = None, **kwargs: Any
 ) -> tuple[type[T] | VertexAIParallelBase | None, dict[str, Any]]:
     """
     Handles the response model based on the specified mode and prepares the kwargs for the API call.
@@ -1063,6 +1112,7 @@ def handle_response_model(
     Args:
         response_model (type[T] | None): The response model to be used for parsing the API response.
         mode (Mode): The mode to use for handling the response model. Defaults to Mode.TOOLS.
+        context (dict[str, Any] | None): The context for templating. Defaults to None.
         **kwargs: Additional keyword arguments to be passed to the API call.
 
     Returns:
@@ -1074,6 +1124,8 @@ def handle_response_model(
     """
 
     new_kwargs = kwargs.copy()
+    if context is not None:
+        new_kwargs["context"] = context
     # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 

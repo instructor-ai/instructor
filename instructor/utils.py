@@ -985,10 +985,7 @@ def extract_genai_system_message(
             "At least one user message must be included. A system message alone is not sufficient."
         )
 
-    if re.search(r"{{.*?}}|{%.*?%}", system_messages):
-        raise ValueError(
-            "Jinja templating is not supported in system messages with Google GenAI, only user messages."
-        )
+
 
     return system_messages
 
