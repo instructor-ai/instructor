@@ -224,7 +224,7 @@ class Instructor:
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
-        verbose: bool = True,
+
         **kwargs: Any,
     ):
         self.client = client
@@ -236,7 +236,6 @@ class Instructor:
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
-        self.verbose = verbose
 
         if mode in {
             instructor.Mode.RESPONSES_TOOLS,
@@ -528,18 +527,11 @@ class Instructor:
 
         This method merges the provided kwargs with the default kwargs stored in the instance.
         It ensures that any kwargs passed to the method call take precedence over the default ones.
-        It also filters out instructor-specific parameters that shouldn't be passed to the underlying client.
         """
         for key, value in self.kwargs.items():
             if key not in kwargs:
                 kwargs[key] = value
-        if "verbose" not in kwargs:
-            kwargs["verbose"] = self.verbose
-        
-        instructor_params = {"verbose"}
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k not in instructor_params}
-        
-        return filtered_kwargs
+        return kwargs
 
     def __getattr__(self, attr: str) -> Any:
         if attr not in {"create", "chat", "messages"}:
@@ -563,7 +555,7 @@ class AsyncInstructor(Instructor):
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
-        verbose: bool = True,
+
         **kwargs: Any,
     ):
         self.client = client
@@ -572,7 +564,6 @@ class AsyncInstructor(Instructor):
         self.kwargs = kwargs
         self.provider = provider
         self.hooks = hooks or Hooks()
-        self.verbose = verbose
 
         if mode in {
             instructor.Mode.RESPONSES_TOOLS,

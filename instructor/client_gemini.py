@@ -57,21 +57,21 @@ def from_gemini(
 
     if use_async:
         create = client.generate_content_async
+        kwargs["verbose"] = verbose
         return instructor.AsyncInstructor(
             client=client,
             create=instructor.patch(create=create, mode=mode),
             provider=instructor.Provider.GEMINI,
             mode=mode,
-            verbose=verbose,
             **kwargs,
         )
 
     create = client.generate_content
+    kwargs["verbose"] = verbose
     return instructor.Instructor(
         client=client,
         create=instructor.patch(create=create, mode=mode),
         provider=instructor.Provider.GEMINI,
         mode=mode,
-        verbose=verbose,
         **kwargs,
     )

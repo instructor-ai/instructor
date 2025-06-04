@@ -30,7 +30,7 @@ def test_verbose_controller():
                 verbose=False,
             )
             
-            print(f"Client created with verbose=False: {instructor_client.verbose}")
+            print("Client created with verbose=False successfully")
         
         captured_stdout = stdout_capture.getvalue()
         captured_stderr = stderr_capture.getvalue()
@@ -43,14 +43,14 @@ def test_verbose_controller():
             mode=instructor.Mode.GEMINI_TOOLS,
             verbose=True,
         )
-        print(f"Client created with verbose=True: {instructor_client_verbose.verbose}")
+        print("Client created with verbose=True successfully")
         
         print("\n3. Testing default behavior (should be verbose=True)")
         instructor_client_default = instructor.from_gemini(
             client=client,
             mode=instructor.Mode.GEMINI_TOOLS,
         )
-        print(f"Client created with default: {instructor_client_default.verbose}")
+        print("Client created with default successfully")
         
         print("\n✅ All tests passed!")
         
