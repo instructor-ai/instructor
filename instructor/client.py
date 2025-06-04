@@ -224,6 +224,7 @@ class Instructor:
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
+
         **kwargs: Any,
     ):
         self.client = client
@@ -554,6 +555,7 @@ class AsyncInstructor(Instructor):
         mode: instructor.Mode = instructor.Mode.TOOLS,
         provider: Provider = Provider.OPENAI,
         hooks: Hooks | None = None,
+
         **kwargs: Any,
     ):
         self.client = client
@@ -803,6 +805,8 @@ def from_openai(
             provider=provider,
             **kwargs,
         )
+    
+    raise ValueError(f"Unsupported client type: {type(client)}")
 
 
 @overload

@@ -13,6 +13,7 @@ def from_gemini(
     client: genai.GenerativeModel,
     mode: instructor.Mode = instructor.Mode.GEMINI_JSON,
     use_async: Literal[True] = True,
+    verbose: bool = True,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
 
@@ -22,6 +23,7 @@ def from_gemini(
     client: genai.GenerativeModel,
     mode: instructor.Mode = instructor.Mode.GEMINI_JSON,
     use_async: Literal[False] = False,
+    verbose: bool = True,
     **kwargs: Any,
 ) -> instructor.Instructor: ...
 
@@ -30,6 +32,7 @@ def from_gemini(
     client: genai.GenerativeModel,
     mode: instructor.Mode = instructor.Mode.GEMINI_JSON,
     use_async: bool = False,
+    verbose: bool = True,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
     valid_modes = {
@@ -54,6 +57,7 @@ def from_gemini(
 
     if use_async:
         create = client.generate_content_async
+        kwargs["verbose"] = verbose
         return instructor.AsyncInstructor(
             client=client,
             create=instructor.patch(create=create, mode=mode),
@@ -63,6 +67,7 @@ def from_gemini(
         )
 
     create = client.generate_content
+    kwargs["verbose"] = verbose
     return instructor.Instructor(
         client=client,
         create=instructor.patch(create=create, mode=mode),
