@@ -625,25 +625,19 @@ def handle_genai_structured_outputs(
     from instructor.templating import apply_template
 
     context = new_kwargs.get("context")
-    print(f"[DEBUG] handle_genai_structured_outputs - context: {context}")
     
     if new_kwargs.get("system"):
         system_message = new_kwargs.pop("system")
-        print(f"[DEBUG] handle_genai_structured_outputs - original system: {system_message}")
         if context:
             system_message = apply_template(system_message, context)
-            print(f"[DEBUG] handle_genai_structured_outputs - templated system: {system_message}")
     elif new_kwargs.get("messages"):
-        print(f"[DEBUG] handle_genai_structured_outputs - original messages: {new_kwargs['messages']}")
         if context:
             templated_messages = []
             for msg in new_kwargs["messages"]:
                 if isinstance(msg, dict) and msg.get("role") == "system":
                     templated_msg = msg.copy()
-                    print(f"[DEBUG] handle_genai_structured_outputs - original system msg: {msg}")
                     if isinstance(msg.get("content"), str):
                         templated_msg["content"] = apply_template(msg["content"], context)
-                        print(f"[DEBUG] handle_genai_structured_outputs - templated system msg: {templated_msg}")
                     elif isinstance(msg.get("content"), list):
                         templated_content = []
                         for item in msg["content"]:
@@ -652,14 +646,11 @@ def handle_genai_structured_outputs(
                             else:
                                 templated_content.append(item)
                         templated_msg["content"] = templated_content
-                        print(f"[DEBUG] handle_genai_structured_outputs - templated system msg list: {templated_msg}")
                     templated_messages.append(templated_msg)
                 else:
                     templated_messages.append(msg)
             new_kwargs["messages"] = templated_messages
-            print(f"[DEBUG] handle_genai_structured_outputs - final messages: {new_kwargs['messages']}")
         system_message = extract_genai_system_message(new_kwargs["messages"])
-        print(f"[DEBUG] handle_genai_structured_outputs - extracted system: {system_message}")
     else:
         system_message = None
 
@@ -699,25 +690,19 @@ def handle_genai_tools(
     )
 
     context = new_kwargs.get("context")
-    print(f"[DEBUG] handle_genai_tools - context: {context}")
 
     if new_kwargs.get("system"):
         system_message = new_kwargs.pop("system")
-        print(f"[DEBUG] handle_genai_tools - original system: {system_message}")
         if context:
             system_message = apply_template(system_message, context)
-            print(f"[DEBUG] handle_genai_tools - templated system: {system_message}")
     elif new_kwargs.get("messages"):
-        print(f"[DEBUG] handle_genai_tools - original messages: {new_kwargs['messages']}")
         if context:
             templated_messages = []
             for msg in new_kwargs["messages"]:
                 if isinstance(msg, dict) and msg.get("role") == "system":
                     templated_msg = msg.copy()
-                    print(f"[DEBUG] handle_genai_tools - original system msg: {msg}")
                     if isinstance(msg.get("content"), str):
                         templated_msg["content"] = apply_template(msg["content"], context)
-                        print(f"[DEBUG] handle_genai_tools - templated system msg: {templated_msg}")
                     elif isinstance(msg.get("content"), list):
                         templated_content = []
                         for item in msg["content"]:
@@ -726,14 +711,11 @@ def handle_genai_tools(
                             else:
                                 templated_content.append(item)
                         templated_msg["content"] = templated_content
-                        print(f"[DEBUG] handle_genai_tools - templated system msg list: {templated_msg}")
                     templated_messages.append(templated_msg)
                 else:
                     templated_messages.append(msg)
             new_kwargs["messages"] = templated_messages
-            print(f"[DEBUG] handle_genai_tools - final messages: {new_kwargs['messages']}")
         system_message = extract_genai_system_message(new_kwargs["messages"])
-        print(f"[DEBUG] handle_genai_tools - extracted system: {system_message}")
     else:
         system_message = None
 
@@ -1120,7 +1102,7 @@ def handle_openrouter_structured_outputs(
 
 
 def handle_response_model(
-    response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
+    response_model: type[T] | None, mode: Mode = Mode.TOOLS, context: dict[str, Any] | None = None, **kwargs: Any
 ) -> tuple[type[T] | VertexAIParallelBase | None, dict[str, Any]]:
     """
     Handles the response model based on the specified mode and prepares the kwargs for the API call.
@@ -1128,6 +1110,7 @@ def handle_response_model(
     Args:
         response_model (type[T] | None): The response model to be used for parsing the API response.
         mode (Mode): The mode to use for handling the response model. Defaults to Mode.TOOLS.
+        context (dict[str, Any] | None): The context for templating. Defaults to None.
         **kwargs: Additional keyword arguments to be passed to the API call.
 
     Returns:
@@ -1139,6 +1122,8 @@ def handle_response_model(
     """
 
     new_kwargs = kwargs.copy()
+    if context is not None:
+        new_kwargs["context"] = context
     # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 
