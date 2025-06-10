@@ -980,6 +980,17 @@ def handle_writer_tools(
     return response_model, new_kwargs
 
 
+def handle_writer_json(
+    response_model: type[T], new_kwargs: dict[str, Any]
+) -> tuple[type[T], dict[str, Any]]:
+    new_kwargs["response_format"] = {
+        "type": "json_schema",
+        "json_schema": {"schema": response_model.model_json_schema()},
+    }
+
+    return response_model, new_kwargs
+
+
 def handle_perplexity_json(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
@@ -1139,6 +1150,7 @@ def handle_response_model(
         Mode.FIREWORKS_JSON: handle_fireworks_json,
         Mode.FIREWORKS_TOOLS: handle_fireworks_tools,
         Mode.WRITER_TOOLS: handle_writer_tools,
+        Mode.WRITER_JSON: handle_writer_json,
         Mode.BEDROCK_JSON: handle_bedrock_json,
         Mode.BEDROCK_TOOLS: handle_bedrock_tools,
         Mode.PERPLEXITY_JSON: handle_perplexity_json,
