@@ -21,11 +21,12 @@ class Label(BaseModel):
     @classmethod
     def validate_chunk_id(cls, v: str, info: ValidationInfo) -> str:
         context = info.context
-        chunks = context.get("chunks", [])
-        if v not in [chunk["id"] for chunk in chunks]:
-            raise ValueError(
-                f"Chunk with id {v} not found, must be one of {[chunk['id'] for chunk in chunks]}"
-            )
+        if context:
+            chunks = context.get("chunks", [])
+            if v not in [chunk["id"] for chunk in chunks]:
+                raise ValueError(
+                    f"Chunk with id {v} not found, must be one of {[chunk['id'] for chunk in chunks]}"
+                )
         return v
 
 
