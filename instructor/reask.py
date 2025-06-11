@@ -369,8 +369,30 @@ def reask_writer_tools(
         {
             "role": "user",
             "content": (
-                f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+                f"Validation Error found:\n{exception}\n Fix errors and fill tool call arguments/name "
+                f"correctly. Just update arguments dict values or update name. Don't change the structure "
+                f"of them. You have to call function by passing desired "
+                f"functions name/args as part of special attribute with name tools_calls, "
+                f"not as text in attribute with name content. IT'S IMPORTANT!"
             ),
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def reask_writer_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": f"Correct your JSON response: {response.choices[0].message.content}, "
+            f"based on the following errors:\n{exception}",
         }
     )
     kwargs["messages"].extend(reask_msgs)
@@ -532,6 +554,8 @@ def handle_reask_kwargs(
         return reask_fireworks_json(kwargs_copy, response, exception)
     elif mode == Mode.WRITER_TOOLS:
         return reask_writer_tools(kwargs_copy, response, exception)
+    elif mode == Mode.WRITER_JSON:
+        return reask_writer_json(kwargs_copy, response, exception)
     elif mode == Mode.BEDROCK_JSON:
         return reask_bedrock_json(kwargs_copy, response, exception)
     elif mode == Mode.PERPLEXITY_JSON:

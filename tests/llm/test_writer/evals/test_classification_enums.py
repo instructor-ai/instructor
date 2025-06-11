@@ -49,7 +49,9 @@ def test_writer_classification(
         messages=[
             {
                 "role": "user",
-                "content": f"Classify the following text: {input}",
+                "content": f"Classify the following text: {input}. "
+                f"Apply this or another class only in cases when "
+                f"when you are 100% sure.",
             },
         ],
     )
@@ -102,7 +104,9 @@ def test_writer_multi_classify(
         messages=[
             {
                 "role": "user",
-                "content": f"Classify the following support ticket: {input}",
+                "content": f"Classify the following support ticket: {input} "
+                f"Apply this or another class only in cases when "
+                f"when you are 100% sure.",
             },
         ],
     )

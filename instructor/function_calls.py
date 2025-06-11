@@ -232,6 +232,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.WRITER_TOOLS:
             return cls.parse_writer_tools(completion, validation_context, strict)
 
+        if mode == Mode.WRITER_JSON:
+            return cls.parse_writer_json(completion, validation_context, strict)
+
         if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
             return cls.parse_responses_tools(
                 completion,
@@ -305,10 +308,17 @@ class OpenAISchema(BaseModel):
         assert isinstance(completion, types.GenerateContentResponse)
         assert len(completion.candidates) == 1
 
-        assert len(completion.candidates[0].content.parts) == 1, (
+        # Filter out thought parts (parts with thought: true)
+        parts = completion.candidates[0].content.parts
+        non_thought_parts = [
+            part for part in parts 
+            if not (hasattr(part, 'thought') and part.thought)
+        ]
+
+        assert len(non_thought_parts) == 1, (
             f"Instructor does not support multiple function calls, use List[Model] instead"
         )
-        function_call = completion.candidates[0].content.parts[0].function_call
+        function_call = non_thought_parts[0].function_call
         assert function_call is not None, (
             f"Please return your response as a function call with the schema {cls.openai_schema} and the name {cls.openai_schema['name']}"
         )
@@ -495,18 +505,39 @@ class OpenAISchema(BaseModel):
         strict: Optional[bool] = None,
     ) -> BaseModel:
         message = completion.choices[0].message
-        tool_calls = message.tool_calls
+        tool_calls = message.tool_calls if message.tool_calls else "{}"
         assert len(tool_calls) == 1, (
             "Instructor does not support multiple tool calls, use List[Model] instead"
         )
         assert tool_calls[0].function.name == cls.openai_schema["name"], (
             "Tool name does not match"
         )
+        loaded_args = json.loads(tool_calls[0].function.arguments)
         return cls.model_validate_json(
-            tool_calls[0].function.arguments,
+            json.dumps(loaded_args) if isinstance(loaded_args, dict) else loaded_args,
             context=validation_context,
             strict=strict,
         )
+
+    @classmethod
+    def parse_writer_json(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        _handle_incomplete_output(completion)
+
+        message = completion.choices[0].message.content or ""
+        json_content = extract_json_from_codeblock(message)
+
+        if strict:
+            return cls.model_validate_json(
+                json_content, context=validation_context, strict=True
+            )
+        else:
+            parsed = json.loads(json_content, strict=False)
+            return cls.model_validate(parsed, context=validation_context, strict=False)
 
     @classmethod
     def parse_functions(
