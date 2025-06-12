@@ -349,10 +349,35 @@ def from_provider(
                 if async_client
                 else openai.OpenAI(base_url=base_url, api_key=api_key)
             )
+
+            # Models that support function calling (tools mode)
+            tool_capable_models = {
+                "llama3.1",
+                "llama3.2",
+                "llama4",
+                "mistral-nemo",
+                "firefunction-v2",
+                "command-r-plus",
+                "qwen2.5",
+                "qwen2.5-coder",
+                "qwen3",
+                "devstral",
+            }
+
+            # Check if model supports tools by looking at model name
+            supports_tools = any(
+                capable_model in model_name.lower()
+                for capable_model in tool_capable_models
+            )
+
+            default_mode = (
+                instructor.Mode.TOOLS if supports_tools else instructor.Mode.JSON
+            )
+
             return from_openai(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.JSON,
+                mode=mode if mode else default_mode,
                 **kwargs,
             )
         except ImportError:
