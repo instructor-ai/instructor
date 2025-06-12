@@ -89,7 +89,7 @@ tqdm==4.67.1
     # via openai
 typer==0.16.0
     # via instructor (pyproject.toml)
-typing-extensions==4.13.2
+typing-extensions==4.14.0
     # via
     #   anyio
     #   openai
