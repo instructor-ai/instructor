@@ -42,6 +42,29 @@ Start by downloading [Ollama](https://ollama.ai/download), and then pull a model
 ollama pull llama2
 ```
 
+## Quick Start with Auto Client
+
+You can use Ollama with Instructor's auto client for a simple setup:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+class Character(BaseModel):
+    name: str
+    age: int
+
+# Simple setup - automatically configured for Ollama
+client = instructor.from_provider("ollama/llama2")
+
+resp = client.chat.completions.create(
+    messages=[{"role": "user", "content": "Tell me about Harry Potter"}],
+    response_model=Character,
+)
+```
+
+## Manual Setup
+
 ```python
 from openai import OpenAI
 from pydantic import BaseModel, Field
