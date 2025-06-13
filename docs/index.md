@@ -5,6 +5,12 @@ description: "Get reliable JSON from any LLM. Built on Pydantic for validation, 
 
 # Stop wrestling with LLM outputs
 
+[![PyPI](https://img.shields.io/pypi/v/instructor?style=flat-square)](https://pypi.org/project/instructor/)
+[![Downloads](https://img.shields.io/pypi/dm/instructor?style=flat-square)](https://pypi.org/project/instructor/)
+[![GitHub Stars](https://img.shields.io/github/stars/instructor-ai/instructor?style=flat-square)](https://github.com/instructor-ai/instructor)
+[![Discord](https://img.shields.io/discord/1192334452110659664?style=flat-square)](https://discord.gg/bD9YE9JArw)
+[![Twitter](https://img.shields.io/twitter/follow/jxnlco?style=flat-square)](https://twitter.com/jxnlco)
+
 You're trying to extract structured data from LLMs, but you're stuck writing JSON schemas, handling validation errors, and parsing malformed responses. There's a better way.
 
 ## The problem
@@ -292,6 +298,54 @@ Instructor adds minimal overhead (<5ms) to your LLM calls. The time saved from n
 ### Can I use it in production?
 
 Absolutely. Instructor is used in production by thousands of companies. It's battle-tested, well-maintained, and has a large community.
+
+## Installation options
+
+=== "uv"
+    ```bash
+    uv add instructor
+    ```
+
+=== "pip"
+    ```bash
+    pip install instructor
+    ```
+
+=== "poetry"
+    ```bash
+    poetry add instructor
+    ```
+
+## Type inference and IDE support
+
+Instructor provides excellent IDE support with proper type inference:
+
+```python
+user = client.chat.completions.create(
+    response_model=User,
+    messages=[{"role": "user", "content": "..."}],
+)
+
+# Your IDE knows these types
+user.name  # str
+user.age   # int
+```
+
+## Available in other languages
+
+Instructor's simple API is available across many languages:
+
+- [TypeScript](https://js.useinstructor.com) - Full-featured JavaScript/TypeScript library
+- [Ruby](https://ruby.useinstructor.com) - Ruby implementation
+- [Go](https://go.useinstructor.com) - Go implementation  
+- [Elixir](https://hex.pm/packages/instructor) - Elixir implementation
+
+## Learn more
+
+- [Concepts](./concepts/index.md) - Core concepts and mental models
+- [Cookbook](./examples/index.md) - Copy-paste examples for common tasks
+- [Blog](./blog/index.md) - Tutorials and best practices
+- [Hub](./hub/index.md) - Pre-built extractors and validators
 
 ## Ready to build?
 

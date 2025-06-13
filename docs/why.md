@@ -4,218 +4,264 @@ description: Discover why Instructor is the simplest, most reliable way to get s
 
 # Why use Instructor?
 
-You've built something with an LLM, but 15% of the time it returns garbage. Parsing JSON is a nightmare. Different providers have different APIs. There has to be a better way.
+Every LLM provider now supports structured outputs. OpenAI has response_format. Anthropic has tool use. Google has function calling. The problem? They're all different, and you still have to handle validation, retries, and complex types yourself.
 
-## The pain of unstructured outputs
+## The real problem: fragmentation
 
-Let's be honest about what working with LLMs is really like:
+Yes, structured outputs exist. But look at what you're dealing with:
 
 ```python
-# What you want:
-user_info = extract_user("John is 25 years old")
-print(user_info.name)  # "John"
-print(user_info.age)   # 25
+# OpenAI's way
+response = openai.chat.completions.create(
+    model="gpt-4",
+    response_format={"type": "json_schema", "json_schema": {...}},
+    messages=[...]
+)
 
-# What you actually get:
-response = llm.complete("Extract: John is 25 years old")
-# "I'd be happy to help! Based on the text, the user's name is John 
-# and their age is 25. Is there anything else you'd like me to extract?"
+# Anthropic's way
+response = anthropic.messages.create(
+    model="claude-3",
+    tools=[{"name": "get_user", "input_schema": {...}}],
+    messages=[...]
+)
 
-# Now you need to:
-# 1. Parse this text somehow
-# 2. Handle when it returns JSON with syntax errors  
-# 3. Validate the data matches what you expect
-# 4. Retry when it fails (which it will)
-# 5. Do this differently for each LLM provider
+# Google's way
+response = genai.generate_content(
+    model="gemini-pro",
+    generation_config={"response_mime_type": "application/json"},
+    contents=[...]
+)
+
+# Mistral's way, Cohere's way, Groq's way...
+# Each one different. Each one incomplete.
 ```
 
-## The Instructor difference
+## What providers don't tell you
 
-Here's the same task with Instructor:
+### 1. No validation beyond "valid JSON"
+
+```python
+# This is valid JSON to OpenAI:
+{
+    "name": "John",
+    "age": "twenty-five",  # Wrong type
+    "email": "not-an-email"  # Invalid format
+}
+
+# This passes their structured output:
+{
+    "users": null  # Where's the data?
+}
+```
+
+### 2. No automatic retries
+
+When validation fails (and it will), you're on your own:
+
+```python
+# Without Instructor: DIY retry logic
+for attempt in range(3):
+    response = openai.chat.completions.create(...)
+    try:
+        data = json.loads(response)
+        # Manual validation
+        if not isinstance(data.get('age'), int):
+            raise ValueError("Age must be integer")
+        break
+    except Exception as e:
+        if attempt == 2:
+            raise
+        # How do you tell the LLM what went wrong?
+        messages.append({"role": "system", "content": f"Error: {e}"})
+```
+
+### 3. No streaming support
+
+Want to show progress? Too bad:
+
+```python
+# Providers' structured output = all or nothing
+response = openai.chat.completions.create(
+    response_format={"type": "json_schema", ...},
+    stream=True,  # Doesn't work with structured outputs!
+)
+```
+
+### 4. No complex types
+
+Nested objects? Enums? Custom validators? Good luck:
+
+```python
+# Try defining this with provider schemas:
+class EmailStatus(str, Enum):
+    VALID = "valid"
+    INVALID = "invalid"
+    UNVERIFIED = "unverified"
+
+class User(BaseModel):
+    email: str
+    status: EmailStatus
+    
+    @field_validator('email')
+    def validate_email(cls, v):
+        if '@' not in v:
+            raise ValueError('Invalid email')
+        return v
+
+# Provider response: ¯\_(ツ)_/¯
+```
+
+## The Instructor solution
+
+One API that works everywhere, with everything you actually need:
 
 ```python
 import instructor
 from pydantic import BaseModel
 
+# Define what you want (once)
 class User(BaseModel):
     name: str
     age: int
+    email: str
 
-client = instructor.from_provider("openai/gpt-4")
-user = client.chat.completions.create(
-    response_model=User,
-    messages=[{"role": "user", "content": "John is 25 years old"}],
-)
-
-print(user.name)  # "John"
-print(user.age)   # 25
-```
-
-**That's it.** No parsing. No retries. No provider-specific code.
-
-## Real problems Instructor solves
-
-### 1. "It works 90% of the time"
-
-Without Instructor, your LLM returns perfect JSON most of the time. But that 10% will ruin your weekend.
-
-```python
-# Without Instructor: Brittle code that breaks randomly
-try:
-    data = json.loads(llm_response)
-    user = User(**data)  # KeyError: 'name'
-except:
-    # Now what? Retry? Parse the text? Give up?
-    pass
-
-# With Instructor: Automatic retries with validation errors
-user = client.chat.completions.create(
-    response_model=User,
-    messages=[{"role": "user", "content": "..."}],
-    max_retries=3,  # Retries with validation errors
-)
-# Always returns valid User object or raises clear exception
-```
-
-### 2. "Each provider is different"
-
-Every LLM provider has its own API. Your code becomes a mess of conditionals.
-
-```python
-# Without Instructor: Provider-specific spaghetti
-if provider == "openai":
-    response = openai.chat.completions.create(
-        tools=[{"type": "function", "function": {...}}]
-    )
-    data = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
-elif provider == "anthropic":
-    response = anthropic.messages.create(
-        tools=[{"name": "extract", "input_schema": {...}}]
-    )
-    data = response.content[0].input
-elif provider == "google":
-    # ... different API again
-
-# With Instructor: One API for all providers
+# Use with any provider (same code!)
 client = instructor.from_provider("openai/gpt-4")
 # or
 client = instructor.from_provider("anthropic/claude-3")
-# or  
+# or
 client = instructor.from_provider("google/gemini-pro")
 
-# Same code for all providers
+# Get validated data with retries
 user = client.chat.completions.create(
     response_model=User,
     messages=[{"role": "user", "content": "..."}],
+    max_retries=3,  # Automatic retries with validation feedback
 )
+
+# Stream partial results
+for partial in client.chat.completions.create(
+    response_model=Partial[User],
+    messages=[{"role": "user", "content": "..."}],
+    stream=True,  # Actually works!
+):
+    print(partial)  # See results as they arrive
 ```
 
-### 3. "Complex data structures are impossible"
+## What you get with Instructor
 
-Nested objects, lists, enums - LLMs struggle with complex schemas.
-
+### Actual validation
 ```python
-# Without Instructor: Good luck with this
-schema = {
-    "type": "object",
-    "properties": {
-        "users": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "addresses": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "street": {"type": "string"},
-                                "city": {"type": "string"}
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-# With Instructor: Just use Python
+from pydantic import field_validator, EmailStr
 from typing import List
-
-class Address(BaseModel):
-    street: str
-    city: str
 
 class User(BaseModel):
     name: str
-    addresses: List[Address]
+    age: int
+    email: EmailStr  # Real email validation
+    tags: List[str]
+    
+    @field_validator('age')
+    def validate_age(cls, v):
+        if v < 0 or v > 150:
+            raise ValueError('Invalid age')
+        return v
 
-class UserList(BaseModel):
-    users: List[User]
+# Instructor ensures you get valid data or clear errors
+```
 
-# Works perfectly
-result = client.chat.completions.create(
-    response_model=UserList,
+### Smart retries that work
+```python
+# Instructor automatically:
+# 1. Catches validation errors
+# 2. Feeds them back to the LLM
+# 3. Retries with exponential backoff
+# 4. Returns valid data or raises clear exception
+
+user = client.chat.completions.create(
+    response_model=User,
     messages=[{"role": "user", "content": "..."}],
+    max_retries=3,
 )
 ```
 
-## The cost of not using Instructor
+### Streaming that's actually useful
+```python
+# Show progress in real-time
+for partial in client.chat.completions.create(
+    response_model=Partial[Recipe],
+    stream=True,
+    messages=[{"role": "user", "content": "..."}],
+):
+    update_ui(partial)  # Update as data arrives
+```
 
-Let's talk real numbers:
+### Complex types that just work
+```python
+from enum import Enum
+from datetime import datetime
+from typing import Optional, Union
 
-**Time wasted:**
-- 2-3 hours implementing JSON parsing and validation
-- 4-6 hours debugging edge cases  
-- 2-3 hours for each new provider you add
+class Priority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+class Task(BaseModel):
+    title: str
+    priority: Priority
+    due_date: Optional[datetime]
+    assignee: Union[User, str]
+    subtasks: List['Task']
+
+# Instructor handles all of this automatically
+```
+
+## The cost of rolling your own
+
+**Time spent:**
+- 2-3 days implementing validation and retries
+- 1-2 days per provider integration
 - Ongoing maintenance as APIs change
+- Debugging "works sometimes" issues
 
-**Bugs in production:**
-- Malformed JSON crashes your app
-- Missing fields cause silent failures
-- Type mismatches corrupt your database
-- Customer complaints about reliability
+**Bugs you'll ship:**
+- Silent data corruption from bad types
+- Crashes from malformed responses
+- Inconsistent behavior across providers
+- No visibility into what went wrong
 
-**Developer frustration:**
-- "It worked in testing!"
-- "Why is the JSON different this time?"
-- "How do I handle when it returns a string instead of a number?"
+**What you'll build anyway:**
+- A worse version of Instructor
+- Provider-specific spaghetti code
+- Half-baked retry logic
+- Manual validation everywhere
 
-## What developers are saying
+## Real developer feedback
 
-Based on our GitHub issues and Discord:
+From our GitHub and Discord:
 
-- **"Reduced our LLM code by 80%"** - Common feedback
-- **"Finally, LLM outputs I can trust"** - From production users
-- **"The retries alone are worth it"** - Saves hours of edge-case handling
-- **"Works exactly the same with every provider"** - No more provider lock-in
+- **"I was building this exact thing when I found Instructor"**
+- **"Saved me weeks of work across multiple providers"**
+- **"The validation alone is worth it"**
+- **"Finally, structured outputs that actually work"**
 
-## Start now, thank yourself later
+## Start using Instructor now
 
-Every day without Instructor is another day of:
-- Debugging malformed JSON
-- Writing provider-specific code  
-- Handling validation manually
-- Explaining to your PM why the LLM integration is flaky
-
-Install Instructor:
 ```bash
 pip install instructor
 ```
 
-Try it in 30 seconds:
+In 30 seconds:
 ```python
 import instructor
 from pydantic import BaseModel
-
-client = instructor.from_provider("openai/gpt-4")
 
 class User(BaseModel):
     name: str
     age: int
 
+client = instructor.from_provider("openai/gpt-4")
 user = client.chat.completions.create(
     response_model=User,
     messages=[{"role": "user", "content": "John is 25 years old"}],
@@ -224,14 +270,15 @@ user = client.chat.completions.create(
 print(user)  # User(name='John', age=25)
 ```
 
-## When NOT to use Instructor
+## When to use provider-specific APIs
 
-Let's be clear - you might not need Instructor if:
+Let's be honest - you might not need Instructor if:
 
-- You only need raw text responses (chatbots, creative writing)
-- You're building a one-off script with no error handling
-- You enjoy debugging JSON parsing errors at 3am
+- You only use one provider and always will
+- You don't need validation or retries
+- You enjoy writing JSON schemas by hand
+- Your data is always perfectly formatted
 
-For everyone else building production LLM applications, Instructor is the obvious choice.
+For everyone else building real applications, Instructor is the obvious choice.
 
-[Get Started →](../index.md#quick-start){ .md-button .md-button--primary }
+[Get Started →](../index.md#start-in-30-seconds){ .md-button .md-button--primary }
