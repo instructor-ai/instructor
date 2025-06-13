@@ -73,9 +73,18 @@ def reask_anthropic_json(
 
     assert isinstance(response, Message), "Response must be a Anthropic Message"
 
+    # Filter for text blocks to handle ThinkingBlock and other non-text content
+    text_blocks = [c for c in response.content if c.type == "text"]
+    if not text_blocks:
+        # Fallback if no text blocks found
+        text_content = "No text content found in response"
+    else:
+        # Use the last text block, similar to function_calls.py:396-397
+        text_content = text_blocks[-1].text
+
     reask_msg = {
         "role": "user",
-        "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{response.content[0].text}""",  # type: ignore
+        "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{text_content}""",
     }
     kwargs["messages"].append(reask_msg)
     return kwargs

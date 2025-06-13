@@ -144,6 +144,7 @@ Supported provider strings:
 - `fireworks/model-name`: Fireworks models
 - `vertexai/model-name`: Vertex AI models
 - `genai/model-name`: Google GenAI models
+- `ollama/model-name`: Ollama models
 
 ### 2. Manual Client Setup
 

@@ -28,6 +28,7 @@ from tenacity import (
     RetryError,
     Retrying,
     stop_after_attempt,
+    stop_after_delay,
 )
 from typing_extensions import ParamSpec
 
@@ -40,27 +41,38 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
 
-def initialize_retrying(max_retries: int | Retrying | AsyncRetrying, is_async: bool):
+def initialize_retrying(
+    max_retries: int | Retrying | AsyncRetrying, is_async: bool, timeout: float | None = None
+):
     """
     Initialize the retrying mechanism based on the type (synchronous or asynchronous).
 
     Args:
         max_retries (int | Retrying | AsyncRetrying): Maximum number of retries or a retrying object.
         is_async (bool): Flag indicating if the retrying is asynchronous.
+        timeout (float | None): Optional timeout in seconds to limit total retry duration.
 
     Returns:
         Retrying | AsyncRetrying: Configured retrying object.
     """
     if isinstance(max_retries, int):
-        logger.debug(f"max_retries: {max_retries}")
+        logger.debug(f"max_retries: {max_retries}, timeout: {timeout}")
+        
+        # Create stop conditions
+        stop_conditions = [stop_after_attempt(max_retries)]
+        if timeout is not None:
+            # Add global timeout: stop after timeout seconds total
+            stop_conditions.append(stop_after_delay(timeout))
+        
+        # Combine stop conditions with OR logic (stop if ANY condition is met)
+        stop_condition = stop_conditions[0]
+        for condition in stop_conditions[1:]:
+            stop_condition = stop_condition | condition
+        
         if is_async:
-            max_retries = AsyncRetrying(
-                stop=stop_after_attempt(max_retries),
-            )
+            max_retries = AsyncRetrying(stop=stop_condition)
         else:
-            max_retries = Retrying(
-                stop=stop_after_attempt(max_retries),
-            )
+            max_retries = Retrying(stop=stop_condition)
     elif not isinstance(max_retries, (Retrying, AsyncRetrying)):
         from instructor.exceptions import ConfigurationError
 
@@ -155,7 +167,9 @@ def retry_sync(
     """
     hooks = hooks or Hooks()
     total_usage = initialize_usage(mode)
-    max_retries = initialize_retrying(max_retries, is_async=False)
+    # Extract timeout from kwargs if available (for global timeout across retries)
+    timeout = kwargs.get("timeout")
+    max_retries = initialize_retrying(max_retries, is_async=False, timeout=timeout)
 
     # Pre-extract stream flag to avoid repeated lookup
     stream = kwargs.get("stream", False)
@@ -239,7 +253,9 @@ async def retry_async(
     """
     hooks = hooks or Hooks()
     total_usage = initialize_usage(mode)
-    max_retries = initialize_retrying(max_retries, is_async=True)
+    # Extract timeout from kwargs if available (for global timeout across retries)
+    timeout = kwargs.get("timeout")
+    max_retries = initialize_retrying(max_retries, is_async=True, timeout=timeout)
 
     # Pre-extract stream flag to avoid repeated lookup
     stream = kwargs.get("stream", False)
