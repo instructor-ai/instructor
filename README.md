@@ -157,6 +157,19 @@ client = instructor.from_provider("ollama/llama3.2")
 
 Run `instructor docs` to open documentation in your browser.
 
+## Available in Multiple Languages
+
+Instructor's simple API is available across many programming languages:
+
+- [Python](https://python.useinstructor.com) - The original implementation
+- [TypeScript](https://js.useinstructor.com) - Full-featured JS/TS port  
+- [Ruby](https://ruby.useinstructor.com) - Ruby implementation
+- [Go](https://go.useinstructor.com) - Go implementation  
+- [Elixir](https://hex.pm/packages/instructor) - Elixir implementation
+- [Rust](https://rust.useinstructor.com) - Rust implementation
+
+All implementations follow the same simple patterns, making it easy to use Instructor in your language of choice.
+
 ## Contributing
 
 We love contributions! Check out our [good first issues](https://github.com/instructor-ai/instructor/labels/good%20first%20issue) to get started. Whether it's adding new features, improving documentation, or creating examples, we'd love your help.
