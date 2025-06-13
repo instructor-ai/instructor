@@ -42,6 +42,57 @@ Start by downloading [Ollama](https://ollama.ai/download), and then pull a model
 ollama pull llama2
 ```
 
+## Quick Start with Auto Client
+
+You can use Ollama with Instructor's auto client for a simple setup:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+class Character(BaseModel):
+    name: str
+    age: int
+
+# Simple setup - automatically configured for Ollama
+client = instructor.from_provider("ollama/llama2")
+
+resp = client.chat.completions.create(
+    messages=[{"role": "user", "content": "Tell me about Harry Potter"}],
+    response_model=Character,
+)
+```
+
+### Intelligent Mode Selection
+
+The auto client automatically selects the best mode based on your model:
+
+- **Function Calling Models** (llama3.1, llama3.2, llama4, mistral-nemo, qwen2.5, etc.): Uses `TOOLS` mode for enhanced function calling support
+- **Other Models**: Uses `JSON` mode for structured output
+
+```python
+# These models automatically use TOOLS mode
+client = instructor.from_provider("ollama/llama3.1")
+client = instructor.from_provider("ollama/qwen2.5")
+
+# Other models use JSON mode
+client = instructor.from_provider("ollama/llama2")
+```
+
+You can also override the mode manually:
+
+```python
+import instructor
+
+# Force JSON mode
+client = instructor.from_provider("ollama/llama3.1", mode=instructor.Mode.JSON)
+
+# Force TOOLS mode  
+client = instructor.from_provider("ollama/llama2", mode=instructor.Mode.TOOLS)
+```
+
+## Manual Setup
+
 ```python
 from openai import OpenAI
 from pydantic import BaseModel, Field
