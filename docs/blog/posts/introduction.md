@@ -209,4 +209,17 @@ class MaybeUser(BaseModel):
 
 Instructor, with Pydantic, simplifies interaction with language models. It is usable for both experienced and new developers.
 
+## Related Concepts
+
+- [Getting Started Guide](../../index.md) - Learn how to install and use Instructor
+- [Model Providers](../../integrations/index.md) - Explore supported LLM providers
+- [Validation Context](../../concepts/reask_validation.md) - Understand how to validate LLM outputs
+- [Response Models](../../concepts/models.md) - Deep dive into defining structured outputs
+
+## See Also
+
+- [Why Instructor is the Best Library](best_framework.md) - Learn about Instructor's philosophy and advantages
+- [Structured Outputs and Prompt Caching with Anthropic](structured-output-anthropic.md) - See how Instructor works with Claude
+- [Chain of Thought Example](../../examples/chain-of-thought.md) - Implement reasoning in your models
+
 If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!
