@@ -22,18 +22,16 @@ With Instructor, you define what you want using Pydantic models - the same way y
 
 ```python
 from pydantic import BaseModel
-from instructor import from_openai
-from openai import OpenAI
+import instructor
 
 class User(BaseModel):
     name: str
     age: int
     email: str
 
-client = from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4")
 
 user = client.chat.completions.create(
-    model="gpt-4",
     response_model=User,
     messages=[{"role": "user", "content": "Jason is 25, email: jason@example.com"}]
 )
@@ -81,11 +79,10 @@ class User(BaseModel):
 When validation fails, Instructor automatically retries with the error message, helping the model self-correct:
 
 ```python
-client.chat.completions.create(
-    model="gpt-4",
+user = client.chat.completions.create(
     response_model=User,
     max_retries=3,  # Automatically retry up to 3 times
-    messages=[...]
+    messages=[{"role": "user", "content": "Extract user details"}]
 )
 ```
 
@@ -97,10 +94,9 @@ Stream complex objects as they're generated:
 from instructor import Partial
 
 for partial_user in client.chat.completions.create(
-    model="gpt-4", 
     response_model=Partial[User],
     stream=True,
-    messages=[...]
+    messages=[{"role": "user", "content": "Jason is 25, email: jason@example.com"}]
 ):
     print(partial_user)
     # User(name='Jason', age=None, email=None)
@@ -113,11 +109,12 @@ for partial_user in client.chat.completions.create(
 Same code works across OpenAI, Anthropic, Google, Mistral, and more:
 
 ```python
-from instructor import from_anthropic, from_gemini
+import instructor
 
 # Same interface, different providers
-anthropic_client = from_anthropic(Anthropic())
-gemini_client = from_gemini(genai.GenerativeModel())
+anthropic_client = instructor.from_provider("anthropic/claude-3-5-sonnet-20241022")
+gemini_client = instructor.from_provider("google/gemini-pro")
+ollama_client = instructor.from_provider("ollama/llama3.2")
 ```
 
 ## Real-World Impact

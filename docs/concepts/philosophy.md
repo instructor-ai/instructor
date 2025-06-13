@@ -26,14 +26,14 @@ Your code should work with or without Instructor:
 
 ```python
 # With Instructor
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4")
 user = client.chat.completions.create(
-    model="gpt-4",
-    response_model=User,  # Just remove this line to go back to OpenAI
+    response_model=User,  # Just remove this line to go back to raw API
     messages=[...]
 )
 
-# Without Instructor - same code structure
+# Without Instructor - use provider's native client
+from openai import OpenAI
 client = OpenAI()
 response = client.chat.completions.create(
     model="gpt-4",
@@ -154,7 +154,6 @@ This philosophy means you write code like this:
 from pydantic import BaseModel
 from typing import List
 import instructor
-from openai import OpenAI
 
 # Your domain models - not ours
 class Product(BaseModel):
@@ -168,10 +167,9 @@ class Order(BaseModel):
 
 # Your business logic - not ours  
 def process_order(image_path: str) -> Order:
-    client = instructor.from_openai(OpenAI())
+    client = instructor.from_provider("openai/gpt-4-vision")
     
     return client.chat.completions.create(
-        model="gpt-4-vision",
         response_model=Order,
         messages=[{
             "role": "user",
