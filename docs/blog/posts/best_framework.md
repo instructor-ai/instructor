@@ -87,3 +87,16 @@ This incremental, zero-overhead adoption path makes Instructor perfect for sprin
 And if you decide Instructor isn't a good fit after all, removing it is as simple as not applying the patch! The familiarity and flexibility of working directly with the OpenAI SDK is a core strength.
 
 Instructor solves the "string hellll" of unstructured LLM outputs. It allows teams to easily realize the full potential of tools like GPTs by mapping their text to type-safe, validated data structures. If you're looking to get more structured value out of LLMs, give Instructor a try!
+
+## Related Concepts
+
+- [Philosophy](../../concepts/philosophy.md) - Understand Instructor's design principles
+- [Patching](../../concepts/patching.md) - Learn how Instructor patches LLM clients
+- [Retrying](../../concepts/retrying.md) - Handle validation failures gracefully
+- [Streaming](../../concepts/partial.md) - Work with streaming responses
+
+## See Also
+
+- [Introduction to Instructor](introduction.md) - Get started with structured outputs
+- [Integration Guides](../../integrations/index.md) - See all supported providers
+- [Type Examples](../../concepts/types.md) - Explore different response types

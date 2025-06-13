@@ -486,3 +486,16 @@ In this example, even though there is no code explicitly transforming the name t
 From the simplicity of Pydantic and Instructor to the dynamic validation capabilities of LLMs, the landscape of validation is changing but without needing to introduce new concepts. It's clear that the future of validation is not just about preventing bad data but about allowing llms to understand the data and correcting it.
 
 If you enjoy the content or want to try out `Instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!
+
+## Related Concepts
+
+- [Validation and Error Handling](../../concepts/validation.md) - Core validation strategies in Instructor
+- [Semantic Validation](../../concepts/semantic_validation.md) - Advanced LLM-powered validation techniques
+- [Reask Validation](../../concepts/reask_validation.md) - Self-correction mechanisms for AI outputs
+- [Retrying and Error Recovery](../../concepts/retrying.md) - Implementing robust retry logic
+
+## See Also
+
+- [Citations and Hallucination Prevention](citations.md) - Validating AI responses against source material
+- [Pydantic is Still All You Need](pydantic-is-still-all-you-need.md) - Why Pydantic remains essential
+- [Self-Critique Example](../../examples/self_critique.md) - Practical implementation of self-correction

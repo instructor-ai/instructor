@@ -350,3 +350,15 @@ Choosing the right caching strategy depends on your application's specific needs
 If you'd like to use this code, try to send it over to ChatGPT to understand it more, and to add additional features that might matter for you, for example, the cache isn't invalidated when your BaseModel changes, so you might want to encode the `Model.model_json_schema()` as part of the key.
 
 If you like the content check out our [GitHub](https://github.com/jxnl/instructor) as give us a star and checkout the library.
+
+## Related Concepts
+
+- [Caching Strategies](../../concepts/caching.md) - Deep dive into caching patterns for LLM applications
+- [Prompt Caching](../../concepts/prompt_caching.md) - Provider-specific caching features from OpenAI and Anthropic
+- [Performance Optimization](../../concepts/parallel.md) - Parallel processing for better performance
+
+## See Also
+
+- [Anthropic Prompt Caching](anthropic-prompt-caching.md) - Using Anthropic's native caching features
+- [Async Processing](learn-async.md) - Combine caching with async for maximum performance
+- [Batch Processing Example](../../examples/batch_job_oai.md) - Efficient batch operations with caching

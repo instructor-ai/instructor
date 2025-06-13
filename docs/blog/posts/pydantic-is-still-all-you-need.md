@@ -123,3 +123,15 @@ Pydantic is still all you need for effective structured outputs with LLMs. It's 
 As we continue to refine AI language models, keeping these principles in mind will lead to more robust, maintainable, and powerful applications. The future of AI isn't just about what the models can do, but how seamlessly we can integrate them into our existing software ecosystems.
 
 For more advanced use cases and integrations, check out our [examples](../../examples/index.md) section, which covers various LLM providers and specialized implementations.
+
+## Related Concepts
+
+- [Models and Response Models](../../concepts/models.md) - Deep dive into defining and using Pydantic models with Instructor
+- [Validation and Error Handling](../../concepts/validation.md) - Learn about validation strategies and error recovery
+- [Hooks and Logging](../../concepts/hooks.md) - Monitor and debug your structured output applications
+
+## See Also
+
+- [Introduction to Structured Outputs](introduction.md) - Getting started with structured outputs
+- [Instructor 1.0 Announcement](version-1.md) - What's new in the latest version
+- [Why Instructor?](best_framework.md) - Understanding the benefits of the Instructor approach
