@@ -6,10 +6,12 @@ Get reliable JSON from any LLM. Built on Pydantic for validation, type safety, a
 import instructor
 from pydantic import BaseModel
 
+
 # Define what you want
 class User(BaseModel):
     name: str
     age: int
+
 
 # Extract it from natural language
 client = instructor.from_provider("openai/gpt-4o-mini")
@@ -53,19 +55,21 @@ Getting structured data from LLMs is hard. You need to:
 response = openai.chat.completions.create(
     model="gpt-4",
     messages=[{"role": "user", "content": "..."}],
-    tools=[{
-        "type": "function",
-        "function": {
-            "name": "extract_user",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "age": {"type": "integer"}
-                }
-            }
+    tools=[
+        {
+            "type": "function",
+            "function": {
+                "name": "extract_user",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "age": {"type": "integer"},
+                    },
+                },
+            },
         }
-    }]
+    ],
 )
 
 # Parse response
@@ -75,6 +79,7 @@ user_data = json.loads(tool_call.function.arguments)
 # Validate manually
 if "name" not in user_data:
     # Handle error...
+    pass
 ```
 
 </td>
@@ -115,7 +120,7 @@ Use the same code with any LLM provider:
 # OpenAI
 client = instructor.from_provider("openai/gpt-4o")
 
-# Anthropic  
+# Anthropic
 client = instructor.from_provider("anthropic/claude-3-5-sonnet")
 
 # Google
@@ -140,15 +145,17 @@ Failed validations are automatically retried with the error message:
 ```python
 from pydantic import BaseModel, field_validator
 
+
 class User(BaseModel):
     name: str
     age: int
-    
+
     @field_validator('age')
     def validate_age(cls, v):
         if v < 0:
             raise ValueError('Age must be positive')
         return v
+
 
 # Instructor automatically retries when validation fails
 user = client.chat.completions.create(
@@ -183,15 +190,18 @@ Extract complex, nested data structures:
 ```python
 from typing import List
 
+
 class Address(BaseModel):
     street: str
     city: str
     country: str
 
+
 class User(BaseModel):
     name: str
     age: int
     addresses: List[Address]
+
 
 # Instructor handles nested objects automatically
 user = client.chat.completions.create(
@@ -222,17 +232,16 @@ import instructor
 
 client = instructor.from_provider("openai/gpt-4o-mini")
 
+
 class Product(BaseModel):
     name: str
     price: float
     in_stock: bool
 
+
 product = client.chat.completions.create(
     response_model=Product,
-    messages=[{
-        "role": "user", 
-        "content": "iPhone 15 Pro, $999, available now"
-    }],
+    messages=[{"role": "user", "content": "iPhone 15 Pro, $999, available now"}],
 )
 
 print(product)

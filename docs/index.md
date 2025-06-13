@@ -55,16 +55,20 @@ import instructor
 from pydantic import BaseModel
 from openai import OpenAI
 
+
 class Person(BaseModel):
     name: str
     age: int
     occupation: str
 
+
 client = instructor.from_openai(OpenAI())
 person = client.chat.completions.create(
     model="gpt-4o-mini",
     response_model=Person,
-    messages=[{"role": "user", "content": "Extract: John is a 30-year-old software engineer"}]
+    messages=[
+        {"role": "user", "content": "Extract: John is a 30-year-old software engineer"}
+    ],
 )
 print(person)  # Person(name='John', age=30, occupation='software engineer')
 ```
@@ -77,16 +81,18 @@ Instructor's **`from_provider`** function provides a unified interface to work w
 import instructor
 from pydantic import BaseModel
 
+
 class UserInfo(BaseModel):
     name: str
     age: int
 
+
 # Works with any provider - same interface everywhere
-client = instructor.from_provider("openai/gpt-4")        # OpenAI
-client = instructor.from_provider("anthropic/claude-3")   # Anthropic  
-client = instructor.from_provider("google/gemini-pro")    # Google
-client = instructor.from_provider("ollama/llama3")       # Ollama (local)
-client = instructor.from_provider("deepseek/deepseek-chat") # DeepSeek
+client = instructor.from_provider("openai/gpt-4")  # OpenAI
+client = instructor.from_provider("anthropic/claude-3")  # Anthropic
+client = instructor.from_provider("google/gemini-pro")  # Google
+client = instructor.from_provider("ollama/llama3")  # Ollama (local)
+client = instructor.from_provider("deepseek/deepseek-chat")  # DeepSeek
 
 # Same extraction code works with all providers
 user = client.chat.completions.create(
@@ -133,10 +139,12 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     from pydantic import BaseModel
     from openai import OpenAI
 
+
     # Define your desired output structure
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     # Patch the OpenAI client
     client = instructor.from_openai(OpenAI())
@@ -162,13 +170,14 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
     ```python
     from openai import OpenAI
-    from pydantic import BaseModel, Field
-    from typing import List
+    from pydantic import BaseModel
     import instructor
+
 
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_openai(
         OpenAI(
@@ -220,9 +229,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         mode=instructor.Mode.JSON_SCHEMA,
     )
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     user = create(
         messages=[
@@ -250,9 +261,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     from anthropic import Anthropic
     from pydantic import BaseModel
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_anthropic(Anthropic())
 
@@ -286,9 +299,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     import google.generativeai as genai
     from pydantic import BaseModel
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_gemini(
         client=genai.GenerativeModel(
@@ -328,9 +343,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
     vertexai.init()
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_vertexai(
         client=GenerativeModel("gemini-1.5-pro-preview-0409"),
@@ -367,9 +384,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
     client = instructor.from_groq(Groq())
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     resp = client.chat.completions.create(
         model="llama3-70b-8192",
@@ -393,9 +412,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     from litellm import completion
     from pydantic import BaseModel
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_litellm(completion)
 
@@ -428,9 +449,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     from pydantic import BaseModel
     from cohere import Client
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     client = instructor.from_cohere(Client())
 
@@ -466,9 +489,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     )
     client = instructor.from_cerebras(client)
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     resp = client.chat.completions.create(
         model="llama3.1-70b",
@@ -503,9 +528,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     )
     client = instructor.from_fireworks(client)
 
+
     class ExtractUser(BaseModel):
         name: str
         age: int
+
 
     resp = client.chat.completions.create(
         model="accounts/fireworks/models/llama-v3p2-1b-instruct",
@@ -856,9 +883,11 @@ from pydantic import BaseModel
 
 client = instructor.from_openai(openai.OpenAI())
 
+
 class User(BaseModel):
     name: str
     age: int
+
 
 # Create a completion using a Jinja template in the message content
 response = client.chat.completions.create(
@@ -893,12 +922,14 @@ from instructor import llm_validator
 # Apply the patch to the OpenAI client
 client = instructor.from_openai(OpenAI())
 
+
 class QuestionAnswer(BaseModel):
     question: str
     answer: Annotated[
         str,
         BeforeValidator(llm_validator("don't say objectionable things", client=client)),
     ]
+
 
 try:
     qa = QuestionAnswer(
