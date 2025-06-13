@@ -1,51 +1,194 @@
 ---
-title: Simplifying AI with Instructor: Flexibility and Transparency in Python Programming
-description: Discover how Instructor empowers Python developers with simplicity, flexibility, and transparent LLM integration for better AI engineering.
+title: Philosophy - Simple, Transparent, Flexible
+description: Learn the core principles behind Instructor - simplicity over complexity, transparency over magic, and flexibility over constraints.
 ---
 
 # Philosophy
 
-The instructor values [simplicity](https://eugeneyan.com/writing/simplicity/) and flexibility in leveraging language models (LLMs). It offers a streamlined approach for structured output, avoiding unnecessary dependencies or complex abstractions. Let [Pydantic](https://docs.pydantic.dev/latest/) do the heavy lifting.
+Instructor is built on a simple idea: **Python developers should be able to get structured data from language models without learning new abstractions.**
 
-> “Simplicity is a great virtue but it requires hard work to achieve it and education to appreciate it. And to make matters worse: complexity sells better.” - Edsger Dijkstra
+## Core Principles
 
-### Proof that its simple
+### 1. Simplicity First
 
-1. Most users will only need to learn `response_model` and `patch` to get started.
-2. No new prompting language to learn, no new abstractions to learn.
+We believe the best tools are invisible. You shouldn't need to learn a new framework to use LLMs effectively.
 
-### Proof that its transparent
+```python
+# This is all you need to know:
+response_model=YourPydanticModel
+```
 
-1. We write very little prompts, and we don't try to hide the prompts from you.
-2. We'll do better in the future to give you config over the 2 prompts we do write, Reasking and JSON_MODE prompts.
+That's it. No DSLs, no complex configurations, no new paradigms. Just Pydantic models you already know.
 
-### Proof that its flexible
+### 2. Zero Lock-in
 
-1. If you build a system with OpenAI directly, it is easy to incrementally adopt instructor.
-2. Add `response_model` and if you want to revert, just remove it.
+Your code should work with or without Instructor:
 
-## The zen of `instructor`
+```python
+# With Instructor
+client = instructor.from_openai(OpenAI())
+user = client.chat.completions.create(
+    model="gpt-4",
+    response_model=User,  # Just remove this line to go back to OpenAI
+    messages=[...]
+)
 
-Maintain the flexibility and power of Python, without unnecessary constraints.
+# Without Instructor - same code structure
+client = OpenAI()
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[...]
+)
+```
 
-Begin with a function and a return type hint – simplicity is key. With my experience maintaining a large enterprise framework at my previous job over many years I've learned that the goal of making a useful framework is minimizing regret, both for the author and hopefully for the user.
+We patch, we don't wrap. Your escape hatch is always one line away.
 
-1. Define a Schema `#!python class StructuredData(BaseModel):`
-2. Define validators and methods on your schema.
-3. Encapsulate all your LLM logic into a function `#!python def extract(a) -> StructuredData:`
-4. Define typed computations against your data with `#!python def compute(data: StructuredData):` or call methods on your schema `#!python data.compute()`
+### 3. Transparent by Design
 
-It should be that simple.
+We don't hide what we're doing. Instructor:
 
-## My Goals
+- Generates minimal, readable prompts
+- Shows you exactly what's being sent to the LLM
+- Lets you override any behavior you need
+- Keeps the LLM's raw response accessible
 
-The goal for the library, [documentation](https://jxnl.github.io/instructor/), and [blog](https://jxnl.github.io/instructor/blog/), is to help you be a better python programmer and as a result a better AI engineer.
+```python
+# See what Instructor sends
+import instructor
+instructor.logfire.configure()  # Full observability
 
-- The library is a result of my desire for simplicity.
-- The library should help maintain simplicity in your codebase.
-- I won't try to write prompts for you,
-- I don't try to create indirections or abstractions that make it hard to debug in the future
+# Access raw responses
+completion = client.chat.completions.create(
+    response_model=User,
+    messages=[...], 
+)
+print(completion._raw_response)  # Original API response
+```
 
-Please note that the library is designed to be adaptable and open-ended, allowing you to customize and extend its functionality based on your specific requirements. If you have any further questions or ideas hit me up on [twitter](https://twitter.com/jxnlco)
+### 4. Composition Over Configuration
 
-Cheers!
+Instead of configuration files and complex setups, compose simple functions:
+
+```python
+def extract_user(text: str) -> User:
+    return client.chat.completions.create(
+        model="gpt-4",
+        response_model=User,
+        messages=[{"role": "user", "content": text}]
+    )
+
+def validate_users(users: List[User]) -> List[User]:
+    return [u for u in users if u.age > 0]
+
+# Compose naturally
+users = [extract_user(text) for text in documents]
+valid_users = validate_users(users)
+```
+
+### 5. Progressive Enhancement
+
+Start simple, add complexity only when needed:
+
+```python
+# Level 1: Basic extraction
+user = client.chat.completions.create(
+    response_model=User,
+    messages=[...]
+)
+
+# Level 2: Add validation when needed
+class User(BaseModel):
+    name: str
+    age: int
+    
+    @field_validator('age')
+    def positive_age(cls, v):
+        if v <= 0:
+            raise ValueError('Age must be positive')
+        return v
+
+# Level 3: Add retries if validation fails
+user = client.chat.completions.create(
+    response_model=User,
+    max_retries=3,
+    messages=[...]
+)
+
+# Level 4: Stream if needed
+for partial in client.chat.completions.create(
+    response_model=Partial[User],
+    stream=True,
+    messages=[...]
+):
+    print(partial)
+```
+
+## What We DON'T Do
+
+### No Prompt Engineering for You
+
+We don't write clever prompts or "optimize" your requests. You know your domain better than we do. We just ensure the LLM returns valid data structures.
+
+### No New Abstractions
+
+No `Agent`, `Chain`, `Tool`, or `Workflow` classes. These are your domain concepts - implement them however makes sense for your application.
+
+### No Hidden Magic
+
+Every Instructor behavior can be understood by reading a single function. We prefer explicit over clever.
+
+## The Result
+
+By following these principles, Instructor remains:
+
+- **Small**: Core functionality in <1000 lines of code
+- **Fast**: Negligible overhead over raw API calls  
+- **Reliable**: Fewer abstractions = fewer bugs
+- **Learnable**: If you know Pydantic, you know Instructor
+
+## In Practice
+
+This philosophy means you write code like this:
+
+```python
+from pydantic import BaseModel
+from typing import List
+import instructor
+from openai import OpenAI
+
+# Your domain models - not ours
+class Product(BaseModel):
+    name: str
+    price: float
+    in_stock: bool
+
+class Order(BaseModel):
+    products: List[Product]
+    total: float
+
+# Your business logic - not ours  
+def process_order(image_path: str) -> Order:
+    client = instructor.from_openai(OpenAI())
+    
+    return client.chat.completions.create(
+        model="gpt-4-vision",
+        response_model=Order,
+        messages=[{
+            "role": "user",
+            "content": [
+                "Extract order details from this receipt",
+                {"type": "image_url", "image_url": {"url": image_path}}
+            ]
+        }]
+    )
+
+# That's it. No framework, just functions.
+```
+
+This is the Instructor way: **Your code, your models, your logic.** We just make sure the LLM plays nice with your data.
+
+---
+
+> "Simplicity is the ultimate sophistication." - Leonardo da Vinci
+
+The best code is no code. The second best is code that does exactly what it says, nothing more, nothing less. That's Instructor.
