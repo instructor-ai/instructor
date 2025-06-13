@@ -1,619 +1,280 @@
-# Instructor, The Most Popular Library for Simple Structured Outputs
+# Instructor: Structured Outputs for LLMs
 
-Instructor is the most popular Python library for working with structured outputs from large language models (LLMs), boasting over 3 million monthly downloads. Built on top of Pydantic, it provides a simple, transparent, and user-friendly API to manage validation, retries, and streaming responses. Get ready to supercharge your LLM workflows with the community's top choice!
-
-[![PyPI - Version](https://img.shields.io/pypi/v/instructor?style=flat-square&logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/instructor/)
-[![License](https://img.shields.io/github/license/instructor-ai/instructor?style=flat-square&color=blue)](https://github.com/instructor-ai/instructor/blob/main/LICENSE)
-[![GitHub Repo stars](https://img.shields.io/github/stars/instructor-ai/instructor?style=flat-square&logo=github&logoColor=white)](https://github.com/instructor-ai/instructor)
-[![Downloads](https://img.shields.io/pypi/dm/instructor?style=flat-square&logo=pypi&logoColor=white&label=Downloads)](https://pypi.org/project/instructor/)
-[![Discord](https://img.shields.io/discord/1192334452110659664?style=flat-square&logo=discord&logoColor=white&label=Discord)](https://discord.gg/bD9YE9JArw)
-[![Twitter Follow](https://img.shields.io/twitter/follow/jxnlco?style=flat-square&logo=twitter&logoColor=white)](https://twitter.com/jxnlco)
-
-## Want your logo on our website?
-
-If your company uses Instructor a lot, we'd love to have your logo on our website! Please fill out [this form](https://q7gjsgfstrp.typeform.com/to/wluQlVVQ)
-
-## Key Features
-
-- **Response Models**: Specify Pydantic models to define the structure of your LLM outputs
-- **Retry Management**: Easily configure the number of retry attempts for your requests
-- **Validation**: Ensure LLM responses conform to your expectations with Pydantic validation
-- **Streaming Support**: Work with Lists and Partial responses effortlessly
-- **Flexible Backends**: Seamlessly integrate with various LLM providers beyond OpenAI
-- **Support in many Languages**: We support many languages including [Python](https://python.useinstructor.com), [TypeScript](https://js.useinstructor.com), [Ruby](https://ruby.useinstructor.com), [Go](https://go.useinstructor.com), and [Elixir](https://hex.pm/packages/instructor)
-
-## Get Started in Minutes
-
-Install Instructor with a single command:
-
-**Recommended (using uv):**
-```bash
-uv add instructor
-```
-
-**Alternative (using pip):**
-```bash
-pip install -U instructor
-```
-
-> **Note:** We recommend using [uv](https://github.com/astral-sh/uv) for faster package installation and better dependency resolution. If you're contributing to the project, uv is required for development.
-
-Now, let's see Instructor in action with a simple example:
-
-```python
-import instructor
-from pydantic import BaseModel
-from openai import OpenAI
-
-
-# Define your desired output structure
-class UserInfo(BaseModel):
-    name: str
-    age: int
-
-
-# Patch the OpenAI client
-client = instructor.from_openai(OpenAI())
-
-# Extract structured data from natural language
-user_info = client.chat.completions.create(
-    model="gpt-4o-mini",
-    response_model=UserInfo,
-    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
-)
-
-print(user_info.name)
-#> John Doe
-print(user_info.age)
-#> 30
-```
-
-### Provider Initialization
-
-Instructor provides a simple way to work with different providers using a consistent interface:
+Get reliable JSON from any LLM. Built on Pydantic for validation, type safety, and IDE support.
 
 ```python
 import instructor
 from pydantic import BaseModel
 
-class UserInfo(BaseModel):
+# Define what you want
+class User(BaseModel):
     name: str
     age: int
 
-# Initialize client for any supported provider
-client = instructor.from_provider("openai/gpt-4")  # OpenAI
-client = instructor.from_provider("anthropic/claude-3-sonnet")  # Anthropic
-client = instructor.from_provider("google/gemini-pro")  # Google
-client = instructor.from_provider("mistral/mistral-large")  # Mistral
-# ... and many more providers
-
-# Use the same interface across all providers
-user_info = client.chat.completions.create(
-    response_model=UserInfo,
-    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
+# Extract it from natural language
+client = instructor.from_provider("openai/gpt-4o-mini")
+user = client.chat.completions.create(
+    response_model=User,
+    messages=[{"role": "user", "content": "John is 25 years old"}],
 )
+
+print(user)  # User(name='John', age=25)
 ```
 
-The `from_provider` function supports both synchronous and asynchronous usage with `async_client=True`, and works with all supported providers including OpenAI, Anthropic, Google, Mistral, Cohere, Perplexity, Groq, Writer, AWS Bedrock, Cerebras, Fireworks, Vertex AI, and more.
+**That's it.** No JSON parsing, no error handling, no retries. Just define a model and get structured data.
 
-### Using Hooks
+[![PyPI](https://img.shields.io/pypi/v/instructor?style=flat-square)](https://pypi.org/project/instructor/)
+[![Downloads](https://img.shields.io/pypi/dm/instructor?style=flat-square)](https://pypi.org/project/instructor/)
+[![GitHub Stars](https://img.shields.io/github/stars/instructor-ai/instructor?style=flat-square)](https://github.com/instructor-ai/instructor)
+[![Discord](https://img.shields.io/discord/1192334452110659664?style=flat-square)](https://discord.gg/bD9YE9JArw)
+[![Twitter](https://img.shields.io/twitter/follow/jxnlco?style=flat-square)](https://twitter.com/jxnlco)
 
-Instructor provides a powerful hooks system that allows you to intercept and log various stages of the LLM interaction process. Here's a simple example demonstrating how to use hooks:
+## Why Instructor?
+
+Getting structured data from LLMs is hard. You need to:
+
+1. Write complex JSON schemas
+2. Handle validation errors  
+3. Retry failed extractions
+4. Parse unstructured responses
+5. Deal with different provider APIs
+
+**Instructor handles all of this with one simple interface:**
+
+<table>
+<tr>
+<td><b>Without Instructor</b></td>
+<td><b>With Instructor</b></td>
+</tr>
+<tr>
+<td>
 
 ```python
-import instructor
-from openai import OpenAI
-from pydantic import BaseModel
-
-
-class UserInfo(BaseModel):
-    name: str
-    age: int
-
-
-# Initialize the OpenAI client with Instructor
-client = instructor.from_openai(OpenAI())
-
-
-# Define hook functions
-def log_kwargs(**kwargs):
-    print(f"Function called with kwargs: {kwargs}")
-
-
-def log_exception(exception: Exception):
-    print(f"An exception occurred: {str(exception)}")
-
-
-client.on("completion:kwargs", log_kwargs)
-client.on("completion:error", log_exception)
-
-user_info = client.chat.completions.create(
-    model="gpt-4o-mini",
-    response_model=UserInfo,
-    messages=[
-        {"role": "user", "content": "Extract the user name: 'John is 20 years old'"}
-    ],
-)
-
-"""
-{
-        'args': (),
-        'kwargs': {
-            'messages': [
-                {
-                    'role': 'user',
-                    'content': "Extract the user name: 'John is 20 years old'",
+response = openai.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "..."}],
+    tools=[{
+        "type": "function",
+        "function": {
+            "name": "extract_user",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "age": {"type": "integer"}
                 }
-            ],
-            'model': 'gpt-4o-mini',
-            'tools': [
-                {
-                    'type': 'function',
-                    'function': {
-                        'name': 'UserInfo',
-                        'description': 'Correctly extracted `UserInfo` with all the required parameters with correct types',
-                        'parameters': {
-                            'properties': {
-                                'name': {'title': 'Name', 'type': 'string'},
-                                'age': {'title': 'Age', 'type': 'integer'},
-                            },
-                            'required': ['age', 'name'],
-                            'type': 'object',
-                        },
-                    },
-                }
-            ],
-            'tool_choice': {'type': 'function', 'function': {'name': 'UserInfo'}},
-        },
-    }
-"""
-
-print(f"Name: {user_info.name}, Age: {user_info.age}")
-#> Name: John, Age: 20
-```
-
-This example demonstrates:
-
-1. A pre-execution hook that logs all kwargs passed to the function.
-2. An exception hook that logs any exceptions that occur during execution.
-
-The hooks provide valuable insights into the function's inputs and any errors,
-enhancing debugging and monitoring capabilities.
-
-### Using Anthropic Models
-
-```python
-import instructor
-from anthropic import Anthropic
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_anthropic(Anthropic())
-
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
-    model="claude-3-opus-20240229",
-    max_tokens=1024,
-    system="You are a world class AI that excels at extracting user data from a sentence",
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
+            }
         }
-    ],
-    response_model=User,
+    }]
 )
 
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
+# Parse response
+tool_call = response.choices[0].message.tool_calls[0]
+user_data = json.loads(tool_call.function.arguments)
+
+# Validate manually
+if "name" not in user_data:
+    # Handle error...
 ```
 
-### Using Cohere Models
-
-Make sure to install `cohere` and set your system environment variable with `export CO_API_KEY=<YOUR_COHERE_API_KEY>`.
-
-```bash
-# Using uv (recommended)
-uv add cohere
-
-# Using pip
-pip install cohere
-```
+</td>
+<td>
 
 ```python
-import instructor
-import cohere
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_cohere(cohere.Client())
-
-# note that client.chat.completions.create will also work
-resp = client.chat.completions.create(
-    model="command-r-plus",
-    max_tokens=1024,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-### Using Gemini Models
-
-Make sure you [install](https://ai.google.dev/api/python/google/generativeai#setup) the Google AI Python SDK. You should set a `GOOGLE_API_KEY` environment variable with your API key.
-Gemini tool calling also requires `jsonref` to be installed.
-
-```bash
-# Using uv (recommended)
-uv add google-generativeai jsonref
-
-# Using pip
-pip install google-generativeai jsonref
-```
-
-```python
-import instructor
-import google.generativeai as genai
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-# genai.configure(api_key=os.environ["API_KEY"]) # alternative API key configuration
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",  # model defaults to "gemini-pro"
-    ),
-    mode=instructor.Mode.GEMINI_JSON,
-)
-```
-
-Alternatively, you can [call Gemini from the OpenAI client](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/call-gemini-using-openai-library#python). You'll have to setup [`gcloud`](https://cloud.google.com/docs/authentication/provide-credentials-adc#local-dev), get setup on Vertex AI, and install the Google Auth library.
-
-```bash
-# Using uv (recommended)
-uv add google-auth
-
-# Using pip
-pip install google-auth
-```
-
-```python
-import google.auth
-import google.auth.transport.requests
-import instructor
-from openai import OpenAI
-from pydantic import BaseModel
-
-creds, project = google.auth.default()
-auth_req = google.auth.transport.requests.Request()
-creds.refresh(auth_req)
-
-# Pass the Vertex endpoint and authentication to the OpenAI SDK
-PROJECT = 'PROJECT_ID'
-LOCATION = (
-    'LOCATION'  # https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations
-)
-base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
-
-client = instructor.from_openai(
-    OpenAI(base_url=base_url, api_key=creds.token), mode=instructor.Mode.JSON
-)
-
-
-# JSON mode is req'd
-class User(BaseModel):
-    name: str
-    age: int
-
-
-resp = client.chat.completions.create(
-    model="google/gemini-1.5-flash-001",
-    max_tokens=1024,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-### Using Perplexity Sonar Models
-
-```python
-import instructor
-from openai import OpenAI
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_perplexity(OpenAI(base_url="https://api.perplexity.ai"))
-
-resp = client.chat.completions.create(
-    model="sonar",
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-### Using Litellm
-
-```python
-import instructor
-from litellm import completion
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_litellm(completion)
-
-resp = client.chat.completions.create(
-    model="claude-3-opus-20240229",
-    max_tokens=1024,
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract Jason is 25 years old.",
-        }
-    ],
-    response_model=User,
-)
-
-assert isinstance(resp, User)
-assert resp.name == "Jason"
-assert resp.age == 25
-```
-
-## Types are inferred correctly
-
-This was the dream of Instructor but due to the patching of OpenAI, it wasn't possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
-
-### Calling `create`
-
-```python
-import openai
-import instructor
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4")
 
 user = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
-    messages=[
-        {"role": "user", "content": "Create a user"},
-    ],
     response_model=User,
+    messages=[{"role": "user", "content": "..."}],
+)
+
+# That's it! user is validated and typed
+```
+
+</td>
+</tr>
+</table>
+
+## Install in seconds
+
+```bash
+pip install instructor
+```
+
+Or with your package manager:
+```bash
+uv add instructor
+poetry add instructor
+```
+
+## Works with every major provider
+
+Use the same code with any LLM provider:
+
+```python
+# OpenAI
+client = instructor.from_provider("openai/gpt-4o")
+
+# Anthropic  
+client = instructor.from_provider("anthropic/claude-3-5-sonnet")
+
+# Google
+client = instructor.from_provider("google/gemini-pro")
+
+# Ollama (local)
+client = instructor.from_provider("ollama/llama3.2")
+
+# All use the same API!
+user = client.chat.completions.create(
+    response_model=User,
+    messages=[{"role": "user", "content": "..."}],
 )
 ```
 
-Now if you use an IDE, you can see the type is correctly inferred.
+## Production-ready features
 
-![type](./docs/blog/posts/img/type.png)
+### Automatic retries
 
-### Handling async: `await create`
-
-This will also work correctly with asynchronous clients.
+Failed validations are automatically retried with the error message:
 
 ```python
-import openai
-import instructor
-from pydantic import BaseModel
-
-
-client = instructor.from_openai(openai.AsyncOpenAI())
-
+from pydantic import BaseModel, field_validator
 
 class User(BaseModel):
     name: str
     age: int
+    
+    @field_validator('age')
+    def validate_age(cls, v):
+        if v < 0:
+            raise ValueError('Age must be positive')
+        return v
 
-
-async def extract():
-    return await client.chat.completions.create(
-        model="gpt-4-turbo-preview",
-        messages=[
-            {"role": "user", "content": "Create a user"},
-        ],
-        response_model=User,
-    )
+# Instructor automatically retries when validation fails
+user = client.chat.completions.create(
+    response_model=User,
+    messages=[{"role": "user", "content": "..."}],
+    max_retries=3,
+)
 ```
 
-Notice that simply because we return the `create` method, the `extract()` function will return the correct user type.
+### Streaming support
 
-![async](./docs/blog/posts/img/async_type.png)
-
-### Returning the original completion: `create_with_completion`
-
-You can also return the original completion object
+Stream partial objects as they're generated:
 
 ```python
-import openai
-import instructor
-from pydantic import BaseModel
+from instructor import Partial
 
+for partial_user in client.chat.completions.create(
+    response_model=Partial[User],
+    messages=[{"role": "user", "content": "..."}],
+    stream=True,
+):
+    print(partial_user)
+    # User(name=None, age=None)
+    # User(name="John", age=None)
+    # User(name="John", age=25)
+```
 
-client = instructor.from_openai(openai.OpenAI())
+### Nested objects
 
+Extract complex, nested data structures:
+
+```python
+from typing import List
+
+class Address(BaseModel):
+    street: str
+    city: str
+    country: str
 
 class User(BaseModel):
     name: str
     age: int
+    addresses: List[Address]
 
-
-user, completion = client.chat.completions.create_with_completion(
-    model="gpt-4-turbo-preview",
-    messages=[
-        {"role": "user", "content": "Create a user"},
-    ],
+# Instructor handles nested objects automatically
+user = client.chat.completions.create(
     response_model=User,
+    messages=[{"role": "user", "content": "..."}],
 )
 ```
 
-![with_completion](./docs/blog/posts/img/with_completion.png)
+## Used in production by
 
-### Streaming Partial Objects: `create_partial`
+Trusted by over 100,000 developers and companies building AI applications:
 
-In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but to simplify the type inference, we've added `create_iterable` and `create_partial` methods as well!
+- **3M+ monthly downloads**
+- **10K+ GitHub stars**  
+- **1000+ community contributors**
+
+Companies using Instructor include teams at OpenAI, Google, Microsoft, AWS, and many YC startups.
+
+## Get started
+
+### Basic extraction
+
+Extract structured data from any text:
 
 ```python
-import openai
-import instructor
 from pydantic import BaseModel
+import instructor
 
+client = instructor.from_provider("openai/gpt-4o-mini")
 
-client = instructor.from_openai(openai.OpenAI())
-
-
-class User(BaseModel):
+class Product(BaseModel):
     name: str
-    age: int
+    price: float
+    in_stock: bool
 
-
-user_stream = client.chat.completions.create_partial(
-    model="gpt-4-turbo-preview",
-    messages=[
-        {"role": "user", "content": "Create a user"},
-    ],
-    response_model=User,
+product = client.chat.completions.create(
+    response_model=Product,
+    messages=[{
+        "role": "user", 
+        "content": "iPhone 15 Pro, $999, available now"
+    }],
 )
 
-for user in user_stream:
-    print(user)
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name='John Doe' age=None
-    #> name='John Doe' age=None
-    #> name='John Doe' age=None
-    #> name='John Doe' age=30
-    #> name='John Doe' age=30
-    # name=None age=None
-    # name='' age=None
-    # name='John' age=None
-    # name='John Doe' age=None
-    # name='John Doe' age=30
+print(product)
+# Product(name='iPhone 15 Pro', price=999.0, in_stock=True)
 ```
 
-Notice now that the type inferred is `Generator[User, None]`
+### Multiple languages
 
-![generator](./docs/blog/posts/img/generator.png)
+Instructor's simple API is available in many languages:
 
-### Streaming Iterables: `create_iterable`
+- [Python](https://python.useinstructor.com) - The original
+- [TypeScript](https://js.useinstructor.com) - Full TypeScript support
+- [Ruby](https://ruby.useinstructor.com) - Ruby implementation  
+- [Go](https://go.useinstructor.com) - Go implementation
+- [Elixir](https://hex.pm/packages/instructor) - Elixir implementation
+- [Rust](https://rust.useinstructor.com) - Rust implementation
 
-We get an iterable of objects when we want to extract multiple objects.
+### Learn more
 
-```python
-import openai
-import instructor
-from pydantic import BaseModel
+- [Documentation](https://python.useinstructor.com) - Comprehensive guides
+- [Examples](https://python.useinstructor.com/examples/) - Copy-paste recipes  
+- [Blog](https://python.useinstructor.com/blog/) - Tutorials and best practices
+- [Discord](https://discord.gg/bD9YE9JArw) - Get help from the community
 
+## Why use Instructor over alternatives?
 
-client = instructor.from_openai(openai.OpenAI())
+**vs Raw JSON mode**: Instructor provides automatic validation, retries, streaming, and nested object support. No manual schema writing.
 
+**vs LangChain/LlamaIndex**: Instructor is focused on one thing - structured extraction. It's lighter, faster, and easier to debug.
 
-class User(BaseModel):
-    name: str
-    age: int
-
-
-users = client.chat.completions.create_iterable(
-    model="gpt-4-turbo-preview",
-    messages=[
-        {"role": "user", "content": "Create 2 users"},
-    ],
-    response_model=User,
-)
-
-for user in users:
-    print(user)
-    #> name='John Doe' age=30
-    #> name='Jane Doe' age=28
-    # User(name='John Doe', age=30)
-    # User(name='Jane Smith', age=25)
-```
-
-![iterable](./docs/blog/posts/img/iterable.png)
-
-## [Evals](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals#how-to-contribute-writing-and-running-evaluation-tests)
-
-We invite you to contribute to evals in `pytest` as a way to monitor the quality of the OpenAI models and the `instructor` library. To get started check out the evals for [Anthropic](https://github.com/jxnl/instructor/blob/main/tests/llm/test_anthropic/evals/test_simple.py) and [OpenAI](https://github.com/jxnl/instructor/tree/main/tests/llm/test_openai/evals#how-to-contribute-writing-and-running-evaluation-tests) and contribute your own evals in the form of pytest tests. These evals will be run once a week and the results will be posted.
-
-## Repository Overview
-
-Below is a quick tour of the repository's main directories. See [docs/repository-overview.md](docs/repository-overview.md) for more details.
-
-- **instructor/** – core library code with clients and utilities.
-- **cli/** – command-line tools for managing jobs and usage.
-- **docs/** – documentation sources for the MkDocs site.
-- **examples/** – cookbook examples showcasing Instructor.
-- **tests/** – unit tests and evaluation suites.
+**vs Custom solutions**: Battle-tested by thousands of developers. Handles edge cases you haven't thought of yet.
 
 ## Contributing
 
-We welcome contributions to Instructor! Whether you're fixing bugs, adding features, improving documentation, or writing blog posts, your help is appreciated.
+We welcome contributions! Check out our [good first issues](https://github.com/instructor-ai/instructor/labels/good%20first%20issue) to get started.
 
-### Getting Started
+## License
 
-If you're new to the project, check out issues marked as [`good-first-issue`](https://github.com/jxnl/instructor/labels/good%20first%20issue) or [`help-wanted`](https://github.com/jxnl/instructor/labels/help%20wanted). These could be anything from code improvements, a guest blog post, or a new cookbook.
+MIT License - see [LICENSE](https://github.com/instructor-ai/instructor/blob/main/LICENSE) for details.
 
-### Setting Up the Development Environment
+---
 
-1. **Fork and clone the repository**
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/instructor.git
-   cd instructor
-   ```
+<p align="center">
+Built by the Instructor community. Special thanks to <a href="https://twitter.com/jxnlco">Jason Liu</a> and all <a href="https://github.com/instructor-ai/instructor/graphs/contributors">contributors</a>.
+</p>
