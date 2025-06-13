@@ -275,6 +275,42 @@ print(response.model_dump_json(indent=2))
 """
 ```
 
+## Global Timeout Support
+
+Instructor supports a global timeout parameter that limits the total time spent on retries across all attempts. This is particularly useful when working with providers like Ollama where you need strict control over request timeouts.
+
+```python
+import openai
+import instructor
+from pydantic import BaseModel
+
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+response = client.chat.completions.create(
+    model="gpt-4-turbo-preview",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract `jason is 12`"},
+    ],
+    max_retries=3,
+    timeout=5.0,  # Total timeout across all retry attempts
+)
+```
+
+The timeout parameter works by:
+
+- **Global Timeout**: Limits the total time spent across all retry attempts, not per individual attempt
+- **OR Logic**: Combines with other stop conditions - retries stop if ANY condition is met (max attempts OR timeout reached)
+- **Provider Compatibility**: Ensures consistent timeout behavior across different providers, especially Ollama
+
+!!! note "Timeout vs Per-Attempt Timeout"
+
+    The timeout parameter controls the **total time** spent on retries, not the timeout for each individual attempt. This prevents scenarios where a 3-second timeout becomes 9+ seconds total when retrying multiple times.
+
 ## Other Features of Tenacity
 
 Tenacity features a huge number of different retrying capabilities. A few of them are listed below.
