@@ -99,6 +99,7 @@ class UserInfo(BaseModel):
     name: str
     age: int
 
+# NOTE: Below example assumes you have set your API keys in your environment variables. See [API Key Management](#api-key-management) below.
 # Initialize any provider with a simple string
 client = instructor.from_provider("openai/gpt-4")
 # Or use async client
@@ -110,6 +111,24 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": "Your prompt"}]
 )
 ```
+
+#### API Key Management
+
+You can provide API keys in two ways:
+
+1. **Environment Variables**:
+   ```bash
+   export OPENAI_API_KEY="your-openai-key"
+   export ANTHROPIC_API_KEY="your-anthropic-key"
+   ```
+
+2. **Direct Parameter**:
+   ```python
+   client = instructor.from_provider(
+       "provider/model-name",
+       api_key="your-api-key"
+   )
+   ```
 
 Supported provider strings:
 - `openai/model-name`: OpenAI models

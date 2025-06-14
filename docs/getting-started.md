@@ -38,7 +38,11 @@ pip install "instructor[litellm]"              # For LiteLLM (multiple providers
 pip install "instructor[mistralai]"            # For Mistral
 ```
 
-## Setting Up Environment
+## Setting Up Environment Variables / API Keys
+
+You have two options for providing API keys to Instructor:
+
+### Option 1: Environment Variables
 
 Set your API keys as environment variables:
 
@@ -50,6 +54,26 @@ export OPENAI_API_KEY=your_openai_api_key
 export ANTHROPIC_API_KEY=your_anthropic_api_key
 
 # For other providers, set relevant API keys
+```
+
+### Option 2: Direct API Key Parameter
+
+You can also pass API keys directly when using the unified provider interface:
+
+```python
+import instructor
+
+# Pass API key directly to from_provider
+client = instructor.from_provider(
+    "openai/gpt-4", 
+    api_key="your-api-key-here"
+)
+
+# Works with any supported provider
+anthropic_client = instructor.from_provider(
+    "anthropic/claude-3-sonnet-20240229",
+    api_key="your-anthropic-api-key"
+)
 ```
 
 ## Your First Structured Output
@@ -87,6 +111,40 @@ This example demonstrates the core workflow:
 2. Patch your LLM client with Instructor
 3. Request structured output using the `response_model` parameter
 
+## Using the Unified Provider Interface
+
+The unified provider interface makes it easy to switch between different LLM providers:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+class UserInfo(BaseModel):
+    name: str
+    age: int
+
+# Using environment variables
+client = instructor.from_provider("openai/gpt-4")
+
+# Or using direct API key
+client = instructor.from_provider(
+    "anthropic/claude-3-sonnet-20240229",
+    api_key="your-api-key"
+)
+
+# Same interface works for all providers
+user_info = client.chat.completions.create(
+    response_model=UserInfo,
+    messages=[
+        {"role": "user", "content": "Extract: Alice is 25 years old."}
+    ],
+)
+
+print(f"Name: {user_info.name}, Age: {user_info.age}")
+```
+
+> Note : For a detailed overview of the unified provider interface, including its features and benefits, see our [announcing blog post](blog/posts/announcing-unified-provider-interface.md).
+    
 ## Validation and Error Handling
 
 Instructor leverages Pydantic's validation to ensure your data meets requirements:
