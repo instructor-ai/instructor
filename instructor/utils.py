@@ -660,15 +660,29 @@ def transform_to_gemini_prompt(
     return messages_gemini
 
 
-def verify_no_enums(obj: dict[str, Any]) -> bool:
+def verify_no_unions(obj: dict[str, Any]) -> bool:
     """
-    Verify that the object does not contain any enums.
+    Verify that the object does not contain any Union types (except Optional).
+    Optional[T] is allowed as it becomes Union[T, None].
     """
     for prop_value in obj["properties"].values():
         if "anyOf" in prop_value:
-            return False
+            # Check if this is an Optional type (Union with None/null)
+            any_of_list = prop_value["anyOf"]
+            if not isinstance(any_of_list, list) or len(any_of_list) != 2:
+                return False
+            
+            # Check if one of the types is null (representing None in Optional[T])
+            has_null = any(
+                isinstance(item, dict) and item.get("type") == "null"
+                for item in any_of_list
+            )
+            
+            if not has_null:
+                # This is a true Union type, not Optional - reject it
+                return False
 
-        if "properties" in prop_value and not verify_no_enums(prop_value):
+        if "properties" in prop_value and not verify_no_unions(prop_value):
             return False
 
     return True
@@ -698,22 +712,37 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)  # type: ignore
     schema.pop("$defs", "")
 
-    def add_enum_format(obj: dict[str, Any]) -> dict[str, Any]:
+    def add_enum_format_and_handle_optional(obj: dict[str, Any]) -> dict[str, Any]:
         if isinstance(obj, dict):
             new_dict: dict[str, Any] = {}
             for key, value in obj.items():
-                new_dict[key] = add_enum_format(value)
                 if key == "enum":
+                    new_dict[key] = value
                     new_dict["format"] = "enum"
+                elif key == "anyOf" and isinstance(value, list) and len(value) == 2:
+                    # Handle Optional[T] which becomes Union[T, None]
+                    non_null_types = [item for item in value if not (isinstance(item, dict) and item.get("type") == "null")]
+                    if len(non_null_types) == 1:
+                        # This is Optional[T], extract the actual type
+                        actual_type = non_null_types[0]
+                        new_dict.update(add_enum_format_and_handle_optional(actual_type))
+                        new_dict["nullable"] = True
+                    else:
+                        # This shouldn't happen if verify_no_unions passed, but handle gracefully
+                        new_dict[key] = add_enum_format_and_handle_optional(value)
+                else:
+                    new_dict[key] = add_enum_format_and_handle_optional(value)
             return new_dict
+        elif isinstance(obj, list):
+            return [add_enum_format_and_handle_optional(item) for item in obj]
         else:
             return obj
 
-    schema = add_enum_format(schema)
+    schema = add_enum_format_and_handle_optional(schema)
 
-    if not verify_no_enums(schema):
+    if not verify_no_unions(schema):
         raise ValueError(
-            "Gemini does not support Optional types. Please change your function schema"
+            "Gemini does not support Union types (except Optional). Please change your function schema"
         )
 
     return FunctionSchema(**schema).model_dump(exclude_none=True, exclude_unset=True)
