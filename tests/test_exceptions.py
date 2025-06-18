@@ -1,7 +1,7 @@
 """Test that all instructor exceptions can be imported and caught properly."""
 
 import pytest
-from instructor import (
+from instructor.exceptions import (
     InstructorError,
     IncompleteOutputException,
     InstructorRetryException,
