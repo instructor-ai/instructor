@@ -4,6 +4,14 @@ from .mode import Mode
 from .process_response import handle_response_model
 from .distil import FinetuneFormat, Instructions
 from .multimodal import Image, Audio
+from .exceptions import (
+    InstructorError,
+    ValidationError,
+    ProviderError,
+    ConfigurationError,
+    ModeError,
+    ClientError,
+)
 from .dsl import (
     CitationMixin,
     Maybe,
@@ -48,6 +56,12 @@ __all__ = [
     "Instructions",
     "handle_parallel_model",
     "handle_response_model",
+    "InstructorError",
+    "ValidationError",
+    "ProviderError",
+    "ConfigurationError",
+    "ModeError",
+    "ClientError",
 ]
 
 
