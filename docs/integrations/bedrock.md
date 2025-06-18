@@ -51,6 +51,40 @@ print(user)
 # > User(name='Jason', age=25)
 ```
 
+### Async Example
+
+AWS's boto3 Bedrock client does **not** natively support asynchronous operations. To enable async usage, Instructor wraps the synchronous client using Python's `asyncio.to_thread`, which runs blocking calls in a thread pool. This allows you to use Bedrock in async applications without blocking the event loop, but note that true network-level async is not possible until boto3 adds support.
+
+```python
+import boto3
+import instructor
+from pydantic import BaseModel
+import asyncio
+
+# Initialize the Bedrock client
+bedrock_client = boto3.client('bedrock-runtime')
+
+# Enable instructor patches for Bedrock client (async)
+client = instructor.from_bedrock(bedrock_client, _async=True)
+
+class User(BaseModel):
+    name: str
+    age: int
+
+async def main():
+    user = await client.chat.completions.create(
+        modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+        messages=[
+            {"role": "user", "content": [{ "text": "Extract: Jason is 25 years old" }]},
+        ],
+        response_model=User,
+    )
+    print(user)
+    # > User(name='Jason', age=25)
+
+asyncio.run(main())
+```
+
 ## Supported Modes
 
 AWS Bedrock supports the following modes with Instructor:
