@@ -8,6 +8,8 @@ from botocore.client import BaseClient
 import instructor
 from instructor.client import AsyncInstructor, Instructor
 
+import asyncio
+
 
 @overload  # type: ignore
 def from_bedrock(
@@ -42,6 +44,21 @@ def from_bedrock(
     _async: bool = False,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
+    """
+    Create an Instructor or AsyncInstructor client for AWS Bedrock.
+
+    Args:
+        client (BaseClient): A boto3 Bedrock client instance.
+        mode (instructor.Mode): The mode to use (BEDROCK_TOOLS or BEDROCK_JSON).
+        _async (bool): If True, returns an AsyncInstructor that runs client.converse in a thread using asyncio.to_thread.
+        **kwargs: Additional keyword arguments passed to the Instructor/AsyncInstructor.
+
+    Returns:
+        Instructor or AsyncInstructor: The appropriate client for synchronous or asynchronous usage.
+
+    Note:
+        The async client is a wrapper around the synchronous boto3 client, using asyncio.to_thread to enable non-blocking calls in async applications.
+    """
     valid_modes = {
         instructor.Mode.BEDROCK_TOOLS,
         instructor.Mode.BEDROCK_JSON,
@@ -65,7 +82,7 @@ def from_bedrock(
         )
 
     async def async_wrapper(**kwargs: Any):
-        return client.converse(**kwargs)
+        return await asyncio.to_thread(client.converse, **kwargs)
 
     create = client.converse
 
