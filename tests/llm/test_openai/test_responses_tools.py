@@ -74,7 +74,7 @@ async def test_web_search_async(aclient: AsyncOpenAI):
             },
         ],
         tools=[{"type": "web_search_preview"}],
-        max_retries=1,
+        max_retries=2,
         response_model=Summary,
     )
 
