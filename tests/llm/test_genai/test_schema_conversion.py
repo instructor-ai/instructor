@@ -37,58 +37,76 @@ class NestedModel(BaseModel):
 
 
 def test_simple_schema_conversion():
-    """Test conversion of a simple schema."""
+    """Test conversion strips extra pydantic fields like 'title'."""
     schema = SimpleModel.model_json_schema()
     result = map_to_gemini_function_schema(schema)
     
-    # Check basic structure
-    assert "type" in result
-    assert "properties" in result
-    assert result["type"] == "object"
+    # Input has 'title' fields that should be stripped out
+    assert "title" in schema
+    assert "title" in schema["properties"]["name"] 
     
-    # Check properties
-    properties = result["properties"]
-    assert "name" in properties
-    assert "age" in properties
-    assert "is_active" in properties
+    # Output should be clean without title fields
+    expected = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "age": {"type": "integer"},
+            "is_active": {"type": "boolean"}
+        },
+        "required": ["name", "age", "is_active"]
+    }
     
-    # Check property types
-    assert properties["name"]["type"] == "string"
-    assert properties["age"]["type"] == "integer"
-    assert properties["is_active"]["type"] == "boolean"
+    assert result == expected
 
 
 def test_optional_schema_conversion():
-    """Test conversion of schema with optional fields."""
+    """Test conversion transforms anyOf[T, null] to nullable fields."""
     schema = OptionalModel.model_json_schema()
     result = map_to_gemini_function_schema(schema)
     
-    properties = result["properties"]
+    # Input should have anyOf with null type for optional fields
+    assert schema["properties"]["age"]["anyOf"] == [{"type": "integer"}, {"type": "null"}]
+    assert schema["properties"]["description"]["anyOf"] == [{"type": "string"}, {"type": "null"}]
     
-    # Required field should not be nullable
-    assert properties["name"]["type"] == "string"
-    assert properties["name"].get("nullable") is None
+    # Output should convert to nullable: true
+    expected = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "age": {"type": "integer", "nullable": True},
+            "description": {"type": "string", "nullable": True}
+        },
+        "required": ["name"]
+    }
     
-    # Optional fields should be nullable
-    assert properties["age"]["type"] == "integer" 
-    assert properties["age"]["nullable"] is True
-    assert properties["description"]["type"] == "string"
-    assert properties["description"]["nullable"] is True
+    assert result == expected
 
 
 def test_enum_schema_conversion():
-    """Test conversion of schema with enum fields."""
+    """Test conversion resolves $refs and adds format: enum."""
     schema = EnumModel.model_json_schema()
     result = map_to_gemini_function_schema(schema)
     
-    properties = result["properties"]
-    priority_prop = properties["priority"]
+    # Input should have $ref and $defs
+    assert schema["properties"]["priority"]["$ref"] == "#/$defs/Priority"
+    assert "$defs" in schema
+    assert schema["$defs"]["Priority"]["enum"] == ["low", "medium", "high"]
     
-    # Check enum handling
-    assert priority_prop["type"] == "string"
-    assert "enum" in priority_prop
-    assert priority_prop["format"] == "enum"
-    assert set(priority_prop["enum"]) == {"low", "medium", "high"}
+    # Output should resolve the ref and add format: enum
+    expected = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "priority": {
+                "type": "string",
+                "enum": ["low", "medium", "high"],
+                "format": "enum"
+            }
+        },
+        "required": ["name", "priority"]
+    }
+    
+    assert result == expected
 
 
 def test_nested_schema_conversion():
@@ -96,21 +114,28 @@ def test_nested_schema_conversion():
     schema = NestedModel.model_json_schema()
     result = map_to_gemini_function_schema(schema)
     
-    properties = result["properties"]
+    expected = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "items": {
+                "type": "array",
+                "items": {"type": "string"}
+            },
+            "details": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "age": {"type": "integer"},
+                    "is_active": {"type": "boolean"}
+                },
+                "required": ["name", "age", "is_active"]
+            }
+        },
+        "required": ["name", "items", "details"]
+    }
     
-    # Check array field
-    assert properties["items"]["type"] == "array"
-    assert properties["items"]["items"]["type"] == "string"
-    
-    # Check nested object
-    details_prop = properties["details"]
-    assert details_prop["type"] == "object"
-    assert "properties" in details_prop
-    
-    nested_props = details_prop["properties"]
-    assert "name" in nested_props
-    assert "age" in nested_props
-    assert "is_active" in nested_props
+    assert result == expected
 
 
 def test_verify_no_unions_valid():
@@ -154,11 +179,16 @@ def test_schema_without_refs():
     
     result = map_to_gemini_function_schema(schema)
     
-    assert result["type"] == "object"
-    assert "properties" in result
-    assert result["properties"]["name"]["type"] == "string"
-    assert result["properties"]["count"]["type"] == "integer"
-    assert result["required"] == ["name"]
+    expected = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "count": {"type": "integer"}
+        },
+        "required": ["name"]
+    }
+    
+    assert result == expected
 
 
 def test_schema_with_description():
@@ -176,8 +206,18 @@ def test_schema_with_description():
     
     result = map_to_gemini_function_schema(schema)
     
-    assert result["description"] == "A test object"
-    assert result["properties"]["name"]["description"] == "The name field"
+    expected = {
+        "type": "object",
+        "description": "A test object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name field"
+            }
+        }
+    }
+    
+    assert result == expected
 
 
 def test_union_type_raises_error():
