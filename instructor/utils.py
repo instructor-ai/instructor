@@ -671,13 +671,13 @@ def verify_no_unions(obj: dict[str, Any]) -> bool:
             any_of_list = prop_value["anyOf"]
             if not isinstance(any_of_list, list) or len(any_of_list) != 2:
                 return False
-            
+
             # Check if one of the types is null (representing None in Optional[T])
             has_null = any(
                 isinstance(item, dict) and item.get("type") == "null"
                 for item in any_of_list
             )
-            
+
             if not has_null:
                 # This is a true Union type, not Optional - reject it
                 return False
@@ -690,12 +690,15 @@ def verify_no_unions(obj: dict[str, Any]) -> bool:
 
 def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     """
-    Map OpenAPI schema to Gemini properties: gemini function call schemas
+    Map OpenAPI schema to Gemini function call schema.
 
-    Ref - https://ai.google.dev/api/python/google/generativeai/protos/Schema,
-    Note that `enum` requires specific `format` setting
+    Transforms a standard JSON schema to Gemini's expected format:
+    - Adds 'format': 'enum' for enum fields
+    - Converts Optional[T] (anyOf with null) to nullable fields
+    - Rejects true Union types (non-Optional anyOf)
+
+    Ref: https://ai.google.dev/api/python/google/generativeai/protos/Schema
     """
-
     import jsonref
 
     class FunctionSchema(BaseModel):
@@ -709,37 +712,49 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
         type: str
         properties: dict[str, FunctionSchema] | None = None
 
+    # Resolve any $ref references in the schema
     schema: dict[str, Any] = jsonref.replace_refs(obj, lazy_load=False)  # type: ignore
-    schema.pop("$defs", "")
+    schema.pop("$defs", None)
 
-    def add_enum_format_and_handle_optional(obj: dict[str, Any]) -> dict[str, Any]:
-        if isinstance(obj, dict):
-            new_dict: dict[str, Any] = {}
-            for key, value in obj.items():
-                if key == "enum":
-                    new_dict[key] = value
-                    new_dict["format"] = "enum"
-                elif key == "anyOf" and isinstance(value, list) and len(value) == 2:
-                    # Handle Optional[T] which becomes Union[T, None]
-                    non_null_types = [item for item in value if not (isinstance(item, dict) and item.get("type") == "null")]
-                    if len(non_null_types) == 1:
-                        # This is Optional[T], extract the actual type
-                        actual_type = non_null_types[0]
-                        new_dict.update(add_enum_format_and_handle_optional(actual_type))
-                        new_dict["nullable"] = True
-                    else:
-                        # This shouldn't happen if verify_no_unions passed, but handle gracefully
-                        new_dict[key] = add_enum_format_and_handle_optional(value)
+    def transform_schema_node(node: Any) -> Any:
+        """Transform a single schema node recursively."""
+        if isinstance(node, list):
+            return [transform_schema_node(item) for item in node]
+
+        if not isinstance(node, dict):
+            return node
+
+        transformed = {}
+
+        for key, value in node.items():
+            if key == "enum":
+                # Gemini requires 'format': 'enum' for enum fields
+                transformed[key] = value
+                transformed["format"] = "enum"
+            elif key == "anyOf" and isinstance(value, list) and len(value) == 2:
+                # Handle Optional[T] which becomes Union[T, None] in JSON schema
+                non_null_items = [
+                    item
+                    for item in value
+                    if not (isinstance(item, dict) and item.get("type") == "null")
+                ]
+
+                if len(non_null_items) == 1:
+                    # This is Optional[T] - merge the actual type and mark as nullable
+                    actual_type = transform_schema_node(non_null_items[0])
+                    transformed.update(actual_type)
+                    transformed["nullable"] = True
                 else:
-                    new_dict[key] = add_enum_format_and_handle_optional(value)
-            return new_dict
-        elif isinstance(obj, list):
-            return [add_enum_format_and_handle_optional(item) for item in obj]
-        else:
-            return obj
+                    # This is a true Union type - keep as is and let validation catch it
+                    transformed[key] = transform_schema_node(value)
+            else:
+                transformed[key] = transform_schema_node(value)
 
-    schema = add_enum_format_and_handle_optional(schema)
+        return transformed
 
+    schema = transform_schema_node(schema)
+
+    # Validate that no unsupported Union types remain
     if not verify_no_unions(schema):
         raise ValueError(
             "Gemini does not support Union types (except Optional). Please change your function schema"
