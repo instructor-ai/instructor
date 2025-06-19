@@ -319,6 +319,9 @@ class Audio(BaseModel):
 
         if mime_type == "audio/x-wav":
             mime_type = "audio/wav"
+        
+        if mime_type == "audio/vnd.dlna.adts":   # <--- this is the case for aac audio files in Windows
+            mime_type = "audio/aac"
 
         assert (
             mime_type in VALID_AUDIO_MIME_TYPES
