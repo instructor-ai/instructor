@@ -91,7 +91,7 @@ class Image(BaseModel):
         raise ValueError("Unable to determine image type or unsupported image format")
 
     @classmethod
-    def autodetect_safely(cls, source: str | Path) -> Union[Image, str]:  # noqa: UP007
+    def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
