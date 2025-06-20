@@ -67,7 +67,7 @@ client.create(
         {
             "role": "user",
             "content": """
-                You are a {{ role }} tasks with the following question 
+                You are a {{ role }} tasks with the following question
 
                 <question>
                 {{ question }}
@@ -148,7 +148,7 @@ response = client.create(
     response_model=Response,
     messages=[
         {
-            "role": "user", 
+            "role": "user",
             "content": """
                 Write about a {{ topic }}
 
@@ -193,7 +193,7 @@ This separation of concerns adheres to best practices in software design, result
 
 ### Side effect of Context also being Pydantic Models
 
-Since they are just python objects we can use Pydantic models to validate the context and also control how they are rendered, so even secret information can be dynamically rendered! 
+Since they are just python objects we can use Pydantic models to validate the context and also control how they are rendered, so even secret information can be dynamically rendered!
 Consider using secret string to pass in sensitive information to the llm.
 
 ```python

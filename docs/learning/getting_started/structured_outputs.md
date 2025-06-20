@@ -144,4 +144,4 @@ In the next sections, you'll learn how to:
 
 1. Create your [first extraction](first_extraction.md)
 2. Understand the different [response models](response_models.md) you can create
-3. Set up [clients for various LLM providers](client_setup.md) 
+3. Set up [clients for various LLM providers](client_setup.md)

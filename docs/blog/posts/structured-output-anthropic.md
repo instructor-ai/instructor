@@ -140,15 +140,11 @@ By combining Anthropic's Claude with Instructor's structured output capabilities
 
 As the AI landscape continues to evolve, staying up-to-date with the latest tools and techniques is crucial. We encourage you to explore these features and share your experiences with the community. Happy coding!
 
-## Related Concepts
-
-- [Anthropic Integration](../../integrations/anthropic.md) - Complete guide to using Instructor with Claude
-- [Prompt Caching](../../concepts/caching.md) - Learn about caching strategies
-- [Multimodal](../../concepts/multimodal.md) - Work with images and other media types
-- [Validation](../../concepts/validation.md) - Ensure output quality with Pydantic
+## Related Documentation
+- [How Patching Works](/concepts/patching) - Understand provider integration
+- [Anthropic Integration](/integrations/anthropic) - Complete setup guide
 
 ## See Also
-
-- [Multimodal Gemini](multimodal-gemini.md) - Compare multimodal capabilities across providers
-- [Best Framework](best_framework.md) - Understand why Instructor excels at structured outputs
-- [Image Analysis Example](../../examples/image-to-ad-copy.md) - See multimodal AI in action
+- [Anthropic Prompt Caching](anthropic-prompt-caching) - Optimize Anthropic costs
+- [Unified Provider Interface](announcing-unified-provider-interface) - Switch providers easily
+- [Framework Comparison](best_framework) - Why Instructor excels

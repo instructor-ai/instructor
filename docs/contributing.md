@@ -61,8 +61,8 @@ UV is a fast Python package installer and resolver that makes development easier
    # Clone the repository
    git clone https://github.com/YOUR-USERNAME/instructor.git
    cd instructor
-   
-   # Install with development dependencies 
+
+   # Install with development dependencies
    uv pip install -e ".[dev,docs]"
    ```
 
@@ -70,7 +70,7 @@ UV is a fast Python package installer and resolver that makes development easier
    ```bash
    # Add a regular dependency
    uv pip install some-package
-   
+
    # Install a specific version
    uv pip install "some-package>=1.0.0,<2.0.0"
    ```
@@ -79,7 +79,7 @@ UV is a fast Python package installer and resolver that makes development easier
    ```bash
    # Update UV itself
    uv self update
-   
+
    # Create a requirements file
    uv pip freeze > requirements.txt
    ```
@@ -98,7 +98,7 @@ Poetry provides comprehensive dependency management and packaging.
    # Clone the repository
    git clone https://github.com/YOUR-USERNAME/instructor.git
    cd instructor
-   
+
    # Install with development dependencies
    poetry install --with dev,docs
    ```
@@ -107,13 +107,13 @@ Poetry provides comprehensive dependency management and packaging.
    ```bash
    # Activate virtual environment
    poetry shell
-   
+
    # Run a command in the virtual environment
    poetry run pytest
-   
+
    # Add a dependency
    poetry add package-name
-   
+
    # Add a development dependency
    poetry add --group dev package-name
    ```
@@ -127,7 +127,7 @@ Instructor uses optional dependencies to support different LLM providers. To add
    [project.optional-dependencies]
    # Add your provider
    my-provider = ["my-provider-sdk>=1.0.0,<2.0.0"]
-   
+
    [dependency-groups]
    # Mirror in dependency groups
    my-provider = ["my-provider-sdk>=1.0.0,<2.0.0"]
@@ -169,7 +169,7 @@ Instructor uses optional dependencies to support different LLM providers. To add
    ```bash
    # Run tests
    pytest tests/ -k 'not llm and not openai'  # Skip LLM tests for faster local dev
-   
+
    # Commit changes
    git add .
    git commit -m "Your descriptive commit message"
@@ -181,6 +181,73 @@ Instructor uses optional dependencies to support different LLM providers. To add
    git push origin feature/your-feature-name
    ```
 6. **Create a Pull Request**: Submit your PR with a clear description of changes
+
+## Utility Scripts
+
+The `scripts/` directory contains utility scripts that help maintain code quality and documentation. These scripts are integrated into pre-commit hooks and can also be run manually.
+
+### Available Scripts
+
+#### `make_clean.py` - Markdown File Cleaner
+Cleans markdown files by removing special whitespace characters and replacing em dashes with regular dashes.
+
+```bash
+# Clean all markdown files
+python scripts/make_clean.py
+
+# Preview changes without modifying files
+python scripts/make_clean.py --dry-run
+```
+
+#### `check_blog_excerpts.py` - Blog Post Excerpt Validator
+Ensures all blog posts contain the `<!-- more -->` tag for proper excerpt handling.
+
+```bash
+# Check all blog posts
+python scripts/check_blog_excerpts.py
+```
+
+#### `make_sitemap.py` - Enhanced Documentation Sitemap Generator
+Generates an enhanced sitemap (`sitemap.yaml`) with AI-powered content analysis and cross-link suggestions.
+
+```bash
+# Generate sitemap with default settings
+python scripts/make_sitemap.py
+
+# Customize settings
+python scripts/make_sitemap.py \
+  --root-dir docs \
+  --output-file sitemap.yaml \
+  --max-concurrency 10
+```
+
+**Requirements for sitemap generation**:
+- OpenAI API key (set as `OPENAI_API_KEY` environment variable)
+- Additional dependencies: `openai`, `typer`, `rich`, `tenacity`, `pyyaml`
+
+### Pre-commit Integration
+
+These scripts run automatically during the commit process:
+
+- **Markdown cleaning**: Runs on commits with markdown files in `docs/`
+- **Blog excerpt validation**: Runs on commits with blog post files
+
+### Manual Usage
+
+You can run scripts manually for testing or one-time operations:
+
+```bash
+# Test markdown cleaning
+python scripts/make_clean.py --dry-run
+
+# Check blog excerpts
+python scripts/check_blog_excerpts.py
+
+# Generate fresh sitemap
+python scripts/make_sitemap.py
+```
+
+For detailed documentation on each script, see [scripts/README.md](../scripts/README.md).
 
 ## Using Cursor to Build PRs
 
@@ -243,7 +310,7 @@ When reviewing code or writing commit messages, we use conventional comments to 
 
 Common labels:
 - **praise:** highlights something positive
-- **suggestion:** proposes a change or improvement 
+- **suggestion:** proposes a change or improvement
 - **question:** asks for clarification
 - **issue:** points out a problem that needs fixing
 - **todo:** notes something to be addressed later
@@ -334,7 +401,7 @@ from pydantic import BaseModel
 class Person(BaseModel):
     name: str
     age: int
-    
+
 # Create the patched client
 client = instructor.from_openai(OpenAI())
 
@@ -386,7 +453,7 @@ When working on documentation, these resources may be helpful:
   ```markdown
   !!! note "Optional Title"
       This is a note admonition.
-  
+
   !!! warning
       This is a warning.
   ```

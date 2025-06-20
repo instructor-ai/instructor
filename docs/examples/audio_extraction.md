@@ -88,4 +88,4 @@ This pattern is particularly useful for:
 ## Related Examples
 
 - [Multi-Modal Data with Gemini](multi_modal_gemini.md)
-- [Structured Outputs with OpenAI](../integrations/openai.md) 
+- [Structured Outputs with OpenAI](../integrations/openai.md)

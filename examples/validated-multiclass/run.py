@@ -17,12 +17,12 @@ class Tag(BaseModel):
         context = info.context
         if context:
             tags: list[Tag] = context.get("tags")
-            assert self.id in {
-                tag.id for tag in tags
-            }, f"Tag ID {self.id} not found in context"
-            assert self.name in {
-                tag.name for tag in tags
-            }, f"Tag name {self.name} not found in context"
+            assert self.id in {tag.id for tag in tags}, (
+                f"Tag ID {self.id} not found in context"
+            )
+            assert self.name in {tag.name for tag in tags}, (
+                f"Tag name {self.name} not found in context"
+            )
         return self
 
 

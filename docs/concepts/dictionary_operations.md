@@ -66,7 +66,7 @@ def handle_reask_kwargs(kwargs, mode, response, exception):
 ```python
 def handle_reask_kwargs(kwargs, mode, response, exception):
     kwargs_copy = kwargs.copy()
-    
+
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_REASONING_TOOLS}:
         return reask_anthropic_tools(kwargs_copy, response, exception)
     elif mode == Mode.ANTHROPIC_JSON:

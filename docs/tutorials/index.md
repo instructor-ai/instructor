@@ -1,6 +1,6 @@
 ---
 title: Instructor Tutorials
-description: Interactive, step-by-step tutorials for learning how to use Instructor effectively 
+description: Interactive, step-by-step tutorials for learning how to use Instructor effectively
 ---
 
 # Instructor Tutorials
@@ -66,13 +66,13 @@ Choose your preferred environment to work through these interactive Jupyter note
 - :material-google: **Google Colab**
 
     Look for the "Open in Colab" button at the top of each notebook
-    
+
     Perfect for cloud execution without local setup
 
 - :simple-mybinder: **Binder**
 
     Click the "Launch Binder" button to run instantly in your browser
-    
+
     No installation or API keys required for basic examples
 
 </div>
@@ -112,7 +112,7 @@ We're here to support your learning journey:
 - :material-play-circle: **Ready to Begin?**
 
     Start your journey with our first tutorial on structured outputs
-    
+
     [:octicons-arrow-right-16: Start Learning](./1-introduction.ipynb){: .md-button .md-button--primary }
 
 </div>

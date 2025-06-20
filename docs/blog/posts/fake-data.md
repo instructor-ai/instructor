@@ -18,7 +18,7 @@ tags:
 
 # Simple Synthetic Data Generation
 
-What that people have been using instructor for is to generate synthetic data rather than extracting data itself. We can even use the J-Schemo extra fields to give specific examples to control how we generate data. 
+What that people have been using instructor for is to generate synthetic data rather than extracting data itself. We can even use the J-Schemo extra fields to give specific examples to control how we generate data.
 
 Consider the example below. We'll likely generate very simple names.
 
@@ -154,7 +154,7 @@ for user in generate_fake_users(5):
 
 ## Leveraging Descriptions
 
-By adjusting the descriptions within our Pydantic models, we can subtly influence the nature of the synthetic data generated. This method allows for a more nuanced control over the output, ensuring that the generated data aligns more closely with our expectations or requirements. 
+By adjusting the descriptions within our Pydantic models, we can subtly influence the nature of the synthetic data generated. This method allows for a more nuanced control over the output, ensuring that the generated data aligns more closely with our expectations or requirements.
 
 For instance, specifying "Fancy French sounding names" as a description for the `name` field in our `UserDetail` model directs the generation process to produce names that fit this particular criterion, resulting in a dataset that is both diverse and tailored to specific linguistic characteristics.
 

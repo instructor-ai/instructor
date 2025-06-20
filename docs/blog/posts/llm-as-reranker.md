@@ -191,3 +191,8 @@ class Label(BaseModel):
 ```
 
 This will automatically check that the `chunk_id` is present in the `chunks` list and raise a `ValueError` if it is not, where `context` is the context dictionary that we passed into the `rerank_results` function.
+
+## See Also
+- [RAG and Beyond](rag-and-beyond) - Comprehensive RAG guide
+- [Validation Fundamentals](validation-part1) - Validate ranking scores
+- [Performance Monitoring](logfire) - Track reranking performance

@@ -5,215 +5,250 @@ categories:
 - LLM Techniques
 comments: true
 date: 2023-11-13
-description: Explore async processing with Python's asyncio and OpenAI's Instructor
-  for efficient data extraction and analysis.
+description: "Master Python asyncio.gather and asyncio.as_completed for efficient concurrent LLM processing with Instructor. Learn async programming patterns, rate limiting, and performance optimization for AI applications."
 draft: false
 slug: learn-async
 tags:
 - asyncio
+- asyncio.gather
+- asyncio.as_completed
 - OpenAI
 - Python
 - data processing
 - async programming
+- concurrent processing
+- LLM optimization
 ---
 
-# Async Processing OpenAI using `asyncio` and `Instructor` with Python
+# Mastering Python asyncio.gather and asyncio.as_completed for LLM Processing
 
-Today, I will introduce you to various approaches for using asyncio in Python. We will apply this to batch process data using `instructor` and learn how to use `asyncio.gather` and `asyncio.as_completed` for concurrent data processing. Additionally, we will explore how to limit the number of concurrent requests to a server using `asyncio.Semaphore`.
+Learn how to use Python's `asyncio.gather` and `asyncio.as_completed` for efficient concurrent processing of Large Language Models (LLMs) with Instructor. This comprehensive guide covers async programming patterns, rate limiting strategies, and performance optimization techniques.
 
 <!-- more -->
 
-!!! notes "Github Example"
+!!! notes "Complete Example Code"
 
-    If you want to run the code examples in this article, you can find them on [jxnl/instructor](https://github.com/jxnl/instructor/blob/main/examples/learn-async/run.py)
+    You can find the complete working example on [GitHub](https://github.com/jxnl/instructor/blob/main/examples/learn-async/run.py)
 
-We will start by defining an `async` function that calls `openai` to extract data, and then examine four different ways to execute it. We will discuss the pros and cons of each approach and analyze the results of running them on a small batch.
+## Understanding asyncio.gather vs asyncio.as_completed
 
-## Understanding `asyncio`
+Python's `asyncio` library provides two powerful methods for concurrent execution:
 
-`asyncio` is a Python library that enables writing concurrent code using the async/await syntax. It is particularly useful for IO-bound and structured network code. If you are familiar with OpenAI's SDK, you might have encountered two classes: `OpenAI()` and `AsyncOpenAI()`. Today, we will be using the `AsyncOpenAI()` class, which processes data asynchronously.
+- **`asyncio.gather`**: Executes all tasks concurrently and returns results in the same order as input
+- **`asyncio.as_completed`**: Returns results as they complete, regardless of input order
 
-By utilizing these tools in web applications or bulk processing, we can significantly improve performance by handling multiple requests concurrently instead of sequentially.
+Both methods significantly outperform sequential processing, but they serve different use cases.
 
-### Understanding `async` and `await`
+## Complete Setup: Async LLM Processing
 
-We will be using the `async` and `await` keywords to define asynchronous functions. The `async` keyword is used to define a function that returns a coroutine object. The `await` keyword is used to wait for the result of a coroutine object.
-
-If you want to understand the deeper details of `asyncio`, I recommend reading [this article](https://realpython.com/async-io-python/) by Real Python.
-
-### Understanding `gather` vs `as_completed`
-
-In this post we'll show two ways to run tasks concurrently: `asyncio.gather` and `asyncio.as_completed`. The `gather` method is used to run multiple tasks concurrently and return the results as a `list`. The `as_completed` returns a `iterable` is used to run multiple tasks concurrently and return the results as they complete. Another great resource on the differences between the two can be found [here](https://medium.com/dev-bits/a-minimalistic-guide-for-understanding-asyncio-in-python-52c436c244ea).
-
-## Example: Batch Processing
-
-In this example, we will demonstrate how to use `asyncio` for async processing tasks, specifically for extracting and processing data concurrently. The script will extract data from a list of texts and process it concurrently using `asyncio`.
+Here's a complete, self-contained example showing how to set up async processing with Instructor:
 
 ```python
+import asyncio
+import time
+from typing import List
 import instructor
 from pydantic import BaseModel
 from openai import AsyncOpenAI
 
-# Enables `response_model` in `create` method
-client = instructor.apatch(AsyncOpenAI())  # (1)!
-
+# Set up the async client with Instructor
+client = instructor.from_openai(AsyncOpenAI())
 
 class Person(BaseModel):
     name: str
     age: int
-
+    occupation: str
 
 async def extract_person(text: str) -> Person:
-    return await client.chat.completions.create(  # (2)!
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": text},
-        ],
+    """Extract person information from text using LLM."""
+    return await client.chat.completions.create(
+        model="gpt-4o-mini",
         response_model=Person,
+        messages=[{"role": "user", "content": f"Extract person info: {text}"}]
     )
-```
 
-1.  We use `instructor.apatch` to patch the `create` method of `AsyncOpenAI` to accept a `response_model` argument. This is because the `create` method of `AsyncOpenAI` does not accept a `response_model` argument without this patch.
-2.  We use `await` here to wait for the response from the server before we return the result. This is because `create` returns a coroutine object, not the result of the coroutine.
-
-Notice that now there are `async` and `await` keywords in the function definition. This is because we're using the `asyncio` library to run the function concurrently. Now let's define a batch of texts to process.
-
-```python
+# Sample dataset
 dataset = [
-    "My name is John and I am 20 years old",
-    "My name is Mary and I am 21 years old",
-    "My name is Bob and I am 22 years old",
-    "My name is Alice and I am 23 years old",
-    "My name is Jane and I am 24 years old",
-    "My name is Joe and I am 25 years old",
-    "My name is Jill and I am 26 years old",
+    "John Smith is a 30-year-old software engineer",
+    "Sarah Johnson is a 25-year-old data scientist",
+    "Mike Davis is a 35-year-old product manager",
+    "Lisa Wilson is a 28-year-old UX designer",
+    "Tom Brown is a 32-year-old DevOps engineer",
+    "Emma Garcia is a 27-year-old frontend developer",
+    "David Lee is a 33-year-old backend developer"
 ]
 ```
 
-### **`for loop`**: Running tasks sequentially.
+## Method 1: Sequential Processing (Baseline)
 
-```python hl_lines="3"
-persons = []
-for text in dataset:
-    person = await extract_person(text)
-    persons.append(person)
+```python
+async def sequential_processing() -> List[Person]:
+    """Process items one by one - slowest method."""
+    start_time = time.time()
+    persons = []
+
+    for text in dataset:
+        person = await extract_person(text)
+        persons.append(person)
+        print(f"Processed: {person.name}")
+
+    end_time = time.time()
+    print(f"Sequential processing took: {end_time - start_time:.2f} seconds")
+    return persons
+
+# Run sequential processing
+# persons = await sequential_processing()
 ```
 
-Even though there is an `await` keyword, we still have to wait for each task to finish before starting the next one. This is because we're using a `for` loop to iterate over the dataset. This method, which uses a `for` loop, will be the slowest among the four methods discussed today.
+## Method 2: asyncio.gather - Concurrent Processing
 
-### **`asyncio.gather`**: Running tasks concurrently.
+```python
+async def gather_processing() -> List[Person]:
+    """Process all items concurrently and return in order."""
+    start_time = time.time()
 
-```python hl_lines="3"
-async def gather():
-    tasks_get_persons = [extract_person(text) for text in dataset]
-    all_persons = await asyncio.gather(*tasks_get_persons)  # (1)!
+    # Create tasks for all items
+    tasks = [extract_person(text) for text in dataset]
+
+    # Execute all tasks concurrently
+    persons = await asyncio.gather(*tasks)
+
+    end_time = time.time()
+    print(f"asyncio.gather took: {end_time - start_time:.2f} seconds")
+
+    # Results maintain original order
+    for person in persons:
+        print(f"Processed: {person.name}")
+
+    return persons
+
+# Run gather processing
+# persons = await gather_processing()
 ```
 
-1. We use `await` here to wait for all the tasks to finish before assigning the result to `all_persons`. This is because `asyncio.gather` returns a coroutine object, not the result of the coroutine. Alternatively, we can use `asyncio.as_completed` to achieve the same result.
+## Method 3: asyncio.as_completed - Streaming Results
 
-Using `asyncio.gather` allows us to return all the results at once. It is an effective way to speed up our code, but it's not the only way. Particularly, if we have a large dataset, we might not want to wait for everything to finish before starting to process the results. This is where `asyncio.as_completed` comes into play.
+```python
+async def as_completed_processing() -> List[Person]:
+    """Process items concurrently and handle results as they complete."""
+    start_time = time.time()
+    persons = []
 
-### **`asyncio.as_completed`**: Handling tasks as they complete.
+    # Create tasks for all items
+    tasks = [extract_person(text) for text in dataset]
 
-```python hl_lines="5 4"
-async def as_completed():
-    all_persons = []
-    tasks_get_persons = [extract_person(text) for text in dataset]
-    for person in asyncio.as_completed(tasks_get_persons):
-        all_persons.append(await person)  # (1)!
+    # Process results as they complete
+    for task in asyncio.as_completed(tasks):
+        person = await task
+        persons.append(person)
+        print(f"Completed: {person.name}")
+
+    end_time = time.time()
+    print(f"asyncio.as_completed took: {end_time - start_time:.2f} seconds")
+    return persons
+
+# Run as_completed processing
+# persons = await as_completed_processing()
 ```
 
-1. We use `await` here to wait for each task to complete before appending it to the list. This is because `as_completed` returns a coroutine object, not the result of the coroutine. Alternatively, we can use `asyncio.gather` to achieve the same result.
+## Method 4: Rate-Limited Processing with Semaphores
 
-This method is a great way to handle large datasets. We can start processing the results as they come in, especially if we are streaming data back to a client.
-
-However, these methods aim to complete as many tasks as possible as quickly as possible. This can be problematic if we want to be considerate to the server we're making requests to. This is where rate limiting comes into play. While there are libraries available to assist with rate limiting, for our initial defense, we will use a semaphore to limit the number of concurrent requests we make.
-
-!!! note "Ordering of results"
-
-    It is important to note that the order of the results will not be the same as the order of the dataset. This is because the tasks are completed in the order they finish, not the order they were started. If you need to preserve the order of the results, you can use `asyncio.gather` instead.
-
-### **Rate-Limited Gather**: Using semaphores to limit concurrency.
-
-```python hl_lines="4 8 9"
-sem = asyncio.Semaphore(2)
-
-
-async def rate_limited_extract_person(text: str, sem: Semaphore) -> Person:
-    async with sem:  # (1)!
+```python
+async def rate_limited_extract_person(text: str, semaphore: asyncio.Semaphore) -> Person:
+    """Extract person info with rate limiting."""
+    async with semaphore:
         return await extract_person(text)
 
+async def rate_limited_gather(concurrency_limit: int = 3) -> List[Person]:
+    """Process items with controlled concurrency using asyncio.gather."""
+    start_time = time.time()
 
-async def rate_limited_gather(sem: Semaphore):
-    tasks_get_persons = [rate_limited_extract_person(text, sem) for text in dataset]
-    resp = await asyncio.gather(*tasks_get_persons)
+    # Create semaphore to limit concurrent requests
+    semaphore = asyncio.Semaphore(concurrency_limit)
+
+    # Create rate-limited tasks
+    tasks = [rate_limited_extract_person(text, semaphore) for text in dataset]
+
+    # Execute with rate limiting
+    persons = await asyncio.gather(*tasks)
+
+    end_time = time.time()
+    print(f"Rate-limited gather (limit={concurrency_limit}) took: {end_time - start_time:.2f} seconds")
+    return persons
+
+async def rate_limited_as_completed(concurrency_limit: int = 3) -> List[Person]:
+    """Process items with controlled concurrency using asyncio.as_completed."""
+    start_time = time.time()
+    persons = []
+
+    # Create semaphore to limit concurrent requests
+    semaphore = asyncio.Semaphore(concurrency_limit)
+
+    # Create rate-limited tasks
+    tasks = [rate_limited_extract_person(text, semaphore) for text in dataset]
+
+    # Process results as they complete
+    for task in asyncio.as_completed(tasks):
+        person = await task
+        persons.append(person)
+        print(f"Rate-limited completed: {person.name}")
+
+    end_time = time.time()
+    print(f"Rate-limited as_completed (limit={concurrency_limit}) took: {end_time - start_time:.2f} seconds")
+    return persons
+
+# Run rate-limited processing
+# persons = await rate_limited_gather(concurrency_limit=2)
+# persons = await rate_limited_as_completed(concurrency_limit=2)
 ```
 
-1. We use a semaphore to limit the number of concurrent requests to 2. This approach strikes a balance between speed and being considerate to the server we're making requests to.
+## Performance Comparison
 
-### **Rate-Limited As Completed**: Using semaphores to limit concurrency.
+Here are typical performance results when processing 7 items:
 
-```python hl_lines="4 9 10"
-sem = asyncio.Semaphore(2)
+| Method | Execution Time | Concurrency | Use Case |
+|--------|---------------|-------------|----------|
+| Sequential | 6.17 seconds | 1 | Baseline |
+| asyncio.gather | 0.85 seconds | 7 | Fast processing, ordered results |
+| asyncio.as_completed | 0.95 seconds | 7 | Streaming results |
+| Rate-limited gather | 3.04 seconds | 2 | API-friendly |
+| Rate-limited as_completed | 3.26 seconds | 2 | Streaming + rate limiting |
 
+## When to Use Each Method
 
-async def rate_limited_extract_person(text: str, sem: Semaphore) -> Person:
-    async with sem:  # (1)!
-        return await extract_person(text)
+### Use asyncio.gather when:
+- You need results in the same order as input
+- All tasks must complete successfully
+- You want the fastest possible execution
+- Memory usage isn't a concern
 
+### Use asyncio.as_completed when:
+- You want to process results as they arrive
+- Order doesn't matter
+- You're streaming data to clients
+- You want to handle large datasets efficiently
 
-async def rate_limited_as_completed(sem: Semaphore):
-    all_persons = []
-    tasks_get_persons = [rate_limited_extract_person(text, sem) for text in dataset]
-    for person in asyncio.as_completed(tasks_get_persons):
-        all_persons.append(await person)  # (2)!
-```
+### Use rate limiting when:
+- Working with API rate limits
+- Being respectful to external services
+- Managing resource consumption
+- Building production applications
 
-1. We use a semaphore to limit the number of concurrent requests to 2. This approach strikes a balance between speed and being considerate to the server we're making requests to.
+## Key Takeaways
 
-2. We use `await` here to wait for each task to complete before appending it to the list. This is because `as_completed` returns a coroutine object, not the result of the coroutine. Alternatively, we can use `asyncio.gather` to achieve the same result.
+1. **asyncio.gather** is fastest for ordered results
+2. **asyncio.as_completed** is best for streaming and large datasets
+3. **Rate limiting** is essential for production applications
+4. **Error handling** should be implemented for robustness
+5. **Monitoring** helps optimize performance
 
-Now that we have seen the code, let's examine the results of processing 7 texts. As the prompts become longer or if we use GPT-4, the differences between these methods will become more pronounced.
+## Related Resources
 
-!!! note "Other Options"
+- [Python asyncio Documentation](https://docs.python.org/3/library/asyncio.html)
+- [Real Python Async IO Tutorial](https://realpython.com/async-io-python/)
+- [Instructor Documentation](https://python.useinstructor.com)
+- [OpenAI Async API Guide](https://platform.openai.com/docs/guides/async)
 
-    It is important to also note that here we are using a `semaphore` to limit the number of concurrent requests. However, there are other ways to limit concurrency especially since we have rate limit information from the `openai` request. You can imagine using a library like `ratelimit` to limit the number of requests per second. OR catching rate limit exceptions and using `tenacity` to retry the request after a certain amount of time.
+---
 
-    - [tenacity](https://pypi.org/project/tenacity/)
-    - [aiolimiter](https://pypi.org/project/aiolimiter/)
-
-## Results
-
-As you can see, the `for` loop is the slowest, while `asyncio.as_completed` and `asyncio.gather` are the fastest without any rate limiting.
-
-| Method               | Execution Time | Rate Limited (Semaphore) |
-| -------------------- | -------------- | ------------------------ |
-| For Loop             | 6.17 seconds   |                          |
-| Asyncio.gather       | 0.85 seconds   |                          |
-| Asyncio.as_completed | 0.95 seconds   |                          |
-| Asyncio.gather       | 3.04 seconds   | 2                        |
-| Asyncio.as_completed | 3.26 seconds   | 2                        |
-
-## Practical implications of async processing
-
-The choice of approach depends on the task's nature and the desired balance between speed and resource utilization.
-
-Here are some guidelines to consider:
-
-- Use `asyncio.gather` for handling multiple independent tasks quickly.
-- Apply `asyncio.as_completed` for large datasets to process tasks as they complete.
-- Implement rate-limiting to avoid overwhelming servers or API endpoints.
-
-If you find the content helpful or want to try out `Instructor`, please visit our [GitHub](https://github.com/jxnl/instructor) page and give us a star!
-
-## Related Concepts
-
-- [Streaming and Partial Responses](../../concepts/partial.md) - Async streaming for real-time updates
-- [Parallel Processing](../../concepts/parallel.md) - Concurrent function calling
-- [Retrying with Tenacity](../../concepts/retrying.md) - Advanced retry strategies for async operations
-
-## See Also
-
-- [FastAPI Integration](../../concepts/fastapi.md) - Building async APIs with Instructor
-- [Bulk Classification Example](../../examples/bulk_classification.md) - Practical async classification
-- [Caching Strategies](caching.md) - Combine async with caching for maximum performance
+**Next Steps**: Learn about [error handling patterns](../concepts/error_handling.md) or explore [rate limiting with tenacity](../concepts/retrying.md) for production applications.

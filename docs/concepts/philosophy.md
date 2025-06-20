@@ -33,7 +33,7 @@ The worst frameworks are roach motels - easy to get in, impossible to get out. I
 
 ```python
 # With Instructor
-client = instructor.from_provider("openai/gpt-4") 
+client = instructor.from_provider("openai/gpt-4")
 result = client.chat.completions.create(
     response_model=User,
     messages=[...]
@@ -112,7 +112,7 @@ user = client.chat.completions.create(
 class User(BaseModel):
     name: str
     age: int
-    
+
     @field_validator('age')
     def check_age(cls, v):
         if v < 0 or v > 150:
@@ -151,7 +151,7 @@ def extract_user(text):
 
 # You write your own prompts:
 messages = [{
-    "role": "system", 
+    "role": "system",
     "content": "You are a precise data extractor"
 }, {
     "role": "user",
@@ -167,7 +167,7 @@ We don't invent concepts like "Agents", "Chains", or "Tools". Those are your dom
 # We DON'T do this:
 class UserExtractionAgent(instructor.Agent):
     tools = [instructor.WebSearch(), instructor.Calculator()]
-    
+
 # You build what makes sense:
 def extract_user_with_search(query: str) -> User:
     # Your logic, your way
@@ -188,7 +188,7 @@ class User(BaseModel):
     name: str
     age: int
 
-# This is just a function  
+# This is just a function
 def process_user(user: User) -> dict:
     return {"name": user.name.upper(), "adult": user.age >= 18}
 
@@ -223,7 +223,7 @@ from enum import Enum
 # Your domain models (not ours)
 class Priority(str, Enum):
     HIGH = "high"
-    MEDIUM = "medium"  
+    MEDIUM = "medium"
     LOW = "low"
 
 class Ticket(BaseModel):

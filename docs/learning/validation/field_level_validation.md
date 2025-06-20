@@ -28,7 +28,7 @@ class User(BaseModel):
     name: str = Field(..., min_length=2, description="User's full name")
     age: int = Field(..., ge=18, le=120, description="User's age in years")
     email: str = Field(
-        ..., 
+        ...,
         pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
         description="Valid email address"
     )
@@ -52,14 +52,14 @@ class Product(BaseModel):
     name: str
     sku: str
     price: float
-    
+
     @field_validator('name')
     @classmethod
     def validate_name(cls, v):
         if len(v.strip()) < 3:
             raise ValueError("Product name must be at least 3 characters long")
         return v.strip().title()  # Clean up and format
-    
+
     @field_validator('sku')
     @classmethod
     def validate_sku(cls, v):
@@ -86,15 +86,15 @@ class Reservation(BaseModel):
     check_out: date
     room_type: str
     guests: int
-    
+
     @model_validator(mode='after')
     def validate_dates(self):
         if self.check_out <= self.check_in:
             raise ValueError("Check-out date must be after check-in date")
-        
+
         if self.room_type == "Standard" and self.guests > 2:
             raise ValueError("Standard rooms can only fit 2 guests")
-            
+
         return self
 ```
 

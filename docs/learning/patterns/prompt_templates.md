@@ -63,12 +63,12 @@ For simple cases, you can use f-strings to create prompt templates:
 def extract_person(content, document_type="text"):
     prompt = f"""
     Extract information about the person mentioned in the following {document_type}:
-    
+
     {content}
-    
+
     Please provide their name, age, and occupation.
     """
-    
+
     return client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -111,12 +111,12 @@ def create_review_extraction_prompt(
     sentiment_instruction = """
     Also include a brief sentiment analysis of the review.
     """ if include_sentiment else ""
-    
+
     return f"""
     Extract product review information from the following {product_category} review:
-    
+
     {review_text}
-    
+
     Please identify:
     - The name of the product being reviewed
     - The numerical rating (1-5)
@@ -170,4 +170,4 @@ review = client.chat.completions.create(
 
 - Explore [Field Validation](./field_validation.md) for ensuring data quality
 - Try [List Extraction](./list_extraction.md) for extracting multiple items
-- Learn about [Nested Structure](./nested_structure.md) for complex data 
+- Learn about [Nested Structure](./nested_structure.md) for complex data

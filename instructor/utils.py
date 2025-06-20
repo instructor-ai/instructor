@@ -467,10 +467,15 @@ def dump_message(message: ChatCompletionMessage) -> ChatCompletionMessageParam:
         if not isinstance(ret["content"], str):
             response_message: str = ""
             for content_message in ret["content"]:
-                if "text" in content_message:
-                    response_message += content_message["text"]
-                elif "refusal" in content_message:
-                    response_message += content_message["refusal"]
+                if isinstance(content_message, dict):
+                    # Use get() to safely access values
+                    message_type = content_message.get("type")
+                    if message_type == "text":
+                        text_content = content_message.get("text", "")
+                        response_message += text_content
+                    elif message_type == "refusal":
+                        refusal_content = content_message.get("refusal", "")
+                        response_message += refusal_content
             ret["content"] = response_message
         ret["content"] += json.dumps(message.model_dump()["function_call"])
     return ret

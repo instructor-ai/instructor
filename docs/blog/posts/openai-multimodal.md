@@ -88,3 +88,12 @@ The addition of audio support to the Chat Completions API enables a wide range o
 While this new feature is exciting, it's important to note that it's best suited for asynchronous use cases that don't require extremely low latencies. For more dynamic and real-time interactions, OpenAI recommends using their Realtime API.
 
 As with any AI-powered feature, it's crucial to consider ethical implications and potential biases in audio processing and generation. Always test thoroughly and consider the diversity of your user base when implementing these features.
+
+## Related Documentation
+- [Multimodal Guide](/concepts/multimodal) - Comprehensive multimodal reference
+- [OpenAI Integration](/integrations/openai) - Full OpenAI setup
+
+## See Also
+- [Gemini Multimodal](multimodal-gemini) - Alternative multimodal approach
+- [Prompt Caching](anthropic-prompt-caching) - Cache large audio files
+- [Monitoring with Logfire](logfire) - Track multimodal processing

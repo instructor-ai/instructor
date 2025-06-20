@@ -26,7 +26,7 @@ We currently have two modes for Gemini
 !!! info "Gemini Thought Parts Filtering"
 
     When using `Mode.GENAI_TOOLS`, Instructor automatically filters out thought parts from Gemini responses. Gemini 2.5 models include internal reasoning parts with `thought: true` by default, which cannot be disabled. Instructor removes these thought parts before processing the structured output to prevent runtime errors.
-    
+
     This filtering happens automatically and requires no additional configuration. For more information about Gemini's thinking feature, see the [official documentation](https://ai.google.dev/gemini-api/docs/thinking).
 
 ## Installation

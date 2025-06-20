@@ -133,7 +133,7 @@ import instructor
 # Force JSON mode
 client = instructor.from_provider("ollama/llama3.1", mode=instructor.Mode.JSON)
 
-# Force TOOLS mode  
+# Force TOOLS mode
 client = instructor.from_provider("ollama/llama2", mode=instructor.Mode.TOOLS)
 ```
 

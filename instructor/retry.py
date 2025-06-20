@@ -42,7 +42,9 @@ T = TypeVar("T")
 
 
 def initialize_retrying(
-    max_retries: int | Retrying | AsyncRetrying, is_async: bool, timeout: float | None = None
+    max_retries: int | Retrying | AsyncRetrying,
+    is_async: bool,
+    timeout: float | None = None,
 ):
     """
     Initialize the retrying mechanism based on the type (synchronous or asynchronous).
@@ -57,18 +59,18 @@ def initialize_retrying(
     """
     if isinstance(max_retries, int):
         logger.debug(f"max_retries: {max_retries}, timeout: {timeout}")
-        
+
         # Create stop conditions
         stop_conditions = [stop_after_attempt(max_retries)]
         if timeout is not None:
             # Add global timeout: stop after timeout seconds total
             stop_conditions.append(stop_after_delay(timeout))
-        
+
         # Combine stop conditions with OR logic (stop if ANY condition is met)
         stop_condition = stop_conditions[0]
         for condition in stop_conditions[1:]:
             stop_condition = stop_condition | condition
-        
+
         if is_async:
             max_retries = AsyncRetrying(stop=stop_condition)
         else:

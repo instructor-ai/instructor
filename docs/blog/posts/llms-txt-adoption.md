@@ -5,7 +5,7 @@ categories:
   - Announcements
 comments: true
 date: 2025-03-19
-description: 
+description:
   Instructor adopts llms.txt to make documentation more accessible to AI language models.
 draft: false
 slug: instructor-adopts-llms-txt
@@ -86,4 +86,4 @@ We're excited to be part of establishing this standard and look forward to seein
 
 For more details about the llms.txt specification, check out the [official repository](https://github.com/AnswerDotAI/llms-txt) and join the discussion about making documentation more AI-friendly.
 
-Happy coding! 
+Happy coding!

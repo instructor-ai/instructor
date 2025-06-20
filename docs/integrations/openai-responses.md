@@ -295,7 +295,7 @@ Model responses that use the web search tool will include two parts:
     1. The text result in message.content[0].text
     2. Annotations message.content[0].annotations for the cited URLs
 
-By default, the model's response will include inline citations for URLs found in the web search results. 
+By default, the model's response will include inline citations for URLs found in the web search results.
 
 In addition to this, the url_citation annotation object will contain the URL, title and location of the cited source. You can extract this information using the `create_with_completion` method.
 
