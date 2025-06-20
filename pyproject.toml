@@ -9,14 +9,17 @@ dependencies = [
     "typer<1.0.0,>=0.9.0",
     "rich<15.0.0,>=13.7.0",
     "aiohttp<4.0.0,>=3.9.1",
-    "tenacity<10.0.0,>=9.0.0",
+    "tenacity<10.0.0,>=8.2.3",
     "pydantic-core<3.0.0,>=2.18.0",
     "jiter>=0.6.1,<0.11",
     "jinja2<4.0.0,>=3.1.4",
     "requests<3.0.0,>=2.32.3",
+    "pre-commit>=4.2.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.5.49",
 ]
 name = "instructor"
-version = "1.8.3"
+version = "1.9.0"
 description = "structured outputs for llm"
 readme = "README.md"
 
@@ -123,6 +126,8 @@ docs = [
     "mkdocs-minify-plugin<1.0.0,>=0.8.0",
     "mkdocs-redirects<2.0.0,>=1.2.1",
     "material>=0.1",
+    "cairosvg>=2.7.1",
+    "pillow>=10.4.0",
 ]
 anthropic = ["anthropic==0.53.0", "xmltodict<0.15,>=0.13"]
 test-docs = [
@@ -163,3 +168,10 @@ cerebras_cloud_sdk = ["cerebras-cloud-sdk<2.0.0,>=1.5.0"]
 fireworks-ai = ["fireworks-ai<1.0.0,>=0.15.4"]
 writer = ["writer-sdk<3.0.0,>=2.2.0"]
 google-genai=["google-genai>=1.5.0","jsonref<2.0.0,>=1.1.0",]
+examples = [
+    "cohere>=5.13.4",
+    "datasets>=3.2.0",
+    "pyright==1.1.401",
+    "ruff==0.11.13",
+    "trafilatura>=2.0.0",
+]
