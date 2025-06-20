@@ -21,6 +21,7 @@ PROVIDERS = [
     "anthropic/claude-3-5-haiku-latest",
     "google/gemini-2.0-flash",
     "openai/gpt-4o-mini",
+    "azure_openai/gpt-4o-mini",
     "mistral/ministral-8b-latest",
     "cohere/command-r-plus",
     "perplexity/sonar-pro",
