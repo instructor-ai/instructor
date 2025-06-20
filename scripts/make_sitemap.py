@@ -1,7 +1,7 @@
 import os
 import asyncio
 import yaml
-from typing import Optional, Dict, List, Set, Tuple
+from typing import Optional
 from collections.abc import Generator
 from openai import AsyncOpenAI
 import typer
@@ -11,7 +11,6 @@ import hashlib
 from asyncio import as_completed
 import tenacity
 import re
-from pathlib import Path
 
 console = Console()
 
@@ -41,7 +40,7 @@ def traverse_docs(
                 yield relative_path, content, content_hash
 
 
-def extract_markdown_links(content: str) -> List[str]:
+def extract_markdown_links(content: str) -> list[str]:
     """
     Extract all markdown links from the content.
 
@@ -107,7 +106,7 @@ def normalize_path(path: str, current_path: str) -> str:
 )
 async def analyze_content(
     client: AsyncOpenAI, path: str, content: str
-) -> Dict[str, any]:
+) -> dict[str, any]:
     """
     Analyze the content of a file to extract summary, keywords, topics, and references.
 
@@ -184,7 +183,7 @@ If no references are found, write: REFERENCES: none""",
         raise
 
 
-def calculate_similarity_score(data1: Dict, data2: Dict) -> float:
+def calculate_similarity_score(data1: dict, data2: dict) -> float:
     """
     Calculate similarity score between two documents based on keywords and topics.
 
@@ -211,8 +210,8 @@ def calculate_similarity_score(data1: Dict, data2: Dict) -> float:
 
 
 def generate_cross_links(
-    sitemap_data: Dict[str, Dict], min_similarity: float = 0.3
-) -> Dict[str, List[str]]:
+    sitemap_data: dict[str, dict], min_similarity: float = 0.3
+) -> dict[str, list[str]]:
     """
     Generate cross-link suggestions based on content similarity and references.
 
