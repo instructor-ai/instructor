@@ -196,4 +196,4 @@ Now that you've set up your client, you can:
 3. Add [validation](../validation/basics.md) to your models
 4. Handle [optional fields](../patterns/optional_fields.md)
 
-The following sections will guide you through these patterns with increasingly complex examples. 
+The following sections will guide you through these patterns with increasingly complex examples.

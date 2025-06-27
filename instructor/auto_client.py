@@ -11,6 +11,7 @@ InstructorType = Union[Instructor, AsyncInstructor]
 # List of supported providers
 supported_providers = [
     "openai",
+    "azure_openai",
     "anthropic",
     "google",
     "mistral",
@@ -82,10 +83,12 @@ def from_provider(
         >>> import instructor
         >>> # Sync clients
         >>> client = instructor.from_provider("openai/gpt-4")
+        >>> client = instructor.from_provider("azure_openai/gpt-4")
         >>> client = instructor.from_provider("anthropic/claude-3-sonnet")
         >>> client = instructor.from_provider("ollama/llama2")
         >>> # Async clients
         >>> async_client = instructor.from_provider("openai/gpt-4", async_client=True)
+        >>> async_client = instructor.from_provider("azure_openai/gpt-4", async_client=True)
     """
     try:
         provider, model_name = model.split("/", 1)
@@ -114,6 +117,58 @@ def from_provider(
 
             raise ConfigurationError(
                 "The openai package is required to use the OpenAI provider. "
+                "Install it with `pip install openai`."
+            ) from None
+
+    elif provider == "azure_openai":
+        try:
+            import os
+            from openai import AzureOpenAI, AsyncAzureOpenAI
+            from instructor import from_openai
+
+            # Get required Azure OpenAI configuration from environment
+            api_key = kwargs.pop("api_key", os.environ.get("AZURE_OPENAI_API_KEY"))
+            azure_endpoint = kwargs.pop("azure_endpoint", os.environ.get("AZURE_OPENAI_ENDPOINT"))
+            api_version = kwargs.pop("api_version", "2024-02-01")
+
+            if not api_key:
+                from instructor.exceptions import ConfigurationError
+                raise ConfigurationError(
+                    "AZURE_OPENAI_API_KEY is not set. "
+                    "Set it with `export AZURE_OPENAI_API_KEY=<your-api-key>` or pass it as kwarg api_key=<your-api-key>"
+                )
+
+            if not azure_endpoint:
+                from instructor.exceptions import ConfigurationError
+                raise ConfigurationError(
+                    "AZURE_OPENAI_ENDPOINT is not set. "
+                    "Set it with `export AZURE_OPENAI_ENDPOINT=<your-endpoint>` or pass it as kwarg azure_endpoint=<your-endpoint>"
+                )
+
+            client = (
+                AsyncAzureOpenAI(
+                    api_key=api_key,
+                    api_version=api_version,
+                    azure_endpoint=azure_endpoint,
+                )
+                if async_client
+                else AzureOpenAI(
+                    api_key=api_key,
+                    api_version=api_version,
+                    azure_endpoint=azure_endpoint,
+                )
+            )
+            return from_openai(
+                client,
+                model=model_name,
+                mode=mode if mode else instructor.Mode.TOOLS,
+                **kwargs,
+            )
+        except ImportError:
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
+                "The openai package is required to use the Azure OpenAI provider. "
                 "Install it with `pip install openai`."
             ) from None
 

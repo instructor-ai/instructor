@@ -336,3 +336,12 @@ for _ in range(2):
     print(completion.usage)
     print(resp)
 ```
+
+## Related Documentation
+- [Caching Strategies](/concepts/caching) - General caching concepts
+- [Anthropic Integration](/integrations/anthropic) - Full Anthropic guide
+
+## See Also
+- [Anthropic Structured Outputs](structured-output-anthropic) - Use with caching
+- [Response Caching](caching) - General caching strategies
+- [Performance Monitoring](logfire) - Track cache performance

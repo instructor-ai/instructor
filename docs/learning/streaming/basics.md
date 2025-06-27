@@ -51,7 +51,7 @@ for partial in client.chat.completions.create(
 ):
     # Print each update as it arrives
     print("\nUpdate received:")
-    
+
     # Access available fields
     if hasattr(partial, "name") and partial.name:
         print(f"Name: {partial.name}")
@@ -110,4 +110,4 @@ for partial in client.chat.completions.create(
 ## Next Steps
 
 - Explore [Streaming Lists](lists.md) for handling collections
-- Learn about [Validation with Streaming](../validation/basics.md) 
+- Learn about [Validation with Streaming](../validation/basics.md)

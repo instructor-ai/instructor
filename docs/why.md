@@ -18,12 +18,12 @@ print(user_info.age)   # 25
 
 # What you actually get:
 response = llm.complete("Extract: John is 25 years old")
-# "I'd be happy to help! Based on the text, the user's name is John 
+# "I'd be happy to help! Based on the text, the user's name is John
 # and their age is 25. Is there anything else you'd like me to extract?"
 
 # Now you need to:
 # 1. Parse this text somehow
-# 2. Handle when it returns JSON with syntax errors  
+# 2. Handle when it returns JSON with syntax errors
 # 3. Validate the data matches what you expect
 # 4. Retry when it fails (which it will)
 # 5. Do this differently for each LLM provider
@@ -100,7 +100,7 @@ elif provider == "google":
 client = instructor.from_provider("openai/gpt-4")
 # or
 client = instructor.from_provider("anthropic/claude-3")
-# or  
+# or
 client = instructor.from_provider("google/gemini-pro")
 
 # Same code for all providers
@@ -168,7 +168,7 @@ Let's talk real numbers:
 
 **Time wasted:**
 - 2-3 hours implementing JSON parsing and validation
-- 4-6 hours debugging edge cases  
+- 4-6 hours debugging edge cases
 - 2-3 hours for each new provider you add
 - Ongoing maintenance as APIs change
 
@@ -196,7 +196,7 @@ Based on our GitHub issues and Discord:
 
 Every day without Instructor is another day of:
 - Debugging malformed JSON
-- Writing provider-specific code  
+- Writing provider-specific code
 - Handling validation manually
 - Explaining to your PM why the LLM integration is flaky
 

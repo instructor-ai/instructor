@@ -269,6 +269,14 @@ except ValidationError as e:
     For further information visit [https://errors.pydantic.dev/2.4/v/value_error](https://errors.pydantic.dev/2.4/v/value_error)
 ```
 
+## Related Documentation
+- [Validation Guide](/concepts/validation) - Validate citations
+
+## See Also
+- [RAG Techniques](rag-and-beyond) - Use citations in RAG
+- [PDF Citations](generating-pdf-citations) - Extract from PDFs
+- [Validation Basics](validation-part1) - Ensure citation quality
+
 ## Conclusion
 
 These examples demonstrate the potential of using Pydantic and OpenAI to enhance data accuracy through citation verification. While the LLM-based approach may not be efficient for runtime operations, it has exciting implications for generating a dataset of accurate responses. By leveraging this method during data generation, we can fine-tune a model that excels in citation accuracy. Similar to our last post on [finetuning a better summarizer](https://jxnl.github.io/instructor/blog/2023/11/05/chain-of-density/).

@@ -64,7 +64,7 @@ try:
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
-    
+
     print(user.model_dump_json(indent=2))
     # Expected output:
     # {
@@ -110,10 +110,10 @@ client = instructor.from_provider(
 async def extract_data(text: str) -> UserExtract:
     """
     Asynchronously extract structured data from text.
-    
+
     Args:
         text: The input text to extract from
-        
+
     Returns:
         A structured UserExtract object
     """

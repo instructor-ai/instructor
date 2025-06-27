@@ -487,15 +487,11 @@ From the simplicity of Pydantic and Instructor to the dynamic validation capabil
 
 If you enjoy the content or want to try out `Instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!
 
-## Related Concepts
-
-- [Validation and Error Handling](../../concepts/validation.md) - Core validation strategies in Instructor
-- [Semantic Validation](../../concepts/semantic_validation.md) - Advanced LLM-powered validation techniques
-- [Reask Validation](../../concepts/reask_validation.md) - Self-correction mechanisms for AI outputs
-- [Retrying and Error Recovery](../../concepts/retrying.md) - Implementing robust retry logic
+## Related Documentation
+- [Core Validation Concepts](/concepts/validation) - Learn about validation fundamentals
+- [Reask Validation](/concepts/reask_validation) - Handle validation failures gracefully
 
 ## See Also
-
-- [Citations and Hallucination Prevention](citations.md) - Validating AI responses against source material
-- [Pydantic is Still All You Need](pydantic-is-still-all-you-need.md) - Why Pydantic remains essential
-- [Self-Critique Example](../../examples/self_critique.md) - Practical implementation of self-correction
+- [Semantic Validation with Structured Outputs](semantic-validation-structured-outputs) - Next evolution in validation
+- [Why Bad Schemas Break LLMs](bad-schemas-could-break-llms) - Schema design best practices
+- [Pydantic Is Still All You Need](pydantic-is-still-all-you-need) - Why Pydantic validation matters

@@ -31,7 +31,7 @@ client = instructor.from_openai(
 class Product(BaseModel):
     name: str
     price: float = Field(..., gt=0)
-    
+
     @field_validator('name')
     @classmethod
     def validate_name(cls, v):
@@ -149,7 +149,7 @@ try:
         ],
         response_model=BasicProduct
     )
-    
+
     # Then get full details with context from the first step
     detailed = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -174,4 +174,4 @@ except Exception as e:
 ## Next Steps
 
 - Learn about [Field-level Validation](field_level_validation.md)
-- Implement [Custom Validators](custom_validators.md) 
+- Implement [Custom Validators](custom_validators.md)

@@ -108,7 +108,7 @@ class Response(BaseModel):
 assert "private_field" not in Response.model_json_schema()["properties"]
 ```
 
-Note that because the language model will never return a value for `private_field`, you'll need a default value (this can be a generator via a declared Pydantic `Field`). 
+Note that because the language model will never return a value for `private_field`, you'll need a default value (this can be a generator via a declared Pydantic `Field`).
 
 ## Customizing JSON Schema
 

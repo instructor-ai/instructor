@@ -97,7 +97,7 @@ from pydantic import BaseModel, Field, field_validator
 class User(BaseModel):
     name: str
     age: int = Field(gt=0, lt=120)  # Age must be between 0 and 120
-    
+
     @field_validator('name')
     def name_must_have_space(cls, v):
         if ' ' not in v:
@@ -138,8 +138,8 @@ person = client.chat.completions.create(
     response_model=Person,
     messages=[
         {"role": "user", "content": """
-        Extract: John Smith is 35 years old. 
-        He has homes at 123 Main St, Springfield, IL 62704 and 
+        Extract: John Smith is 35 years old.
+        He has homes at 123 Main St, Springfield, IL 62704 and
         456 Oak Ave, Chicago, IL 60601.
         """}
     ],

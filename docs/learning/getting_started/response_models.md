@@ -163,7 +163,7 @@ from pydantic import BaseModel, Field
 
 class Investment(BaseModel):
     """Represents an investment opportunity with risk and return details."""
-    
+
     name: str = Field(description="Name of the investment")
     amount: float = Field(description="Investment amount in USD")
     expected_return: float = Field(description="Expected annual return percentage")
@@ -196,4 +196,4 @@ For more advanced validation techniques, check out the [Custom Validators](../va
 
 ## Next Steps
 
-In the next section, learn about [Client Setup](client_setup.md) to configure different LLM providers and understand the various modes of operation. 
+In the next section, learn about [Client Setup](client_setup.md) to configure different LLM providers and understand the various modes of operation.

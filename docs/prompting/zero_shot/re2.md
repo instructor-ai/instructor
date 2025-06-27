@@ -8,7 +8,7 @@ Re2 (**Re** - **R** eading) is a technique that asks the model to read the quest
 
 !!! example "Re-Reading Prompting"
     **Prompt Template**: Read the question again: <*query*> <*critical thinking prompt*><sup><a href="https://arxiv.org/abs/2309.06275">1</a></sup>
-    
+
     A common critical thinking prompt is: "Let's think step by step."
 
 ## Implementation

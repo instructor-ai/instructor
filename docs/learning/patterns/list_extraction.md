@@ -1,6 +1,6 @@
-# List Extraction
+# List Extraction Tutorial: Extract Multiple Objects from LLMs
 
-This guide explains how to extract lists (arrays) of structured data using Instructor. Lists are one of the most useful patterns for extracting multiple similar items from text.
+Master the art of extracting lists and arrays from LLMs in this comprehensive tutorial. Learn how to use Instructor to extract multiple structured objects from language models like GPT-4, Claude, and Gemini with type-safe validation.
 
 ## Basic List Extraction
 
@@ -112,7 +112,7 @@ books = client.chat.completions.create(
         {"role": "user", "content": """
         Book 1: "Good Omens" (1990)
         Authors: Terry Pratchett (British), Neil Gaiman (British)
-        
+
         Book 2: "The Talisman" (1984)
         Authors: Stephen King (American), Peter Straub (American)
         """}
@@ -172,7 +172,7 @@ client = instructor.from_openai(OpenAI())
 class Product(BaseModel):
     name: str
     price: float
-    
+
     @field_validator('price')
     @classmethod
     def validate_price(cls, v):
@@ -182,7 +182,7 @@ class Product(BaseModel):
 
 class ProductList(BaseModel):
     products: List[Product] = Field(..., min_items=1)
-    
+
     @model_validator(mode='after')
     def validate_unique_names(self):
         names = [p.name for p in self.products]
@@ -263,9 +263,9 @@ action_items = client.chat.completions.create(
         {"role": "user", "content": """
         Meeting Notes - Project Kickoff
         Date: 2023-05-15
-        
+
         Attendees: John (john@example.com), Sarah (sarah@example.com), Mike
-        
+
         Discussion points:
         1. John will prepare the project timeline by next Friday. This is high priority.
         2. Sarah needs to contact the client for requirements clarification by Wednesday. Medium priority.
@@ -297,4 +297,4 @@ For a more detailed example, see the [Action Items Extraction](../../examples/ac
 
 - Learn about [Nested Structure](./nested_structure.md) for complex data
 - Explore [Streaming Lists](../streaming/lists.md) for handling large lists
-- Check out [Field Validation](./field_validation.md) for validation techniques 
+- Check out [Field Validation](./field_validation.md) for validation techniques

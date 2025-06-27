@@ -51,7 +51,7 @@ response = client.chat.completions.create(
 # Access the nested data
 print(f"Name: {response.name}")
 print(f"Age: {response.age}")
-print(f"Address: {response.address.street}, {response.address.city}, " 
+print(f"Address: {response.address.street}, {response.address.city}, "
       f"{response.address.state} {response.address.zip_code}")
 ```
 
@@ -138,9 +138,9 @@ response = client.chat.completions.create(
     messages=[
         {"role": "user", "content": """
         Recipe: Chocolate Chip Cookies
-        
+
         Description: Classic homemade chocolate chip cookies that are soft in the middle and crispy on the edges.
-        
+
         Ingredients:
         - 2 1/4 cups all-purpose flour
         - 1 teaspoon baking soda
@@ -151,7 +151,7 @@ response = client.chat.completions.create(
         - 2 eggs
         - 2 teaspoons vanilla extract
         - 2 cups chocolate chips
-        
+
         Instructions:
         1. Preheat oven to 375°F (190°C)
         2. Mix flour, baking soda, and salt
@@ -212,7 +212,7 @@ client = instructor.from_openai(OpenAI())
 
 class EmailContact(BaseModel):
     email: str
-    
+
     @field_validator('email')
     @classmethod
     def validate_email(cls, v):
@@ -224,7 +224,7 @@ class EmailContact(BaseModel):
 class Customer(BaseModel):
     name: str
     contact: EmailContact  # Nested structure with its own validation
-    
+
     @model_validator(mode='after')
     def validate_name_email_match(self):
         name_part = self.name.lower().split()[0]
@@ -269,7 +269,7 @@ response = client.chat.completions.create(
         Blog Post: "Python Tips and Tricks"
         Author: John Smith
         Content: Here are some helpful Python tips for beginners...
-        
+
         Comments:
         1. Alice: "Great post! Very helpful."
            - Bob: "I agree, I learned a lot."
@@ -300,7 +300,7 @@ client = instructor.from_openai(OpenAI())
 class Employee(BaseModel):
     name: str
     title: str
-    
+
 class Department(BaseModel):
     name: str
     head: Employee
@@ -322,28 +322,28 @@ response = client.chat.completions.create(
         {"role": "user", "content": """
         Acme Corporation
         CEO: Jane Smith, Chief Executive Officer
-        
+
         Departments:
-        
+
         1. Engineering
            Head: Bob Johnson, CTO
            Employees:
            - Sarah Lee, Senior Engineer
            - Tom Brown, Software Developer
-           
+
            Sub-departments:
            - Frontend Team
              Head: Lisa Wang, Frontend Lead
              Employees:
              - Mike Chen, UI Developer
              - Ana Garcia, UX Designer
-           
+
            - Backend Team
              Head: David Kim, Backend Lead
              Employees:
              - James Wright, Database Engineer
              - Rachel Patel, API Developer
-        
+
         2. Marketing
            Head: Michael Davis, CMO
            Employees:

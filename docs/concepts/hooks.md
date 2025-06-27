@@ -43,7 +43,7 @@ This hook is emitted when an error occurs during parsing of the response as a py
 
 ```python
 def handler(error) -> None: ...
-``` 
+```
 
 ### `completion:last_attempt`
 
@@ -295,14 +295,14 @@ def handle_completion_error(error: Exception) -> None:
     print(f"## Completion error: {error}")
     print(f"Type: {type(error).__name__}")
     print(f"Message: {str(error)}")
-    
+
     # Handle specific Instructor exceptions
     from instructor.exceptions import (
         IncompleteOutputException,
         ValidationError,
         ProviderError
     )
-    
+
     if isinstance(error, IncompleteOutputException):
         print(f"Output was truncated. Last completion: {error.last_completion}")
     elif isinstance(error, ValidationError):
@@ -315,7 +315,7 @@ def log_parse_error(error: Exception) -> None:
     print(f"## Parse error: {error}")
     print(f"Type: {type(error).__name__}")
     print(f"Message: {str(error)}")
-    
+
     # You can also check for Pydantic validation errors
     from pydantic import ValidationError as PydanticValidationError
     if isinstance(error, PydanticValidationError):
@@ -456,7 +456,7 @@ class ErrorMonitor:
             "retry_exhausted": 0,
             "other": 0
         }
-    
+
     def handle_error(self, error: Exception):
         # Log the error with appropriate level
         if isinstance(error, IncompleteOutputException):
@@ -474,7 +474,7 @@ class ErrorMonitor:
         else:
             self.error_counts["other"] += 1
             logger.error(f"Unexpected error: {type(error).__name__}: {error}")
-    
+
     def get_stats(self):
         return self.error_counts
 

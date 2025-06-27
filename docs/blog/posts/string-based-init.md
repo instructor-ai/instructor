@@ -89,19 +89,19 @@ from instructor import Mode
 
 # Override the default mode for a provider
 client = instructor.from_provider(
-    "anthropic/claude-3-sonnet", 
+    "anthropic/claude-3-sonnet",
     mode=Mode.ANTHROPIC_TOOLS
 )
 
 # Use JSON mode instead of the default tools mode
 client = instructor.from_provider(
-    "mistral/mistral-large", 
+    "mistral/mistral-large",
     mode=Mode.MISTRAL_STRUCTURED_OUTPUTS
 )
 
 # Use reasoning tools instead of regular tools for Anthropic
 client = instructor.from_provider(
-    "anthropic/claude-3-opus", 
+    "anthropic/claude-3-opus",
     mode=Mode.ANTHROPIC_REASONING_TOOLS
 )
 ```
@@ -153,10 +153,10 @@ The function validates the provider string format, checks if the provider is sup
 Like the native client libraries, `from_provider` respects environment variables set for each provider:
 
 ```python
-# Set environment variables 
+# Set environment variables
 import os
 os.environ["OPENAI_API_KEY"] = "your-openai-key"
-os.environ["ANTHROPIC_API_KEY"] = "your-anthropic-key" 
+os.environ["ANTHROPIC_API_KEY"] = "your-anthropic-key"
 os.environ["MISTRAL_API_KEY"] = "your-mistral-key"
 
 # No need to pass API keys directly
@@ -186,7 +186,7 @@ Some providers require specific parameters for API calls:
 ```python
 # Anthropic requires max_tokens
 anthropic_client = instructor.from_provider(
-    "anthropic/claude-3-haiku-20240307", 
+    "anthropic/claude-3-haiku-20240307",
     max_tokens=400  # Required for Anthropic
 )
 
@@ -220,7 +220,7 @@ async def main():
         messages=[{"role": "user", "content": "Jane Doe is a 28-year-old data scientist."}]
     )
     print(f"OpenAI result: {openai_result.model_dump()}")
-    
+
     # Test Anthropic with async client
     if os.environ.get("ANTHROPIC_API_KEY"):
         anthropic_client = instructor.from_provider(

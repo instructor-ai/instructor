@@ -71,9 +71,9 @@ Here's a simple example showing how to extract multiple users from a single sent
 ---
 
 
-We also support more complex extraction patterns such as Unions as you'll see below out of the box. 
+We also support more complex extraction patterns such as Unions as you'll see below out of the box.
 
-???+ warning 
+???+ warning
 
     Unions don't work with Gemini because the AnyOf is not supported in the current response schema.
 

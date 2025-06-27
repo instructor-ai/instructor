@@ -175,7 +175,7 @@ client = OpenAI(
 
 # Enable instructor patches for Perplexity client with explicit mode
 client = instructor.from_perplexity(
-    client, 
+    client,
     mode=Mode.PERPLEXITY_JSON
 )
 
@@ -201,4 +201,4 @@ print(user)
 ## Additional Resources
 
 - [Perplexity API Documentation](https://docs.perplexity.ai/)
-- [Perplexity API Reference](https://docs.perplexity.ai/reference/post_chat_completions) 
+- [Perplexity API Reference](https://docs.perplexity.ai/reference/post_chat_completions)

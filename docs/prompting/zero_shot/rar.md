@@ -7,7 +7,7 @@ How can we identify and clarify ambigious information in the prompt?
 Let's say we are given the query: *Was Ed Sheeran born on an odd month?*
 
 There are many ways a model might interpret an *odd month*:
-    
+
 - Februray is *odd* because of an irregular number of days.
 - A month is *odd* if it has an odd number of days.
 - A month is *odd* if its numberical order in the year is odd (i.e. Janurary is the 1st month).

@@ -71,21 +71,21 @@ class Product(BaseModel):
     name: str
     sku: str
     price: float
-    
+
     @field_validator('name')
     @classmethod
     def validate_name(cls, v):
         if len(v.strip()) < 3:
             raise ValueError("Product name must be at least 3 characters")
         return v.strip()
-    
+
     @field_validator('sku')
     @classmethod
     def validate_sku(cls, v):
         if not re.match(r'^[A-Z]{3}-\d{4}$', v):
             raise ValueError("SKU must be in format XXX-0000")
         return v
-    
+
     @field_validator('price')
     @classmethod
     def validate_price(cls, v):
@@ -128,7 +128,7 @@ client = instructor.from_openai(OpenAI())
 class DateRange(BaseModel):
     start_date: date
     end_date: date
-    
+
     @model_validator(mode='after')
     def validate_date_range(self):
         if self.end_date < self.start_date:
@@ -153,7 +153,7 @@ class Address(BaseModel):
     city: str
     state: str
     zip_code: str
-    
+
     @field_validator('state')
     @classmethod
     def validate_state(cls, v):
@@ -161,7 +161,7 @@ class Address(BaseModel):
         if v not in valid_states:
             raise ValueError(f"State must be one of: {', '.join(valid_states)}")
         return v
-    
+
     @field_validator('zip_code')
     @classmethod
     def validate_zip(cls, v):
@@ -190,22 +190,22 @@ client = instructor.from_openai(OpenAI())
 
 class TagList(BaseModel):
     tags: List[str] = Field(..., min_items=1, max_items=5)
-    
+
     @field_validator('tags')
     @classmethod
     def validate_tags(cls, tags):
         # Convert all tags to lowercase
         tags = [tag.lower() for tag in tags]
-        
+
         # Check for minimum length of each tag
         for tag in tags:
             if len(tag) < 2:
                 raise ValueError("Each tag must be at least 2 characters")
-                
+
         # Check for duplicates
         if len(tags) != len(set(tags)):
             raise ValueError("Tags must be unique")
-            
+
         return tags
 ```
 
@@ -264,24 +264,24 @@ client = instructor.from_openai(OpenAI())
 
 class CreditCard(BaseModel):
     number: str = Field(
-        ..., 
+        ...,
         pattern=r'^\d{16}$',
         json_schema_extra={"error_msg": "Credit card number must be exactly 16 digits"}
     )
     expiry_month: int = Field(
-        ..., 
-        ge=1, 
+        ...,
+        ge=1,
         le=12,
         json_schema_extra={"error_msg": "Expiry month must be between 1 and 12"}
     )
     expiry_year: int = Field(
-        ..., 
-        ge=2023, 
+        ...,
+        ge=2023,
         le=2030,
         json_schema_extra={"error_msg": "Expiry year must be between 2023 and 2030"}
     )
     cvv: str = Field(
-        ..., 
+        ...,
         pattern=r'^\d{3,4}$',
         json_schema_extra={"error_msg": "CVV must be 3 or 4 digits"}
     )
@@ -327,21 +327,21 @@ class RegistrationForm(BaseModel):
     password: str
     confirm_password: str
     birth_date: date
-    
+
     @field_validator('username')
     @classmethod
     def validate_username(cls, v):
         if not re.match(r'^[a-zA-Z0-9_]+$', v):
             raise ValueError("Username can only contain letters, numbers, and underscores")
         return v
-    
+
     @field_validator('email')
     @classmethod
     def validate_email(cls, v):
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
             raise ValueError("Invalid email format")
         return v
-    
+
     @field_validator('password')
     @classmethod
     def validate_password(cls, v):
@@ -354,7 +354,7 @@ class RegistrationForm(BaseModel):
         if not re.search(r'[0-9]', v):
             raise ValueError("Password must contain at least one number")
         return v
-    
+
     @field_validator('birth_date')
     @classmethod
     def validate_age(cls, v):
@@ -363,7 +363,7 @@ class RegistrationForm(BaseModel):
         if age < 18:
             raise ValueError("You must be at least 18 years old to register")
         return v
-    
+
     @model_validator(mode='after')
     def passwords_match(self):
         if self.password != self.confirm_password:
@@ -384,4 +384,4 @@ class RegistrationForm(BaseModel):
 
 - Learn about [Optional Fields](optional_fields.md) for handling missing data
 - Explore [Custom Validators](../validation/custom_validators.md) for complex validation
-- Check out [Nested Structure](nested_structure.md) for complex data relationships 
+- Check out [Nested Structure](nested_structure.md) for complex data relationships

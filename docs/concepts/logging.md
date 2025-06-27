@@ -3,7 +3,7 @@ title: Debugging OpenAI Requests with Python Logging
 description: Learn how to log OpenAI requests and responses in Python using DEBUG level logging for efficient debugging.
 ---
 
-In order to see the requests made to OpenAI and the responses, you can set logging to DEBUG. This will show the requests and responses made to OpenAI. This can be useful for debugging and understanding the requests and responses made to OpenAI. I would love some contributions that make this a lot cleaner, but for now this is the fastest way to see the prompts. 
+In order to see the requests made to OpenAI and the responses, you can set logging to DEBUG. This will show the requests and responses made to OpenAI. This can be useful for debugging and understanding the requests and responses made to OpenAI. I would love some contributions that make this a lot cleaner, but for now this is the fastest way to see the prompts.
 
 ```python
 import instructor
@@ -32,7 +32,7 @@ user = client.chat.completions.create(
     ],
 )  # type: ignore
 
-""" 
+"""
 ...
 DEBUG:instructor:Patching `client.chat.completions.create` with mode=<Mode.TOOLS: 'tool_call'>
 DEBUG:instructor:Instructor Request: mode.value='tool_call', response_model=<class '__main__.UserDetail'>, new_kwargs={'model': 'gpt-3.5-turbo', 'messages': [{'role': 'user', 'content': 'Extract Jason is 25 years old'}], 'tools': [{'type': 'function', 'function': {'name': 'UserDetail', 'description': 'Correctly extracted `UserDetail` with all the required parameters with correct types', 'parameters': {'properties': {'name': {'title': 'Name', 'type': 'string'}, 'age': {'title': 'Age', 'type': 'integer'}}, 'required': ['age', 'name'], 'type': 'object'}}}], 'tool_choice': {'type': 'function', 'function': {'name': 'UserDetail'}}}

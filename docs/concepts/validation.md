@@ -24,27 +24,27 @@ flowchart TD
     A[Define Pydantic Model] --> B[Send Request to LLM]
     B --> C[LLM Generates Response]
     C --> D{Validate Response}
-    
+
     D -->|Valid| E[Return Pydantic Object]
     D -->|Invalid| F{Auto-Retry Enabled?}
-    
+
     F -->|Yes| G[Send Error Context to LLM]
     F -->|No| H[Raise ValidationError]
-    
+
     G --> I[LLM Generates New Response]
     I --> J{Validate Again}
-    
+
     J -->|Valid| E
     J -->|Invalid| K{Max Retries Reached?}
-    
+
     K -->|No| G
     K -->|Yes| H
-    
+
     classDef success fill:#d4edda,stroke:#c3e6cb,color:#155724;
     classDef error fill:#f8d7da,stroke:#f5c6cb,color:#721c24;
     classDef process fill:#e2f0fb,stroke:#b8daff,color:#004085;
     classDef decision fill:#fff3cd,stroke:#ffeeba,color:#856404;
-    
+
     class A,B,C,G,I process
     class D,F,J,K decision
     class E success
@@ -362,7 +362,7 @@ class FactCheckedClaim(BaseModel):
         default_factory=list,
         description="Evidence supporting or refuting the claim"
     )
-    
+
     @classmethod
     def validate_claim(cls, text: str) -> "FactCheckedClaim":
         return client.chat.completions.create(
@@ -400,13 +400,13 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 class Comment(BaseModel):
     """Model representing a user comment with content moderation."""
-    
+
     user_id: str
     content: Annotated[
         str,
         BeforeValidator(
             llm_validator(
-                "Content must comply with community guidelines: no hate speech, harassment, or explicit content", 
+                "Content must comply with community guidelines: no hate speech, harassment, or explicit content",
                 client=client
             )
         )
@@ -428,11 +428,11 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 class Report(BaseModel):
     """Model representing a financial report with semantic validation."""
-    
+
     title: str
     summary: str
     key_findings: List[str]
-    
+
     @model_validator(mode='after')
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
@@ -447,9 +447,9 @@ class Report(BaseModel):
                     "role": "user",
                     "content": """
                         Please validate if this summary accurately reflects the key findings:
-                        
+
                         Summary: {{ summary }}
-                        
+
                         Key findings:
                         {% for finding in findings %}
                         - {{ finding }}
@@ -462,10 +462,10 @@ class Report(BaseModel):
                 "findings": self.key_findings
             }
         )
-        
+
         if not validation_result.is_valid:
             raise ValueError(f"Consistency error: {validation_result.reason}")
-        
+
         return self
 ```
 
@@ -484,13 +484,13 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 class CompanyAnnouncement(BaseModel):
     """Model representing a company announcement with tone validation."""
-    
+
     title: str
     content: Annotated[
         str,
         BeforeValidator(
             llm_validator(
-                "The announcement must maintain a professional, positive tone without being overly informal or using slang", 
+                "The announcement must maintain a professional, positive tone without being overly informal or using slang",
                 client=client
             )
         )
@@ -512,12 +512,12 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 class MedicalClaim(BaseModel):
     """Model representing a medical claim with factual validation."""
-    
+
     statement: Annotated[
         str,
         BeforeValidator(
             llm_validator(
-                "The medical claim must be factually accurate and supported by scientific consensus", 
+                "The medical claim must be factually accurate and supported by scientific consensus",
                 client=client
             )
         )

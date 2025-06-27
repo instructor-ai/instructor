@@ -45,7 +45,7 @@ client = instructor.from_openai(OpenAI())
 class ClassificationResponse(BaseModel):
     """
     A few-shot example of text classification:
-    
+
     Examples:
     - "Buy cheap watches now!": SPAM
     - "Meeting at 3 PM in the conference room": NOT_SPAM

@@ -24,7 +24,7 @@ Built on top of **Pydantic**, Instructor provides type-safe data extraction with
 ## Key Features for LLM Data Extraction
 
 - **Structured Outputs**: Define Pydantic models to specify exactly what data you want from your LLM
-- **Automatic Retries**: Built-in retry logic when validation fails - no more manual error handling  
+- **Automatic Retries**: Built-in retry logic when validation fails - no more manual error handling
 - **Data Validation**: Leverage Pydantic's powerful validation to ensure response quality
 - **Streaming Support**: Real-time processing of partial responses and lists
 - **Multi-Provider**: Works with OpenAI, Anthropic, Google, Mistral, Cohere, Ollama, DeepSeek, and 15+ LLM providers
@@ -986,7 +986,7 @@ Absolutely. Instructor fully supports asyncio with async clients for OpenAI, Ant
 ## Why Choose Instructor for LLM Structured Outputs?
 
 - **🏆 Industry Standard**: Over 1M monthly downloads make it the most trusted Python library for LLM data extraction
-- **⚡ Production Ready**: Built-in error handling, retries, and validation for reliable production deployments  
+- **⚡ Production Ready**: Built-in error handling, retries, and validation for reliable production deployments
 - **🔧 Developer Friendly**: Full IDE support with type hints, autocompletion, and comprehensive documentation
 - **🌐 Provider Agnostic**: Switch between LLM providers without changing your code structure
 - **📈 Scalable**: From simple scripts to enterprise applications, Instructor scales with your needs
@@ -994,7 +994,7 @@ Absolutely. Instructor fully supports asyncio with async clients for OpenAI, Ant
 ## Related Topics
 
 - [LLM Response Validation](./concepts/reask_validation.md) - Ensure quality outputs
-- [Streaming LLM Outputs](./concepts/partial.md) - Real-time data processing  
+- [Streaming LLM Outputs](./concepts/partial.md) - Real-time data processing
 - [Multi-Provider Setup](./integrations/index.md) - Use any LLM service
 - [Production Deployment](./concepts/retrying.md) - Error handling and retries
 - [Type Safety with Pydantic](./concepts/models.md) - Schema validation

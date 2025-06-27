@@ -60,7 +60,7 @@ We're using some photos from a fitness influencer called [Jpgeez](https://www.in
 <div class="grid" markdown>
 ![](./img/style_1.png){: style="height:200px"}
 ![](./img/style_2.png){: style="height:200px"}
-![](./img/style_3.png){: style="height:200px"}  
+![](./img/style_3.png){: style="height:200px"}
 ![](./img/style_4.png){: style="height:200px"}
 ![](./img/style_5.png){: style="height:200px"}
 ![](./img/style_6.png){: style="height:200px"}

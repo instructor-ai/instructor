@@ -1,11 +1,11 @@
 ---
-title: Instructor Provider Integrations
-description: Connect Instructor to a wide variety of LLM providers including OpenAI, Anthropic, Google, open-source models, and more.
+title: "LLM Provider Integration Tutorials - Instructor"
+description: "Complete tutorials for integrating Instructor with 15+ LLM providers. Learn structured data extraction with OpenAI, Anthropic Claude, Google Gemini, local models with Ollama, and more."
 ---
 
-# Provider Integrations
+# LLM Provider Integration Tutorials
 
-Instructor works with many different LLM providers, allowing you to use structured outputs with your preferred models.
+Learn how to integrate Instructor with various AI model providers. These comprehensive tutorials cover everything from cloud-based services like OpenAI and Anthropic to local open-source models, helping you extract structured outputs from any LLM.
 
 <div class="grid cards" markdown>
 
@@ -13,27 +13,27 @@ Instructor works with many different LLM providers, allowing you to use structur
 
     Leading AI providers with comprehensive features
 
-    [:octicons-arrow-right-16: OpenAI](./openai.md)          · 
-    [:octicons-arrow-right-16: OpenAI Responses](./openai-responses.md)          · 
-    [:octicons-arrow-right-16: Azure](./azure.md)            · 
-    [:octicons-arrow-right-16: Anthropic](./anthropic.md)    · 
-    [:octicons-arrow-right-16: Google.GenerativeAI](./google.md)          · 
-    [:octicons-arrow-right-16: Vertex AI](./vertex.md)       · 
-    [:octicons-arrow-right-16: AWS Bedrock](./bedrock.md)    · 
+    [:octicons-arrow-right-16: OpenAI](./openai.md)          ·
+    [:octicons-arrow-right-16: OpenAI Responses](./openai-responses.md)          ·
+    [:octicons-arrow-right-16: Azure](./azure.md)            ·
+    [:octicons-arrow-right-16: Anthropic](./anthropic.md)    ·
+    [:octicons-arrow-right-16: Google.GenerativeAI](./google.md)          ·
+    [:octicons-arrow-right-16: Vertex AI](./vertex.md)       ·
+    [:octicons-arrow-right-16: AWS Bedrock](./bedrock.md)    ·
     [:octicons-arrow-right-16: Google.GenAI](./genai.md)
 
 - :material-cloud-outline: **Additional Cloud Providers**
 
     Other commercial AI providers with specialized offerings
 
-    [:octicons-arrow-right-16: Cohere](./cohere.md)          · 
-    [:octicons-arrow-right-16: Mistral](./mistral.md)        · 
-    [:octicons-arrow-right-16: DeepSeek](./deepseek.md)      · 
-    [:octicons-arrow-right-16: Together AI](./together.md)    · 
-    [:octicons-arrow-right-16: Groq](./groq.md)              · 
-    [:octicons-arrow-right-16: Fireworks](./fireworks.md)    · 
-    [:octicons-arrow-right-16: Cerebras](./cerebras.md)      · 
-    [:octicons-arrow-right-16: Writer](./writer.md)          · 
+    [:octicons-arrow-right-16: Cohere](./cohere.md)          ·
+    [:octicons-arrow-right-16: Mistral](./mistral.md)        ·
+    [:octicons-arrow-right-16: DeepSeek](./deepseek.md)      ·
+    [:octicons-arrow-right-16: Together AI](./together.md)    ·
+    [:octicons-arrow-right-16: Groq](./groq.md)              ·
+    [:octicons-arrow-right-16: Fireworks](./fireworks.md)    ·
+    [:octicons-arrow-right-16: Cerebras](./cerebras.md)      ·
+    [:octicons-arrow-right-16: Writer](./writer.md)          ·
     [:octicons-arrow-right-16: Perplexity](./perplexity.md)
     [:octicons-arrow-right-16: Sambanova](./sambanova.md)
 
@@ -41,9 +41,9 @@ Instructor works with many different LLM providers, allowing you to use structur
 
     Run open-source models locally or in the cloud
 
-    [:octicons-arrow-right-16: Ollama](./ollama.md)                  · 
+    [:octicons-arrow-right-16: Ollama](./ollama.md)                  ·
     [:octicons-arrow-right-16: llama-cpp-python](./llama-cpp-python.md)
-    
+
 - :material-router-wireless: **Routing**
 
     Unified interfaces for multiple providers
@@ -140,7 +140,7 @@ Alternatively, you can manually set up the client:
    ```python
    import instructor
    from provider_package import Client
-   
+
    client = instructor.from_provider(Client())
    ```
 

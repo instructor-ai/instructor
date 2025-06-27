@@ -21,7 +21,7 @@ tags:
 
 Flashcards help break down complex topics and learn anything from biology to a new
 language or lines for a play. This blog will show how to use LLMs to generate
-flashcards and kickstart your learning! 
+flashcards and kickstart your learning!
 
 **Instructor** lets us get structured outputs from LLMs reliably, and [Burr](https://github.com/dagworks-inc/burr) helps
 create an LLM application that's easy to understand and debug. It comes with **Burr UI**,
@@ -29,7 +29,7 @@ a free, open-source, and local-first tool for observability, annotations, and mo
 
 <!-- more -->
 
-??? info 
+??? info
 
     This post expands on an earlier one: [Analyzing Youtube Transcripts with Instructor](./youtube-transcripts.md/).
 
@@ -278,7 +278,7 @@ app.visualize()
 ### 3. Launch the application
 
 Using `Application.run()` will make the application execute actions until a halt condition.
-In this case, we halt before `process_user_input` to get the YouTube URL from the user. 
+In this case, we halt before `process_user_input` to get the YouTube URL from the user.
 
 The method `.run()` returns a tuple `(action_name, result, state)`. In this case, we only
 use the state to inspect the generated question-answer pairs.
@@ -370,7 +370,7 @@ app = (
 
 ![telemetry](./img/youtube-flashcards/telemetry.gif)
 
-> Telemetry for our OpenAI API calls with Instructor. We see the prompt, the response model, and the response content. 
+> Telemetry for our OpenAI API calls with Instructor. We see the prompt, the response model, and the response content.
 
 ### 3. Annotate application logs
 

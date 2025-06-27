@@ -67,11 +67,11 @@ $ instructor batch list --limit 5
 ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━┓
 ┃ Batch ID             ┃ Created At          ┃ Status    ┃ Failed ┃ Completed ┃ Total ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━┩
-│ batch_BSMSiMMy8on2D… │ 2024-06-19 15:10:21 │ cancelled │ 0      │ 298       │ 300   │
-│ batch_pD5dqHmqjWYF5… │ 2024-06-19 15:09:38 │ completed │ 0      │ 15        │ 15    │
-│ batch_zsTSsWVLgpEan… │ 2024-06-19 15:06:05 │ completed │ 0      │ 15        │ 15    │
-│ batch_igaa2j9VBVw2Z… │ 2024-06-19 15:01:59 │ completed │ 0      │ 300       │ 300   │
-│ batch_HcjI2wG46Y1LY… │ 2024-06-12 15:45:37 │ completed │ 0      │ 3         │ 3     │
+│ batch_BSMSiMMy8on2D... │ 2024-06-19 15:10:21 │ cancelled │ 0      │ 298       │ 300   │
+│ batch_pD5dqHmqjWYF5... │ 2024-06-19 15:09:38 │ completed │ 0      │ 15        │ 15    │
+│ batch_zsTSsWVLgpEan... │ 2024-06-19 15:06:05 │ completed │ 0      │ 15        │ 15    │
+│ batch_igaa2j9VBVw2Z... │ 2024-06-19 15:01:59 │ completed │ 0      │ 300       │ 300   │
+│ batch_HcjI2wG46Y1LY... │ 2024-06-12 15:45:37 │ completed │ 0      │ 3         │ 3     │
 └──────────────────────┴─────────────────────┴───────────┴────────┴───────────┴───────┘
 ```
 

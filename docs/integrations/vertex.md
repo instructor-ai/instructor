@@ -198,7 +198,7 @@ async def stream_partial():
             {"role": "user", "content": "Anibal is 23 years old"},
         ],
     )
-    
+
     async for partial_user in response_stream:
         print(f"Received update: {partial_user}")
 
@@ -209,7 +209,7 @@ async def stream_iterable():
             {"role": "user", "content": "Make up two people"},
         ],
     )
-    
+
     async for user in response_stream:
         print(f"Generated user: {user}")
 

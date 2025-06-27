@@ -57,7 +57,7 @@ sequenceDiagram
     ProviderClient->>Instructor: Return response
     Instructor->>Instructor: Parse structured data
     Instructor->>Instructor: Validate against model
-    
+
     alt Validation succeeds
         Instructor->>User: Return validated Pydantic object
     else Validation fails

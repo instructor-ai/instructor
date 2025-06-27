@@ -21,7 +21,7 @@ flowchart LR
     B --> C[LLM Provider]
     C --> B
     B --> A
-    
+
     style B fill:#e2f0fb,stroke:#b8daff,color:#004085
 ```
 

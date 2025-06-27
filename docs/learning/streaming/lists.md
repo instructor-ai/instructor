@@ -26,7 +26,7 @@ for book in client.chat.completions.create(
     messages=[
         {"role": "user", "content": "List 5 classic science fiction books"}
     ],
-    response_model=Iterable[Book],  
+    response_model=Iterable[Book],
 ):
     print(f"Received: {book.title} by {book.author} ({book.year})")
 ```
@@ -97,4 +97,4 @@ print(f"\nAll {received_tasks} tasks generated in {elapsed_time:.2f} seconds")
 
 - Learn about [Validation](../../learning/validation/basics.md) to ensure your streamed data is valid
 - Explore [Field Validation](../../learning/validation/field_level_validation.md) for more control
-- See [Async Support](../../integrations/index.md) for integrating streaming with your specific provider when writing asynchronous code 
+- See [Async Support](../../integrations/index.md) for integrating streaming with your specific provider when writing asynchronous code

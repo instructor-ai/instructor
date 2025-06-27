@@ -72,12 +72,12 @@ flowchart TD
     I -->|Yes| J[Try Again with Error Context]
     I -->|No| K[Return Validation Error]
     J --> E
-    
+
     classDef process fill:#e2f0fb,stroke:#b8daff,color:#004085;
     classDef decision fill:#fff3cd,stroke:#ffeeba,color:#856404;
     classDef success fill:#d4edda,stroke:#c3e6cb,color:#155724;
     classDef error fill:#f8d7da,stroke:#f5c6cb,color:#721c24;
-    
+
     class A,B,E,J process
     class C,F,I decision
     class G,D success
@@ -102,7 +102,7 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 class ProductDescription(BaseModel):
     """Model for validating product descriptions."""
-    
+
     name: str
     description: Annotated[
         str,
@@ -129,7 +129,7 @@ try:
                 "content": "Generate a product description based on the product name."
             },
             {
-                "role": "user", 
+                "role": "user",
                 "content": "Create a description for: {{ product_name }}"
             }
         ],
@@ -156,7 +156,7 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 class Comment(BaseModel):
     """Model representing a user comment with content moderation."""
-    
+
     user_id: str
     content: Annotated[
         str,
@@ -167,7 +167,7 @@ class Comment(BaseModel):
                 - No explicit sexual or violent content
                 - No promotion of illegal activities
                 - No sharing of personal information
-                - No spamming or excessive self-promotion""", 
+                - No spamming or excessive self-promotion""",
                 client=client
             )
         )
@@ -197,7 +197,7 @@ class ForumPost(BaseModel):
             )
         )
     ]
-    
+
     # Using Jinja templating for validation against dynamic values
     @classmethod
     def validate_post(cls, topic_name: str, post_content: str) -> "ForumPost":
@@ -213,10 +213,10 @@ class ForumPost(BaseModel):
                     "role": "user",
                     "content": """
                     Topic: {{ topic }}
-                    
+
                     Post content:
                     {{ post }}
-                    
+
                     Is this post relevant to the topic?
                     """
                 }
@@ -242,14 +242,14 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 class FactCheckedClaim(BaseModel):
     """Model for validating factual accuracy of claims."""
-    
+
     claim: str
     is_accurate: bool = Field(description="Whether the claim is factually accurate")
     supporting_evidence: List[str] = Field(
         default_factory=list,
         description="Evidence supporting or refuting the claim"
     )
-    
+
     @classmethod
     def validate_claim(cls, text: str) -> "FactCheckedClaim":
         return client.chat.completions.create(
@@ -282,11 +282,11 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 
 class Report(BaseModel):
     """Model representing a report with related fields that need semantic validation."""
-    
+
     title: str
     summary: str
     key_findings: List[str]
-    
+
     @model_validator(mode='after')
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
@@ -301,15 +301,15 @@ class Report(BaseModel):
                     "role": "user",
                     "content": """
                         Please validate if this summary accurately reflects the key findings:
-                        
+
                         Title: {{ title }}
                         Summary: {{ summary }}
-                        
+
                         Key findings:
                         {% for finding in findings %}
                         - {{ finding }}
                         {% endfor %}
-                        
+
                         Evaluate for consistency, completeness, and accuracy.
                     """
                 }
@@ -320,10 +320,10 @@ class Report(BaseModel):
                 "findings": self.key_findings
             }
         )
-        
+
         if not validation_result.is_valid:
             raise ValueError(f"Consistency error: {validation_result.reason}")
-        
+
         return self
 ```
 

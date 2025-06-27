@@ -58,7 +58,7 @@ try:
         response_model=ExampleModel,
         # Concept-specific parameters
     )
-    
+
     print(result.model_dump_json(indent=2))
     # Expected output:
     # {
