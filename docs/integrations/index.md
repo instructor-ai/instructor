@@ -1,11 +1,11 @@
 ---
-title: Instructor Provider Integrations
-description: Connect Instructor to a wide variety of LLM providers including OpenAI, Anthropic, Google, open-source models, and more.
+title: "LLM Provider Integration Tutorials - Instructor"
+description: "Complete tutorials for integrating Instructor with 15+ LLM providers. Learn structured data extraction with OpenAI, Anthropic Claude, Google Gemini, local models with Ollama, and more."
 ---
 
-# Provider Integrations
+# LLM Provider Integration Tutorials
 
-Instructor works with many different LLM providers, allowing you to use structured outputs with your preferred models.
+Learn how to integrate Instructor with various AI model providers. These comprehensive tutorials cover everything from cloud-based services like OpenAI and Anthropic to local open-source models, helping you extract structured outputs from any LLM.
 
 <div class="grid cards" markdown>
 

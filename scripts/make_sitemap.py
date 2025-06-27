@@ -1,7 +1,7 @@
 import os
 import asyncio
 import yaml
-from typing import Optional, Dict, List, Set, Tuple
+from typing import Optional, Any
 from collections.abc import Generator
 from openai import AsyncOpenAI
 import typer
@@ -11,7 +11,6 @@ import hashlib
 from asyncio import as_completed
 import tenacity
 import re
-from pathlib import Path
 
 console = Console()
 
@@ -41,7 +40,7 @@ def traverse_docs(
                 yield relative_path, content, content_hash
 
 
-def extract_markdown_links(content: str) -> List[str]:
+def extract_markdown_links(content: str) -> list[str]:
     """
     Extract all markdown links from the content.
 
@@ -107,7 +106,7 @@ def normalize_path(path: str, current_path: str) -> str:
 )
 async def analyze_content(
     client: AsyncOpenAI, path: str, content: str
-) -> Dict[str, any]:
+) -> dict[str, Any]:
     """
     Analyze the content of a file to extract summary, keywords, topics, and references.
 
@@ -117,7 +116,7 @@ async def analyze_content(
         content (str): The content of the file.
 
     Returns:
-        Dict[str, any]: Analysis results including summary, keywords, topics, and references.
+        Dict[str, Any]: Analysis results including summary, keywords, topics, and references.
 
     Raises:
         Exception: If all retry attempts fail.
@@ -155,22 +154,23 @@ If no references are found, write: REFERENCES: none""",
         topics = []
         references = []
 
-        for line in result_text.split("\n"):
-            line = line.strip()
-            if line.startswith("SUMMARY:"):
-                summary = line[8:].strip()
-            elif line.startswith("KEYWORDS:"):
-                keywords_text = line[9:].strip()
-                if keywords_text and keywords_text != "none":
-                    keywords = [k.strip() for k in keywords_text.split(",")]
-            elif line.startswith("TOPICS:"):
-                topics_text = line[7:].strip()
-                if topics_text and topics_text != "none":
-                    topics = [t.strip() for t in topics_text.split(",")]
-            elif line.startswith("REFERENCES:"):
-                refs_text = line[11:].strip()
-                if refs_text and refs_text != "none":
-                    references = [r.strip() for r in refs_text.split(",")]
+        if result_text:
+            for line in result_text.split("\n"):
+                line = line.strip()
+                if line.startswith("SUMMARY:"):
+                    summary = line[8:].strip()
+                elif line.startswith("KEYWORDS:"):
+                    keywords_text = line[9:].strip()
+                    if keywords_text and keywords_text != "none":
+                        keywords = [k.strip() for k in keywords_text.split(",")]
+                elif line.startswith("TOPICS:"):
+                    topics_text = line[7:].strip()
+                    if topics_text and topics_text != "none":
+                        topics = [t.strip() for t in topics_text.split(",")]
+                elif line.startswith("REFERENCES:"):
+                    refs_text = line[11:].strip()
+                    if refs_text and refs_text != "none":
+                        references = [r.strip() for r in refs_text.split(",")]
 
         return {
             "summary": summary,
@@ -184,88 +184,11 @@ If no references are found, write: REFERENCES: none""",
         raise
 
 
-def calculate_similarity_score(data1: Dict, data2: Dict) -> float:
-    """
-    Calculate similarity score between two documents based on keywords and topics.
-
-    Args:
-        data1 (Dict): First document's data
-        data2 (Dict): Second document's data
-
-    Returns:
-        float: Similarity score between 0 and 1
-    """
-    # Extract sets of keywords and topics
-    keywords1 = set(k.lower() for k in data1.get("keywords", []))
-    keywords2 = set(k.lower() for k in data2.get("keywords", []))
-
-    topics1 = set(t.lower() for t in data1.get("topics", []))
-    topics2 = set(t.lower() for t in data2.get("topics", []))
-
-    # Calculate overlap
-    keyword_overlap = len(keywords1 & keywords2) / max(len(keywords1 | keywords2), 1)
-    topic_overlap = len(topics1 & topics2) / max(len(topics1 | topics2), 1)
-
-    # Weighted average (topics are more important)
-    return 0.4 * keyword_overlap + 0.6 * topic_overlap
-
-
-def generate_cross_links(
-    sitemap_data: Dict[str, Dict], min_similarity: float = 0.3
-) -> Dict[str, List[str]]:
-    """
-    Generate cross-link suggestions based on content similarity and references.
-
-    Args:
-        sitemap_data (Dict): The complete sitemap data
-        min_similarity (float): Minimum similarity score for suggesting links
-
-    Returns:
-        Dict[str, List[str]]: Cross-link suggestions for each document
-    """
-    cross_links = {}
-
-    for path1, data1 in sitemap_data.items():
-        suggested_links = set()
-
-        # Add explicit references found in content
-        for ref in data1.get("references", []):
-            if ref in sitemap_data and ref != path1:
-                suggested_links.add(ref)
-
-        # Add AI-detected references
-        for ref in data1.get("ai_references", []):
-            # Try to match the reference to actual files
-            for path2 in sitemap_data:
-                if ref in path2 or path2 in ref:
-                    if path2 != path1:
-                        suggested_links.add(path2)
-
-        # Find similar documents based on keywords and topics
-        similarities = []
-        for path2, data2 in sitemap_data.items():
-            if path2 != path1:
-                score = calculate_similarity_score(data1, data2)
-                if score >= min_similarity:
-                    similarities.append((path2, score))
-
-        # Sort by similarity and take top 5
-        similarities.sort(key=lambda x: x[1], reverse=True)
-        for path2, score in similarities[:5]:
-            suggested_links.add(path2)
-
-        # Convert to sorted list
-        cross_links[path1] = sorted(list(suggested_links))
-
-    return cross_links
-
-
 async def generate_sitemap(
     root_dir: str,
     output_file: str,
     api_key: Optional[str] = None,
     max_concurrency: int = 5,
-    min_similarity: float = 0.3,
 ) -> None:
     """
     Generate a sitemap from the given root directory.
@@ -275,21 +198,20 @@ async def generate_sitemap(
         output_file (str): The output file to save the sitemap.
         api_key (Optional[str]): The OpenAI API key. If not provided, it will be read from the OPENAI_API_KEY environment variable.
         max_concurrency (int): The maximum number of concurrent tasks. Defaults to 5.
-        min_similarity (float): Minimum similarity score for cross-link suggestions. Defaults to 0.3.
     """
     client = AsyncOpenAI(api_key=api_key)
 
     # Load existing sitemap if it exists
-    existing_sitemap: dict[str, dict[str, any]] = {}
+    existing_sitemap: dict[str, dict[str, Any]] = {}
     if os.path.exists(output_file):
         with open(output_file, encoding="utf-8") as sitemap_file:
             existing_sitemap = yaml.safe_load(sitemap_file) or {}
 
-    sitemap_data: dict[str, dict[str, any]] = {}
+    sitemap_data: dict[str, dict[str, Any]] = {}
 
     async def process_file(
         path: str, content: str, content_hash: str
-    ) -> tuple[str, dict[str, any]]:
+    ) -> tuple[str, dict[str, Any]]:
         # Check if we can reuse existing data
         if (
             path in existing_sitemap
@@ -362,25 +284,14 @@ async def generate_sitemap(
             sitemap_data[path] = result
             progress.update(task, advance=1)
 
-    # Generate cross-links after all files are processed
-    console.print("[yellow]Generating cross-link suggestions...[/yellow]")
-    cross_links = generate_cross_links(sitemap_data, min_similarity)
-
-    # Add cross-links to sitemap data
-    for path, links in cross_links.items():
-        if path in sitemap_data:
-            sitemap_data[path]["cross_links"] = links
-
     # Save final results
     with open(output_file, "w", encoding="utf-8") as sitemap_file:
         yaml.dump(sitemap_data, sitemap_file, default_flow_style=False, sort_keys=True)
 
     console.print(
-        f"[bold green]Enhanced sitemap has been generated and saved to {output_file}[/bold green]"
+        f"[bold green]Sitemap has been generated and saved to {output_file}[/bold green]"
     )
-    console.print(
-        f"[green]Processed {total_files} files with cross-link suggestions[/green]"
-    )
+    console.print(f"[green]Processed {total_files} files[/green]")
 
 
 app = typer.Typer()
@@ -392,18 +303,11 @@ def main(
     output_file: str = typer.Option("sitemap.yaml", help="Output file for the sitemap"),
     api_key: Optional[str] = typer.Option(None, help="OpenAI API key"),
     max_concurrency: int = typer.Option(5, help="Maximum number of concurrent tasks"),
-    min_similarity: float = typer.Option(
-        0.3, help="Minimum similarity score for cross-link suggestions (0-1)"
-    ),
 ):
     """
-    Generate an enhanced sitemap with keywords, topics, and cross-link suggestions.
+    Generate a sitemap with keywords, topics, and reference analysis.
     """
-    asyncio.run(
-        generate_sitemap(
-            root_dir, output_file, api_key, max_concurrency, min_similarity
-        )
-    )
+    asyncio.run(generate_sitemap(root_dir, output_file, api_key, max_concurrency))
 
 
 if __name__ == "__main__":

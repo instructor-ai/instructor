@@ -632,7 +632,7 @@ def handle_genai_structured_outputs(
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
-    # We validate that the schema doesn't contain any optional fields
+    # We validate that the schema doesn't contain any Union fields
     map_to_gemini_function_schema(response_model.model_json_schema())
 
     base_config = {

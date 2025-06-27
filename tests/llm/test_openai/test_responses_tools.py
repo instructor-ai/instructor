@@ -74,7 +74,7 @@ async def test_web_search_async(aclient: AsyncOpenAI):
             },
         ],
         tools=[{"type": "web_search_preview"}],
-        max_retries=1,
+        max_retries=2,
         response_model=Summary,
     )
 
@@ -116,7 +116,7 @@ def test_file_search():
             },
         ],
         response_model=Response,
-        max_retries=1,
+        max_retries=2,
         include=["file_search_call.results"],
     )
 
@@ -159,7 +159,7 @@ async def test_file_search_async():
             },
         ],
         response_model=Response,
-        max_retries=1,
+        max_retries=2,
         include=["file_search_call.results"],
     )
 

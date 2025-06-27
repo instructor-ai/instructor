@@ -142,6 +142,7 @@ nav:
     - Help with Instructor: 'help.md'
     - Contributing: 'contributing.md'
     - Newsletter: 'newsletter.md'
+    - Tutorials: 'tutorials.md'
   - Learning:
     - Installation: 'learning/getting_started/installation.md'
     - Overview: 'learning/index.md'
@@ -161,7 +162,6 @@ nav:
     - Custom Validators: 'learning/validation/custom_validators.md'
     - Retry Mechanisms: 'learning/validation/retry_mechanisms.md'
     - Field-level Validation: 'learning/validation/field_level_validation.md'
-    - Tutorials: 'tutorials/index.md'
   - Integrations:
     - Overview: 'integrations/index.md'
     # Major cloud providers
