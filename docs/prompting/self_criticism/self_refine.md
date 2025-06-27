@@ -14,13 +14,13 @@ graph TD
     C -->|No| D[Refine response]:::orange
     C -->|Yes| E[Final output]:::green
     D --> B
-    
+
     classDef blue fill:#E3F2FD,stroke:#90CAF9,color:#1565C0
     classDef orange fill:#FFF3E0,stroke:#FFE0B2,color:#E65100
     classDef green fill:#E8F5E9,stroke:#A5D6A7,color:#2E7D32
     linkStyle default stroke:#90A4AE,stroke-width:2px;
     linkStyle 1,2,4 stroke:#FFB74D,stroke-width:2px;
-``` 
+```
 
 ```python hl_lines="102-106"
 import instructor

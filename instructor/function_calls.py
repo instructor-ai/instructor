@@ -311,8 +311,7 @@ class OpenAISchema(BaseModel):
         # Filter out thought parts (parts with thought: true)
         parts = completion.candidates[0].content.parts
         non_thought_parts = [
-            part for part in parts 
-            if not (hasattr(part, 'thought') and part.thought)
+            part for part in parts if not (hasattr(part, "thought") and part.thought)
         ]
 
         assert len(non_thought_parts) == 1, (

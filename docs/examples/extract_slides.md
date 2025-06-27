@@ -10,7 +10,7 @@ In this guide, we demonstrate how to extract data from slides.
 !!! tips "Motivation"
 
    When we want to translate key information from slides into structured data, simply isolating the text and running extraction might not be enough. Sometimes the important data is in the images on the slides, so we should consider including them in our extraction pipeline.
-    
+
 ## Defining the necessary Data Structures
 
 Let's say we want to extract the competitors from various presentations and categorize them according to their respective industries.

@@ -9,7 +9,7 @@ Least-to-Most is a prompting technique that breaks a complex problem down into a
 
 !!! example "Subproblems Example"
     **original problem**: Adam is twice as old as Mary. Adam will be 11 in 1 year. How old is Mary?
-    
+
     **subproblems**: (1) How old is Adam now? (2) What is half of Adam's current age?
 
 These subproblems are solved sequentially, allowing the answers from earlier (simpler) subproblems to inform the LLM while solving later (more complex) subproblems.

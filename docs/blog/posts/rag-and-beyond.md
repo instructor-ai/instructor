@@ -237,17 +237,12 @@ This is not about fancy embedding tricks, it's just plain old information retrie
 
 Here I want to show that `instructor` isn’t just about data extraction. It’s a powerful framework for building a data model and integrating it with your LLM. Structured output is just the beginning - the untapped goldmine is skilled use of tools and APIs.
 
-## Related Concepts
-
-- [Query Understanding](../../examples/search.md) - Build intelligent search queries
-- [Validation Context](../../concepts/reask_validation.md) - Ensure query quality
-- [Parallel Processing](../../concepts/parallel.md) - Execute multiple searches efficiently
-- [Union Types](../../concepts/unions.md) - Handle diverse search results
+## Related Documentation
+- [Validation Concepts](/concepts/validation) - Validate RAG outputs
 
 ## See Also
-
-- [RAG Examples](../../examples/youtube-clips.md) - Practical RAG implementations
-- [Best Framework](best_framework.md) - Why Instructor excels at complex queries
-- [Search Example](../../examples/exact_citations.md) - Extract citations from documents
+- [LLM as Reranker](llm-as-reranker) - Improve search relevance
+- [Citation Extraction](citations) - Verify sources
+- [PDF Processing](chat-with-your-pdf-with-gemini) - Document handling
 
 If you enjoy the content or want to try out `instructor` please check out the [github](https://github.com/jxnl/instructor) and give us a star!

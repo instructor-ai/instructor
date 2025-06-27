@@ -124,14 +124,11 @@ As we continue to refine AI language models, keeping these principles in mind wi
 
 For more advanced use cases and integrations, check out our [examples](../../examples/index.md) section, which covers various LLM providers and specialized implementations.
 
-## Related Concepts
-
-- [Models and Response Models](../../concepts/models.md) - Deep dive into defining and using Pydantic models with Instructor
-- [Validation and Error Handling](../../concepts/validation.md) - Learn about validation strategies and error recovery
-- [Hooks and Logging](../../concepts/hooks.md) - Monitor and debug your structured output applications
+## Related Documentation
+- [Instructor Philosophy](/concepts/philosophy) - Why we chose Pydantic
+- [Validation Guide](/concepts/validation) - Practical validation techniques
 
 ## See Also
-
-- [Introduction to Structured Outputs](introduction.md) - Getting started with structured outputs
-- [Instructor 1.0 Announcement](version-1.md) - What's new in the latest version
-- [Why Instructor?](best_framework.md) - Understanding the benefits of the Instructor approach
+- [Validation Deep Dive](validation-part1) - Advanced validation patterns
+- [Best Framework Comparison](best_framework) - Why Instructor stands out
+- [Introduction to Instructor](introduction) - Getting started guide

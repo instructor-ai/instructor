@@ -84,14 +84,14 @@ sequenceDiagram
     participant User as Your Code
     participant Instructor
     participant LLM as LLM Provider
-    
+
     User->>Instructor: Define Pydantic model
-    User->>Instructor: Patch LLM client 
+    User->>Instructor: Patch LLM client
     User->>Instructor: Create completion with response_model
-    Instructor->>LLM: Send structured request 
+    Instructor->>LLM: Send structured request
     LLM->>Instructor: Return LLM response
     Instructor->>Instructor: Validate against model
-    
+
     alt Validation Success
         Instructor->>User: Return validated Pydantic object
     else Validation Failure

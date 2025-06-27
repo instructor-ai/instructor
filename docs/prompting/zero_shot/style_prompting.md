@@ -8,7 +8,7 @@ How can we constrain model outputs through prompting alone?
 To contrain a model's response to fit the boundaries of our task, we can specify a style.
 
 Stylistic constraints can include:
- 
+
  - **writing style**: write a *flowery* poem
  - **tone**: write a *dramatic* poem
  - **mood**: write a *happy* poem

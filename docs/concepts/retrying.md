@@ -1,388 +1,605 @@
 ---
-title: Implementing Effective Retry Logic with Pydantic and Tenacity
-description: Learn how to establish simple and advanced retry strategies in Python using Pydantic and Tenacity for robust application behavior.
+title: "Python Retry Logic with Tenacity and Instructor | Complete Guide"
+description: "Master Python retry logic with Tenacity library and Instructor for LLM applications. Learn exponential backoff, conditional retries, rate limit handling, and robust error recovery patterns."
+keywords: "tenacity python, python retry, instructor retry logic, exponential backoff, python error handling, LLM retry, API retry, python tenacity library, automatic retries, python resilience, tenacity library python, retry decorator python"
 ---
 
-# Retrying
+# Python Retry Logic with Tenacity and Instructor
 
-One of the benefits of having Pydantic is the ease with which we can define validators. We cover this topic in many articles, like [Reasking Validation](./reask_validation.md) and in our blog post [Good LLM validation is just good validation](../blog/posts/validation-part1.md).
+_Implement robust retry mechanisms for LLM applications with automatic error handling, exponential backoff, and intelligent failure recovery using Python's Tenacity library._
 
-This post will mostly describe how to use simple and more complex retry and logic.
+## What is Tenacity?
 
-## Example of a Validator
+**Tenacity** is a powerful Python library that simplifies implementing retry logic in your applications. It provides decorators and utilities for handling transient failures, rate limits, and validation errors with intelligent backoff strategies.
 
-Before we begin, we'll use a simple example of a validator. One that checks that the name is in all caps. While we could obviously prompt that we want the name in all caps, this serves as an example of how we can build in additional logic without changing our prompts.
+When combined with Instructor, Tenacity creates a robust foundation for LLM applications that can handle API failures, network issues, and validation errors gracefully.
 
-```python
-from typing import Annotated
-from pydantic import AfterValidator, BaseModel
+## Why Use Tenacity with Instructor?
 
+- **Automatic Retries**: Handle transient failures without manual intervention
+- **Exponential Backoff**: Intelligent delay strategies to avoid overwhelming APIs
+- **Conditional Retries**: Retry only on specific error types
+- **Rate Limit Handling**: Respect API rate limits with smart delays
+- **Validation Error Recovery**: Retry when LLM outputs fail validation
+- **Circuit Breaker Patterns**: Prevent cascading failures
 
-def uppercase_validator(v):
-    if v.islower():
-        raise ValueError("Name must be ALL CAPS")
-    return v
+## Complete Setup: Basic Retry Implementation
 
-
-class UserDetail(BaseModel):
-    name: Annotated[str, AfterValidator(uppercase_validator)]
-    age: int
-
-
-try:
-    UserDetail(name="jason", age=12)
-except Exception as e:
-    print(e)
-    """
-    1 validation error for UserDetail
-    name
-      Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
-    """
-```
-
-## Simple: Max Retries
-
-The simplest way to set up retries is to assign an integer value to `max_retries`.
+Here's a complete, self-contained example showing how to set up retry logic with Tenacity and Instructor:
 
 ```python
-import openai
 import instructor
-from pydantic import BaseModel
-
-
-class UserDetail(BaseModel):
-    name: str
-    age: int
-
-
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
-
-response = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
-    response_model=UserDetail,
-    messages=[
-        {"role": "user", "content": "Extract `jason is 12`"},
-    ],
-    max_retries=3,  # (1)!
-)
-print(response.model_dump_json(indent=2))
-"""
-{
-  "name": "jason",
-  "age": 12
-}
-"""
-# (2)!
-```
-
-1. We set the maximum number of retries to 3. This means that if the model returns an error, we'll reask the model up to 3 times.
-2. We assert that the name is in all caps.
-
-## Catching Retry Exceptions
-
-If you want to catch the retry exceptions, you can do so and access the `last_completion`, `n_attempts` and `messages` attributes. Instructor provides a comprehensive exception hierarchy for better error handling:
-
-### Exception Hierarchy
-
-```python
-InstructorError  # Base exception for all Instructor-specific errors
-├── IncompleteOutputException  # When LLM output is incomplete due to token limits
-├── InstructorRetryException  # When all retry attempts are exhausted
-├── ValidationError  # When response validation fails
-├── ProviderError  # Provider-specific errors (e.g., API issues)
-├── ConfigurationError  # Configuration-related errors
-├── ModeError  # Invalid mode for a provider
-└── ClientError  # Client initialization/usage errors
-```
-
-### Example: Handling Retry Exceptions
-
-```python
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from pydantic import BaseModel, field_validator
-import openai
-import instructor
-from instructor.exceptions import InstructorRetryException
-from tenacity import Retrying, retry_if_not_exception_type, stop_after_attempt
+from openai import OpenAI, RateLimitError, APIError
+import time
 
-# Patch the OpenAI client to enable response_model
-client = instructor.from_openai(openai.OpenAI())
+# Set up the client with Instructor
+client = instructor.from_openai(OpenAI())
 
-
-# Define a Pydantic model for the user details
-class UserDetail(BaseModel):
+class UserInfo(BaseModel):
     name: str
     age: int
+    email: str
 
-    @field_validator("age")
-    def validate_age(cls, v: int):
-        raise ValueError(f"You will never succeed with {str(v)}")
-
-
-retries = Retrying(
-    retry=retry_if_not_exception_type(ZeroDivisionError), stop=stop_after_attempt(3)
-)
-# Use the client to create a user detail
-try:
-    user = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        response_model=UserDetail,
-        messages=[{"role": "user", "content": "Extract Jason is 25 years old"}],
-        max_retries=retries,
-    )
-except InstructorRetryException as e:
-    print(e.messages[-1]["content"])  # type: ignore
-    """
-    Validation Error found:
-    1 validation error for UserDetail
-    age
-      Value error, You will never succeed with 25 [type=value_error, input_value=25, input_type=int]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
-    Recall the function correctly, fix the errors
-    """
-
-    print(e.n_attempts)
-    #> 3
-
-    print(e.last_completion)
-    """
-    ChatCompletion(
-        id='chatcmpl-B7YgHmfrWA8FxsSxvzUUvdSe2lo9h',
-        choices=[
-            Choice(
-                finish_reason='stop',
-                index=0,
-                logprobs=None,
-                message=ChatCompletionMessage(
-                    content=None,
-                    refusal=None,
-                    role='assistant',
-                    audio=None,
-                    function_call=None,
-                    tool_calls=[
-                        ChatCompletionMessageToolCall(
-                            id='call_zvTyhnBKPIhDXrOCxNzlsgzN',
-                            function=Function(
-                                arguments='{"name":"Jason","age":25}', name='UserDetail'
-                            ),
-                            type='function',
-                        )
-                    ],
-                ),
-            )
-        ],
-        created=1741141309,
-        model='gpt-3.5-turbo-0125',
-        object='chat.completion',
-        service_tier='default',
-        system_fingerprint=None,
-        usage=CompletionUsage(
-            completion_tokens=30,
-            prompt_tokens=522,
-            total_tokens=552,
-            completion_tokens_details=CompletionTokensDetails(
-                audio_tokens=0, reasoning_tokens=0
-            ),
-            prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0),
-        ),
-    )
-    """
-```
-
-## Advanced: Retry Logic
-
-If you want more control over how we define retries such as back-offs and additional retry logic we can use a library called Tenacity. To learn more, check out the documentation on the [Tenacity](https://tenacity.readthedocs.io/en/latest/) website.
-
-Rather than using the decorator `@retry`, we can use the `Retrying` and `AsyncRetrying` classes to define our own retry logic.
-
-```python
-import openai
-import instructor
-from pydantic import BaseModel
-from tenacity import Retrying, stop_after_attempt, wait_fixed
-
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
-
-
-class UserDetail(BaseModel):
-    name: str
-    age: int
-
-
-response = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
-    response_model=UserDetail,
-    messages=[
-        {"role": "user", "content": "Extract `jason is 12`"},
-    ],
-    max_retries=Retrying(
-        stop=stop_after_attempt(2),  # (1)!
-        wait=wait_fixed(1),  # (2)!
-    ),  # (3)!
-)
-print(response.model_dump_json(indent=2))
-"""
-{
-  "name": "jason",
-  "age": 12
-}
-"""
-```
-
-1. We stop after 2 attempts
-2. We wait 1 second between each attempt
-3. We can now define our own retry logic
-
-### asynchronous retries
-
-If you're using asynchronous code, you can use `AsyncRetrying` instead.
-
-```python
-import openai
-import instructor
-from pydantic import BaseModel
-from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
-
-client = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
-
-
-class UserDetail(BaseModel):
-    name: str
-    age: int
-
-
-task = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
-    response_model=UserDetail,
-    messages=[
-        {"role": "user", "content": "Extract `jason is 12`"},
-    ],
-    max_retries=AsyncRetrying(
-        stop=stop_after_attempt(2),
-        wait=wait_fixed(1),
-    ),
-)
-
-import asyncio
-
-response = asyncio.run(task)
-print(response.model_dump_json(indent=2))
-"""
-{
-  "name": "jason",
-  "age": 12
-}
-"""
-```
-
-## Global Timeout Support
-
-Instructor supports a global timeout parameter that limits the total time spent on retries across all attempts. This is particularly useful when working with providers like Ollama where you need strict control over request timeouts.
-
-```python
-import openai
-import instructor
-from pydantic import BaseModel
-
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
-
-class UserDetail(BaseModel):
-    name: str
-    age: int
-
-response = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
-    response_model=UserDetail,
-    messages=[
-        {"role": "user", "content": "Extract `jason is 12`"},
-    ],
-    max_retries=3,
-    timeout=5.0,  # Total timeout across all retry attempts
-)
-```
-
-The timeout parameter works by:
-
-- **Global Timeout**: Limits the total time spent across all retry attempts, not per individual attempt
-- **OR Logic**: Combines with other stop conditions - retries stop if ANY condition is met (max attempts OR timeout reached)
-- **Provider Compatibility**: Ensures consistent timeout behavior across different providers, especially Ollama
-
-!!! note "Timeout vs Per-Attempt Timeout"
-
-    The timeout parameter controls the **total time** spent on retries, not the timeout for each individual attempt. This prevents scenarios where a 3-second timeout becomes 9+ seconds total when retrying multiple times.
-
-## Other Features of Tenacity
-
-Tenacity features a huge number of different retrying capabilities. A few of them are listed below.
-
-- `Retrying(stop=stop_after_attempt(2))`: Stop after 2 attempts
-- `Retrying(stop=stop_after_delay(10))`: Stop after 10 seconds
-- `Retrying(wait=wait_fixed(1))`: Wait 1 second between each attempt
-- `Retrying(wait=wait_random(0, 1))`: Wait a random amount of time between 0 and 1 seconds
-- `Retrying(wait=wait_exponential(multiplier=1, min=4, max=10))`: Wait an exponential amount of time between 4 and 10 seconds
-- `Retrying(wait=(stop_after_attempt(2) | stop_after_delay(10)))`: Stop after 2 attempts or 10 seconds
-- `Retrying(wait=(wait_fixed(1) + wait_random(0.2)))`: Wait at least 1 second and add up to 0.2 seconds
-
-Remember that for async clients you need to use `AsyncRetrying` instead of `Retrying`!
-
-## Retry Callbacks
-
-You can also define callbacks to be called before and after each attempt. This is useful for logging or debugging.
-
-```python
-from pydantic import BaseModel, field_validator
-import instructor
-import tenacity
-import openai
-
-client = instructor.from_openai(openai.OpenAI())
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-    @field_validator("name")
-    def name_is_uppercase(cls, v: str):
-        assert v.isupper(), "Name must be uppercase"
+    @field_validator('age')
+    @classmethod
+    def validate_age(cls, v):
+        if v < 0 or v > 150:
+            raise ValueError(f"Age {v} is invalid")
         return v
 
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        if '@' not in v:
+            raise ValueError(f"Invalid email: {v}")
+        return v.lower()
 
-resp = client.messages.create(
-    model="gpt-3.5-turbo",
-    max_tokens=1024,
-    max_retries=tenacity.Retrying(
-        stop=tenacity.stop_after_attempt(3),
-        before=lambda _: print("before:", _),
-"""
-before:
-<RetryCallState 13531729680: attempt #1; slept for 0.0; last result: none yet>
-"""
-        after=lambda _: print("after:", _),
-    ),  # type: ignore
-    messages=[
-        {
-            "role": "user",
-            "content": "Extract John is 18 years old.",
-        }
-    ],
-    response_model=User,
+# Sample data for testing
+test_texts = [
+    "John is 30 years old with email john@example.com",
+    "Sarah is 25 with email sarah@test.com",
+    "Mike is 35 and his email is mike@demo.org"
+]
+```
+
+## Method 1: Basic Retry with Exponential Backoff
+
+```python
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=4, max=10)
+)
+def extract_user_info(text: str) -> UserInfo:
+    """Extract user information with basic retry logic."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": f"Extract user info: {text}"}]
+    )
+
+# Usage example
+try:
+    user = extract_user_info("John is 30 years old with email john@example.com")
+    print(f"Success: {user.name}, {user.age}, {user.email}")
+except Exception as e:
+    print(f"Failed after retries: {e}")
+```
+
+## Method 2: Conditional Retries for Specific Errors
+
+```python
+@retry(
+    retry=retry_if_exception_type((RateLimitError, APIError)),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=1, max=60)
+)
+def robust_extraction(text: str) -> UserInfo:
+    """Retry only on specific API errors."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+
+# This will retry on rate limits and API errors, but not validation errors
+try:
+    user = robust_extraction("Extract: Sarah is 25 with email sarah@test.com")
+    print(f"Extracted: {user.name}")
+except Exception as e:
+    print(f"Failed: {e}")
+```
+
+## Method 3: Validation Error Retries
+
+```python
+from pydantic import ValidationError
+
+@retry(
+    retry=retry_if_exception_type(ValidationError),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10)
+)
+def extract_with_validation(text: str) -> UserInfo:
+    """Retry when Pydantic validation fails."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+
+# This will retry if the LLM returns invalid data
+try:
+    user = extract_with_validation("Extract: Mike is 35 and his email is mike@demo.org")
+    print(f"Validated: {user.name}")
+except Exception as e:
+    print(f"Validation failed: {e}")
+```
+
+## Method 4: Custom Retry Conditions
+
+```python
+from tenacity import retry, retry_if_result, stop_after_attempt
+
+def should_retry(result: UserInfo) -> bool:
+    """Custom retry logic based on result content."""
+    # Retry if age is invalid or email is missing
+    return result.age < 0 or result.age > 150 or not result.email
+
+@retry(
+    retry=retry_if_result(should_retry),
+    stop=stop_after_attempt(3)
+)
+def extract_valid_user(text: str) -> UserInfo:
+    """Retry based on result validation."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+
+# This will retry if the result doesn't meet our quality criteria
+try:
+    user = extract_valid_user("Extract: Alice is 28 with email alice@example.com")
+    print(f"Quality check passed: {user.name}")
+except Exception as e:
+    print(f"Quality check failed: {e}")
+```
+
+## Method 5: Advanced Retry Strategies
+
+### Rate Limit Specific Retry
+
+```python
+@retry(
+    retry=retry_if_exception_type(RateLimitError),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=1, max=120),
+    before_sleep=lambda retry_state: print(f"Rate limited, waiting... (attempt {retry_state.attempt_number})")
+)
+def rate_limit_safe_extraction(text: str) -> UserInfo:
+    """Handle rate limits with longer delays."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+```
+
+### Network Error Retry
+
+```python
+import requests
+from tenacity import retry, retry_if_exception_type, wait_random_exponential
+
+@retry(
+    retry=retry_if_exception_type((requests.ConnectionError, requests.Timeout)),
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=1, min=4, max=30)
+)
+def network_resilient_extraction(text: str) -> UserInfo:
+    """Handle network issues with random exponential backoff."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+```
+
+## Method 6: Logging and Monitoring
+
+```python
+import logging
+from tenacity import before_log, after_log
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    before=before_log(logger, logging.INFO),
+    after=after_log(logger, logging.ERROR)
+)
+def logged_extraction(text: str) -> UserInfo:
+    """Extract with comprehensive logging."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+
+# This will log each retry attempt
+try:
+    user = logged_extraction("Extract: Bob is 32 with email bob@example.com")
+    print(f"Logged extraction: {user.name}")
+except Exception as e:
+    print(f"Logged failure: {e}")
+```
+
+## Method 7: Circuit Breaker Pattern
+
+```python
+from functools import lru_cache
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+@lru_cache(maxsize=1)
+def get_client():
+    """Cache the client to avoid repeated initialization."""
+    return instructor.from_openai(OpenAI())
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=4, max=10)
+)
+def circuit_breaker_extraction(text: str) -> UserInfo:
+    """Extract with circuit breaker pattern."""
+    client = get_client()
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+```
+
+## Method 8: Batch Processing with Retries
+
+```python
+import asyncio
+from tenacity import retry, stop_after_attempt
+
+@retry(stop=stop_after_attempt(3))
+async def process_batch(texts: list[str]) -> list[UserInfo]:
+    """Process multiple texts with retry logic."""
+    client = instructor.from_openai(OpenAI())
+    results = []
+
+    for text in texts:
+        try:
+            result = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                response_model=UserInfo,
+                messages=[{"role": "user", "content": text}]
+            )
+            results.append(result)
+        except Exception as e:
+            print(f"Failed to process: {text}, error: {e}")
+            continue
+
+    return results
+
+# Async batch processing
+async def run_batch_processing():
+    results = await process_batch(test_texts)
+    print(f"Successfully processed {len(results)} items")
+
+# Run async batch processing
+# asyncio.run(run_batch_processing())
+```
+
+## Integration with Instructor's Built-in Retries
+
+Instructor has built-in retry support that works alongside Tenacity:
+
+```python
+from instructor import Mode
+
+# Instructor's built-in retry with custom settings
+client = instructor.from_openai(
+    OpenAI(),
+    mode=Mode.JSON,
+    max_retries=3,
+    retry_delay=1
 )
 
-assert isinstance(resp, User)
-assert resp.name == "JOHN"  # due to validation
-assert resp.age == 18
-print(resp)
-#> name='JOHN' age=18
-# Output: name='JOHN' age=18
-
-# Sample output:
-# before: <RetryCallState 4421908816: attempt #1; slept for 0.0; last result: none yet>
-# after: <RetryCallState 4421908816: attempt #1; slept for 0.0; last result: failed (ValidationError 1 validation error for User
-# name
-#   Assertion failed, Name must be uppercase [type=assertion_error, input_value='John', input_type=str]
-#     For further information visit https://errors.pydantic.dev/2.6/v/assertion_error)>
-#
-# before: <RetryCallState 4421908816: attempt #2; slept for 0.0; last result: none yet>
-# name='JOHN' age=18
+# Combine with Tenacity for additional resilience
+@retry(stop=stop_after_attempt(2))
+def double_retry_extraction(text: str) -> UserInfo:
+    """Combine Instructor and Tenacity retries."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
 ```
+
+## Best Practices for Tenacity with Instructor
+
+### 1. Choose Appropriate Retry Strategies
+
+```python
+# For rate limits - longer delays
+@retry(
+    wait=wait_exponential(multiplier=2, min=1, max=60),
+    stop=stop_after_attempt(5)
+)
+
+# For validation errors - shorter delays
+@retry(
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    stop=stop_after_attempt(3)
+)
+
+# For network issues - moderate delays
+@retry(
+    wait=wait_exponential(multiplier=1.5, min=2, max=30),
+    stop=stop_after_attempt(4)
+)
+```
+
+### 2. Error-Specific Retry Logic
+
+```python
+from tenacity import retry, retry_if_exception_type, stop_after_attempt
+
+# Different strategies for different errors
+@retry(
+    retry=retry_if_exception_type(RateLimitError),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=1, max=120)
+)
+def handle_rate_limits(text: str) -> UserInfo:
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+
+@retry(
+    retry=retry_if_exception_type(ValidationError),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10)
+)
+def handle_validation_errors(text: str) -> UserInfo:
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+```
+
+### 3. Performance Monitoring
+
+```python
+import time
+from tenacity import retry, stop_after_attempt
+
+@retry(stop=stop_after_attempt(3))
+def monitored_extraction(text: str) -> UserInfo:
+    """Extract with performance monitoring."""
+    start_time = time.time()
+
+    try:
+        result = client.chat.completions.create(
+            model="gpt-4o-mini",
+            response_model=UserInfo,
+            messages=[{"role": "user", "content": text}]
+        )
+
+        end_time = time.time()
+        print(f"Extraction took {end_time - start_time:.2f} seconds")
+        return result
+
+    except Exception as e:
+        end_time = time.time()
+        print(f"Extraction failed after {end_time - start_time:.2f} seconds: {e}")
+        raise
+```
+
+## Common Use Cases and Patterns
+
+### 1. API Rate Limit Handling
+
+```python
+@retry(
+    retry=retry_if_exception_type(RateLimitError),
+    wait=wait_exponential(multiplier=2, min=1, max=120),
+    stop=stop_after_attempt(5)
+)
+def api_friendly_extraction(text: str) -> UserInfo:
+    """Respect API rate limits with exponential backoff."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+```
+
+### 2. Validation Error Recovery
+
+```python
+@retry(
+    retry=retry_if_exception_type(ValidationError),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    stop=stop_after_attempt(3)
+)
+def validation_resilient_extraction(text: str) -> UserInfo:
+    """Recover from validation errors with retries."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+```
+
+### 3. Network Resilience
+
+```python
+@retry(
+    retry=retry_if_exception_type((requests.ConnectionError, requests.Timeout)),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    stop=stop_after_attempt(4)
+)
+def network_resilient_extraction(text: str) -> UserInfo:
+    """Handle network issues gracefully."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+```
+
+## Troubleshooting Common Issues
+
+### 1. Infinite Retries
+
+**Problem**: Function keeps retrying indefinitely
+**Solution**: Always set appropriate `stop` conditions
+
+```python
+# Good: Set maximum attempts
+@retry(stop=stop_after_attempt(3))
+
+# Bad: No stop condition (could retry forever)
+@retry()  # Don't do this!
+```
+
+### 2. Too Many Retries
+
+**Problem**: Too many retry attempts causing delays
+**Solution**: Adjust retry strategy based on error type
+
+```python
+# For validation errors - fewer retries
+@retry(
+    retry=retry_if_exception_type(ValidationError),
+    stop=stop_after_attempt(2),
+    wait=wait_exponential(multiplier=1, min=1, max=5)
+)
+
+# For rate limits - more retries with longer delays
+@retry(
+    retry=retry_if_exception_type(RateLimitError),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=1, max=60)
+)
+```
+
+### 3. Rate Limit Issues
+
+**Problem**: Still hitting rate limits despite retries
+**Solution**: Use longer delays and respect rate limit headers
+
+```python
+@retry(
+    retry=retry_if_exception_type(RateLimitError),
+    wait=wait_exponential(multiplier=2, min=1, max=120),
+    stop=stop_after_attempt(5)
+)
+def rate_limit_respectful_extraction(text: str) -> UserInfo:
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+```
+
+## Debugging Retry Behavior
+
+```python
+import logging
+from tenacity import retry, stop_after_attempt, wait_exponential, before_log, after_log
+
+logging.basicConfig(level=logging.INFO)
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    before=before_log(logging.getLogger(__name__), logging.INFO),
+    after=after_log(logging.getLogger(__name__), logging.ERROR)
+)
+def debug_extraction(text: str) -> UserInfo:
+    """Extract with detailed retry logging."""
+    return client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": text}]
+    )
+
+# This will show detailed retry information
+try:
+    user = debug_extraction("Extract: Debug user info")
+    print(f"Debug extraction successful: {user.name}")
+except Exception as e:
+    print(f"Debug extraction failed: {e}")
+```
+
+## Performance Considerations
+
+- **Retry Overhead**: Each retry adds latency, so choose strategies carefully
+- **Cost Impact**: More retries = higher API costs
+- **User Experience**: Balance reliability with responsiveness
+- **Resource Usage**: Monitor memory and CPU usage during retry storms
+
+## Complete Example: Main Function
+
+```python
+def main():
+    """Run all retry methods and demonstrate their usage."""
+    print("=== Python Tenacity Retry Logic with Instructor ===\n")
+
+    # Test different retry strategies
+    strategies = [
+        ("Basic Retry", extract_user_info),
+        ("Conditional Retry", robust_extraction),
+        ("Validation Retry", extract_with_validation),
+        ("Custom Retry", extract_valid_user),
+        ("Rate Limit Retry", rate_limit_safe_extraction)
+    ]
+
+    test_text = "John is 30 years old with email john@example.com"
+
+    for name, strategy in strategies:
+        print(f"\n--- Testing {name} ---")
+        try:
+            start_time = time.time()
+            user = strategy(test_text)
+            end_time = time.time()
+            print(f"✓ Success: {user.name} ({end_time - start_time:.2f}s)")
+        except Exception as e:
+            print(f"✗ Failed: {e}")
+
+if __name__ == "__main__":
+    main()
+```
+
+## Key Takeaways
+
+1. **Tenacity** provides powerful retry decorators for Python applications
+2. **Exponential backoff** prevents overwhelming APIs during failures
+3. **Conditional retries** allow fine-grained control over retry behavior
+4. **Error-specific strategies** optimize retry logic for different failure types
+5. **Monitoring and logging** help debug and optimize retry behavior
+
+## Related Resources
+
+- [Tenacity Documentation](https://tenacity.readthedocs.io/)
+- [Instructor Error Handling](./error_handling.md)
+- [Validation Best Practices](./validation.md)
+- [Async Processing Guide](./async.md)
+- [Python Retry Patterns](https://pypi.org/project/tenacity/)
+
+---
+
+**Next Steps**: Learn about [error handling patterns](./error_handling.md) or explore [async processing](./async.md) for high-performance applications.

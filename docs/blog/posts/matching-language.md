@@ -30,7 +30,7 @@ In this post, we explore techniques to ensure the language of the generated summ
 Consider the following example where we ask a language model to summarize text in various languages:
 
 ```txt
-Լեզվական մոդելները վերջին տարիներին դարձել են ավելի հարուստ և կատարյալ, հնարավորություն ընձեռելով ստեղծել սահուն և բնական տեքստեր, ինչպես նաև գերազանց արդյունքներ ցուցաբերել մեքենայական թարգմանության, հարցերի պատասխանման և ստեղծագործ տեքստերի ստեղծման նման տարբեր առաջադրանքներում։ Այս մոդելները մշակվում են հսկայական տեքստային տվյալների հիման վրա և կարող են բռնել բնական լեզվի կառուցվածքն ու նրբությունները՝ հեղափոխություն առաջացնելով համակարգիչների և մարդկանց միջև հաղորդակցության ոլորտում։
+Լեզվական մոդելները վերջին տարիներին դարձել են ավելի հարուստ եւ կատարյալ, հնարավորություն ընձեռելով ստեղծել սահուն եւ բնական տեքստեր, ինչպես նաեւ գերազանց արդյունքներ ցուցաբերել մեքենայական թարգմանության, հարցերի պատասխանման եւ ստեղծագործ տեքստերի ստեղծման նման տարբեր առաջադրանքներում։ Այս մոդելները մշակվում են հսկայական տեքստային տվյալների հիման վրա եւ կարող են բռնել բնական լեզվի կառուցվածքն ու նրբությունները՝ հեղափոխություն առաջացնելով համակարգիչների եւ մարդկանց միջեւ հաղորդակցության ոլորտում։
 
 ---
 
@@ -41,11 +41,11 @@ Mga modelo ng wika ay naging mas sopistikado sa nagdaang mga taon, na nagbibigay
 Ngaahi motuʻa lea kuo nau hoko ʻo fakaʻofoʻofa ange ʻi he ngaahi taʻu fakamuimui ni, ʻo fakafaingofuaʻi e fakatupu ʻo e ngaahi konga tohi ʻoku lelei mo fakanatula pea ʻoku nau fakahaaʻi ʻa e ngaahi ola lelei ʻi he ngaahi ngāue kehekehe ʻo hangē ko e liliu fakaʻētita, tali fehuʻi, mo e fakatupu ʻo e konga tohi fakaʻatamai. Ko e ako ʻa e ngaahi motuʻa ni ʻi he ngaahi seti ʻo e fakamatala tohi lahi pea ʻoku nau malava ʻo puke ʻa e fakafuofua mo e ngaahi meʻa iiki ʻo e lea fakanatula. ʻE lava ke fakatupu ʻe he ngaahi fakaleleiʻi ki he ngaahi motuʻa lea ha liliu lahi ʻi he fetu'utaki ʻi he vahaʻa ʻo e ngaahi komipiuta mo e kakai, pea ʻoku ʻamanaki ʻe toe fakalakalaka ange ia ʻi he kahaʻu.
 ```
 
-If we use a simple instructor prompt, even when we ask for the language to be correct, we oftentimes will get English instead. 
+If we use a simple instructor prompt, even when we ask for the language to be correct, we oftentimes will get English instead.
 
 ??? note "Expand to see documents examples"
 
-    Լեզվական մոդելները վերջին տարիներին դարձել են ավելի հարուստ և կատարյալ, հնարավորություն ընձեռելով ստեղծել սահուն և բնական տեքստեր, ինչպես նաև գերազանց արդյունքներ ցուցաբերել մեքենայական թարգմանության, հարցերի պատասխանման և ստեղծագործ տեքստերի ստեղծման նման տարբեր առաջադրանքներում։ Այս մոդելները մշակվում են հսկայական տեքստային տվյալների հիման վրա և կարող են բռնել բնական լեզվի կառուցվածքն ու նրբությունները՝ հեղափոխություն առաջացնելով համակարգիչների և մարդկանց միջև հաղորդակցության ոլորտում։
+    Լեզվական մոդելները վերջին տարիներին դարձել են ավելի հարուստ եւ կատարյալ, հնարավորություն ընձեռելով ստեղծել սահուն եւ բնական տեքստեր, ինչպես նաեւ գերազանց արդյունքներ ցուցաբերել մեքենայական թարգմանության, հարցերի պատասխանման եւ ստեղծագործ տեքստերի ստեղծման նման տարբեր առաջադրանքներում։ Այս մոդելները մշակվում են հսկայական տեքստային տվյալների հիման վրա եւ կարող են բռնել բնական լեզվի կառուցվածքն ու նրբությունները՝ հեղափոխություն առաջացնելով համակարգիչների եւ մարդկանց միջեւ հաղորդակցության ոլորտում։
 
     ---
 
@@ -62,7 +62,7 @@ If we use a simple instructor prompt, even when we ask for the language to be co
     ---
 
     Mô hình ngôn ngữ đã trở nên tinh vi hơn trong những năm gần đây, cho phép tạo ra các văn bản trôi chảy và tự nhiên, đồng thời thể hiện hiệu suất xuất sắc trong các nhiệm vụ khác nhau như dịch máy, trả lời câu hỏi và tạo văn bản sáng tạo. Các mô hình này được huấn luyện trên các tập dữ liệu văn bản khổng lồ và có thể nắm bắt cấu trúc và sắc thái của ngôn ngữ tự nhiên. Những cải tiến trong mô hình ngôn ngữ có thể mang lại cuộc cách mạng trong giao tiếp giữa máy tính và con người, và người ta kỳ vọng sẽ có những tiến bộ hơn nữa trong tương lai.
-    
+
     ---
 
     Les modèles de langage sont devenus de plus en plus sophistiqués ces dernières années, permettant de générer des textes fluides et naturels, et de performer dans une variété de tâches telles que la traduction automatique, la réponse aux questions et la génération de texte créatif. Entraînés sur d'immenses ensembles de données textuelles, ces modèles sont capables de capturer la structure et les nuances du langage naturel, ouvrant la voie à une révolution dans la communication entre les ordinateurs et les humains.
@@ -92,7 +92,7 @@ from instructor import patch
 from openai import AsyncOpenAI
 from langdetect import detect
 
-docs = # To see the text, expand the notes above. 
+docs = # To see the text, expand the notes above.
 
 # Patch the OpenAI client to enable response_model
 client = patch(AsyncOpenAI())
@@ -148,9 +148,9 @@ if __name__ == "__main__":
 
 In this example, you'll notice that not all the languages are matching. Many of them respond in English, and so we get pretty terrible results. Only 3 out of 9 passed!
 
-## Reiterating instructions 
+## Reiterating instructions
 
-A simple trick that I found to work very well is to add a language detection attribute before the summary. 
+A simple trick that I found to work very well is to add a language detection attribute before the summary.
 
 ```python hl_lines="2"
 class GeneratedSummary(BaseModel):
@@ -160,7 +160,7 @@ class GeneratedSummary(BaseModel):
     summary: str
 ```
 
-Just by adding this single attribute, we end up getting 100% correctness on language matches. If you want to see for yourself, checkout the complete script below 
+Just by adding this single attribute, we end up getting 100% correctness on language matches. If you want to see for yourself, checkout the complete script below
 
 ```python
 from pydantic import BaseModel, Field
@@ -171,7 +171,7 @@ from langdetect import detect
 docs = map(
     lambda x: x.strip(),
     """
-Լեզվական մոդելները վերջին տարիներին դարձել են ավելի հարուստ և կատարյալ, հնարավորություն ընձեռելով ստեղծել սահուն և բնական տեքստեր, ինչպես նաև գերազանց արդյունքներ ցուցաբերել մեքենայական թարգմանության, հարցերի պատասխանման և ստեղծագործ տեքստերի ստեղծման նման տարբեր առաջադրանքներում։ Այս մոդելները մշակվում են հսկայական տեքստային տվյալների հիման վրա և կարող են բռնել բնական լեզվի կառուցվածքն ու նրբությունները՝ հեղափոխություն առաջացնելով համակարգիչների և մարդկանց միջև հաղորդակցության ոլորտում։
+Լեզվական մոդելները վերջին տարիներին դարձել են ավելի հարուստ եւ կատարյալ, հնարավորություն ընձեռելով ստեղծել սահուն եւ բնական տեքստեր, ինչպես նաեւ գերազանց արդյունքներ ցուցաբերել մեքենայական թարգմանության, հարցերի պատասխանման եւ ստեղծագործ տեքստերի ստեղծման նման տարբեր առաջադրանքներում։ Այս մոդելները մշակվում են հսկայական տեքստային տվյալների հիման վրա եւ կարող են բռնել բնական լեզվի կառուցվածքն ու նրբությունները՝ հեղափոխություն առաջացնելով համակարգիչների եւ մարդկանց միջեւ հաղորդակցության ոլորտում։
 
 ---
 

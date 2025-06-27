@@ -1,6 +1,6 @@
-# Custom Validators
+# Custom LLM Validators Tutorial: Advanced Data Quality Control
 
-Custom validators allow you to implement specialized validation logic for your structured data extraction. This tutorial will show you how to create and use custom validators with Instructor, including both rule-based and semantic validators.
+Learn how to build custom validators for LLM outputs in this advanced tutorial. Master both rule-based and semantic validation techniques to ensure GPT-4, Claude, and other language models produce data that meets your exact requirements.
 
 ## Basic Custom Validator
 
@@ -16,7 +16,7 @@ client = instructor.from_provider("openai/gpt-4o-mini")
 class Person(BaseModel):
     name: str
     age: int
-    
+
     @field_validator('age')
     @classmethod
     def validate_age(cls, value):
@@ -56,14 +56,14 @@ class Employee(BaseModel):
     hire_date: date
     termination_date: Optional[date] = None
     skills: List[str]
-    
+
     @field_validator('skills')
     @classmethod
     def validate_skills(cls, skills):
         if len(skills) < 1:
             raise ValueError("Employee must have at least one skill")
         return skills
-    
+
     @model_validator(mode='after')
     def validate_dates(self):
         if self.termination_date and self.termination_date < self.hire_date:
@@ -89,7 +89,7 @@ class Contact(BaseModel):
     name: str
     email: str
     phone: str
-    
+
     @field_validator('email')
     @classmethod
     def validate_email(cls, value):
@@ -97,7 +97,7 @@ class Contact(BaseModel):
         if not re.match(pattern, value):
             raise ValueError("Invalid email format")
         return value
-    
+
     @field_validator('phone')
     @classmethod
     def validate_phone(cls, value):
@@ -127,7 +127,7 @@ class Address(BaseModel):
     city: str
     state: str
     zip_code: str
-    
+
     @field_validator('zip_code')
     @classmethod
     def validate_zip_code(cls, value):
@@ -156,7 +156,7 @@ class ProductDescription(BaseModel):
         str,
         BeforeValidator(
             llm_validator(
-                "The description must be professional, accurate, and free of hyperbole. " 
+                "The description must be professional, accurate, and free of hyperbole. "
                 "It should not make unsubstantiated claims or use superlatives excessively.",
                 client=client
             )
@@ -218,4 +218,4 @@ For more information on validation in general, check out the [Validation](../../
 - [Models](../../concepts/models.md) - Understand model creation and configuration
 - [Types](../../concepts/types.md) - Explore the different data types you can use
 
-Custom validators are a powerful way to ensure the data you extract meets your specific requirements, improving the reliability and quality of structured outputs from LLMs. 
+Custom validators are a powerful way to ensure the data you extract meets your specific requirements, improving the reliability and quality of structured outputs from LLMs.

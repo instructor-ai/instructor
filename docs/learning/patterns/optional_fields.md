@@ -175,7 +175,7 @@ client = instructor.from_openai(OpenAI())
 class ContactInfo(BaseModel):
     email: str
     phone: Optional[str] = None
-    
+
     @field_validator('phone')
     @classmethod
     def validate_phone(cls, v):
@@ -195,4 +195,4 @@ class ContactInfo(BaseModel):
 
 - Learn about [Field Validation](./field_validation.md)
 - Explore [Nested Structure](./nested_structure.md) for complex data
-- Check out [Prompt Templates](./prompt_templates.md) for crafting prompts 
+- Check out [Prompt Templates](./prompt_templates.md) for crafting prompts

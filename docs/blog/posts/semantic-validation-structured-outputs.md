@@ -27,7 +27,7 @@ As LLMs become increasingly integrated into production systems, ensuring the qua
 
 ## Beyond Rule-Based Validation
 
-Traditional validation approaches focus on verifying that data conforms to certain rules—ensuring that:
+Traditional validation approaches focus on verifying that data conforms to certain rules-ensuring that:
 
 - A field has the correct type (`int`, `str`, etc.)
 - A value falls within predefined ranges (e.g., `age >= 0`)
@@ -107,7 +107,7 @@ class UserComment(BaseModel):
                 - No explicit sexual or violent content
                 - No promotion of illegal activities
                 - No sharing of personal information
-                - No spamming or excessive self-promotion""", 
+                - No spamming or excessive self-promotion""",
                 client=client
             )
         )
@@ -125,7 +125,7 @@ class CompanyAnnouncement(BaseModel):
         str,
         BeforeValidator(
             llm_validator(
-                "The announcement must maintain a professional, positive tone without being overly informal or using slang", 
+                "The announcement must maintain a professional, positive tone without being overly informal or using slang",
                 client=client
             )
         )
@@ -141,7 +141,7 @@ class FactCheckedClaim(BaseModel):
     claim: str
     is_accurate: bool
     supporting_evidence: list[str]
-    
+
     @classmethod
     def validate_claim(cls, text: str) -> "FactCheckedClaim":
         return client.chat.completions.create(
@@ -169,7 +169,7 @@ class Report(BaseModel):
     title: str
     summary: str
     key_findings: list[str]
-    
+
     @model_validator(mode='after')
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
@@ -184,15 +184,15 @@ class Report(BaseModel):
                     "role": "user",
                     "content": """
                         Please validate if this summary accurately reflects the key findings:
-                        
+
                         Title: {{ title }}
                         Summary: {{ summary }}
-                        
+
                         Key findings:
                         {% for finding in findings %}
                         - {{ finding }}
                         {% endfor %}
-                        
+
                         Evaluate for consistency, completeness, and accuracy.
                     """
                 }
@@ -203,10 +203,10 @@ class Report(BaseModel):
                 "findings": self.key_findings
             }
         )
-        
+
         if not validation_result.is_valid:
             raise ValueError(f"Consistency error: {validation_result.reason}")
-        
+
         return self
 ```
 
@@ -279,13 +279,13 @@ You can build a comprehensive guardrails framework by combining semantic validat
 def create_guarded_model(base_class, guardrails):
     """Create a model with multiple semantic guardrails applied."""
     validators = {}
-    
+
     for field_name, criteria in guardrails.items():
         validators[field_name] = Annotated[
-            str, 
+            str,
             BeforeValidator(llm_validator(criteria, client=client))
         ]
-    
+
     return create_model(
         f"Guarded{base_class.__name__}",
         __base__=base_class,
@@ -312,7 +312,7 @@ class LegalCompliance(BaseModel):
         str,
         BeforeValidator(
             llm_validator(
-                """Check if this document complies with the provided guidelines. 
+                """Check if this document complies with the provided guidelines.
                 Guidelines: {{ guidelines }}""",
                 client=client
             )
@@ -337,4 +337,13 @@ As these techniques mature, we can expect to see semantic validation become a st
 
 To get started with semantic validation in your projects, check out the [Semantic Validation documentation](https://python.useinstructor.com/concepts/semantic_validation/) and explore the various examples and patterns.
 
-This approach isn't just a technical improvement—it's a fundamental shift in how we think about validation, moving from rigid rules to intelligent understanding of content and context.
+This approach isn't just a technical improvement-it's a fundamental shift in how we think about validation, moving from rigid rules to intelligent understanding of content and context.
+
+## Related Documentation
+- [Validation Fundamentals](/concepts/validation) - Core validation concepts
+- [LLM Validation](/concepts/llm_validation) - Using LLMs for validation
+
+## See Also
+- [Validation Deep Dive](validation-part1) - Foundation validation concepts
+- [Anthropic Prompt Caching](anthropic-prompt-caching) - Optimize validation costs
+- [Monitoring with Logfire](logfire) - Track validation performance

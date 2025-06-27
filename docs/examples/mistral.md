@@ -10,7 +10,7 @@ The examples are using mistral-large-latest.
 
 ## MistralAI API
 To use mistral you need to obtain a mistral API key.
-Goto [mistralai](https://mistral.ai/) click on Build Now and login. Select API Keys from the left menu and then select 
+Goto [mistralai](https://mistral.ai/) click on Build Now and login. Select API Keys from the left menu and then select
 Create API key to create a new key.
 
 ## Use example

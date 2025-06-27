@@ -50,10 +50,11 @@ jobs:
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
-          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks and not perplexity and not mistral"
+          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks and not perplexity and not mistral and not genai"
           uv run coverage report
           uv run coverage html
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}

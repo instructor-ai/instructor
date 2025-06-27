@@ -1,11 +1,11 @@
 ---
-title: "Structured outputs with Google/Gemini, a complete guide w/ instructor"
-description: "Complete guide to using Instructor with Google's Gemini models. Learn how to generate structured, type-safe outputs with Google's advanced AI capabilities."
+title: "Google Gemini Tutorial: Structured Outputs with Instructor"
+description: "Learn how to use Google's Gemini models (Pro, Flash, Ultra) with Instructor for structured data extraction. Complete tutorial with examples for multimodal AI and type-safe outputs."
 ---
 
-# Structured outputs with Google/Gemini, a complete guide w/ instructor
+# Google Gemini Tutorial: Structured Outputs with Instructor
 
-This guide will show you how to use Instructor with the Google.GenerativeAI library. We recommend this library for most users as it's significantly easier to get started with.
+Master structured data extraction using Google's Gemini models with Instructor. This comprehensive tutorial covers Gemini Pro, Flash, and Ultra models, including multimodal capabilities for processing text, images, and more.
 
 ## Google.GenerativeAI
 

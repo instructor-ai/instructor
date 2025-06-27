@@ -51,6 +51,38 @@ client = AzureOpenAI(
 client = instructor.from_openai(client)
 ```
 
+## Using Auto Client (Recommended)
+
+The easiest way to get started with Azure OpenAI is using the `from_provider` method:
+
+```python
+import instructor
+import os
+
+# Set your Azure OpenAI credentials
+os.environ["AZURE_OPENAI_API_KEY"] = "your-api-key"
+os.environ["AZURE_OPENAI_ENDPOINT"] = "https://your-resource.openai.azure.com/"
+
+# Create client using the provider string
+client = instructor.from_provider("azure_openai/gpt-4o-mini")
+
+# Or async client
+async_client = instructor.from_provider("azure_openai/gpt-4o-mini", async_client=True)
+```
+
+You can also pass credentials as parameters:
+
+```python
+import instructor
+
+client = instructor.from_provider(
+    "azure_openai/gpt-4o-mini",
+    api_key="your-api-key",
+    azure_endpoint="https://your-resource.openai.azure.com/",
+    api_version="2024-02-01"  # Optional, defaults to 2024-02-01
+)
+```
+
 ## Basic Usage
 
 Here's a simple example using a Pydantic model:

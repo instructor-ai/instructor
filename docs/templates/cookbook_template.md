@@ -97,10 +97,10 @@ client = instructor.from_openai(
 def process_data(input_text: str) -> MyResponseModel:
     """
     Process input text and return structured data.
-    
+
     Args:
         input_text: The text to be processed
-        
+
     Returns:
         A structured MyResponseModel object
     """

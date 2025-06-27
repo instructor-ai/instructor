@@ -91,7 +91,7 @@ class Image(BaseModel):
         raise ValueError("Unable to determine image type or unsupported image format")
 
     @classmethod
-    def autodetect_safely(cls, source: str | Path) -> Union[Image, str]:  # noqa: UP007
+    def autodetect_safely(cls, source: Union[str, Path]) -> Union[Image, str]:  # noqa: UP007
         """Safely attempt to autodetect an image from a source string or path.
 
         Args:
@@ -260,7 +260,12 @@ class Image(BaseModel):
         """
         Convert the Image instance to Google GenAI's API format.
         """
-        from google.genai import types
+        try:
+            from google.genai import types
+        except ImportError as err:
+            raise ImportError(
+                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
+            ) from err
 
         # Google Cloud Storage
         if isinstance(self.source, str) and self.source.startswith("gs://"):
@@ -291,7 +296,7 @@ class Image(BaseModel):
 class Audio(BaseModel):
     """Represents an audio that can be loaded from a URL or file path."""
 
-    source: str | Path = Field(description="URL or file path of the audio")  # noqa: UP007
+    source: Union[str, Path] = Field(description="URL or file path of the audio")  # noqa: UP007
     data: Union[str, None] = Field(  # noqa: UP007
         None, description="Base64 encoded audio data", repr=False
     )
@@ -302,9 +307,9 @@ class Audio(BaseModel):
         """Create an Audio instance from a URL."""
         response = requests.get(url)
         content_type = response.headers.get("content-type")
-        assert (
-            content_type in VALID_AUDIO_MIME_TYPES
-        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        assert content_type in VALID_AUDIO_MIME_TYPES, (
+            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        )
 
         data = base64.b64encode(response.content).decode("utf-8")
         return cls(source=url, data=data, media_type=content_type)
@@ -320,9 +325,14 @@ class Audio(BaseModel):
         if mime_type == "audio/x-wav":
             mime_type = "audio/wav"
 
-        assert (
-            mime_type in VALID_AUDIO_MIME_TYPES
-        ), f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        if (
+            mime_type == "audio/vnd.dlna.adts"
+        ):  # <--- this is the case for aac audio files in Windows
+            mime_type = "audio/aac"
+
+        assert mime_type in VALID_AUDIO_MIME_TYPES, (
+            f"Invalid audio format. Must be one of: {', '.join(VALID_AUDIO_MIME_TYPES)}"
+        )
 
         data = base64.b64encode(path.read_bytes()).decode("utf-8")
         return cls(source=str(path), data=data, media_type=mime_type)
@@ -344,7 +354,12 @@ class Audio(BaseModel):
         """
         Convert the Audio instance to Google GenAI's API format.
         """
-        from google.genai import types
+        try:
+            from google.genai import types
+        except ImportError as err:
+            raise ImportError(
+                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
+            ) from err
 
         return types.Part.from_bytes(
             data=base64.b64decode(self.data),  # type: ignore
@@ -577,7 +592,12 @@ class PDF(BaseModel):
             }
 
     def to_genai(self):
-        from google.genai import types
+        try:
+            from google.genai import types
+        except ImportError as err:
+            raise ImportError(
+                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
+            ) from err
 
         if (
             isinstance(self.source, str)
@@ -654,7 +674,12 @@ class PDFWithGenaiFile(PDF):
             raise ValueError("We only support uploaded PDFs for now")
 
     def to_genai(self):
-        from google.genai import types
+        try:
+            from google.genai import types
+        except ImportError as err:
+            raise ImportError(
+                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
+            ) from err
 
         if (
             self.source

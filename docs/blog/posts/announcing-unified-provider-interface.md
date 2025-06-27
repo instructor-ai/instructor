@@ -200,3 +200,12 @@ This unified interface is intended to balance ease of use for common tasks with 
 These are areas where `instructor` can continue to reduce friction for developers working in an increasingly diverse LLM ecosystem.
 
 We encourage you to try `from_provider()` in your projects, particularly when experimenting with multiple LLMs. Feedback and suggestions for additional providers or features are always welcome.
+
+## Related Documentation
+- [Provider Patching](/concepts/patching) - How provider integration works
+- [All Integrations](/integrations/) - Supported provider list
+
+## See Also
+- [String-Based Initialization](string-based-init) - Alternative init method
+- [Framework Comparison](best_framework) - Multi-provider advantages
+- [Getting Started](introduction) - Quick start guide

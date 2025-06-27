@@ -1,13 +1,15 @@
 ---
-title: "Structured outputs with Anthropic, a complete guide w/ instructor"
-description: Learn how to combine Anthropic and Instructor clients to create user models with complex properties in Python.
+title: "Anthropic Claude Tutorial: Structured Outputs with Instructor"
+description: "Complete guide to using Anthropic's Claude models with Instructor for structured data extraction. Learn how to use Claude 3 Opus, Sonnet, and Haiku for type-safe outputs in Python."
 ---
 
-# Structured outputs with Anthropic, a complete guide w/ instructor
+# Anthropic Claude Tutorial: Structured Outputs with Instructor
 
-Now that we have a [Anthropic](https://www.anthropic.com/) client, we can use it with the `instructor` client to make requests.
+Learn how to use Anthropic's Claude models (Claude 3 Opus, Sonnet, and Haiku) with Instructor to extract structured, validated data. This tutorial covers everything from basic setup to advanced patterns for production use.
 
-Let's first install the instructor client with anthropic support
+## Quick Start: Install Instructor for Claude
+
+Get started with Claude and Instructor for structured outputs:
 
 ```
 pip install "instructor[anthropic]"
