@@ -33,7 +33,7 @@ class Buckets(enum.Enum):
 class TaskAction(BaseModel):
     id: int
     method: Action = Field(
-        description="Method of creating, for closing a task the task, to close a task only a id is required"
+        description="Method of creating and closing a task: to close a task, only an ID is required"
     )
     waiting_on: Optional[list[int]] = Field(
         None, description="IDs of tasks that this task is waiting on"
