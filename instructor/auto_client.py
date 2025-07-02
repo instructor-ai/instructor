@@ -1,8 +1,9 @@
 from __future__ import annotations
-from typing import Any, Union, Literal, overload
+from typing import Any, Union, Literal, overload, Optional
 from instructor.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
+from instructor.cache import BaseCache  # type: ignore[import-not-found]
 
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
@@ -32,6 +33,7 @@ supported_providers = [
 def from_provider(
     model: KnownModelName,
     async_client: Literal[True] = True,
+    cache: BaseCache | None = None,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -40,25 +42,27 @@ def from_provider(
 def from_provider(
     model: KnownModelName,
     async_client: Literal[False] = False,
+    cache: BaseCache | None = None,
     **kwargs: Any,
 ) -> Instructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[True] = True, **kwargs: Any
+    model: str, async_client: Literal[True] = True, cache: BaseCache | None = None, **kwargs: Any
 ) -> AsyncInstructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[False] = False, **kwargs: Any
+    model: str, async_client: Literal[False] = False, cache: BaseCache | None = None, **kwargs: Any
 ) -> Instructor: ...
 
 
 def from_provider(
     model: Union[str, KnownModelName],  # noqa: UP007
     async_client: bool = False,
+    cache: BaseCache | None = None,
     mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
     **kwargs: Any,
 ) -> Union[Instructor, AsyncInstructor]:  # noqa: UP007
@@ -68,6 +72,8 @@ def from_provider(
         model: String in format "provider/model-name"
               (e.g., "openai/gpt-4", "anthropic/claude-3-sonnet", "google/gemini-pro")
         async_client: Whether to return an async client
+        cache: Optional cache adapter (e.g., ``AutoCache`` or ``RedisCache``)
+               to enable transparent response caching.
         mode: Override the default mode for the provider. If not specified, uses the
               recommended default mode for each provider.
         **kwargs: Additional arguments passed to the client constructor
