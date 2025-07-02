@@ -5,6 +5,36 @@ description: Explore caching methods in Python with functools, diskcache, and Re
 
 If you want to learn more about concepts in caching and how to use them in your own projects, check out our [blog](../blog/posts/caching.md) on the topic.
 
+## Built-in caching in Instructor (v2.5 and later)
+
+Instructor now supports drop-in caching for every client.  Pass a cache
+adapter when you create the client – nothing else to wire-up:
+
+```python
+from instructor import from_provider
+from instructor.cache import AutoCache, RedisCache
+
+# Local in-process LRU cache
+client = from_provider(
+    "openai/gpt-3.5-turbo",
+    cache=AutoCache(maxsize=1000),
+)
+
+# Or shared Redis cache
+# client = from_provider("openai/gpt-3.5-turbo", cache=RedisCache())
+
+# Your normal calls are now cached automatically
+class User(BaseModel):
+    name: str
+
+first = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
+second = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
+assert first is second               # second call was served from cache
+```
+
+See the blog post for a deep dive and a feature matrix of what is (and
+is not yet) cached.
+
 ## 1. `functools.cache` for Simple In-Memory Caching
 
 **When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application where we don't need to persist the cache between sessions.
