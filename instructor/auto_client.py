@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Union, Literal, overload, Optional
+from typing import Any, Union, Literal, overload
 from instructor.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
@@ -108,7 +108,7 @@ def from_provider(
 
     if provider == "openai":
         try:
-            import openai
+            import openai  # type: ignore[import-not-found]
             from instructor import from_openai
 
             client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
@@ -180,7 +180,7 @@ def from_provider(
 
     elif provider == "anthropic":
         try:
-            import anthropic
+            import anthropic  # type: ignore[import-not-found]
             from instructor import from_anthropic
 
             client = (
@@ -203,7 +203,7 @@ def from_provider(
 
     elif provider == "google":
         try:
-            import google.genai as genai  # type: ignore
+            import google.genai as genai  # type: ignore[import-not-found]
             from instructor import from_genai
 
             client = genai.Client(
@@ -225,7 +225,7 @@ def from_provider(
 
     elif provider == "mistral":
         try:
-            from mistralai import Mistral  # type: ignore
+            from mistralai import Mistral  # type: ignore[import-not-found]
             from instructor import from_mistral
             import os
 
@@ -250,7 +250,7 @@ def from_provider(
 
     elif provider == "cohere":
         try:
-            import cohere
+            import cohere  # type: ignore[import-not-found]
             from instructor import from_cohere
 
             client = cohere.AsyncClient() if async_client else cohere.Client()
@@ -264,7 +264,7 @@ def from_provider(
 
     elif provider == "perplexity":
         try:
-            import openai
+            import openai  # type: ignore[import-not-found]
             from instructor import from_perplexity
             import os
 
@@ -297,7 +297,7 @@ def from_provider(
 
     elif provider == "groq":
         try:
-            import groq
+            import groq  # type: ignore[import-not-found]
             from instructor import from_groq
 
             client = groq.AsyncGroq() if async_client else groq.Groq()
@@ -311,7 +311,7 @@ def from_provider(
 
     elif provider == "writer":
         try:
-            from writerai import AsyncWriter, Writer
+            from writerai import AsyncWriter, Writer  # type: ignore[import-not-found]
             from instructor import from_writer
 
             client = AsyncWriter() if async_client else Writer()
@@ -325,7 +325,7 @@ def from_provider(
 
     elif provider == "bedrock":
         try:
-            import boto3
+            import boto3  # type: ignore[import-not-found]
             from instructor import from_bedrock
 
             client = boto3.client("bedrock-runtime")
@@ -339,7 +339,7 @@ def from_provider(
 
     elif provider == "cerebras":
         try:
-            from cerebras.cloud.sdk import AsyncCerebras, Cerebras
+            from cerebras.cloud.sdk import AsyncCerebras, Cerebras  # type: ignore[import-not-found]
             from instructor import from_cerebras
 
             client = AsyncCerebras() if async_client else Cerebras()
@@ -353,7 +353,7 @@ def from_provider(
 
     elif provider == "fireworks":
         try:
-            from fireworks.client import AsyncFireworks, Fireworks
+            from fireworks.client import AsyncFireworks, Fireworks  # type: ignore[import-not-found]
             from instructor import from_fireworks
 
             client = AsyncFireworks() if async_client else Fireworks()
@@ -367,7 +367,7 @@ def from_provider(
 
     elif provider == "vertexai":
         try:
-            import vertexai.generative_models as gm
+            import vertexai.generative_models as gm  # type: ignore[import-not-found]
             from instructor import from_vertexai
 
             client = gm.GenerativeModel(model_name=model_name)
@@ -381,7 +381,7 @@ def from_provider(
 
     elif provider == "generative-ai":
         try:
-            from google.generativeai import GenerativeModel
+            from google.generativeai import GenerativeModel  # type: ignore[import-not-found]
             from instructor import from_gemini
 
             client = GenerativeModel(model_name=model_name)
