@@ -102,7 +102,7 @@ class AutoCache(BaseCache):
 def _import_diskcache():  # pragma: no cover – only executed when requested
     import importlib  # type: ignore[]
 
-    if importlib.util.find_spec("diskcache") is None:
+    if importlib.util.find_spec("diskcache") is None:  # type: ignore[attr-defined]
         raise ImportError(
             "diskcache is not installed.  Install it with `pip install diskcache`."
         )
@@ -114,7 +114,7 @@ def _import_diskcache():  # pragma: no cover – only executed when requested
 def _import_redis():  # pragma: no cover – only executed when requested
     import importlib  # type: ignore[]
 
-    if importlib.util.find_spec("redis") is None:
+    if importlib.util.find_spec("redis") is None:  # type: ignore[attr-defined]
         raise ImportError("redis is not installed.  Install it with `pip install redis`.")
     import redis  # type: ignore
 
