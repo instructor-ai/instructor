@@ -10,8 +10,8 @@ from typing import (
 from collections.abc import Awaitable
 from typing_extensions import ParamSpec
 
-from openai import AsyncOpenAI, OpenAI
-from pydantic import BaseModel
+from openai import AsyncOpenAI, OpenAI  # type: ignore[import-not-found]
+from pydantic import BaseModel  # type: ignore[import-not-found]
 
 from instructor.process_response import handle_response_model
 from instructor.retry import retry_async, retry_sync
@@ -22,7 +22,7 @@ from instructor.templating import handle_templating
 from instructor.mode import Mode
 import logging
 
-from tenacity import (
+from tenacity import (  # type: ignore[import-not-found]
     AsyncRetrying,
     Retrying,
 )
