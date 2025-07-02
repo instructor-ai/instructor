@@ -198,7 +198,7 @@ def patch(  # type: ignore
         # Store in cache *after* successful call
         if cache is not None and response_model is not None:
             try:
-                from pydantic import BaseModel as _BM  # type: ignore
+                from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
 
                 if isinstance(response, _BM):
                     # mypy: ignore-next-line
@@ -264,7 +264,7 @@ def patch(  # type: ignore
         # Save to cache
         if cache is not None and response_model is not None:
             try:
-                from pydantic import BaseModel as _BM  # type: ignore
+                from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
 
                 if isinstance(response, _BM):
                     # mypy: ignore-next-line

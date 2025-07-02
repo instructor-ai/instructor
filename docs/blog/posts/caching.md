@@ -35,6 +35,26 @@ tags:
 
 **NEW**: All strategies in this guide are now **validated with working examples** that demonstrate real performance improvements of 200,000x+ and cost savings of $420-4,800/month.
 
+> **Update (June 2025)** – Instructor now ships *native* caching support
+> out-of-the-box.  Pass a cache adapter directly when you create a
+> client:
+>
+> ```python
+> from instructor import from_provider
+> from instructor.cache import AutoCache, RedisCache
+>
+> client = from_provider(
+>     "openai/gpt-4o",  # or any other provider
+>     cache=AutoCache(maxsize=10_000),   # in-process LRU
+>     # or cache=RedisCache(host="localhost")
+> )
+> ```
+>
+> Under the hood this uses the very same techniques explained below, so
+> you can still roll your own adapter if you need a bespoke backend.  The
+> remainder of the post walks through the design rationale in detail and
+> is fully compatible with the built-in implementation.
+
 Today, we're diving deep into optimizing instructor code while maintaining the excellent developer experience offered by [Pydantic](https://docs.pydantic.dev/latest/) models. We'll tackle the challenges of caching Pydantic models, typically incompatible with `pickle`, and explore comprehensive solutions using `decorators` like `functools.cache`. Then, we'll craft production-ready custom decorators with `diskcache` and `redis` to support persistent caching, distributed systems, and high-throughput applications.
 
 <!-- more -->

@@ -27,9 +27,11 @@ import json
 import threading
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Any, Optional
+from typing import Any
 
-from pydantic import BaseModel
+# The project already depends on pydantic; type checker in some
+# environments might not have its stubs – silence if missing.
+from pydantic import BaseModel  # type: ignore[import-not-found]
 
 __all__ = [
     "BaseCache",

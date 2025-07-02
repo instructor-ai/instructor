@@ -1,7 +1,7 @@
-import pytest
+import pytest  # type: ignore[import-not-found]
 
 from instructor.cache import make_cache_key
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field  # type: ignore[import-not-found]
 
 
 messages = [
