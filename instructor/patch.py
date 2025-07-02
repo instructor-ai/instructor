@@ -180,8 +180,22 @@ def patch(  # type: ignore
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
             if (cached := cache.get(key)) is not None:
-                # Cached value stored as JSON string
-                return response_model.model_validate_json(cached)  # type: ignore[return-value]
+                # Expect JSON string with keys `model` and `raw`
+                import json  # local import to avoid global overhead
+
+                try:
+                    data = json.loads(cached)
+                    model_json = data["model"]
+                    raw_json = data.get("raw")
+                except Exception:
+                    # Fallback to previous single-value format
+                    model_json = cached
+                    raw_json = None
+
+                obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
+                if raw_json is not None:
+                    setattr(obj, "_raw_response", raw_json)
+                return obj  # type: ignore[return-value]
 
         response = await retry_async(
             func=func,  # type:ignore
@@ -202,7 +216,16 @@ def patch(  # type: ignore
 
                 if isinstance(response, _BM):
                     # mypy: ignore-next-line
-                    cache.set(key, response.model_dump_json(), ttl=cache_ttl)  # type: ignore[attr-defined]
+                    import json
+
+                    raw_resp = getattr(response, "_raw_response", None)
+                    payload = {
+                        "model": response.model_dump_json(),  # type: ignore[attr-defined]
+                        "raw": getattr(raw_resp, "model_dump_json", lambda: raw_resp)()
+                        if raw_resp is not None
+                        else None,
+                    }
+                    cache.set(key, json.dumps(payload), ttl=cache_ttl)
             except ModuleNotFoundError:
                 pass
         return response  # type: ignore
@@ -245,9 +268,23 @@ def patch(  # type: ignore
                 response_model=response_model,
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
-            cached = cache.get(key)
-            if cached is not None:
-                return response_model.model_validate_json(cached)  # type: ignore[return-value]
+            cached_value = cache.get(key)
+            if cached_value is not None:
+                # Expect JSON string with keys `model` and `raw`
+                import json
+
+                try:
+                    data = json.loads(cached_value)
+                    model_json = data["model"]
+                    raw_json = data.get("raw")
+                except Exception:
+                    model_json = cached_value
+                    raw_json = None
+
+                obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
+                if raw_json is not None:
+                    setattr(obj, "_raw_response", raw_json)
+                return obj  # type: ignore[return-value]
 
         response = retry_sync(
             func=func,  # type: ignore
@@ -268,7 +305,16 @@ def patch(  # type: ignore
 
                 if isinstance(response, _BM):
                     # mypy: ignore-next-line
-                    cache.set(key, response.model_dump_json(), ttl=cache_ttl)  # type: ignore[attr-defined]
+                    import json
+
+                    raw_resp = getattr(response, "_raw_response", None)
+                    payload = {
+                        "model": response.model_dump_json(),  # type: ignore[attr-defined]
+                        "raw": getattr(raw_resp, "model_dump_json", lambda: raw_resp)()
+                        if raw_resp is not None
+                        else None,
+                    }
+                    cache.set(key, json.dumps(payload), ttl=cache_ttl)
             except ModuleNotFoundError:
                 pass
         return response  # type: ignore
