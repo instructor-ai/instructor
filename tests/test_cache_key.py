@@ -23,6 +23,16 @@ class UserV1DiffField(BaseModel):
     age: int
 
 
+class UserDoc1(BaseModel):
+    """First docstring"""
+    name: str
+
+
+class UserDoc2(BaseModel):
+    """Second different docstring"""
+    name: str
+
+
 def test_cache_key_changes_on_description_change():
     k1 = make_cache_key(messages=messages, model=model_name, response_model=UserV1)
     k2 = make_cache_key(messages=messages, model=model_name, response_model=UserV1DiffDesc)
@@ -39,3 +49,9 @@ def test_cache_key_same_for_identical_schema():
     k1 = make_cache_key(messages=messages, model=model_name, response_model=UserV1)
     k2 = make_cache_key(messages=messages, model=model_name, response_model=UserV1)
     assert k1 == k2, "Identical schemas should produce identical cache keys"
+
+
+def test_cache_key_changes_on_docstring_change():
+    k1 = make_cache_key(messages=messages, model=model_name, response_model=UserDoc1)
+    k2 = make_cache_key(messages=messages, model=model_name, response_model=UserDoc2)
+    assert k1 != k2, "Changing class docstring should bust the cache key"
