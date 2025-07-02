@@ -37,16 +37,11 @@ class Response:
     ):
         self.client = client
 
-    def create(
+    def _create(
         self,
         input: str | list[ChatCompletionMessageParam],
-        response_model: type[T] | None = None,
-        max_retries: int | Retrying = 3,
-        validation_context: dict[str, Any] | None = None,
-        context: dict[str, Any] | None = None,
-        strict: bool = True,
-        **kwargs,
-    ) -> T | Any:
+        max_retries: int | Any | None = None,
+    ):
         if isinstance(input, str):
             input = [
                 {
@@ -54,6 +49,28 @@ class Response:
                     "content": input,
                 }
             ]
+
+        # For retries, the order of precedence is:
+        # 1. max_retries passed to the method
+        # 2. max_retries from the client kwargs
+        # 3. default max_retries of 3
+        # Eventually, instead of hardcoding 3, we can make it configurable e.g. via an env var.
+        if max_retries is None:
+            max_retries = self.client.kwargs.get("max_retries", 3)
+
+        return input, max_retries
+
+    def create(
+        self,
+        input: str | list[ChatCompletionMessageParam],
+        response_model: type[T] | None = None,
+        max_retries: int | Retrying | None = None,
+        validation_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
+        strict: bool = True,
+        **kwargs,
+    ) -> T | Any:
+        input, max_retries = self._create(input, max_retries)
 
         return self.client.create(
             response_model=response_model,
@@ -69,16 +86,10 @@ class Response:
         self,
         input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying = 3,
+        max_retries: int | Retrying | None = None,
         **kwargs,
     ) -> tuple[T, Any]:
-        if isinstance(input, str):
-            input = [
-                {
-                    "role": "user",
-                    "content": input,
-                }
-            ]
+        input, max_retries = self._create(input, max_retries)
 
         return self.client.create_with_completion(
             messages=input,
@@ -91,16 +102,10 @@ class Response:
         self,
         input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying = 3,
+        max_retries: int | Retrying | None = None,
         **kwargs,
     ) -> Generator[T, None, None]:
-        if isinstance(input, str):
-            input = [
-                {
-                    "role": "user",
-                    "content": input,
-                }
-            ]
+        input, max_retries = self._create(input, max_retries)
 
         return self.client.create_iterable(
             messages=input,
@@ -113,16 +118,10 @@ class Response:
         self,
         input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying = 3,
+        max_retries: int | Retrying | None = None,
         **kwargs,
     ) -> Generator[T, None, None]:
-        if isinstance(input, str):
-            input = [
-                {
-                    "role": "user",
-                    "content": input,
-                }
-            ]
+        input, max_retries = self._create(input, max_retries)
 
         return self.client.create_partial(
             messages=input,
@@ -140,19 +139,13 @@ class AsyncResponse(Response):
         self,
         input: str | list[ChatCompletionMessageParam],
         response_model: type[T] | None = None,
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         strict: bool = True,
         **kwargs,
     ) -> T | Any:
-        if isinstance(input, str):
-            input = [
-                {
-                    "role": "user",
-                    "content": input,
-                }
-            ]
+        input, max_retries = self._create(input, max_retries)
 
         return await self.client.create(
             response_model=response_model,
@@ -168,16 +161,10 @@ class AsyncResponse(Response):
         self,
         input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         **kwargs,
     ) -> tuple[T, Any]:
-        if isinstance(input, str):
-            input = [
-                {
-                    "role": "user",
-                    "content": input,
-                }
-            ]
+        input, max_retries = self._create(input, max_retries)
 
         return await self.client.create_with_completion(
             messages=input,
@@ -190,16 +177,10 @@ class AsyncResponse(Response):
         self,
         input: str | list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         **kwargs,
     ) -> AsyncGenerator[T, None]:
-        if isinstance(input, str):
-            input = [
-                {
-                    "role": "user",
-                    "content": input,
-                }
-            ]
+        input, max_retries = self._create(input, max_retries)
 
         return self.client.create_iterable(
             messages=input,
@@ -308,7 +289,7 @@ class Instructor:
         self: AsyncInstructor,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -320,7 +301,7 @@ class Instructor:
         self: Self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying = 3,
+        max_retries: int | Retrying | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -332,7 +313,7 @@ class Instructor:
         self: AsyncInstructor,
         response_model: None,
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -344,7 +325,7 @@ class Instructor:
         self: Self,
         response_model: None,
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying = 3,
+        max_retries: int | Retrying | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -355,7 +336,7 @@ class Instructor:
         self,
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -379,7 +360,7 @@ class Instructor:
         self: AsyncInstructor,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,  # {{ edit_1 }}
         strict: bool = True,
@@ -391,7 +372,7 @@ class Instructor:
         self: Self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying = 3,
+        max_retries: int | Retrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -402,7 +383,7 @@ class Instructor:
         self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -429,7 +410,7 @@ class Instructor:
         self: AsyncInstructor,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -441,7 +422,7 @@ class Instructor:
         self: Self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying = 3,
+        max_retries: int | Retrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -452,7 +433,7 @@ class Instructor:
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -478,7 +459,7 @@ class Instructor:
         self: AsyncInstructor,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -490,7 +471,7 @@ class Instructor:
         self: Self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying = 3,
+        max_retries: int | Retrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -501,7 +482,7 @@ class Instructor:
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | Retrying | AsyncRetrying = 3,
+        max_retries: int | Retrying | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -574,7 +555,7 @@ class AsyncInstructor(Instructor):
         self,
         response_model: type[T] | None,
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -618,7 +599,7 @@ class AsyncInstructor(Instructor):
         self,
         response_model: type[T],
         messages: list[ChatCompletionMessageParam],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -642,7 +623,7 @@ class AsyncInstructor(Instructor):
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
@@ -666,7 +647,7 @@ class AsyncInstructor(Instructor):
         self,
         messages: list[ChatCompletionMessageParam],
         response_model: type[T],
-        max_retries: int | AsyncRetrying = 3,
+        max_retries: int | AsyncRetrying | None = None,
         validation_context: dict[str, Any] | None = None,  # Deprecate in 2.0
         context: dict[str, Any] | None = None,
         strict: bool = True,
