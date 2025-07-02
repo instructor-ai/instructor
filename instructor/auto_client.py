@@ -129,7 +129,7 @@ def from_provider(
     elif provider == "azure_openai":
         try:
             import os
-            from openai import AzureOpenAI, AsyncAzureOpenAI
+            from openai import AzureOpenAI, AsyncAzureOpenAI  # type: ignore[import-not-found]
             from instructor import from_openai
 
             # Get required Azure OpenAI configuration from environment
@@ -398,7 +398,7 @@ def from_provider(
 
     elif provider == "ollama":
         try:
-            import openai
+            import openai  # type: ignore[import-not-found]
             from instructor import from_openai
 
             # Get base_url from kwargs or use default
