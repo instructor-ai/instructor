@@ -179,6 +179,13 @@ def patch(  # type: ignore
                 response_model=response_model,
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
+            if cache is not None:
+                import logging
+                logger = logging.getLogger("instructor.cache")
+
+                # Log lookup intent
+                logger.debug("[async] cache lookup: %s", key)
+
             if (cached := cache.get(key)) is not None:
                 # Expect JSON string with keys `model` and `raw`
                 import json  # local import to avoid global overhead
@@ -195,6 +202,7 @@ def patch(  # type: ignore
                 obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
                 if raw_json is not None:
                     setattr(obj, "_raw_response", raw_json)
+                logger.debug("[async] cache hit: %s", key)
                 return obj  # type: ignore[return-value]
 
         response = await retry_async(
@@ -226,6 +234,7 @@ def patch(  # type: ignore
                         else None,
                     }
                     cache.set(key, json.dumps(payload), ttl=cache_ttl)
+                    logger.debug("[async] cache store: %s", key)
             except ModuleNotFoundError:
                 pass
         return response  # type: ignore
@@ -268,6 +277,11 @@ def patch(  # type: ignore
                 response_model=response_model,
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
+            if cache is not None:
+                import logging
+                logger = logging.getLogger("instructor.cache")
+                logger.debug("[sync] cache lookup: %s", key)
+
             cached_value = cache.get(key)
             if cached_value is not None:
                 # Expect JSON string with keys `model` and `raw`
@@ -284,6 +298,7 @@ def patch(  # type: ignore
                 obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
                 if raw_json is not None:
                     setattr(obj, "_raw_response", raw_json)
+                logger.debug("[sync] cache hit: %s", key)
                 return obj  # type: ignore[return-value]
 
         response = retry_sync(
@@ -315,6 +330,7 @@ def patch(  # type: ignore
                         else None,
                     }
                     cache.set(key, json.dumps(payload), ttl=cache_ttl)
+                    logger.debug("[sync] cache store: %s", key)
             except ModuleNotFoundError:
                 pass
         return response  # type: ignore
