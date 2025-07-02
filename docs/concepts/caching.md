@@ -35,6 +35,38 @@ assert first is second               # second call was served from cache
 See the blog post for a deep dive and a feature matrix of what is (and
 is not yet) cached.
 
+### Cache-key design
+
+Under the hood Instructor generates a **deterministic** key for every
+ call using `instructor.cache.make_cache_key`.
+
+Components that influence the key:
+
+| Part                        | Why it matters                               |
+|-----------------------------|----------------------------------------------|
+| `model`                     | Different model names can yield different answers |
+| `messages` / `contents`     | The full chat history is hashed              |
+| `mode`                      | JSON vs. TOOLS vs. RESPONSES changes formatting |
+| `response_model` schema     | The entire `model_json_schema()` is included so **any** change in field names, types or *descriptions* busts the cache automatically |
+
+The function returns a SHA-256 hex digest; its length is constant regardless
+of prompt size, so it is safe to use as a Redis key, file path, etc.
+
+```python
+from instructor.cache import make_cache_key
+
+key = make_cache_key(
+    messages=[{"role": "user", "content": "hello"}],
+    model="gpt-3.5-turbo",
+    response_model=User,
+    mode="TOOLS",
+)
+print(key)  # → 9b8f5e2c8c9e…
+```
+
+If you need custom behaviour (e.g. ignoring certain prompt fields) you can
+write your own helper and pass a derived key into a bespoke cache adapter.
+
 ## 1. `functools.cache` for Simple In-Memory Caching
 
 **When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application where we don't need to persist the cache between sessions.
