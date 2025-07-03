@@ -811,6 +811,11 @@ def update_genai_kwargs(
             }
         )
 
+    # Handle thinking_config parameter - pass through directly since it's already in genai format
+    thinking_config = new_kwargs.pop("thinking_config", None)
+    if thinking_config is not None:
+        base_config["thinking_config"] = thinking_config
+
     return base_config
 
 
