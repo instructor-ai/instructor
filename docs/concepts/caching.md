@@ -30,10 +30,24 @@ class User(BaseModel):
 first = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
 second = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
 assert first is second               # second call was served from cache
+
++`cache_ttl` per-call override
+
+Pass `cache_ttl=<seconds>` alongside `cache=` if you want a result to
+expire automatically:
+
+```python
+client.create(
+    messages=[{"role": "user", "content": "Hi"}],
+    response_model=User,
+    cache=cache,
+    cache_ttl=3600,   # 1 hour
+)
 ```
 
-See the blog post for a deep dive and a feature matrix of what is (and
-is not yet) cached.
+If the underlying cache backend supports TTL (e.g. `DiskCache` does), the
+entry will be evicted after the specified duration.  For `AutoCache` the
+parameter is ignored.
 
 ### Cache-key design
 

@@ -28,6 +28,7 @@ import threading
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from typing import Any
+import logging
 
 # The project already depends on pydantic; type checker in some
 # environments might not have its stubs – silence if missing.
@@ -37,7 +38,6 @@ __all__ = [
     "BaseCache",
     "AutoCache",
     "DiskCache",
-    "RedisCache",
     "make_cache_key",
 ]
 
@@ -111,16 +111,6 @@ def _import_diskcache():  # pragma: no cover – only executed when requested
     return diskcache  # noqa: WPS331 – re-export helper
 
 
-def _import_redis():  # pragma: no cover – only executed when requested
-    import importlib  # type: ignore[]
-
-    if importlib.util.find_spec("redis") is None:  # type: ignore[attr-defined]
-        raise ImportError("redis is not installed.  Install it with `pip install redis`.")
-    import redis  # type: ignore
-
-    return redis
-
-
 class DiskCache(BaseCache):
     """Wrapper around `diskcache.Cache`."""
 
@@ -136,24 +126,6 @@ class DiskCache(BaseCache):
             self._cache.set(key, value)
         else:
             self._cache.set(key, value, expire=ttl)
-
-
-class RedisCache(BaseCache):
-    """Thin wrapper around `redis.Redis`.  Works with sync API for now."""
-
-    def __init__(self, host: str = "localhost", port: int = 6379, db: int = 0, **kwargs: Any):
-        redis = _import_redis()
-        self._r = redis.Redis(host=host, port=port, db=db, **kwargs)
-
-    def get(self, key: str) -> Any | None:  # noqa: ANN401
-        value = self._r.get(key)
-        return value  # type: ignore[return-value]
-
-    def set(self, key: str, value: Any, ttl: int | None = None) -> None:  # noqa: ANN401
-        if ttl is None:
-            self._r.set(key, value)
-        else:
-            self._r.setex(key, ttl, value)
 
 
 # -------------------------------------------------------------------------
@@ -189,3 +161,45 @@ def make_cache_key(*, messages: Any, model: str | None, response_model: type[Bas
     # string so dumps never fails.
     data = json.dumps(payload, sort_keys=True, default=str)
     return hashlib.sha256(data.encode()).hexdigest()
+
+
+# -------------------------------------------------------------------------
+# Convenience helpers used by patch.py to avoid duplication
+# -------------------------------------------------------------------------
+
+logger = logging.getLogger("instructor.cache")
+
+
+def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseModel]):  # noqa: ANN201
+    """Return parsed model if *key* exists in *cache* else None."""
+    cached = cache.get(key)
+    if cached is None:
+        return None
+    import json
+
+    try:
+        data = json.loads(cached)
+        model_json = data["model"]
+        raw_json = data.get("raw")
+    except Exception:  # noqa: BLE001
+        model_json = cached
+        raw_json = None
+
+    obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
+    if raw_json is not None:
+        setattr(obj, "_raw_response", raw_json)
+    logger.debug("cache hit: %s", key)
+    return obj
+
+
+def store_cached_response(cache: BaseCache, key: str, model: BaseModel, ttl: int | None = None) -> None:  # noqa: D401
+    """Serialize *model* and optional raw response to JSON and cache it."""
+    import json
+
+    raw_resp = getattr(model, "_raw_response", None)
+    payload = {
+        "model": model.model_dump_json(),  # type: ignore[attr-defined]
+        "raw": getattr(raw_resp, "model_dump_json", lambda: raw_resp)() if raw_resp is not None else None,
+    }
+    cache.set(key, json.dumps(payload), ttl=ttl)
+    logger.debug("cache store: %s", key)

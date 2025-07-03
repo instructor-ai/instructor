@@ -156,7 +156,7 @@ def patch(  # type: ignore
         # -----------------------------
         # Cache handling (async path)
         # -----------------------------
-        from instructor.cache import BaseCache, make_cache_key  # local import to avoid cycle
+        from instructor.cache import BaseCache, make_cache_key, load_cached_response
 
         cache: BaseCache | None = kwargs.pop("cache", None)  # type: ignore[assignment]
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
@@ -180,30 +180,9 @@ def patch(  # type: ignore
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
             if cache is not None:
-                import logging
-                logger = logging.getLogger("instructor.cache")
-
-                # Log lookup intent
-                logger.debug("[async] cache lookup: %s", key)
-
-            if (cached := cache.get(key)) is not None:
-                # Expect JSON string with keys `model` and `raw`
-                import json  # local import to avoid global overhead
-
-                try:
-                    data = json.loads(cached)
-                    model_json = data["model"]
-                    raw_json = data.get("raw")
-                except Exception:
-                    # Fallback to previous single-value format
-                    model_json = cached
-                    raw_json = None
-
-                obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
-                if raw_json is not None:
-                    setattr(obj, "_raw_response", raw_json)
-                logger.debug("[async] cache hit: %s", key)
-                return obj  # type: ignore[return-value]
+                obj = load_cached_response(cache, key, response_model)
+                if obj is not None:
+                    return obj  # type: ignore[return-value]
 
         response = await retry_async(
             func=func,  # type:ignore
@@ -224,17 +203,8 @@ def patch(  # type: ignore
 
                 if isinstance(response, _BM):
                     # mypy: ignore-next-line
-                    import json
-
-                    raw_resp = getattr(response, "_raw_response", None)
-                    payload = {
-                        "model": response.model_dump_json(),  # type: ignore[attr-defined]
-                        "raw": getattr(raw_resp, "model_dump_json", lambda: raw_resp)()
-                        if raw_resp is not None
-                        else None,
-                    }
-                    cache.set(key, json.dumps(payload), ttl=cache_ttl)
-                    logger.debug("[async] cache store: %s", key)
+                    from instructor.cache import store_cached_response
+                    store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:
                 pass
         return response  # type: ignore
@@ -253,7 +223,7 @@ def patch(  # type: ignore
         # -----------------------------
         # Cache handling (sync path)
         # -----------------------------
-        from instructor.cache import BaseCache, make_cache_key  # local import to avoid cycle
+        from instructor.cache import BaseCache, make_cache_key, load_cached_response
 
         cache: BaseCache | None = kwargs.pop("cache", None)  # type: ignore[assignment]
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
@@ -278,28 +248,9 @@ def patch(  # type: ignore
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
             if cache is not None:
-                import logging
-                logger = logging.getLogger("instructor.cache")
-                logger.debug("[sync] cache lookup: %s", key)
-
-            cached_value = cache.get(key)
-            if cached_value is not None:
-                # Expect JSON string with keys `model` and `raw`
-                import json
-
-                try:
-                    data = json.loads(cached_value)
-                    model_json = data["model"]
-                    raw_json = data.get("raw")
-                except Exception:
-                    model_json = cached_value
-                    raw_json = None
-
-                obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
-                if raw_json is not None:
-                    setattr(obj, "_raw_response", raw_json)
-                logger.debug("[sync] cache hit: %s", key)
-                return obj  # type: ignore[return-value]
+                obj = load_cached_response(cache, key, response_model)
+                if obj is not None:
+                    return obj  # type: ignore[return-value]
 
         response = retry_sync(
             func=func,  # type: ignore
@@ -320,17 +271,8 @@ def patch(  # type: ignore
 
                 if isinstance(response, _BM):
                     # mypy: ignore-next-line
-                    import json
-
-                    raw_resp = getattr(response, "_raw_response", None)
-                    payload = {
-                        "model": response.model_dump_json(),  # type: ignore[attr-defined]
-                        "raw": getattr(raw_resp, "model_dump_json", lambda: raw_resp)()
-                        if raw_resp is not None
-                        else None,
-                    }
-                    cache.set(key, json.dumps(payload), ttl=cache_ttl)
-                    logger.debug("[sync] cache store: %s", key)
+                    from instructor.cache import store_cached_response
+                    store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:
                 pass
         return response  # type: ignore
