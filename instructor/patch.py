@@ -160,7 +160,9 @@ def patch(  # type: ignore
 
         cache: BaseCache | None = kwargs.pop("cache", None)  # type: ignore[assignment]
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
-        cache_ttl: int | None = cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
+        cache_ttl: int | None = (
+            cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
+        )
 
         context = handle_context(context, validation_context)
 
@@ -179,10 +181,9 @@ def patch(  # type: ignore
                 response_model=response_model,
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
-            if cache is not None:
-                obj = load_cached_response(cache, key, response_model)
-                if obj is not None:
-                    return obj  # type: ignore[return-value]
+            obj = load_cached_response(cache, key, response_model)
+            if obj is not None:
+                return obj  # type: ignore[return-value]
 
         response = await retry_async(
             func=func,  # type:ignore
@@ -204,6 +205,7 @@ def patch(  # type: ignore
                 if isinstance(response, _BM):
                     # mypy: ignore-next-line
                     from instructor.cache import store_cached_response
+
                     store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:
                 pass
@@ -227,7 +229,9 @@ def patch(  # type: ignore
 
         cache: BaseCache | None = kwargs.pop("cache", None)  # type: ignore[assignment]
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
-        cache_ttl: int | None = cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
+        cache_ttl: int | None = (
+            cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
+        )
 
         context = handle_context(context, validation_context)
         # print(f"instructor.patch: patched_function {func.__name__}")
@@ -247,10 +251,9 @@ def patch(  # type: ignore
                 response_model=response_model,
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
-            if cache is not None:
-                obj = load_cached_response(cache, key, response_model)
-                if obj is not None:
-                    return obj  # type: ignore[return-value]
+            obj = load_cached_response(cache, key, response_model)
+            if obj is not None:
+                return obj  # type: ignore[return-value]
 
         response = retry_sync(
             func=func,  # type: ignore
@@ -272,6 +275,7 @@ def patch(  # type: ignore
                 if isinstance(response, _BM):
                     # mypy: ignore-next-line
                     from instructor.cache import store_cached_response
+
                     store_cached_response(cache, key, response, ttl=cache_ttl)
             except ModuleNotFoundError:
                 pass

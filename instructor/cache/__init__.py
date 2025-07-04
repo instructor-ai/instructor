@@ -53,7 +53,12 @@ class BaseCache(ABC):
         """Return *None* to indicate a cache miss."""
 
     @abstractmethod
-    def set(self, key: str, value: Any, ttl: int | None = None) -> None:  # noqa: ANN401
+    def set(
+        self,
+        key: str,
+        value: Any,
+        ttl: int | None = None,  # noqa: ARG002
+    ) -> None:  # noqa: ANN401
         """Store *value* under *key*.
 
         ``ttl`` is time-to-live in **seconds**.  Implementations *may*
@@ -84,7 +89,12 @@ class AutoCache(BaseCache):
             self._cache[key] = value
             return value
 
-    def set(self, key: str, value: Any, ttl: int | None = None) -> None:  # noqa: ANN401
+    def set(
+        self,
+        key: str,
+        value: Any,
+        ttl: int | None = None,  # noqa: ARG002
+    ) -> None:  # noqa: ANN401
         # *ttl* is ignored for the in-process cache.
         with self._lock:
             if key in self._cache:
@@ -99,6 +109,7 @@ class AutoCache(BaseCache):
 # Optional back-ends – imported lazily so users do not need extra deps
 # -------------------------------------------------------------------------
 
+
 def _import_diskcache():  # pragma: no cover – only executed when requested
     import importlib  # type: ignore[]
 
@@ -108,7 +119,7 @@ def _import_diskcache():  # pragma: no cover – only executed when requested
         )
     import diskcache  # type: ignore
 
-    return diskcache  # noqa: WPS331 – re-export helper
+    return diskcache
 
 
 class DiskCache(BaseCache):
@@ -132,7 +143,14 @@ class DiskCache(BaseCache):
 # Cache-key helper
 # -------------------------------------------------------------------------
 
-def make_cache_key(*, messages: Any, model: str | None, response_model: type[BaseModel] | None, mode: str | None = None) -> str:  # noqa: ANN401
+
+def make_cache_key(
+    *,
+    messages: Any,
+    model: str | None,
+    response_model: type[BaseModel] | None,
+    mode: str | None = None,
+) -> str:  # noqa: ANN401
     """Compute a *deterministic* cache key.
 
     The key space uses SHA-256("json payload") to keep the final length
@@ -187,19 +205,31 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
 
     obj = response_model.model_validate_json(model_json)  # type: ignore[arg-type]
     if raw_json is not None:
-        setattr(obj, "_raw_response", raw_json)
+        # `_raw_response` is an internal attribute used by Instructor; it may not
+        # be declared on the Pydantic model type.
+        obj._raw_response = raw_json  # type: ignore[attr-defined]
     logger.debug("cache hit: %s", key)
     return obj
 
 
-def store_cached_response(cache: BaseCache, key: str, model: BaseModel, ttl: int | None = None) -> None:  # noqa: D401
+def store_cached_response(
+    cache: BaseCache, key: str, model: BaseModel, ttl: int | None = None
+) -> None:  # noqa: D401
     """Serialize *model* and optional raw response to JSON and cache it."""
     import json
 
     raw_resp = getattr(model, "_raw_response", None)
+    if raw_resp is not None:
+        try:
+            raw_json = raw_resp.model_dump_json()  # type: ignore[attr-defined]
+        except Exception:  # noqa: BLE001
+            raw_json = str(raw_resp)
+    else:
+        raw_json = None
+
     payload = {
         "model": model.model_dump_json(),  # type: ignore[attr-defined]
-        "raw": getattr(raw_resp, "model_dump_json", lambda: raw_resp)() if raw_resp is not None else None,
+        "raw": raw_json,
     }
     cache.set(key, json.dumps(payload), ttl=ttl)
     logger.debug("cache store: %s", key)

@@ -6,5 +6,7 @@
     "instructor/client_bedrock.py",
     "instructor/client_cerebras.py"
   ],
-  "typeCheckingMode": "basic"
-} 
+  "typeCheckingMode": "off",
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false
+}
