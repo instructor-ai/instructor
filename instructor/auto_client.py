@@ -33,7 +33,7 @@ supported_providers = [
 def from_provider(
     model: KnownModelName,
     async_client: Literal[True] = True,
-    cache: BaseCache | None = None,
+    cache: BaseCache | None = None,  # noqa: ARG001
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -42,27 +42,33 @@ def from_provider(
 def from_provider(
     model: KnownModelName,
     async_client: Literal[False] = False,
-    cache: BaseCache | None = None,
+    cache: BaseCache | None = None,  # noqa: ARG001
     **kwargs: Any,
 ) -> Instructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[True] = True, cache: BaseCache | None = None, **kwargs: Any
+    model: str,
+    async_client: Literal[True] = True,
+    cache: BaseCache | None = None,  # noqa: ARG001
+    **kwargs: Any,
 ) -> AsyncInstructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[False] = False, cache: BaseCache | None = None, **kwargs: Any
+    model: str,
+    async_client: Literal[False] = False,
+    cache: BaseCache | None = None,  # noqa: ARG001
+    **kwargs: Any,
 ) -> Instructor: ...
 
 
 def from_provider(
     model: Union[str, KnownModelName],  # noqa: UP007
     async_client: bool = False,
-    cache: BaseCache | None = None,
+    cache: BaseCache | None = None,  # noqa: ARG001
     mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
     **kwargs: Any,
 ) -> Union[Instructor, AsyncInstructor]:  # noqa: UP007
@@ -134,11 +140,14 @@ def from_provider(
 
             # Get required Azure OpenAI configuration from environment
             api_key = kwargs.pop("api_key", os.environ.get("AZURE_OPENAI_API_KEY"))
-            azure_endpoint = kwargs.pop("azure_endpoint", os.environ.get("AZURE_OPENAI_ENDPOINT"))
+            azure_endpoint = kwargs.pop(
+                "azure_endpoint", os.environ.get("AZURE_OPENAI_ENDPOINT")
+            )
             api_version = kwargs.pop("api_version", "2024-02-01")
 
             if not api_key:
                 from instructor.exceptions import ConfigurationError
+
                 raise ConfigurationError(
                     "AZURE_OPENAI_API_KEY is not set. "
                     "Set it with `export AZURE_OPENAI_API_KEY=<your-api-key>` or pass it as kwarg api_key=<your-api-key>"
@@ -146,6 +155,7 @@ def from_provider(
 
             if not azure_endpoint:
                 from instructor.exceptions import ConfigurationError
+
                 raise ConfigurationError(
                     "AZURE_OPENAI_ENDPOINT is not set. "
                     "Set it with `export AZURE_OPENAI_ENDPOINT=<your-endpoint>` or pass it as kwarg azure_endpoint=<your-endpoint>"
