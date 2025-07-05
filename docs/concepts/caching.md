@@ -5,7 +5,7 @@ description: Explore caching methods in Python with functools, diskcache, and Re
 
 If you want to learn more about concepts in caching and how to use them in your own projects, check out our [blog](../blog/posts/caching.md) on the topic.
 
-## Built-in caching in Instructor (v2.5 and later)
+## Built-in caching in Instructor (v1.9.1 and later)
 
 Instructor now supports drop-in caching for every client.  Pass a cache
 adapter when you create the client – the cache parameter automatically flows
