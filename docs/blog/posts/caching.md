@@ -33,7 +33,6 @@ tags:
 
 > Instructor makes working with language models easy, but they are still computationally expensive. Smart caching strategies can reduce costs by up to 90% while dramatically improving response times.
 
-**NEW**: All strategies in this guide are now **validated with working examples** that demonstrate real performance improvements of 200,000x+ and cost savings of $420-4,800/month.
 
 > **Update (June 2025)** – Instructor now ships *native* caching support
 > out-of-the-box.  Pass a cache adapter directly when you create a
