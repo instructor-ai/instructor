@@ -4,10 +4,10 @@ This example demonstrates the new built-in caching functionality in Instructor.
 
 ## Files
 
-- `run_real.py` - Complete demo with real API calls showing all caching features
+- `run.py` - Main example showing all caching features (with mock calls for quick testing)
+- `run_real.py` - Complete demo with real API calls
 - `test_simple.py` - Unit tests for cache components without API calls
-- `test_anthropic.py` - Tests with Anthropic provider to verify defensive caching
-- `test_mock.py` - Mock-based tests (for development)
+- `test_anthropic.py` - Tests with Anthropic provider to verify caching works across providers
 
 ## Features Demonstrated
 

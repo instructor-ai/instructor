@@ -79,7 +79,7 @@ def from_provider(
               (e.g., "openai/gpt-4", "anthropic/claude-3-sonnet", "google/gemini-pro")
         async_client: Whether to return an async client
         cache: Optional cache adapter (e.g., ``AutoCache`` or ``RedisCache``)
-               to enable transparent response caching. Automatically flows through 
+               to enable transparent response caching. Automatically flows through
                **kwargs to all provider implementations.
         mode: Override the default mode for the provider. If not specified, uses the
               recommended default mode for each provider.
@@ -96,22 +96,22 @@ def from_provider(
     Examples:
         >>> import instructor
         >>> from instructor.cache import AutoCache
-        >>> 
+        >>>
         >>> # Basic usage
         >>> client = instructor.from_provider("openai/gpt-4")
         >>> client = instructor.from_provider("anthropic/claude-3-sonnet")
-        >>> 
+        >>>
         >>> # With caching
         >>> cache = AutoCache(maxsize=1000)
         >>> client = instructor.from_provider("openai/gpt-4", cache=cache)
-        >>> 
-        >>> # Async clients  
+        >>>
+        >>> # Async clients
         >>> async_client = instructor.from_provider("openai/gpt-4", async_client=True)
     """
     # Add cache to kwargs if provided so it flows through to provider functions
     if cache is not None:
-        kwargs['cache'] = cache
-    
+        kwargs["cache"] = cache
+
     try:
         provider, model_name = model.split("/", 1)
     except ValueError:

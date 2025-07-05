@@ -210,13 +210,19 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
         try:
             # Try to deserialize as JSON and reconstruct object structure
             import json
+
             raw_data = json.loads(raw_json)
-            
+
             # Check if this looks like a Pydantic-serialized object (has proper structure)
-            if isinstance(raw_data, dict) and any(key in raw_data for key in ['id', 'object', 'model', 'choices']):
+            if isinstance(raw_data, dict) and any(
+                key in raw_data for key in ["id", "object", "model", "choices"]
+            ):
                 # Looks like a proper completion object - use SimpleNamespace reconstruction
                 from types import SimpleNamespace
-                obj._raw_response = json.loads(raw_json, object_hook=lambda d: SimpleNamespace(**d))  # type: ignore[attr-defined]
+
+                obj._raw_response = json.loads(
+                    raw_json, object_hook=lambda d: SimpleNamespace(**d)
+                )  # type: ignore[attr-defined]
                 logger.debug("Restored raw response as SimpleNamespace object")
             else:
                 # Plain dict/list - keep as-is
@@ -225,7 +231,9 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
         except (json.JSONDecodeError, TypeError):
             # Not valid JSON - probably string fallback
             obj._raw_response = raw_json  # type: ignore[attr-defined]
-            logger.debug("Restored raw response as string (original could not be fully serialized)")
+            logger.debug(
+                "Restored raw response as string (original could not be fully serialized)"
+            )
     logger.debug("cache hit: %s", key)
     return obj
 
@@ -246,8 +254,11 @@ def store_cached_response(
             # Fallback for non-Pydantic responses (custom providers, plain dicts, etc.)
             try:
                 import json
+
                 raw_json = json.dumps(raw_resp, default=str)
-                logger.debug("Cached raw response as plain JSON (provider may not support full reconstruction)")
+                logger.debug(
+                    "Cached raw response as plain JSON (provider may not support full reconstruction)"
+                )
             except (TypeError, ValueError):
                 # Final fallback - string representation
                 raw_json = str(raw_resp)
