@@ -70,6 +70,32 @@ tags:
 1. **Model** – we call `model_dump_json()` which produces a compact, loss-less JSON string.  On a cache hit we re-hydrate with `model_validate_json()` so you get the same `BaseModel` subclass instance.
 2. **Raw completion** – Instructor attaches the original `ChatCompletion` (or provider-specific) object to the model as `_raw_response`.  We serialise this object too (when possible with `model_dump_json()`, otherwise a plain `str()` fallback) and restore it on a cache hit so `create_with_completion()` behaves identically.
 
+#### Raw Response Reconstruction
+
+For raw completion objects, we use a `SimpleNamespace` trick to reconstruct the original object structure:
+
+```python
+# When caching:
+raw_json = completion.model_dump_json()  # Serialize to JSON
+
+# When restoring from cache:
+import json
+from types import SimpleNamespace
+restored = json.loads(raw_json, object_hook=lambda d: SimpleNamespace(**d))
+```
+
+This approach allows us to restore the original dot-notation access patterns (e.g., `completion.usage.total_tokens`) without requiring the original class definitions. The `SimpleNamespace` objects behave identically to the original completion objects for attribute access while being much simpler to reconstruct from JSON.
+
+#### Defensive Handling
+
+The cache implementation includes multiple fallback strategies for different provider response types:
+
+1. **Pydantic models** (OpenAI, Anthropic) - Use `model_dump_json()` for perfect serialization
+2. **Plain dictionaries** - Use standard `json.dumps()` with `default=str` fallback  
+3. **Unpickleable objects** - Fall back to string representation with a warning
+
+This ensures the cache works reliably across all providers, even if they don't follow the same response object patterns.
+
 ### Streaming limitations
 
 The current implementation opts **not** to cache streaming helpers (`create_partial`, `create_iterable`, or `stream=True`).  Replaying a realistic token-stream requires a dedicated design which is coming in a future release.  Until then, those calls always reach the provider.

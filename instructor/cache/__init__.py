@@ -207,7 +207,25 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
     if raw_json is not None:
         # `_raw_response` is an internal attribute used by Instructor; it may not
         # be declared on the Pydantic model type.
-        obj._raw_response = raw_json  # type: ignore[attr-defined]
+        try:
+            # Try to deserialize as JSON and reconstruct object structure
+            import json
+            raw_data = json.loads(raw_json)
+            
+            # Check if this looks like a Pydantic-serialized object (has proper structure)
+            if isinstance(raw_data, dict) and any(key in raw_data for key in ['id', 'object', 'model', 'choices']):
+                # Looks like a proper completion object - use SimpleNamespace reconstruction
+                from types import SimpleNamespace
+                obj._raw_response = json.loads(raw_json, object_hook=lambda d: SimpleNamespace(**d))  # type: ignore[attr-defined]
+                logger.debug("Restored raw response as SimpleNamespace object")
+            else:
+                # Plain dict/list - keep as-is
+                obj._raw_response = raw_data  # type: ignore[attr-defined]
+                logger.debug("Restored raw response as plain data structure")
+        except (json.JSONDecodeError, TypeError):
+            # Not valid JSON - probably string fallback
+            obj._raw_response = raw_json  # type: ignore[attr-defined]
+            logger.debug("Restored raw response as string (original could not be fully serialized)")
     logger.debug("cache hit: %s", key)
     return obj
 
@@ -221,9 +239,22 @@ def store_cached_response(
     raw_resp = getattr(model, "_raw_response", None)
     if raw_resp is not None:
         try:
+            # Try Pydantic model serialization first (OpenAI, Anthropic, etc.)
             raw_json = raw_resp.model_dump_json()  # type: ignore[attr-defined]
-        except Exception:  # noqa: BLE001
-            raw_json = str(raw_resp)
+            logger.debug("Cached raw response as Pydantic JSON")
+        except (AttributeError, TypeError) as e:
+            # Fallback for non-Pydantic responses (custom providers, plain dicts, etc.)
+            try:
+                import json
+                raw_json = json.dumps(raw_resp, default=str)
+                logger.debug("Cached raw response as plain JSON (provider may not support full reconstruction)")
+            except (TypeError, ValueError):
+                # Final fallback - string representation
+                raw_json = str(raw_resp)
+                logger.warning(
+                    "Raw response could not be serialized as JSON, using string fallback. "
+                    "create_with_completion may not fully restore original object structure."
+                )
     else:
         raw_json = None
 

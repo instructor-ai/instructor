@@ -68,7 +68,7 @@ def from_provider(
 def from_provider(
     model: Union[str, KnownModelName],  # noqa: UP007
     async_client: bool = False,
-    cache: BaseCache | None = None,  # noqa: ARG001
+    cache: BaseCache | None = None,
     mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
     **kwargs: Any,
 ) -> Union[Instructor, AsyncInstructor]:  # noqa: UP007
@@ -79,10 +79,12 @@ def from_provider(
               (e.g., "openai/gpt-4", "anthropic/claude-3-sonnet", "google/gemini-pro")
         async_client: Whether to return an async client
         cache: Optional cache adapter (e.g., ``AutoCache`` or ``RedisCache``)
-               to enable transparent response caching.
+               to enable transparent response caching. Automatically flows through 
+               **kwargs to all provider implementations.
         mode: Override the default mode for the provider. If not specified, uses the
               recommended default mode for each provider.
-        **kwargs: Additional arguments passed to the client constructor
+        **kwargs: Additional arguments passed to the provider client functions.
+                 This includes the cache parameter and any provider-specific options.
 
     Returns:
         Instructor or AsyncInstructor instance
@@ -93,15 +95,23 @@ def from_provider(
 
     Examples:
         >>> import instructor
-        >>> # Sync clients
+        >>> from instructor.cache import AutoCache
+        >>> 
+        >>> # Basic usage
         >>> client = instructor.from_provider("openai/gpt-4")
-        >>> client = instructor.from_provider("azure_openai/gpt-4")
         >>> client = instructor.from_provider("anthropic/claude-3-sonnet")
-        >>> client = instructor.from_provider("ollama/llama2")
-        >>> # Async clients
+        >>> 
+        >>> # With caching
+        >>> cache = AutoCache(maxsize=1000)
+        >>> client = instructor.from_provider("openai/gpt-4", cache=cache)
+        >>> 
+        >>> # Async clients  
         >>> async_client = instructor.from_provider("openai/gpt-4", async_client=True)
-        >>> async_client = instructor.from_provider("azure_openai/gpt-4", async_client=True)
     """
+    # Add cache to kwargs if provided so it flows through to provider functions
+    if cache is not None:
+        kwargs['cache'] = cache
+    
     try:
         provider, model_name = model.split("/", 1)
     except ValueError:
