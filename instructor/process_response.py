@@ -397,7 +397,7 @@ def handle_json_modes(
     elif mode == Mode.JSON_SCHEMA:
         new_kwargs["response_format"] = {
             "type": "json_schema",
-            "schema": {
+            "json_schema": {
                 "name": response_model.__name__,
                 "schema": response_model.model_json_schema(),
             },
