@@ -55,6 +55,7 @@ class Provider(Enum):
     CEREBRAS = "cerebras"
     FIREWORKS = "fireworks"
     WRITER = "writer"
+    XAI = "xai"
     UNKNOWN = "unknown"
     BEDROCK = "bedrock"
     PERPLEXITY = "perplexity"
@@ -90,6 +91,8 @@ def get_provider(base_url: str) -> Provider:
         return Provider.WRITER
     elif "perplexity" in str(base_url):
         return Provider.PERPLEXITY
+    elif "x.ai" in str(base_url) or "xai" in str(base_url):
+        return Provider.XAI
     elif "openrouter" in str(base_url):
         return Provider.OPENROUTER
     return Provider.UNKNOWN
@@ -774,7 +777,7 @@ def update_genai_kwargs(
     """
     Update keyword arguments for google.genai package from OpenAI format.
     """
-    from google.genai.types import HarmCategory
+    from google.genai.types import HarmCategory, HarmBlockThreshold
 
     new_kwargs = kwargs.copy()
 
@@ -798,16 +801,25 @@ def update_genai_kwargs(
                 base_config[gemini_key] = val
 
     safety_settings = new_kwargs.pop("safety_settings", {})
+    base_config["safety_settings"] = []
 
-    if safety_settings:
-        base_config["safety_settings"] = [
+    # Filter out image related harm categories which are not
+    # supported for text based models
+    supported_categories = [
+        c
+        for c in HarmCategory
+        if c != HarmCategory.HARM_CATEGORY_UNSPECIFIED
+        and not c.name.startswith("HARM_CATEGORY_IMAGE_")
+    ]
+
+    for category in supported_categories:
+        threshold = safety_settings.get(category, HarmBlockThreshold.OFF)
+        base_config["safety_settings"].append(
             {
                 "category": category,
                 "threshold": threshold,
             }
-            for category, threshold in safety_settings.items()
-            if category != HarmCategory.HARM_CATEGORY_UNSPECIFIED
-        ]
+        )
 
     return base_config
 

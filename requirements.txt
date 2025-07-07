@@ -86,7 +86,7 @@ huggingface-hub==0.27.0
 idna==3.10
 importlib-metadata==8.5.0
 iniconfig==2.0.0
--e file:///Users/ivanleo/Documents/coding/instructor
+-e .
 ipykernel==6.29.5
 ipython==8.18.1
 jedi==0.19.2
