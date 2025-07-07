@@ -3,6 +3,8 @@ from pydantic import BaseModel
 import instructor
 from .util import models, modes
 from itertools import product
+from google import genai
+from google.genai import types
 
 
 class User(BaseModel):
