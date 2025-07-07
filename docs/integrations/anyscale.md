@@ -28,26 +28,19 @@ Here's how to extract structured data from Anyscale models:
 ```python
 import os
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 
 # Initialize the client with Anyscale base URL
-client = instructor.from_openai(
-    OpenAI(
-        base_url="https://api.endpoints.anyscale.com/v1",
-        api_key=os.environ["ANYSCALE_API_KEY"],
-    ),
+client = instructor.from_provider(
+    "anyscale/Mixtral-8x7B-Instruct-v0.1",
     mode=instructor.Mode.JSON_SCHEMA,
 )
-
-# Define your data structure
 class UserExtract(BaseModel):
     name: str
     age: int
 
 # Extract structured data
 user = client.chat.completions.create(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -56,6 +49,33 @@ user = client.chat.completions.create(
 
 print(user)
 # Output: UserExtract(name='Jason', age=25)
+```
+
+### Async Example
+
+```python
+import asyncio
+import instructor
+from pydantic import BaseModel
+
+async_client = instructor.from_provider(
+    "anyscale/Mixtral-8x7B-Instruct-v0.1",
+    async_client=True,
+    mode=instructor.Mode.JSON_SCHEMA,
+)
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+async def fetch_user():
+    return await async_client.chat.completions.create(
+        messages=[{"role": "user", "content": "Extract jason is 25 years old"}],
+        response_model=UserExtract,
+    )
+
+user = asyncio.run(fetch_user())
+print(user)
 ```
 
 ## Supported Modes

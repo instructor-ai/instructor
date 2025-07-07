@@ -15,7 +15,7 @@ Get started with Claude and Instructor for structured outputs:
 pip install "instructor[anthropic]"
 ```
 
-Once we've done so, getting started is as simple as using our `from_anthropic` method to patch the client up.
+Once we've done so, getting started is as simple as using our `from_provider` method to patch the client up.
 
 ### Basic Usage
 
@@ -45,16 +45,14 @@ class User(BaseModel):
     age: int = Field(description="The user's age in years")
     properties: List[Properties] = Field(description="List of user properties")
 
-# Initialize the client with explicit mode
-client = instructor.from_anthropic(
-    anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY")),
-    mode=instructor.Mode.ANTHROPIC_TOOLS  # Using Anthropic's tool calling API
+client = instructor.from_provider(
+    "anthropic/claude-3-haiku-20240307",
+    mode=instructor.Mode.ANTHROPIC_TOOLS
 )
 
 try:
     # Extract structured data
     user_response = client.chat.completions.create(
-        model="claude-3-haiku-20240307",  # Use latest stable model
         max_tokens=1024,
         messages=[
             {
@@ -93,6 +91,27 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 ```
 
+### Async Example
+
+```python
+import asyncio
+
+async_client = instructor.from_provider(
+    "anthropic/claude-3-haiku-20240307",
+    async_client=True,
+    mode=instructor.Mode.ANTHROPIC_TOOLS,
+)
+
+async def extract_user():
+    return await async_client.chat.completions.create(
+        messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
+        response_model=User,
+    )
+
+user = asyncio.run(extract_user())
+print(user)
+```
+
 ## Multimodal
 
 > We've provided a few different sample files for you to use to test out these new features. All examples below use these files.
@@ -129,11 +148,10 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
-client = instructor.from_anthropic(Anthropic())
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
 response = client.chat.completions.create(
-    model="claude-3-5-sonnet-20240620",
     response_model=ImageDescription,
     max_tokens=1000,
     messages=[
@@ -184,11 +202,10 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_anthropic(Anthropic())
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response = client.chat.completions.create(
-    model="claude-3-5-sonnet-20240620",
     response_model=Receipt,
     max_tokens=1000,
     messages=[
@@ -227,11 +244,10 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_anthropic(Anthropic())
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response, completion = client.chat.completions.create_with_completion(
-    model="claude-3-5-sonnet-20240620",
     response_model=Receipt,
     max_tokens=1000,
     messages=[
@@ -277,16 +293,16 @@ import os
 
 # Third-party imports
 import anthropic
-from instructor import from_anthropic
+import instructor
 from pydantic import BaseModel, Field
 
 # Set up environment (typically handled before script execution)
 # os.environ["ANTHROPIC_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
 
 # Initialize client with explicit mode
-client = from_anthropic(
-    anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY")),
-    mode=instructor.Mode.ANTHROPIC_TOOLS
+client = instructor.from_provider(
+    "anthropic/claude-3-haiku-20240307",
+    mode=instructor.Mode.ANTHROPIC_TOOLS,
 )
 
 # Define your model with proper annotations
@@ -299,7 +315,6 @@ class User(BaseModel):
 try:
     # Stream partial objects as they're generated
     for partial_user in client.chat.completions.create_partial(
-        model="claude-3-haiku-20240307",  # Use latest stable model
         messages=[
             {"role": "system", "content": "Create a detailed user profile based on the information provided."},
             {"role": "user", "content": "Create a user profile for Jason, age 25"},
@@ -327,15 +342,14 @@ import os
 
 # Third-party imports
 import anthropic
-from instructor import from_anthropic
+from instructor import from_provider
 from pydantic import BaseModel, Field
 
 # Set up environment (typically handled before script execution)
 # os.environ["ANTHROPIC_API_KEY"] = "your-api-key"  # Uncomment and replace with your API key if not set
 
 # Initialize client with explicit mode
-client = from_anthropic(
-    anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY")),
+client = from_provider(
     mode=instructor.Mode.ANTHROPIC_TOOLS
 )
 
@@ -348,7 +362,6 @@ class User(BaseModel):
 try:
     # Create an iterable of user objects
     users = client.chat.completions.create_iterable(
-        model="claude-3-haiku-20240307",  # Use latest stable model
         messages=[
             {
                 "role": "system",
@@ -418,8 +431,7 @@ class Character(BaseModel):
     description: str = Field(description="A description of the character")
 
 # Initialize client with explicit mode and prompt caching
-client = instructor.from_anthropic(
-    Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY")),
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
     mode=instructor.Mode.ANTHROPIC_TOOLS,
 )
 
@@ -432,7 +444,6 @@ try:
     for _ in range(2):
         # The first time processes the large text, subsequent calls use the cache
         resp, completion = client.chat.completions.create_with_completion(
-            model="claude-3-haiku-20240307",  # Use latest stable model
             messages=[
                 {
                     "role": "system",
@@ -494,8 +505,7 @@ class ImageAnalyzer(BaseModel):
     scene_type: str = Field(description="Type of scene shown in the images (indoor, outdoor, etc.)")
 
 # Initialize client with explicit mode and image caching enabled
-client = instructor.from_anthropic(
-    Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY")),
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
     mode=instructor.Mode.ANTHROPIC_TOOLS,
 )
 
@@ -505,7 +515,6 @@ try:
 
     # Make a request with cached images
     response = client.chat.completions.create(
-        model="claude-3-haiku-20240307",  # Use latest stable model
         response_model=ImageAnalyzer,
         messages=[
             {
@@ -560,9 +569,8 @@ class Answer(BaseModel):
 
 
 client = Anthropic()
-client = instructor.from_anthropic(client, mode=instructor.Mode.ANTHROPIC_REASONING_TOOLS)
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
 response = client.chat.completions.create(
-    model="claude-3-7-sonnet-latest",
     response_model=Answer,
     messages=[
         {

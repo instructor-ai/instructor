@@ -30,7 +30,7 @@ from pydantic import BaseModel
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # Enable instructor patches for Groq client
-client = instructor.from_groq(client)
+client = instructor.from_provider("groq/llama3-8b-8192")
 
 
 class User(BaseModel):
@@ -40,7 +40,6 @@ class User(BaseModel):
 
 # Create structured output
 user = client.chat.completions.create(
-    model="llama3-groq-70b-8192-tool-use-preview",
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -54,17 +53,15 @@ print(user)
 ### Async Example
 
 ```python
-import os
-from groq import AsyncGroq
 import instructor
 from pydantic import BaseModel
 import asyncio
 
-# Initialize with API key
-client = AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
-
-# Enable instructor patches for Groq client
-client = instructor.from_groq(client)
+# Initialize async client using provider string
+client = instructor.from_provider(
+    "groq/llama3-8b-8192",
+    async_client=True,
+)
 
 
 class User(BaseModel):
@@ -74,7 +71,6 @@ class User(BaseModel):
 
 async def extract_user():
     user = await client.chat.completions.create(
-        model="llama3-groq-70b-8192-tool-use-preview",
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -102,7 +98,7 @@ from pydantic import BaseModel
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # Enable instructor patches for Groq client
-client = instructor.from_groq(client)
+client = instructor.from_provider("groq/llama3-8b-8192")
 
 
 class Address(BaseModel):
@@ -119,7 +115,6 @@ class User(BaseModel):
 
 # Create structured output with nested objects
 user = client.chat.completions.create(
-    model="llama3-groq-70b-8192-tool-use-preview",
     messages=[
         {
             "role": "user",

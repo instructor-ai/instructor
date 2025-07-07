@@ -33,11 +33,8 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 # Initialize the client with Databricks base URL
-client = instructor.from_openai(
-    OpenAI(
-        base_url="https://your-databricks-workspace-url/serving-endpoints/your-endpoint-name/invocations",
-        api_key=os.environ["DATABRICKS_API_KEY"],
-    ),
+client = instructor.from_provider(
+    "databricks/dbrx-instruct",
     mode=instructor.Mode.TOOLS,
 )
 
@@ -48,7 +45,6 @@ class UserExtract(BaseModel):
 
 # Extract structured data
 user = client.chat.completions.create(
-    model="databricks-model", # Your model name in Databricks
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -57,6 +53,16 @@ user = client.chat.completions.create(
 
 print(user)
 # Output: UserExtract(name='Jason', age=25)
+```
+
+### Async Example
+
+```python
+async_client = instructor.from_provider(
+    "databricks/dbrx-instruct",
+    async_client=True,
+    mode=instructor.Mode.TOOLS,
+)
 ```
 
 ## Supported Modes
