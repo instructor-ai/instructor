@@ -19,7 +19,7 @@ dependencies = [
     "mkdocs-material>=9.5.49",
 ]
 name = "instructor"
-version = "1.9.0"
+version = "1.9.1"
 description = "structured outputs for llm"
 readme = "README.md"
 

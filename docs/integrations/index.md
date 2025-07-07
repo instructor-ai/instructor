@@ -35,7 +35,7 @@ Learn how to integrate Instructor with various AI model providers. These compreh
     [:octicons-arrow-right-16: Cerebras](./cerebras.md)      ·
     [:octicons-arrow-right-16: Writer](./writer.md)          ·
     [:octicons-arrow-right-16: Perplexity](./perplexity.md)
-    [:octicons-arrow-right-16: Sambanova](./sambanova.md)
+    [:octicons-arrow-right-16: SambaNova](./sambanova.md)
 
 - :material-open-source-initiative: **Open Source**
 
