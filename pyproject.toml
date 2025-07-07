@@ -57,6 +57,7 @@ dev = [
     "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
     "pytest-examples>=0.0.15",
+    "python-dotenv>=1.0.1",
 ]
 docs = [
     "mkdocs<2.0.0,>=1.6.1",
@@ -115,6 +116,7 @@ dev = [
     "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
     "pytest-examples>=0.0.15",
+    "python-dotenv>=1.0.1",
 ]
 docs = [
     "mkdocs<2.0.0,>=1.4.3",

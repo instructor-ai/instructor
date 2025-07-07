@@ -774,7 +774,7 @@ def update_genai_kwargs(
     """
     Update keyword arguments for google.genai package from OpenAI format.
     """
-    from google.genai.types import HarmCategory
+    from google.genai.types import HarmCategory, HarmBlockThreshold
 
     new_kwargs = kwargs.copy()
 
@@ -798,16 +798,18 @@ def update_genai_kwargs(
                 base_config[gemini_key] = val
 
     safety_settings = new_kwargs.pop("safety_settings", {})
+    base_config["safety_settings"] = []
 
-    if safety_settings:
-        base_config["safety_settings"] = [
+    for category in HarmCategory:
+        if category == HarmCategory.HARM_CATEGORY_UNSPECIFIED:
+            continue
+        threshold = safety_settings.get(category, HarmBlockThreshold.OFF)
+        base_config["safety_settings"].append(
             {
                 "category": category,
                 "threshold": threshold,
             }
-            for category, threshold in safety_settings.items()
-            if category != HarmCategory.HARM_CATEGORY_UNSPECIFIED
-        ]
+        )
 
     return base_config
 
