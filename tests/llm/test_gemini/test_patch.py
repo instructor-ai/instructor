@@ -2,7 +2,6 @@ from itertools import product
 from pydantic import BaseModel, field_validator
 import pytest
 import instructor
-from google import genai
 
 from .util import models, modes
 
@@ -12,17 +11,19 @@ class UserExtract(BaseModel):
     age: int
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_runmodel(model, mode):
-    client = instructor.from_genai(
-        genai.Client(model=model),
-        mode=mode,
-        system_instruction="You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information.",
-    )
-    model = client.chat.completions.create(
+async def test_runmodel(model, mode):
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=True)
+    model = await client.chat.completions.create(
+        model=model,
         response_model=UserExtract,
         max_retries=3,
         messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information.",
+            },
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
     )
@@ -48,16 +49,18 @@ class UserExtractValidated(BaseModel):
         return v
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("model, mode", product(models, modes))
-def test_runmodel_validator(model, mode):
-    client = instructor.from_genai(
-        genai.Client(model=model),
-        mode=mode,
-        system_instruction="You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information",
-    )
-    model = client.chat.completions.create(
+async def test_runmodel_validator(model, mode):
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=True)
+    model = await client.chat.completions.create(
+        model=model,
         response_model=UserExtractValidated,
         messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information",
+            },
             {"role": "user", "content": "Extract jason is 25 years old"},
         ],
         max_retries=5,

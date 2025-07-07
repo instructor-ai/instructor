@@ -20,7 +20,7 @@ class User(BaseModel):
 async def test_genai_async_from_provider(mode):
     """Test Google GenAI async client using from_provider with different modes"""
     client = instructor.from_provider(
-        "google/gemini-1.5-flash-latest", mode=mode, async_client=True
+        "google/gemini-2.5-flash", mode=mode, async_client=True
     )
 
     user = await client.chat.completions.create(
@@ -51,7 +51,7 @@ async def test_genai_async_from_provider(mode):
 )
 def test_genai_sync_from_provider(mode):
     """Test Google GenAI sync client using from_provider with different modes"""
-    client = instructor.from_provider("google/gemini-1.5-flash-latest", mode=mode)
+    client = instructor.from_provider("google/gemini-2.5-flash", mode=mode)
 
     user = client.chat.completions.create(
         response_model=User,

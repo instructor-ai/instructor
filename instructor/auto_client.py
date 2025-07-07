@@ -3,6 +3,7 @@ from typing import Any, Union, Literal, overload
 from instructor.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
+import warnings
 
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
@@ -14,6 +15,8 @@ supported_providers = [
     "azure_openai",
     "anthropic",
     "google",
+    "generative-ai",
+    "vertexai",
     "mistral",
     "cohere",
     "perplexity",
@@ -22,8 +25,6 @@ supported_providers = [
     "bedrock",
     "cerebras",
     "fireworks",
-    "vertexai",
-    "generative-ai",
     "ollama",
     "xai",
 ]
@@ -212,10 +213,22 @@ def from_provider(
             # Get API key from kwargs or environment
             api_key = kwargs.pop("api_key", os.environ.get("GOOGLE_API_KEY"))
 
+            # Extract client-specific parameters
+            client_kwargs = {}
+            for key in [
+                "debug_config",
+                "http_options",
+                "credentials",
+                "project",
+                "location",
+            ]:
+                if key in kwargs:
+                    client_kwargs[key] = kwargs.pop(key)
+
             client = genai.Client(
                 vertexai=vertexai_flag,
                 api_key=api_key,
-                **kwargs,
+                **client_kwargs,
             )  # type: ignore
             kwargs["model"] = model_name  # Pass model as part of kwargs
             if async_client:
@@ -372,6 +385,12 @@ def from_provider(
             raise import_err from None
 
     elif provider == "vertexai":
+        warnings.warn(
+            "The 'vertexai' provider is deprecated. Use 'google' provider with vertexai=True instead. "
+            "Example: instructor.from_provider('google/gemini-pro', vertexai=True)",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         try:
             import google.genai as genai  # type: ignore
             from instructor import from_genai
@@ -409,6 +428,12 @@ def from_provider(
             raise import_err from None
 
     elif provider == "generative-ai":
+        warnings.warn(
+            "The 'generative-ai' provider is deprecated. Use 'google' provider instead. "
+            "Example: instructor.from_provider('google/gemini-pro')",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         try:
             from google import genai
             from instructor import from_genai
