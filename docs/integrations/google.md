@@ -7,19 +7,18 @@ description: "Learn how to use Google's Gemini models (Pro, Flash, Ultra) with I
 
 Master structured data extraction using Google's Gemini models with Instructor. This comprehensive tutorial covers Gemini Pro, Flash, and Ultra models, including multimodal capabilities for processing text, images, and more.
 
-## Google.GenerativeAI
+## Google GenAI SDK
 
-Google's Gemini models provide powerful AI capabilities with multimodal support. This guide shows you how to use Instructor with Google's Gemini models for type-safe, validated responses.
+Google's GenAI SDK is the recommended way to access Gemini models. It provides a unified interface for both the Gemini API and Vertex AI. This guide shows you how to use Instructor with Google's GenAI SDK for type-safe, validated responses.
 
 ```bash
-pip install "instructor[google-generativeai, vertexai]"
+pip install "instructor[google-genai]"
 ```
 
 ## Simple User Example (Sync)
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 
@@ -28,9 +27,9 @@ class User(BaseModel):
     age: int
 
 
+# Using from_provider (recommended)
 client = instructor.from_provider(
     "google/gemini-1.5-flash-latest",
-    mode=instructor.Mode.GEMINI_JSON,
 )
 
 # note that client.chat.completions.create will also work
@@ -44,18 +43,17 @@ resp = client.messages.create(
     response_model=User,
 )
 
-print(resp)
+print(resp)  # User(name='Jason', age=25)
 ```
 
 ## Simple User Example (Async)
 
 !!! info "Async Support"
 
-    Instructor supports async mode for the Google.GenerativeAI library. If you're using the async client, make sure that your client is declared within the same event loop as the function that calls it. If not you'll get a bunch of errors.
+    Instructor supports async mode for the Google GenAI SDK. If you're using the async client, make sure that your client is declared within the same event loop as the function that calls it. If not you'll get a bunch of errors.
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 import asyncio
 
@@ -86,7 +84,6 @@ async def extract_user():
 # Run async function
 user = asyncio.run(extract_user())
 print(user)  # User(name='Jason', age=25)
-
 ```
 
 ## Configuration Options
@@ -242,7 +239,6 @@ for user_partial in user:
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 
@@ -281,10 +277,13 @@ for user in users:
 
 ## Instructor Modes
 
-We provide several modes to make it easy to work with the different response models that Gemini supports
+We provide several modes to make it easy to work with the different response models that Gemini supports:
 
-1. `instructor.Mode.GEMINI_JSON` : This parses the raw text completion into a pydantic object
-2. `instructor.Mode.GEMINI_TOOLS` : This uses Gemini's tool calling API to return structured outputs to the client
+1. `instructor.Mode.GENAI_TOOLS` : This uses Gemini's tool calling API to return structured outputs (default)
+2. `instructor.Mode.GENAI_STRUCTURED_OUTPUTS` : This uses Gemini's JSON schema mode for structured outputs
+
+!!! info "Mode Selection"
+    When using `from_provider`, the appropriate mode is automatically selected based on the provider and model capabilities.
 
 ## Available Models
 
@@ -310,6 +309,76 @@ Stay tuned to the blog for more guides on using Gemini with instructor.
 - [Instructor Core Concepts](../concepts/index.md)
 - [Type Validation Guide](../concepts/validation.md)
 - [Advanced Usage Examples](../examples/index.md)
+
+## Migration from google-generativeai
+
+If you're currently using the legacy `google-generativeai` package with Instructor, here's how to migrate:
+
+### Old Way (Deprecated)
+```python
+import instructor
+import google.generativeai as genai
+
+client = instructor.from_gemini(
+    genai.GenerativeModel("gemini-1.5-flash"),
+    mode=instructor.Mode.GEMINI_JSON,
+)
+```
+
+### New Way (Recommended)
+```python
+import instructor
+
+# Option 1: Using from_provider (simplest)
+client = instructor.from_provider("google/gemini-1.5-flash")
+
+# Option 2: Using from_genai directly
+from google import genai
+from instructor import from_genai
+
+client = from_genai(genai.Client())
+```
+
+### Vertex AI Migration
+
+For Vertex AI users, the migration is similar:
+
+#### Old Way (Deprecated)
+```python
+import instructor
+import vertexai
+from vertexai.generative_models import GenerativeModel
+
+vertexai.init(project="your-project", location="us-central1")
+client = instructor.from_vertexai(
+    GenerativeModel("gemini-1.5-flash"),
+    mode=instructor.Mode.VERTEXAI_TOOLS,
+)
+```
+
+#### New Way (Recommended)
+```python
+import instructor
+
+# Option 1: Using from_provider
+client = instructor.from_provider(
+    "vertexai/gemini-1.5-flash",
+    project="your-project",
+    location="us-central1"
+)
+
+# Option 2: Using from_genai with vertexai=True
+from google import genai
+from instructor import from_genai
+
+client = from_genai(
+    genai.Client(
+        vertexai=True,
+        project="your-project",
+        location="us-central1"
+    )
+)
+```
 
 ## Updates and Compatibility
 
