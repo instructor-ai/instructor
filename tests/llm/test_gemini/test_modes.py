@@ -1,6 +1,6 @@
 from itertools import product
 from pydantic import BaseModel, Field
-import google.generativeai as genai
+from google import genai
 
 import pytest
 
@@ -20,7 +20,7 @@ class Order(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_nested(model, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_genai(genai.Client(model=model), mode=mode)
     content = """
     Order Details:
     Customer: Jason
@@ -62,7 +62,7 @@ class LibraryRecord(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_complex_nested_model(model, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_genai(genai.Client(model=model), mode=mode)
 
     content = """
     Library visit details:

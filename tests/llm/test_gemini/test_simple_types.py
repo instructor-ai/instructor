@@ -1,14 +1,11 @@
 import instructor
 import enum
 
-import google.generativeai as genai
 from typing import Literal
 
 
 def test_literal():
-    client = instructor.from_gemini(
-        genai.GenerativeModel("models/gemini-1.5-flash-latest")
-    )
+    client = instructor.from_provider("google/gemini-1.5-flash-latest")
 
     response = client.chat.completions.create(
         response_model=Literal["1231", "212", "331"],
@@ -28,9 +25,7 @@ def test_enum():
         B = "B"
         C = "C"
 
-    client = instructor.from_gemini(
-        genai.GenerativeModel("models/gemini-1.5-flash-latest")
-    )
+    client = instructor.from_provider("google/gemini-1.5-flash-latest")
 
     response = client.chat.completions.create(
         response_model=Options,
@@ -45,9 +40,7 @@ def test_enum():
 
 
 def test_bool():
-    client = instructor.from_gemini(
-        genai.GenerativeModel("models/gemini-1.5-flash-latest")
-    )
+    client = instructor.from_provider("google/gemini-1.5-flash-latest")
 
     response = client.chat.completions.create(
         response_model=bool,

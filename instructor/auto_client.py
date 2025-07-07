@@ -204,14 +204,20 @@ def from_provider(
         try:
             import google.genai as genai  # type: ignore
             from instructor import from_genai
+            import os
 
             # Remove vertexai from kwargs if present to avoid passing it twice
             vertexai_flag = kwargs.pop("vertexai", False)
+
+            # Get API key from kwargs or environment
+            api_key = kwargs.pop("api_key", os.environ.get("GOOGLE_API_KEY"))
+
             client = genai.Client(
                 vertexai=vertexai_flag,
-                model=model_name,
+                api_key=api_key,
                 **kwargs,
             )  # type: ignore
+            kwargs["model"] = model_name  # Pass model as part of kwargs
             if async_client:
                 return from_genai(client, use_async=True, **kwargs)  # type: ignore
             else:
@@ -388,9 +394,9 @@ def from_provider(
                 vertexai=True,
                 project=project,
                 location=location,
-                model=model_name,
                 **kwargs,
             )  # type: ignore
+            kwargs["model"] = model_name  # Pass model as part of kwargs
             if async_client:
                 return from_genai(client, use_async=True, **kwargs)  # type: ignore
             else:
@@ -406,8 +412,13 @@ def from_provider(
         try:
             from google import genai
             from instructor import from_genai
+            import os
 
-            client = genai.Client(vertexai=False, model=model_name)
+            # Get API key from kwargs or environment
+            api_key = kwargs.pop("api_key", os.environ.get("GOOGLE_API_KEY"))
+
+            client = genai.Client(vertexai=False, api_key=api_key)
+            kwargs["model"] = model_name  # Pass model as part of kwargs
             if async_client:
                 return from_genai(client, use_async=True, **kwargs)  # type: ignore
             else:
