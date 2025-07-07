@@ -2,7 +2,7 @@ from itertools import product
 from pydantic import BaseModel, field_validator
 import pytest
 import instructor
-import google.generativeai as genai
+from google import genai
 
 from .util import models, modes
 
@@ -14,12 +14,10 @@ class UserExtract(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_runmodel(model, mode):
-    client = instructor.from_gemini(
-        genai.GenerativeModel(
-            model,
-            system_instruction="You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information.",
-        ),
+    client = instructor.from_genai(
+        genai.Client(model=model),
         mode=mode,
+        system_instruction="You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information.",
     )
     model = client.chat.completions.create(
         response_model=UserExtract,
@@ -31,9 +29,9 @@ def test_runmodel(model, mode):
     assert isinstance(model, UserExtract), "Should be instance of UserExtract"
     assert model.first_name.lower() == "jason"
     assert model.age == 25
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from Gemini"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from Gemini"
+    )
 
 
 class UserExtractValidated(BaseModel):
@@ -52,12 +50,10 @@ class UserExtractValidated(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_runmodel_validator(model, mode):
-    client = instructor.from_gemini(
-        genai.GenerativeModel(
-            model,
-            system_instruction="You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information",
-        ),
+    client = instructor.from_genai(
+        genai.Client(model=model),
         mode=mode,
+        system_instruction="You are a helpful assistant that excels at extracting user information. Make sure to adhere closely to the requested fields to extract the information",
     )
     model = client.chat.completions.create(
         response_model=UserExtractValidated,
@@ -68,6 +64,6 @@ def test_runmodel_validator(model, mode):
     )
     assert isinstance(model, UserExtractValidated), "Should be instance of UserExtract"
     assert model.name == "JASON"
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from Gemini"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from Gemini"
+    )

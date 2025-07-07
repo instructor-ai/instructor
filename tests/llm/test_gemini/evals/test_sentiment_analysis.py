@@ -1,10 +1,7 @@
 import enum
-from itertools import product
 from pydantic import BaseModel
 import pytest
 import instructor
-import google.generativeai as genai
-from ..util import models, modes
 
 
 class Sentiment(str, enum.Enum):
@@ -33,11 +30,11 @@ test_data = [
 ]
 
 
-@pytest.mark.parametrize("model, data, mode", product(models, test_data, modes))
-def test_sentiment_analysis(model, data, mode):
+@pytest.mark.parametrize("data", test_data)
+def test_sentiment_analysis(data):
     sample_data, expected_sentiment = data
 
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_provider("google/gemini-2.0-flash-exp")
 
     response = client.chat.completions.create(
         response_model=SentimentAnalysis,

@@ -1,13 +1,9 @@
-from itertools import product
 from typing import Literal
 
 import pytest
 import instructor
-import google.generativeai as genai
 
 from pydantic import BaseModel
-
-from ..util import models, modes
 
 
 class SinglePrediction(BaseModel):
@@ -24,9 +20,9 @@ data = [
 ]
 
 
-@pytest.mark.parametrize("model, data, mode", product(models, data, modes))
-def test_classification(model, data, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+@pytest.mark.parametrize("data", data)
+def test_classification(data):
+    client = instructor.from_provider("google/gemini-2.0-flash-exp")
 
     input, expected = data
     resp = client.chat.completions.create(
@@ -62,9 +58,9 @@ data = [
 ]
 
 
-@pytest.mark.parametrize("model, data, mode", product(models, data, modes))
-def test_multi_classify(model, data, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+@pytest.mark.parametrize("data", data)
+def test_multi_classify(data):
+    client = instructor.from_provider("google/gemini-2.0-flash-exp")
 
     input, expected = data
 

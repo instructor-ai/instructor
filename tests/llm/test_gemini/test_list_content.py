@@ -1,5 +1,4 @@
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 
@@ -13,9 +12,9 @@ class UserList(BaseModel):
 
 
 def test_list_of_strings():
-    client = instructor.from_gemini(
-        genai.GenerativeModel("gemini-1.5-flash-latest"),
-        mode=instructor.Mode.GEMINI_JSON,
+    client = instructor.from_provider(
+        "google/gemini-1.5-flash-latest",
+        mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
     )
 
     users = [

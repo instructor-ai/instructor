@@ -1,5 +1,4 @@
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 from .util import models, modes
 
@@ -15,12 +14,10 @@ from itertools import product
 
 @pytest.mark.parametrize("model, mode, is_list", product(models, modes, [True, False]))
 def test_format_string(model: str, mode: instructor.Mode, is_list: bool):
-    client = instructor.from_gemini(
-        client=genai.GenerativeModel(
-            model_name=model,
-            system_instruction="You are a helpful assistant that excels at extracting user information.",
-        ),
+    client = instructor.from_provider(
+        f"google/{model}",
         mode=mode,
+        system_instruction="You are a helpful assistant that excels at extracting user information.",
     )
 
     content = (
