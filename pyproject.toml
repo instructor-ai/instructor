@@ -85,10 +85,6 @@ test-docs = [
 anthropic = ["anthropic==0.53.0", "xmltodict<0.15,>=0.13"]
 groq = ["groq>=0.4.2,<0.27.0"]
 cohere = ["cohere<6.0.0,>=5.1.8"]
-google-generativeai = [
-    "google-generativeai<1.0.0,>=0.8.2",
-    "jsonref<2.0.0,>=1.1.0",
-]
 vertexai = ["google-cloud-aiplatform<2.0.0,>=1.53.0", "jsonref<2.0.0,>=1.1.0"]
 cerebras_cloud_sdk = ["cerebras-cloud-sdk<2.0.0,>=1.5.0"]
 fireworks-ai = ["fireworks-ai<1.0.0,>=0.15.4"]

@@ -56,6 +56,7 @@ if importlib.util.find_spec("anthropic") is not None:
 
     __all__ += ["from_anthropic"]
 
+# Keep from_gemini for backward compatibility but it's deprecated
 if (
     importlib.util.find_spec("google")
     and importlib.util.find_spec("google.generativeai") is not None
