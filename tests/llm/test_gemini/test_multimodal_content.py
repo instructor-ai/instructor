@@ -37,9 +37,9 @@ def test_audio_compatability_list():
         ],
     )
 
-    assert isinstance(
-        result, Description
-    ), "Result should be an instance of Description"
+    assert isinstance(result, Description), (
+        "Result should be an instance of Description"
+    )
 
 
 def test_audio_compatability_multiple_messages():
@@ -65,6 +65,6 @@ def test_audio_compatability_multiple_messages():
         ],
     )
 
-    assert isinstance(
-        result, Description
-    ), "Result should be an instance of Description"
+    assert isinstance(result, Description), (
+        "Result should be an instance of Description"
+    )
