@@ -34,6 +34,13 @@ def test_update_genai_kwargs_safety_settings():
     """Test that safety settings are properly configured."""
     from google.genai.types import HarmCategory, HarmBlockThreshold
 
+    supported_categories = [
+        c
+        for c in HarmCategory
+        if c != HarmCategory.HARM_CATEGORY_UNSPECIFIED
+        and not c.name.startswith("HARM_CATEGORY_IMAGE_")
+    ]
+
     kwargs = {}
     base_config = {}
 
@@ -43,8 +50,8 @@ def test_update_genai_kwargs_safety_settings():
     assert "safety_settings" in result
     assert isinstance(result["safety_settings"], list)
 
-    # Should have one entry for each HarmCategory
-    assert len(result["safety_settings"]) == (len(HarmCategory) - 1)
+    # Should have one entry for each supported HarmCategory
+    assert len(result["safety_settings"]) == len(supported_categories)
 
     # Each entry should be a dict with category and threshold
     for setting in result["safety_settings"]:
@@ -57,6 +64,13 @@ def test_update_genai_kwargs_safety_settings():
 def test_update_genai_kwargs_with_custom_safety_settings():
     """Test that custom safety settings are properly handled."""
     from google.genai.types import HarmCategory, HarmBlockThreshold
+
+    supported_categories = [
+        c
+        for c in HarmCategory
+        if c != HarmCategory.HARM_CATEGORY_UNSPECIFIED
+        and not c.name.startswith("HARM_CATEGORY_IMAGE_")
+    ]
 
     # Test with one category that exists in safety_settings
     custom_safety = {
@@ -71,8 +85,8 @@ def test_update_genai_kwargs_with_custom_safety_settings():
     assert "safety_settings" in result
     assert isinstance(result["safety_settings"], list)
 
-    # Should have one entry for each HarmCategory
-    assert len(result["safety_settings"]) == (len(HarmCategory) - 1)
+    # Should have one entry for each supported HarmCategory
+    assert len(result["safety_settings"]) == len(supported_categories)
 
     for setting in result["safety_settings"]:
         if setting["category"] == HarmCategory.HARM_CATEGORY_HATE_SPEECH:
