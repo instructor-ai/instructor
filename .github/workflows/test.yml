@@ -25,12 +25,13 @@ jobs:
         run: uv sync --all-extras
       - name: Run tests
         if: matrix.python-version != '3.11'
-        run: uv run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai and not mistral'
+        run: uv run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai and not mistral and not xai'
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
       - name: Run GenAI Tests
         if: matrix.python-version != '3.11'
@@ -47,10 +48,16 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
 
+      - name: Run xAI Tests
+        if: matrix.python-version != '3.9'  # xAI requires Python 3.10+
+        run: uv run pytest tests/llm/test_xai
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+
       - name: Generate coverage report
         if: matrix.python-version == '3.11'
         run: |
-          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks and not perplexity and not mistral and not genai"
+          uv run coverage run -m pytest tests/ -k "not docs and not anthropic and not gemini and not cohere and not vertexai and not fireworks and not perplexity and not mistral and not genai and not xai"
           uv run coverage report
           uv run coverage html
         env:

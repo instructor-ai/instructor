@@ -25,6 +25,7 @@ supported_providers = [
     "vertexai",
     "generative-ai",
     "ollama",
+    "xai",
 ]
 
 
@@ -128,11 +129,14 @@ def from_provider(
 
             # Get required Azure OpenAI configuration from environment
             api_key = kwargs.pop("api_key", os.environ.get("AZURE_OPENAI_API_KEY"))
-            azure_endpoint = kwargs.pop("azure_endpoint", os.environ.get("AZURE_OPENAI_ENDPOINT"))
+            azure_endpoint = kwargs.pop(
+                "azure_endpoint", os.environ.get("AZURE_OPENAI_ENDPOINT")
+            )
             api_version = kwargs.pop("api_version", "2024-02-01")
 
             if not api_key:
                 from instructor.exceptions import ConfigurationError
+
                 raise ConfigurationError(
                     "AZURE_OPENAI_API_KEY is not set. "
                     "Set it with `export AZURE_OPENAI_API_KEY=<your-api-key>` or pass it as kwarg api_key=<your-api-key>"
@@ -140,6 +144,7 @@ def from_provider(
 
             if not azure_endpoint:
                 from instructor.exceptions import ConfigurationError
+
                 raise ConfigurationError(
                     "AZURE_OPENAI_ENDPOINT is not set. "
                     "Set it with `export AZURE_OPENAI_ENDPOINT=<your-endpoint>` or pass it as kwarg azure_endpoint=<your-endpoint>"
@@ -441,6 +446,24 @@ def from_provider(
             raise ConfigurationError(
                 "The openai package is required to use the Ollama provider. "
                 "Install it with `pip install openai`."
+            ) from None
+
+    elif provider == "xai":
+        try:
+            from xai_sdk.sync.client import Client as SyncClient
+            from xai_sdk.aio.client import Client as AsyncClient
+            from instructor import from_xai
+
+            client = AsyncClient() if async_client else SyncClient()
+            return from_xai(
+                client, mode=mode if mode else instructor.Mode.JSON, **kwargs
+            )
+        except ImportError:
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
+                "The xai-sdk package is required to use the xAI provider. "
+                "Install it with `pip install xai-sdk`."
             ) from None
 
     else:

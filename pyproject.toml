@@ -19,7 +19,7 @@ dependencies = [
     "mkdocs-material>=9.5.49",
 ]
 name = "instructor"
-version = "1.9.1"
+version = "1.9.2"
 description = "structured outputs for llm"
 readme = "README.md"
 
@@ -98,6 +98,7 @@ mistral = ["mistralai<2.0.0,>=1.5.1"]
 perplexity = ["openai<2.0.0,>=1.52.0"]
 google-genai = ["google-genai>=1.5.0","jsonref<2.0.0,>=1.1.0"]
 litellm = ["litellm<2.0.0,>=1.35.31"]
+xai = ["xai-sdk>=0.2.0 ; python_version >= '3.10'", "python-dotenv>=1.0.0"]
 phonenumbers = ["phonenumbers>=8.13.33,<10.0.0"]
 graphviz = ["graphviz<1.0.0,>=0.20.3"]
 sqlmodel = ["sqlmodel<1.0.0,>=0.0.22"]
