@@ -1,5 +1,5 @@
 import instructor
-import google.generativeai as genai
+from google import genai
 from pydantic import BaseModel
 import os
 
@@ -14,9 +14,9 @@ file_path = os.path.join(curr_file, "./test_files/sample.mp3")
 
 
 def test_audio_compatability_list():
-    client = instructor.from_gemini(
-        genai.GenerativeModel("gemini-1.5-flash-latest"),
-        mode=instructor.Mode.GEMINI_JSON,
+    client = instructor.from_provider(
+        "google/gemini-1.5-flash-latest",
+        mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
     )
 
     files = [file for file in genai.list_files()]
@@ -43,9 +43,9 @@ def test_audio_compatability_list():
 
 
 def test_audio_compatability_multiple_messages():
-    client = instructor.from_gemini(
-        genai.GenerativeModel("gemini-1.5-flash-latest"),
-        mode=instructor.Mode.GEMINI_JSON,
+    client = instructor.from_provider(
+        "google/gemini-1.5-flash-latest",
+        mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
     )
 
     files = [file for file in genai.list_files()]

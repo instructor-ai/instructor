@@ -867,7 +867,11 @@ def update_gemini_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         result["contents"] = transform_to_gemini_prompt(result.pop("messages"))
 
     # Handle safety settings - import here to avoid circular imports
-    from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
+    try:
+        from google.genai.types import HarmCategory, HarmBlockThreshold  # type: ignore
+    except ImportError:
+        # Fallback for backward compatibility
+        from google.generativeai.types import HarmCategory, HarmBlockThreshold  # type: ignore
 
     # Create or get existing safety settings
     safety_settings = result.get("safety_settings", {})
