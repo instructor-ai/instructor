@@ -1,9 +1,23 @@
-import cohere
 import os
-import openai
-import instructor
-import anthropic
 import pytest
+
+if not (
+    os.getenv("OPENAI_API_KEY")
+    and os.getenv("ANTHROPIC_API_KEY")
+    and os.getenv("COHERE_API_KEY")
+):
+    pytest.skip(
+        "Required API keys not set",
+        allow_module_level=True,
+    )
+
+try:
+    import cohere
+    import openai
+    import instructor
+    import anthropic
+except ImportError:  # pragma: no cover - optional dependency
+    pytest.skip("Required LLM packages are not installed", allow_module_level=True)
 from pydantic import BaseModel, Field
 
 

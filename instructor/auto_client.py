@@ -26,6 +26,7 @@ supported_providers = [
     "vertexai",
     "generative-ai",
     "ollama",
+    "xai",
 ]
 
 
@@ -467,6 +468,27 @@ def from_provider(
             raise ConfigurationError(
                 "The openai package is required to use the Ollama provider. "
                 "Install it with `pip install openai`."
+            ) from None
+
+    elif provider == "xai":
+        try:
+            from xai_sdk.sync.client import Client as SyncClient
+            from xai_sdk.aio.client import Client as AsyncClient
+            from instructor import from_xai
+
+            client = AsyncClient() if async_client else SyncClient()
+            return from_xai(
+                client,
+                mode=mode if mode else instructor.Mode.JSON,
+                model=model_name,
+                **kwargs,
+            )
+        except ImportError:
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
+                "The xai-sdk package is required to use the xAI provider. "
+                "Install it with `pip install xai-sdk`."
             ) from None
 
     else:

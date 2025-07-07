@@ -1,7 +1,17 @@
 # conftest.py
-from openai import AsyncOpenAI, OpenAI
-import pytest
 import os
+import pytest
+
+if not (os.getenv("OPENAI_API_KEY") or os.getenv("BRAINTRUST_API_KEY")):
+    pytest.skip(
+        "OPENAI_API_KEY environment variable not set",
+        allow_module_level=True,
+    )
+
+try:
+    from openai import AsyncOpenAI, OpenAI
+except ImportError:  # pragma: no cover - optional dependency
+    pytest.skip("openai package is not installed", allow_module_level=True)
 
 try:
     import braintrust

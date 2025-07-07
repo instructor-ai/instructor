@@ -396,8 +396,11 @@ def handle_json_modes(
         new_kwargs["response_format"] = {"type": "json_object"}
     elif mode == Mode.JSON_SCHEMA:
         new_kwargs["response_format"] = {
-            "type": "json_object",
-            "schema": response_model.model_json_schema(),
+            "type": "json_schema",
+            "json_schema": {
+                "name": response_model.__name__,
+                "schema": response_model.model_json_schema(),
+            },
         }
     elif mode == Mode.MD_JSON:
         new_kwargs["messages"].append(

@@ -55,11 +55,10 @@ class User(BaseModel):
 
 # Initialize and patch the client
 client = genai.Client()
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+client = instructor.from_provider("genai/gemini-1.5-flash")
 
 # Extract structured data
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
     response_model=User,
 )
@@ -84,11 +83,10 @@ class User(BaseModel):
 
 # Initialize and patch the client
 client = genai.Client()
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+client = instructor.from_provider("genai/gemini-1.5-flash")
 
 # Single string (converted to user message)
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages="Jason is 25 years old",
     response_model=User,
 )
@@ -98,7 +96,6 @@ print(response)
 
 # Standard format
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages=[
         {"role": "user", "content": "Jason is 25 years old"}
     ],
@@ -110,7 +107,6 @@ print(response)
 
 # Using genai's Content type
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages=[
         genai.types.Content(
             role="user",
@@ -140,11 +136,10 @@ class User(BaseModel):
 
 
 client = genai.Client()
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+client = instructor.from_provider("genai/gemini-1.5-flash")
 
 # As a parameter
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     system="Jason is 25 years old",
     messages=[{"role": "user", "content": "You are a data extraction assistant"}],
     response_model=User,
@@ -155,7 +150,6 @@ print(response)
 
 # Or as a message with role "system"
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages=[
         {"role": "system", "content": "Jason is 25 years old"},
         {"role": "user", "content": "You are a data extraction assistant"},
@@ -187,11 +181,10 @@ class User(BaseModel):
 
 # Initialize and patch the client
 client = genai.Client()
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+client = instructor.from_provider("genai/gemini-1.5-flash")
 
 # Single string (converted to user message)
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages=["{{name}} is {{ age }} years old"],
     response_model=User,
     context={
@@ -205,7 +198,6 @@ print(response)
 
 # Standard format
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages=[{"role": "user", "content": "{{ name }} is {{ age }} years old"}],
     response_model=User,
     context={
@@ -219,7 +211,6 @@ print(response)
 
 # Using genai's Content type
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages=[
         genai.types.Content(
             role="user",
@@ -259,10 +250,9 @@ class UserDetail(BaseModel):
     age: int
 
 
-client = instructor.from_genai(genai.Client())
+client = instructor.from_provider("genai/gemini-1.5-flash")
 
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     messages=[{"role": "user", "content": "Extract: jason is 25 years old"}],
     response_model=UserDetail,
     max_retries=3,
@@ -310,11 +300,10 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
-client = instructor.from_genai(Client())
+client = instructor.from_provider("genai/gemini-1.5-flash")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
 response = client.chat.completions.create(
-    model="gemini-2.0-flash",
     response_model=ImageDescription,
     messages=[
         {
@@ -366,10 +355,9 @@ class AudioDescription(BaseModel):
 
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
 
-client = instructor.from_genai(Client())
+client = instructor.from_provider("genai/gemini-1.5-flash")
 
 response = client.chat.completions.create(
-    model="gemini-2.0-flash",
     response_model=AudioDescription,
     messages=[
         {
@@ -409,11 +397,10 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_genai(Client())
+client = instructor.from_provider("genai/gemini-1.5-flash")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response = client.chat.completions.create(
-    model="gemini-2.0-flash",
     response_model=Receipt,
     messages=[
         {
@@ -463,11 +450,10 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_genai(Client())
+client = instructor.from_provider("genai/gemini-1.5-flash")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response = client.chat.completions.create(
-    model="gemini-2.0-flash",
     response_model=Receipt,
     messages=[
         {
@@ -504,7 +490,7 @@ class Summary(BaseModel):
 
 
 client = genai.Client()
-client = instructor.from_genai(client, mode=instructor.Mode.GENAI_TOOLS)
+client = instructor.from_provider("genai/gemini-1.5-flash")
 
 file1 = client.files.upload(
     file="./gettysburg.wav",
@@ -512,7 +498,6 @@ file1 = client.files.upload(
 
 # As a parameter
 response = client.chat.completions.create(
-    model="gemini-2.0-flash-001",
     system="Summarise the audio file.",
     messages=[
         file1,
@@ -540,8 +525,9 @@ import instructor
 from google import genai
 
 
-client = instructor.from_genai(
-    genai.Client(), mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
+client = instructor.from_provider(
+    "genai/gemini-1.5-flash",
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
 )
 
 
@@ -555,7 +541,6 @@ class PersonList(BaseModel):
 
 
 stream = client.chat.completions.create_partial(
-    model="gemini-2.0-flash-001",
     system="You are a helpful assistant. You must return a function call with the schema provided.",
     messages=[
         {
@@ -592,13 +577,12 @@ class User(BaseModel):
 
 
 async def extract_user():
-    client = genai.Client()
-    client = instructor.from_genai(
-        client, mode=instructor.Mode.GENAI_TOOLS, use_async=True
+    client = instructor.from_provider(
+        "genai/gemini-1.5-flash",
+        async_client=True,
     )
 
     response = await client.chat.completions.create(
-        model="gemini-2.0-flash-001",
         messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
         response_model=User,
     )

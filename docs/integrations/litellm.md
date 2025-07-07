@@ -23,7 +23,7 @@ import instructor
 from pydantic import BaseModel
 
 # Enable instructor patches
-client = instructor.from_litellm(completion)
+client = instructor.from_provider("litellm/gpt-3.5-turbo")
 
 class User(BaseModel):
     name: str
@@ -31,7 +31,6 @@ class User(BaseModel):
 
 # Create structured output
 user = client.chat.completions.create(
-    model="gpt-3.5-turbo",  # Can use any supported model
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -44,13 +43,14 @@ print(user)  # User(name='Jason', age=25)
 ## Simple User Example (Async)
 
 ```python
-from litellm import acompletion
 import instructor
 from pydantic import BaseModel
 import asyncio
 
-# Enable instructor patches for async
-client = instructor.from_litellm(acompletion)
+client = instructor.from_provider(
+    "litellm/gpt-3.5-turbo",
+    async_client=True,
+)
 
 
 class User(BaseModel):
@@ -60,7 +60,6 @@ class User(BaseModel):
 
 async def extract_user():
     user = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -92,9 +91,8 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_litellm(completion)
+client = instructor.from_provider("litellm/gpt-3.5-turbo")
 instructor_resp, raw_completion = client.chat.completions.create_with_completion(
-    model="claude-3-5-sonnet-20240620",
     max_tokens=1024,
     messages=[
         {

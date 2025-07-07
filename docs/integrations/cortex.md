@@ -25,28 +25,25 @@ Let's start by initializing the client below - note that we need to provide a ba
 
 ```python
 import os
-from openai import OpenAI
+import instructor
 
-client = from_openai(
-    openai.OpenAI(
-        base_url="http://localhost:39281/v1",
-        api_key="this is a fake api key that doesn't matter",
-    )
+client = instructor.from_provider(
+    "cortex/llama3.2:3b-gguf-q4-km",
+    base_url="http://localhost:39281/v1",
+    api_key="this is a fake api key that doesn't matter",
 )
 ```
 
 ## Simple User Example (Sync)
 
 ```python
-from instructor import from_openai
+import instructor
 from pydantic import BaseModel
-import openai
 
-client = from_openai(
-    openai.OpenAI(
-        base_url="http://localhost:39281/v1",
-        api_key="this is a fake api key that doesn't matter",
-    )
+client = instructor.from_provider(
+    "cortex/llama3.2:3b-gguf-q4-km",
+    base_url="http://localhost:39281/v1",
+    api_key="this is a fake api key that doesn't matter",
 )
 
 
@@ -56,7 +53,6 @@ class User(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="llama3.2:3b-gguf-q4-km",
     messages=[{"role": "user", "content": "Ivan is 27 and lives in Singapore"}],
     response_model=User,
 )
@@ -69,17 +65,16 @@ print(resp)
 
 ```python
 import os
-from openai import AsyncOpenAI
 import instructor
 from pydantic import BaseModel
 import asyncio
 
 # Initialize with API key
-client = from_openai(
-    openai.AsyncOpenAI(
-        base_url="http://localhost:39281/v1",
-        api_key="this is a fake api key that doesn't matter",
-    )
+client = instructor.from_provider(
+    "cortex/llama3.2:3b-gguf-q4-km",
+    async_client=True,
+    base_url="http://localhost:39281/v1",
+    api_key="this is a fake api key that doesn't matter",
 )
 
 class User(BaseModel):
@@ -88,7 +83,6 @@ class User(BaseModel):
 
 async def extract_user():
     user = await client.chat.completions.create(
-        model="llama3.2:3b-gguf-q4-km",
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -105,15 +99,13 @@ print(user)
 ## Nested Example
 
 ```python
-from instructor import from_openai
+import instructor
 from pydantic import BaseModel
-import openai
 
-client = from_openai(
-    openai.OpenAI(
-        base_url="http://localhost:39281/v1",
-        api_key="this is a fake api key that doesn't matter",
-    )
+client = instructor.from_provider(
+    "cortex/llama3.2:3b-gguf-q4-km",
+    base_url="http://localhost:39281/v1",
+    api_key="this is a fake api key that doesn't matter",
 )
 
 
@@ -130,7 +122,6 @@ class User(BaseModel):
 
 
 user = client.chat.completions.create(
-    model="llama3.2:3b-gguf-q4-km",
     messages=[
         {
             "role": "user",

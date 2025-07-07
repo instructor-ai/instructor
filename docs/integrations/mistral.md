@@ -45,17 +45,12 @@ To set the mode for your mistral client, simply use the code snippet below
 ```python
 import os
 from pydantic import BaseModel
-from mistralai import Mistral
-from instructor import from_mistral
+import instructor
 
 
 # Initialize with API key
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-
-# Enable instructor patches for Mistral client
-instructor_client = from_mistral(
-    client=client,
-    # Set the mode here
+instructor_client = instructor.from_provider(
+    "mistral/mistral-large-latest",
     mode=Mode.MISTRAL_TOOLS,
 )
 ```
@@ -65,8 +60,8 @@ instructor_client = from_mistral(
 ```python
 import os
 from pydantic import BaseModel
-from mistralai import Mistral
-from instructor import from_mistral, Mode
+import instructor
+from instructor import Mode
 
 
 class UserDetails(BaseModel):
@@ -74,19 +69,15 @@ class UserDetails(BaseModel):
     age: int
 
 
-# Initialize with API key
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-
-# Enable instructor patches for Mistral client
-instructor_client = from_mistral(
-    client=client,
+# Initialize the client
+instructor_client = instructor.from_provider(
+    "mistral/mistral-large-latest",
     mode=Mode.MISTRAL_TOOLS,
 )
 
 # Extract a single user
 user = instructor_client.chat.completions.create(
     response_model=UserDetails,
-    model="mistral-large-latest",
     messages=[{"role": "user", "content": "Jason is 25 years old"}],
     temperature=0,
 )
@@ -103,8 +94,8 @@ For asynchronous operations, you can use the `use_async=True` parameter when cre
 import os
 import asyncio
 from pydantic import BaseModel
-from mistralai import Mistral
-from instructor import from_mistral, Mode
+import instructor
+from instructor import Mode
 
 
 class User(BaseModel):
@@ -112,14 +103,11 @@ class User(BaseModel):
     age: int
 
 
-# Initialize with API key
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-
-# Enable instructor patches for async Mistral client
-instructor_client = from_mistral(
-    client=client,
+# Initialize the async client
+instructor_client = instructor.from_provider(
+    "mistral/mistral-large-latest",
+    async_client=True,
     mode=Mode.MISTRAL_TOOLS,
-    use_async=True,
 )
 
 async def extract_user():
@@ -127,7 +115,6 @@ async def extract_user():
         response_model=User,
         messages=[{"role": "user", "content": "Jack is 28 years old."}],
         temperature=0,
-        model="mistral-large-latest",
     )
     return user
 
@@ -145,8 +132,8 @@ You can also work with nested models:
 from pydantic import BaseModel
 from typing import List
 import os
-from mistralai import Mistral
-from instructor import from_mistral, Mode
+import instructor
+from instructor import Mode
 
 class Address(BaseModel):
     street: str
@@ -158,12 +145,9 @@ class User(BaseModel):
     age: int
     addresses: List[Address]
 
-# Initialize with API key
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-
-# Enable instructor patches for Mistral client
-instructor_client = from_mistral(
-    client=client,
+# Initialize the client
+instructor_client = instructor.from_provider(
+    "mistral/mistral-large-latest",
     mode=Mode.MISTRAL_TOOLS,
 )
 
@@ -177,7 +161,6 @@ user = instructor_client.chat.completions.create(
             and has a summer house at 456 Beach Rd, Miami, USA
         """}
     ],
-    model="mistral-large-latest",
     temperature=0,
 )
 
@@ -213,11 +196,10 @@ class UserExtract(BaseModel):
 client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 
 # Enable instructor patches for Mistral client
-instructor_client = instructor.from_mistral(client)
+instructor_client = instructor.from_provider("mistral/mistral-small")
 
 # Stream partial responses
 model = instructor_client.chat.completions.create(
-    model="mistral-large-latest",
     response_model=Partial[UserExtract],
     stream=True,
     messages=[
@@ -248,11 +230,10 @@ class UserExtract(BaseModel):
 client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 
 # Enable instructor patches for Mistral client
-instructor_client = instructor.from_mistral(client)
+instructor_client = instructor.from_provider("mistral/mistral-small")
 
 # Stream iterable responses
 users = instructor_client.chat.completions.create_iterable(
-    model="mistral-large-latest",
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Make up two people"},
@@ -283,11 +264,10 @@ class UserExtract(BaseModel):
 
 # Initialize client with async support
 client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
-instructor_client = instructor.from_mistral(client, use_async=True)
+instructor_client = instructor.from_provider("mistral/mistral-small")
 
 async def stream_partial():
     model = await instructor_client.chat.completions.create(
-        model="mistral-large-latest",
         response_model=Partial[UserExtract],
         stream=True,
         messages=[
@@ -300,7 +280,6 @@ async def stream_partial():
 
 async def stream_iterable():
     users = instructor_client.chat.completions.create_iterable(
-        model="mistral-large-latest",
         response_model=UserExtract,
         messages=[
             {"role": "user", "content": "Make up two people"},
@@ -344,12 +323,11 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_mistral(Mistral(os.environ["MISTRAL_API_KEY"]))
+client = instructor.from_provider("mistral/mistral-small")
 
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 
 response = client.chat.completions.create(
-    model="ministral-8b-latest",
     response_model=Receipt,
     max_tokens=1000,
     messages=[

@@ -31,8 +31,8 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-1.5-pro-preview-0409"),
+client = instructor.from_provider(
+    "vertex_ai/gemini-1.5-pro-preview-0409",
     mode=instructor.Mode.VERTEXAI_TOOLS,
 )
 
@@ -68,10 +68,10 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-1.5-pro-preview-0409"),
+client = instructor.from_provider(
+    "vertex_ai/gemini-1.5-pro-preview-0409",
+    async_client=True,
     mode=instructor.Mode.VERTEXAI_TOOLS,
-    _async=True,
 )
 
 async def extract_user():
@@ -111,8 +111,8 @@ class UserExtract(BaseModel):
     name: str
     age: int
 
-client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-2.0-flash"),
+client = instructor.from_provider(
+    "vertex_ai/gemini-1.5-pro-preview-0409",
     mode=instructor.Mode.VERTEXAI_TOOLS,
 )
 
@@ -146,8 +146,8 @@ class UserExtract(BaseModel):
     name: str
     age: int
 
-client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-2.0-flash"),
+client = instructor.from_provider(
+    "vertex_ai/gemini-1.5-pro-preview-0409",
     mode=instructor.Mode.VERTEXAI_TOOLS,
 )
 
@@ -184,10 +184,10 @@ class UserExtract(BaseModel):
     name: str
     age: int
 
-client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-2.0-flash"),
+client = instructor.from_provider(
+    "vertex_ai/gemini-1.5-pro-preview-0409",
+    async_client=True,
     mode=instructor.Mode.VERTEXAI_TOOLS,
-    _async=True,
 )
 
 async def stream_partial():

@@ -30,7 +30,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client
-client = instructor.from_bedrock(bedrock_client)
+client = instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
 
 
 class User(BaseModel):
@@ -51,6 +51,34 @@ print(user)
 # > User(name='Jason', age=25)
 ```
 
+### Async Example
+
+```python
+import boto3
+import instructor
+from pydantic import BaseModel
+import asyncio
+
+async_client = instructor.from_provider(
+    "bedrock/anthropic.claude-3-sonnet-20240229-v1:0",
+    async_client=True,
+)
+
+class User(BaseModel):
+    name: str
+    age: int
+
+async def get_user_async():
+    return await async_client.converse(
+        modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+        messages=[{"role": "user", "content": [{"text": "Extract Jason is 25 years old"}]}],
+        response_model=User,
+    )
+
+user = asyncio.run(get_user_async())
+print(user)
+```
+
 ## Supported Modes
 
 AWS Bedrock supports the following modes with Instructor:
@@ -68,10 +96,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client with specific mode
-client = instructor.from_bedrock(
-    bedrock_client,
-    mode=Mode.BEDROCK_TOOLS
-)
+client = instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
 
 
 class User(BaseModel):
@@ -103,7 +128,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client
-client = instructor.from_bedrock(bedrock_client)
+client = instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
 
 
 class Address(BaseModel):

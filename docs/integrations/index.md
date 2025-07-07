@@ -127,6 +127,25 @@ Supported provider strings:
 - `genai/model-name`: Google GenAI models
 - `ollama/model-name`: Ollama models
 
+### Provider Checklist
+
+Use these example strings with `from_provider` to quickly get started:
+
+- [x] `instructor.from_provider("openai/gpt-4o-mini")`
+- [x] `instructor.from_provider("anthropic/claude-3-sonnet")`
+- [x] `instructor.from_provider("google/gemini-1.5-flash")`
+- [x] `instructor.from_provider("mistral/mistral-large-latest")`
+- [x] `instructor.from_provider("cohere/command-r")`
+- [x] `instructor.from_provider("perplexity/sonar-small")`
+- [x] `instructor.from_provider("groq/llama3-8b-8192")`
+- [x] `instructor.from_provider("writer/palmyra-x-004")`
+- [x] `instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")`
+- [x] `instructor.from_provider("cerebras/llama3.1-70b")`
+- [x] `instructor.from_provider("fireworks/llama-v3-70b-instruct")`
+- [x] `instructor.from_provider("vertexai/gemini-1.5-flash")`
+- [x] `instructor.from_provider("genai/gemini-1.5-flash")`
+- [x] `instructor.from_provider("ollama/llama3")`
+
 ### 2. Manual Client Setup
 
 Alternatively, you can manually set up the client:

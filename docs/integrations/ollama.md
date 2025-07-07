@@ -38,7 +38,6 @@ Instructor's patch enhances a openai api it with the following features:
 Ollama integration now properly supports timeout parameters to ensure reliable request handling:
 
 ```python
-from openai import OpenAI
 from pydantic import BaseModel
 import instructor
 
@@ -46,16 +45,12 @@ class Character(BaseModel):
     name: str
     age: int
 
-client = instructor.from_openai(
-    OpenAI(
-        base_url="http://localhost:11434/v1",
-        api_key="ollama",  # required, but unused
-    ),
+client = instructor.from_provider(
+    "ollama/llama2",
     mode=instructor.Mode.JSON,
 )
 
 resp = client.chat.completions.create(
-    model="llama2",
     messages=[
         {
             "role": "user",
@@ -109,6 +104,31 @@ resp = client.chat.completions.create(
 )
 ```
 
+### Async Example
+
+```python
+import instructor
+from pydantic import BaseModel
+import asyncio
+
+async_client = instructor.from_provider(
+    "ollama/llama2",
+    async_client=True,
+)
+
+class Character(BaseModel):
+    name: str
+    age: int
+
+async def get_character():
+    return await async_client.chat.completions.create(
+        messages=[{"role": "user", "content": "Tell me about Harry Potter"}],
+        response_model=Character,
+    )
+
+print(asyncio.run(get_character()))
+```
+
 ### Intelligent Mode Selection
 
 The auto client automatically selects the best mode based on your model:
@@ -154,16 +174,12 @@ class Character(BaseModel):
 
 
 # enables `response_model` in create call
-client = instructor.from_openai(
-    OpenAI(
-        base_url="http://localhost:11434/v1",
-        api_key="ollama",  # required, but unused
-    ),
+client = instructor.from_provider(
+    "ollama/llama2",
     mode=instructor.Mode.JSON,
 )
 
 resp = client.chat.completions.create(
-    model="llama2",
     messages=[
         {
             "role": "user",

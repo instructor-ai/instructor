@@ -37,6 +37,26 @@ Recently llama-cpp-python added support for structured outputs via JSON schema m
 
 In this example we'll cover a more advanced use case of JSON_SCHEMA mode to stream out partial models. To learn more [partial streaming](https://github.com/jxnl/instructor/concepts/partial.md) check out partial streaming.
 
+## Quick Start with `from_provider`
+
+If you run the `llama-cpp-python` server in OpenAI compatible mode, you can use the unified `from_provider` API to patch the client. Simply point the base URL at your local server:
+
+```python
+import instructor
+
+# Sync client
+client = instructor.from_provider(
+    "ollama/openhermes", base_url="http://localhost:8080/v1"
+)
+
+# Async client
+async_client = instructor.from_provider(
+    "ollama/openhermes", async_client=True, base_url="http://localhost:8080/v1"
+)
+```
+
+You can then call `chat.completions.create` just like with any other provider.
+
 ```python
 import llama_cpp
 import instructor
