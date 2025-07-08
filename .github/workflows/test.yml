@@ -34,22 +34,22 @@ jobs:
       fail-fast: false
       matrix:
         provider:
-          - name: openai
+          - name: Openai
             env_key: OPENAI_API_KEY
             test_path: tests/llm/test_openai
-          - name: anthropic
+          - name: Anthropic
             env_key: ANTHROPIC_API_KEY
             test_path: tests/llm/test_anthropic
-          - name: gemini
+          - name: Gemini
             env_key: GOOGLE_API_KEY
             test_path: tests/llm/test_gemini
-          - name: genai
+          - name: Google GenAI
             env_key: GOOGLE_API_KEY
             test_path: tests/llm/test_genai
-          - name: cohere
+          - name: Cohere
             env_key: COHERE_API_KEY
             test_path: tests/llm/test_cohere
-          - name: xai
+          - name: XAI
             env_key: XAI_API_KEY
             test_path: tests/llm/test_xai
 
