@@ -6,10 +6,9 @@ provider-specific batch requests with JSON schema generation.
 """
 
 from __future__ import annotations
-from typing import Any, Type, Optional, List, Dict, Generic
+from typing import Any, Generic
 from pydantic import BaseModel, Field
 import json
-import os
 from .models import T
 
 
@@ -27,10 +26,10 @@ class Tool(BaseModel):
 class RequestBody(BaseModel):
     model: str
     messages: list[dict[str, Any]]
-    max_tokens: Optional[int] = Field(default=1000)
-    temperature: Optional[float] = Field(default=1.0)
-    tools: Optional[list[Tool]]
-    tool_choice: Optional[dict[str, Any]]
+    max_tokens: int | None = Field(default=1000)
+    temperature: float | None = Field(default=1.0)
+    tools: list[Tool] | None
+    tool_choice: dict[str, Any] | None
 
 
 class BatchModel(BaseModel):
@@ -44,20 +43,20 @@ class BatchRequest(BaseModel, Generic[T]):
     """Unified batch request that works across all providers using JSON schema"""
 
     custom_id: str
-    messages: List[Dict[str, Any]]
-    response_model: Type[T]
+    messages: list[dict[str, Any]]
+    response_model: type[T]
     model: str
-    max_tokens: Optional[int] = Field(default=1000)
-    temperature: Optional[float] = Field(default=0.1)
+    max_tokens: int | None = Field(default=1000)
+    temperature: float | None = Field(default=0.1)
 
     class Config:
         arbitrary_types_allowed = True
 
-    def get_json_schema(self) -> Dict[str, Any]:
+    def get_json_schema(self) -> dict[str, Any]:
         """Generate JSON schema from response_model"""
         return self.response_model.model_json_schema()
 
-    def to_openai_format(self) -> Dict[str, Any]:
+    def to_openai_format(self) -> dict[str, Any]:
         """Convert to OpenAI batch format with JSON schema"""
         schema = self.get_json_schema()
 
@@ -108,7 +107,7 @@ class BatchRequest(BaseModel, Generic[T]):
             },
         }
 
-    def to_anthropic_format(self) -> Dict[str, Any]:
+    def to_anthropic_format(self) -> dict[str, Any]:
         """Convert to Anthropic batch format with JSON schema"""
         schema = self.get_json_schema()
 

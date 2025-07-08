@@ -4,7 +4,7 @@ OpenAI-specific batch processing implementation.
 This module contains the OpenAI batch processing provider class.
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Any, Optional
 from .base import BatchProvider
 from ..models import BatchJobInfo
 
@@ -13,7 +13,7 @@ class OpenAIProvider(BatchProvider):
     """OpenAI batch processing provider"""
 
     def submit_batch(
-        self, file_path: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
+        self, file_path: str, metadata: Optional[dict[str, Any]] = None, **kwargs
     ) -> str:
         """Submit OpenAI batch job"""
         try:
@@ -37,7 +37,7 @@ class OpenAIProvider(BatchProvider):
         except Exception as e:
             raise Exception(f"Failed to submit OpenAI batch: {e}")
 
-    def get_status(self, batch_id: str) -> Dict[str, Any]:
+    def get_status(self, batch_id: str) -> dict[str, Any]:
         """Get OpenAI batch status"""
         try:
             from openai import OpenAI
@@ -96,7 +96,7 @@ class OpenAIProvider(BatchProvider):
         except Exception as e:
             raise Exception(f"Failed to download OpenAI results: {e}")
 
-    def cancel_batch(self, batch_id: str) -> Dict[str, Any]:
+    def cancel_batch(self, batch_id: str) -> dict[str, Any]:
         """Cancel OpenAI batch job"""
         try:
             from openai import OpenAI
@@ -107,7 +107,7 @@ class OpenAIProvider(BatchProvider):
         except Exception as e:
             raise Exception(f"Failed to cancel OpenAI batch: {e}")
 
-    def delete_batch(self, batch_id: str) -> Dict[str, Any]:
+    def delete_batch(self, batch_id: str) -> dict[str, Any]:
         """Delete OpenAI batch job"""
         try:
             from openai import OpenAI
@@ -123,7 +123,7 @@ class OpenAIProvider(BatchProvider):
         except Exception as e:
             raise Exception(f"Failed to delete OpenAI batch: {e}")
 
-    def list_batches(self, limit: int = 10) -> List[BatchJobInfo]:
+    def list_batches(self, limit: int = 10) -> list[BatchJobInfo]:
         """List OpenAI batch jobs"""
         try:
             from openai import OpenAI

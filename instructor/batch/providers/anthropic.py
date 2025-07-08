@@ -5,7 +5,7 @@ This module contains the Anthropic batch processing provider class.
 """
 
 import json
-from typing import Dict, Any, Optional, List
+from typing import Any, Optional
 from .base import BatchProvider
 from ..models import BatchJobInfo
 
@@ -14,7 +14,7 @@ class AnthropicProvider(BatchProvider):
     """Anthropic batch processing provider"""
 
     def submit_batch(
-        self, file_path: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
+        self, file_path: str, metadata: Optional[dict[str, Any]] = None, **kwargs
     ) -> str:
         """Submit Anthropic batch job"""
         _ = kwargs  # Unused but accepted for API consistency
@@ -44,7 +44,7 @@ class AnthropicProvider(BatchProvider):
         except Exception as e:
             raise Exception(f"Failed to submit Anthropic batch: {e}")
 
-    def get_status(self, batch_id: str) -> Dict[str, Any]:
+    def get_status(self, batch_id: str) -> dict[str, Any]:
         """Get Anthropic batch status"""
         try:
             import anthropic
@@ -135,7 +135,7 @@ class AnthropicProvider(BatchProvider):
         except Exception as e:
             raise Exception(f"Failed to download Anthropic results: {e}")
 
-    def cancel_batch(self, batch_id: str) -> Dict[str, Any]:
+    def cancel_batch(self, batch_id: str) -> dict[str, Any]:
         """Cancel Anthropic batch job"""
         try:
             import anthropic
@@ -153,7 +153,7 @@ class AnthropicProvider(BatchProvider):
         except Exception as e:
             raise Exception(f"Failed to cancel Anthropic batch: {e}")
 
-    def delete_batch(self, batch_id: str) -> Dict[str, Any]:
+    def delete_batch(self, batch_id: str) -> dict[str, Any]:
         """Delete Anthropic batch job"""
         try:
             import anthropic
@@ -175,7 +175,7 @@ class AnthropicProvider(BatchProvider):
         except Exception as e:
             raise Exception(f"Failed to delete Anthropic batch: {e}")
 
-    def list_batches(self, limit: int = 10) -> List[BatchJobInfo]:
+    def list_batches(self, limit: int = 10) -> list[BatchJobInfo]:
         """List Anthropic batch jobs"""
         try:
             import anthropic

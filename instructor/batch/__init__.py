@@ -112,7 +112,7 @@ class BatchJob:
         return res, error_objs
 
     @classmethod
-    def _extract_structured_data(cls, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _extract_structured_data(cls, data: dict[str, Any]) -> Optional[dict[str, Any]]:
         """Extract structured data from various provider response formats"""
         import json
 

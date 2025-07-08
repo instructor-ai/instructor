@@ -6,7 +6,7 @@ for batch processing across different LLM providers.
 """
 
 from __future__ import annotations
-from typing import Any, Type, Optional, List, Dict, Generic
+from typing import Any, Generic
 import json
 import os
 from .models import BatchResult, BatchSuccess, BatchError, BatchJobInfo, T
@@ -17,7 +17,7 @@ from .providers import get_provider
 class BatchProcessor(Generic[T]):
     """Unified batch processor that works across all providers"""
 
-    def __init__(self, model: str, response_model: Type[T]):
+    def __init__(self, model: str, response_model: type[T]):
         self.model = model
         self.response_model = response_model
 
@@ -35,10 +35,10 @@ class BatchProcessor(Generic[T]):
 
     def create_batch_from_messages(
         self,
-        messages_list: List[List[Dict[str, Any]]],
+        messages_list: list[list[dict[str, Any]]],
         file_path: str,
-        max_tokens: Optional[int] = 1000,
-        temperature: Optional[float] = 0.1,
+        max_tokens: int | None = 1000,
+        temperature: float | None = 0.1,
     ) -> str:
         """Create batch file from list of message conversations
 
@@ -72,7 +72,7 @@ class BatchProcessor(Generic[T]):
         return file_path
 
     def submit_batch(
-        self, file_path: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
+        self, file_path: str, metadata: dict[str, Any] | None = None, **kwargs
     ) -> str:
         """Submit batch job to the provider and return job ID
 
@@ -86,16 +86,16 @@ class BatchProcessor(Generic[T]):
 
         return self.provider.submit_batch(file_path, metadata=metadata, **kwargs)
 
-    def get_batch_status(self, batch_id: str) -> Dict[str, Any]:
+    def get_batch_status(self, batch_id: str) -> dict[str, Any]:
         """Get batch job status from the provider"""
         return self.provider.get_status(batch_id)
 
-    def retrieve_results(self, batch_id: str) -> List[BatchResult]:
+    def retrieve_results(self, batch_id: str) -> list[BatchResult]:
         """Retrieve and parse batch results from the provider"""
         results_content = self.provider.retrieve_results(batch_id)
         return self.parse_results(results_content)
 
-    def list_batches(self, limit: int = 10) -> List[BatchJobInfo]:
+    def list_batches(self, limit: int = 10) -> list[BatchJobInfo]:
         """List batch jobs for the current provider
 
         Args:
@@ -107,8 +107,8 @@ class BatchProcessor(Generic[T]):
         return self.provider.list_batches(limit)
 
     def get_results(
-        self, batch_id: str, file_path: Optional[str] = None
-    ) -> List[BatchResult]:
+        self, batch_id: str, file_path: str | None = None
+    ) -> list[BatchResult]:
         """Get batch results, optionally saving raw results to a file
 
         Args:
@@ -129,7 +129,7 @@ class BatchProcessor(Generic[T]):
 
         return results_content
 
-    def cancel_batch(self, batch_id: str) -> Dict[str, Any]:
+    def cancel_batch(self, batch_id: str) -> dict[str, Any]:
         """Cancel a batch job
 
         Args:
@@ -140,7 +140,7 @@ class BatchProcessor(Generic[T]):
         """
         return self.provider.cancel_batch(batch_id)
 
-    def delete_batch(self, batch_id: str) -> Dict[str, Any]:
+    def delete_batch(self, batch_id: str) -> dict[str, Any]:
         """Delete a batch job (only available for completed batches)
 
         Args:
@@ -151,9 +151,9 @@ class BatchProcessor(Generic[T]):
         """
         return self.provider.delete_batch(batch_id)
 
-    def parse_results(self, results_content: str) -> List[BatchResult]:
+    def parse_results(self, results_content: str) -> list[BatchResult]:
         """Parse batch results from content string into Maybe-like results with custom_id tracking"""
-        results: List[BatchResult] = []
+        results: list[BatchResult] = []
 
         lines = results_content.strip().split("\n")
         for line in lines:
@@ -221,7 +221,7 @@ class BatchProcessor(Generic[T]):
 
         return results
 
-    def _extract_from_response(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _extract_from_response(self, data: dict[str, Any]) -> dict[str, Any] | None:
         """Extract structured data from provider-specific response format"""
         try:
             if self.provider_name == "openai":

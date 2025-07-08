@@ -5,7 +5,7 @@ This module defines the abstract base class that all batch providers must implem
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List
+from typing import Any, Optional
 from ..models import BatchJobInfo
 
 
@@ -14,13 +14,13 @@ class BatchProvider(ABC):
 
     @abstractmethod
     def submit_batch(
-        self, file_path: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
+        self, file_path: str, metadata: Optional[dict[str, Any]] = None, **kwargs
     ) -> str:
         """Submit a batch job and return the job ID"""
         pass
 
     @abstractmethod
-    def get_status(self, batch_id: str) -> Dict[str, Any]:
+    def get_status(self, batch_id: str) -> dict[str, Any]:
         """Get the status of a batch job"""
         pass
 
@@ -35,16 +35,16 @@ class BatchProvider(ABC):
         pass
 
     @abstractmethod
-    def cancel_batch(self, batch_id: str) -> Dict[str, Any]:
+    def cancel_batch(self, batch_id: str) -> dict[str, Any]:
         """Cancel a batch job"""
         pass
 
     @abstractmethod
-    def delete_batch(self, batch_id: str) -> Dict[str, Any]:
+    def delete_batch(self, batch_id: str) -> dict[str, Any]:
         """Delete a batch job"""
         pass
 
     @abstractmethod
-    def list_batches(self, limit: int = 10) -> List[BatchJobInfo]:
+    def list_batches(self, limit: int = 10) -> list[BatchJobInfo]:
         """List batch jobs"""
         pass

@@ -6,7 +6,7 @@ used throughout the batch processing system.
 """
 
 from __future__ import annotations
-from typing import Any, Union, TypeVar, Optional, List, Dict, Generic
+from typing import Any, Union, TypeVar, Generic
 from pydantic import BaseModel, Field
 from datetime import datetime, timezone
 from enum import Enum
@@ -32,7 +32,7 @@ class BatchError(BaseModel):
     error_type: str
     error_message: str
     success: bool = False
-    raw_data: Optional[Dict[str, Any]] = None
+    raw_data: dict[str, Any] | None = None
 
 
 class BatchStatus(str, Enum):
@@ -49,47 +49,47 @@ class BatchStatus(str, Enum):
 class BatchTimestamps(BaseModel):
     """Comprehensive timestamp tracking"""
 
-    created_at: Optional[datetime] = None
-    started_at: Optional[datetime] = None  # in_progress_at, processing start
-    completed_at: Optional[datetime] = None  # completed_at, ended_at
-    failed_at: Optional[datetime] = None
-    cancelled_at: Optional[datetime] = None
-    expired_at: Optional[datetime] = None
-    expires_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    started_at: datetime | None = None  # in_progress_at, processing start
+    completed_at: datetime | None = None  # completed_at, ended_at
+    failed_at: datetime | None = None
+    cancelled_at: datetime | None = None
+    expired_at: datetime | None = None
+    expires_at: datetime | None = None
 
 
 class BatchRequestCounts(BaseModel):
     """Unified request counts across providers"""
 
-    total: Optional[int] = None
+    total: int | None = None
 
     # OpenAI fields
-    completed: Optional[int] = None
-    failed: Optional[int] = None
+    completed: int | None = None
+    failed: int | None = None
 
     # Anthropic fields
-    processing: Optional[int] = None
-    succeeded: Optional[int] = None
-    errored: Optional[int] = None
-    cancelled: Optional[int] = None
-    expired: Optional[int] = None
+    processing: int | None = None
+    succeeded: int | None = None
+    errored: int | None = None
+    cancelled: int | None = None
+    expired: int | None = None
 
 
 class BatchErrorInfo(BaseModel):
     """Batch-level error information"""
 
-    error_type: Optional[str] = None
-    error_message: Optional[str] = None
-    error_code: Optional[str] = None
+    error_type: str | None = None
+    error_message: str | None = None
+    error_code: str | None = None
 
 
 class BatchFiles(BaseModel):
     """File references for batch job"""
 
-    input_file_id: Optional[str] = None
-    output_file_id: Optional[str] = None
-    error_file_id: Optional[str] = None
-    results_url: Optional[str] = None  # Anthropic
+    input_file_id: str | None = None
+    output_file_id: str | None = None
+    error_file_id: str | None = None
+    results_url: str | None = None  # Anthropic
 
 
 class BatchJobInfo(BaseModel):
@@ -113,19 +113,19 @@ class BatchJobInfo(BaseModel):
     files: BatchFiles
 
     # Error information
-    error: Optional[BatchErrorInfo] = None
+    error: BatchErrorInfo | None = None
 
     # Provider-specific data
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-    raw_data: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    raw_data: dict[str, Any] | None = None
 
     # Additional fields
-    model: Optional[str] = None
-    endpoint: Optional[str] = None
-    completion_window: Optional[str] = None
+    model: str | None = None
+    endpoint: str | None = None
+    completion_window: str | None = None
 
     @classmethod
-    def from_openai(cls, batch_data: Dict[str, Any]) -> BatchJobInfo:
+    def from_openai(cls, batch_data: dict[str, Any]) -> BatchJobInfo:
         """Create from OpenAI batch response"""
         # Normalize status
         status_map = {
@@ -219,7 +219,7 @@ class BatchJobInfo(BaseModel):
         )
 
     @classmethod
-    def from_anthropic(cls, batch_data: Dict[str, Any]) -> BatchJobInfo:
+    def from_anthropic(cls, batch_data: dict[str, Any]) -> BatchJobInfo:
         """Create from Anthropic batch response"""
         # Normalize status
         status_map = {

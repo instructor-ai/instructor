@@ -29,8 +29,7 @@ Usage:
 
 import os
 import sys
-import time
-from typing import List, Optional
+from typing import Optional
 import typer
 from pydantic import BaseModel
 
@@ -52,7 +51,7 @@ class User(BaseModel):
     age: int
 
 
-def create_test_messages() -> List[List[dict]]:
+def create_test_messages() -> list[list[dict]]:
     """Create test message conversations for user extraction"""
     test_prompts = [
         "Hi there! My name is Alice and I'm 28 years old. I work as a software engineer.",
@@ -72,7 +71,7 @@ def create_test_messages() -> List[List[dict]]:
     return messages_list
 
 
-def get_expected_results() -> List[User]:
+def get_expected_results() -> list[User]:
     """Get the expected User objects for validation"""
     return [
         User(name="Alice", age=28),
@@ -108,7 +107,7 @@ def check_api_key(provider: str) -> bool:
     return True
 
 
-def create_openai_batch(model: str, messages_list: List[List[dict]]) -> Optional[str]:
+def create_openai_batch(model: str, messages_list: list[list[dict]]) -> Optional[str]:
     """Create OpenAI batch job using BatchProcessor"""
     processor = BatchProcessor(model, User)
 
@@ -135,7 +134,7 @@ def create_openai_batch(model: str, messages_list: List[List[dict]]) -> Optional
 
 
 def create_anthropic_batch(
-    model: str, messages_list: List[List[dict]]
+    model: str, messages_list: list[list[dict]]
 ) -> Optional[str]:
     """Create Anthropic batch job using BatchProcessor"""
     processor = BatchProcessor(model, User)
@@ -159,7 +158,7 @@ def create_anthropic_batch(
             os.remove(batch_filename)
 
 
-def create_google_batch(model: str, messages_list: List[List[dict]]) -> Optional[str]:
+def create_google_batch(model: str, messages_list: list[list[dict]]) -> Optional[str]:
     """Create Google batch job using BatchProcessor (inline only)"""
     processor = BatchProcessor(model, User)
 
@@ -479,7 +478,7 @@ def show_results(
 
 def poll_for_results(
     provider: str, batch_id: str, validate: bool, max_wait: int
-) -> List[User]:
+) -> list[User]:
     """Poll for batch results until completion or timeout"""
     import time
 
@@ -539,7 +538,7 @@ def poll_for_results(
 
 def fetch_openai_results_with_status(
     batch_id: str, validate: bool
-) -> tuple[str, List[User]]:
+) -> tuple[str, list[User]]:
     """Fetch OpenAI batch results and return status"""
     processor = BatchProcessor("openai/gpt-4o-mini", User)
 
@@ -579,7 +578,7 @@ def fetch_openai_results_with_status(
 
 def fetch_anthropic_results_with_status(
     batch_id: str, validate: bool
-) -> tuple[str, List[User]]:
+) -> tuple[str, list[User]]:
     """Fetch Anthropic batch results and return status"""
     processor = BatchProcessor("anthropic/claude-3-5-sonnet-20241022", User)
 
@@ -627,7 +626,7 @@ def fetch_anthropic_results_with_status(
 
 def fetch_google_results_with_status(
     batch_job_name: str, validate: bool
-) -> tuple[str, List[User]]:
+) -> tuple[str, list[User]]:
     """Fetch Google batch results and return status"""
     try:
         processor = BatchProcessor("google/gemini-2.5-flash", User)
@@ -667,7 +666,7 @@ def fetch_google_results_with_status(
         return "error", []
 
 
-def fetch_openai_results(batch_id: str, validate: bool) -> List[User]:
+def fetch_openai_results(batch_id: str, validate: bool) -> list[User]:
     """Fetch OpenAI batch results using BatchProcessor"""
     processor = BatchProcessor("openai/gpt-4o-mini", User)
 
@@ -711,7 +710,7 @@ def fetch_openai_results(batch_id: str, validate: bool) -> List[User]:
     return extracted_results
 
 
-def fetch_anthropic_results(batch_id: str, validate: bool) -> List[User]:
+def fetch_anthropic_results(batch_id: str, validate: bool) -> list[User]:
     """Fetch Anthropic batch results using BatchProcessor"""
     processor = BatchProcessor("anthropic/claude-3-5-sonnet-20241022", User)
 
@@ -755,7 +754,7 @@ def fetch_anthropic_results(batch_id: str, validate: bool) -> List[User]:
     return extracted_results
 
 
-def fetch_google_results(batch_job_name: str, validate: bool) -> List[User]:
+def fetch_google_results(batch_job_name: str, validate: bool) -> list[User]:
     """Fetch Google batch results using BatchProcessor"""
     try:
         processor = BatchProcessor("google/gemini-2.5-flash", User)
@@ -801,7 +800,7 @@ def fetch_google_results(batch_job_name: str, validate: bool) -> List[User]:
         return []
 
 
-def validate_results(results: List[User], provider_name: str) -> bool:
+def validate_results(results: list[User], provider_name: str) -> bool:
     """Validate extracted results against expected results"""
     expected_results = get_expected_results()
 
