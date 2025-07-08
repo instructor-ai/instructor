@@ -160,85 +160,20 @@ def create_anthropic_batch(
 
 
 def create_google_batch(model: str, messages_list: List[List[dict]]) -> Optional[str]:
-    """Create Google batch job using BatchProcessor"""
-    try:
-        # Check environment variables
-        bucket_name = os.getenv("GCS_BUCKET")
-        test_mode = os.getenv("GOOGLE_TEST_MODE", "false").lower() == "true"
-        
-        # Create processor
-        processor = BatchProcessor(model, User)
-        
-        # Try inline batch first (for small batches)
-        try:
-            typer.echo("Trying Google inline batch submission...")
-            batch_id = processor.submit_batch(
-                messages_list=messages_list,
-                metadata={"description": "Unified BatchProcessor test"},
-                use_inline=True,
-                max_tokens=200,
-                temperature=0.1,
-            )
-            
-            typer.echo(f"Inline batch job created: {batch_id}")
-            return batch_id
-            
-        except Exception as inline_error:
-            typer.echo(f"Inline batch failed: {inline_error}")
-            typer.echo("Falling back to file-based batch...")
-            
-            # Fallback to file-based batch
-            if not bucket_name and not test_mode:
-                typer.echo("GCS_BUCKET environment variable is not set")
-                typer.echo("To test Google batch functionality without actual submission:")
-                typer.echo("  export GOOGLE_TEST_MODE=true")
-                typer.echo("  export GOOGLE_API_KEY=fake_key_for_testing")
-                typer.echo("Then run the test again.")
-                raise Exception("GCS_BUCKET environment variable is not set")
+    """Create Google batch job using BatchProcessor (inline only)"""
+    processor = BatchProcessor(model, User)
 
-            # Create batch file
-            batch_filename = "test_batch.jsonl"
-            processor.create_batch_from_messages(
-                file_path=batch_filename,
-                messages_list=messages_list,
-                max_tokens=200,
-                temperature=0.1,
-            )
+    typer.echo("Submitting Google inline batch...")
+    batch_id = processor.submit_batch(
+        messages_list=messages_list,
+        metadata={"description": "Unified BatchProcessor test"},
+        use_inline=True,
+        max_tokens=200,
+        temperature=0.1,
+    )
 
-            try:
-                if test_mode:
-                    typer.echo("GOOGLE TEST MODE - Simulating batch creation...")
-                    typer.echo("Generated batch file format for Google:")
-                    
-                    # Show the generated batch file content for debugging
-                    with open(batch_filename, 'r') as f:
-                        lines = f.readlines()
-                        for i, line in enumerate(lines[:3]):  # Show first 3 lines
-                            typer.echo(f"  Line {i+1}: {line.strip()}")
-                    
-                    # Return a fake batch ID for testing
-                    fake_batch_id = f"batches/test_google_batch_{int(time.time() * 1000) % 1000000}"
-                    typer.echo(f"Simulated batch job created: {fake_batch_id}")
-                    return fake_batch_id
-                else:
-                    typer.echo("Submitting Google GenAI file-based batch job...")
-                    batch_id = processor.submit_batch(
-                        file_path=batch_filename, 
-                        metadata={"description": "Unified BatchProcessor test"},
-                        bucket_name=bucket_name
-                    )
-
-                    typer.echo(f"File-based batch job created: {batch_id}")
-                    return batch_id
-
-            finally:
-                if os.path.exists(batch_filename):
-                    os.remove(batch_filename)
-
-    except Exception as e:
-        typer.echo(f"Error creating Google batch: {e}")
-        if "GCS_BUCKET" not in str(e):
-            raise e
+    typer.echo(f"Inline batch job created: {batch_id}")
+    return batch_id
 
 
 @app.command()
@@ -406,9 +341,9 @@ def fetch(
             typer.echo(f"Successfully fetched and validated {len(results)} results!")
             if validate:
                 # Assert that the results match the expected results
-                assert validate_results(results, provider.capitalize()), (
-                    f"Test failed: {provider} results do not match expected results."
-                )
+                assert validate_results(
+                    results, provider.capitalize()
+                ), f"Test failed: {provider} results do not match expected results."
         else:
             typer.echo("No results available yet or batch still processing")
             if not poll:
@@ -647,7 +582,7 @@ def fetch_anthropic_results_with_status(
 ) -> tuple[str, List[User]]:
     """Fetch Anthropic batch results and return status"""
     processor = BatchProcessor("anthropic/claude-3-5-sonnet-20241022", User)
-    
+
     # Get batch info
     all_batches = processor.list_batches(limit=100)
     batch_info = None
@@ -655,12 +590,16 @@ def fetch_anthropic_results_with_status(
         if batch.id == batch_id:
             batch_info = batch
             break
-    
+
     if not batch_info:
         return "not_found", []
-    
+
     # Check for various terminal states
-    if batch_info.status in [BatchStatus.FAILED, BatchStatus.CANCELLED, BatchStatus.EXPIRED]:
+    if batch_info.status in [
+        BatchStatus.FAILED,
+        BatchStatus.CANCELLED,
+        BatchStatus.EXPIRED,
+    ]:
         return batch_info.raw_status, []
 
     if batch_info.status != BatchStatus.COMPLETED:
@@ -692,7 +631,7 @@ def fetch_google_results_with_status(
     """Fetch Google batch results and return status"""
     try:
         processor = BatchProcessor("google/gemini-2.5-flash", User)
-        
+
         # Get batch info
         all_batches = processor.list_batches(limit=100)
         batch_info = None
@@ -700,10 +639,10 @@ def fetch_google_results_with_status(
             if batch.id == batch_job_name:
                 batch_info = batch
                 break
-        
+
         if not batch_info:
             return "not_found", []
-        
+
         if batch_info.status != BatchStatus.COMPLETED:
             return batch_info.raw_status, []
 

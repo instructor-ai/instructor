@@ -1,6 +1,6 @@
 ---
 title: Managing Batch Jobs with Multi-Provider CLI
-description: Learn how to create, list, cancel, and delete batch jobs using the unified Command Line Interface (CLI) across OpenAI, Anthropic, and Google providers.
+description: Learn how to create, list, cancel, and delete batch jobs using the unified Command Line Interface (CLI) across OpenAI and Anthropic providers.
 ---
 
 # Using the Command Line Interface for Batch Jobs
@@ -11,7 +11,6 @@ The instructor CLI provides comprehensive functionalities for managing batch job
 
 - **OpenAI**: Utilizes OpenAI's robust batch processing capabilities with metadata support
 - **Anthropic**: Leverages Anthropic's advanced language models with cancel/delete operations
-- **Google GenAI**: Uses Google's Gemini models with Cloud Storage integration
 
 The CLI uses a unified `--provider` flag for all commands, with backward compatibility for legacy flags.
 
@@ -20,20 +19,20 @@ $ instructor batch --help
 
  Usage: instructor batch [OPTIONS] COMMAND [ARGS]...
 
- Manage Multi-Provider Batch jobs
+ Manage OpenAI Batch jobs
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ --help          Show this message and exit.                                         │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ──────────────────────────────────────────────────────────────────────────╮
-│ cancel             Cancel a batch job                                               │
-│ create             Create batch job using BatchProcessor                            │
-│ create-from-file   Create a batch job from a file                                   │
-│ delete             Delete a completed batch job                                     │
-│ download-file      Download the file associated with a batch job                    │
-│ list               See all existing batch jobs                                      │
-│ results            Retrieve results from a batch job                                │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ cancel             Cancel a batch job                                        │
+│ create             Create batch job using BatchProcessor                     │
+│ create-from-file   Create a batch job from a file                            │
+│ delete             Delete a completed batch job                              │
+│ download-file      Download the file associated with a batch job             │
+│ list               See all existing batch jobs                               │
+│ results            Retrieve results from a batch job                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ## Creating a Batch Job
@@ -47,22 +46,32 @@ $ instructor batch list --help
 
  See all existing batch jobs
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ --limit                    INTEGER  Total number of batch jobs to show              │
-│                                     [default: 10]                                   │
-│ --poll                     INTEGER  Time in seconds to wait for the batch job to    │
-│                                     complete                                        │
-│                                     [default: 10]                                   │
-│ --screen    --no-screen             Enable or disable screen output                 │
-│                                     [default: no-screen]                            │
-│ --live      --no-live               Enable live polling to continuously update      │
-│                                     [default: no-live]                              │
-│ --provider                 TEXT     Provider to use (openai, anthropic, google)     │
-│                                     [default: openai]                               │
-│ --use-anthropic                     [DEPRECATED] Use --provider 'anthropic'         │
-│                                     [default: False]                                │
-│ --help                              Show this message and exit.                     │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --limit                                  INTEGER  Total number of batch jobs │
+│                                                   to show                    │
+│                                                   [default: 10]              │
+│ --poll                                   INTEGER  Time in seconds to wait    │
+│                                                   for the batch job to       │
+│                                                   complete                   │
+│                                                   [default: 10]              │
+│ --screen           --no-screen                    Enable or disable screen   │
+│                                                   output                     │
+│                                                   [default: no-screen]       │
+│ --live             --no-live                      Enable live polling to     │
+│                                                   continuously update the    │
+│                                                   table                      │
+│                                                   [default: no-live]         │
+│ --provider                               TEXT     Provider to use (e.g.,     │
+│                                                   'openai', 'anthropic')     │
+│                                                   [default: openai]          │
+│ --use-anthropic    --no-use-anthropic             [DEPRECATED] Use --model   │
+│                                                   instead. Use Anthropic API │
+│                                                   instead of OpenAI          │
+│                                                   [default:                  │
+│                                                   no-use-anthropic]          │
+│ --help                                            Show this message and      │
+│                                                   exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
 The enhanced list command now shows rich information including timestamps, duration, and provider-specific metrics:
@@ -102,21 +111,38 @@ You can create batch jobs directly from pre-formatted .jsonl files with enhanced
 ```bash
 $ instructor batch create-from-file --help
 
-Usage: instructor batch create-from-file [OPTIONS]
+ Usage: instructor batch create-from-file [OPTIONS]
 
  Create a batch job from a file
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --file-path          TEXT  File containing batch job requests [required]         │
-│ *  --model              TEXT  Model in format 'provider/model-name'                │
-│                               [default: openai/gpt-4o-mini]                         │
-│    --description        TEXT  Description/metadata for the batch job                │
-│                               [default: Instructor batch job]                       │
-│    --completion-window  TEXT  Completion window for batch job (OpenAI only)         │
-│                               [default: 24h]                                        │
-│    --use-anthropic            [DEPRECATED] Use --model instead                      │
-│    --help                     Show this message and exit.                           │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ *  --file-path                                  TEXT  File containing the    │
+│                                                       batch job requests     │
+│                                                       [default: None]        │
+│                                                       [required]             │
+│    --model                                      TEXT  Model in format        │
+│                                                       'provider/model-name'  │
+│                                                       (e.g., 'openai/gpt-4', │
+│                                                       'anthropic/claude-3-s… │
+│                                                       [default:              │
+│                                                       openai/gpt-4o-mini]    │
+│    --description                                TEXT  Description/metadata   │
+│                                                       for the batch job      │
+│                                                       [default: Instructor   │
+│                                                       batch job]             │
+│    --completion-window                          TEXT  Completion window for  │
+│                                                       the batch job (OpenAI  │
+│                                                       only)                  │
+│                                                       [default: 24h]         │
+│    --use-anthropic        --no-use-anthropic          [DEPRECATED] Use       │
+│                                                       --model instead. Use   │
+│                                                       Anthropic API instead  │
+│                                                       of OpenAI              │
+│                                                       [default:              │
+│                                                       no-use-anthropic]      │
+│    --help                                             Show this message and  │
+│                                                       exit.                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
 Example usage with metadata:
@@ -134,12 +160,6 @@ instructor batch create-from-file \
     --file-path batch_requests.jsonl \
     --model "anthropic/claude-3-5-sonnet-20241022" \
     --description "Text analysis batch"
-
-# Google GenAI batch (requires GCS setup)
-instructor batch create-from-file \
-    --file-path batch_requests.jsonl \
-    --model "google/gemini-2.5-flash" \
-    --description "Document processing batch"
 ```
 
 For creating .jsonl files, you can use the enhanced `BatchProcessor`:
@@ -191,12 +211,22 @@ $ instructor batch cancel --help
 
  Cancel a batch job
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --batch-id     TEXT  Batch job ID to cancel [required]                           │
-│    --provider     TEXT  Provider to use (openai, anthropic, google) [default: openai]│
-│    --use-anthropic      [DEPRECATED] Use --provider 'anthropic'                     │
-│    --help               Show this message and exit.                                 │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ *  --batch-id                               TEXT  Batch job ID to cancel     │
+│                                                   [default: None]            │
+│                                                   [required]                 │
+│    --provider                               TEXT  Provider to use (e.g.,     │
+│                                                   'openai', 'anthropic')     │
+│                                                   [default: openai]          │
+│    --use-anthropic    --no-use-anthropic          [DEPRECATED] Use           │
+│                                                   --provider 'anthropic'     │
+│                                                   instead. Use Anthropic API │
+│                                                   instead of OpenAI          │
+│                                                   [default:                  │
+│                                                   no-use-anthropic]          │
+│    --help                                         Show this message and      │
+│                                                   exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
 Examples:
@@ -207,14 +237,11 @@ instructor batch cancel --batch-id batch_abc123 --provider openai
 
 # Cancel Anthropic batch
 instructor batch cancel --batch-id msgbatch_def456 --provider anthropic
-
-# Cancel Google batch
-instructor batch cancel --batch-id batches/ghi789 --provider google
 ```
 
 ### Deleting a Batch Job
 
-Delete completed batch jobs (supported by Anthropic and Google):
+Delete completed batch jobs (supported by Anthropic):
 
 ```bash
 $ instructor batch delete --help
@@ -223,11 +250,12 @@ $ instructor batch delete --help
 
  Delete a completed batch job
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --batch-id     TEXT  Batch job ID to delete [required]                           │
-│    --provider     TEXT  Provider to use (openai, anthropic, google) [default: openai]│
-│    --help               Show this message and exit.                                 │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ *  --batch-id        TEXT  Batch job ID to delete [default: None] [required] │
+│    --provider        TEXT  Provider to use (e.g., 'openai', 'anthropic')     │
+│                            [default: openai]                                 │
+│    --help                  Show this message and exit.                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
 Examples:
@@ -235,9 +263,6 @@ Examples:
 ```bash
 # Delete Anthropic batch (supported)
 instructor batch delete --batch-id msgbatch_abc123 --provider anthropic
-
-# Delete Google batch (supported)
-instructor batch delete --batch-id batches/def456 --provider google
 
 # Try to delete OpenAI batch (shows helpful message)
 instructor batch delete --batch-id batch_ghi789 --provider openai
@@ -255,12 +280,17 @@ $ instructor batch results --help
 
  Retrieve results from a batch job
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --batch-id     TEXT  Batch job ID to get results from [required]                 │
-│ *  --output-file  TEXT  File to save the results to [required]                      │
-│ *  --model        TEXT  Model in format 'provider/model-name' [required]            │
-│    --help               Show this message and exit.                                 │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ *  --batch-id           TEXT  Batch job ID to get results from               │
+│                               [default: None]                                │
+│                               [required]                                     │
+│ *  --output-file        TEXT  File to save the results to [default: None]    │
+│                               [required]                                     │
+│    --model              TEXT  Model in format 'provider/model-name' (e.g.,   │
+│                               'openai/gpt-4', 'anthropic/claude-3-sonnet')   │
+│                               [default: openai/gpt-4o-mini]                  │
+│    --help                     Show this message and exit.                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
 Examples:
@@ -290,24 +320,29 @@ $ instructor batch download-file --help
 
  Download the file associated with a batch job
 
-╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --batch-id           TEXT  Batch job ID to download [required]                   │
-│ *  --download-file-path TEXT  Path to download file to [required]                   │
-│    --provider           TEXT  Provider to use (openai, anthropic, google)           │
-│                               [default: openai]                                     │
-│    --help                     Show this message and exit.                           │
-╰─────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ *  --batch-id                  TEXT  Batch job ID to download                │
+│                                      [default: None]                         │
+│                                      [required]                              │
+│ *  --download-file-path        TEXT  Path to download file to                │
+│                                      [default: None]                         │
+│                                      [required]                              │
+│    --provider                  TEXT  Provider to use (e.g., 'openai',        │
+│                                      'anthropic')                            │
+│                                      [default: openai]                       │
+│    --help                            Show this message and exit.             │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ## Provider Support Matrix
 
-| Operation | OpenAI | Anthropic | Google GenAI |
-|-----------|--------|-----------|--------------|
-| **List**  | ✅ Enhanced table | ✅ Enhanced table | ✅ Enhanced table |
-| **Create** | ✅ With metadata | ✅ File-based | ✅ GCS integration |
-| **Cancel** | ✅ Standard API | ✅ Standard API | ✅ Standard API |
-| **Delete** | ❌ Not supported | ✅ Standard API | ✅ Standard API |
-| **Results** | ✅ Structured parsing | ✅ Structured parsing | ✅ Structured parsing |
+| Operation | OpenAI | Anthropic |
+|-----------|--------|-----------|
+| **List**  | ✅ Enhanced table | ✅ Enhanced table |
+| **Create** | ✅ With metadata | ✅ File-based |
+| **Cancel** | ✅ Standard API | ✅ Standard API |
+| **Delete** | ❌ Not supported | ✅ Standard API |
+| **Results** | ✅ Structured parsing | ✅ Structured parsing |
 
 ## Enhanced Features
 

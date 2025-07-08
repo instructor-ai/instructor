@@ -34,8 +34,6 @@ def generate_table(batch_jobs: list[BatchJobInfo], provider: str):
         table.add_column("Succeeded", justify="right", min_width=8)
         table.add_column("Errored", justify="right", min_width=7)
         table.add_column("Processing", justify="right", min_width=9)
-    elif provider == "google":
-        table.add_column("Model", style="dim", min_width=15)
 
     for batch_job in batch_jobs:
         # Color code status
@@ -112,15 +110,6 @@ def generate_table(batch_jobs: list[BatchJobInfo], provider: str):
                 str(batch_job.request_counts.errored or 0),
                 str(batch_job.request_counts.processing or 0),
             )
-        elif provider == "google":
-            table.add_row(
-                str(batch_job.id),
-                colored_status,
-                created_str,
-                started_str,
-                duration_str,
-                str(batch_job.model or "N/A"),
-            )
 
     return table
 
@@ -133,7 +122,6 @@ def get_jobs(limit: int = 10, provider: str = "openai") -> list[BatchJobInfo]:
     model_map = {
         "openai": "openai/gpt-4o-mini",
         "anthropic": "anthropic/claude-3-sonnet",
-        "google": "google/gemini-1.5-flash",
     }
 
     if provider not in model_map:
@@ -167,7 +155,7 @@ def watch(
     ),
     provider: str = typer.Option(
         "openai",
-        help="Provider to use (e.g., 'openai', 'anthropic', 'google')",
+        help="Provider to use (e.g., 'openai', 'anthropic')",
     ),
     # Deprecated flag for backward compatibility
     use_anthropic: bool = typer.Option(
@@ -192,7 +180,6 @@ def watch(
     required_keys = {
         "anthropic": "ANTHROPIC_API_KEY",
         "openai": "OPENAI_API_KEY",
-        "google": "GOOGLE_API_KEY",
     }
 
     if provider in required_keys and not os.getenv(required_keys[provider]):
@@ -287,7 +274,7 @@ def cancel(
     batch_id: str = typer.Option(help="Batch job ID to cancel"),
     provider: str = typer.Option(
         "openai",
-        help="Provider to use (e.g., 'openai', 'anthropic', 'google')",
+        help="Provider to use (e.g., 'openai', 'anthropic')",
     ),
     # Deprecated flag for backward compatibility
     use_anthropic: bool = typer.Option(
@@ -317,8 +304,7 @@ def cancel(
         model_map = {
             "openai": "openai/gpt-4o-mini",
             "anthropic": "anthropic/claude-3-sonnet",
-            "google": "google/gemini-1.5-flash",
-        }
+            }
 
         if provider not in model_map:
             console.print(f"[red]Unsupported provider: {provider}[/red]")
@@ -330,7 +316,7 @@ def cancel(
         with console.status(
             f"[bold yellow]Cancelling {provider} batch job...", spinner="dots"
         ):
-            result = processor.cancel_batch(batch_id)
+            processor.cancel_batch(batch_id)
 
         console.print(
             f"[bold green]Batch {batch_id} cancelled successfully![/bold green]"
@@ -350,7 +336,7 @@ def delete(
     batch_id: str = typer.Option(help="Batch job ID to delete"),
     provider: str = typer.Option(
         "openai",
-        help="Provider to use (e.g., 'openai', 'anthropic', 'google')",
+        help="Provider to use (e.g., 'openai', 'anthropic')",
     ),
 ):
     """Delete a batch job using the unified BatchProcessor"""
@@ -365,8 +351,7 @@ def delete(
         model_map = {
             "openai": "openai/gpt-4o-mini",
             "anthropic": "anthropic/claude-3-sonnet",
-            "google": "google/gemini-1.5-flash",
-        }
+            }
 
         if provider not in model_map:
             console.print(f"[red]Unsupported provider: {provider}[/red]")
@@ -378,7 +363,7 @@ def delete(
         with console.status(
             f"[bold yellow]Deleting {provider} batch job...", spinner="dots"
         ):
-            result = processor.delete_batch(batch_id)
+            processor.delete_batch(batch_id)
 
         console.print(
             f"[bold green]Batch {batch_id} deleted successfully![/bold green]"
@@ -399,7 +384,7 @@ def download_file(
     download_file_path: str = typer.Option(help="Path to download file to"),
     provider: str = typer.Option(
         "openai",
-        help="Provider to use (e.g., 'openai', 'anthropic', 'google')",
+        help="Provider to use (e.g., 'openai', 'anthropic')",
     ),
 ):
     try:
@@ -500,13 +485,6 @@ def results(
                     f.write(json.dumps(result.model_dump()) + "\n")
             console.print(f"[bold green]Results saved to: {output_file}[/bold green]")
 
-        elif provider == "google":
-            console.print(
-                "[red]Google/Gemini batch results via CLI not yet implemented[/red]"
-            )
-            console.print(
-                "[yellow]Check your Google Cloud Storage bucket for results[/yellow]"
-            )
 
         else:
             console.print(f"[red]Unsupported provider: {provider}[/red]")

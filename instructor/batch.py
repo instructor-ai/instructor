@@ -1,14 +1,13 @@
 """
 Unified Batch Processing API for Multiple Providers
 
-This module provides a unified interface for batch processing across OpenAI, Anthropic,
-and Google GenAI providers. The API uses a Maybe/Result-like pattern with custom_id
+This module provides a unified interface for batch processing across OpenAI and Anthropic
+providers. The API uses a Maybe/Result-like pattern with custom_id
 tracking for type-safe handling of batch results.
 
 Supported Providers:
 - OpenAI: 50% cost savings on batch requests
 - Anthropic: 50% cost savings on batch requests (Message Batches API)
-- Google GenAI: 50% cost savings on batch requests (Cloud Vertex AI)
 
 Features:
 - Type-safe Maybe/Result pattern for handling successes and errors
@@ -35,7 +34,6 @@ Example usage:
 Documentation:
 - OpenAI Batch API: https://platform.openai.com/docs/guides/batch
 - Anthropic Message Batches: https://docs.anthropic.com/en/api/creating-message-batches
-- Google Cloud Batch Prediction: https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/batch-prediction-gemini
 """
 
 from __future__ import annotations
@@ -130,8 +128,6 @@ class BatchFiles(BaseModel):
     output_file_id: Optional[str] = None
     error_file_id: Optional[str] = None
     results_url: Optional[str] = None  # Anthropic
-    input_uri: Optional[str] = None  # Google GCS
-    output_uri: Optional[str] = None  # Google GCS
 
 
 class BatchJobInfo(BaseModel):
@@ -316,56 +312,6 @@ class BatchJobInfo(BaseModel):
             raw_data=batch_data,
         )
 
-    @classmethod
-    def from_google(cls, batch_data: Dict[str, Any]) -> BatchJobInfo:
-        """Create from Google GenAI batch response"""
-        # Normalize status
-        status_map = {
-            "JOB_STATE_PENDING": BatchStatus.PENDING,
-            "JOB_STATE_QUEUED": BatchStatus.PENDING,
-            "JOB_STATE_RUNNING": BatchStatus.PROCESSING,
-            "JOB_STATE_SUCCEEDED": BatchStatus.COMPLETED,
-            "JOB_STATE_FAILED": BatchStatus.FAILED,
-            "JOB_STATE_CANCELLED": BatchStatus.CANCELLED,
-            "JOB_STATE_EXPIRED": BatchStatus.EXPIRED,
-        }
-
-        # Parse timestamps
-        def parse_iso_timestamp(timestamp_str):
-            if not timestamp_str:
-                return None
-            try:
-                # Handle different ISO format variations
-                if isinstance(timestamp_str, str):
-                    return datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
-                else:
-                    return None
-            except (ValueError, AttributeError):
-                return None
-
-        timestamps = BatchTimestamps(
-            created_at=parse_iso_timestamp(batch_data.get("create_time")),
-            started_at=parse_iso_timestamp(batch_data.get("start_time")),
-            completed_at=parse_iso_timestamp(batch_data.get("end_time")),
-        )
-
-        # Parse files
-        files = BatchFiles(
-            input_uri=batch_data.get("input_uri"),
-            output_uri=batch_data.get("output_uri"),
-        )
-
-        return cls(
-            id=batch_data["name"],
-            provider="google",
-            status=status_map.get(batch_data.get("state", ""), BatchStatus.PENDING),
-            raw_status=batch_data.get("state", ""),
-            timestamps=timestamps,
-            request_counts=BatchRequestCounts(),  # Google doesn't provide detailed counts
-            files=files,
-            raw_data=batch_data,
-            model=batch_data.get("model"),
-        )
 
 
 # Union type for batch results - like a Maybe/Result type
@@ -531,93 +477,6 @@ class BatchRequest(BaseModel, Generic[T]):
             "params": params,
         }
 
-    def to_gemini_format(self) -> Dict[str, Any]:
-        """Convert to Gemini batch format with JSON schema"""
-        schema = self.get_json_schema()
-        contents = self._convert_messages_to_gemini_contents()
-
-        return {
-            "contents": contents,
-            "generationConfig": {
-                "maxOutputTokens": self.max_tokens,
-                "temperature": self.temperature,
-                "responseSchema": schema,
-                "responseMimeType": "application/json",
-            },
-        }
-
-    def to_genai_batch_format(self) -> Dict[str, Any]:
-        """Convert to Google GenAI batch format for batch processing
-
-        Based on Google Cloud documentation:
-        https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/batch-prediction-gemini#batch_prediction_inputs_and_outputs
-        """
-        schema = self.get_json_schema()
-        contents = self._convert_messages_to_gemini_contents()
-
-        return {
-            "key": self.custom_id,
-            "request": {
-                "contents": contents,
-                "generationConfig": {
-                    "maxOutputTokens": self.max_tokens,
-                    "temperature": self.temperature,
-                    "responseSchema": schema,
-                    "responseMimeType": "application/json",
-                },
-            },
-        }
-
-    def _convert_messages_to_gemini_contents(self) -> List[Dict[str, Any]]:
-        """Convert OpenAI/Anthropic message format to Gemini contents format"""
-        contents = []
-        system_instructions = []
-
-        for msg in self.messages:
-            role = msg.get("role", "")
-            content = msg.get("content", "")
-
-            if role == "system":
-                # Gemini handles system instructions separately, but for batch we'll include in contents
-                system_instructions.append(content)
-            elif role == "user":
-                contents.append({"parts": [{"text": content}], "role": "user"})
-            elif role == "assistant":
-                contents.append(
-                    {
-                        "parts": [{"text": content}],
-                        "role": "model",  # Gemini uses "model" instead of "assistant"
-                    }
-                )
-
-        # If we have system instructions, prepend them as the first user message
-        if system_instructions:
-            system_content = "Instructions: " + "\n".join(system_instructions)
-            if contents and contents[0]["role"] == "user":
-                # Prepend to first user message
-                contents[0]["parts"][0]["text"] = (
-                    system_content + "\n\n" + contents[0]["parts"][0]["text"]
-                )
-            else:
-                # Add as first message
-                contents.insert(
-                    0, {"parts": [{"text": system_content}], "role": "user"}
-                )
-
-        # Ensure we end with a user message for response generation
-        if not contents or contents[-1]["role"] != "user":
-            # Add schema instruction as final user message
-            schema_instruction = (
-                f"Return a JSON object matching this schema: {self.get_json_schema()}"
-            )
-            if contents and contents[-1]["role"] == "user":
-                contents[-1]["parts"][0]["text"] += "\n\n" + schema_instruction
-            else:
-                contents.append(
-                    {"parts": [{"text": schema_instruction}], "role": "user"}
-                )
-
-        return contents
 
     def save_to_file(self, file_path: str, provider: str) -> None:
         """Save batch request to file in provider-specific format"""
@@ -625,8 +484,6 @@ class BatchRequest(BaseModel, Generic[T]):
             data = self.to_openai_format()
         elif provider == "anthropic":
             data = self.to_anthropic_format()
-        elif provider == "google":
-            data = self.to_genai_batch_format()
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 
@@ -693,45 +550,19 @@ class BatchProcessor(Generic[T]):
 
     def submit_batch(
         self, 
-        file_path: str = None, 
-        messages_list: List[List[Dict[str, Any]]] = None,
+        file_path: str,
         metadata: Optional[Dict[str, Any]] = None, 
-        use_inline: bool = None,
         **kwargs
     ) -> str:
         """Submit batch job to the provider and return job ID
 
         Args:
-            file_path: Path to the batch request file (for file-based submission)
-            messages_list: List of message conversations (for inline submission)
+            file_path: Path to the batch request file
             metadata: Optional metadata to attach to the batch job
-            use_inline: Force inline mode (Google only), auto-detect if None
             **kwargs: Additional provider-specific arguments
         """
         if metadata is None:
             metadata = {"description": "Instructor batch job"}
-
-        # For Google, support both inline and file-based submission
-        if self.provider_name == "google":
-            # Auto-detect inline vs file mode
-            if use_inline is None:
-                if messages_list is not None:
-                    # Estimate size - use inline for small batches
-                    total_size = sum(len(json.dumps(msgs).encode()) for msgs in messages_list)
-                    use_inline = total_size < 15_000_000  # 15MB threshold
-                else:
-                    use_inline = False
-            
-            if use_inline and messages_list is not None:
-                return self._submit_google_inline_batch(messages_list, metadata=metadata, **kwargs)
-            else:
-                if file_path is None:
-                    raise ValueError("file_path is required for file-based Google batch submission")
-                return self._submit_google_file_batch(file_path, metadata=metadata, **kwargs)
-        
-        # For other providers, use file-based submission
-        if file_path is None:
-            raise ValueError("file_path is required for batch submission")
             
         if self.provider_name == "openai":
             return self._submit_openai_batch(file_path, metadata=metadata, **kwargs)
@@ -748,8 +579,6 @@ class BatchProcessor(Generic[T]):
             return self._get_openai_status(batch_id)
         elif self.provider_name == "anthropic":
             return self._get_anthropic_status(batch_id)
-        elif self.provider_name == "google":
-            return self._get_google_status(batch_id)
         else:
             raise ValueError(
                 f"Unsupported provider for batch status: {self.provider_name}"
@@ -761,8 +590,6 @@ class BatchProcessor(Generic[T]):
             results_content = self._retrieve_openai_results(batch_id)
         elif self.provider_name == "anthropic":
             results_content = self._retrieve_anthropic_results(batch_id)
-        elif self.provider_name == "google":
-            results_content = self._retrieve_google_results(batch_id)
         else:
             raise ValueError(
                 f"Unsupported provider for result retrieval: {self.provider_name}"
@@ -783,8 +610,6 @@ class BatchProcessor(Generic[T]):
             return self._list_openai_batches(limit)
         elif self.provider_name == "anthropic":
             return self._list_anthropic_batches(limit)
-        elif self.provider_name == "google":
-            return self._list_google_batches(limit)
         else:
             raise ValueError(
                 f"Unsupported provider for listing batches: {self.provider_name}"
@@ -814,8 +639,6 @@ class BatchProcessor(Generic[T]):
                 self._download_openai_results(batch_id, file_path)
             elif self.provider_name == "anthropic":
                 self._download_anthropic_results(batch_id, file_path)
-            elif self.provider_name == "google":
-                self._download_google_results(batch_id, file_path)
             else:
                 raise ValueError(
                     f"Unsupported provider for result download: {self.provider_name}"
@@ -836,8 +659,6 @@ class BatchProcessor(Generic[T]):
             return self._cancel_openai_batch(batch_id)
         elif self.provider_name == "anthropic":
             return self._cancel_anthropic_batch(batch_id)
-        elif self.provider_name == "google":
-            return self._cancel_google_batch(batch_id)
         else:
             raise ValueError(
                 f"Unsupported provider for batch cancellation: {self.provider_name}"
@@ -856,8 +677,6 @@ class BatchProcessor(Generic[T]):
             return self._delete_openai_batch(batch_id)
         elif self.provider_name == "anthropic":
             return self._delete_anthropic_batch(batch_id)
-        elif self.provider_name == "google":
-            return self._delete_google_batch(batch_id)
         else:
             raise ValueError(
                 f"Unsupported provider for batch deletion: {self.provider_name}"
@@ -892,6 +711,7 @@ class BatchProcessor(Generic[T]):
         self, file_path: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
     ) -> str:
         """Submit Anthropic batch job"""
+        _ = kwargs  # Unused but accepted for API consistency
         try:
             import anthropic
 
@@ -918,160 +738,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to submit Anthropic batch: {e}")
 
-    def _submit_google_batch(
-        self, file_path: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
-    ) -> str:
-        """Submit Google GenAI batch job"""
-        try:
-            from google import genai
-            from google.genai.types import CreateBatchJobConfig, HttpOptions
-            from google.cloud import storage
-            import uuid
-
-            # Required environment variables
-            bucket_name = kwargs.get("bucket_name") or os.getenv("GCS_BUCKET")
-            if not bucket_name:
-                raise Exception(
-                    "GCS_BUCKET environment variable or bucket_name parameter is required"
-                )
-
-            # Remove gs:// prefix if present
-            if bucket_name.startswith("gs://"):
-                bucket_name = bucket_name[5:]
-
-            # Upload to GCS
-            blob_path = f"batch-inputs/{uuid.uuid4()}.jsonl"
-            storage_client = storage.Client()
-            bucket = storage_client.bucket(bucket_name)
-            blob = bucket.blob(blob_path)
-            blob.upload_from_filename(file_path)
-            gcs_input_uri = f"gs://{bucket_name}/{blob_path}"
-
-            # Create GenAI client and submit batch
-            client = genai.Client(http_options=HttpOptions(api_version="v1"))
-            output_uri = f"gs://{bucket_name}/batch-outputs/"
-
-            # Prepare config with display_name from metadata
-            config_params = {"dest": output_uri}
-            if metadata and "description" in metadata:
-                config_params["display_name"] = metadata["description"]
-            elif metadata and "display_name" in metadata:
-                config_params["display_name"] = metadata["display_name"]
-            else:
-                config_params["display_name"] = "Instructor batch job"
-
-            job = client.batches.create(
-                model=self.model_name,
-                src=gcs_input_uri,
-                config=CreateBatchJobConfig(**config_params),
-            )
-            return job.name
-        except Exception as e:
-            raise Exception(f"Failed to submit Google batch: {e}")
-
-    def _submit_google_file_batch(
-        self, file_path: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
-    ) -> str:
-        """Submit Google GenAI file-based batch job"""
-        # This is the same as _submit_google_batch - just renamed for clarity
-        return self._submit_google_batch(file_path, metadata=metadata, **kwargs)
-
-    def _submit_google_inline_batch(
-        self, messages_list: List[List[dict]], metadata: Optional[Dict[str, Any]] = None, **kwargs
-    ) -> str:
-        """Submit Google GenAI inline batch job with requests directly"""
-        try:
-            from google import genai
-            from google.genai import types
-
-            # Create GenAI client with API key
-            import os
-            api_key = kwargs.get("api_key") or os.environ.get("GOOGLE_API_KEY")
-            
-            # Create client with proper authentication
-            if api_key:
-                client = genai.Client(api_key=api_key)
-            else:
-                # Try default authentication (for Vertex AI)
-                client = genai.Client()
-
-            # Convert messages to Google inline batch format
-            inline_requests = []
-            for i, messages in enumerate(messages_list):
-                # Convert messages to Google format
-                contents = []
-                system_message = None
-                
-                for msg in messages:
-                    if msg["role"] == "system":
-                        # Store system message to prepend to user message
-                        system_message = msg["content"]
-                        continue
-                    elif msg["role"] == "user":
-                        content = msg["content"]
-                        # Prepend system message if present
-                        if system_message:
-                            content = f"{system_message}\n\n{content}"
-                            system_message = None  # Only prepend once
-                        
-                        contents.append({
-                            "role": "user",
-                            "parts": [{"text": content}]
-                        })
-                    elif msg["role"] == "assistant":
-                        contents.append({
-                            "role": "model",
-                            "parts": [{"text": msg["content"]}]
-                        })
-                
-                # Create inline request format using InlinedRequest structure
-                # Note: InlinedRequest has 'config' field that takes GenerateContentConfig
-                config = {
-                    "generation_config": {
-                        "temperature": kwargs.get("temperature", 0.1),
-                        "max_output_tokens": kwargs.get("max_tokens", 1000),
-                    }
-                }
-                
-                # Add response schema if response_model is defined
-                if self.response_model:
-                    schema = self.response_model.model_json_schema()
-                    config["generation_config"]["response_mime_type"] = "application/json"
-                    config["generation_config"]["response_schema"] = schema
-                
-                # Create InlinedRequest format
-                request = {
-                    "contents": contents,
-                    "config": config
-                }
-                
-                inline_requests.append(request)
-            
-            # Prepare config with display_name from metadata
-            config = {}
-            if metadata and "description" in metadata:
-                config["display_name"] = metadata["description"]
-            elif metadata and "display_name" in metadata:
-                config["display_name"] = metadata["display_name"]
-            else:
-                config["display_name"] = "Instructor inline batch job"
-            
-            # Submit batch job with inline requests using the correct API
-            # Convert model name to include "models/" prefix if not present
-            model_name = self.model_name
-            if not model_name.startswith("models/"):
-                model_name = f"models/{model_name}"
-            
-            # Create the batch job with inline requests
-            # Use the src parameter directly with the list of requests
-            job = client.batches.create(
-                model=model_name,
-                src=inline_requests,
-                config=config,
-            )
-            return job.name
-        except Exception as e:
-            raise Exception(f"Failed to submit Google inline batch: {e}")
 
     def _get_openai_status(self, batch_id: str) -> Dict[str, Any]:
         """Get OpenAI batch status"""
@@ -1116,22 +782,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to get Anthropic batch status: {e}")
 
-    def _get_google_status(self, batch_id: str) -> Dict[str, Any]:
-        """Get Google GenAI batch status"""
-        try:
-            from google import genai
-            from google.genai.types import HttpOptions
-
-            client = genai.Client(http_options=HttpOptions(api_version="v1"))
-            job = client.batches.get(name=batch_id)
-            return {
-                "id": job.name,
-                "status": job.state.name,
-                "created_at": getattr(job, "create_time", None),
-                "output_uri": getattr(job, "output_uri", None),
-            }
-        except Exception as e:
-            raise Exception(f"Failed to get Google batch status: {e}")
 
     def _retrieve_openai_results(self, batch_id: str) -> str:
         """Retrieve OpenAI batch results"""
@@ -1187,46 +837,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to retrieve Anthropic results: {e}")
 
-    def _retrieve_google_results(self, batch_id: str) -> str:
-        """Retrieve Google GenAI batch results"""
-        try:
-            from google import genai
-            from google.genai.types import JobState, HttpOptions
-            from google.cloud import storage
-
-            # Get job status
-            client = genai.Client(http_options=HttpOptions(api_version="v1"))
-            job = client.batches.get(name=batch_id)
-
-            if job.state != JobState.JOB_STATE_SUCCEEDED:
-                raise Exception(
-                    f"Batch not completed successfully, status: {job.state.name}"
-                )
-
-            if not job.output_uri:
-                raise Exception("No output URI available")
-
-            # Download results from GCS
-            if not job.output_uri.startswith("gs://"):
-                raise Exception("Invalid GCS URI format")
-
-            gcs_path = job.output_uri[5:]  # Remove gs://
-            bucket_name, prefix = gcs_path.split("/", 1)
-
-            storage_client = storage.Client()
-            bucket = storage_client.bucket(bucket_name)
-
-            results_lines = []
-            for blob in bucket.list_blobs(prefix=prefix):
-                if blob.name.endswith(".jsonl"):
-                    content = blob.download_as_text()
-                    for line in content.splitlines():
-                        if line.strip():
-                            results_lines.append(line)
-
-            return "\n".join(results_lines)
-        except Exception as e:
-            raise Exception(f"Failed to retrieve Google results: {e}")
 
     def parse_results(self, results_content: str) -> List[BatchResult]:
         """Parse batch results from content string into Maybe-like results with custom_id tracking"""
@@ -1338,20 +948,6 @@ class BatchProcessor(Generic[T]):
 
                 return None
 
-            elif self.provider_name == "google":
-                # Handle Google GenAI batch response format
-                # Documentation: https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/batch-prediction-gemini#batch_prediction_inputs_and_outputs
-                if "response" in data and "candidates" in data["response"]:
-                    # Google GenAI batch response format
-                    candidates = data["response"]["candidates"]
-                    if candidates and len(candidates) > 0:
-                        content = candidates[0]["content"]["parts"][0]["text"]
-                        return json.loads(content)
-                elif "candidates" in data and len(data["candidates"]) > 0:
-                    # Direct Gemini API response
-                    content = data["candidates"][0]["content"]["parts"][0]["text"]
-                    return json.loads(content)
-                return None
 
         except Exception:
             return None
@@ -1411,42 +1007,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to download Anthropic results: {e}")
 
-    def _download_google_results(self, batch_id: str, file_path: str) -> None:
-        """Download Google GenAI batch results to a file"""
-        try:
-            from google import genai
-            from google.genai.types import JobState, HttpOptions
-            from google.cloud import storage
-
-            # Get job status
-            client = genai.Client(http_options=HttpOptions(api_version="v1"))
-            job = client.batches.get(name=batch_id)
-
-            if job.state != JobState.JOB_STATE_SUCCEEDED:
-                raise Exception(
-                    f"Batch not completed successfully, status: {job.state.name}"
-                )
-
-            if not job.output_uri:
-                raise Exception("No output URI available")
-
-            # Download results from GCS
-            if not job.output_uri.startswith("gs://"):
-                raise Exception("Invalid GCS URI format")
-
-            gcs_path = job.output_uri[5:]  # Remove gs://
-            bucket_name, prefix = gcs_path.split("/", 1)
-
-            storage_client = storage.Client()
-            bucket = storage_client.bucket(bucket_name)
-
-            with open(file_path, "w") as f:
-                for blob in bucket.list_blobs(prefix=prefix):
-                    if blob.name.endswith(".jsonl"):
-                        content = blob.download_as_text()
-                        f.write(content)
-        except Exception as e:
-            raise Exception(f"Failed to download Google results: {e}")
 
     def _list_openai_batches(self, limit: int) -> List[BatchJobInfo]:
         """List OpenAI batch jobs"""
@@ -1499,24 +1059,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to list Anthropic batches: {e}")
 
-    def _list_google_batches(self, limit: int) -> List[BatchJobInfo]:
-        """List Google GenAI batch jobs"""
-        try:
-            from google import genai
-            from google.genai.types import HttpOptions
-
-            client = genai.Client(http_options=HttpOptions(api_version="v1"))
-            jobs = client.batches.list(limit=limit)
-
-            batch_infos = []
-            for job in jobs:
-                batch_data = job.__dict__ if hasattr(job, "__dict__") else {}
-                batch_info = BatchJobInfo.from_google(batch_data)
-                batch_infos.append(batch_info)
-
-            return list(batch_infos)
-        except Exception as e:
-            raise Exception(f"Failed to list Google batches: {e}")
 
     def _cancel_openai_batch(self, batch_id: str) -> Dict[str, Any]:
         """Cancel OpenAI batch job"""
@@ -1551,23 +1093,12 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to cancel Anthropic batch: {e}")
 
-    def _cancel_google_batch(self, batch_id: str) -> Dict[str, Any]:
-        """Cancel Google GenAI batch job"""
-        try:
-            from google import genai
-            from google.genai.types import HttpOptions
-
-            client = genai.Client(http_options=HttpOptions(api_version="v1"))
-            # Google uses cancel operation
-            response = client.batches.cancel(name=batch_id)
-            return response.__dict__ if hasattr(response, "__dict__") else {}
-        except Exception as e:
-            raise Exception(f"Failed to cancel Google batch: {e}")
 
     def _delete_openai_batch(self, batch_id: str) -> Dict[str, Any]:
         """Delete OpenAI batch job"""
         # Note: OpenAI doesn't have a delete batch API endpoint
         # Batches are automatically deleted after a certain period
+        _ = batch_id  # Unused but required for interface consistency
         raise NotImplementedError("OpenAI does not support batch deletion via API")
 
     def _delete_anthropic_batch(self, batch_id: str) -> Dict[str, Any]:
@@ -1592,18 +1123,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to delete Anthropic batch: {e}")
 
-    def _delete_google_batch(self, batch_id: str) -> Dict[str, Any]:
-        """Delete Google GenAI batch job"""
-        try:
-            from google import genai
-            from google.genai.types import HttpOptions
-
-            client = genai.Client(http_options=HttpOptions(api_version="v1"))
-            # Google uses delete operation
-            response = client.batches.delete(name=batch_id)
-            return response.__dict__ if hasattr(response, "__dict__") else {}
-        except Exception as e:
-            raise Exception(f"Failed to delete Google batch: {e}")
 
 
 class BatchJob:
@@ -1683,15 +1202,6 @@ class BatchJob:
                             text = item.get("text", "")
                             return json.loads(text)
 
-            # Try Gemini format
-            if "candidates" in data:
-                candidates = data["candidates"]
-                if candidates and len(candidates) > 0:
-                    content = candidates[0].get("content", {})
-                    parts = content.get("parts", [])
-                    if parts and len(parts) > 0:
-                        text = parts[0].get("text", "")
-                        return json.loads(text)
 
         except Exception:
             pass
@@ -1713,13 +1223,10 @@ class BatchJob:
         """Create batch file from messages using provider detection"""
         # Detect provider from model name
         use_anthropic = "claude" in model.lower()
-        use_gemini = "gemini" in model.lower()
 
         # Use the new BatchProcessor for unified handling
         if use_anthropic:
             full_model = f"anthropic/{model}"
-        elif use_gemini:
-            full_model = f"google/{model}"
         else:
             full_model = f"openai/{model}"
 
