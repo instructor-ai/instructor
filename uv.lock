@@ -1824,6 +1824,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-examples" },
+    { name = "pytest-xdist" },
     { name = "python-dotenv" },
 ]
 docs = [
@@ -2053,6 +2054,7 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24.0,<1.0.0" },
     { name = "pytest-examples", marker = "extra == 'dev'", specifier = ">=0.0.15" },
     { name = "pytest-examples", marker = "extra == 'docs'", specifier = ">=0.0.15" },
+    { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.8.0" },
     { name = "python-dotenv", marker = "extra == 'dev'", specifier = ">=1.0.1" },
     { name = "python-dotenv", marker = "extra == 'xai'", specifier = ">=1.0.0" },
     { name = "redis", marker = "extra == 'test-docs'", specifier = ">=5.0.1,<7.0.0" },

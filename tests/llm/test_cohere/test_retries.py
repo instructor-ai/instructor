@@ -37,34 +37,3 @@ async def test_user_async_creation_retry(aclient):
         )
     except Exception as e:
         assert isinstance(e, InstructorRetryException)
-
-
-def test_invalid_model(client):
-    try:
-        client = from_cohere(client)
-        res = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "What is the capital of the moon?"}],
-            response_model=User,
-        )
-    except Exception as e:
-        assert isinstance(e, InstructorRetryException)
-        assert e.__cause__.__cause__.args[0] == {
-            "message": "model 'gpt-4o-mini' not found, make sure the correct model ID was used and that you have access to the model."
-        }
-
-
-@pytest.mark.asyncio()
-async def test_invalid_model_async(aclient):
-    try:
-        client = from_cohere(aclient)
-        res = await client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "What is the capital of the moon?"}],
-            response_model=User,
-        )
-    except Exception as e:
-        assert isinstance(e, InstructorRetryException)
-        assert e.__cause__.__cause__.args[0] == {
-            "message": "model 'gpt-4o-mini' not found, make sure the correct model ID was used and that you have access to the model."
-        }

@@ -64,7 +64,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run ${{ matrix.provider.name }} tests
-        run: uv run pytest ${{ matrix.provider.test_path }}
+        run: uv run pytest ${{ matrix.provider.test_path }} -n auto
         env:
           INSTRUCTOR_ENV: CI
           ${{ matrix.provider.env_key }}: ${{ secrets[matrix.provider.env_key] }}
