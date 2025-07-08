@@ -34,9 +34,9 @@ def test_writer_extract(
         ],
     )
 
-    assert (
-        response.first_name == expected_name
-    ), f"Expected name {expected_name}, got {response.first_name}"
-    assert (
-        response.age == expected_age
-    ), f"Expected age {expected_age}, got {response.age}"
+    assert response.first_name == expected_name, (
+        f"Expected name {expected_name}, got {response.first_name}"
+    )
+    assert response.age == expected_age, (
+        f"Expected age {expected_age}, got {response.age}"
+    )

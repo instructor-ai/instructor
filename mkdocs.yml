@@ -171,6 +171,7 @@ nav:
     - llama-cpp-python: 'integrations/llama-cpp-python.md'
     - Gemini: 'integrations/google.md'
     - Anthropic: 'integrations/anthropic.md'
+    - xAI: 'integrations/xai.md'
     - Azure OpenAI: 'integrations/azure.md'
     - Google GenAI: 'integrations/genai.md'
     - AWS Bedrock: 'integrations/bedrock.md'

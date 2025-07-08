@@ -3,7 +3,6 @@ from collections.abc import Iterable
 from pydantic import BaseModel
 import pytest
 import instructor
-import google.generativeai as genai
 from instructor.dsl.partial import Partial
 
 from .util import models, modes
@@ -16,7 +15,7 @@ class UserExtract(BaseModel):
 
 @pytest.mark.parametrize("model, mode, stream", product(models, modes, [True, False]))
 def test_iterable_model(model, mode, stream):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     model = client.chat.completions.create(
         response_model=Iterable[UserExtract],
         max_retries=2,
@@ -31,7 +30,7 @@ def test_iterable_model(model, mode, stream):
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_partial_model(model, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     model = client.chat.completions.create(
         response_model=Partial[UserExtract],
         max_retries=2,

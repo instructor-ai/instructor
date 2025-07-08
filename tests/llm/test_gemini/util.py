@@ -1,4 +1,4 @@
 import instructor
 
-models: list[str] = ["models/gemini-1.5-flash-8b"]
-modes = [instructor.Mode.GEMINI_TOOLS, instructor.Mode.GEMINI_JSON]
+models: list[str] = ["gemini-2.5-flash"]
+modes = [instructor.Mode.GENAI_TOOLS, instructor.Mode.GENAI_STRUCTURED_OUTPUTS]

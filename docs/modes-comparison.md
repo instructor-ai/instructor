@@ -24,8 +24,10 @@ Here's a quick comparison:
 | `JSON_O1` | One-shot completion with JSON | Simple extractions | OpenAI, Azure |
 | `ANTHROPIC_TOOLS` | Anthropic's tool calling | Claude models | Anthropic |
 | `ANTHROPIC_JSON` | Direct JSON with Claude | Claude models | Anthropic |
-| `GEMINI_TOOLS` | Google's function calling | Gemini models | Google |
-| `GEMINI_JSON` | Direct JSON with Gemini | Gemini models | Google |
+| `GENAI_TOOLS` | Google's function calling (new) | Gemini models | Google |
+| `GENAI_STRUCTURED_OUTPUTS` | Direct JSON with Gemini (new) | Gemini models | Google |
+| `GEMINI_TOOLS` | **Deprecated** - Use GENAI_TOOLS | Gemini models | Google |
+| `GEMINI_JSON` | **Deprecated** - Use GENAI_STRUCTURED_OUTPUTS | Gemini models | Google |
 | `VERTEXAI_TOOLS` | Vertex AI function calling | Vertex AI models | Vertex AI |
 | `VERTEXAI_JSON` | Direct JSON with Vertex AI | Vertex AI models | Vertex AI |
 | `COHERE_TOOLS` | Cohere's tool calling | Cohere models | Cohere |
@@ -129,12 +131,12 @@ This mode requests direct JSON output from Anthropic models. It:
 
 ### Google/Gemini Modes
 
-#### `GEMINI_TOOLS` Mode
+#### `GENAI_TOOLS` Mode (Recommended)
 
 ```python
-client = instructor.from_gemini(
-    genai.GenerativeModel("gemini-1.5-pro"),
-    mode=instructor.Mode.GEMINI_TOOLS
+client = instructor.from_provider(
+    "google/gemini-1.5-pro",
+    mode=instructor.Mode.GENAI_TOOLS
 )
 ```
 
@@ -147,12 +149,12 @@ This mode uses Google's function calling for Gemini models. It:
 
 **Note**: Cannot be used with multi-modal inputs.
 
-#### `GEMINI_JSON` Mode
+#### `GENAI_STRUCTURED_OUTPUTS` Mode (Recommended)
 
 ```python
-client = instructor.from_gemini(
-    genai.GenerativeModel("gemini-1.5-pro"),
-    mode=instructor.Mode.GEMINI_JSON
+client = instructor.from_provider(
+    "google/gemini-1.5-pro",
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
 )
 ```
 
@@ -207,16 +209,16 @@ client = instructor.from_anthropic(Anthropic(), mode=instructor.Mode.ANTHROPIC_J
 ### Google/Gemini
 
 ```python
-# For complex structures (non-multi-modal)
-client = instructor.from_gemini(
-    genai.GenerativeModel("gemini-1.5-pro"),
-    mode=instructor.Mode.GEMINI_TOOLS
+# For complex structures (recommended)
+client = instructor.from_provider(
+    "google/gemini-1.5-pro",
+    mode=instructor.Mode.GENAI_TOOLS
 )
 
-# For multi-modal inputs or simple structures
-client = instructor.from_gemini(
-    genai.GenerativeModel("gemini-1.5-pro"),
-    mode=instructor.Mode.GEMINI_JSON
+# For structured outputs with JSON (recommended)
+client = instructor.from_provider(
+    "google/gemini-1.5-pro",
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
 )
 ```
 
@@ -226,7 +228,7 @@ client = instructor.from_gemini(
 |------------|------------------|------------------|
 | OpenAI     | TOOLS, TOOLS_STRICT, PARALLEL_TOOLS, FUNCTIONS | JSON, MD_JSON, JSON_O1 |
 | Anthropic  | ANTHROPIC_TOOLS | ANTHROPIC_JSON |
-| Gemini     | GEMINI_TOOLS | GEMINI_JSON |
+| Gemini     | GENAI_TOOLS | GENAI_STRUCTURED_OUTPUTS |
 | Vertex AI  | VERTEXAI_TOOLS | VERTEXAI_JSON |
 | Cohere     | COHERE_TOOLS | JSON, MD_JSON |
 | Mistral    | MISTRAL_TOOLS | MISTRAL_STRUCTURED_OUTPUTS |
@@ -245,7 +247,7 @@ client = instructor.from_gemini(
 1. **Start with the recommended mode for your provider**
    - For OpenAI: `TOOLS`
    - For Anthropic: `ANTHROPIC_TOOLS` (Claude 3+) or `ANTHROPIC_JSON`
-   - For Gemini: `GEMINI_TOOLS` or `GEMINI_JSON` for multi-modal
+   - For Gemini: `GENAI_TOOLS` or `GENAI_STRUCTURED_OUTPUTS`
 
 2. **Try JSON modes for simple structures or if you encounter issues**
    - JSON modes often work with simpler schemas

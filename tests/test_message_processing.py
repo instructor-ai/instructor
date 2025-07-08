@@ -234,7 +234,7 @@ class TestUpdateGeminiKwargs:
 
     def test_existing_safety_settings(self):
         """Test respecting existing safety settings."""
-        from google.generativeai.types import HarmCategory, HarmBlockThreshold
+        from google.genai.types import HarmCategory, HarmBlockThreshold
 
         kwargs = {
             "messages": [{"role": "user", "content": "Hello"}],

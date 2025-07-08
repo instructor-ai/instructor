@@ -22,10 +22,10 @@ import instructor
 from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 
-client = instructor.from_cerebras(Cerebras())
+client = instructor.from_provider("cerebras/llama3.1-70b")
 
 # Enable instructor patches
-client = instructor.from_cerebras(client)
+client = instructor.from_provider("cerebras/llama3.1-70b")
 
 class User(BaseModel):
     name: str
@@ -33,7 +33,6 @@ class User(BaseModel):
 
 # Create structured output
 resp = client.chat.completions.create(
-    model="llama3.1-70b",
     messages=[
         {
             "role": "user",
@@ -50,16 +49,14 @@ print(resp)
 ## Simple User Example (Async)
 
 ```python
-from cerebras.cloud.sdk import AsyncCerebras
 import instructor
 from pydantic import BaseModel
 import asyncio
 
-# Initialize async client
-client = AsyncCerebras()
-
-# Enable instructor patches
-client = instructor.from_cerebras(client)
+client = instructor.from_provider(
+    "cerebras/llama3.1-70b",
+    async_client=True,
+)
 
 class User(BaseModel):
     name: str
@@ -67,7 +64,6 @@ class User(BaseModel):
 
 async def extract_user():
     resp = await client.chat.completions.create(
-        model="llama3.1-70b",
         messages=[
             {
                 "role": "user",
@@ -91,7 +87,7 @@ from pydantic import BaseModel
 import instructor
 from cerebras.cloud.sdk import Cerebras
 
-client = instructor.from_cerebras(Cerebras())
+client = instructor.from_provider("cerebras/llama3.1-70b")
 
 
 class Address(BaseModel):
@@ -118,7 +114,6 @@ user = client.chat.completions.create(
     """,
         }
     ],
-    model="llama3.1-70b",
     response_model=User,
 )
 
@@ -152,11 +147,14 @@ We currently support partial streaming for Cerebras by parsing the raw text comp
 
 ```python
 import instructor
-from cerebras.cloud.sdk import Cerebras, AsyncCerebras
+from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 from typing import Iterable
 
-client = instructor.from_cerebras(Cerebras(), mode=instructor.Mode.CEREBRAS_JSON)
+client = instructor.from_provider(
+    "cerebras/llama3.1-70b",
+    mode=instructor.Mode.CEREBRAS_JSON,
+)
 
 
 class Person(BaseModel):
@@ -165,7 +163,6 @@ class Person(BaseModel):
 
 
 resp = client.chat.completions.create_partial(
-    model="llama3.1-70b",
     messages=[
         {
             "role": "user",
@@ -188,11 +185,14 @@ for person in resp:
 
 ```python
 import instructor
-from cerebras.cloud.sdk import Cerebras, AsyncCerebras
+from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 from typing import Iterable
 
-client = instructor.from_cerebras(Cerebras(), mode=instructor.Mode.CEREBRAS_JSON)
+client = instructor.from_provider(
+    "cerebras/llama3.1-70b",
+    mode=instructor.Mode.CEREBRAS_JSON,
+)
 
 
 class Person(BaseModel):
@@ -201,7 +201,6 @@ class Person(BaseModel):
 
 
 resp = client.chat.completions.create_iterable(
-    model="llama3.1-70b",
     messages=[
         {
             "role": "user",

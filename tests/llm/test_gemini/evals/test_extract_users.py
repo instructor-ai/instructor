@@ -2,7 +2,6 @@ import pytest
 from itertools import product
 from pydantic import BaseModel
 import instructor
-import google.generativeai as genai
 from ..util import models, modes
 
 
@@ -23,7 +22,7 @@ test_data = [
 def test_extract(model, data, mode):
     sample_data, expected_name, expected_age = data
 
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_provider(model=f"google/{model}", mode=mode)
 
     # Calling the extract function with the provided model, sample data, and mode
     response = client.chat.completions.create(
@@ -34,9 +33,9 @@ def test_extract(model, data, mode):
     )
 
     # Assertions
-    assert (
-        response.name == expected_name
-    ), f"Expected name {expected_name}, got {response.name}"
-    assert (
-        response.age == expected_age
-    ), f"Expected age {expected_age}, got {response.age}"
+    assert response.name == expected_name, (
+        f"Expected name {expected_name}, got {response.name}"
+    )
+    assert response.age == expected_age, (
+        f"Expected age {expected_age}, got {response.age}"
+    )

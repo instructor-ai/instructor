@@ -16,7 +16,7 @@ class UserExtract(BaseModel):
 
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_partial_model(model, mode, client):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     model = client.chat.completions.create(
         model=model,
         response_model=Partial[UserExtract],
@@ -39,7 +39,7 @@ def test_partial_model(model, mode, client):
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
 async def test_partial_model_async(client, model, mode):
-    client = instructor.from_genai(client, mode=mode, use_async=True)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=True)
     response_stream = client.chat.completions.create_partial(
         model=model,
         response_model=UserExtract,
@@ -58,7 +58,7 @@ async def test_partial_model_async(client, model, mode):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_iterable_model(model, mode, client):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     model = client.chat.completions.create_iterable(
         model=model,
         response_model=UserExtract,
@@ -81,8 +81,8 @@ def test_iterable_model(model, mode, client):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 @pytest.mark.asyncio
-async def test_iterable_model_async(model, mode, client):
-    client = instructor.from_genai(client, mode=mode, use_async=True)
+async def test_iterable_model_async(model, mode):
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=True)
     model = client.chat.completions.create_iterable(
         model=model,
         response_model=UserExtract,

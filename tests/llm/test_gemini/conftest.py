@@ -5,11 +5,6 @@ if not os.getenv("GOOGLE_API_KEY"):
     pytest.skip("GOOGLE_API_KEY environment variable not set", allow_module_level=True)
 
 try:
-    from google import generativeai as genai
+    from google import genai  # noqa: F401
 except ImportError:  # pragma: no cover - optional dependency
-    pytest.skip("google-generativeai package is not installed", allow_module_level=True)
-
-
-@pytest.fixture(scope="session", autouse=True)
-def configure_genai():
-    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+    pytest.skip("google-genai package is not installed", allow_module_level=True)

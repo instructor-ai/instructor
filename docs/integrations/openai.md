@@ -26,24 +26,22 @@ export OPENAI_API_KEY='your-api-key-here'
 2. Or provide it directly to the client:
 
 ```python
-import os
-from openai import OpenAI
-client = OpenAI(api_key='your-api-key-here')
+import instructor
+
+client = instructor.from_provider(
+    "openai/gpt-4o-mini",
+    api_key='your-api-key-here',
+)
 ```
 
 ## Simple User Example (Sync)
 
 ```python
-import os
-from openai import OpenAI
 import instructor
 from pydantic import BaseModel
 
-# Initialize with API key
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-
-# Enable instructor patches for OpenAI client
-client = instructor.from_openai(client)
+# Initialize client using provider string
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 class User(BaseModel):
     name: str
@@ -51,7 +49,6 @@ class User(BaseModel):
 
 # Create structured output
 user = client.chat.completions.create(
-    model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -65,17 +62,12 @@ print(user)
 ## Simple User Example (Async)
 
 ```python
-import os
-from openai import AsyncOpenAI
 import instructor
 from pydantic import BaseModel
 import asyncio
 
-# Initialize with API key
-client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-
-# Enable instructor patches for async OpenAI client
-client = instructor.from_openai(client)
+# Initialize async client using provider string
+client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
 
 class User(BaseModel):
     name: str
@@ -83,7 +75,6 @@ class User(BaseModel):
 
 async def extract_user():
     user = await client.chat.completions.create(
-        model="gpt-4-turbo-preview",
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -117,14 +108,13 @@ class User(BaseModel):
     age: int
     addresses: List[Address]
 
-# Initialize with API key
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-
-# Enable instructor patches for OpenAI client
-client = instructor.from_openai(client)
+# Initialize client
+client = instructor.from_provider(
+    "openai/gpt-4o-mini",
+    api_key=os.getenv('OPENAI_API_KEY'),
+)
 # Create structured output with nested objects
 user = client.chat.completions.create(
-    model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": """
             Extract: Jason is 25 years old.
@@ -191,11 +181,10 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
     response_model=ImageDescription,
     messages=[
         {
@@ -244,11 +233,10 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
     response_model=Receipt,
     messages=[
         {
@@ -294,10 +282,9 @@ class AudioDescription(BaseModel):
 
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 response = client.chat.completions.create(
-    model="gpt-4o-audio-preview",
     response_model=AudioDescription,
     modalities=["text"],
     audio={"voice": "alloy", "format": "wav"},
@@ -329,11 +316,9 @@ Instructor has two main ways that you can use to stream responses out
 ### Partials
 
 ```python
-from instructor import from_openai
-import openai
 from pydantic import BaseModel
 
-client = from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 class User(BaseModel):
@@ -343,7 +328,6 @@ class User(BaseModel):
 
 
 user = client.chat.completions.create_partial(
-    model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": "Create a user profile for Jason, age 25"},
     ],
@@ -375,7 +359,6 @@ class User(BaseModel):
 
 # Extract multiple users from text
 users = client.chat.completions.create_iterable(
-    model="gpt-4o-mini",
     messages=[
         {"role": "user", "content": """
             Extract users:

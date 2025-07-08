@@ -47,18 +47,16 @@ The good news is that Together employs the same OpenAI client, and its models su
 
 ```python
 import os
-import openai
 from pydantic import BaseModel
 import instructor
 
-client = openai.OpenAI(
-    base_url="https://api.together.xyz/v1",
+client = instructor.from_provider(
+    "together/Mixtral-8x7B-Instruct-v0.1",
     api_key=os.environ["TOGETHER_API_KEY"],
+    base_url="https://api.together.xyz/v1",
 )
 
-
 # By default, the patch function will patch the ChatCompletion.create and ChatCompletion.create methods to support the response_model parameter
-client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
 
 
 # Now, we can use the response_model parameter using only a base model
@@ -69,7 +67,6 @@ class UserExtract(BaseModel):
 
 
 user: UserExtract = client.chat.completions.create(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -91,6 +88,34 @@ print(user.model_dump_json(indent=2))
     "name": "Jason",
     "age": 25,
 }
+```
+
+### Async Example
+
+```python
+import instructor
+from pydantic import BaseModel
+import os
+import asyncio
+
+async_client = instructor.from_provider(
+    "together/Mixtral-8x7B-Instruct-v0.1",
+    async_client=True,
+    api_key=os.environ["TOGETHER_API_KEY"],
+    base_url="https://api.together.xyz/v1",
+)
+
+class UserExtract(BaseModel):
+    name: str
+    age: int
+
+async def extract_user():
+    return await async_client.chat.completions.create(
+        response_model=UserExtract,
+        messages=[{"role": "user", "content": "Extract jason is 25 years old"}],
+    )
+
+print(asyncio.run(extract_user()))
 ```
 
 You can find more information about Together's function calling support [here](https://docs.together.ai/docs/function-calling).
