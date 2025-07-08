@@ -304,7 +304,7 @@ def cancel(
         model_map = {
             "openai": "openai/gpt-4o-mini",
             "anthropic": "anthropic/claude-3-sonnet",
-            }
+        }
 
         if provider not in model_map:
             console.print(f"[red]Unsupported provider: {provider}[/red]")
@@ -351,7 +351,7 @@ def delete(
         model_map = {
             "openai": "openai/gpt-4o-mini",
             "anthropic": "anthropic/claude-3-sonnet",
-            }
+        }
 
         if provider not in model_map:
             console.print(f"[red]Unsupported provider: {provider}[/red]")
@@ -484,7 +484,6 @@ def results(
                 for result in results_iter:
                     f.write(json.dumps(result.model_dump()) + "\n")
             console.print(f"[bold green]Results saved to: {output_file}[/bold green]")
-
 
         else:
             console.print(f"[red]Unsupported provider: {provider}[/red]")

@@ -182,16 +182,22 @@ class BatchJobInfo(BaseModel):
             created_at=datetime.fromtimestamp(batch_data["created_at"], tz=timezone.utc)
             if batch_data.get("created_at")
             else None,
-            started_at=datetime.fromtimestamp(batch_data["in_progress_at"], tz=timezone.utc)
+            started_at=datetime.fromtimestamp(
+                batch_data["in_progress_at"], tz=timezone.utc
+            )
             if batch_data.get("in_progress_at")
             else None,
-            completed_at=datetime.fromtimestamp(batch_data["completed_at"], tz=timezone.utc)
+            completed_at=datetime.fromtimestamp(
+                batch_data["completed_at"], tz=timezone.utc
+            )
             if batch_data.get("completed_at")
             else None,
             failed_at=datetime.fromtimestamp(batch_data["failed_at"], tz=timezone.utc)
             if batch_data.get("failed_at")
             else None,
-            cancelled_at=datetime.fromtimestamp(batch_data["cancelled_at"], tz=timezone.utc)
+            cancelled_at=datetime.fromtimestamp(
+                batch_data["cancelled_at"], tz=timezone.utc
+            )
             if batch_data.get("cancelled_at")
             else None,
             expired_at=datetime.fromtimestamp(batch_data["expired_at"], tz=timezone.utc)
@@ -311,7 +317,6 @@ class BatchJobInfo(BaseModel):
             files=files,
             raw_data=batch_data,
         )
-
 
 
 # Union type for batch results - like a Maybe/Result type
@@ -477,7 +482,6 @@ class BatchRequest(BaseModel, Generic[T]):
             "params": params,
         }
 
-
     def save_to_file(self, file_path: str, provider: str) -> None:
         """Save batch request to file in provider-specific format"""
         if provider == "openai":
@@ -549,10 +553,7 @@ class BatchProcessor(Generic[T]):
         return file_path
 
     def submit_batch(
-        self, 
-        file_path: str,
-        metadata: Optional[Dict[str, Any]] = None, 
-        **kwargs
+        self, file_path: str, metadata: Optional[Dict[str, Any]] = None, **kwargs
     ) -> str:
         """Submit batch job to the provider and return job ID
 
@@ -563,7 +564,7 @@ class BatchProcessor(Generic[T]):
         """
         if metadata is None:
             metadata = {"description": "Instructor batch job"}
-            
+
         if self.provider_name == "openai":
             return self._submit_openai_batch(file_path, metadata=metadata, **kwargs)
         elif self.provider_name == "anthropic":
@@ -738,7 +739,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to submit Anthropic batch: {e}")
 
-
     def _get_openai_status(self, batch_id: str) -> Dict[str, Any]:
         """Get OpenAI batch status"""
         try:
@@ -781,7 +781,6 @@ class BatchProcessor(Generic[T]):
             }
         except Exception as e:
             raise Exception(f"Failed to get Anthropic batch status: {e}")
-
 
     def _retrieve_openai_results(self, batch_id: str) -> str:
         """Retrieve OpenAI batch results"""
@@ -836,7 +835,6 @@ class BatchProcessor(Generic[T]):
             return "\n".join(results_lines)
         except Exception as e:
             raise Exception(f"Failed to retrieve Anthropic results: {e}")
-
 
     def parse_results(self, results_content: str) -> List[BatchResult]:
         """Parse batch results from content string into Maybe-like results with custom_id tracking"""
@@ -948,7 +946,6 @@ class BatchProcessor(Generic[T]):
 
                 return None
 
-
         except Exception:
             return None
 
@@ -1007,7 +1004,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to download Anthropic results: {e}")
 
-
     def _list_openai_batches(self, limit: int) -> List[BatchJobInfo]:
         """List OpenAI batch jobs"""
         try:
@@ -1059,7 +1055,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to list Anthropic batches: {e}")
 
-
     def _cancel_openai_batch(self, batch_id: str) -> Dict[str, Any]:
         """Cancel OpenAI batch job"""
         try:
@@ -1093,7 +1088,6 @@ class BatchProcessor(Generic[T]):
         except Exception as e:
             raise Exception(f"Failed to cancel Anthropic batch: {e}")
 
-
     def _delete_openai_batch(self, batch_id: str) -> Dict[str, Any]:
         """Delete OpenAI batch job"""
         # Note: OpenAI doesn't have a delete batch API endpoint
@@ -1122,7 +1116,6 @@ class BatchProcessor(Generic[T]):
             )
         except Exception as e:
             raise Exception(f"Failed to delete Anthropic batch: {e}")
-
 
 
 class BatchJob:
@@ -1201,7 +1194,6 @@ class BatchJob:
                         if item.get("type") == "text":
                             text = item.get("text", "")
                             return json.loads(text)
-
 
         except Exception:
             pass

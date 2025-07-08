@@ -15,11 +15,6 @@ Batch processing allows you to send multiple requests in a single operation, whi
 - **Format**: Uses Anthropic's Message Batches API with tool calling for structured outputs
 - **Documentation**: [Anthropic Message Batches API](https://docs.anthropic.com/en/api/creating-message-batches)
 
-### Google GenAI
-- **Models**: gemini-2.5-flash, gemini-2.0-flash, gemini-pro
-- **Cost Savings**: 50% discount on batch requests
-- **Format**: Uses Google Cloud Vertex AI batch prediction API
-- **Documentation**: [Google Cloud Batch Prediction](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/batch-prediction-gemini)
 
 ## Basic Usage
 
@@ -100,7 +95,7 @@ if batch_id:
     except Exception as e:
         print(f"Could not cancel: {e}")
     
-    # Delete a completed batch (Anthropic/Google only)
+    # Delete a completed batch (Anthropic only)
     try:
         processor.delete_batch(batch_id)
         print(f"Batch {batch_id} deleted")
@@ -130,32 +125,6 @@ export ANTHROPIC_API_KEY="your-anthropic-key"
 processor = BatchProcessor("anthropic/claude-3-5-sonnet-20241022", User)
 ```
 
-### Google GenAI Setup
-
-For Google GenAI batch processing, you need additional setup:
-
-```bash
-# Set up Google Cloud credentials
-export GOOGLE_CLOUD_PROJECT="your-project-id"
-export GOOGLE_CLOUD_LOCATION="us-central1"  # Optional, defaults to us-central1
-export GCS_BUCKET="your-gcs-bucket-name"
-
-# Authentication (choose one method):
-# 1. Service account key file
-export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account-key.json"
-
-# 2. Or use gcloud auth for development
-gcloud auth application-default login
-```
-
-**Required permissions:**
-- `roles/aiplatform.user` for Vertex AI
-- `roles/storage.objectUser` for Cloud Storage access
-
-```python
-# Use Google GenAI models
-processor = BatchProcessor("google/gemini-2.5-flash", User)
-```
 
 ## Maybe-Like Result Design
 
@@ -262,22 +231,6 @@ for error in error_results:
 }
 ```
 
-### Google GenAI Response Format
-Based on [Google Cloud documentation](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/batch-prediction-gemini#batch_prediction_inputs_and_outputs):
-
-```json
-{
-  "response": {
-    "candidates": [{
-      "content": {
-        "parts": [{
-          "text": "{\"name\": \"Alice\", \"age\": 28}"
-        }]
-      }
-    }]
-  }
-}
-```
 
 ## Complete Workflow Example
 
@@ -400,7 +353,7 @@ if __name__ == "__main__":
 
 - **`list_batches(limit=10)`**: List batch jobs with enhanced information (timestamps, counts, status)
 - **`cancel_batch(batch_id)`**: Cancel a running batch job (all providers)
-- **`delete_batch(batch_id)`**: Delete a completed batch job (Anthropic/Google only)
+- **`delete_batch(batch_id)`**: Delete a completed batch job (Anthropic only)
 - **`get_results(batch_id, file_path=None)`**: Retrieve results optionally saving to file
 
 ### Enhanced Batch Information
@@ -410,7 +363,7 @@ The new `BatchJobInfo` schema provides comprehensive information:
 ```python
 class BatchJobInfo:
     id: str                           # Batch job ID
-    provider: str                     # Provider name (openai/anthropic/google)
+    provider: str                     # Provider name (openai/anthropic)
     status: BatchStatus              # Normalized status (PENDING/PROCESSING/COMPLETED/FAILED/CANCELLED/EXPIRED)
     raw_status: str                  # Original provider status
     timestamps: BatchTimestamps      # Created, started, completed times
@@ -431,8 +384,6 @@ metadata = {"description": "User extraction", "project": "demo", "version": "1.0
 batch_id = processor.submit_batch("requests.jsonl", metadata=metadata)
 
 # Anthropic: Metadata accepted but not stored (logged as note)
-# Google: Uses display_name from description field
-metadata = {"description": "My batch job"}  # Becomes display_name in Google
 ```
 
 ## CLI Usage
@@ -453,7 +404,7 @@ instructor batch create-from-file \
 # Cancel a running batch job
 instructor batch cancel --batch-id "batch_abc123" --provider openai
 
-# Delete a completed batch job (Anthropic/Google only)
+# Delete a completed batch job (Anthropic only)
 instructor batch delete --batch-id "msgbatch_abc123" --provider anthropic
 
 # Get batch results

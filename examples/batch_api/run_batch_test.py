@@ -341,9 +341,9 @@ def fetch(
             typer.echo(f"Successfully fetched and validated {len(results)} results!")
             if validate:
                 # Assert that the results match the expected results
-                assert validate_results(
-                    results, provider.capitalize()
-                ), f"Test failed: {provider} results do not match expected results."
+                assert validate_results(results, provider.capitalize()), (
+                    f"Test failed: {provider} results do not match expected results."
+                )
         else:
             typer.echo("No results available yet or batch still processing")
             if not poll:
