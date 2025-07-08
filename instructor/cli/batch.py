@@ -3,6 +3,7 @@ from rich.table import Table
 from rich.live import Live
 import typer
 import time
+import json
 from typing import Any
 
 app = typer.Typer()
@@ -100,7 +101,7 @@ def create_from_file(
             "[bold green]Creating Anthropic batch job...", spinner="dots"
         ):
             with open(file_path) as file:
-                requests = [eval(line) for line in file]
+                requests = [json.loads(line) for line in file]
 
             batch = client.beta.messages.batches.create(requests=requests)
         console.print(f"Anthropic batch job created with ID: {batch.id}")
