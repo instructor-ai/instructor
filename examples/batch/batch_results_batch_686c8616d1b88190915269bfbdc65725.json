@@ -1,0 +1,27 @@
+[
+  {
+    "custom_id": "user-0",
+    "user": null,
+    "error": "Unexpected function call: extract_user"
+  },
+  {
+    "custom_id": "user-1",
+    "user": null,
+    "error": "Unexpected function call: extract_user"
+  },
+  {
+    "custom_id": "user-2",
+    "user": null,
+    "error": "Unexpected function call: extract_user"
+  },
+  {
+    "custom_id": "user-3",
+    "user": null,
+    "error": "Unexpected function call: extract_user"
+  },
+  {
+    "custom_id": "user-4",
+    "user": null,
+    "error": "Unexpected function call: extract_user"
+  }
+]
