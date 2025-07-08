@@ -5,10 +5,8 @@ from rich.live import Live
 import typer
 import time
 import json
-from typing import Any, Optional
-from instructor.batch import BatchProcessor
-from instructor.auto_client import from_provider
 import warnings
+from instructor.batch import BatchProcessor, BatchJobInfo
 
 from tqdm import tqdm
 
@@ -17,92 +15,144 @@ app = typer.Typer()
 console = Console()
 
 
-def generate_table(batch_jobs: list[Any], provider: str):
-    """Generate table for batch jobs based on provider"""
+def generate_table(batch_jobs: list[BatchJobInfo], provider: str):
+    """Generate enhanced table for batch jobs using unified BatchJobInfo objects"""
     table = Table(title=f"{provider.title()} Batch Jobs")
 
-    table.add_column("Batch ID", style="dim", min_width=30, no_wrap=True)
-    table.add_column("Created At")
-    table.add_column("Status")
+    table.add_column("Batch ID", style="dim", max_width=20, no_wrap=True)
+    table.add_column("Status", min_width=10)
+    table.add_column("Created", style="dim", min_width=10)
+    table.add_column("Started", style="dim", min_width=10)
+    table.add_column("Duration", style="dim", min_width=7)
 
-    # Add provider-specific columns
+    # Add provider-specific columns for request counts
     if provider == "openai":
-        table.add_column("Failed")
-        table.add_column("Completed")
-        table.add_column("Total")
+        table.add_column("Completed", justify="right", min_width=8)
+        table.add_column("Failed", justify="right", min_width=6)
+        table.add_column("Total", justify="right", min_width=6)
     elif provider == "anthropic":
-        table.add_column("Request Count")
+        table.add_column("Succeeded", justify="right", min_width=8)
+        table.add_column("Errored", justify="right", min_width=7)
+        table.add_column("Processing", justify="right", min_width=9)
     elif provider == "google":
-        table.add_column("State")
+        table.add_column("Model", style="dim", min_width=15)
 
     for batch_job in batch_jobs:
+        # Color code status
+        status_color = {
+            "pending": "yellow",
+            "processing": "blue",
+            "completed": "green",
+            "failed": "red",
+            "cancelled": "red",
+            "expired": "red",
+        }.get(batch_job.status.value, "white")
+
+        colored_status = f"[{status_color}]{batch_job.status.value}[/{status_color}]"
+
+        # Format timestamps
+        created_str = (
+            batch_job.timestamps.created_at.strftime("%m/%d %H:%M")
+            if batch_job.timestamps.created_at
+            else "N/A"
+        )
+        started_str = (
+            batch_job.timestamps.started_at.strftime("%m/%d %H:%M")
+            if batch_job.timestamps.started_at
+            else "N/A"
+        )
+
+        # Calculate duration
+        duration_str = "N/A"
+        if batch_job.timestamps.started_at and batch_job.timestamps.completed_at:
+            duration = (
+                batch_job.timestamps.completed_at - batch_job.timestamps.started_at
+            )
+            total_minutes = duration.total_seconds() / 60
+            if total_minutes < 60:
+                duration_str = f"{int(total_minutes)}m"
+            else:
+                hours = total_minutes / 60
+                duration_str = f"{hours:.1f}h"
+        elif batch_job.timestamps.started_at and batch_job.status.value == "processing":
+            from datetime import datetime, timezone
+
+            duration = datetime.now(timezone.utc) - batch_job.timestamps.started_at
+            total_minutes = duration.total_seconds() / 60
+            if total_minutes < 60:
+                duration_str = f"{int(total_minutes)}m"
+            else:
+                hours = total_minutes / 60
+                duration_str = f"{hours:.1f}h"
+
+        # Truncate batch ID for display
+        batch_id_display = str(batch_job.id)
+        if len(batch_id_display) > 18:
+            batch_id_display = batch_id_display[:15] + "..."
+
         if provider == "openai":
             table.add_row(
-                str(batch_job.id),
-                str(batch_job.created_at),
-                str(batch_job.status),
-                str(getattr(batch_job.request_counts, "failed", "N/A")),
-                str(getattr(batch_job.request_counts, "completed", "N/A")),
-                str(getattr(batch_job.request_counts, "total", "N/A")),
+                batch_id_display,
+                colored_status,
+                created_str,
+                started_str,
+                duration_str,
+                str(batch_job.request_counts.completed or 0),
+                str(batch_job.request_counts.failed or 0),
+                str(batch_job.request_counts.total or 0),
             )
         elif provider == "anthropic":
             table.add_row(
                 str(batch_job.id),
-                str(batch_job.created_at),
-                str(batch_job.processing_status),
-                str(
-                    getattr(batch_job.request_counts, "processing", "N/A")
-                    if hasattr(batch_job, "request_counts")
-                    else "N/A"
-                ),
+                colored_status,
+                created_str,
+                started_str,
+                duration_str,
+                str(batch_job.request_counts.succeeded or 0),
+                str(batch_job.request_counts.errored or 0),
+                str(batch_job.request_counts.processing or 0),
             )
         elif provider == "google":
             table.add_row(
-                str(getattr(batch_job, "name", batch_job.id)),
-                str(getattr(batch_job, "create_time", "N/A")),
-                str(getattr(batch_job, "state", "N/A")),
-                str(getattr(batch_job, "state", "N/A")),
+                str(batch_job.id),
+                colored_status,
+                created_str,
+                started_str,
+                duration_str,
+                str(batch_job.model or "N/A"),
             )
 
     return table
 
 
-def get_jobs(limit: int = 10, provider: str = "openai"):
-    """Get batch jobs for the specified provider"""
+def get_jobs(limit: int = 10, provider: str = "openai") -> list[BatchJobInfo]:
+    """Get batch jobs for the specified provider using BatchProcessor"""
 
-    if provider == "openai":
-        from openai import OpenAI
+    # Create a dummy model string for the provider
+    # We just need the provider part for listing batches
+    model_map = {
+        "openai": "openai/gpt-4o-mini",
+        "anthropic": "anthropic/claude-3-sonnet",
+        "google": "google/gemini-1.5-flash",
+    }
 
-        client = OpenAI()
-        return client.batches.list(limit=limit).data
-
-    elif provider == "anthropic":
-        from anthropic import Anthropic
-
-        client = Anthropic()
-        # TODO: Remove beta fallback when stable API is available
-        try:
-            batches_client = client.messages.batches
-        except AttributeError:
-            batches_client = client.beta.messages.batches
-        response = batches_client.list(limit=limit)
-        return response.data
-
-    elif provider == "google":
-        from google import genai
-        from google.genai.types import HttpOptions
-
-        client = genai.Client(http_options=HttpOptions(api_version="v1"))
-        try:
-            # List batch jobs for Google GenAI
-            jobs = client.batches.list(limit=limit)
-            return list(jobs)
-        except Exception as e:
-            console.print(f"[red]Error listing Google batch jobs: {e}[/red]")
-            return []
-
-    else:
+    if provider not in model_map:
         raise ValueError(f"Unsupported provider: {provider}")
+
+    # Create a dummy response model (not used for listing)
+    from pydantic import BaseModel
+
+    class DummyModel(BaseModel):
+        dummy: str = "dummy"
+
+    try:
+        # Create BatchProcessor instance
+        processor = BatchProcessor(model_map[provider], DummyModel)
+        # Get batch jobs
+        return processor.list_batches(limit=limit)
+    except Exception as e:
+        console.print(f"[red]Error listing {provider} batch jobs: {e}[/red]")
+        return []
 
 
 @app.command(name="list", help="See all existing batch jobs")
@@ -177,12 +227,21 @@ def create_from_file(
         "openai/gpt-4o-mini",
         help="Model in format 'provider/model-name' (e.g., 'openai/gpt-4', 'anthropic/claude-3-sonnet')",
     ),
+    description: str = typer.Option(
+        "Instructor batch job",
+        help="Description/metadata for the batch job",
+    ),
+    completion_window: str = typer.Option(
+        "24h",
+        help="Completion window for the batch job (OpenAI only)",
+    ),
     # Deprecated flag for backward compatibility
     use_anthropic: bool = typer.Option(
         None,
         help="[DEPRECATED] Use --model instead. Use Anthropic API instead of OpenAI",
     ),
 ):
+    """Create a batch job from a file using the unified BatchProcessor"""
     # Handle deprecated flag
     if use_anthropic is not None:
         warnings.warn(
@@ -193,79 +252,145 @@ def create_from_file(
         if use_anthropic:
             model = "anthropic/claude-3-sonnet"
 
-    provider, _ = model.split("/", 1)
+    try:
+        # Create a dummy response model (not used for direct file submission)
+        from pydantic import BaseModel
 
-    if provider == "anthropic":
-        from anthropic import Anthropic
+        class DummyModel(BaseModel):
+            dummy: str = "dummy"
 
-        client = Anthropic()
-        with console.status(
-            "[bold green]Creating Anthropic batch job...", spinner="dots"
-        ):
-            with open(file_path) as file:
-                requests = [json.loads(line) for line in file]
+        # Create BatchProcessor instance
+        processor = BatchProcessor(model, DummyModel)
 
-            # TODO: Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
-            batch = batches_client.create(requests=requests)
-        console.print(f"Anthropic batch job created with ID: {batch.id}")
-    else:
-        from openai import OpenAI
+        # Prepare metadata
+        metadata = {
+            "description": description,
+        }
 
-        client = OpenAI()
-        with console.status(
-            f"[bold green] Uploading batch job file...", spinner="dots"
-        ):
-            batch_input_file = client.files.create(
-                file=open(file_path, "rb"), purpose="batch"
+        with console.status(f"[bold green]Submitting batch job...", spinner="dots"):
+            batch_id = processor.submit_batch(
+                file_path, metadata=metadata, completion_window=completion_window
             )
 
-        batch_input_file_id = batch_input_file.id
+        console.print(f"[bold green]Batch job created with ID: {batch_id}[/bold green]")
 
-        with console.status(
-            f"[bold green] Creating batch job from ID {batch_input_file_id}",
-            spinner="dots",
-        ):
-            client.batches.create(
-                input_file_id=batch_input_file_id,
-                endpoint="/v1/chat/completions",
-                completion_window="24h",
-                metadata={"description": "testing job"},
-            )
+        # Show updated batch list
+        provider_name = model.split("/", 1)[0]
+        watch(limit=5, poll=2, screen=False, live=False, provider=provider_name)
 
-    # Skip the watch command to avoid timeout issues in testing
+    except Exception as e:
+        console.print(f"[bold red]Error creating batch job: {e}[/bold red]")
 
 
 @app.command(help="Cancel a batch job")
 def cancel(
     batch_id: str = typer.Option(help="Batch job ID to cancel"),
+    provider: str = typer.Option(
+        "openai",
+        help="Provider to use (e.g., 'openai', 'anthropic', 'google')",
+    ),
+    # Deprecated flag for backward compatibility
     use_anthropic: bool = typer.Option(
-        False, help="Use Anthropic API instead of OpenAI"
+        None,
+        help="[DEPRECATED] Use --provider 'anthropic' instead. Use Anthropic API instead of OpenAI",
     ),
 ):
-    try:
+    """Cancel a batch job using the unified BatchProcessor"""
+    # Handle deprecated flag
+    if use_anthropic is not None:
+        warnings.warn(
+            "--use-anthropic is deprecated. Use --provider 'anthropic' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if use_anthropic:
-            from anthropic import Anthropic
+            provider = "anthropic"
 
-            client = Anthropic()
-            # TODO: Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
-            batches_client.cancel(batch_id)
-        else:
-            from openai import OpenAI
+    try:
+        # Create a dummy response model (not used for cancellation)
+        from pydantic import BaseModel
 
-            client = OpenAI()
-            client.batches.cancel(batch_id)
-        watch(limit=5, poll=2, screen=False, live=False, use_anthropic=use_anthropic)
-        console.log(f"[bold red]Job {batch_id} cancelled successfully!")
+        class DummyModel(BaseModel):
+            dummy: str = "dummy"
+
+        # Create a dummy model string for the provider
+        model_map = {
+            "openai": "openai/gpt-4o-mini",
+            "anthropic": "anthropic/claude-3-sonnet",
+            "google": "google/gemini-1.5-flash",
+        }
+
+        if provider not in model_map:
+            console.print(f"[red]Unsupported provider: {provider}[/red]")
+            return
+
+        # Create BatchProcessor instance
+        processor = BatchProcessor(model_map[provider], DummyModel)
+
+        with console.status(
+            f"[bold yellow]Cancelling {provider} batch job...", spinner="dots"
+        ):
+            result = processor.cancel_batch(batch_id)
+
+        console.print(
+            f"[bold green]Batch {batch_id} cancelled successfully![/bold green]"
+        )
+
+        # Show updated status
+        watch(limit=5, poll=2, screen=False, live=False, provider=provider)
+
+    except NotImplementedError as e:
+        console.print(f"[yellow]Note: {e}[/yellow]")
     except Exception as e:
-        console.log(f"[bold red]Error cancelling job {batch_id}: {e}")
+        console.print(f"[bold red]Error cancelling batch {batch_id}: {e}[/bold red]")
+
+
+@app.command(help="Delete a completed batch job")
+def delete(
+    batch_id: str = typer.Option(help="Batch job ID to delete"),
+    provider: str = typer.Option(
+        "openai",
+        help="Provider to use (e.g., 'openai', 'anthropic', 'google')",
+    ),
+):
+    """Delete a batch job using the unified BatchProcessor"""
+    try:
+        # Create a dummy response model (not used for deletion)
+        from pydantic import BaseModel
+
+        class DummyModel(BaseModel):
+            dummy: str = "dummy"
+
+        # Create a dummy model string for the provider
+        model_map = {
+            "openai": "openai/gpt-4o-mini",
+            "anthropic": "anthropic/claude-3-sonnet",
+            "google": "google/gemini-1.5-flash",
+        }
+
+        if provider not in model_map:
+            console.print(f"[red]Unsupported provider: {provider}[/red]")
+            return
+
+        # Create BatchProcessor instance
+        processor = BatchProcessor(model_map[provider], DummyModel)
+
+        with console.status(
+            f"[bold yellow]Deleting {provider} batch job...", spinner="dots"
+        ):
+            result = processor.delete_batch(batch_id)
+
+        console.print(
+            f"[bold green]Batch {batch_id} deleted successfully![/bold green]"
+        )
+
+        # Show updated status
+        watch(limit=5, poll=2, screen=False, live=False, provider=provider)
+
+    except NotImplementedError as e:
+        console.print(f"[yellow]Note: {e}[/yellow]")
+    except Exception as e:
+        console.print(f"[bold red]Error deleting batch {batch_id}: {e}[/bold red]")
 
 
 @app.command(help="Download the file associated with a batch job")
@@ -417,7 +542,7 @@ def create(
 
         # Load messages from file
         messages_list = []
-        with open(messages_file, "r") as f:
+        with open(messages_file) as f:
             for line in f:
                 if line.strip():
                     messages_list.append(json.loads(line))

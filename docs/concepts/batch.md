@@ -1,6 +1,6 @@
 # Batch Processing
 
-Batch processing allows you to send multiple requests in a single operation, which is more cost-effective and efficient for processing large datasets. Instructor supports batch processing across multiple providers with a unified interface.
+Batch processing allows you to send multiple requests in a single operation, which is more cost-effective and efficient for processing large datasets. Instructor supports batch processing across multiple providers with a unified interface, comprehensive job management, and enhanced monitoring capabilities.
 
 ## Supported Providers
 
@@ -57,11 +57,17 @@ processor.create_batch_from_messages(
     temperature=0.1
 )
 
-# Submit batch job to provider
-batch_id = processor.submit_batch("batch_requests.jsonl")
+# Submit batch job to provider with metadata
+metadata = {"description": "User extraction batch", "project": "demo"}
+batch_id = processor.submit_batch("batch_requests.jsonl", metadata=metadata)
 print(f"Batch job submitted: {batch_id}")
 
-# Check batch status
+# Monitor batch status with enhanced information
+batch_jobs = processor.list_batches(limit=5)
+for job in batch_jobs:
+    print(f"Batch {job.id}: {job.status.value} - Created: {job.timestamps.created_at}")
+
+# Check specific batch status
 status = processor.get_batch_status(batch_id)
 print(f"Status: {status['status']}")
 
@@ -84,6 +90,22 @@ if status['status'] in ['completed', 'ended', 'JOB_STATE_SUCCEEDED']:
     # Or just get the extracted objects
     for user in extracted_users:
         print(f"Name: {user.name}, Age: {user.age}")
+
+# Job management operations
+if batch_id:
+    # Cancel a running batch
+    try:
+        processor.cancel_batch(batch_id)
+        print(f"Batch {batch_id} cancelled")
+    except Exception as e:
+        print(f"Could not cancel: {e}")
+    
+    # Delete a completed batch (Anthropic/Google only)
+    try:
+        processor.delete_batch(batch_id)
+        print(f"Batch {batch_id} deleted")
+    except NotImplementedError as e:
+        print(f"Delete not supported: {e}")
 ```
 
 ## Provider-Specific Setup
@@ -364,29 +386,81 @@ if __name__ == "__main__":
         run_batch_workflow("google/gemini-2.5-flash")
 ```
 
-## BatchProcessor API Reference
+## Enhanced BatchProcessor API Reference
 
 ### Core Methods
 
-- **`create_batch_from_messages()`**: Generate batch request file from message conversations
-- **`submit_batch()`**: Submit batch job to the provider and return job ID
-- **`get_batch_status()`**: Get current status of a batch job
-- **`retrieve_results()`**: Download and parse batch results
-- **`parse_results()`**: Parse raw batch results into structured objects
+- **`create_batch_from_messages(messages_list, file_path, max_tokens, temperature)`**: Generate batch request file from message conversations
+- **`submit_batch(file_path, metadata=None, **kwargs)`**: Submit batch job with optional metadata and return job ID
+- **`get_batch_status(batch_id)`**: Get current status of a batch job
+- **`retrieve_results(batch_id)`**: Download and parse batch results with enhanced error handling
+- **`parse_results(results_content)`**: Parse raw batch results into structured objects with custom_id tracking
+
+### Job Management Methods
+
+- **`list_batches(limit=10)`**: List batch jobs with enhanced information (timestamps, counts, status)
+- **`cancel_batch(batch_id)`**: Cancel a running batch job (all providers)
+- **`delete_batch(batch_id)`**: Delete a completed batch job (Anthropic/Google only)
+- **`get_results(batch_id, file_path=None)`**: Retrieve results optionally saving to file
+
+### Enhanced Batch Information
+
+The new `BatchJobInfo` schema provides comprehensive information:
+
+```python
+class BatchJobInfo:
+    id: str                           # Batch job ID
+    provider: str                     # Provider name (openai/anthropic/google)
+    status: BatchStatus              # Normalized status (PENDING/PROCESSING/COMPLETED/FAILED/CANCELLED/EXPIRED)
+    raw_status: str                  # Original provider status
+    timestamps: BatchTimestamps      # Created, started, completed times
+    request_counts: BatchRequestCounts  # Total, completed, failed, processing counts
+    files: BatchFiles               # Input/output file references
+    error: Optional[BatchErrorInfo] # Error information if failed
+    metadata: Dict[str, Any]        # Provider-specific metadata
+    model: Optional[str]            # Model used (if available)
+```
+
+### Metadata Support
+
+All providers now support metadata for better job organization:
+
+```python
+# OpenAI: Uses metadata field directly
+metadata = {"description": "User extraction", "project": "demo", "version": "1.0"}
+batch_id = processor.submit_batch("requests.jsonl", metadata=metadata)
+
+# Anthropic: Metadata accepted but not stored (logged as note)
+# Google: Uses display_name from description field
+metadata = {"description": "My batch job"}  # Becomes display_name in Google
+```
 
 ## CLI Usage
 
 Instructor also provides CLI commands for batch processing:
 
 ```bash
-# List batch jobs
-instructor batch list --model "openai/gpt-4o-mini"
+# List batch jobs with enhanced display
+instructor batch list --provider openai --limit 10
 
-# Create batch from file
-instructor batch create-from-file --file-path batch_requests.jsonl --model "openai/gpt-4o-mini"
+# Create batch from file with metadata
+instructor batch create-from-file \
+    --file-path batch_requests.jsonl \
+    --model "openai/gpt-4o-mini" \
+    --description "User extraction batch" \
+    --completion-window "24h"
+
+# Cancel a running batch job
+instructor batch cancel --batch-id "batch_abc123" --provider openai
+
+# Delete a completed batch job (Anthropic/Google only)
+instructor batch delete --batch-id "msgbatch_abc123" --provider anthropic
 
 # Get batch results
-instructor batch results --batch-id "batch_abc123" --output-file results.jsonl --model "openai/gpt-4o-mini"
+instructor batch results \
+    --batch-id "batch_abc123" \
+    --output-file results.jsonl \
+    --model "openai/gpt-4o-mini"
 ```
 
 ## Best Practices

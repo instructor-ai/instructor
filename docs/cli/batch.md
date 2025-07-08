@@ -1,41 +1,44 @@
 ---
-title: Managing Batch Jobs with OpenAI CLI
-description: Learn how to create, list, and cancel batch jobs using the OpenAI Command Line Interface (CLI) for efficient job management.
+title: Managing Batch Jobs with Multi-Provider CLI
+description: Learn how to create, list, cancel, and delete batch jobs using the unified Command Line Interface (CLI) across OpenAI, Anthropic, and Google providers.
 ---
 
 # Using the Command Line Interface for Batch Jobs
 
-
-The instructor CLI provides functionalities for managing batch jobs on both OpenAI and Anthropic platforms. This dual support allows users to leverage the strengths of both providers for their batch processing needs.
+The instructor CLI provides comprehensive functionalities for managing batch jobs across multiple providers with a unified interface. This multi-provider support allows users to leverage the strengths of different AI providers for their batch processing needs.
 
 ## Supported Providers
 
-- **OpenAI**: Utilizes OpenAI's robust batch processing capabilities.
-- **Anthropic**: Leverages Anthropic's advanced language models for batch operations.
+- **OpenAI**: Utilizes OpenAI's robust batch processing capabilities with metadata support
+- **Anthropic**: Leverages Anthropic's advanced language models with cancel/delete operations
+- **Google GenAI**: Uses Google's Gemini models with Cloud Storage integration
 
-To switch between providers, use the `--use-anthropic` flag in the relevant commands.
+The CLI uses a unified `--provider` flag for all commands, with backward compatibility for legacy flags.
 
 ```bash
 $ instructor batch --help
 
  Usage: instructor batch [OPTIONS] COMMAND [ARGS]...
 
- Manage OpenAI and Anthropic Batch jobs
+ Manage Multi-Provider Batch jobs
 
 ╭─ Options ───────────────────────────────────────────────────────────────────────────╮
 │ --help          Show this message and exit.                                         │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ──────────────────────────────────────────────────────────────────────────╮
 │ cancel             Cancel a batch job                                               │
+│ create             Create batch job using BatchProcessor                            │
 │ create-from-file   Create a batch job from a file                                   │
+│ delete             Delete a completed batch job                                     │
 │ download-file      Download the file associated with a batch job                    │
 │ list               See all existing batch jobs                                      │
+│ results            Retrieve results from a batch job                                │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ## Creating a Batch Job
 
-### View Jobs
+### List Jobs with Enhanced Display
 
 ```bash
 $ instructor batch list --help
@@ -52,70 +55,49 @@ $ instructor batch list --help
 │                                     [default: 10]                                   │
 │ --screen    --no-screen             Enable or disable screen output                 │
 │                                     [default: no-screen]                            │
-│ --use-anthropic                     Use Anthropic API instead of OpenAI             │
+│ --live      --no-live               Enable live polling to continuously update      │
+│                                     [default: no-live]                              │
+│ --provider                 TEXT     Provider to use (openai, anthropic, google)     │
+│                                     [default: openai]                               │
+│ --use-anthropic                     [DEPRECATED] Use --provider 'anthropic'         │
 │                                     [default: False]                                │
 │ --help                              Show this message and exit.                     │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-This returns a list of jobs as seen below:
+The enhanced list command now shows rich information including timestamps, duration, and provider-specific metrics:
 
 ```bash
-$ instructor batch list --limit 5
+$ instructor batch list --provider openai --limit 3
 
-                                   OpenAI Batch Jobs
-┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━┓
-┃ Batch ID             ┃ Created At          ┃ Status    ┃ Failed ┃ Completed ┃ Total ┃
-┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━┩
-│ batch_BSMSiMMy8on2D... │ 2024-06-19 15:10:21 │ cancelled │ 0      │ 298       │ 300   │
-│ batch_pD5dqHmqjWYF5... │ 2024-06-19 15:09:38 │ completed │ 0      │ 15        │ 15    │
-│ batch_zsTSsWVLgpEan... │ 2024-06-19 15:06:05 │ completed │ 0      │ 15        │ 15    │
-│ batch_igaa2j9VBVw2Z... │ 2024-06-19 15:01:59 │ completed │ 0      │ 300       │ 300   │
-│ batch_HcjI2wG46Y1LY... │ 2024-06-12 15:45:37 │ completed │ 0      │ 3         │ 3     │
-└──────────────────────┴─────────────────────┴───────────┴────────┴───────────┴───────┘
+                                         Openai Batch Jobs
+┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━┓
+┃ Batch ID           ┃ Status     ┃ Created    ┃ Started    ┃ Duration┃ Completed┃ Failed ┃ Total ┃
+┡━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━┩
+│ batch_abc123...    │ completed  │ 07/07      │ 07/07      │ 2m      │ 15       │ 0      │ 15    │
+│                    │            │ 23:48      │ 23:48      │         │          │        │       │
+│ batch_def456...    │ processing │ 07/07      │ 07/07      │ 45m     │ 8        │ 0      │ 10    │
+│                    │            │ 22:30      │ 22:31      │         │          │        │       │
+│ batch_ghi789...    │ failed     │ 07/07      │ N/A        │ N/A     │ 0        │ 5      │ 5     │
+│                    │            │ 21:15      │            │         │          │        │       │
+└────────────────────┴────────────┴────────────┴────────────┴─────────┴──────────┴────────┴───────┘
+
+$ instructor batch list --provider anthropic --limit 2
+
+                                           Anthropic Batch Jobs
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━┓
+┃ Batch ID             ┃ Status     ┃ Created    ┃ Started    ┃ Duration┃ Succeeded┃ Errored ┃ Processing  ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━┩
+│ msgbatch_abc123...   │ completed  │ 07/08      │ 07/08      │ 1m      │ 20       │ 0       │ 0           │
+│                      │            │ 03:47      │ 03:47      │         │          │         │             │
+│ msgbatch_def456...   │ processing │ 07/08      │ 07/08      │ 15m     │ 5        │ 0       │ 10          │
+│                      │            │ 03:30      │ 03:30      │         │          │         │             │
+└──────────────────────┴────────────┴────────────┴────────────┴─────────┴──────────┴─────────┴─────────────┘
 ```
 
-### Create From File
+### Create From File with Metadata Support
 
-You'll need to supply a valid .jsonl file to create a Batch job. Here's how you can create one using Instructor:
-
-```python
-from instructor.batch import BatchJob
-from pydantic import BaseModel, Field
-from typing import Literal
-
-class Classification(BaseModel):
-    label: Literal["SPAM", "NOT_SPAM"] = Field(
-        ..., description="Whether the email is spam or not"
-    )
-
-emails = [
-    "Hello there I'm a Nigerian prince and I want to give you money",
-    "Meeting with Thomas has been set at Friday next week",
-    "Here are some weekly product updates from our marketing team",
-]
-
-messages = [
-    [
-        {
-            "role": "system",
-            "content": f"Classify the following email {email}",
-        }
-    ]
-    for email in emails
-]
-
-import json
-
-with open("output.jsonl", "w") as f:
-    for line in BatchJob.create_from_messages(
-        messages,
-        model="gpt-3.5-turbo",
-        response_model=Classification,
-        max_tokens=100,
-    ):
-        f.write(json.dumps(line) + "\n")
-```
+You can create batch jobs directly from pre-formatted .jsonl files with enhanced metadata support:
 
 ```bash
 $ instructor batch create-from-file --help
@@ -125,23 +107,82 @@ Usage: instructor batch create-from-file [OPTIONS]
  Create a batch job from a file
 
 ╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --file-path        TEXT  File containing the batch job requests [default: None]  │
-│                             [required]                                              │
-│    --use-anthropic          Use Anthropic API instead of OpenAI                     │
-│                             [default: False]                                        │
-│    --help                   Show this message and exit.                             │
+│ *  --file-path          TEXT  File containing batch job requests [required]         │
+│ *  --model              TEXT  Model in format 'provider/model-name'                │
+│                               [default: openai/gpt-4o-mini]                         │
+│    --description        TEXT  Description/metadata for the batch job                │
+│                               [default: Instructor batch job]                       │
+│    --completion-window  TEXT  Completion window for batch job (OpenAI only)         │
+│                               [default: 24h]                                        │
+│    --use-anthropic            [DEPRECATED] Use --model instead                      │
+│    --help                     Show this message and exit.                           │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-Example usage:
+Example usage with metadata:
 
 ```bash
-$ instructor batch create-from-file --file-path output.jsonl
+# OpenAI batch with custom metadata
+instructor batch create-from-file \
+    --file-path batch_requests.jsonl \
+    --model "openai/gpt-4o-mini" \
+    --description "Email classification batch - production v2.1" \
+    --completion-window "24h"
+
+# Anthropic batch
+instructor batch create-from-file \
+    --file-path batch_requests.jsonl \
+    --model "anthropic/claude-3-5-sonnet-20241022" \
+    --description "Text analysis batch"
+
+# Google GenAI batch (requires GCS setup)
+instructor batch create-from-file \
+    --file-path batch_requests.jsonl \
+    --model "google/gemini-2.5-flash" \
+    --description "Document processing batch"
 ```
+
+For creating .jsonl files, you can use the enhanced `BatchProcessor`:
+
+```python
+from instructor.batch import BatchProcessor
+from pydantic import BaseModel, Field
+from typing import Literal
+
+class Classification(BaseModel):
+    label: Literal["SPAM", "NOT_SPAM"] = Field(
+        ..., description="Whether the email is spam or not"
+    )
+
+# Create processor
+processor = BatchProcessor("openai/gpt-4o-mini", Classification)
+
+# Prepare message conversations
+messages_list = [
+    [
+        {"role": "system", "content": "Classify the following email"},
+        {"role": "user", "content": "Hello there I'm a Nigerian prince and I want to give you money"}
+    ],
+    [
+        {"role": "system", "content": "Classify the following email"},
+        {"role": "user", "content": "Meeting with Thomas has been set at Friday next week"}
+    ]
+]
+
+# Create batch file
+processor.create_batch_from_messages(
+    messages_list=messages_list,
+    file_path="batch_requests.jsonl",
+    max_tokens=100,
+    temperature=0.1
+)
+```
+
+## Job Management Operations
 
 ### Cancelling a Batch Job
 
-You can cancel an outstanding batch job using the `cancel` command:
+Cancel running batch jobs across all providers:
 
 ```bash
 $ instructor batch cancel --help
@@ -151,22 +192,96 @@ $ instructor batch cancel --help
  Cancel a batch job
 
 ╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --batch-id        TEXT  Batch job ID to cancel [default: None] [required]        │
-│    --use-anthropic        Use Anthropic API instead of OpenAI                       │
-│                           [default: False]                                          │
-│    --help                 Show this message and exit.                               │
+│ *  --batch-id     TEXT  Batch job ID to cancel [required]                           │
+│    --provider     TEXT  Provider to use (openai, anthropic, google) [default: openai]│
+│    --use-anthropic      [DEPRECATED] Use --provider 'anthropic'                     │
+│    --help               Show this message and exit.                                 │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-Example usage:
+Examples:
 
 ```bash
-$ instructor batch cancel --batch-id batch_BSMSiMMy8on2D
+# Cancel OpenAI batch
+instructor batch cancel --batch-id batch_abc123 --provider openai
+
+# Cancel Anthropic batch
+instructor batch cancel --batch-id msgbatch_def456 --provider anthropic
+
+# Cancel Google batch
+instructor batch cancel --batch-id batches/ghi789 --provider google
 ```
 
-### Downloading Batch Job Results
+### Deleting a Batch Job
 
-To download the results of a completed batch job:
+Delete completed batch jobs (supported by Anthropic and Google):
+
+```bash
+$ instructor batch delete --help
+
+ Usage: instructor batch delete [OPTIONS]
+
+ Delete a completed batch job
+
+╭─ Options ───────────────────────────────────────────────────────────────────────────╮
+│ *  --batch-id     TEXT  Batch job ID to delete [required]                           │
+│    --provider     TEXT  Provider to use (openai, anthropic, google) [default: openai]│
+│    --help               Show this message and exit.                                 │
+╰─────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+Examples:
+
+```bash
+# Delete Anthropic batch (supported)
+instructor batch delete --batch-id msgbatch_abc123 --provider anthropic
+
+# Delete Google batch (supported)
+instructor batch delete --batch-id batches/def456 --provider google
+
+# Try to delete OpenAI batch (shows helpful message)
+instructor batch delete --batch-id batch_ghi789 --provider openai
+# Note: OpenAI does not support batch deletion via API
+```
+
+### Retrieving Batch Results
+
+Get structured results from completed batch jobs:
+
+```bash
+$ instructor batch results --help
+
+ Usage: instructor batch results [OPTIONS]
+
+ Retrieve results from a batch job
+
+╭─ Options ───────────────────────────────────────────────────────────────────────────╮
+│ *  --batch-id     TEXT  Batch job ID to get results from [required]                 │
+│ *  --output-file  TEXT  File to save the results to [required]                      │
+│ *  --model        TEXT  Model in format 'provider/model-name' [required]            │
+│    --help               Show this message and exit.                                 │
+╰─────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+Examples:
+
+```bash
+# Get OpenAI batch results
+instructor batch results \
+    --batch-id batch_abc123 \
+    --output-file openai_results.jsonl \
+    --model "openai/gpt-4o-mini"
+
+# Get Anthropic batch results
+instructor batch results \
+    --batch-id msgbatch_def456 \
+    --output-file anthropic_results.jsonl \
+    --model "anthropic/claude-3-5-sonnet-20241022"
+```
+
+### Downloading Raw Files (Legacy)
+
+For compatibility, the download-file command is still available:
 
 ```bash
 $ instructor batch download-file --help
@@ -176,18 +291,31 @@ $ instructor batch download-file --help
  Download the file associated with a batch job
 
 ╭─ Options ───────────────────────────────────────────────────────────────────────────╮
-│ *  --batch-id           TEXT  Batch job ID to download [default: None] [required]   │
-│ *  --download-file-path TEXT  Path to download file to [default: None] [required]   │
-│    --use-anthropic           Use Anthropic API instead of OpenAI                    │
-│                              [default: False]                                       │
-│    --help                    Show this message and exit.                            │
+│ *  --batch-id           TEXT  Batch job ID to download [required]                   │
+│ *  --download-file-path TEXT  Path to download file to [required]                   │
+│    --provider           TEXT  Provider to use (openai, anthropic, google)           │
+│                               [default: openai]                                     │
+│    --help                     Show this message and exit.                           │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-Example usage:
+## Provider Support Matrix
 
-```bash
-$ instructor batch download-file --batch-id batch_pD5dqHmqjWYF5 --download-file-path results.jsonl
-```
+| Operation | OpenAI | Anthropic | Google GenAI |
+|-----------|--------|-----------|--------------|
+| **List**  | ✅ Enhanced table | ✅ Enhanced table | ✅ Enhanced table |
+| **Create** | ✅ With metadata | ✅ File-based | ✅ GCS integration |
+| **Cancel** | ✅ Standard API | ✅ Standard API | ✅ Standard API |
+| **Delete** | ❌ Not supported | ✅ Standard API | ✅ Standard API |
+| **Results** | ✅ Structured parsing | ✅ Structured parsing | ✅ Structured parsing |
 
-This comprehensive set of commands allows you to manage batch jobs efficiently, whether you're using OpenAI or Anthropic as your provider.
+## Enhanced Features
+
+- **Rich CLI Tables**: Color-coded status, timestamps, duration calculations
+- **Metadata Support**: Add descriptions and custom fields to organize batches
+- **Unified Commands**: Same interface works across all providers
+- **Provider Detection**: Automatic provider detection from model strings
+- **Error Handling**: Clear error messages and helpful notes for unsupported operations
+- **Backward Compatibility**: Legacy flags still work with deprecation warnings
+
+This comprehensive CLI interface provides efficient batch job management across all supported providers with enhanced monitoring and control capabilities.
