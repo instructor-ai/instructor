@@ -189,6 +189,9 @@ class AnthropicProvider(BatchProvider):
                 batches_client = client.beta.messages.batches
 
             batches = batches_client.list(limit=limit)
-            return [BatchJobInfo.from_anthropic(batch.model_dump()) for batch in batches.data]
+            return [
+                BatchJobInfo.from_anthropic(batch.model_dump())
+                for batch in batches.data
+            ]
         except Exception as e:
             raise Exception(f"Failed to list Anthropic batches: {e}")

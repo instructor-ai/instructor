@@ -14,7 +14,6 @@ from .request import BatchRequest
 from .providers import get_provider
 
 
-
 class BatchProcessor(Generic[T]):
     """Unified batch processor that works across all providers"""
 

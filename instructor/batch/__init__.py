@@ -84,6 +84,7 @@ class BatchJob:
     ) -> tuple[list[T], list[dict[Any, Any]]]:
         """Enhanced parser that works with all providers using JSON schema"""
         import json
+
         res: list[T] = []
         error_objs: list[dict[Any, Any]] = []
 
@@ -114,6 +115,7 @@ class BatchJob:
     def _extract_structured_data(cls, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Extract structured data from various provider response formats"""
         import json
+
         try:
             # Try OpenAI JSON schema format first
             if "response" in data and "body" in data["response"]:
@@ -174,7 +176,7 @@ __all__ = [
     # Request models
     "BatchRequest",
     "Function",
-    "Tool", 
+    "Tool",
     "RequestBody",
     "BatchModel",
     # Main processor

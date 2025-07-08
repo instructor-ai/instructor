@@ -130,6 +130,8 @@ class OpenAIProvider(BatchProvider):
 
             client = OpenAI()
             batches = client.batches.list(limit=limit)
-            return [BatchJobInfo.from_openai(batch.model_dump()) for batch in batches.data]
+            return [
+                BatchJobInfo.from_openai(batch.model_dump()) for batch in batches.data
+            ]
         except Exception as e:
             raise Exception(f"Failed to list OpenAI batches: {e}")
