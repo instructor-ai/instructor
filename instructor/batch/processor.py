@@ -9,10 +9,10 @@ from __future__ import annotations
 from typing import Any, Type, Optional, List, Dict, Generic
 import json
 import os
-from instructor.auto_client import from_provider
 from .models import BatchResult, BatchSuccess, BatchError, BatchJobInfo, T
 from .request import BatchRequest
 from .providers import get_provider
+
 
 
 class BatchProcessor(Generic[T]):
@@ -30,9 +30,6 @@ class BatchProcessor(Generic[T]):
                 'Model string must be in format "provider/model-name" '
                 '(e.g. "openai/gpt-4" or "anthropic/claude-3-sonnet")'
             )
-
-        # Get the instructor client
-        self.client = from_provider(model)
 
         # Get the batch provider instance
         self.provider = get_provider(self.provider_name)

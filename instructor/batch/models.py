@@ -141,33 +141,41 @@ class BatchJobInfo(BaseModel):
 
         # Parse timestamps
         timestamps = BatchTimestamps(
-            created_at=datetime.fromtimestamp(batch_data["created_at"], tz=timezone.utc)
-            if batch_data.get("created_at")
-            else None,
-            started_at=datetime.fromtimestamp(
-                batch_data["in_progress_at"], tz=timezone.utc
-            )
-            if batch_data.get("in_progress_at")
-            else None,
-            completed_at=datetime.fromtimestamp(
-                batch_data["completed_at"], tz=timezone.utc
-            )
-            if batch_data.get("completed_at")
-            else None,
-            failed_at=datetime.fromtimestamp(batch_data["failed_at"], tz=timezone.utc)
-            if batch_data.get("failed_at")
-            else None,
-            cancelled_at=datetime.fromtimestamp(
-                batch_data["cancelled_at"], tz=timezone.utc
-            )
-            if batch_data.get("cancelled_at")
-            else None,
-            expired_at=datetime.fromtimestamp(batch_data["expired_at"], tz=timezone.utc)
-            if batch_data.get("expired_at")
-            else None,
-            expires_at=datetime.fromtimestamp(batch_data["expires_at"], tz=timezone.utc)
-            if batch_data.get("expires_at")
-            else None,
+            created_at=(
+                datetime.fromtimestamp(batch_data["created_at"], tz=timezone.utc)
+                if batch_data.get("created_at")
+                else None
+            ),
+            started_at=(
+                datetime.fromtimestamp(batch_data["in_progress_at"], tz=timezone.utc)
+                if batch_data.get("in_progress_at")
+                else None
+            ),
+            completed_at=(
+                datetime.fromtimestamp(batch_data["completed_at"], tz=timezone.utc)
+                if batch_data.get("completed_at")
+                else None
+            ),
+            failed_at=(
+                datetime.fromtimestamp(batch_data["failed_at"], tz=timezone.utc)
+                if batch_data.get("failed_at")
+                else None
+            ),
+            cancelled_at=(
+                datetime.fromtimestamp(batch_data["cancelled_at"], tz=timezone.utc)
+                if batch_data.get("cancelled_at")
+                else None
+            ),
+            expired_at=(
+                datetime.fromtimestamp(batch_data["expired_at"], tz=timezone.utc)
+                if batch_data.get("expired_at")
+                else None
+            ),
+            expires_at=(
+                datetime.fromtimestamp(batch_data["expires_at"], tz=timezone.utc)
+                if batch_data.get("expires_at")
+                else None
+            ),
         )
 
         # Parse request counts
