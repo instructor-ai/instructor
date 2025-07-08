@@ -5,6 +5,95 @@ description: Explore caching methods in Python with functools, diskcache, and Re
 
 If you want to learn more about concepts in caching and how to use them in your own projects, check out our [blog](../blog/posts/caching.md) on the topic.
 
+## Built-in caching in Instructor (v1.9.1 and later)
+
+Instructor now supports drop-in caching for every client.  Pass a cache
+adapter when you create the client – the cache parameter automatically flows
+through to all provider implementations via **kwargs:
+
+```python
+from instructor import from_provider
+from instructor.cache import AutoCache, DiskCache
+
+# Works with any provider - cache flows through **kwargs automatically
+client = from_provider("openai/gpt-3.5-turbo", cache=AutoCache(maxsize=1000))
+client = from_provider("anthropic/claude-3-haiku", cache=AutoCache(maxsize=1000))  
+client = from_provider("google/gemini-pro", cache=DiskCache(directory=".cache"))
+
+# Your normal calls are now cached automatically
+class User(BaseModel):
+    name: str
+
+first = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
+second = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
+assert first.name == second.name    # second call was served from cache
+
++`cache_ttl` per-call override
+
+Pass `cache_ttl=<seconds>` alongside `cache=` if you want a result to
+expire automatically:
+
+```python
+client.create(
+    messages=[{"role": "user", "content": "Hi"}],
+    response_model=User,
+    cache=cache,
+    cache_ttl=3600,   # 1 hour
+)
+```
+
+If the underlying cache backend supports TTL (e.g. `DiskCache` does), the
+entry will be evicted after the specified duration.  For `AutoCache` the
+parameter is ignored.
+
+### Cache-key design
+
+Under the hood Instructor generates a **deterministic** key for every
+ call using `instructor.cache.make_cache_key`.
+
+Components that influence the key:
+
+| Part                        | Why it matters                               |
+|-----------------------------|----------------------------------------------|
+| `model`                     | Different model names can yield different answers |
+| `messages` / `contents`     | The full chat history is hashed              |
+| `mode`                      | JSON vs. TOOLS vs. RESPONSES changes formatting |
+| `response_model` schema     | The entire `model_json_schema()` is included so **any** change in field names, types or *descriptions* busts the cache automatically |
+
+The function returns a SHA-256 hex digest; its length is constant regardless
+of prompt size, so it is safe to use as a Redis key, file path, etc.
+
+```python
+from instructor.cache import make_cache_key
+
+key = make_cache_key(
+    messages=[{"role": "user", "content": "hello"}],
+    model="gpt-3.5-turbo",
+    response_model=User,
+    mode="TOOLS",
+)
+print(key)  # → 9b8f5e2c8c9e…
+```
+
+If you need custom behaviour (e.g. ignoring certain prompt fields) you can
+write your own helper and pass a derived key into a bespoke cache adapter.
+
+### Raw Response Reconstruction
+
+For raw completion objects (used with `create_with_completion`), we use a `SimpleNamespace` trick to reconstruct the original object structure:
+
+```python
+# When caching:
+raw_json = completion.model_dump_json()  # Serialize to JSON
+
+# When restoring from cache:
+import json
+from types import SimpleNamespace
+restored = json.loads(raw_json, object_hook=lambda d: SimpleNamespace(**d))
+```
+
+This approach allows us to restore the original dot-notation access patterns (e.g., `completion.usage.total_tokens`) without requiring the original class definitions. The `SimpleNamespace` objects behave identically to the original completion objects for attribute access while being much simpler to reconstruct from JSON.
+
 ## 1. `functools.cache` for Simple In-Memory Caching
 
 **When to Use**: Ideal for functions with immutable arguments, called repeatedly with the same parameters in small to medium-sized applications. This makes sense when we might be reusing the same data within a single session. or in an application where we don't need to persist the cache between sessions.
