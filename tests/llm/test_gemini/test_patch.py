@@ -31,9 +31,9 @@ def test_runmodel(model, mode):
     assert isinstance(model, UserExtract), "Should be instance of UserExtract"
     assert model.first_name.lower() == "jason"
     assert model.age == 25
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from Gemini"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from Gemini"
+    )
 
 
 class UserExtractValidated(BaseModel):
@@ -68,6 +68,6 @@ def test_runmodel_validator(model, mode):
     )
     assert isinstance(model, UserExtractValidated), "Should be instance of UserExtract"
     assert model.name == "JASON"
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from Gemini"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from Gemini"
+    )

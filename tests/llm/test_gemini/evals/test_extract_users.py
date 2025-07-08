@@ -34,9 +34,9 @@ def test_extract(model, data, mode):
     )
 
     # Assertions
-    assert (
-        response.name == expected_name
-    ), f"Expected name {expected_name}, got {response.name}"
-    assert (
-        response.age == expected_age
-    ), f"Expected age {expected_age}, got {response.age}"
+    assert response.name == expected_name, (
+        f"Expected name {expected_name}, got {response.name}"
+    )
+    assert response.age == expected_age, (
+        f"Expected age {expected_age}, got {response.age}"
+    )

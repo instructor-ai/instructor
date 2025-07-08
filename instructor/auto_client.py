@@ -3,6 +3,7 @@ from typing import Any, Union, Literal, overload
 from instructor.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
+from instructor.cache import BaseCache
 
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
@@ -33,6 +34,7 @@ supported_providers = [
 def from_provider(
     model: KnownModelName,
     async_client: Literal[True] = True,
+    cache: BaseCache | None = None,  # noqa: ARG001
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -41,25 +43,33 @@ def from_provider(
 def from_provider(
     model: KnownModelName,
     async_client: Literal[False] = False,
+    cache: BaseCache | None = None,  # noqa: ARG001
     **kwargs: Any,
 ) -> Instructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[True] = True, **kwargs: Any
+    model: str,
+    async_client: Literal[True] = True,
+    cache: BaseCache | None = None,  # noqa: ARG001
+    **kwargs: Any,
 ) -> AsyncInstructor: ...
 
 
 @overload
 def from_provider(
-    model: str, async_client: Literal[False] = False, **kwargs: Any
+    model: str,
+    async_client: Literal[False] = False,
+    cache: BaseCache | None = None,  # noqa: ARG001
+    **kwargs: Any,
 ) -> Instructor: ...
 
 
 def from_provider(
     model: Union[str, KnownModelName],  # noqa: UP007
     async_client: bool = False,
+    cache: BaseCache | None = None,
     mode: Union[instructor.Mode, None] = None,  # noqa: ARG001, UP007
     **kwargs: Any,
 ) -> Union[Instructor, AsyncInstructor]:  # noqa: UP007
@@ -69,9 +79,13 @@ def from_provider(
         model: String in format "provider/model-name"
               (e.g., "openai/gpt-4", "anthropic/claude-3-sonnet", "google/gemini-pro")
         async_client: Whether to return an async client
+        cache: Optional cache adapter (e.g., ``AutoCache`` or ``RedisCache``)
+               to enable transparent response caching. Automatically flows through
+               **kwargs to all provider implementations.
         mode: Override the default mode for the provider. If not specified, uses the
               recommended default mode for each provider.
-        **kwargs: Additional arguments passed to the client constructor
+        **kwargs: Additional arguments passed to the provider client functions.
+                 This includes the cache parameter and any provider-specific options.
 
     Returns:
         Instructor or AsyncInstructor instance
@@ -82,15 +96,23 @@ def from_provider(
 
     Examples:
         >>> import instructor
-        >>> # Sync clients
+        >>> from instructor.cache import AutoCache
+        >>>
+        >>> # Basic usage
         >>> client = instructor.from_provider("openai/gpt-4")
-        >>> client = instructor.from_provider("azure_openai/gpt-4")
         >>> client = instructor.from_provider("anthropic/claude-3-sonnet")
-        >>> client = instructor.from_provider("ollama/llama2")
+        >>>
+        >>> # With caching
+        >>> cache = AutoCache(maxsize=1000)
+        >>> client = instructor.from_provider("openai/gpt-4", cache=cache)
+        >>>
         >>> # Async clients
         >>> async_client = instructor.from_provider("openai/gpt-4", async_client=True)
-        >>> async_client = instructor.from_provider("azure_openai/gpt-4", async_client=True)
     """
+    # Add cache to kwargs if provided so it flows through to provider functions
+    if cache is not None:
+        kwargs["cache"] = cache
+
     try:
         provider, model_name = model.split("/", 1)
     except ValueError:
@@ -202,7 +224,7 @@ def from_provider(
 
     elif provider == "google":
         try:
-            import google.genai as genai  # type: ignore
+            import google.genai as genai
             from instructor import from_genai
 
             client = genai.Client(
@@ -210,11 +232,11 @@ def from_provider(
                 if kwargs.get("vertexai") is None
                 else kwargs.get("vertexai"),
                 **kwargs,
-            )  # type: ignore
+            )
             if async_client:
-                return from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
+                return from_genai(client, use_async=True, model=model_name, **kwargs)
             else:
-                return from_genai(client, model=model_name, **kwargs)  # type: ignore
+                return from_genai(client, model=model_name, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The google-genai package is required to use the Google provider. "
@@ -224,7 +246,7 @@ def from_provider(
 
     elif provider == "mistral":
         try:
-            from mistralai import Mistral  # type: ignore
+            from mistralai import Mistral
             from instructor import from_mistral
             import os
 
@@ -385,9 +407,9 @@ def from_provider(
 
             client = GenerativeModel(model_name=model_name)
             if async_client:
-                return from_gemini(client, use_async=True, **kwargs)  # type: ignore
+                return from_gemini(client, use_async=True, **kwargs)
             else:
-                return from_gemini(client, **kwargs)  # type: ignore
+                return from_gemini(client, **kwargs)
         except ImportError:
             import_err = ImportError(
                 "The google-generativeai package is required to use the Google GenAI provider. "

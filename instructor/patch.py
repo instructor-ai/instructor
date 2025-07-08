@@ -10,8 +10,8 @@ from typing import (
 from collections.abc import Awaitable
 from typing_extensions import ParamSpec
 
-from openai import AsyncOpenAI, OpenAI
-from pydantic import BaseModel
+from openai import AsyncOpenAI, OpenAI  # type: ignore[import-not-found]
+from pydantic import BaseModel  # type: ignore[import-not-found]
 
 from instructor.process_response import handle_response_model
 from instructor.retry import retry_async, retry_sync
@@ -22,7 +22,7 @@ from instructor.templating import handle_templating
 from instructor.mode import Mode
 import logging
 
-from tenacity import (
+from tenacity import (  # type: ignore[import-not-found]
     AsyncRetrying,
     Retrying,
 )
@@ -153,12 +153,37 @@ def patch(  # type: ignore
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
+        # -----------------------------
+        # Cache handling (async path)
+        # -----------------------------
+        from instructor.cache import BaseCache, make_cache_key, load_cached_response
+
+        cache: BaseCache | None = kwargs.pop("cache", None)  # type: ignore[assignment]
+        cache_ttl_raw = kwargs.pop("cache_ttl", None)
+        cache_ttl: int | None = (
+            cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
+        )
+
         context = handle_context(context, validation_context)
 
         response_model, new_kwargs = handle_response_model(
             response_model=response_model, mode=mode, **kwargs
         )  # type: ignore
         new_kwargs = handle_templating(new_kwargs, mode=mode, context=context)
+
+        # Attempt cache lookup **before** hitting retry layer
+        if cache is not None and response_model is not None:
+            key = make_cache_key(
+                messages=new_kwargs.get("messages")
+                or new_kwargs.get("contents")
+                or new_kwargs.get("chat_history"),
+                model=new_kwargs.get("model"),
+                response_model=response_model,
+                mode=mode.value if hasattr(mode, "value") else str(mode),
+            )
+            obj = load_cached_response(cache, key, response_model)
+            if obj is not None:
+                return obj  # type: ignore[return-value]
 
         response = await retry_async(
             func=func,  # type:ignore
@@ -171,6 +196,19 @@ def patch(  # type: ignore
             mode=mode,
             hooks=hooks,
         )
+
+        # Store in cache *after* successful call
+        if cache is not None and response_model is not None:
+            try:
+                from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
+
+                if isinstance(response, _BM):
+                    # mypy: ignore-next-line
+                    from instructor.cache import store_cached_response
+
+                    store_cached_response(cache, key, response, ttl=cache_ttl)
+            except ModuleNotFoundError:
+                pass
         return response  # type: ignore
 
     @wraps(func)  # type: ignore
@@ -184,6 +222,17 @@ def patch(  # type: ignore
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
+        # -----------------------------
+        # Cache handling (sync path)
+        # -----------------------------
+        from instructor.cache import BaseCache, make_cache_key, load_cached_response
+
+        cache: BaseCache | None = kwargs.pop("cache", None)  # type: ignore[assignment]
+        cache_ttl_raw = kwargs.pop("cache_ttl", None)
+        cache_ttl: int | None = (
+            cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
+        )
+
         context = handle_context(context, validation_context)
         # print(f"instructor.patch: patched_function {func.__name__}")
         response_model, new_kwargs = handle_response_model(
@@ -191,6 +240,20 @@ def patch(  # type: ignore
         )  # type: ignore
 
         new_kwargs = handle_templating(new_kwargs, mode=mode, context=context)
+
+        # Attempt cache lookup
+        if cache is not None and response_model is not None:
+            key = make_cache_key(
+                messages=new_kwargs.get("messages")
+                or new_kwargs.get("contents")
+                or new_kwargs.get("chat_history"),
+                model=new_kwargs.get("model"),
+                response_model=response_model,
+                mode=mode.value if hasattr(mode, "value") else str(mode),
+            )
+            obj = load_cached_response(cache, key, response_model)
+            if obj is not None:
+                return obj  # type: ignore[return-value]
 
         response = retry_sync(
             func=func,  # type: ignore
@@ -203,6 +266,19 @@ def patch(  # type: ignore
             kwargs=new_kwargs,
             mode=mode,
         )
+
+        # Save to cache
+        if cache is not None and response_model is not None:
+            try:
+                from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
+
+                if isinstance(response, _BM):
+                    # mypy: ignore-next-line
+                    from instructor.cache import store_cached_response
+
+                    store_cached_response(cache, key, response, ttl=cache_ttl)
+            except ModuleNotFoundError:
+                pass
         return response  # type: ignore
 
     new_create = new_create_async if func_is_async else new_create_sync

@@ -8,39 +8,47 @@ def test_dynamic_model_creation_with_field_description():
     This verifies the example in the documentation at docs/concepts/models.md.
     """
     types = {
-        'string': str,
-        'integer': int,
-        'email': str,
+        "string": str,
+        "integer": int,
+        "email": str,
     }
-    
+
     mock_cursor = [
-        ('name', 'string', 'The name of the user.'),
-        ('age', 'integer', 'The age of the user.'),
-        ('email', 'email', 'The email of the user.'),
+        ("name", "string", "The name of the user."),
+        ("age", "integer", "The age of the user."),
+        ("email", "email", "The email of the user."),
     ]
-    
+
     DynamicModel = create_model(
-        'User',
+        "User",
         **{
             property_name: (types[property_type], Field(description=description))
             for property_name, property_type, description in mock_cursor
         },
         __base__=BaseModel,
     )
-    
+
     schema = DynamicModel.model_json_schema()
-    
-    assert schema['properties']['name']['description'] == 'The name of the user.'
-    assert schema['properties']['age']['description'] == 'The age of the user.'
-    assert schema['properties']['email']['description'] == 'The email of the user.'
-    
-    assert 'default' not in schema['properties']['name']
-    assert 'default' not in schema['properties']['age']
-    assert 'default' not in schema['properties']['email']
-    
+
+    assert schema["properties"]["name"]["description"] == "The name of the user."
+    assert schema["properties"]["age"]["description"] == "The age of the user."
+    assert schema["properties"]["email"]["description"] == "The email of the user."
+
+    assert "default" not in schema["properties"]["name"]
+    assert "default" not in schema["properties"]["age"]
+    assert "default" not in schema["properties"]["email"]
+
     OpenAISchemaModel = openai_schema(DynamicModel)
     openai_schema_json = OpenAISchemaModel.model_json_schema()
-    
-    assert openai_schema_json['properties']['name']['description'] == 'The name of the user.'
-    assert openai_schema_json['properties']['age']['description'] == 'The age of the user.'
-    assert openai_schema_json['properties']['email']['description'] == 'The email of the user.'
+
+    assert (
+        openai_schema_json["properties"]["name"]["description"]
+        == "The name of the user."
+    )
+    assert (
+        openai_schema_json["properties"]["age"]["description"] == "The age of the user."
+    )
+    assert (
+        openai_schema_json["properties"]["email"]["description"]
+        == "The email of the user."
+    )
