@@ -35,7 +35,7 @@ class OpenAIProvider(BatchProvider):
             )
             return batch_job.id
         except Exception as e:
-            raise Exception(f"Failed to submit OpenAI batch: {e}")
+            raise Exception(f"Failed to submit OpenAI batch: {e}") from e
 
     def get_status(self, batch_id: str) -> dict[str, Any]:
         """Get OpenAI batch status"""
@@ -55,7 +55,7 @@ class OpenAIProvider(BatchProvider):
                 },
             }
         except Exception as e:
-            raise Exception(f"Failed to get OpenAI batch status: {e}")
+            raise Exception(f"Failed to get OpenAI batch status: {e}") from e
 
     def retrieve_results(self, batch_id: str) -> str:
         """Retrieve OpenAI batch results"""
@@ -74,7 +74,7 @@ class OpenAIProvider(BatchProvider):
             file_response = client.files.content(batch.output_file_id)
             return file_response.text
         except Exception as e:
-            raise Exception(f"Failed to retrieve OpenAI results: {e}")
+            raise Exception(f"Failed to retrieve OpenAI results: {e}") from e
 
     def download_results(self, batch_id: str, file_path: str) -> None:
         """Download OpenAI batch results to a file"""
@@ -94,7 +94,7 @@ class OpenAIProvider(BatchProvider):
             with open(file_path, "w") as f:
                 f.write(file_response.text)
         except Exception as e:
-            raise Exception(f"Failed to download OpenAI results: {e}")
+            raise Exception(f"Failed to download OpenAI results: {e}") from e
 
     def cancel_batch(self, batch_id: str) -> dict[str, Any]:
         """Cancel OpenAI batch job"""
@@ -105,7 +105,7 @@ class OpenAIProvider(BatchProvider):
             batch = client.batches.cancel(batch_id)
             return batch.model_dump()
         except Exception as e:
-            raise Exception(f"Failed to cancel OpenAI batch: {e}")
+            raise Exception(f"Failed to cancel OpenAI batch: {e}") from e
 
     def delete_batch(self, batch_id: str) -> dict[str, Any]:
         """Delete OpenAI batch job"""
@@ -121,7 +121,7 @@ class OpenAIProvider(BatchProvider):
                 "message": "OpenAI does not support batch deletion",
             }
         except Exception as e:
-            raise Exception(f"Failed to delete OpenAI batch: {e}")
+            raise Exception(f"Failed to delete OpenAI batch: {e}") from e
 
     def list_batches(self, limit: int = 10) -> list[BatchJobInfo]:
         """List OpenAI batch jobs"""
@@ -134,4 +134,4 @@ class OpenAIProvider(BatchProvider):
                 BatchJobInfo.from_openai(batch.model_dump()) for batch in batches.data
             ]
         except Exception as e:
-            raise Exception(f"Failed to list OpenAI batches: {e}")
+            raise Exception(f"Failed to list OpenAI batches: {e}") from e

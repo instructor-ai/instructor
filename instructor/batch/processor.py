@@ -24,11 +24,11 @@ class BatchProcessor(Generic[T]):
         # Parse provider from model string
         try:
             self.provider_name, self.model_name = model.split("/", 1)
-        except ValueError:
+        except ValueError as err:
             raise ValueError(
                 'Model string must be in format "provider/model-name" '
                 '(e.g. "openai/gpt-4" or "anthropic/claude-3-sonnet")'
-            )
+            ) from err
 
         # Get the batch provider instance
         self.provider = get_provider(self.provider_name)

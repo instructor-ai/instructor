@@ -197,7 +197,7 @@ def create(
             "Examples: 'openai/gpt-4o-mini', 'anthropic/claude-3-5-sonnet-20241022'",
             err=True,
         )
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     # Check API key
     if not check_api_key(provider):
@@ -249,7 +249,7 @@ def create(
 
     except Exception as e:
         typer.echo(f"Error creating batch: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -350,10 +350,10 @@ def fetch(
 
     except AssertionError as ae:
         typer.echo(f"AssertionError: {ae}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from ae
     except Exception as e:
         typer.echo(f"Error fetching results: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -473,7 +473,7 @@ def show_results(
 
     except Exception as e:
         typer.echo(f"Error showing results: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 def poll_for_results(

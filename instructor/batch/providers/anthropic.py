@@ -42,7 +42,7 @@ class AnthropicProvider(BatchProvider):
             batch = batches_client.create(requests=requests)
             return batch.id
         except Exception as e:
-            raise Exception(f"Failed to submit Anthropic batch: {e}")
+            raise Exception(f"Failed to submit Anthropic batch: {e}") from e
 
     def get_status(self, batch_id: str) -> dict[str, Any]:
         """Get Anthropic batch status"""
@@ -65,7 +65,7 @@ class AnthropicProvider(BatchProvider):
                 "request_counts": getattr(batch, "request_counts", {}),
             }
         except Exception as e:
-            raise Exception(f"Failed to get Anthropic batch status: {e}")
+            raise Exception(f"Failed to get Anthropic batch status: {e}") from e
 
     def retrieve_results(self, batch_id: str) -> str:
         """Retrieve Anthropic batch results"""
@@ -100,7 +100,7 @@ class AnthropicProvider(BatchProvider):
 
             return "\n".join(results_lines)
         except Exception as e:
-            raise Exception(f"Failed to retrieve Anthropic results: {e}")
+            raise Exception(f"Failed to retrieve Anthropic results: {e}") from e
 
     def download_results(self, batch_id: str, file_path: str) -> None:
         """Download Anthropic batch results to a file"""
@@ -133,7 +133,7 @@ class AnthropicProvider(BatchProvider):
                 for result in results:
                     f.write(result.model_dump_json() + "\n")
         except Exception as e:
-            raise Exception(f"Failed to download Anthropic results: {e}")
+            raise Exception(f"Failed to download Anthropic results: {e}") from e
 
     def cancel_batch(self, batch_id: str) -> dict[str, Any]:
         """Cancel Anthropic batch job"""
@@ -151,7 +151,7 @@ class AnthropicProvider(BatchProvider):
             batch = batches_client.cancel(batch_id)
             return batch.model_dump()
         except Exception as e:
-            raise Exception(f"Failed to cancel Anthropic batch: {e}")
+            raise Exception(f"Failed to cancel Anthropic batch: {e}") from e
 
     def delete_batch(self, batch_id: str) -> dict[str, Any]:
         """Delete Anthropic batch job"""
@@ -173,7 +173,7 @@ class AnthropicProvider(BatchProvider):
                 "message": "Anthropic does not support batch deletion",
             }
         except Exception as e:
-            raise Exception(f"Failed to delete Anthropic batch: {e}")
+            raise Exception(f"Failed to delete Anthropic batch: {e}") from e
 
     def list_batches(self, limit: int = 10) -> list[BatchJobInfo]:
         """List Anthropic batch jobs"""
@@ -194,4 +194,4 @@ class AnthropicProvider(BatchProvider):
                 for batch in batches.data
             ]
         except Exception as e:
-            raise Exception(f"Failed to list Anthropic batches: {e}")
+            raise Exception(f"Failed to list Anthropic batches: {e}") from e

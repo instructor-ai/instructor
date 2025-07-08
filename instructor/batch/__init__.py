@@ -36,7 +36,7 @@ Documentation:
 - Anthropic Message Batches: https://docs.anthropic.com/en/api/creating-message-batches
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 # Import all public symbols from the modules
 from .models import (
