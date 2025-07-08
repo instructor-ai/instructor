@@ -10,6 +10,8 @@ from instructor.batch import BatchProcessor
 from instructor.auto_client import from_provider
 import warnings
 
+from tqdm import tqdm
+
 app = typer.Typer()
 
 console = Console()
@@ -48,7 +50,11 @@ def generate_table(batch_jobs: list[Any], provider: str):
                 str(batch_job.id),
                 str(batch_job.created_at),
                 str(batch_job.processing_status),
-                str(getattr(batch_job, "request_counts", {}).get("processing", "N/A")),
+                str(
+                    getattr(batch_job.request_counts, "processing", "N/A")
+                    if hasattr(batch_job, "request_counts")
+                    else "N/A"
+                ),
             )
         elif provider == "google":
             table.add_row(
@@ -106,10 +112,12 @@ def watch(
         10, help="Time in seconds to wait for the batch job to complete"
     ),
     screen: bool = typer.Option(False, help="Enable or disable screen output"),
-    live: bool = typer.Option(False, help="Enable live polling to continuously update the table"),
-    model: str = typer.Option(
-        "openai/gpt-4o-mini",
-        help="Model in format 'provider/model-name' (e.g., 'openai/gpt-4', 'anthropic/claude-3-sonnet')",
+    live: bool = typer.Option(
+        False, help="Enable live polling to continuously update the table"
+    ),
+    provider: str = typer.Option(
+        "openai",
+        help="Provider to use (e.g., 'openai', 'anthropic', 'google')",
     ),
     # Deprecated flag for backward compatibility
     use_anthropic: bool = typer.Option(
@@ -123,35 +131,38 @@ def watch(
     # Handle deprecated flag
     if use_anthropic is not None:
         warnings.warn(
-            "--use-anthropic is deprecated. Use --model 'anthropic/claude-3-sonnet' instead.",
+            "--use-anthropic is deprecated. Use --provider 'anthropic' instead.",
             DeprecationWarning,
             stacklevel=2,
         )
         if use_anthropic:
-            model = "anthropic/claude-3-sonnet"
+            provider = "anthropic"
 
-    providers = []
+    # Check if required API key is available for the provider
+    required_keys = {
+        "anthropic": "ANTHROPIC_API_KEY",
+        "openai": "OPENAI_API_KEY",
+        "google": "GOOGLE_API_KEY",
+    }
 
-    if os.getenv("ANTHROPIC_API_KEY") is not None:
-        providers.append("anthropic")
-    if os.getenv("OPENAI_API_KEY") is not None:
-        providers.append("openai")
-    if os.getenv("GOOGLE_API_KEY") is not None:
-        providers.append("google")
+    if provider in required_keys and not os.getenv(required_keys[provider]):
+        console.print(
+            f"[red]Error: {required_keys[provider]} environment variable not set for {provider}[/red]"
+        )
+        return
 
-    provider, _ = model.split("/", 1)
-    batch_jobs = get_jobs(limit, model)
+    batch_jobs = get_jobs(limit, provider)
     table = generate_table(batch_jobs, provider)
-    
+
     if not live:
         # Show table once and exit
         console.print(table)
         return
-    
+
     # Live polling mode
     with Live(table, refresh_per_second=2, screen=screen) as live_table:
         while True:
-            batch_jobs = get_jobs(limit, model)
+            batch_jobs = get_jobs(limit, provider)
             table = generate_table(batch_jobs, provider)
             live_table.update(table)
             time.sleep(poll)
@@ -261,16 +272,22 @@ def cancel(
 def download_file(
     batch_id: str = typer.Option(help="Batch job ID to download"),
     download_file_path: str = typer.Option(help="Path to download file to"),
-    use_anthropic: bool = typer.Option(
-        False, help="Use Anthropic API instead of OpenAI"
+    provider: str = typer.Option(
+        "openai",
+        help="Provider to use (e.g., 'openai', 'anthropic', 'google')",
     ),
 ):
     try:
-        if use_anthropic:
+        if provider == "anthropic":
             from anthropic import Anthropic
 
             client = Anthropic()
-            batch = client.beta.messages.batches.retrieve(batch_id)
+            # TODO: Remove beta fallback when stable API is available
+            try:
+                batches_client = client.messages.batches
+            except AttributeError:
+                batches_client = client.beta.messages.batches
+            batch = batches_client.retrieve(batch_id)
             if batch.processing_status != "ended":
                 raise ValueError("Only completed Jobs can be downloaded")
 
@@ -278,10 +295,9 @@ def download_file(
             if not results_url:
                 raise ValueError("Results URL not available")
 
-            # Download from results_url and save to download_file_path
-            # This part depends on how you want to handle the download
-            console.log(f"[bold green]Results available at: {results_url}")
-            console.log("[bold yellow]Implement download logic for Anthropic results")
+            with open(download_file_path, "w") as file:
+                for result in tqdm(client.messages.batches.results(batch_id)):
+                    file.write(json.dumps(result.model_dump()) + "\n")
         else:
             from openai import OpenAI
 

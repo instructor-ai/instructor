@@ -46,6 +46,7 @@ import instructor
 import uuid
 import json
 import os
+import tempfile
 from instructor.auto_client import from_provider
 
 T = TypeVar("T", bound=BaseModel)
@@ -322,13 +323,22 @@ class BatchProcessor(Generic[T]):
 
     def create_batch_from_messages(
         self,
-        file_path: str,
-        *,
         messages_list: List[List[Dict[str, Any]]],
+        file_path: str,
         max_tokens: Optional[int] = 1000,
         temperature: Optional[float] = 0.1,
     ) -> str:
-        """Create batch file from list of message conversations"""
+        """Create batch file from list of message conversations
+        
+        Args:
+            messages_list: List of message conversations, each as a list of message dicts
+            file_path: Path to save the batch request file
+            max_tokens: Maximum tokens per request
+            temperature: Temperature for generation
+            
+        Returns:
+            The file path where the batch was saved
+        """
         # Remove existing file if it exists
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -387,6 +397,35 @@ class BatchProcessor(Generic[T]):
             raise ValueError(f"Unsupported provider for result retrieval: {self.provider_name}")
         
         return self.parse_results(results_content)
+    
+    def get_results(self, batch_id: str, file_path: Optional[str] = None) -> List[BatchResult]:
+        """Get batch results, optionally saving raw results to a file
+        
+        Args:
+            batch_id: The batch job ID
+            file_path: Optional file path to save raw results. If provided, 
+                      raw results will be saved to this file. If not provided,
+                      results are only kept in memory.
+                      
+        Returns:
+            List of BatchResult objects (BatchSuccess[T] or BatchError)
+        """
+        # Retrieve results directly to memory
+        results_content = self.retrieve_results(batch_id)
+        
+        # If file path is provided, save raw results to file
+        if file_path is not None:
+            # Get the raw content again for saving
+            if self.provider_name == "openai":
+                self._download_openai_results(batch_id, file_path)
+            elif self.provider_name == "anthropic":
+                self._download_anthropic_results(batch_id, file_path)
+            elif self.provider_name == "google":
+                self._download_google_results(batch_id, file_path)
+            else:
+                raise ValueError(f"Unsupported provider for result download: {self.provider_name}")
+        
+        return results_content
 
     def _submit_openai_batch(self, file_path: str, **kwargs) -> str:
         """Submit OpenAI batch job"""
@@ -734,6 +773,88 @@ class BatchProcessor(Generic[T]):
             return None
 
         return None
+    
+    def _download_openai_results(self, batch_id: str, file_path: str) -> None:
+        """Download OpenAI batch results to a file"""
+        try:
+            from openai import OpenAI
+            client = OpenAI()
+            batch = client.batches.retrieve(batch_id)
+            
+            if batch.status != "completed":
+                raise Exception(f"Batch not completed, status: {batch.status}")
+            
+            if not batch.output_file_id:
+                raise Exception("No output file available")
+            
+            file_response = client.files.content(batch.output_file_id)
+            with open(file_path, 'w') as f:
+                f.write(file_response.text)
+        except Exception as e:
+            raise Exception(f"Failed to download OpenAI results: {e}")
+    
+    def _download_anthropic_results(self, batch_id: str, file_path: str) -> None:
+        """Download Anthropic batch results to a file"""
+        try:
+            import anthropic
+            client = anthropic.Anthropic()
+            
+            # TODO: Remove beta fallback when stable API is available
+            try:
+                batches_client = client.messages.batches
+            except AttributeError:
+                batches_client = client.beta.messages.batches
+            
+            batch = batches_client.retrieve(batch_id)
+            
+            # Check for various terminal states
+            if batch.processing_status in ["failed", "cancelled", "expired"]:
+                raise Exception(f"Batch job failed with status: {batch.processing_status}")
+            
+            if batch.processing_status != "ended":
+                raise Exception(f"Batch not completed, status: {batch.processing_status}")
+            
+            results = batches_client.results(batch_id)
+            with open(file_path, 'w') as f:
+                for result in results:
+                    f.write(result.model_dump_json() + '\n')
+        except Exception as e:
+            raise Exception(f"Failed to download Anthropic results: {e}")
+    
+    def _download_google_results(self, batch_id: str, file_path: str) -> None:
+        """Download Google GenAI batch results to a file"""
+        try:
+            from google import genai
+            from google.genai.types import JobState, HttpOptions
+            from google.cloud import storage
+            
+            # Get job status
+            client = genai.Client(http_options=HttpOptions(api_version="v1"))
+            job = client.batches.get(name=batch_id)
+            
+            if job.state != JobState.JOB_STATE_SUCCEEDED:
+                raise Exception(f"Batch not completed successfully, status: {job.state.name}")
+            
+            if not job.output_uri:
+                raise Exception("No output URI available")
+            
+            # Download results from GCS
+            if not job.output_uri.startswith("gs://"):
+                raise Exception("Invalid GCS URI format")
+            
+            gcs_path = job.output_uri[5:]  # Remove gs://
+            bucket_name, prefix = gcs_path.split("/", 1)
+            
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(bucket_name)
+            
+            with open(file_path, 'w') as f:
+                for blob in bucket.list_blobs(prefix=prefix):
+                    if blob.name.endswith('.jsonl'):
+                        content = blob.download_as_text()
+                        f.write(content)
+        except Exception as e:
+            raise Exception(f"Failed to download Google results: {e}")
 
 
 class BatchJob:
