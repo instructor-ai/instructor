@@ -220,11 +220,12 @@ def from_provider(
                 **kwargs,
             )
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The anthropic package is required to use the Anthropic provider. "
                 "Install it with `pip install anthropic`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "google":
         try:
@@ -260,11 +261,12 @@ def from_provider(
             else:
                 return from_genai(client, model=model_name, **kwargs)  # type: ignore
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The google-genai package is required to use the Google provider. "
                 "Install it with `pip install google-genai`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "mistral":
         try:
@@ -285,11 +287,12 @@ def from_provider(
             else:
                 return from_mistral(client, model=model_name, **kwargs)
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The mistralai package is required to use the Mistral provider. "
                 "Install it with `pip install mistralai`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "cohere":
         try:
@@ -299,11 +302,12 @@ def from_provider(
             client = cohere.AsyncClient() if async_client else cohere.Client()
             return from_cohere(client, **kwargs)
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The cohere package is required to use the Cohere provider. "
                 "Install it with `pip install cohere`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "perplexity":
         try:
@@ -332,11 +336,12 @@ def from_provider(
             )
             return from_perplexity(client, model=model_name, **kwargs)
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The openai package is required to use the Perplexity provider. "
                 "Install it with `pip install openai`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "groq":
         try:
@@ -346,11 +351,12 @@ def from_provider(
             client = groq.AsyncGroq() if async_client else groq.Groq()
             return from_groq(client, model=model_name, **kwargs)
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The groq package is required to use the Groq provider. "
                 "Install it with `pip install groq`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "writer":
         try:
@@ -360,11 +366,12 @@ def from_provider(
             client = AsyncWriter() if async_client else Writer()
             return from_writer(client, model=model_name, **kwargs)
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The writerai package is required to use the Writer provider. "
                 "Install it with `pip install writer-sdk`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "bedrock":
         try:
@@ -421,7 +428,9 @@ def from_provider(
                 **kwargs,
             )
         except ImportError:
-            raise ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The boto3 package is required to use the AWS Bedrock provider. "
                 "Install it with `pip install boto3`."
             ) from None
@@ -434,11 +443,12 @@ def from_provider(
             client = AsyncCerebras() if async_client else Cerebras()
             return from_cerebras(client, model=model_name, **kwargs)
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The cerebras package is required to use the Cerebras provider. "
                 "Install it with `pip install cerebras`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "fireworks":
         try:
@@ -448,11 +458,12 @@ def from_provider(
             client = AsyncFireworks() if async_client else Fireworks()
             return from_fireworks(client, model=model_name, **kwargs)
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The fireworks-ai package is required to use the Fireworks provider. "
                 "Install it with `pip install fireworks-ai`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "vertexai":
         warnings.warn(
@@ -491,11 +502,12 @@ def from_provider(
             else:
                 return from_genai(client, **kwargs)  # type: ignore
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The google-genai package is required to use the VertexAI provider. "
                 "Install it with `pip install google-genai`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "generative-ai":
         warnings.warn(
@@ -518,11 +530,12 @@ def from_provider(
             else:
                 return from_genai(client, model=model_name, **kwargs)  # type: ignore
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The google-genai package is required to use the Google GenAI provider. "
                 "Install it with `pip install google-genai`."
-            )
-            raise import_err from None
+            ) from None
 
     elif provider == "ollama":
         try:
