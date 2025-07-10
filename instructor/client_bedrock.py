@@ -13,7 +13,7 @@ from instructor.client import AsyncInstructor, Instructor
 def from_bedrock(
     client: boto3.client,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
-    _async: Literal[False] = False,
+    async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
 
@@ -22,7 +22,7 @@ def from_bedrock(
 def from_bedrock(
     client: boto3.client,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
-    _async: Literal[True] = True,
+    async_client: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -41,9 +41,13 @@ def handle_bedrock_json(
 def from_bedrock(
     client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_JSON,
-    _async: bool = False,
+    async_client: bool = False,
+    _async: bool = False,  # Deprecated, use async_client
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
+    """
+    Accepts both 'async_client' (preferred) and '_async' (deprecated) for async mode.
+    """
     valid_modes = {
         instructor.Mode.BEDROCK_TOOLS,
         instructor.Mode.BEDROCK_JSON,
@@ -66,12 +70,15 @@ def from_bedrock(
             f"Got: {type(client).__name__}"
         )
 
+    # Prefer async_client, fallback to _async for backward compatibility
+    use_async = async_client or _async
+
     async def async_wrapper(**kwargs: Any):
-        return client.converse(**kwargs)
+        return client.chat.completions.create(**kwargs)
 
-    create = client.converse
+    create = client.chat.completions.create
 
-    if _async:
+    if use_async:
         return AsyncInstructor(
             client=client,
             create=instructor.patch(create=async_wrapper, mode=mode),
