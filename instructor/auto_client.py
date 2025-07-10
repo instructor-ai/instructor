@@ -421,12 +421,10 @@ def from_provider(
                 **kwargs,
             )
         except ImportError:
-            from instructor.exceptions import ConfigurationError
-
-            raise ConfigurationError(
+            raise ImportError(
                 "The boto3 package is required to use the AWS Bedrock provider. "
                 "Install it with `pip install boto3`."
-            )
+            ) from None
 
     elif provider == "cerebras":
         try:
