@@ -5,9 +5,12 @@ import instructor
 from instructor.models import KnownModelName
 from instructor.cache import BaseCache
 import warnings
+import logging
 
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
+
+logger = logging.getLogger("instructor.auto_client")
 
 
 # List of supported providers
@@ -370,9 +373,13 @@ def from_provider(
             from instructor import from_bedrock
 
             # Get AWS configuration from environment or kwargs
-            region = kwargs.pop(
-                "region", os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
-            )
+            if "region" in kwargs:
+                region = kwargs.pop("region")
+            else:
+                logger.debug(
+                    "AWS_DEFAULT_REGION is not set. Using default region us-east-1"
+                )
+                region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 
             # Extract AWS-specific parameters
             # Dictionary to collect AWS credentials and session parameters for boto3 client
@@ -384,8 +391,9 @@ def from_provider(
             ]:
                 if key in kwargs:
                     aws_kwargs[key] = kwargs.pop(key)
-                elif f"AWS_{key.upper()}" in os.environ:
-                    aws_kwargs[key] = os.environ[f"AWS_{key.upper()}"]
+                elif key.upper() in os.environ:
+                    logger.debug(f"Using {key.upper()} from environment variable")
+                    aws_kwargs[key] = os.environ[key.upper()]
 
             # Add region to client configuration
             aws_kwargs["region_name"] = region

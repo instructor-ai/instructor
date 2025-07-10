@@ -1,6 +1,8 @@
 from __future__ import annotations  # type: ignore
 
 from typing import Any, Literal, overload
+import warnings
+from warnings import DeprecationWarning
 
 import boto3
 from botocore.client import BaseClient
@@ -42,7 +44,7 @@ def from_bedrock(
     client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_JSON,
     async_client: bool = False,
-    _async: bool = False,  # Deprecated, use async_client
+    _async: bool | None = None,  # Deprecated, use async_client
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     """
@@ -70,13 +72,21 @@ def from_bedrock(
             f"Got: {type(client).__name__}"
         )
 
+    # Deprecation warning for _async usage
+    if _async is not None and not async_client:
+        warnings.warn(
+            "The '_async' argument to from_bedrock is deprecated. Use 'async_client' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
     # Prefer async_client, fallback to _async for backward compatibility
-    use_async = async_client or _async
+    use_async = async_client or (_async is not None and _async is True)
 
     async def async_wrapper(**kwargs: Any):
-        return client.chat.completions.create(**kwargs)
+        return client.converse(**kwargs)
 
-    create = client.chat.completions.create
+    create = client.converse
 
     if use_async:
         return AsyncInstructor(
