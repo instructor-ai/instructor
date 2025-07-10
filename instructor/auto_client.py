@@ -373,6 +373,7 @@ def from_provider(
             region = kwargs.pop("region", os.environ.get("AWS_DEFAULT_REGION", "us-east-1"))
             
             # Extract AWS-specific parameters
+            # Dictionary to collect AWS credentials and session parameters for boto3 client
             aws_kwargs = {}
             for key in ["aws_access_key_id", "aws_secret_access_key", "aws_session_token"]:
                 if key in kwargs:
