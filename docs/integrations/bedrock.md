@@ -19,6 +19,38 @@ pip install "instructor[bedrock]"
 
 AWS Bedrock is a fully managed service that offers a choice of high-performing foundation models (FMs) from leading AI companies like AI21 Labs, Anthropic, Cohere, Meta, Stability AI, and Amazon through a single API.
 
+## Auto Client Setup
+
+For simplified setup, you can use the auto client pattern:
+
+```python
+import instructor
+
+# Auto client with model specification
+client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0")
+
+# The auto client automatically handles:
+# - AWS credential detection from environment
+# - Region configuration (defaults to us-east-1)
+# - Mode selection based on model (Claude models use BEDROCK_TOOLS)
+```
+
+### Environment Configuration
+
+Set your AWS credentials and region:
+
+```bash
+export AWS_ACCESS_KEY_ID=your_access_key
+export AWS_SECRET_ACCESS_KEY=your_secret_key
+export AWS_DEFAULT_REGION=us-east-1
+```
+
+Or configure using AWS CLI:
+
+```bash
+aws configure
+```
+
 ### Sync Example
 
 ```python
@@ -30,7 +62,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client
-client = instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
+client = instructor.from_bedrock(bedrock_client)
 
 
 class User(BaseModel):
@@ -39,10 +71,10 @@ class User(BaseModel):
 
 
 # Create structured output
-user = client.chat.completions.create(
+user = client.converse(
     modelId="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
-        {"role": "user", "content": [{ "text": "Extract: Jason is 25 years old" }]},
+        {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
     response_model=User,
 )
@@ -59,10 +91,11 @@ import instructor
 from pydantic import BaseModel
 import asyncio
 
-async_client = instructor.from_provider(
-    "bedrock/anthropic.claude-3-sonnet-20240229-v1:0",
-    async_client=True,
-)
+# Initialize the Bedrock client
+bedrock_client = boto3.client('bedrock-runtime')
+
+# Enable instructor patches for async Bedrock client
+async_client = instructor.from_bedrock(bedrock_client, _async=True)
 
 class User(BaseModel):
     name: str
@@ -71,7 +104,7 @@ class User(BaseModel):
 async def get_user_async():
     return await async_client.converse(
         modelId="anthropic.claude-3-sonnet-20240229-v1:0",
-        messages=[{"role": "user", "content": [{"text": "Extract Jason is 25 years old"}]}],
+        messages=[{"role": "user", "content": "Extract Jason is 25 years old"}],
         response_model=User,
     )
 
@@ -96,7 +129,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client with specific mode
-client = instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
+client = instructor.from_bedrock(bedrock_client, mode=Mode.BEDROCK_TOOLS)
 
 
 class User(BaseModel):
@@ -128,7 +161,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client
-client = instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
+client = instructor.from_bedrock(bedrock_client)
 
 
 class Address(BaseModel):
@@ -170,7 +203,79 @@ print(user)
 #> )
 ```
 
+## Modern Models and Features
+
+### Latest Model Support
+
+AWS Bedrock supports many modern foundation models:
+
+```python
+import instructor
+
+# Claude 3.5 models (latest)
+client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0")
+# or
+client = instructor.from_provider("bedrock/anthropic.claude-3-5-haiku-20241022-v1:0")
+
+# Amazon Nova models (multimodal)
+client = instructor.from_provider("bedrock/amazon.nova-micro-v1:0")
+
+# Meta Llama 3 models
+client = instructor.from_provider("bedrock/meta.llama3-70b-instruct-v1:0")
+
+# Mistral models
+client = instructor.from_provider("bedrock/mistral.mistral-large-2402-v1:0")
+```
+
+### Advanced Configuration
+
+```python
+import boto3
+import instructor
+
+# Custom AWS configuration
+bedrock_client = boto3.client(
+    'bedrock-runtime',
+    region_name='us-west-2',
+    aws_access_key_id='your_key',
+    aws_secret_access_key='your_secret'
+)
+
+client = instructor.from_bedrock(
+    bedrock_client,
+    mode=instructor.Mode.BEDROCK_TOOLS
+)
+
+# Advanced inference configuration
+user = client.converse(
+    modelId="anthropic.claude-3-5-sonnet-20241022-v2:0",
+    messages=[{"role": "user", "content": "Extract user info"}],
+    response_model=User,
+    inferenceConfig={
+        "maxTokens": 2048,
+        "temperature": 0.1,
+        "topP": 0.9,
+        "stopSequences": ["STOP"]
+    }
+)
+```
+
+### Modern Features
+
+**Streaming Support** (Available via converse_stream):
+```python
+# Note: Streaming support requires async implementation
+# This is a future enhancement for instructor-bedrock integration
+```
+
+**Model Selection by Capability**:
+- **Claude models**: Best for function calling and complex reasoning (use `BEDROCK_TOOLS`)
+- **Titan models**: Cost-effective for simple extraction (use `BEDROCK_JSON`)
+- **Llama models**: Open-source alternative (use `BEDROCK_JSON`)
+
 ## Additional Resources
 
 - [AWS Bedrock Documentation](https://docs.aws.amazon.com/bedrock/)
 - [Boto3 Bedrock Client](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock.html)
+- [Bedrock Model IDs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html)
+- [Bedrock Pricing](https://aws.amazon.com/bedrock/pricing/)

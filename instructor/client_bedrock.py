@@ -31,8 +31,10 @@ def handle_bedrock_json(
     response_model: Any,
     new_kwargs: Any,
 ) -> tuple[Any, Any]:
-    print(f"handle_bedrock_json: response_model {response_model}")
-    print(f"handle_bedrock_json: new_kwargs {new_kwargs}")
+    """
+    This function is deprecated and no longer used.
+    Bedrock JSON handling is now done in process_response.py via handle_bedrock_json().
+    """
     return response_model, new_kwargs
 
 

@@ -365,17 +365,50 @@ def from_provider(
 
     elif provider == "bedrock":
         try:
+            import os
             import boto3
             from instructor import from_bedrock
 
-            client = boto3.client("bedrock-runtime")
-            return from_bedrock(client, **kwargs)
+            # Get AWS configuration from environment or kwargs
+            region = kwargs.pop("region", os.environ.get("AWS_DEFAULT_REGION", "us-east-1"))
+            
+            # Extract AWS-specific parameters
+            aws_kwargs = {}
+            for key in ["aws_access_key_id", "aws_secret_access_key", "aws_session_token"]:
+                if key in kwargs:
+                    aws_kwargs[key] = kwargs.pop(key)
+                elif f"AWS_{key.upper()}" in os.environ:
+                    aws_kwargs[key] = os.environ[f"AWS_{key.upper()}"]
+            
+            # Add region to client configuration
+            aws_kwargs["region_name"] = region
+            
+            # Create bedrock-runtime client
+            client = boto3.client("bedrock-runtime", **aws_kwargs)
+            
+            # Determine default mode based on model
+            if mode is None:
+                # Anthropic models (Claude) support tools, others use JSON
+                if model_name and ("anthropic" in model_name.lower() or "claude" in model_name.lower()):
+                    default_mode = instructor.Mode.BEDROCK_TOOLS
+                else:
+                    default_mode = instructor.Mode.BEDROCK_JSON
+            else:
+                default_mode = mode
+            
+            return from_bedrock(
+                client,
+                mode=default_mode,
+                _async=async_client,
+                **kwargs,
+            )
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+            
+            raise ConfigurationError(
                 "The boto3 package is required to use the AWS Bedrock provider. "
                 "Install it with `pip install boto3`."
             )
-            raise import_err from None
 
     elif provider == "cerebras":
         try:
