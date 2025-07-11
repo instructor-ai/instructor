@@ -22,7 +22,7 @@ from instructor.dsl.parallel import (
     get_types_array,
     handle_parallel_model,
 )
-from instructor.dsl.partial import PartialBase
+from instructor.dsl.partial import PartialBase, Partial
 from instructor.dsl.simple_type import (
     AdapterBase,
     ModelAdapter,
@@ -626,6 +626,10 @@ def handle_genai_structured_outputs(
 ) -> tuple[type[T], dict[str, Any]]:
     from google.genai import types
 
+    # Automatically wrap regular models with Partial when streaming is enabled
+    if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
+        response_model = Partial[response_model]
+
     if new_kwargs.get("system"):
         system_message = new_kwargs.pop("system")
     elif new_kwargs.get("messages"):
@@ -659,6 +663,10 @@ def handle_genai_tools(
     response_model: type[T], new_kwargs: dict[str, Any]
 ) -> tuple[type[T], dict[str, Any]]:
     from google.genai import types
+
+    # Automatically wrap regular models with Partial when streaming is enabled
+    if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
+        response_model = Partial[response_model]
 
     schema = map_to_gemini_function_schema(response_model.model_json_schema())
     function_definition = types.FunctionDeclaration(
@@ -1127,25 +1135,29 @@ def handle_response_model(
 
             elif mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
                 # Handle GenAI mode - convert messages to contents and extract system message
-                from instructor.utils import convert_to_genai_messages, extract_genai_system_message
-                
+                from instructor.utils import (
+                    convert_to_genai_messages,
+                    extract_genai_system_message,
+                )
+
                 # Convert OpenAI-style messages to GenAI-style contents
                 new_kwargs["contents"] = convert_to_genai_messages(messages)
-                
+
                 # Extract multimodal content for GenAI
                 new_kwargs["contents"] = extract_genai_multimodal_content(
                     new_kwargs["contents"], autodetect_images
                 )
-                
+
                 # Handle system message for GenAI
                 if "system" not in new_kwargs:
-                    system_message = extract_genai_system_message(messages) 
+                    system_message = extract_genai_system_message(messages)
                     if system_message:
                         from google.genai import types
+
                         new_kwargs["config"] = types.GenerateContentConfig(
                             system_instruction=system_message
                         )
-                
+
                 # Remove messages since we converted to contents
                 new_kwargs.pop("messages", None)
 
