@@ -85,11 +85,43 @@ def is_simple_type(
     # Handle special case for list[int | str], list[Union[int, str]] or similar type patterns
     # Identify a list type by checking for various origins it might have
     if origin in {typing.Iterable, Partial, list}:
-        # Always treat regular Python list as a simple type
+        # For list types, check the contents before deciding
         if origin is list:
-            return True
+            # Extract the inner types from the list
+            args = typing.get_args(response_model)
+            if args and len(args) == 1:
+                inner_arg = args[0]
+                # Special handling for Union types
+                inner_origin = typing.get_origin(inner_arg)
 
-        # Extract the inner types from the list
+                # Explicit check for Union types - try different patterns across Python versions
+                if (
+                    inner_origin is typing.Union
+                    or inner_origin == typing.Union
+                    or str(inner_origin) == "typing.Union"
+                    or str(type(inner_arg)) == "<class 'typing._UnionGenericAlias'>"
+                ):
+                    return True
+
+                # Check for Python 3.10+ pipe syntax
+                if hasattr(inner_arg, "__or__"):
+                    return True
+
+                # For simple list with basic types, also return True
+                if inner_arg in {str, int, float, bool}:
+                    return True
+                
+                # Check if inner type is a BaseModel - if so, not a simple type
+                try:
+                    if isclass(inner_arg) and issubclass(inner_arg, BaseModel):
+                        return False
+                except TypeError:
+                    pass
+            
+            # If no args or unknown pattern, treat as simple list
+            return len(args) == 0
+
+        # Extract the inner types from the list for other iterable types
         args = typing.get_args(response_model)
         if args and len(args) == 1:
             inner_arg = args[0]
