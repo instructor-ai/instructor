@@ -61,4 +61,4 @@ jobs:
           # Optional: Custom environment variables for Claude
           # claude_env: |
           #   NODE_ENV: test
-
+          allowed_tools: "Bash(git commit), Bash(uv sync), Bash(uv run)"

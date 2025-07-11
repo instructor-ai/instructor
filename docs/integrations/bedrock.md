@@ -57,26 +57,20 @@ Or configure using AWS CLI:
 aws configure
 ```
 
-### Sync Example
+## Sync Example
 
 ```python
 import boto3
 import instructor
 from pydantic import BaseModel
 
-# Initialize the Bedrock client
 bedrock_client = boto3.client('bedrock-runtime')
-
-# Enable instructor patches for Bedrock client
 client = instructor.from_bedrock(bedrock_client)
-
 
 class User(BaseModel):
     name: str
     age: int
 
-
-# Create structured output
 user = client.chat.completions.create(
     modelId="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
@@ -89,30 +83,31 @@ print(user)
 # > User(name='Jason', age=25)
 ```
 
-### Async Example
+## Async Example
+
+> **Warning:**
+> AWS Bedrock's official SDK (`boto3`) does not support async natively. If you need to call Bedrock from async code, you can use `asyncio.to_thread` to run synchronous Bedrock calls in a non-blocking way.
 
 ```python
-import boto3
 import instructor
 from pydantic import BaseModel
 import asyncio
 
-# Initialize the Bedrock client
-bedrock_client = boto3.client('bedrock-runtime')
-
-# Enable instructor patches for async Bedrock client
-async_client = instructor.from_bedrock(bedrock_client, async_client=True)
+client = instructor.from_provider("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
 
 class User(BaseModel):
     name: str
     age: int
 
-async def get_user_async():
-    return await async_client.chat.completions.create(
+def get_user():
+    return client.chat.completions.create(
         modelId="anthropic.claude-3-sonnet-20240229-v1:0",
         messages=[{"role": "user", "content": "Extract Jason is 25 years old"}],
         response_model=User,
     )
+
+async def get_user_async():
+    return await asyncio.to_thread(get_user)
 
 user = asyncio.run(get_user_async())
 print(user)
@@ -131,30 +126,59 @@ import instructor
 from instructor import Mode
 from pydantic import BaseModel
 
-# Initialize the Bedrock client
 bedrock_client = boto3.client('bedrock-runtime')
-
-# Enable instructor patches for Bedrock client with specific mode
 client = instructor.from_bedrock(bedrock_client, mode=Mode.BEDROCK_TOOLS)
-
 
 class User(BaseModel):
     name: str
     age: int
+```
 
+## OpenAI Compatibility: Flexible Input Format and Model Parameter
 
-# Create structured output
-user = client.chat.completions.create(
-    modelId="anthropic.claude-3-sonnet-20240229-v1:0",
-    messages=[
-        {"role": "user", "content": "Extract: Jason is 25 years old"},
-    ],
+Instructor’s Bedrock integration supports both OpenAI-style and Bedrock-native message formats, as well as any mix of the two. You can use either:
+
+- **OpenAI-style**:  
+  `{"role": "user", "content": "Extract: Jason is 25 years old"}`
+
+- **Bedrock-native**:  
+  `{"role": "user", "content": [{"text": "Extract: Jason is 25 years old"}]}`
+
+- **Mixed**:  
+  You can freely mix OpenAI-style and Bedrock-native messages in the same request. The integration will automatically convert OpenAI-style messages to the correct Bedrock format, while preserving any Bedrock-native fields you provide.
+
+This flexibility also applies to other keyword arguments, such as the model name:
+
+- You can use either `model` (OpenAI-style) or `modelId` (Bedrock-native) as a keyword argument.  
+- If you provide `model`, Instructor will automatically convert it to `modelId` for Bedrock.
+- If you provide both, `modelId` takes precedence.
+
+**Example:**
+
+```python
+import instructor
+
+messages = [
+    {"role": "system", "content": "Extract the name and age."},  # OpenAI-style
+    {"role": "user", "content": [{"text": "Extract: Jason is 25 years old"}]},  # Bedrock-native
+    {"role": "assistant", "content": "Sure! Jason is 25."},  # OpenAI-style
+]
+
+# Both of these are valid:
+user = client.create(
+    model="anthropic.claude-3-sonnet-20240229-v1:0",  # OpenAI-style
+    messages=messages,
     response_model=User,
 )
 
-print(user)
-# > User(name='Jason', age=25)
+user = client.create(
+    modelId="anthropic.claude-3-sonnet-20240229-v1:0",  # Bedrock-native
+    messages=messages,
+    response_model=User,
+)
 ```
+
+All of the above will work seamlessly with Instructor’s Bedrock integration.
 
 ## Nested Objects
 
