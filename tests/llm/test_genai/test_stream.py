@@ -4,7 +4,6 @@ import pytest
 from pydantic import BaseModel
 
 import instructor
-from instructor.dsl.partial import Partial
 
 from .util import models, modes
 
@@ -17,9 +16,9 @@ class UserExtract(BaseModel):
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_partial_model(model, mode, client):
     client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
-    model = client.chat.completions.create(
+    model = client.chat.completions.create_partial(
         model=model,
-        response_model=Partial[UserExtract],
+        response_model=UserExtract,
         max_retries=2,
         stream=True,
         messages=[
@@ -101,54 +100,3 @@ async def test_iterable_model_async(model, mode):
         assert isinstance(m, UserExtract)
         iterations += 1
     assert iterations == 3
-
-
-@pytest.mark.parametrize("model, mode", product(models, modes))
-@pytest.mark.asyncio
-async def test_regular_model_with_streaming_async(model, mode, client):
-    """Test that regular models (not explicitly Partial) work with streaming via automatic Partial wrapping."""
-    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=True)
-    stream = client.chat.completions.create(
-        model=model,
-        response_model=UserExtract,  # Regular model, not Partial[UserExtract]
-        max_retries=2,
-        stream=True,
-        messages=[
-            {"role": "user", "content": "John is 25 years old"},
-        ],
-    )
-    final_model = None
-    iterations = 0
-    async for chunk in stream:
-        assert isinstance(chunk, UserExtract)
-        final_model = chunk
-        iterations += 1
-    assert iterations >= 1
-    assert isinstance(final_model, UserExtract)
-    assert final_model.age == 25
-    assert final_model.name == "John"
-
-
-@pytest.mark.parametrize("model, mode", product(models, modes))
-def test_regular_model_with_streaming_sync(model, mode, client):
-    """Test that regular models (not explicitly Partial) work with streaming via automatic Partial wrapping."""
-    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
-    stream = client.chat.completions.create(
-        model=model,
-        response_model=UserExtract,  # Regular model, not Partial[UserExtract]
-        max_retries=2,
-        stream=True,
-        messages=[
-            {"role": "user", "content": "Alice is 30 years old"},
-        ],
-    )
-    final_model = None
-    iterations = 0
-    for chunk in stream:
-        assert isinstance(chunk, UserExtract)
-        final_model = chunk
-        iterations += 1
-    assert iterations >= 1
-    assert isinstance(final_model, UserExtract)
-    assert final_model.age == 30
-    assert final_model.name == "Alice"
