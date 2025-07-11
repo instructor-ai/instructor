@@ -6,11 +6,7 @@ response_model is set to None, ensuring that OpenAI-style messages are
 correctly converted to GenAI-style contents.
 """
 
-import pytest
-from instructor.mode import Mode
 
-
-@pytest.mark.parametrize("mode", [Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS])
 def test_genai_response_model_none(genai_client):
     """Test that GenAI client works with response_model=None"""
 
