@@ -1,9 +1,7 @@
 name: Test Docs
 on:
-  pull_request:
-  push:
-    branches:
-      - master
+  schedule:
+    - cron: '0 0 1 * *'  # Runs at 00:00 on the 1st of every month
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -33,6 +31,6 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run tests
-        run: uv run pytest tests/llm/test_openai/docs
+        run: uv run pytest tests/docs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
