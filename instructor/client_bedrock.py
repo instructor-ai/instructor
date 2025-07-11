@@ -2,7 +2,6 @@ from __future__ import annotations  # type: ignore
 
 from typing import Any, Literal, overload
 import warnings
-from warnings import DeprecationWarning
 
 import boto3
 from botocore.client import BaseClient
