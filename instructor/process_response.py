@@ -1110,6 +1110,30 @@ def handle_response_model(
                     if system_message:
                         new_kwargs["system"] = system_message
 
+            elif mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
+                # Handle GenAI mode - convert messages to contents and extract system message
+                from instructor.utils import convert_to_genai_messages, extract_genai_system_message
+                
+                # Convert OpenAI-style messages to GenAI-style contents
+                new_kwargs["contents"] = convert_to_genai_messages(messages)
+                
+                # Extract multimodal content for GenAI
+                new_kwargs["contents"] = extract_genai_multimodal_content(
+                    new_kwargs["contents"], autodetect_images
+                )
+                
+                # Handle system message for GenAI
+                if "system" not in new_kwargs:
+                    system_message = extract_genai_system_message(messages) 
+                    if system_message:
+                        from google.genai import types
+                        new_kwargs["config"] = types.GenerateContentConfig(
+                            system_instruction=system_message
+                        )
+                
+                # Remove messages since we converted to contents
+                new_kwargs.pop("messages", None)
+
             else:
                 if mode in {
                     Mode.RESPONSES_TOOLS,
