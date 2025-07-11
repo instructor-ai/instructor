@@ -7,6 +7,50 @@ description: Learn how to use AWS Bedrock with Instructor for structured JSON ou
 
 This guide demonstrates how to use AWS Bedrock with Instructor to generate structured outputs. You'll learn how to use AWS Bedrock's LLM models with Pydantic to create type-safe, validated responses.
 
+## Flexible Input Format and Model Parameter
+
+Instructor’s Bedrock integration supports both OpenAI-style and Bedrock-native message formats, as well as any mix of the two. You can use either:
+
+- **OpenAI-style**:  
+  `{"role": "user", "content": "Extract: Jason is 25 years old"}`
+
+- **Bedrock-native**:  
+  `{"role": "user", "content": [{"text": "Extract: Jason is 25 years old"}]}`
+
+- **Mixed**:  
+  You can freely mix OpenAI-style and Bedrock-native messages in the same request. The integration will automatically convert OpenAI-style messages to the correct Bedrock format, while preserving any Bedrock-native fields you provide.
+
+This flexibility also applies to other keyword arguments, such as the model name:
+
+- You can use either `model` (OpenAI-style) or `modelId` (Bedrock-native) as a keyword argument.  
+- If you provide `model`, Instructor will automatically convert it to `modelId` for Bedrock.
+- If you provide both, `modelId` takes precedence.
+
+**Example:**
+
+```python
+messages = [
+    {"role": "system", "content": "Extract the name and age."},  # OpenAI-style
+    {"role": "user", "content": [{"text": "Extract: Jason is 25 years old"}]},  # Bedrock-native
+    {"role": "assistant", "content": "Sure! Jason is 25."},  # OpenAI-style
+]
+
+# Both of these are valid:
+user = client.create(
+    model="anthropic.claude-3-sonnet-20240229-v1:0",  # OpenAI-style
+    messages=messages,
+    response_model=User,
+)
+
+user = client.create(
+    modelId="anthropic.claude-3-sonnet-20240229-v1:0",  # Bedrock-native
+    messages=messages,
+    response_model=User,
+)
+```
+
+All of the above will work seamlessly with Instructor’s Bedrock integration.
+
 ## Prerequisites
 
 You'll need to have an AWS account with access to Bedrock and the appropriate permissions. You'll also need to set up your AWS credentials.
@@ -40,9 +84,10 @@ class User(BaseModel):
 
 # Create structured output
 user = client.chat.completions.create(
-    modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+    model="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
-        {"role": "user", "content": [{ "text": "Extract: Jason is 25 years old" }]},
+        {"role": "system", "content": "Extract the name and age from the user's message."},
+        {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
     response_model=User,
 )
@@ -70,8 +115,11 @@ class User(BaseModel):
 
 async def get_user_async():
     return await async_client.converse(
-        modelId="anthropic.claude-3-sonnet-20240229-v1:0",
-        messages=[{"role": "user", "content": [{"text": "Extract Jason is 25 years old"}]}],
+        model="anthropic.claude-3-sonnet-20240229-v1:0",
+        messages=[
+            {"role": "system", "content": "Extract the name and age from the user's message."},
+            {"role": "user", "content": "Extract: Jason is 25 years old"},
+        ],
         response_model=User,
     )
 
@@ -106,7 +154,7 @@ class User(BaseModel):
 
 # Create structured output
 user = client.converse(
-    modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+    model="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -145,7 +193,7 @@ class User(BaseModel):
 
 # Create structured output with nested objects
 user = client.converse(
-    modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+    model="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
         {
             "role": "user",

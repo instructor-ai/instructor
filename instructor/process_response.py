@@ -766,13 +766,19 @@ def _prepare_bedrock_converse_kwargs_internal(
     # Convert to OpenAI format by adding to messages as system role
     if "system" in call_kwargs and isinstance(call_kwargs["system"], list):
         system_content = call_kwargs.pop("system")
-        if system_content and isinstance(system_content[0], dict) and "text" in system_content[0]:
+        if (
+            system_content
+            and isinstance(system_content[0], dict)
+            and "text" in system_content[0]
+        ):
             # Convert system=[{'text': '...'}] to OpenAI format
             system_text = system_content[0]["text"]
             if "messages" not in call_kwargs:
                 call_kwargs["messages"] = []
             # Insert system message at beginning
-            call_kwargs["messages"].insert(0, {"role": "system", "content": system_text})
+            call_kwargs["messages"].insert(
+                0, {"role": "system", "content": system_text}
+            )
 
     # Bedrock expects 'modelId' over 'model'
     if "model" in call_kwargs and "modelId" not in call_kwargs:
@@ -862,7 +868,12 @@ def _prepare_bedrock_converse_kwargs_internal(
                 if "content" in current_message_for_api:
                     if isinstance(content, str):
                         current_message_for_api["content"] = [{"text": content}]
-                    elif isinstance(content, list) and content and isinstance(content[0], dict) and "text" in content[0]:
+                    elif (
+                        isinstance(content, list)
+                        and content
+                        and isinstance(content[0], dict)
+                        and "text" in content[0]
+                    ):
                         # Handle Bedrock-native content format: [{'text': "..."}]
                         current_message_for_api["content"] = content
                     else:  # Content is not a string or supported list format (e.g., None, int, unsupported list).
