@@ -19,7 +19,7 @@ def test_typed_dict_conversion() -> None:
 
 
 def test_bedrock_system_parameter_conversion() -> None:
-    """Test conversion of Bedrock-native system=[{'text': '...'}] to OpenAI format"""
+    """Test conversion of Bedrock-native system=[{'text': '...'}] parameter with OpenAI message content"""
     call_kwargs = {
         "system": [{'text': 'You are a helpful assistant.'}],
         "messages": [{'role': 'user', 'content': 'Hello'}]
@@ -27,11 +27,11 @@ def test_bedrock_system_parameter_conversion() -> None:
     
     result = _prepare_bedrock_converse_kwargs_internal(call_kwargs)
     
-    # System parameter should be removed and converted to system message in messages
-    assert "system" not in result
-    assert len(result["messages"]) == 2
-    assert result["messages"][0] == {"role": "system", "content": "You are a helpful assistant."}
-    assert result["messages"][1] == {'role': 'user', 'content': 'Hello'}
+    # Should convert to proper Bedrock format
+    assert result["system"] == [{"text": "You are a helpful assistant."}]
+    assert len(result["messages"]) == 1
+    assert result["messages"][0]["role"] == "user"
+    assert result["messages"][0]["content"] == [{"text": "Hello"}]
 
 
 def test_bedrock_content_list_format() -> None:
@@ -50,26 +50,29 @@ def test_bedrock_content_list_format() -> None:
 
 
 def test_bedrock_combined_system_and_content_format() -> None:
-    """Test the exact issue scenario: system=[{'text': '...'}] + content=[{'text': '...'}]"""
+    """Test OpenAI format input converted to Bedrock format output"""
+    # OpenAI-style input
     call_kwargs = {
-        "modelId": "anthropic.claude-3-haiku-20240307-v1:0",
-        "system": [{'text': 'You are a helpful assistant.'}],
-        "messages": [{'role': 'user', 'content': [{'text': "Extract: Jason is 22 years old"}]}]
+        "model": "anthropic.claude-3-haiku-20240307-v1:0",
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Extract: Jason is 22 years old"}
+        ]
     }
     
     result = _prepare_bedrock_converse_kwargs_internal(call_kwargs)
     
-    # Should convert system parameter and preserve content format
-    assert "system" not in result
+    # Should convert to Bedrock format
+    assert "model" not in result
     assert result["modelId"] == "anthropic.claude-3-haiku-20240307-v1:0"
-    assert len(result["messages"]) == 2
-    assert result["messages"][0] == {"role": "system", "content": "You are a helpful assistant."}
-    assert result["messages"][1]["role"] == "user"
-    assert result["messages"][1]["content"] == [{'text': "Extract: Jason is 22 years old"}]
+    assert result["system"] == [{"text": "You are a helpful assistant."}]
+    assert len(result["messages"]) == 1
+    assert result["messages"][0]["role"] == "user"
+    assert result["messages"][0]["content"] == [{'text': "Extract: Jason is 22 years old"}]
 
 
 def test_bedrock_backward_compatibility_openai_format() -> None:
-    """Test that existing OpenAI format still works"""
+    """Test that OpenAI format gets converted properly to Bedrock format"""
     call_kwargs = {
         "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
@@ -79,12 +82,51 @@ def test_bedrock_backward_compatibility_openai_format() -> None:
     
     result = _prepare_bedrock_converse_kwargs_internal(call_kwargs)
     
-    # Should process OpenAI format correctly (string content converted to text objects)
-    assert len(result["messages"]) == 2
-    assert result["messages"][0]["role"] == "system"
-    assert result["messages"][0]["content"] == "You are a helpful assistant."  # System content stays as string
-    assert result["messages"][1]["role"] == "user"
-    assert result["messages"][1]["content"] == [{"text": "Extract: Jason is 22 years old"}]
+    # Should convert to Bedrock format: system extracted, user content as text objects
+    assert result["system"] == [{"text": "You are a helpful assistant."}]
+    assert len(result["messages"]) == 1
+    assert result["messages"][0]["role"] == "user"
+    assert result["messages"][0]["content"] == [{"text": "Extract: Jason is 22 years old"}]
+
+
+def test_bedrock_mixed_format_scenarios() -> None:
+    """Test mixed format: some args already in Bedrock format, others in OpenAI format"""
+    # Mixed format: Bedrock system parameter + OpenAI messages
+    call_kwargs = {
+        "model": "anthropic.claude-3-haiku-20240307-v1:0",
+        "system": [{'text': 'You are a helpful assistant.'}],  # Already Bedrock format
+        "messages": [
+            {"role": "user", "content": "Extract: Jason is 22 years old"}  # OpenAI format
+        ]
+    }
+    
+    result = _prepare_bedrock_converse_kwargs_internal(call_kwargs)
+    
+    # Should handle mixed format correctly
+    assert "model" not in result
+    assert result["modelId"] == "anthropic.claude-3-haiku-20240307-v1:0"
+    assert result["system"] == [{"text": "You are a helpful assistant."}]
+    assert len(result["messages"]) == 1
+    assert result["messages"][0]["role"] == "user"
+    assert result["messages"][0]["content"] == [{'text': "Extract: Jason is 22 years old"}]
+
+
+def test_bedrock_mixed_format_content() -> None:
+    """Test mixed content formats: some already as text objects, others as strings"""
+    call_kwargs = {
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},  # OpenAI string format
+            {"role": "user", "content": [{'text': "Extract: Jason is 22 years old"}]}  # Already Bedrock format
+        ]
+    }
+    
+    result = _prepare_bedrock_converse_kwargs_internal(call_kwargs)
+    
+    # Should handle mixed content formats
+    assert result["system"] == [{"text": "You are a helpful assistant."}]
+    assert len(result["messages"]) == 1
+    assert result["messages"][0]["role"] == "user"
+    assert result["messages"][0]["content"] == [{'text': "Extract: Jason is 22 years old"}]
 
 
 def test_bedrock_model_id_conversion() -> None:
