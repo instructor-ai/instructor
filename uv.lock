@@ -1834,6 +1834,7 @@ cohere = [
 dev = [
     { name = "coverage" },
     { name = "jsonref" },
+    { name = "pre-commit" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -1992,6 +1993,7 @@ cohere = [{ name = "cohere", specifier = ">=5.1.8,<6.0.0" }]
 dev = [
     { name = "coverage", specifier = ">=7.3.2,<8.0.0" },
     { name = "jsonref", specifier = ">=1.1.0,<2.0.0" },
+    { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pyright", specifier = "<2.0.0" },
     { name = "pytest", specifier = ">=8.3.3,<9.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.24.0,<1.0.0" },
