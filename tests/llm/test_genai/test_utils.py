@@ -151,9 +151,9 @@ def test_update_genai_kwargs_preserves_original():
 
 def test_update_genai_kwargs_thinking_config():
     """Test that thinking_config is properly passed through."""
-    from google.genai.types import ThinkingConfig
-    
-    thinking_config = ThinkingConfig(thinking_budget=1024)
+    from google.genai.types import GenerationConfig, ThinkingConfig
+
+    thinking_config = {"thinking_budget": 1024}
     kwargs = {"thinking_config": thinking_config}
     base_config = {}
 
