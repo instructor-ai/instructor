@@ -43,3 +43,24 @@ DEBUG:httpcore.connection:close.started
 DEBUG:httpcore.connection:close.complete
 """
 ```
+
+## Provider initialization logs
+
+`from_provider()` now emits structured logs at the `INFO` level when a provider
+is initialized. Enable logging to see which provider and model are being used.
+
+```python
+import logging
+import instructor
+
+logging.basicConfig(level=logging.INFO)
+
+instructor.from_provider("openai/gpt-4o-mini")
+```
+
+Example output:
+
+```
+INFO:instructor.auto_client:Initializing openai provider with model gpt-4o-mini
+INFO:instructor.auto_client:Client initialized
+```
