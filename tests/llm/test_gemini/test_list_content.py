@@ -1,6 +1,6 @@
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
+import pytest
 
 
 class User(BaseModel):
@@ -12,10 +12,12 @@ class UserList(BaseModel):
     items: list[User]
 
 
-def test_list_of_strings():
-    client = instructor.from_gemini(
-        genai.GenerativeModel("gemini-1.5-flash-latest"),
-        mode=instructor.Mode.GEMINI_JSON,
+@pytest.mark.asyncio
+async def test_list_of_strings():
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        mode=instructor.Mode.GENAI_TOOLS,
+        async_client=True,
     )
 
     users = [
@@ -41,7 +43,7 @@ def test_list_of_strings():
     {% endfor %}
     """
 
-    result = client.chat.completions.create(
+    result = await client.chat.completions.create(
         response_model=UserList,
         messages=[
             {"role": "user", "content": prompt},

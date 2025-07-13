@@ -158,19 +158,33 @@ class OpenAISchema(BaseModel):
 
     @classproperty
     def gemini_schema(cls) -> Any:
-        import google.generativeai.types as genai_types
+        # This is kept for backward compatibility but deprecated
+        import warnings
 
-        # Use OpenAI schema
-        openai_schema = cls.openai_schema
-
-        # Transform to Gemini format
-        function = genai_types.FunctionDeclaration(
-            name=openai_schema["name"],
-            description=openai_schema["description"],
-            parameters=map_to_gemini_function_schema(openai_schema["parameters"]),
+        warnings.warn(
+            "gemini_schema is deprecated. The google-generativeai library is being replaced by google-genai.",
+            DeprecationWarning,
+            stacklevel=2,
         )
 
-        return function
+        try:
+            import google.generativeai.types as genai_types
+
+            # Use OpenAI schema
+            openai_schema = cls.openai_schema
+
+            # Transform to Gemini format
+            function = genai_types.FunctionDeclaration(
+                name=openai_schema["name"],
+                description=openai_schema["description"],
+                parameters=map_to_gemini_function_schema(openai_schema["parameters"]),
+            )
+
+            return function
+        except ImportError as e:
+            raise ImportError(
+                "google-generativeai is deprecated. Please install google-genai instead: pip install google-genai"
+            ) from e
 
     @classmethod
     def from_response(

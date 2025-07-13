@@ -32,6 +32,27 @@ def from_gemini(
     use_async: bool = False,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
+    import warnings
+
+    warnings.warn(
+        "from_gemini is deprecated and will be removed in a future version. "
+        "Please use from_genai or from_provider instead. "
+        "Install google-genai with: pip install google-genai\n"
+        "Example migration:\n"
+        "  # Old way\n"
+        "  from instructor import from_gemini\n"
+        "  import google.generativeai as genai\n"
+        "  client = from_gemini(genai.GenerativeModel('gemini-1.5-flash'))\n\n"
+        "  # New way\n"
+        "  from instructor import from_genai\n"
+        "  from google import genai\n"
+        "  client = from_genai(genai.Client())\n"
+        "  # OR use from_provider\n"
+        "  client = instructor.from_provider('google/gemini-1.5-flash')",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     valid_modes = {
         instructor.Mode.GEMINI_JSON,
         instructor.Mode.GEMINI_TOOLS,

@@ -19,7 +19,7 @@ class Users(BaseModel):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_simple_string_message(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     response = client.chat.completions.create(
         model=model,
         messages=["Ivan is 28 years old"],  # type: ignore
@@ -34,7 +34,7 @@ def test_simple_string_message(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_system_prompt(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -58,7 +58,7 @@ def test_system_prompt(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_system_kwarg(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     response = client.chat.completions.create(
         model=model,
         system="Ivan is 28 years old",
@@ -78,8 +78,8 @@ def test_system_kwarg(client, model, mode):
 
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
-def test_system_kwarg(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+def test_system_kwarg_genai(client, model, mode):
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     response = client.chat.completions.create(
         model=model,
         system="Ivan is 28 years old",
@@ -104,7 +104,7 @@ def test_system_kwarg(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_system_prompt_list(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -131,7 +131,7 @@ def test_system_prompt_list(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_format_genai_typed(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     response = client.chat.completions.create(
         model=model,
         response_model=User,
@@ -152,7 +152,7 @@ def test_format_genai_typed(client, model, mode):
 
 @pytest.mark.parametrize("model, mode, is_list", product(models, modes, [True, False]))
 def test_format_string(client, model: str, mode: instructor.Mode, is_list: bool):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
 
     content = (
         ["Extract {{name}} is {{age}} years old."]

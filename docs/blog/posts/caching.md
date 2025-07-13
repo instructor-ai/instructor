@@ -33,7 +33,71 @@ tags:
 
 > Instructor makes working with language models easy, but they are still computationally expensive. Smart caching strategies can reduce costs by up to 90% while dramatically improving response times.
 
-**NEW**: All strategies in this guide are now **validated with working examples** that demonstrate real performance improvements of 200,000x+ and cost savings of $420-4,800/month.
+
+> **Update (June 2025)** – Instructor now ships *native* caching support
+> out-of-the-box.  Pass a cache adapter directly when you create a
+> client:
+>
+> ```python
+> from instructor import from_provider
+> from instructor.cache import AutoCache, RedisCache
+>
+> client = from_provider(
+>     "openai/gpt-4o",  # or any other provider
+>     cache=AutoCache(maxsize=10_000),   # in-process LRU
+>     # or cache=RedisCache(host="localhost")
+> )
+> ```
+>
+> Under the hood this uses the very same techniques explained below, so
+> you can still roll your own adapter if you need a bespoke backend.  The
+> remainder of the post walks through the design rationale in detail and
+> is fully compatible with the built-in implementation.
+
+## Built-in cache – feature matrix
+
+| Method / helper                          | Cached | What is stored                                         | Notes |
+|------------------------------------------|--------|-------------------------------------------------------|-------|
+| `create(...)`                            | ✅ Yes | Parsed Pydantic model + raw completion JSON           |  |
+| `create_with_completion(...)`            | ✅ Yes | Same as above – second tuple element restored from cache |
+| `create_partial(...)`                    | ❌ No  | –                                                     | Streaming generators not cached (yet) |
+| `create_iterable(...)`                   | ❌ No  | –                                                     | Streaming generators not cached (yet) |
+| Any call with `stream=True`              | ❌ No  | –                                                     | Provider always invoked |
+
+### How serialization works
+
+1. **Model** – we call `model_dump_json()` which produces a compact, loss-less JSON string.  On a cache hit we re-hydrate with `model_validate_json()` so you get the same `BaseModel` subclass instance.
+2. **Raw completion** – Instructor attaches the original `ChatCompletion` (or provider-specific) object to the model as `_raw_response`.  We serialise this object too (when possible with `model_dump_json()`, otherwise a plain `str()` fallback) and restore it on a cache hit so `create_with_completion()` behaves identically.
+
+#### Raw Response Reconstruction
+
+For raw completion objects, we use a `SimpleNamespace` trick to reconstruct the original object structure:
+
+```python
+# When caching:
+raw_json = completion.model_dump_json()  # Serialize to JSON
+
+# When restoring from cache:
+import json
+from types import SimpleNamespace
+restored = json.loads(raw_json, object_hook=lambda d: SimpleNamespace(**d))
+```
+
+This approach allows us to restore the original dot-notation access patterns (e.g., `completion.usage.total_tokens`) without requiring the original class definitions. The `SimpleNamespace` objects behave identically to the original completion objects for attribute access while being much simpler to reconstruct from JSON.
+
+#### Defensive Handling
+
+The cache implementation includes multiple fallback strategies for different provider response types:
+
+1. **Pydantic models** (OpenAI, Anthropic) - Use `model_dump_json()` for perfect serialization
+2. **Plain dictionaries** - Use standard `json.dumps()` with `default=str` fallback  
+3. **Unpickleable objects** - Fall back to string representation with a warning
+
+This ensures the cache works reliably across all providers, even if they don't follow the same response object patterns.
+
+### Streaming limitations
+
+The current implementation opts **not** to cache streaming helpers (`create_partial`, `create_iterable`, or `stream=True`).  Replaying a realistic token-stream requires a dedicated design which is coming in a future release.  Until then, those calls always reach the provider.
 
 Today, we're diving deep into optimizing instructor code while maintaining the excellent developer experience offered by [Pydantic](https://docs.pydantic.dev/latest/) models. We'll tackle the challenges of caching Pydantic models, typically incompatible with `pickle`, and explore comprehensive solutions using `decorators` like `functools.cache`. Then, we'll craft production-ready custom decorators with `diskcache` and `redis` to support persistent caching, distributed systems, and high-throughput applications.
 

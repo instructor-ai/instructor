@@ -39,9 +39,9 @@ def test_typed_dict(model, mode, client):
     assert isinstance(model, BaseModel), "Should be instance of a pydantic model"
     assert model.name.lower() == "jason"
     assert model.age == 25
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from OpenAI"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from OpenAI"
+    )
 
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
@@ -64,9 +64,9 @@ def test_runmodel(model, mode, client):
     assert isinstance(model, UserExtract), "Should be instance of UserExtract"
     assert model.name.lower() == "jason"
     assert model.age == 25
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from OpenAI"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from OpenAI"
+    )
 
     ChatCompletion(**model._raw_response.model_dump())
 
@@ -92,9 +92,9 @@ async def test_runmodel_async(model, mode, aclient):
     assert isinstance(model, UserExtract), "Should be instance of UserExtract"
     assert model.name.lower() == "jason"
     assert model.age == 25
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from OpenAI"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from OpenAI"
+    )
 
     ChatCompletion(**model._raw_response.model_dump())
 
@@ -131,9 +131,9 @@ def test_runmodel_validator(model, mode, client):
     )
     assert isinstance(model, UserExtractValidated), "Should be instance of UserExtract"
     assert model.name == "JASON"
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from OpenAI"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from OpenAI"
+    )
 
     ChatCompletion(**model._raw_response.model_dump())
 
@@ -157,8 +157,8 @@ async def test_runmodel_async_validator(model, mode, aclient):
     )
     assert isinstance(model, UserExtractValidated), "Should be instance of UserExtract"
     assert model.name == "JASON"
-    assert hasattr(
-        model, "_raw_response"
-    ), "The raw response should be available from OpenAI"
+    assert hasattr(model, "_raw_response"), (
+        "The raw response should be available from OpenAI"
+    )
 
     ChatCompletion(**model._raw_response.model_dump())

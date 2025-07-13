@@ -142,6 +142,27 @@ def from_vertexai(
     use_async: bool | None = None,
     **kwargs: Any,
 ) -> instructor.Instructor:
+    import warnings
+
+    warnings.warn(
+        "from_vertexai is deprecated and will be removed in a future version. "
+        "Please use from_genai with vertexai=True or from_provider instead. "
+        "Install google-genai with: pip install google-genai\n"
+        "Example migration:\n"
+        "  # Old way\n"
+        "  from instructor import from_vertexai\n"
+        "  import vertexai.generative_models as gm\n"
+        "  client = from_vertexai(gm.GenerativeModel('gemini-1.5-flash'))\n\n"
+        "  # New way\n"
+        "  from instructor import from_genai\n"
+        "  from google import genai\n"
+        "  client = from_genai(genai.Client(vertexai=True, project='your-project', location='us-central1'))\n"
+        "  # OR use from_provider\n"
+        "  client = instructor.from_provider('vertexai/gemini-1.5-flash')",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     valid_modes = {
         instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
         instructor.Mode.VERTEXAI_TOOLS,

@@ -48,7 +48,7 @@ Proin a egestas ligula. Suspendisse ultrices, lacus non accumsan vestibulum, qua
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_local_file_image(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -71,7 +71,7 @@ def test_local_file_image(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_remote_url_image(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
 
     response = client.chat.completions.create(
         model=model,
@@ -95,7 +95,7 @@ def test_remote_url_image(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_gs_url_image(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
     image_url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 
     response = client.chat.completions.create(
@@ -116,7 +116,7 @@ def test_gs_url_image(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_instructor_image(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
 
     response = client.chat.completions.create(
         model=model,
@@ -136,7 +136,7 @@ def test_instructor_image(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_audio_from_path(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
 
     class AudioResponse(BaseModel):
         response: str
@@ -162,7 +162,7 @@ def test_audio_from_path(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_audio_from_url(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
 
     class AudioResponse(BaseModel):
         response: str
@@ -189,7 +189,7 @@ def test_audio_from_url(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_autodetect_images_sync(client, model, mode, autodetect_images):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
 
     response = client.chat.completions.create(
         model=model,
@@ -215,7 +215,7 @@ def test_autodetect_images_sync(client, model, mode, autodetect_images):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 async def test_autodetect_images_async(client, model, mode, autodetect_images):
-    client = instructor.from_genai(client, mode=mode, use_async=True)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=True)
 
     response = await client.chat.completions.create(
         model=model,
@@ -245,7 +245,7 @@ class Invoice(BaseModel):
 @pytest.mark.parametrize("mode", modes)
 @pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string, pdf_url])
 def test_local_pdf(client, model, mode, pdf_source):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -267,7 +267,7 @@ def test_local_pdf(client, model, mode, pdf_source):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_existing_genai_file_pdf_integration(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -291,7 +291,7 @@ def test_existing_genai_file_pdf_integration(client, model, mode):
 @pytest.mark.parametrize("model", models)
 @pytest.mark.parametrize("mode", modes)
 def test_upload_file_genai_pdf_integration(client, model, mode):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
     file = client.files.upload(file=pdf_path)
     response = client.chat.completions.create(
         model=model,
@@ -317,7 +317,7 @@ def test_upload_file_genai_pdf_integration(client, model, mode):
 @pytest.mark.parametrize("mode", modes)
 @pytest.mark.parametrize("pdf_source", [pdf_path, pdf_base64_string, pdf_url])
 def test_local_pdf_with_genai_file(client, model, mode, pdf_source):
-    client = instructor.from_genai(client, mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
     response = client.chat.completions.create(
         model=model,
         messages=[

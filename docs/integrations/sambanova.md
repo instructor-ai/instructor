@@ -16,24 +16,17 @@ pip install "instructor[openai]"
 ## Basic Usage
 
 ```python
-from openai import OpenAI
 import instructor
 import os
 from pydantic import BaseModel
 
-client = instructor.from_openai(
-    OpenAI(
-        base_url="https://api.sambanova.ai/v1",
-        api_key=os.environ["SAMBANOVA_API_KEY"]
-    )
-)
+client = instructor.from_provider("sambanova/Meta-Llama-3.1-405B-Instruct")
 
 class User(BaseModel):
     name: str
     age: int
 
 user = client.chat.completions.create(
-    model="Meta-Llama-3.1-405B-Instruct",
     messages=[
         {"role": "user", "content": "Ivan is 28"},
     ],
@@ -47,16 +40,13 @@ print(user)
 ## Async Usage
 
 ```python
-from openai import AsyncOpenAI
 import instructor
 import os
 from pydantic import BaseModel
 
-client = instructor.from_openai(
-    AsyncOpenAI(
-        base_url="https://api.sambanova.ai/v1",
-        api_key=os.environ["SAMBANOVA_API_KEY"]
-    )
+client = instructor.from_provider(
+    "sambanova/Meta-Llama-3.1-405B-Instruct",
+    async_client=True,
 )
 
 class User(BaseModel):
@@ -65,7 +55,6 @@ class User(BaseModel):
 
 async def get_user():
     user = await client.chat.completions.create(
-        model="Meta-Llama-3.1-405B-Instruct",
         messages=[
             {"role": "user", "content": "Ivan is 28"},
         ],

@@ -1,7 +1,17 @@
 # conftest.py
-from anthropic import AsyncAnthropic, Anthropic
-import pytest
 import os
+import pytest
+
+if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("BRAINTRUST_API_KEY")):
+    pytest.skip(
+        "ANTHROPIC_API_KEY environment variable not set",
+        allow_module_level=True,
+    )
+
+try:
+    from anthropic import AsyncAnthropic, Anthropic
+except ImportError:  # pragma: no cover - optional dependency
+    pytest.skip("anthropic package is not installed", allow_module_level=True)
 
 try:
     import braintrust

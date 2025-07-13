@@ -31,7 +31,7 @@ pip install instructor
 pip install "instructor[anthropic]"
 
 # For other providers
-pip install "instructor[google-generativeai]"  # For Google/Gemini
+pip install "instructor[google-genai]"         # For Google/Gemini
 pip install "instructor[vertexai]"             # For Vertex AI
 pip install "instructor[cohere]"               # For Cohere
 pip install "instructor[litellm]"              # For LiteLLM (multiple providers)

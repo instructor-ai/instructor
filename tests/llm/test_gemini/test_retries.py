@@ -3,7 +3,6 @@ from pydantic import AfterValidator, BaseModel, Field
 import pytest
 import instructor
 from itertools import product
-import google.generativeai as genai
 
 from .util import models, modes
 
@@ -23,7 +22,7 @@ class UserDetail(BaseModel):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_upper_case(model, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     response = client.chat.completions.create(
         response_model=UserDetail,
         messages=[
@@ -36,7 +35,7 @@ def test_upper_case(model, mode):
 
 @pytest.mark.parametrize("model, mode", product(models, modes))
 def test_upper_case_tenacity(model, mode):
-    client = instructor.from_gemini(genai.GenerativeModel(model), mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
     from tenacity import Retrying, stop_after_attempt, wait_fixed
 
     retries = Retrying(

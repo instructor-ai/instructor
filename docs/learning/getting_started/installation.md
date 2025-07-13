@@ -55,7 +55,7 @@ export ANTHROPIC_API_KEY=your_anthropic_key
 Use Gemini Pro and Flash models for structured outputs with function calling:
 
 ```shell
-pip install "instructor[google-generativeai]"
+pip install "instructor[google-genai]"
 ```
 
 Set up Gemini API access:

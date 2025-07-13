@@ -26,7 +26,7 @@ from pydantic import BaseModel
 client = Fireworks()
 
 # Enable instructor patches
-client = instructor.from_fireworks(client)
+client = instructor.from_provider("fireworks/llama-v3-70b-instruct")
 
 
 class User(BaseModel):
@@ -42,7 +42,6 @@ user = client.chat.completions.create(
             "content": "Extract: Jason is 25 years old",
         }
     ],
-    model="accounts/fireworks/models/llama-v3-8b-instruct",
     response_model=User,
 )
 
@@ -54,16 +53,14 @@ print(user)
 ## Simple User Example (Async)
 
 ```python
-from fireworks.client import AsyncFireworks
 import instructor
 from pydantic import BaseModel
 import asyncio
 
-# Initialize async client
-client = AsyncFireworks()
-
-# Enable instructor patches
-client = instructor.from_fireworks(client)
+client = instructor.from_provider(
+    "fireworks/llama-v3-70b-instruct",
+    async_client=True,
+)
 
 
 class User(BaseModel):
@@ -79,7 +76,6 @@ async def extract_user():
                 "content": "Extract: Jason is 25 years old",
             }
         ],
-        model="accounts/fireworks/models/llama-v3-8b-instruct",
         response_model=User,
     )
     return user
@@ -100,7 +96,7 @@ from pydantic import BaseModel
 
 
 # Enable instructor patches
-client = instructor.from_fireworks(Fireworks())
+client = instructor.from_provider("fireworks/llama-v3-70b-instruct")
 
 
 class Address(BaseModel):
@@ -127,7 +123,6 @@ user = client.chat.completions.create(
             """,
         }
     ],
-    model="accounts/fireworks/models/llama-v3-8b-instruct",
     response_model=User,
 )
 
@@ -166,7 +161,7 @@ from pydantic import BaseModel
 
 
 # Enable instructor patches
-client = instructor.from_fireworks(Fireworks())
+client = instructor.from_provider("fireworks/llama-v3-70b-instruct")
 
 
 class User(BaseModel):
@@ -176,7 +171,6 @@ class User(BaseModel):
 
 
 user = client.chat.completions.create_partial(
-    model="accounts/fireworks/models/llama-v3-8b-instruct",
     messages=[
         {
             "role": "user",
@@ -204,7 +198,7 @@ from pydantic import BaseModel
 
 
 # Enable instructor patches
-client = instructor.from_fireworks(Fireworks())
+client = instructor.from_provider("fireworks/llama-v3-70b-instruct")
 
 
 class User(BaseModel):
@@ -214,7 +208,6 @@ class User(BaseModel):
 
 # Extract multiple users from text
 users = client.chat.completions.create_iterable(
-    model="accounts/fireworks/models/llama-v3-8b-instruct",
     messages=[
         {
             "role": "user",

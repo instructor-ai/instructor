@@ -2,7 +2,6 @@ import pytest
 from typing import Optional, Union
 
 import instructor
-from google.genai import Client
 from pydantic import BaseModel
 from .util import models, modes
 from itertools import product
@@ -12,7 +11,7 @@ from instructor.utils import map_to_gemini_function_schema
 @pytest.mark.parametrize("mode,model", product(modes, models))
 def test_nested(mode, model):
     """Test that nested schemas are supported."""
-    client: instructor.Instructor = instructor.from_genai(Client(), mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
 
     class Address(BaseModel):
         street: str
@@ -40,7 +39,7 @@ def test_nested(mode, model):
 @pytest.mark.parametrize("mode,model", product(modes, models))
 def test_union(mode, model):
     """Test that union types raise appropriate error with Gemini."""
-    client = instructor.from_genai(Client(), mode=mode)
+    client = instructor.from_provider(f"google/{model}", mode=mode)
 
     class UserData(BaseModel):
         name: str

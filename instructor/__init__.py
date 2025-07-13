@@ -23,6 +23,7 @@ from .client import (
     Provider,
 )
 from .auto_client import from_provider
+from .batch import BatchProcessor, BatchRequest, BatchJob
 
 __all__ = [
     "Instructor",
@@ -48,6 +49,9 @@ __all__ = [
     "Instructions",
     "handle_parallel_model",
     "handle_response_model",
+    "BatchProcessor",
+    "BatchRequest",
+    "BatchJob",
 ]
 
 
@@ -56,6 +60,7 @@ if importlib.util.find_spec("anthropic") is not None:
 
     __all__ += ["from_anthropic"]
 
+# Keep from_gemini for backward compatibility but it's deprecated
 if (
     importlib.util.find_spec("google")
     and importlib.util.find_spec("google.generativeai") is not None
@@ -103,6 +108,11 @@ if importlib.util.find_spec("writerai") is not None:
     from .client_writer import from_writer
 
     __all__ += ["from_writer"]
+
+if importlib.util.find_spec("xai_sdk") is not None:
+    from .client_xai import from_xai
+
+    __all__ += ["from_xai"]
 
 if importlib.util.find_spec("openai") is not None:
     from .client_perplexity import from_perplexity
