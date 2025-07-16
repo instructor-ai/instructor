@@ -794,11 +794,12 @@ def from_provider(
             # Get base_url from kwargs or use default
             base_url = kwargs.pop("base_url", "http://localhost:11434/v1")
             api_key = kwargs.pop("api_key", "ollama")  # required but unused
+            timeout = kwargs.get("timeout")  # Extract timeout but keep it in kwargs for instructor
 
             client = (
-                openai.AsyncOpenAI(base_url=base_url, api_key=api_key)
+                openai.AsyncOpenAI(base_url=base_url, api_key=api_key, timeout=timeout)
                 if async_client
-                else openai.OpenAI(base_url=base_url, api_key=api_key)
+                else openai.OpenAI(base_url=base_url, api_key=api_key, timeout=timeout)
             )
 
             # Models that support function calling (tools mode)
