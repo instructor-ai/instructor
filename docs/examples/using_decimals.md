@@ -6,7 +6,6 @@ Extract precise decimal values for financial calculations using Python's `Decima
 from decimal import Decimal
 from pydantic import BaseModel, field_validator
 import instructor
-from openai import OpenAI
 
 class Receipt(BaseModel):
     item: str
@@ -19,10 +18,9 @@ class Receipt(BaseModel):
             return Decimal(v)
         return v
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 receipt = client.chat.completions.create(
-    model="gpt-4",
     messages=[{"role": "user", "content": "Coffee costs $4.99"}],
     response_model=Receipt,
 )

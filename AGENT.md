@@ -25,3 +25,4 @@
 - **Error handling**: Custom exceptions from `exceptions.py`, Pydantic validation
 - **Naming**: `snake_case` functions/variables, `PascalCase` classes
 - **No mocking**: Tests use real API calls
+- **Client creation**: Always use `instructor.from_provider("provider_name")` instead of provider-specific methods like `from_openai()`, `from_anthropic()`, etc.
