@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from json import JSONDecodeError
 from typing import Any, Callable, TypeVar
 
@@ -169,20 +170,40 @@ def retry_sync(
     hooks = hooks or Hooks()
     total_usage = initialize_usage(mode)
     # Extract timeout from kwargs if available (for global timeout across retries)
-    timeout = kwargs.get("timeout")
-    max_retries = initialize_retrying(max_retries, is_async=False, timeout=timeout)
+    original_timeout = kwargs.get("timeout")
+    max_retries = initialize_retrying(max_retries, is_async=False, timeout=original_timeout)
 
     # Pre-extract stream flag to avoid repeated lookup
     stream = kwargs.get("stream", False)
+
+    # Track start time for progressive timeout
+    start_time = time.time()
 
     try:
         response = None
         for attempt in max_retries:
             with attempt:
                 logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
+                
+                # Calculate progressive timeout: remaining time from original timeout
+                if original_timeout is not None:
+                    elapsed_time = time.time() - start_time
+                    remaining_timeout = original_timeout - elapsed_time
+                    
+                    # Ensure we have at least 0.1 seconds for the request
+                    if remaining_timeout <= 0.1:
+                        remaining_timeout = 0.1
+                    
+                    # Update kwargs with progressive timeout
+                    kwargs_with_timeout = kwargs.copy()
+                    kwargs_with_timeout["timeout"] = remaining_timeout
+                    logger.debug(f"Progressive timeout: {remaining_timeout:.2f}s (elapsed: {elapsed_time:.2f}s)")
+                else:
+                    kwargs_with_timeout = kwargs
+                
                 try:
-                    hooks.emit_completion_arguments(*args, **kwargs)
-                    response = func(*args, **kwargs)
+                    hooks.emit_completion_arguments(*args, **kwargs_with_timeout)
+                    response = func(*args, **kwargs_with_timeout)
                     hooks.emit_completion_response(response)
                     response = update_total_usage(
                         response=response, total_usage=total_usage
@@ -298,20 +319,39 @@ async def retry_async(
     hooks = hooks or Hooks()
     total_usage = initialize_usage(mode)
     # Extract timeout from kwargs if available (for global timeout across retries)
-    timeout = kwargs.get("timeout")
-    max_retries = initialize_retrying(max_retries, is_async=True, timeout=timeout)
+    original_timeout = kwargs.get("timeout")
+    max_retries = initialize_retrying(max_retries, is_async=True, timeout=original_timeout)
 
     # Pre-extract stream flag to avoid repeated lookup
     stream = kwargs.get("stream", False)
+
+    # Track start time for progressive timeout
+    start_time = time.time()
 
     try:
         response = None
         async for attempt in max_retries:
             logger.debug(f"Retrying, attempt: {attempt.retry_state.attempt_number}")
             with attempt:
+                # Calculate progressive timeout: remaining time from original timeout
+                if original_timeout is not None:
+                    elapsed_time = time.time() - start_time
+                    remaining_timeout = original_timeout - elapsed_time
+                    
+                    # Ensure we have at least 0.1 seconds for the request
+                    if remaining_timeout <= 0.1:
+                        remaining_timeout = 0.1
+                    
+                    # Update kwargs with progressive timeout
+                    kwargs_with_timeout = kwargs.copy()
+                    kwargs_with_timeout["timeout"] = remaining_timeout
+                    logger.debug(f"Progressive timeout: {remaining_timeout:.2f}s (elapsed: {elapsed_time:.2f}s)")
+                else:
+                    kwargs_with_timeout = kwargs
+                
                 try:
-                    hooks.emit_completion_arguments(*args, **kwargs)
-                    response: ChatCompletion = await func(*args, **kwargs)
+                    hooks.emit_completion_arguments(*args, **kwargs_with_timeout)
+                    response: ChatCompletion = await func(*args, **kwargs_with_timeout)
                     hooks.emit_completion_response(response)
                     response = update_total_usage(
                         response=response, total_usage=total_usage
