@@ -18,7 +18,7 @@ class Receipt(BaseModel):
             return Decimal(v)
         return v
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 receipt = client.chat.completions.create(
     messages=[{"role": "user", "content": "Coffee costs $4.99"}],
