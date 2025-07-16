@@ -5,7 +5,7 @@ Batch processing allows you to send multiple requests in a single operation, whi
 ## Supported Providers
 
 ### OpenAI
-- **Models**: gpt-4o, gpt-4o-mini, gpt-4-turbo, etc.
+- **Models**: gpt-4o, gpt-4.1-mini, gpt-4-turbo, etc.
 - **Cost Savings**: 50% discount on batch requests
 - **Format**: Uses OpenAI's batch API with JSON schema for structured outputs
 
@@ -35,7 +35,7 @@ class User(BaseModel):
     age: int
 
 # Create processor with model specification
-processor = BatchProcessor("openai/gpt-4o-mini", User)
+processor = BatchProcessor("openai/gpt-4.1-mini", User)
 
 # Prepare your message conversations
 messages_list = [
@@ -95,7 +95,7 @@ export OPENAI_API_KEY="your-openai-key"
 
 ```python
 # Use OpenAI models
-processor = BatchProcessor("openai/gpt-4o-mini", User)
+processor = BatchProcessor("openai/gpt-4.1-mini", User)
 ```
 
 ### Anthropic Setup
@@ -353,7 +353,7 @@ def run_batch_workflow(provider_model: str):
 if __name__ == "__main__":
     # OpenAI
     if os.getenv("OPENAI_API_KEY"):
-        run_batch_workflow("openai/gpt-4o-mini")
+        run_batch_workflow("openai/gpt-4.1-mini")
     
     # Anthropic
     if os.getenv("ANTHROPIC_API_KEY"):
@@ -380,13 +380,13 @@ Instructor also provides CLI commands for batch processing:
 
 ```bash
 # List batch jobs
-instructor batch list --model "openai/gpt-4o-mini"
+instructor batch list --model "openai/gpt-4.1-mini"
 
 # Create batch from file
-instructor batch create-from-file --file-path batch_requests.jsonl --model "openai/gpt-4o-mini"
+instructor batch create-from-file --file-path batch_requests.jsonl --model "openai/gpt-4.1-mini"
 
 # Get batch results
-instructor batch results --batch-id "batch_abc123" --output-file results.jsonl --model "openai/gpt-4o-mini"
+instructor batch results --batch-id "batch_abc123" --output-file results.jsonl --model "openai/gpt-4.1-mini"
 ```
 
 ## Best Practices
@@ -412,7 +412,7 @@ instructor batch results --batch-id "batch_abc123" --output-file results.jsonl -
 - **Region Mismatch**: Ensure GCS bucket and batch job are in the same region
 
 ### General Issues
-- **Invalid Model Name**: Use format `provider/model-name` (e.g., `openai/gpt-4o-mini`)
+- **Invalid Model Name**: Use format `provider/model-name` (e.g., `openai/gpt-4.1-mini`)
 - **Authentication**: Ensure API keys are set correctly
 - **Schema Validation**: Verify your Pydantic models match expected output format
 

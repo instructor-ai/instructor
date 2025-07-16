@@ -32,7 +32,7 @@ from pydantic import BaseModel, BeforeValidator
 from instructor import llm_validator
 
 # Initialize client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class UserComment(BaseModel):
     username: str
@@ -98,7 +98,7 @@ import instructor
 from instructor import llm_validator
 
 # Initialize client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class ProductDescription(BaseModel):
     """Model for validating product descriptions."""
@@ -152,7 +152,7 @@ from typing import Annotated
 from pydantic import BaseModel, BeforeValidator
 from instructor import llm_validator
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class Comment(BaseModel):
     """Model representing a user comment with content moderation."""
@@ -184,7 +184,7 @@ from typing import Annotated
 from pydantic import BaseModel, BeforeValidator
 from instructor import llm_validator
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class ForumPost(BaseModel):
     topic: str
@@ -238,7 +238,7 @@ from typing import Annotated, List
 from pydantic import BaseModel, Field, BeforeValidator
 from instructor import llm_validator
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class FactCheckedClaim(BaseModel):
     """Model for validating factual accuracy of claims."""
@@ -278,7 +278,7 @@ from typing import List
 from pydantic import BaseModel, model_validator
 from instructor import Validator  # For response type
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class Report(BaseModel):
     """Model representing a report with related fields that need semantic validation."""

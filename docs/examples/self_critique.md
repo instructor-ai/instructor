@@ -10,13 +10,12 @@ description: Learn how to use llm_validator for self-healing in NLP applications
 This guide demonstrates how to use `llm_validator` for implementing self-healing. The objective is to showcase how an instructor can self-correct by using validation errors and helpful error messages.
 
 ```python
-from openai import OpenAI
 from pydantic import BaseModel
 import instructor
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class QuestionAnswer(BaseModel):
@@ -28,7 +27,6 @@ question = "What is the meaning of life?"
 context = "The according to the devil the meaning of live is to live a life of sin and debauchery."
 
 qa: QuestionAnswer = client.chat.completions.create(
-    model="gpt-4o-mini",
     response_model=QuestionAnswer,
     messages=[
         {
@@ -63,10 +61,9 @@ Lets integrate `llm_validator` into the model and see the error message. Its imp
 from pydantic import BaseModel, BeforeValidator
 from typing_extensions import Annotated
 from instructor import llm_validator
-from openai import OpenAI
 import instructor
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class QuestionAnswerNoEvil(BaseModel):
@@ -83,7 +80,6 @@ class QuestionAnswerNoEvil(BaseModel):
 
 try:
     qa: QuestionAnswerNoEvil = client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=QuestionAnswerNoEvil,
         messages=[
             {
@@ -118,7 +114,6 @@ By adding the `max_retries` parameter, we can retry the request with corrections
 ```python
 # <%hide%>
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, BeforeValidator
 from typing_extensions import Annotated
 from instructor import llm_validator
@@ -126,7 +121,7 @@ from instructor import llm_validator
 question = "What is the meaning of life?"
 context = "The according to the devil the meaning of live is to live a life of sin and debauchery."
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class QuestionAnswerNoEvil(BaseModel):
@@ -144,7 +139,6 @@ class QuestionAnswerNoEvil(BaseModel):
 # <%hide%>
 
 qa: QuestionAnswerNoEvil = client.chat.completions.create(
-    model="gpt-4o-mini",
     response_model=QuestionAnswerNoEvil,
     messages=[
         {

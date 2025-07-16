@@ -31,11 +31,11 @@ Here's a complete, self-contained example showing how to set up retry logic with
 import instructor
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from pydantic import BaseModel, field_validator
-from openai import OpenAI, RateLimitError, APIError
+from openai import RateLimitError, APIError
 import time
 
 # Set up the client with Instructor
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class UserInfo(BaseModel):
     name: str
@@ -74,7 +74,6 @@ test_texts = [
 def extract_user_info(text: str) -> UserInfo:
     """Extract user information with basic retry logic."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": f"Extract user info: {text}"}]
     )
@@ -98,7 +97,6 @@ except Exception as e:
 def robust_extraction(text: str) -> UserInfo:
     """Retry only on specific API errors."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -124,7 +122,6 @@ from pydantic import ValidationError
 def extract_with_validation(text: str) -> UserInfo:
     """Retry when Pydantic validation fails."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -154,7 +151,6 @@ def should_retry(result: UserInfo) -> bool:
 def extract_valid_user(text: str) -> UserInfo:
     """Retry based on result validation."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -181,7 +177,6 @@ except Exception as e:
 def rate_limit_safe_extraction(text: str) -> UserInfo:
     """Handle rate limits with longer delays."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -201,7 +196,6 @@ from tenacity import retry, retry_if_exception_type, wait_random_exponential
 def network_resilient_extraction(text: str) -> UserInfo:
     """Handle network issues with random exponential backoff."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -225,7 +219,6 @@ logging.basicConfig(level=logging.INFO)
 def logged_extraction(text: str) -> UserInfo:
     """Extract with comprehensive logging."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -247,7 +240,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 @lru_cache(maxsize=1)
 def get_client():
     """Cache the client to avoid repeated initialization."""
-    return instructor.from_openai(OpenAI())
+    return instructor.from_provider("openai/gpt-4.1-mini")
 
 @retry(
     stop=stop_after_attempt(3),
@@ -257,7 +250,6 @@ def circuit_breaker_extraction(text: str) -> UserInfo:
     """Extract with circuit breaker pattern."""
     client = get_client()
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -272,13 +264,12 @@ from tenacity import retry, stop_after_attempt
 @retry(stop=stop_after_attempt(3))
 async def process_batch(texts: list[str]) -> list[UserInfo]:
     """Process multiple texts with retry logic."""
-    client = instructor.from_openai(OpenAI())
+    client = instructor.from_provider("openai/gpt-4.1-mini")
     results = []
 
     for text in texts:
         try:
             result = await client.chat.completions.create(
-                model="gpt-4o-mini",
                 response_model=UserInfo,
                 messages=[{"role": "user", "content": text}]
             )
@@ -306,11 +297,11 @@ Instructor has built-in retry support that works alongside Tenacity:
 from instructor import Mode
 
 # Instructor's built-in retry with custom settings
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
     mode=Mode.JSON,
     max_retries=3,
-    retry_delay=1
+    retry_delay=1,
 )
 
 # Combine with Tenacity for additional resilience
@@ -318,7 +309,6 @@ client = instructor.from_openai(
 def double_retry_extraction(text: str) -> UserInfo:
     """Combine Instructor and Tenacity retries."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -361,7 +351,6 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 )
 def handle_rate_limits(text: str) -> UserInfo:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -373,7 +362,6 @@ def handle_rate_limits(text: str) -> UserInfo:
 )
 def handle_validation_errors(text: str) -> UserInfo:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -392,7 +380,6 @@ def monitored_extraction(text: str) -> UserInfo:
 
     try:
         result = client.chat.completions.create(
-            model="gpt-4o-mini",
             response_model=UserInfo,
             messages=[{"role": "user", "content": text}]
         )
@@ -420,7 +407,6 @@ def monitored_extraction(text: str) -> UserInfo:
 def api_friendly_extraction(text: str) -> UserInfo:
     """Respect API rate limits with exponential backoff."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -437,7 +423,6 @@ def api_friendly_extraction(text: str) -> UserInfo:
 def validation_resilient_extraction(text: str) -> UserInfo:
     """Recover from validation errors with retries."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -454,7 +439,6 @@ def validation_resilient_extraction(text: str) -> UserInfo:
 def network_resilient_extraction(text: str) -> UserInfo:
     """Handle network issues gracefully."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -509,7 +493,6 @@ def network_resilient_extraction(text: str) -> UserInfo:
 )
 def rate_limit_respectful_extraction(text: str) -> UserInfo:
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -532,7 +515,6 @@ logging.basicConfig(level=logging.INFO)
 def debug_extraction(text: str) -> UserInfo:
     """Extract with detailed retry logging."""
     return client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )

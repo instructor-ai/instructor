@@ -144,11 +144,9 @@ We can add methods to our Pydantic models, just as any plain Python class. We mi
 from pydantic import BaseModel
 from typing import Literal
 
-from openai import OpenAI
-
 import instructor
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class SearchQuery(BaseModel):
@@ -162,7 +160,7 @@ class SearchQuery(BaseModel):
 
 
 query = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4.1-mini",
     messages=[{"role": "user", "content": "Search for a picture of a cat"}],
     response_model=SearchQuery,
 )

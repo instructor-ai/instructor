@@ -52,10 +52,9 @@ class ImageDescription(BaseModel):
 # Use our sample image provided above.
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
     response_model=ImageDescription,
     messages=[
         {
@@ -91,10 +90,9 @@ class ImageDescription(BaseModel):
 # Download a sample image for demonstration
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
     response_model=ImageDescription,
     autodetect_images=True,  # Set this to True
     messages=[
@@ -126,10 +124,9 @@ class ImageDescription(BaseModel):
 # Download a sample image for demonstration
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 
-client = instructor.from_anthropic(anthropic.Anthropic())
+client = instructor.from_provider("anthropic/claude-3-5-sonnet-20240620")
 
 response, completion = client.chat.completions.create_with_completion(
-    model="claude-3-5-sonnet-20240620",
     response_model=ImageDescription,
     autodetect_images=True,  # Set this to True
     messages=[
@@ -183,7 +180,7 @@ from instructor.multimodal import Audio
 import base64
 
 # Initialize the client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-audio-preview")
 
 
 # Define our response model
@@ -196,7 +193,6 @@ url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/ass
 
 # Make the API call with the audio file
 resp = client.chat.completions.create(
-    model="gpt-4o-audio-preview",
     response_model=AudioDescription,
     modalities=["text"],
     audio={"voice": "alloy", "format": "wav"},
@@ -243,7 +239,7 @@ We provide examples of how to use all three object classes below.
 
  # Set up the client
  url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
- client = instructor.from_openai(OpenAI())
+ client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
  # Create a model for analyzing PDFs
@@ -254,7 +250,6 @@ We provide examples of how to use all three object classes below.
 
  # Load and analyze a PDF
  response = client.chat.completions.create(
-     model="gpt-4o-mini",
      response_model=Invoice,
      messages=[
          {
@@ -283,7 +278,7 @@ from instructor.multimodal import PDFWithCacheControl
 
 # Set up the client
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
-client = instructor.from_anthropic(Anthropic())
+client = instructor.from_provider("anthropic/claude-3-5-sonnet-20240620")
 
 
 # Create a model for analyzing PDFs
@@ -294,7 +289,6 @@ class Invoice(BaseModel):
 
 # Load and analyze a PDF
 response, completion = client.chat.completions.create_with_completion(
-    model="claude-3-5-sonnet-20240620",
     response_model=Invoice,
     messages=[
         {
@@ -330,7 +324,7 @@ import requests
 
 # Set up the client
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
-client = instructor.from_genai(Client())
+client = instructor.from_provider("google/gemini-2.5-flash")
 
 with requests.get(url) as response:
     pdf_data = response.content
@@ -346,7 +340,6 @@ class Invoice(BaseModel):
 
 # Load and analyze a PDF
 response = client.chat.completions.create(
-    model="gemini-2.0-flash",
     response_model=Invoice,
     messages=[
         {
@@ -378,7 +371,7 @@ import requests
 
 # Set up the client
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
-client = instructor.from_genai(Client())
+client = instructor.from_provider("google/gemini-2.5-flash")
 
 with requests.get(url) as response:
     pdf_data = response.content
@@ -398,7 +391,6 @@ class Invoice(BaseModel):
 
 # Load and analyze a PDF
 response = client.chat.completions.create(
-    model="gemini-2.0-flash",
     response_model=Invoice,
     messages=[
         {

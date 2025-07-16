@@ -31,7 +31,6 @@ Use discriminated unions to handle different response types:
 from typing import Literal, Union
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
 
 
 class UserQuery(BaseModel):
@@ -47,10 +46,9 @@ class SystemQuery(BaseModel):
 Query = Union[UserQuery, SystemQuery]
 
 # Usage with Instructor
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Query,
     messages=[{"role": "user", "content": "Parse: user lookup jsmith"}],
 )
@@ -158,11 +156,10 @@ With this pattern, the LLM can decide whether to perform a search or a lookup ba
 import instructor
 from openai import OpenAI
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Let the LLM decide what action to take
 result = client.chat.completions.create(
-    model="gpt-4",
     response_model=Action,
     messages=[
         {
@@ -194,7 +191,6 @@ def validate_response(response: Response) -> bool:
 
 
 result = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Response,
     validation_hook=validate_response,
     messages=[{"role": "user", "content": "Process this request"}],
@@ -205,7 +201,6 @@ result = client.chat.completions.create(
 ```python
 def stream_content():
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=Message,
         stream=True,
         messages=[{"role": "user", "content": "Generate mixed content"}],
@@ -277,7 +272,6 @@ Action = Union[SendMessage, MakePayment]
 # Usage with Instructor
 client = instructor.patch(OpenAI())
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Action,
     messages=[{"role": "user", "content": "Send a payment of $50 to John."}],
 )
@@ -308,7 +302,6 @@ Action = Union[SearchAction, EmailAction]
 # The model can choose which action to take
 client = instructor.patch(OpenAI())
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Action,
     messages=[{"role": "user", "content": "Find me information about climate change."}],
 )
@@ -338,7 +331,6 @@ Response = Union[TextResponse, ImageResponse]
 # Patched client
 client = instructor.patch(OpenAI())
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Response,
     messages=[{"role": "user", "content": "Tell me a joke about programming."}],
 )

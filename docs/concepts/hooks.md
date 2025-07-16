@@ -113,10 +113,9 @@ You can register hooks using the `on` method of the Instructor client or a `Hook
 
 ```python
 import instructor
-import openai
 import pprint
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 def log_completion_kwargs(*args, **kwargs):
@@ -126,7 +125,6 @@ def log_completion_kwargs(*args, **kwargs):
 client.on("completion:kwargs", log_completion_kwargs)
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Hello, world!"}],
     response_model=str,
 )
@@ -144,10 +142,9 @@ You can remove a specific hook using the `off` method:
 
 ```python
 import instructor
-import openai
 import pprint
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 def log_completion_kwargs(*args, **kwargs):
@@ -167,9 +164,8 @@ To remove all hooks for a specific event or all events:
 
 ```python
 import instructor
-import openai
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Define a simple handler
 def log_completion_kwargs(*args, **kwargs):
@@ -180,7 +176,6 @@ client.on("completion:kwargs", log_completion_kwargs)
 
 # Make a request that triggers the hook
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Hello, world!"}],
     response_model=str,
 )
@@ -204,7 +199,6 @@ Here's a comprehensive example demonstrating how to use hooks for logging and de
 
 ```python
 import instructor
-import openai
 import pydantic
 
 
@@ -219,7 +213,7 @@ def log_completion_kwargs(*args, **kwargs) -> None:
     #             "content": "Extract the user name and age from the following text: 'John is 20 years old'",
     #         }
     #     ],
-    #     "model": "gpt-4o-mini",
+    #     "model": "gpt-4.1-mini",
     #     "tools": [
     #         {
     #             "type": "function",
@@ -271,7 +265,7 @@ def log_completion_response(response) -> None:
     #         }
     #     ],
     #     'created': 1732370794,
-    #     'model': 'gpt-4o-mini-2024-07-18',
+    #     'model': 'gpt-4.1-mini-2024-07-18',
     #     'object': 'chat.completion',
     #     'service_tier': None,
     #     'system_fingerprint': 'fp_0705bf87c0',
@@ -334,7 +328,7 @@ class ErrorCounter:
         print(f"Error count: {self.error_count}")
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Register the hooks
 client.on("completion:kwargs", log_completion_kwargs)
@@ -355,7 +349,6 @@ class User(pydantic.BaseModel):
 # Try extraction with a potentially problematic input
 try:
     resp = client.chat.completions.create(
-        model="gpt-4o-mini",
         messages=[
             {
                 "role": "user",
@@ -480,7 +473,7 @@ class ErrorMonitor:
 
 # Usage
 monitor = ErrorMonitor()
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 client.on("completion:error", monitor.handle_error)
 client.on("parse:error", monitor.handle_error)
@@ -498,19 +491,17 @@ Hooks are particularly useful for testing, as they allow you to inspect the argu
 import unittest
 from unittest.mock import Mock
 import instructor
-import openai
 
 
 class TestMyApp(unittest.TestCase):
     def test_completion(self):
-        client = instructor.from_openai(openai.OpenAI())
+        client = instructor.from_provider("openai/gpt-4.1-mini")
         mock_handler = Mock()
 
         client.on("completion:response", mock_handler)
 
         # Call your code that uses the client
         result = client.chat.completions.create(
-            model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": "Hello"}],
             response_model=str,
         )
@@ -520,7 +511,7 @@ class TestMyApp(unittest.TestCase):
 
         # You can also inspect the arguments
         response_arg = mock_handler.call_args[0][0]
-        self.assertEqual(response_arg.model, "gpt-3.5-turbo")
+        self.assertEqual(response_arg.model, "gpt-4.1-mini")
 ```
 
 This approach allows you to test your code without mocking the entire client.
@@ -537,7 +528,6 @@ client = instructor.patch(OpenAI())
 
 # Example with all hooks enabled (default)
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=str,
     messages=[{"role": "user", "content": "Hello!"}],
 )

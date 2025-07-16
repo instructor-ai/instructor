@@ -126,7 +126,7 @@ import instructor
 from instructor import llm_validator
 
 # Initialize client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class ContentReview(BaseModel):
     """Model for reviewing user-generated content."""
@@ -233,7 +233,7 @@ class User(BaseModel):
 
 
 # Initialize client using unified provider interface
-client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.JSON)
+client = instructor.from_provider("openai/gpt-4.1-mini", mode=instructor.Mode.JSON)
 
 try:
     # Attempt to extract with validation using Jinja templating
@@ -294,7 +294,7 @@ from pydantic import BaseModel, BeforeValidator
 import instructor
 from instructor import llm_validator
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class ResponseValidation(BaseModel):
     question: str
@@ -320,7 +320,7 @@ from pydantic import BaseModel, BeforeValidator, Field
 import instructor
 from instructor import llm_validator
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class SafeContent(BaseModel):
     content: Annotated[
@@ -349,7 +349,7 @@ from pydantic import BaseModel, BeforeValidator, Field
 import instructor
 from instructor import llm_validator
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class FactCheckedClaim(BaseModel):
     claim: str
@@ -396,7 +396,7 @@ from instructor import llm_validator
 import instructor
 
 # Initialize client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class Comment(BaseModel):
     """Model representing a user comment with content moderation."""
@@ -424,7 +424,7 @@ from instructor import llm_validator
 import instructor
 
 # Initialize client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class Report(BaseModel):
     """Model representing a financial report with semantic validation."""
@@ -480,7 +480,7 @@ from instructor import llm_validator
 import instructor
 
 # Initialize client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class CompanyAnnouncement(BaseModel):
     """Model representing a company announcement with tone validation."""
@@ -508,7 +508,7 @@ from instructor import llm_validator
 import instructor
 
 # Initialize client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 class MedicalClaim(BaseModel):
     """Model representing a medical claim with factual validation."""

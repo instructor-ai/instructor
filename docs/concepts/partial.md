@@ -69,12 +69,11 @@ Let's look at an example of streaming an extraction of conference information, t
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 from typing import List
 from rich.console import Console
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 text_block = """
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -106,7 +105,6 @@ class MeetingInfo(BaseModel):
 
 
 extraction_stream = client.chat.completions.create_partial(
-    model="gpt-4",
     response_model=MeetingInfo,
     messages=[
         {
@@ -163,10 +161,12 @@ I also just want to call out in this example that `instructor` also supports asy
 
 ```python
 import instructor
-from openai import AsyncOpenAI
 from pydantic import BaseModel
 
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider(
+    "openai/gpt-4-turbo-preview",
+    async_client=True,
+)
 
 
 class User(BaseModel):
@@ -176,7 +176,6 @@ class User(BaseModel):
 
 async def print_partial_results():
     user = client.chat.completions.create_partial(
-        model="gpt-4-turbo-preview",
         response_model=User,
         max_retries=2,
         stream=True,

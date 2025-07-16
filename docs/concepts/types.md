@@ -53,13 +53,11 @@ print(model.model_json_schema())
 
 ```python
 import instructor
-import openai
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Response model with simple types like str, int, float, bool
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=bool,
     messages=[
         {
@@ -79,17 +77,15 @@ Annotations can be used to add more information about the type. This can be usef
 
 ```python
 import instructor
-import openai
 from typing import Annotated
 from pydantic import Field
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 UpperCaseStr = Annotated[str, Field(description="string must be upper case")]
 
 # Response model with simple types like str, int, float, bool
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=UpperCaseStr,
     messages=[
         {
@@ -109,13 +105,11 @@ When doing simple classification Literals go quite well, they support literal of
 
 ```python
 import instructor
-import openai
 from typing import Literal
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Literal["BILLING", "SHIPPING"],
     messages=[
         {
@@ -135,7 +129,6 @@ Enums are harder to get right without some addition promping but are useful if t
 
 ```python
 import instructor
-import openai
 from enum import Enum
 
 
@@ -144,10 +137,9 @@ class Label(str, Enum):
     SHIPPING = "SHIPPING"
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Label,
     messages=[
         {
@@ -165,13 +157,11 @@ print(resp)
 
 ```python
 import instructor
-import openai
 from typing import List
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=List[int],
     messages=[
         {
@@ -192,11 +182,10 @@ Union is a great way to handle multiple types of responses, similar to multiple 
 
 ```python
 import instructor
-import openai
 from pydantic import BaseModel
 from typing import Union
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class Add(BaseModel):
@@ -209,7 +198,6 @@ class Weather(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Union[Add, Weather],
     messages=[
         {
@@ -236,7 +224,6 @@ from typing import Annotated, Any
 from pydantic import BeforeValidator, PlainSerializer, InstanceOf, WithJsonSchema
 import pandas as pd
 import instructor
-import openai
 
 
 def md_to_df(data: Any) -> Any:
@@ -275,10 +262,9 @@ MarkdownDataFrame = Annotated[
 ]
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=MarkdownDataFrame,
     messages=[
         {
@@ -305,11 +291,10 @@ Just like Unions we can use List of Unions to represent multiple types of respon
 
 ```python
 import instructor
-import openai
 from pydantic import BaseModel
 from typing import Union, List
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class Weather(BaseModel, frozen=True):
@@ -322,7 +307,6 @@ class Add(BaseModel, frozen=True):
 
 
 resp = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=List[Union[Add, Weather]],
     messages=[
         {

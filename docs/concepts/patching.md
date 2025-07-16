@@ -25,9 +25,11 @@ This is the recommended method for OpenAI clients. It is the most stable as func
 
 ```python
 import instructor
-from openai import OpenAI
 
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.TOOLS,
+)
 ```
 
 ### Gemini Tool Calling
@@ -45,10 +47,10 @@ Gemini tool calling comes with some known limitations:
 
 ```python
 import instructor
-import google.generativeai as genai
 
-client = instructor.from_gemini(
-    genai.GenerativeModel(), mode=instructor.Mode.GEMINI_TOOLS
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    mode=instructor.Mode.GEMINI_TOOLS,
 )
 ```
 
@@ -60,14 +62,9 @@ This method allows us to get structured output from Gemini via tool calling with
 
 ```python
 import instructor
-from vertexai.generative_models import GenerativeModel  # type: ignore
-import vertexai
 
-vertexai.init(project="vertexai-generative-models")
-
-
-client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-1.5-pro-preview-0409"),
+client = instructor.from_provider(
+    "vertexai/gemini-1.5-pro-preview-0409",
     mode=instructor.Mode.VERTEXAI_TOOLS,
 )
 ```
@@ -78,9 +75,10 @@ Parallel tool calling is also an option but you must set `response_model` to be 
 
 ```python
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.PARALLEL_TOOLS,
+)
 ```
 
 ## Function Calling
@@ -89,9 +87,11 @@ Note that function calling is soon to be deprecated in favor of TOOL mode for Op
 
 ```python
 import instructor
-from openai import OpenAI
 
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.TOOLS,
+)
 ```
 
 ## JSON Mode
@@ -100,9 +100,11 @@ JSON mode uses OpenAI's JSON format for responses by setting `response_format={"
 
 ```python
 import instructor
-from openai import OpenAI
 
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.JSON)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.JSON,
+)
 ```
 
 JSON mode is also required for [the Gemini Models via OpenAI's SDK](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/call-gemini-using-openai-library#client-setup).
@@ -115,7 +117,6 @@ pip install google-auth
 import google.auth
 import google.auth.transport.requests
 import instructor
-from openai import OpenAI
 
 creds, project = google.auth.default()
 auth_req = google.auth.transport.requests.Request()
@@ -126,8 +127,11 @@ PROJECT = 'PROJECT_ID'
 LOCATION = 'LOCATION'
 
 base_url = f'https://{LOCATION}-aiplatform.googleapis.com/v1beta1/projects/{PROJECT}/locations/{LOCATION}/endpoints/openapi'
-client = instructor.from_openai(
-    OpenAI(base_url=base_url, api_key=creds.token), mode=instructor.Mode.JSON
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    base_url=base_url,
+    api_key=creds.token,
+    mode=instructor.Mode.JSON,
 )
 ```
 
@@ -137,10 +141,10 @@ This mode uses Gemini's response mimetype field to generate a response in JSON f
 
 ```python
 import instructor
-import google.generativeai as genai
 
-client = instructor.from_gemini(
-    genai.GenerativeModel(), mode=instructor.Mode.GEMINI_JSON
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    mode=instructor.Mode.GEMINI_JSON,
 )
 ```
 
@@ -156,9 +160,11 @@ General syntax:
 
 ```python
 import instructor
-from openai import OpenAI
 
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_JSON)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.MD_JSON,
+)
 ```
 
 Databricks syntax:
@@ -166,17 +172,15 @@ Databricks syntax:
 ```python
 import instructor
 import os
-from openai import OpenAI
 
 DATABRICKS_TOKEN = os.environ.get("DATABRICKS_TOKEN", "")
 DATABRICKS_HOST = os.environ.get("DATABRICKS_HOST", "")
 
 # Assuming Databricks environment variables are set
-client = instructor.from_openai(
-    OpenAI(
-        api_key=DATABRICKS_TOKEN,
-        base_url=f"{DATABRICKS_HOST}/serving-endpoints",
-    ),
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    api_key=DATABRICKS_TOKEN,
+    base_url=f"{DATABRICKS_HOST}/serving-endpoints",
     mode=instructor.Mode.MD_JSON,
 )
 ```

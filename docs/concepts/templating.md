@@ -25,11 +25,10 @@ Our solution offers:
 The `context` parameter is a dictionary that is passed to the templating engine. It is used to pass in the relevant variables to the templating engine. This single `context` parameter will be passed to jinja to render out the final prompt.
 
 ```python hl_lines="14-15 19-22"
-import openai
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class User(BaseModel):
@@ -38,7 +37,6 @@ class User(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-4o-mini",
     messages=[
         {
             "role": "user",
@@ -62,12 +60,11 @@ print(resp)
 In this example, we demonstrate how to leverage the `context` parameter with Pydantic validators to enhance our validation and data processing capabilities. By passing the `context` to the validators, we can implement dynamic validation rules and data transformations based on the input context. This approach allows for flexible and context-aware validation, such as checking for banned words or applying redaction patterns to sensitive information.
 
 ```python hl_lines="15-16 26-30"
-import openai
 import instructor
 from pydantic import BaseModel, ValidationInfo, field_validator
 import re
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class Response(BaseModel):
@@ -85,7 +82,6 @@ class Response(BaseModel):
 
 
 response = client.create(
-    model="gpt-4o",
     response_model=Response,
     messages=[
         {
@@ -138,11 +134,10 @@ Jinja is used to render the prompts, allowing the use of familiar Jinja syntax. 
 This makes formatting of prompts and rendering logic extremely easy.
 
 ```python hl_lines="29-34 37-43"
-import openai
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class Citation(BaseModel):
@@ -155,7 +150,6 @@ class Response(BaseModel):
 
 
 resp = client.chat.completions.create(
-    model="gpt-4o-mini",
     messages=[
         {
             "role": "user",
@@ -211,7 +205,6 @@ Your prompts might need to include sensitive user information when they're sent 
 ```python
 from pydantic import BaseModel, SecretStr
 import instructor
-import openai
 
 
 class UserContext(BaseModel):
@@ -226,11 +219,10 @@ class Address(BaseModel):
     zipcode: str
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 context = UserContext(name="scolvin", address="secret address")
 
 address = client.chat.completions.create(
-    model="gpt-4o",
     messages=[
         {
             "role": "user",
