@@ -232,6 +232,7 @@ nav:
     - "Partial Response Streaming": 'examples/partial_streaming.md'
     - "Single Classification Tasks": 'examples/single_classification.md'
     - "Table Extraction from Images": 'examples/tables_from_vision.md'
+    - "Using Decimals": 'examples/using_decimals.md'
     - "YouTube Clip Analysis": 'examples/youtube_clips.md'
   - Concepts:
     - Overview: 'concepts/index.md'
