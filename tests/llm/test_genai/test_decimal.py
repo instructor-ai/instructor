@@ -10,8 +10,8 @@ class Receipt(BaseModel):
     quantity: int
     price: Decimal
     total: Decimal
-    
-    @field_validator('price', 'total', mode='before')
+
+    @field_validator("price", "total", mode="before")
     @classmethod
     def parse_decimals(cls, v):
         if isinstance(v, str):
@@ -22,8 +22,8 @@ class Receipt(BaseModel):
 class Invoice(BaseModel):
     receipts: list[Receipt]
     grand_total: Decimal
-    
-    @field_validator('grand_total', mode='before')
+
+    @field_validator("grand_total", mode="before")
     @classmethod
     def parse_grand_total(cls, v):
         if isinstance(v, str):
@@ -47,21 +47,25 @@ def test_decimal_extraction(client, model, mode):
     )
     assert isinstance(response, Invoice)
     assert len(response.receipts) == 2
-    
+
     # Check apple receipt
-    apple_receipt = next((r for r in response.receipts if "apple" in r.item.lower()), None)
+    apple_receipt = next(
+        (r for r in response.receipts if "apple" in r.item.lower()), None
+    )
     assert apple_receipt is not None
     assert apple_receipt.quantity == 2
     assert isinstance(apple_receipt.price, Decimal)
     assert isinstance(apple_receipt.total, Decimal)
-    
+
     # Check banana receipt
-    banana_receipt = next((r for r in response.receipts if "banana" in r.item.lower()), None)
+    banana_receipt = next(
+        (r for r in response.receipts if "banana" in r.item.lower()), None
+    )
     assert banana_receipt is not None
     assert banana_receipt.quantity == 3
     assert isinstance(banana_receipt.price, Decimal)
     assert isinstance(banana_receipt.total, Decimal)
-    
+
     # Check grand total
     assert isinstance(response.grand_total, Decimal)
 
@@ -83,20 +87,20 @@ async def test_decimal_extraction_async(aclient, model, mode):
     )
     assert isinstance(response, Invoice)
     assert len(response.receipts) == 2
-    
+
     # Check that all decimal fields are proper Decimal instances
     for receipt in response.receipts:
         assert isinstance(receipt.price, Decimal)
         assert isinstance(receipt.total, Decimal)
-    
+
     assert isinstance(response.grand_total, Decimal)
 
 
 class SimpleProduct(BaseModel):
     name: str
     price: Decimal
-    
-    @field_validator('price', mode='before')
+
+    @field_validator("price", mode="before")
     @classmethod
     def parse_price(cls, v):
         if isinstance(v, str):

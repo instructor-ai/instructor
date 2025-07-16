@@ -5,16 +5,18 @@ from pydantic import BaseModel, field_validator
 import instructor
 from openai import OpenAI
 
+
 class Receipt(BaseModel):
     item: str
     price: Decimal
-    
-    @field_validator('price', mode='before')
+
+    @field_validator("price", mode="before")
     @classmethod
     def parse_price(cls, v):
         if isinstance(v, str):
             return Decimal(v)
         return v
+
 
 if __name__ == "__main__":
     client = instructor.from_openai(OpenAI())
@@ -28,7 +30,7 @@ if __name__ == "__main__":
     print(f"Item: {receipt.item}")
     print(f"Price: {receipt.price}")  # Decimal('4.99')
     print(f"Type: {type(receipt.price)}")  # <class 'decimal.Decimal'>
-    
+
     # Test precision
     total = receipt.price * 2
     print(f"Total for 2 items: {total}")  # Decimal('9.98')

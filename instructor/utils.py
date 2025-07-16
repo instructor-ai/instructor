@@ -770,7 +770,7 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
                     for item in value:
                         if isinstance(item, dict) and "type" in item:
                             types_in_union.append(item["type"])
-                    
+
                     if set(types_in_union) == {"string", "number"}:
                         # This is a Decimal type - keep the anyOf structure
                         transformed[key] = transform_schema_node(value)
