@@ -1,9 +1,10 @@
 """Test schema conversion functions for Gemini."""
 
-import pytest
-from typing import Optional
-from pydantic import BaseModel
 from enum import Enum
+from typing import Optional
+
+import pytest
+from pydantic import BaseModel
 
 from instructor.utils import map_to_gemini_function_schema, verify_no_unions
 
@@ -202,8 +203,8 @@ def test_schema_with_description():
 
 
 def test_union_type_raises_error():
-    """Test that union types (except Optional) raise ValueError."""
-    # Create a model with a true union type
+    """Test that unsupported union types raise ValueError."""
+    # Create a model with a true union type (not Optional or Decimal)
     union_schema = {
         "type": "object",
         "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
@@ -211,3 +212,132 @@ def test_union_type_raises_error():
 
     with pytest.raises(ValueError, match="Gemini does not support Union types"):
         map_to_gemini_function_schema(union_schema)
+
+
+def test_verify_no_unions_allows_optional():
+    """Test that verify_no_unions allows Optional types."""
+    # Schema with Optional field (Union with null)
+    optional_schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "age": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
+        },
+    }
+
+    assert verify_no_unions(optional_schema) is True
+
+
+def test_verify_no_unions_allows_decimal():
+    """Test that verify_no_unions allows Decimal types (string | number)."""
+    # Schema with Decimal field (Union of string and number)
+    decimal_schema = {
+        "type": "object",
+        "properties": {
+            "total": {"anyOf": [{"type": "number"}, {"type": "string"}]},
+            "price": {
+                "anyOf": [{"type": "string"}, {"type": "number"}]
+            },  # Order shouldn't matter
+        },
+    }
+
+    assert verify_no_unions(decimal_schema) is True
+
+
+def test_verify_no_unions_rejects_other_unions():
+    """Test that verify_no_unions rejects non-Optional, non-Decimal union types."""
+    # Schema with unsupported union type (string | integer)
+    union_schema = {
+        "type": "object",
+        "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
+    }
+
+    assert verify_no_unions(union_schema) is False
+
+
+def test_verify_no_unions_rejects_complex_unions():
+    """Test that verify_no_unions rejects complex union types."""
+    # Schema with more than 2 types in union
+    complex_union_schema = {
+        "type": "object",
+        "properties": {
+            "value": {
+                "anyOf": [{"type": "string"}, {"type": "integer"}, {"type": "boolean"}]
+            }
+        },
+    }
+
+    assert verify_no_unions(complex_union_schema) is False
+
+
+def test_verify_no_unions_nested_schemas():
+    """Test that verify_no_unions works with nested schemas."""
+    # Schema with nested object containing Decimal and Optional fields
+    nested_schema = {
+        "type": "object",
+        "properties": {
+            "receipt": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "anyOf": [{"type": "number"}, {"type": "string"}]
+                    },  # Decimal - should pass
+                    "notes": {
+                        "anyOf": [{"type": "string"}, {"type": "null"}]
+                    },  # Optional - should pass
+                },
+            }
+        },
+    }
+
+    assert verify_no_unions(nested_schema) is True
+
+    # Schema with nested object containing unsupported union
+    bad_nested_schema = {
+        "type": "object",
+        "properties": {
+            "receipt": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "anyOf": [{"type": "number"}, {"type": "string"}]
+                    },  # Decimal - should pass
+                    "status": {
+                        "anyOf": [{"type": "string"}, {"type": "integer"}]
+                    },  # Bad union - should fail
+                },
+            }
+        },
+    }
+
+    assert verify_no_unions(bad_nested_schema) is False
+
+
+def test_decimal_schema_conversion_succeeds():
+    """Test that Decimal types (string | number) are successfully converted."""
+    # Schema representing a Receipt with Decimal total field
+    decimal_schema = {
+        "type": "object",
+        "title": "Receipt",
+        "properties": {
+            "total": {
+                "anyOf": [{"type": "number"}, {"type": "string"}],
+                "title": "Total",
+            }
+        },
+        "required": ["total"],
+    }
+
+    # This should not raise an error now
+    result = map_to_gemini_function_schema(decimal_schema)
+
+    # The conversion should succeed and preserve the anyOf structure
+    assert result["type"] == "object"
+    assert result["properties"]["total"]["anyOf"] == [
+        {"type": "number"},
+        {"type": "string"},
+    ]
+    assert result["required"] == ["total"]
+    # Title should be stripped out
+    assert "title" not in result
+    assert "title" not in result["properties"]["total"]

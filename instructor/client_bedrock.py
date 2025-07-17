@@ -1,6 +1,7 @@
 from __future__ import annotations  # type: ignore
 
 from typing import Any, Literal, overload
+import warnings
 
 import boto3
 from botocore.client import BaseClient
@@ -15,7 +16,7 @@ import asyncio
 def from_bedrock(
     client: boto3.client,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
-    _async: Literal[False] = False,
+    async_client: Literal[False] = False,
     **kwargs: Any,
 ) -> Instructor: ...
 
@@ -24,7 +25,7 @@ def from_bedrock(
 def from_bedrock(
     client: boto3.client,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
-    _async: Literal[True] = True,
+    async_client: Literal[True] = True,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -33,15 +34,18 @@ def handle_bedrock_json(
     response_model: Any,
     new_kwargs: Any,
 ) -> tuple[Any, Any]:
-    print(f"handle_bedrock_json: response_model {response_model}")
-    print(f"handle_bedrock_json: new_kwargs {new_kwargs}")
+    """
+    This function is deprecated and no longer used.
+    Bedrock JSON handling is now done in process_response.py via handle_bedrock_json().
+    """
     return response_model, new_kwargs
 
 
 def from_bedrock(
     client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_JSON,
-    _async: bool = False,
+    async_client: bool = False,
+    _async: bool | None = None,  # Deprecated, use async_client
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     """
@@ -81,12 +85,23 @@ def from_bedrock(
             f"Got: {type(client).__name__}"
         )
 
+    # Deprecation warning for _async usage
+    if _async is not None and not async_client:
+        warnings.warn(
+            "The '_async' argument to from_bedrock is deprecated. Use 'async_client' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    # Prefer async_client, fallback to _async for backward compatibility
+    use_async = async_client or (_async is not None and _async is True)
+
     async def async_wrapper(**kwargs: Any):
         return await asyncio.to_thread(client.converse, **kwargs)
 
     create = client.converse
 
-    if _async:
+    if use_async:
         return AsyncInstructor(
             client=client,
             create=instructor.patch(create=async_wrapper, mode=mode),

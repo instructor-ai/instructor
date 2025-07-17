@@ -1,8 +1,3 @@
----
-title: Caching Techniques in Python: In-Memory, Disk, and Redis
-description: Explore caching methods in Python with functools, diskcache, and Redis for improved performance in your applications.
----
-
 If you want to learn more about concepts in caching and how to use them in your own projects, check out our [blog](../blog/posts/caching.md) on the topic.
 
 ## Built-in caching in Instructor (v1.9.1 and later)
@@ -16,9 +11,9 @@ from instructor import from_provider
 from instructor.cache import AutoCache, DiskCache
 
 # Works with any provider - cache flows through **kwargs automatically
-client = from_provider("openai/gpt-3.5-turbo", cache=AutoCache(maxsize=1000))
+client = from_provider("openai/gpt-4.1-mini", cache=AutoCache(maxsize=1000))
 client = from_provider("anthropic/claude-3-haiku", cache=AutoCache(maxsize=1000))  
-client = from_provider("google/gemini-pro", cache=DiskCache(directory=".cache"))
+client = from_provider("google/gemini-2.5-flash", cache=DiskCache(directory=".cache"))
 
 # Your normal calls are now cached automatically
 class User(BaseModel):
@@ -27,8 +22,9 @@ class User(BaseModel):
 first = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
 second = client.create(messages=[{"role": "user", "content": "Hi."}], response_model=User)
 assert first.name == second.name    # second call was served from cache
+```
 
-+`cache_ttl` per-call override
+### `cache_ttl` per-call override
 
 Pass `cache_ttl=<seconds>` alongside `cache=` if you want a result to
 expire automatically:
@@ -68,7 +64,7 @@ from instructor.cache import make_cache_key
 
 key = make_cache_key(
     messages=[{"role": "user", "content": "hello"}],
-    model="gpt-3.5-turbo",
+    model="gpt-4.1-mini",
     response_model=User,
     mode="TOOLS",
 )
@@ -101,11 +97,10 @@ This approach allows us to restore the original dot-notation access patterns (e.
 ```python
 import time
 import functools
-import openai
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class UserDetail(BaseModel):
@@ -116,7 +111,6 @@ class UserDetail(BaseModel):
 @functools.cache
 def extract(data) -> UserDetail:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
@@ -229,11 +223,9 @@ import functools
 import inspect
 import instructor
 import diskcache
-
-from openai import OpenAI
 from pydantic import BaseModel
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 cache = diskcache.Cache('./my_cache_directory')
 
 
@@ -271,7 +263,6 @@ class UserDetail(BaseModel):
 @instructor_cache
 def extract(data) -> UserDetail:
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},
@@ -335,9 +326,8 @@ import inspect
 import instructor
 
 from pydantic import BaseModel
-from openai import OpenAI
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 cache = redis.Redis("localhost")
 
 
@@ -374,7 +364,6 @@ class UserDetail(BaseModel):
 def extract(data) -> UserDetail:
     # Assuming client.chat.completions.create returns a UserDetail instance
     return client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": data},

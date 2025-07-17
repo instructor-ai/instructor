@@ -9,7 +9,6 @@ We also support typed dicts.
 
 ```python
 from typing_extensions import TypedDict
-from openai import OpenAI
 import instructor
 
 
@@ -18,11 +17,10 @@ class User(TypedDict):
     age: int
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=User,
     messages=[
         {

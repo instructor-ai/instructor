@@ -66,14 +66,13 @@ LLM-based validation can also be plugged into the same Pydantic model. Here, if 
 
 ```python hl_lines="9 15"
 import instructor
-from openai import OpenAI
 from instructor import llm_validator
 from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
 
 
 # Apply the patch to the OpenAI client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class QuestionAnswer(BaseModel):
@@ -123,12 +122,11 @@ It is a great layer of defense against bad outputs of two forms:
 Notice that the field validator wants the name in uppercase, but the user input is lowercase. The validator will raise a `ValueError` if the name is not in uppercase.
 
 ```python hl_lines="12-17"
-import openai
 import instructor
 from pydantic import BaseModel, field_validator
 
 # Apply the patch to the OpenAI client
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
 class UserDetails(BaseModel):
@@ -149,10 +147,12 @@ Here, the `UserDetails` model is passed as the `response_model`, and `max_retrie
 
 ```python
 import instructor
-import openai
 from pydantic import BaseModel
 
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.TOOLS,
+)
 
 
 class UserDetails(BaseModel):
@@ -161,7 +161,6 @@ class UserDetails(BaseModel):
 
 
 model = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=UserDetails,
     max_retries=2,
     messages=[
@@ -180,7 +179,7 @@ print(model.model_dump_json(indent=2))
 
 ### What happens behind the scenes?
 
-Behind the scenes, the `instructor.from_openai()` method adds a `max_retries` parameter to the `openai.ChatCompletion.create()` method. The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
+Behind the scenes, the `instructor.from_provider()` method adds a `max_retries` parameter to the `openai.ChatCompletion.create()` method. The `max_retries` parameter will trigger up to 2 reattempts if the `name` attribute fails the uppercase validation in `UserDetails`.
 
 ```python
 from pydantic import ValidationError

@@ -14,17 +14,15 @@ Here's a simple example showing how to extract multiple users from a single sent
 === "Using `create_iterable` (recommended)"
     ```python
     import instructor
-    import openai
     from pydantic import BaseModel
 
-    client = instructor.from_openai(openai.OpenAI())
+    client = instructor.from_provider("openai/gpt-4.1-mini")
 
     class User(BaseModel):
         name: str
         age: int
 
     resp = client.chat.completions.create_iterable(
-        model="gpt-4o-mini",
         messages=[
             {
                 "role": "user",
@@ -42,18 +40,16 @@ Here's a simple example showing how to extract multiple users from a single sent
 === "Using `create` with `Iterable[User]`"
     ```python
     import instructor
-    import openai
     from pydantic import BaseModel
     from typing import Iterable
 
-    client = instructor.from_openai(openai.OpenAI())
+    client = instructor.from_provider("openai/gpt-4.1-mini")
 
     class User(BaseModel):
         name: str
         age: int
 
     resp = client.chat.completions.create(
-        model="gpt-4o-mini",
         messages=[
             {
                 "role": "user",
@@ -83,7 +79,6 @@ We also support more complex extraction patterns such as Unions as you'll see be
 
     ```python
     import instructor
-    import openai
     from typing import Iterable, Union, Literal
     from pydantic import BaseModel
 
@@ -94,10 +89,11 @@ We also support more complex extraction patterns such as Unions as you'll see be
     class GoogleSearch(BaseModel):
         query: str
 
-    client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+    client = instructor.from_provider(
+        "openai/gpt-4.1-mini", mode=instructor.Mode.TOOLS
+    )
 
     results = client.chat.completions.create(
-        model="gpt-4",
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
@@ -115,7 +111,6 @@ We also support more complex extraction patterns such as Unions as you'll see be
     ```python
 
     import instructor
-    import openai
     from typing import Union, Literal
     from pydantic import BaseModel
 
@@ -126,10 +121,11 @@ We also support more complex extraction patterns such as Unions as you'll see be
     class GoogleSearch(BaseModel):
         query: str
 
-    client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+    client = instructor.from_provider(
+        "openai/gpt-4.1-mini", mode=instructor.Mode.TOOLS
+    )
 
     results = client.chat.completions.create_iterable(
-        model="gpt-4",
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
@@ -149,7 +145,6 @@ We also support more complex extraction patterns such as Unions as you'll see be
 
     ```python
     import instructor
-    import openai
     from typing import Iterable, Union, Literal
     from pydantic import BaseModel
     import asyncio
@@ -161,11 +156,12 @@ We also support more complex extraction patterns such as Unions as you'll see be
     class GoogleSearch(BaseModel):
         query: str
 
-    aclient = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+    aclient = instructor.from_provider(
+        "openai/gpt-4.1-mini", async_client=True, mode=instructor.Mode.TOOLS
+    )
 
     async def main():
         results = await aclient.chat.completions.create(
-            model="gpt-4",
             messages=[
                 {"role": "system", "content": "You must always use tools"},
                 {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
@@ -183,7 +179,6 @@ We also support more complex extraction patterns such as Unions as you'll see be
 
     ```python
     import instructor
-    import openai
     from typing import Union, Literal
     from pydantic import BaseModel
     import asyncio
@@ -195,11 +190,12 @@ We also support more complex extraction patterns such as Unions as you'll see be
     class GoogleSearch(BaseModel):
         query: str
 
-    aclient = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+    aclient = instructor.from_provider(
+        "openai/gpt-4.1-mini", async_client=True, mode=instructor.Mode.TOOLS
+    )
 
     async def main():
         results = await aclient.chat.completions.create_iterable(
-            model="gpt-4",
             messages=[
                 {"role": "system", "content": "You must always use tools"},
                 {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},

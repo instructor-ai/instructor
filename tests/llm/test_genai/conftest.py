@@ -2,6 +2,8 @@
 import os
 import pytest
 
+import instructor
+
 if not os.getenv("GOOGLE_API_KEY"):
     pytest.skip(
         "GOOGLE_API_KEY environment variable not set",
@@ -22,3 +24,11 @@ def client():
 @pytest.fixture(scope="function")
 def aclient():
     yield Client()
+
+
+@pytest.fixture(scope="function")
+def genai_client():
+    # Use the recommended model for sync client, let the test set the mode
+    return instructor.from_provider(
+        "google/gemini-2.5-flash",
+    )

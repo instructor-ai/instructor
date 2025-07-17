@@ -4,7 +4,6 @@ import pytest
 from pydantic import BaseModel
 
 import instructor
-from instructor.dsl.partial import Partial
 
 from .util import models, modes
 
@@ -17,9 +16,9 @@ class UserExtract(BaseModel):
 @pytest.mark.parametrize("model,mode", product(models, modes))
 def test_partial_model(model, mode, client):
     client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
-    model = client.chat.completions.create(
+    model = client.chat.completions.create_partial(
         model=model,
-        response_model=Partial[UserExtract],
+        response_model=UserExtract,
         max_retries=2,
         stream=True,
         messages=[

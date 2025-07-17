@@ -18,7 +18,7 @@ class User(BaseModel):
     age: int
 
 # What Instructor adds
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 user = client.chat.completions.create(
     response_model=User,  # That's it
     messages=[...]
@@ -33,14 +33,14 @@ The worst frameworks are roach motels - easy to get in, impossible to get out. I
 
 ```python
 # With Instructor
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 result = client.chat.completions.create(
     response_model=User,
     messages=[...]
 )
 
 # Want to go back to raw API? Just remove response_model:
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 result = client.chat.completions.create(
     messages=[...]  # Now you get the raw response
 )
@@ -237,7 +237,7 @@ def prioritize_tickets(tickets: List[Ticket]) -> List[Ticket]:
     return sorted(tickets, key=lambda t: (t.priority.value, -t.estimated_hours))
 
 # Connect to LLM (one line)
-client = instructor.from_provider("openai/gpt-4")
+client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Extract structured data (simple function call)
 tickets = client.chat.completions.create(

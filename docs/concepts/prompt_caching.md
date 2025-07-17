@@ -18,7 +18,7 @@ This optimization is especially useful for applications making multiple API call
 Prompt Caching is enabled for the following models:
 
 - gpt-4o
-- gpt-4o-mini
+- gpt-4.1-mini
 - o1-preview
 - o1-mini
 
@@ -176,10 +176,9 @@ Prompt Caching is now generally avaliable for Anthropic. This enables you to cac
 
 ```python
 import instructor
-from anthropic import Anthropic
 from pydantic import BaseModel
 
-client = instructor.from_anthropic(Anthropic())
+client = instructor.from_provider("anthropic/claude-3-5-sonnet-20240620")
 
 
 class Character(BaseModel):

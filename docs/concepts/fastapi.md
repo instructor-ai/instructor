@@ -22,10 +22,12 @@ import instructor
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-from openai import AsyncOpenAI
 
 # Enables response_model
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    async_client=True,
+)
 app = FastAPI()
 
 
@@ -42,7 +44,6 @@ class UserDetail(BaseModel):
 @app.post("/endpoint", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
     user_detail = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
             {"role": "user", "content": f"Extract: `{data.query}`"},
@@ -77,7 +78,6 @@ class UserDetail(BaseModel):
 @app.post("/extract", response_class=StreamingResponse)
 async def extract(data: UserData):
     users = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=Iterable[UserDetail],
         stream=True,
         messages=[

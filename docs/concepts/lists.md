@@ -56,11 +56,13 @@ By using `Iterable` you get a very convenient class with prompts and names autom
 
 ```python
 import instructor
-from openai import OpenAI
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.JSON)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini-1106",
+    mode=instructor.function_calls.Mode.JSON,
+)
 
 
 class User(BaseModel):
@@ -69,7 +71,6 @@ class User(BaseModel):
 
 
 users = client.chat.completions.create(
-    model="gpt-3.5-turbo-1106",
     temperature=0.1,
     response_model=Iterable[User],
     stream=False,
@@ -96,11 +97,13 @@ Lets look at an example in action with the same class
 
 ```python hl_lines="6 26"
 import instructor
-import openai
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.TOOLS,
+)
 
 
 class User(BaseModel):
@@ -109,7 +112,6 @@ class User(BaseModel):
 
 
 users = client.chat.completions.create(
-    model="gpt-4",
     temperature=0.1,
     stream=True,
     response_model=Iterable[User],
@@ -138,11 +140,14 @@ I also just want to call out in this example that `instructor` also supports asy
 
 ```python
 import instructor
-import openai
 from typing import Iterable
 from pydantic import BaseModel
 
-client = instructor.from_openai(openai.AsyncOpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    async_client=True,
+    mode=instructor.Mode.TOOLS,
+)
 
 
 class UserExtract(BaseModel):
@@ -152,7 +157,6 @@ class UserExtract(BaseModel):
 
 async def print_iterable_results():
     model = await client.chat.completions.create(
-        model="gpt-4",
         response_model=Iterable[UserExtract],
         max_retries=2,
         stream=True,

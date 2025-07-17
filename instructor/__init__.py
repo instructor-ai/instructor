@@ -23,6 +23,7 @@ from .client import (
     Provider,
 )
 from .auto_client import from_provider
+from .batch import BatchProcessor, BatchRequest, BatchJob
 
 __all__ = [
     "Instructor",
@@ -48,6 +49,9 @@ __all__ = [
     "Instructions",
     "handle_parallel_model",
     "handle_response_model",
+    "BatchProcessor",
+    "BatchRequest",
+    "BatchJob",
 ]
 
 

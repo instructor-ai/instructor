@@ -5,9 +5,12 @@ import instructor
 from instructor.models import KnownModelName
 from instructor.cache import BaseCache
 import warnings
+import logging
 
 # Type alias for the return type
 InstructorType = Union[Instructor, AsyncInstructor]
+
+logger = logging.getLogger("instructor.auto_client")
 
 
 # List of supported providers
@@ -124,18 +127,37 @@ def from_provider(
             '(e.g. "openai/gpt-4" or "anthropic/claude-3-sonnet")'
         ) from None
 
+    provider_info = {"provider": provider, "operation": "initialize"}
+    logger.info(
+        "Initializing %s provider with model %s",
+        provider,
+        model_name,
+        extra=provider_info,
+    )
+    logger.debug(
+        "Provider configuration: async_client=%s, mode=%s",
+        async_client,
+        mode,
+        extra=provider_info,
+    )
+
     if provider == "openai":
         try:
             import openai
             from instructor import from_openai
 
             client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
-            return from_openai(
+            result = from_openai(
                 client,
                 model=model_name,
                 mode=mode if mode else instructor.Mode.TOOLS,
                 **kwargs,
             )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
             from instructor.exceptions import ConfigurationError
 
@@ -143,6 +165,15 @@ def from_provider(
                 "The openai package is required to use the OpenAI provider. "
                 "Install it with `pip install openai`."
             ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
+            )
+            raise
 
     elif provider == "azure_openai":
         try:
@@ -186,12 +217,17 @@ def from_provider(
                     azure_endpoint=azure_endpoint,
                 )
             )
-            return from_openai(
+            result = from_openai(
                 client,
                 model=model_name,
                 mode=mode if mode else instructor.Mode.TOOLS,
                 **kwargs,
             )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
             from instructor.exceptions import ConfigurationError
 
@@ -199,6 +235,15 @@ def from_provider(
                 "The openai package is required to use the Azure OpenAI provider. "
                 "Install it with `pip install openai`."
             ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
+            )
+            raise
 
     elif provider == "anthropic":
         try:
@@ -209,19 +254,34 @@ def from_provider(
                 anthropic.AsyncAnthropic() if async_client else anthropic.Anthropic()
             )
             max_tokens = kwargs.pop("max_tokens", 4096)
-            return from_anthropic(
+            result = from_anthropic(
                 client,
                 model=model_name,
                 mode=mode if mode else instructor.Mode.ANTHROPIC_TOOLS,
                 max_tokens=max_tokens,
                 **kwargs,
             )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The anthropic package is required to use the Anthropic provider. "
                 "Install it with `pip install anthropic`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "google":
         try:
@@ -253,15 +313,30 @@ def from_provider(
                 **client_kwargs,
             )  # type: ignore
             if async_client:
-                return from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
             else:
-                return from_genai(client, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(client, model=model_name, **kwargs)  # type: ignore
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The google-genai package is required to use the Google provider. "
                 "Install it with `pip install google-genai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "mistral":
         try:
@@ -278,15 +353,32 @@ def from_provider(
                 )
 
             if async_client:
-                return from_mistral(client, model=model_name, use_async=True, **kwargs)
+                result = from_mistral(
+                    client, model=model_name, use_async=True, **kwargs
+                )
             else:
-                return from_mistral(client, model=model_name, **kwargs)
+                result = from_mistral(client, model=model_name, **kwargs)
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The mistralai package is required to use the Mistral provider. "
                 "Install it with `pip install mistralai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "cohere":
         try:
@@ -294,13 +386,28 @@ def from_provider(
             from instructor import from_cohere
 
             client = cohere.AsyncClient() if async_client else cohere.Client()
-            return from_cohere(client, **kwargs)
+            result = from_cohere(client, **kwargs)
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The cohere package is required to use the Cohere provider. "
                 "Install it with `pip install cohere`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "perplexity":
         try:
@@ -327,13 +434,28 @@ def from_provider(
                     api_key=api_key, base_url="https://api.perplexity.ai"
                 )
             )
-            return from_perplexity(client, model=model_name, **kwargs)
+            result = from_perplexity(client, model=model_name, **kwargs)
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The openai package is required to use the Perplexity provider. "
                 "Install it with `pip install openai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "groq":
         try:
@@ -341,13 +463,28 @@ def from_provider(
             from instructor import from_groq
 
             client = groq.AsyncGroq() if async_client else groq.Groq()
-            return from_groq(client, model=model_name, **kwargs)
+            result = from_groq(client, model=model_name, **kwargs)
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The groq package is required to use the Groq provider. "
                 "Install it with `pip install groq`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "writer":
         try:
@@ -355,27 +492,104 @@ def from_provider(
             from instructor import from_writer
 
             client = AsyncWriter() if async_client else Writer()
-            return from_writer(client, model=model_name, **kwargs)
+            result = from_writer(client, model=model_name, **kwargs)
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The writerai package is required to use the Writer provider. "
                 "Install it with `pip install writer-sdk`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "bedrock":
         try:
+            import os
             import boto3
             from instructor import from_bedrock
 
-            client = boto3.client("bedrock-runtime")
-            return from_bedrock(client, **kwargs)
+            # Get AWS configuration from environment or kwargs
+            if "region" in kwargs:
+                region = kwargs.pop("region")
+            else:
+                logger.debug(
+                    "AWS_DEFAULT_REGION is not set. Using default region us-east-1"
+                )
+                region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+
+            # Extract AWS-specific parameters
+            # Dictionary to collect AWS credentials and session parameters for boto3 client
+            aws_kwargs = {}
+            for key in [
+                "aws_access_key_id",
+                "aws_secret_access_key",
+                "aws_session_token",
+            ]:
+                if key in kwargs:
+                    aws_kwargs[key] = kwargs.pop(key)
+                elif key.upper() in os.environ:
+                    logger.debug(f"Using {key.upper()} from environment variable")
+                    aws_kwargs[key] = os.environ[key.upper()]
+
+            # Add region to client configuration
+            aws_kwargs["region_name"] = region
+
+            # Create bedrock-runtime client
+            client = boto3.client("bedrock-runtime", **aws_kwargs)
+
+            # Determine default mode based on model
+            if mode is None:
+                # Anthropic models (Claude) support tools, others use JSON
+                if model_name and (
+                    "anthropic" in model_name.lower() or "claude" in model_name.lower()
+                ):
+                    default_mode = instructor.Mode.BEDROCK_TOOLS
+                else:
+                    default_mode = instructor.Mode.BEDROCK_JSON
+            else:
+                default_mode = mode
+
+            result = from_bedrock(
+                client,
+                mode=default_mode,
+                async_client=async_client,
+                _async=async_client,  # for backward compatibility
+                **kwargs,
+            )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The boto3 package is required to use the AWS Bedrock provider. "
                 "Install it with `pip install boto3`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "cerebras":
         try:
@@ -383,13 +597,28 @@ def from_provider(
             from instructor import from_cerebras
 
             client = AsyncCerebras() if async_client else Cerebras()
-            return from_cerebras(client, model=model_name, **kwargs)
+            result = from_cerebras(client, model=model_name, **kwargs)
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The cerebras package is required to use the Cerebras provider. "
                 "Install it with `pip install cerebras`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "fireworks":
         try:
@@ -397,13 +626,28 @@ def from_provider(
             from instructor import from_fireworks
 
             client = AsyncFireworks() if async_client else Fireworks()
-            return from_fireworks(client, model=model_name, **kwargs)
+            result = from_fireworks(client, model=model_name, **kwargs)
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The fireworks-ai package is required to use the Fireworks provider. "
                 "Install it with `pip install fireworks-ai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "vertexai":
         warnings.warn(
@@ -438,15 +682,30 @@ def from_provider(
             )  # type: ignore
             kwargs["model"] = model_name  # Pass model as part of kwargs
             if async_client:
-                return from_genai(client, use_async=True, **kwargs)  # type: ignore
+                result = from_genai(client, use_async=True, **kwargs)  # type: ignore
             else:
-                return from_genai(client, **kwargs)  # type: ignore
+                result = from_genai(client, **kwargs)  # type: ignore
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The google-genai package is required to use the VertexAI provider. "
                 "Install it with `pip install google-genai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "generative-ai":
         warnings.warn(
@@ -465,15 +724,30 @@ def from_provider(
 
             client = genai.Client(vertexai=False, api_key=api_key)
             if async_client:
-                return from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
             else:
-                return from_genai(client, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(client, model=model_name, **kwargs)  # type: ignore
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
-            import_err = ImportError(
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
                 "The google-genai package is required to use the Google GenAI provider. "
                 "Install it with `pip install google-genai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
             )
-            raise import_err from None
+            raise
 
     elif provider == "ollama":
         try:
@@ -514,12 +788,17 @@ def from_provider(
                 instructor.Mode.TOOLS if supports_tools else instructor.Mode.JSON
             )
 
-            return from_openai(
+            result = from_openai(
                 client,
                 model=model_name,
                 mode=mode if mode else default_mode,
                 **kwargs,
             )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
             from instructor.exceptions import ConfigurationError
 
@@ -527,6 +806,15 @@ def from_provider(
                 "The openai package is required to use the Ollama provider. "
                 "Install it with `pip install openai`."
             ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
+            )
+            raise
 
     elif provider == "xai":
         try:
@@ -535,12 +823,17 @@ def from_provider(
             from instructor import from_xai
 
             client = AsyncClient() if async_client else SyncClient()
-            return from_xai(
+            result = from_xai(
                 client,
                 mode=mode if mode else instructor.Mode.JSON,
                 model=model_name,
                 **kwargs,
             )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
         except ImportError:
             from instructor.exceptions import ConfigurationError
 
@@ -548,10 +841,24 @@ def from_provider(
                 "The xai-sdk package is required to use the xAI provider. "
                 "Install it with `pip install xai-sdk`."
             ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
+            )
+            raise
 
     else:
         from instructor.exceptions import ConfigurationError
 
+        logger.error(
+            "Error initializing %s client: unsupported provider",
+            provider,
+            extra={**provider_info, "status": "error"},
+        )
         raise ConfigurationError(
             f"Unsupported provider: {provider}. "
             f"Supported providers are: {supported_providers}"

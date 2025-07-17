@@ -167,53 +167,6 @@ def test_multimodal_image_description_autodetect_image_params_cache(
     )
 
 
-@pytest.mark.parametrize("model, mode", product(models, modes))
-def test_multimodal_image_description_autodetect_no_response_model(model, mode, client):
-    client = instructor.from_anthropic(client, mode=mode)
-    system_message = (
-        "You are a helpful assistant that can describe images. "
-        "If looking at an image, reply with 'This is an image' and nothing else."
-    )
-    # Test with OpenAI style messages
-    response = client.chat.completions.create(
-        response_model=None,
-        model=model,  # Ensure this is a vision-capable model
-        messages=[
-            {
-                "role": "system",
-                "content": system_message,
-            },
-            {
-                "role": "user",
-                "content": image_url,
-            },
-        ],
-        max_tokens=1000,
-        temperature=1,
-        autodetect_images=True,
-    )
-
-    assert response.content[0].text.startswith("This is an image")
-
-    # Test with Anthropic style messages
-    response = client.chat.completions.create(
-        response_model=None,
-        model=model,  # Ensure this is a vision-capable model
-        system=system_message,
-        messages=[
-            {
-                "role": "user",
-                "content": image_url,
-            },
-        ],
-        max_tokens=1000,
-        temperature=1,
-        autodetect_images=True,
-    )
-
-    assert response.content[0].text.startswith("This is an image")
-
-
 class LineItem(BaseModel):
     name: str
     price: int

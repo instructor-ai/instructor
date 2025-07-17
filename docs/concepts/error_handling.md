@@ -36,7 +36,6 @@ Raised when the LLM output is incomplete due to reaching the maximum token limit
 ```python
 try:
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=DetailedReport,
         messages=[{"role": "user", "content": "Write a very long report..."}],
         max_tokens=50  # Very low limit
@@ -52,7 +51,6 @@ Raised when all retry attempts have been exhausted.
 ```python
 try:
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[{"role": "user", "content": "Extract user info..."}],
         max_retries=3
@@ -70,7 +68,6 @@ Raised when response validation fails. This is different from Pydantic's Validat
 ```python
 try:
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=StrictModel,
         messages=[{"role": "user", "content": "Extract data..."}]
     )
@@ -83,7 +80,7 @@ Raised for provider-specific errors, includes the provider name for context.
 
 ```python
 try:
-    client = instructor.from_anthropic(invalid_client)
+    client = instructor.from_provider(invalid_client)
 except ProviderError as e:
     print(f"Provider {e.provider} error: {e}")
 ```
@@ -103,9 +100,9 @@ Raised when an invalid mode is used for a specific provider.
 
 ```python
 try:
-    client = instructor.from_anthropic(
-        anthropic.Anthropic(),
-        mode=instructor.Mode.TOOLS  # Wrong mode for Anthropic
+    client = instructor.from_provider(
+        "anthropic/claude-3-sonnet-20240229",
+        mode=instructor.Mode.TOOLS,  # Wrong mode for Anthropic
     )
 except ModeError as e:
     print(f"Invalid mode '{e.mode}' for provider '{e.provider}'")
@@ -117,7 +114,7 @@ Raised for client initialization or usage errors.
 
 ```python
 try:
-    client = instructor.from_anthropic("not_a_client")
+    client = instructor.from_provider("not_a_client")
 except ClientError as e:
     print(f"Client error: {e}")
 ```
@@ -193,7 +190,6 @@ logger = logging.getLogger(__name__)
 def extract_data(content: str):
     try:
         return client.chat.completions.create(
-            model="gpt-3.5-turbo",
             response_model=DataModel,
             messages=[{"role": "user", "content": content}]
         )
@@ -218,7 +214,6 @@ def extract_with_fallback(content: str):
     # Try with strict model first
     try:
         return client.chat.completions.create(
-            model="gpt-4",
             response_model=StrictDataModel,
             messages=[{"role": "user", "content": content}]
         )
@@ -226,7 +221,6 @@ def extract_with_fallback(content: str):
         # Fall back to less strict model
         logger.warning("Strict validation failed, trying relaxed model")
         return client.chat.completions.create(
-            model="gpt-3.5-turbo",
             response_model=RelaxedDataModel,
             messages=[{"role": "user", "content": content}]
         )
@@ -278,9 +272,9 @@ except ConfigurationError as e:
 
 ```python
 try:
-    client = instructor.from_openai(
-        openai.OpenAI(),
-        mode=instructor.Mode.ANTHROPIC_TOOLS  # Wrong mode
+    client = instructor.from_provider(
+        "openai/gpt-4.1-mini",
+        mode=instructor.Mode.ANTHROPIC_TOOLS,  # Wrong mode
     )
 except ModeError as e:
     print(f"Use one of these modes instead: {e.valid_modes}")

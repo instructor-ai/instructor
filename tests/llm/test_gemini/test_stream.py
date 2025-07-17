@@ -21,7 +21,13 @@ def test_iterable_model(model, mode, stream):
         max_retries=2,
         stream=stream,
         messages=[
-            {"role": "user", "content": "Make two up people"},
+            {
+                "role": "user",
+                "content": (
+                    "Create two fictional people. For each, provide their name (string) and age (integer). "
+                    "Return only the name and age for each person."
+                ),
+            },
         ],
     )
     for m in model:

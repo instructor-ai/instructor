@@ -147,3 +147,47 @@ def test_update_genai_kwargs_preserves_original():
     # But result should have the mapped parameters
     assert "max_output_tokens" in result
     assert "temperature" in result
+
+
+def test_update_genai_kwargs_thinking_config():
+    """Test that thinking_config is properly passed through."""
+
+    thinking_config = {"thinking_budget": 1024}
+    kwargs = {"thinking_config": thinking_config}
+    base_config = {}
+
+    result = update_genai_kwargs(kwargs, base_config)
+
+    # Check that thinking_config is passed through unchanged
+    assert "thinking_config" in result
+    assert result["thinking_config"] == thinking_config
+
+
+def test_update_genai_kwargs_thinking_config_none():
+    """Test that None thinking_config is not included in result."""
+    kwargs = {"thinking_config": None}
+    base_config = {}
+
+    result = update_genai_kwargs(kwargs, base_config)
+
+    # Check that thinking_config is not included when None
+    assert "thinking_config" not in result
+
+
+def test_update_genai_kwargs_no_thinking_config():
+    """Test that missing thinking_config doesn't affect other parameters."""
+    kwargs = {
+        "generation_config": {
+            "max_tokens": 100,
+            "temperature": 0.7,
+        }
+    }
+    base_config = {}
+
+    result = update_genai_kwargs(kwargs, base_config)
+
+    # Check that normal parameters still work
+    assert result["max_output_tokens"] == 100
+    assert result["temperature"] == 0.7
+    # Check that thinking_config is not included when not provided
+    assert "thinking_config" not in result

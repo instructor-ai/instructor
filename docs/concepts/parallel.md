@@ -20,7 +20,6 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
     ```python hl_lines="20 32"
     from __future__ import annotations
 
-    import openai
     import instructor
 
     from typing import Iterable, Literal
@@ -36,10 +35,12 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         query: str
 
 
-    client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
+    client = instructor.from_provider(
+        "openai/gpt-4.1-mini",
+        mode=instructor.Mode.PARALLEL_TOOLS,
+    )
 
     function_calls = client.chat.completions.create(
-        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {
@@ -61,12 +62,8 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
 
     ```python hl_lines="20 30"
     import instructor
-    import vertexai
-    from vertexai.generative_models import GenerativeModel
     from typing import Iterable, Literal
     from pydantic import BaseModel
-
-    vertexai.init()
 
 
     class Weather(BaseModel):
@@ -78,8 +75,8 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         query: str
 
 
-    client = instructor.from_vertexai(
-        GenerativeModel("gemini-1.5-pro-preview-0409"),
+    client = instructor.from_provider(
+        "vertexai/gemini-1.5-pro-preview-0409",
         mode=instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
     )
 

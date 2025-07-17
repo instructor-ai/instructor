@@ -25,6 +25,10 @@ jobs:
         run: uv run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai and not mistral and not xai and not docs'
         env:
           INSTRUCTOR_ENV: CI
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
   # Provider tests run in parallel
   provider-tests:
