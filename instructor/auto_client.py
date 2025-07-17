@@ -146,8 +146,9 @@ def from_provider(
         api_key = kwargs.pop("api_key")
         if api_key:
             logger.debug(
-                "API key provided for %s provider",
+                "API key provided for %s provider (length: %d characters)",
                 provider,
+                len(api_key),
                 extra=provider_info,
             )
 
