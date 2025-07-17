@@ -141,13 +141,26 @@ def from_provider(
         mode,
         extra=provider_info,
     )
+    api_key = None
+    if "api_key" in kwargs:
+        api_key = kwargs.pop("api_key")
+        if api_key:
+            logger.debug(
+                "API key provided for %s provider",
+                provider,
+                extra=provider_info,
+            )
 
     if provider == "openai":
         try:
             import openai
             from instructor import from_openai
 
-            client = openai.AsyncOpenAI() if async_client else openai.OpenAI()
+            client = (
+                openai.AsyncOpenAI(api_key=api_key)
+                if async_client
+                else openai.OpenAI(api_key=api_key)
+            )
             result = from_openai(
                 client,
                 model=model_name,
@@ -183,7 +196,7 @@ def from_provider(
             from instructor import from_openai
 
             # Get required Azure OpenAI configuration from environment
-            api_key = kwargs.pop("api_key", os.environ.get("AZURE_OPENAI_API_KEY"))
+            api_key = api_key or os.environ.get("AZURE_OPENAI_API_KEY")
             azure_endpoint = kwargs.pop(
                 "azure_endpoint", os.environ.get("AZURE_OPENAI_ENDPOINT")
             )
@@ -252,7 +265,9 @@ def from_provider(
             from instructor import from_anthropic
 
             client = (
-                anthropic.AsyncAnthropic() if async_client else anthropic.Anthropic()
+                anthropic.AsyncAnthropic(api_key=api_key)
+                if async_client
+                else anthropic.Anthropic(api_key=api_key)
             )
             max_tokens = kwargs.pop("max_tokens", 4096)
             result = from_anthropic(
@@ -294,7 +309,7 @@ def from_provider(
             vertexai_flag = kwargs.pop("vertexai", False)
 
             # Get API key from kwargs or environment
-            api_key = kwargs.pop("api_key", os.environ.get("GOOGLE_API_KEY"))
+            api_key = api_key or os.environ.get("GOOGLE_API_KEY")
 
             # Extract client-specific parameters
             client_kwargs = {}
@@ -345,8 +360,10 @@ def from_provider(
             from instructor import from_mistral
             import os
 
-            if os.environ.get("MISTRAL_API_KEY"):
-                client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
+            api_key = api_key or os.environ.get("MISTRAL_API_KEY")
+
+            if api_key:
+                client = Mistral(api_key=api_key)
             else:
                 raise ValueError(
                     "MISTRAL_API_KEY is not set. "
@@ -386,7 +403,11 @@ def from_provider(
             import cohere
             from instructor import from_cohere
 
-            client = cohere.AsyncClient() if async_client else cohere.Client()
+            client = (
+                cohere.AsyncClient(api_key=api_key)
+                if async_client
+                else cohere.Client(api_key=api_key)
+            )
             result = from_cohere(client, **kwargs)
             logger.info(
                 "Client initialized",
@@ -416,11 +437,8 @@ def from_provider(
             from instructor import from_perplexity
             import os
 
-            if os.environ.get("PERPLEXITY_API_KEY"):
-                api_key = os.environ.get("PERPLEXITY_API_KEY")
-            elif kwargs.get("api_key"):
-                api_key = kwargs.get("api_key")
-            else:
+            api_key = api_key or os.environ.get("PERPLEXITY_API_KEY")
+            if not api_key:
                 raise ValueError(
                     "PERPLEXITY_API_KEY is not set. "
                     "Set it with `export PERPLEXITY_API_KEY=<your-api-key>` or pass it as a kwarg api_key=<your-api-key>"
@@ -463,7 +481,11 @@ def from_provider(
             import groq
             from instructor import from_groq
 
-            client = groq.AsyncGroq() if async_client else groq.Groq()
+            client = (
+                groq.AsyncGroq(api_key=api_key)
+                if async_client
+                else groq.Groq(api_key=api_key)
+            )
             result = from_groq(client, model=model_name, **kwargs)
             logger.info(
                 "Client initialized",
@@ -492,7 +514,11 @@ def from_provider(
             from writerai import AsyncWriter, Writer
             from instructor import from_writer
 
-            client = AsyncWriter() if async_client else Writer()
+            client = (
+                AsyncWriter(api_key=api_key)
+                if async_client
+                else Writer(api_key=api_key)
+            )
             result = from_writer(client, model=model_name, **kwargs)
             logger.info(
                 "Client initialized",
@@ -597,7 +623,11 @@ def from_provider(
             from cerebras.cloud.sdk import AsyncCerebras, Cerebras
             from instructor import from_cerebras
 
-            client = AsyncCerebras() if async_client else Cerebras()
+            client = (
+                AsyncCerebras(api_key=api_key)
+                if async_client
+                else Cerebras(api_key=api_key)
+            )
             result = from_cerebras(client, model=model_name, **kwargs)
             logger.info(
                 "Client initialized",
@@ -626,7 +656,11 @@ def from_provider(
             from fireworks.client import AsyncFireworks, Fireworks
             from instructor import from_fireworks
 
-            client = AsyncFireworks() if async_client else Fireworks()
+            client = (
+                AsyncFireworks(api_key=api_key)
+                if async_client
+                else Fireworks(api_key=api_key)
+            )
             result = from_fireworks(client, model=model_name, **kwargs)
             logger.info(
                 "Client initialized",
@@ -721,7 +755,7 @@ def from_provider(
             import os
 
             # Get API key from kwargs or environment
-            api_key = kwargs.pop("api_key", os.environ.get("GOOGLE_API_KEY"))
+            api_key = api_key or os.environ.get("GOOGLE_API_KEY")
 
             client = genai.Client(vertexai=False, api_key=api_key)
             if async_client:
@@ -824,8 +858,8 @@ def from_provider(
             import os
 
             # Get API key from kwargs or environment
-            api_key = kwargs.pop("api_key", os.environ.get("DEEPSEEK_API_KEY"))
-            
+            api_key = api_key or os.environ.get("DEEPSEEK_API_KEY")
+
             if not api_key:
                 from instructor.exceptions import ConfigurationError
 
@@ -836,13 +870,13 @@ def from_provider(
 
             # DeepSeek uses OpenAI-compatible API
             base_url = kwargs.pop("base_url", "https://api.deepseek.com")
-            
+
             client = (
                 openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
                 if async_client
                 else openai.OpenAI(api_key=api_key, base_url=base_url)
             )
-            
+
             result = from_openai(
                 client,
                 model=model_name,
@@ -877,7 +911,11 @@ def from_provider(
             from xai_sdk.aio.client import Client as AsyncClient
             from instructor import from_xai
 
-            client = AsyncClient() if async_client else SyncClient()
+            client = (
+                AsyncClient(api_key=api_key)
+                if async_client
+                else SyncClient(api_key=api_key)
+            )
             result = from_xai(
                 client,
                 mode=mode if mode else instructor.Mode.JSON,
