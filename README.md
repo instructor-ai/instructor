@@ -129,6 +129,11 @@ client = instructor.from_provider("google/gemini-pro")
 # Ollama (local)
 client = instructor.from_provider("ollama/llama3.2")
 
+# With API keys directly (no environment variables needed)
+client = instructor.from_provider("openai/gpt-4o", api_key="sk-...")
+client = instructor.from_provider("anthropic/claude-3-5-sonnet", api_key="sk-ant-...")
+client = instructor.from_provider("groq/llama-3.1-8b-instant", api_key="gsk_...")
+
 # All use the same API!
 user = client.chat.completions.create(
     response_model=User,

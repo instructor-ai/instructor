@@ -94,6 +94,11 @@ client = instructor.from_provider("google/gemini-pro")  # Google
 client = instructor.from_provider("ollama/llama3")  # Ollama (local)
 client = instructor.from_provider("deepseek/deepseek-chat")  # DeepSeek
 
+# Pass API keys directly (no environment variables needed)
+client = instructor.from_provider("openai/gpt-4", api_key="sk-...")
+client = instructor.from_provider("anthropic/claude-3", api_key="sk-ant-...")
+client = instructor.from_provider("groq/llama-3.1-8b-instant", api_key="gsk_...")
+
 # Same extraction code works with all providers
 user = client.chat.completions.create(
     response_model=UserInfo,
