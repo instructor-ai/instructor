@@ -1,17 +1,17 @@
 ---
-title: Understanding Parallel Function Calling in OpenAI
-description: Learn about OpenAI's experimental parallel function calling to reduce latency and improve application performance.
+title: Parallel Tools
+description: Learn about parallel tools in OpenAI, Google, and Anthropic.
 ---
 
 # Parallel Tools
 
-Parallel Function Calling is a feature that allows you to call multiple functions in a single request.
+Parallel Tool Calling is a feature that allows you to call multiple functions in a single request.
 
 !!! warning "Experimental Feature"
 
-    Parallel Function calling is supported by Google, OpenAI, and Anthropic. Make sure to use the equivalent parallel tool `mode` for your client.
+    Parallel Tool Calling is supported by Google, OpenAI, and Anthropic. Make sure to use the equivalent parallel tool `mode` for your client.
 
-## Understanding Parallel Function Calling
+## Understanding Parallel Tool Calling
 
 Parallel Function Calling helps you to significantly reduce the latency of your application without having to build a parent schema as a wrapper around these tool calls.
 
@@ -76,7 +76,7 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
 
 
     client = instructor.from_provider(
-        "vertexai/gemini-1.5-pro-preview-0409",
+        "vertexai/gemini-2.5-flash",
         mode=instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
     )
 
@@ -115,7 +115,7 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
 
 
     client = instructor.from_provider(
-        "anthropic/claude-3-haiku-20240307",
+        "anthropic/claude-3-7-sonnet-latest",
         mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
     )
 
