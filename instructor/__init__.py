@@ -44,7 +44,7 @@ __all__ = [
     "Partial",
     "openai_schema",
     "generate_openai_schema",
-    "generate_anthropic_schema", 
+    "generate_anthropic_schema",
     "generate_gemini_schema",
     "Mode",
     "patch",

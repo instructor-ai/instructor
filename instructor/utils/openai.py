@@ -117,7 +117,9 @@ def handle_functions(
 ) -> tuple[type[Any], dict[str, Any]]:
     Mode.warn_mode_functions_deprecation()
     new_kwargs["functions"] = [generate_openai_schema(response_model)]
-    new_kwargs["function_call"] = {"name": generate_openai_schema(response_model)["name"]}
+    new_kwargs["function_call"] = {
+        "name": generate_openai_schema(response_model)["name"]
+    }
     return response_model, new_kwargs
 
 

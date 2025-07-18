@@ -4,7 +4,6 @@ import logging
 import re
 from functools import wraps
 from typing import Annotated, Any, Optional, TypeVar, cast
-from docstring_parser import parse
 from openai.types.chat import ChatCompletion
 from pydantic import (
     BaseModel,
@@ -19,7 +18,6 @@ from instructor.mode import Mode
 from instructor.utils import (
     classproperty,
     extract_json_from_codeblock,
-    map_to_gemini_function_schema,
 )
 from instructor.schema_utils import (
     generate_openai_schema,

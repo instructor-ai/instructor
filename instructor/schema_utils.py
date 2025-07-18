@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import functools
 import warnings
-from typing import Any, Type
+from typing import Any
 
 from docstring_parser import parse
 from pydantic import BaseModel
@@ -18,32 +18,30 @@ from instructor.utils.google import map_to_gemini_function_schema
 
 __all__ = [
     "generate_openai_schema",
-    "generate_anthropic_schema", 
+    "generate_anthropic_schema",
     "generate_gemini_schema",
 ]
 
 
 @functools.lru_cache(maxsize=256)
-def generate_openai_schema(model: Type[BaseModel]) -> dict[str, Any]:
+def generate_openai_schema(model: type[BaseModel]) -> dict[str, Any]:
     """
     Generate OpenAI function schema from a Pydantic model.
-    
+
     Args:
         model: A Pydantic BaseModel subclass
-        
+
     Returns:
         A dictionary in the format of OpenAI's function schema
-        
+
     Note:
         The model's docstring will be used for the function description.
         Parameter descriptions from the docstring will enrich field descriptions.
     """
     schema = model.model_json_schema()
     docstring = parse(model.__doc__ or "")
-    parameters = {
-        k: v for k, v in schema.items() if k not in ("title", "description")
-    }
-    
+    parameters = {k: v for k, v in schema.items() if k not in ("title", "description")}
+
     # Enrich parameter descriptions from docstring
     for param in docstring.params:
         if (name := param.arg_name) in parameters["properties"] and (
@@ -73,13 +71,13 @@ def generate_openai_schema(model: Type[BaseModel]) -> dict[str, Any]:
 
 
 @functools.lru_cache(maxsize=256)
-def generate_anthropic_schema(model: Type[BaseModel]) -> dict[str, Any]:
+def generate_anthropic_schema(model: type[BaseModel]) -> dict[str, Any]:
     """
     Generate Anthropic tool schema from a Pydantic model.
-    
+
     Args:
         model: A Pydantic BaseModel subclass
-        
+
     Returns:
         A dictionary in the format of Anthropic's tool schema
     """
@@ -93,16 +91,16 @@ def generate_anthropic_schema(model: Type[BaseModel]) -> dict[str, Any]:
 
 
 @functools.lru_cache(maxsize=256)
-def generate_gemini_schema(model: Type[BaseModel]) -> Any:
+def generate_gemini_schema(model: type[BaseModel]) -> Any:
     """
     Generate Gemini function schema from a Pydantic model.
-    
+
     Args:
         model: A Pydantic BaseModel subclass
-        
+
     Returns:
         A Gemini FunctionDeclaration object
-        
+
     Note:
         This function is deprecated. The google-generativeai library is being replaced by google-genai.
     """
