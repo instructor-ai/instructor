@@ -4,9 +4,9 @@ from instructor import Mode
 
 
 modes = [
-    Mode.COHERE_TOOL
     Mode.COHERE_JSON_SCHEMA,
-    Mode.COHERe
+    Mode.COHERE_TOOLS,
+]
 
 
 @pytest.mark.parametrize("mode", modes)
