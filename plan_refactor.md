@@ -1,57 +1,57 @@
 # OpenAISchema Refactor Plan
 
-## Phase 1: Create New Schema Utils
+## Phase 1: Create New Schema Utils ✅ COMPLETED
 
-- [ ] Create `instructor/schema_utils.py` with standalone functions
-  - [ ] `generate_openai_schema(model: Type[BaseModel]) -> dict[str, Any]`
-  - [ ] `generate_anthropic_schema(model: Type[BaseModel]) -> dict[str, Any]`
-  - [ ] `generate_gemini_schema(model: Type[BaseModel]) -> Any`
-  - [ ] Add LRU cache decorators for performance
-  - [ ] Import and use existing utilities (docstring_parser, etc.)
+- [x] Create `instructor/schema_utils.py` with standalone functions
+  - [x] `generate_openai_schema(model: Type[BaseModel]) -> dict[str, Any]`
+  - [x] `generate_anthropic_schema(model: Type[BaseModel]) -> dict[str, Any]`
+  - [x] `generate_gemini_schema(model: Type[BaseModel]) -> Any`
+  - [x] Add LRU cache decorators for performance
+  - [x] Import and use existing utilities (docstring_parser, etc.)
 
-- [ ] Update `instructor/function_calls.py`
-  - [ ] Import new schema utils functions
-  - [ ] Update `OpenAISchema.openai_schema` to delegate to `generate_openai_schema(cls)`
-  - [ ] Update `OpenAISchema.anthropic_schema` to delegate to `generate_anthropic_schema(cls)`
-  - [ ] Update `OpenAISchema.gemini_schema` to delegate to `generate_gemini_schema(cls)`
+- [x] Update `instructor/function_calls.py`
+  - [x] Import new schema utils functions
+  - [x] Update `OpenAISchema.openai_schema` to delegate to `generate_openai_schema(cls)`
+  - [x] Update `OpenAISchema.anthropic_schema` to delegate to `generate_anthropic_schema(cls)`
+  - [x] Update `OpenAISchema.gemini_schema` to delegate to `generate_gemini_schema(cls)`
 
-- [ ] Add tests for new functions
-  - [ ] Test that `generate_openai_schema(Model)` == `Model.openai_schema`
-  - [ ] Test that `generate_anthropic_schema(Model)` == `Model.anthropic_schema`
-  - [ ] Test that `generate_gemini_schema(Model)` == `Model.gemini_schema`
+- [x] Add tests for new functions
+  - [x] Test that `generate_openai_schema(Model)` == `Model.openai_schema`
+  - [x] Test that `generate_anthropic_schema(Model)` == `Model.anthropic_schema`
+  - [x] Test that `generate_gemini_schema(Model)` == `Model.gemini_schema`
 
-## Phase 2: Update Internal Usage (Utils Directory)
+## Phase 2: Update Internal Usage (Utils Directory) ✅ COMPLETED
 
-- [ ] `instructor/utils/cerebras.py` (2 calls)
-  - [ ] Line 45: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
-  - [ ] Line 50: `"function": {"name": response_model.openai_schema["name"]},` -> `"function": {"name": generate_openai_schema(response_model)["name"]},`
+- [x] `instructor/utils/cerebras.py` (2 calls)
+  - [x] Line 45: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
+  - [x] Line 50: `"function": {"name": response_model.openai_schema["name"]},` -> `"function": {"name": generate_openai_schema(response_model)["name"]},`
 
-- [ ] `instructor/utils/writer.py` (1 call)
-  - [ ] Line 62: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
+- [x] `instructor/utils/writer.py` (1 call)
+  - [x] Line 62: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
 
-- [ ] `instructor/utils/fireworks.py` (2 calls)
-  - [ ] Line 58: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
-  - [ ] Line 63: `"function": {"name": response_model.openai_schema["name"]},` -> `"function": {"name": generate_openai_schema(response_model)["name"]},`
+- [x] `instructor/utils/fireworks.py` (2 calls)
+  - [x] Line 58: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
+  - [x] Line 63: `"function": {"name": response_model.openai_schema["name"]},` -> `"function": {"name": generate_openai_schema(response_model)["name"]},`
 
-- [ ] `instructor/utils/openai.py` (6 calls)
-  - [ ] Line 121: `new_kwargs["functions"] = [response_model.openai_schema]` -> `new_kwargs["functions"] = [generate_openai_schema(response_model)]`
-  - [ ] Line 122: `new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}` -> `new_kwargs["function_call"] = {"name": generate_openai_schema(response_model)["name"]}`
-  - [ ] Line 145: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
-  - [ ] Line 150: `"function": {"name": response_model.openai_schema["name"]},` -> `"function": {"name": generate_openai_schema(response_model)["name"]},`
-  - [ ] Line 185: `"name": response_model.openai_schema["name"],` -> `"name": generate_openai_schema(response_model)["name"],`
-  - [ ] Line 217: `"name": response_model.openai_schema["name"],` -> `"name": generate_openai_schema(response_model)["name"],`
+- [x] `instructor/utils/openai.py` (6 calls)
+  - [x] Line 121: `new_kwargs["functions"] = [response_model.openai_schema]` -> `new_kwargs["functions"] = [generate_openai_schema(response_model)]`
+  - [x] Line 122: `new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}` -> `new_kwargs["function_call"] = {"name": generate_openai_schema(response_model)["name"]}`
+  - [x] Line 145: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
+  - [x] Line 150: `"function": {"name": response_model.openai_schema["name"]},` -> `"function": {"name": generate_openai_schema(response_model)["name"]},`
+  - [x] Line 185: `"name": response_model.openai_schema["name"],` -> `"name": generate_openai_schema(response_model)["name"],`
+  - [x] Line 217: `"name": response_model.openai_schema["name"],` -> `"name": generate_openai_schema(response_model)["name"],`
 
-- [ ] `instructor/utils/mistral.py` (1 call)
-  - [ ] Line 67: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
+- [x] `instructor/utils/mistral.py` (1 call)
+  - [x] Line 67: `"function": response_model.openai_schema,` -> `"function": generate_openai_schema(response_model),`
 
-- [ ] `instructor/utils/anthropic.py` (1 call)
-  - [ ] Line 214: `tool_descriptions = response_model.anthropic_schema` -> `tool_descriptions = generate_anthropic_schema(response_model)`
+- [x] `instructor/utils/anthropic.py` (1 call)
+  - [x] Line 214: `tool_descriptions = response_model.anthropic_schema` -> `tool_descriptions = generate_anthropic_schema(response_model)`
 
-- [ ] `instructor/utils/google.py` (1 call)
-  - [ ] Line 644: `new_kwargs["tools"] = [response_model.gemini_schema]` -> `new_kwargs["tools"] = [generate_gemini_schema(response_model)]`
+- [x] `instructor/utils/google.py` (1 call)
+  - [x] Kept as `response_model.gemini_schema` to avoid circular imports
 
-- [ ] `instructor/utils/core.py` (1 call)
-  - [ ] Line 605: `response_model = openai_schema(response_model)` -> keep for now (decorator usage)
+- [x] `instructor/utils/core.py` (1 call)
+  - [x] Line 605: `response_model = openai_schema(response_model)` -> kept for now (decorator usage)
 
 ## Phase 3: Update Core Processing
 
@@ -70,11 +70,11 @@
 - [ ] `instructor/distil.py` (1 call)
   - [ ] Line 234: `openai_function_call = openai_schema(base_model).openai_schema` -> `openai_function_call = generate_openai_schema(base_model)`
 
-## Phase 5: Update Public API
+## Phase 5: Update Public API ✅ COMPLETED
 
-- [ ] `instructor/__init__.py`
-  - [ ] Add exports for new schema utils functions
-  - [ ] Keep existing exports for backward compatibility
+- [x] `instructor/__init__.py`
+  - [x] Add exports for new schema utils functions
+  - [x] Keep existing exports for backward compatibility
 
 ## Phase 6: Add Deprecation Warnings
 

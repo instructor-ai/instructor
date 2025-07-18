@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from instructor.mode import Mode
+from instructor.schema_utils import generate_openai_schema
 from instructor.utils.core import dump_message
 
 
@@ -55,12 +56,12 @@ def handle_fireworks_tools(
     new_kwargs["tools"] = [
         {
             "type": "function",
-            "function": response_model.openai_schema,
+            "function": generate_openai_schema(response_model),
         }
     ]
     new_kwargs["tool_choice"] = {
         "type": "function",
-        "function": {"name": response_model.openai_schema["name"]},
+        "function": {"name": generate_openai_schema(response_model)["name"]},
     }
     return response_model, new_kwargs
 

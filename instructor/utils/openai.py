@@ -16,6 +16,7 @@ from instructor.dsl.parallel import ParallelModel, handle_parallel_model
 from instructor.exceptions import ConfigurationError
 from instructor.mode import Mode
 from instructor.utils.core import dump_message, merge_consecutive_messages
+from instructor.schema_utils import generate_openai_schema
 
 
 def reask_tools(
@@ -115,8 +116,8 @@ def handle_functions(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
     Mode.warn_mode_functions_deprecation()
-    new_kwargs["functions"] = [response_model.openai_schema]
-    new_kwargs["function_call"] = {"name": response_model.openai_schema["name"]}
+    new_kwargs["functions"] = [generate_openai_schema(response_model)]
+    new_kwargs["function_call"] = {"name": generate_openai_schema(response_model)["name"]}
     return response_model, new_kwargs
 
 
@@ -139,12 +140,12 @@ def handle_tools(
     new_kwargs["tools"] = [
         {
             "type": "function",
-            "function": response_model.openai_schema,
+            "function": generate_openai_schema(response_model),
         }
     ]
     new_kwargs["tool_choice"] = {
         "type": "function",
-        "function": {"name": response_model.openai_schema["name"]},
+        "function": {"name": generate_openai_schema(response_model)["name"]},
     }
     return response_model, new_kwargs
 
@@ -179,7 +180,7 @@ def handle_responses_tools(
 
     new_kwargs["tool_choice"] = {
         "type": "function",
-        "name": response_model.openai_schema["name"],
+        "name": generate_openai_schema(response_model)["name"],
     }
     if new_kwargs.get("max_tokens") is not None:
         new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
@@ -211,7 +212,7 @@ def handle_responses_tools_with_inbuilt_tools(
         new_kwargs["tools"] = [tool_definition]
         new_kwargs["tool_choice"] = {
             "type": "function",
-            "name": response_model.openai_schema["name"],
+            "name": generate_openai_schema(response_model)["name"],
         }
     else:
         new_kwargs["tools"].append(tool_definition)

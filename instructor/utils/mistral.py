@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from instructor.mode import Mode
+from instructor.schema_utils import generate_openai_schema
 from instructor.utils.core import dump_message
 
 
@@ -64,7 +65,7 @@ def handle_mistral_tools(
     new_kwargs["tools"] = [
         {
             "type": "function",
-            "function": response_model.openai_schema,
+            "function": generate_openai_schema(response_model),
         }
     ]
     new_kwargs["tool_choice"] = "any"

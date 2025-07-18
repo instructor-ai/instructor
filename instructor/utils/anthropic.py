@@ -12,6 +12,7 @@ from typing import Any, TypedDict, Union
 from pydantic import ValidationError
 
 from instructor.mode import Mode
+from instructor.schema_utils import generate_anthropic_schema
 
 
 class SystemMessage(TypedDict, total=False):
@@ -211,7 +212,7 @@ def reask_anthropic_json(
 def handle_anthropic_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
-    tool_descriptions = response_model.anthropic_schema
+    tool_descriptions = generate_anthropic_schema(response_model)
     new_kwargs["tools"] = [tool_descriptions]
     new_kwargs["tool_choice"] = {
         "type": "tool",

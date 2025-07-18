@@ -11,6 +11,11 @@ from .dsl import (
     openai_moderation,
 )
 from .function_calls import OpenAISchema, openai_schema
+from .schema_utils import (
+    generate_openai_schema,
+    generate_anthropic_schema,
+    generate_gemini_schema,
+)
 from .patch import apatch, patch
 from .client import (
     Instructor,
@@ -38,6 +43,9 @@ __all__ = [
     "Maybe",
     "Partial",
     "openai_schema",
+    "generate_openai_schema",
+    "generate_anthropic_schema", 
+    "generate_gemini_schema",
     "Mode",
     "patch",
     "apatch",

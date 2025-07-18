@@ -21,6 +21,11 @@ from instructor.utils import (
     extract_json_from_codeblock,
     map_to_gemini_function_schema,
 )
+from instructor.schema_utils import (
+    generate_openai_schema,
+    generate_anthropic_schema,
+    generate_gemini_schema,
+)
 
 
 T = TypeVar("T")
@@ -115,76 +120,17 @@ class OpenAISchema(BaseModel):
         Returns:
             model_json_schema (dict): A dictionary in the format of OpenAI's schema as jsonschema
         """
-        schema = cls.model_json_schema()
-        docstring = parse(cls.__doc__ or "")
-        parameters = {
-            k: v for k, v in schema.items() if k not in ("title", "description")
-        }
-        for param in docstring.params:
-            if (name := param.arg_name) in parameters["properties"] and (
-                description := param.description
-            ):
-                if "description" not in parameters["properties"][name]:
-                    parameters["properties"][name]["description"] = description
-
-        parameters["required"] = sorted(
-            k for k, v in parameters["properties"].items() if "default" not in v
-        )
-
-        if "description" not in schema:
-            if docstring.short_description:
-                schema["description"] = docstring.short_description
-            else:
-                schema["description"] = (
-                    f"Correctly extracted `{cls.__name__}` with all "
-                    f"the required parameters with correct types"
-                )
-
-        return {
-            "name": schema["title"],
-            "description": schema["description"],
-            "parameters": parameters,
-        }
+        return generate_openai_schema(cls)
 
     @classproperty
     def anthropic_schema(cls) -> dict[str, Any]:
         # Generate the Anthropic schema based on the OpenAI schema to avoid redundant schema generation
-        openai_schema = cls.openai_schema
-        return {
-            "name": openai_schema["name"],
-            "description": openai_schema["description"],
-            "input_schema": cls.model_json_schema(),
-        }
+        return generate_anthropic_schema(cls)
 
     @classproperty
     def gemini_schema(cls) -> Any:
         # This is kept for backward compatibility but deprecated
-        import warnings
-
-        warnings.warn(
-            "gemini_schema is deprecated. The google-generativeai library is being replaced by google-genai.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        try:
-            import google.generativeai.types as genai_types
-
-            # Use OpenAI schema
-            openai_schema = cls.openai_schema
-
-            # Transform to Gemini format
-            function = genai_types.FunctionDeclaration(
-                name=openai_schema["name"],
-                description=openai_schema["description"],
-                parameters=map_to_gemini_function_schema(openai_schema["parameters"]),
-            )
-
-            return function
-        except ImportError as e:
-            raise ImportError(
-                "google-generativeai is deprecated. Please install google-genai instead: pip install google-genai"
-            ) from e
+        return generate_gemini_schema(cls)
 
     @classmethod
     def from_response(
