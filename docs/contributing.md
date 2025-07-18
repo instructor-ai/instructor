@@ -120,7 +120,7 @@ Poetry provides comprehensive dependency management and packaging.
 
 ## Adding Support for New LLM Providers
 
-Instructor uses optional dependencies to support different LLM providers. To add a new provider:
+Instructor uses optional dependencies to support different LLM providers. Provider-specific utilities live in the `instructor/utils` directory. To add a new provider:
 
 1. **Add Dependencies to pyproject.toml**:
    ```toml
@@ -147,7 +147,19 @@ Instructor uses optional dependencies to support different LLM providers. To add
    poetry install --with my-provider
    ```
 
-5. **Write Documentation**:
+5. **Create Provider Utilities and Handlers**:
+   - Add `instructor/utils/myprovider.py` with `reask` and `handle_*` helpers
+   - Define `MYPROVIDER_HANDLERS` mapping `Mode` values to these functions
+
+6. **Register the Provider**:
+   - Update `instructor/utils/providers.py` with your provider enum value
+   - Extend `get_provider` detection for your base URL
+
+7. **Update `process_response.py`**:
+   - Import your handlers and add them to `mode_handlers`
+   - This script uses the handlers to prepare kwargs and parse results
+
+8. **Write Documentation**:
    - Add a new markdown file in `docs/integrations/` for your provider
    - Update `mkdocs.yml` to include your new page
    - Make sure to include a complete example

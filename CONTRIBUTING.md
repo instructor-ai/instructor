@@ -152,7 +152,7 @@ Key Poetry commands:
 
 ### Working with Optional Dependencies
 
-Instructor uses optional dependencies to support different LLM providers. When adding integration for a new provider:
+Instructor uses optional dependencies to support different LLM providers. Provider-specific utilities live under `instructor/utils`. When adding integration for a new provider:
 
 1. **Update pyproject.toml**: Add your provider's dependencies to both `[project.optional-dependencies]` and `[dependency-groups]`:
 
@@ -177,6 +177,22 @@ Instructor uses optional dependencies to support different LLM providers. When a
    # or
    poetry install --with my-provider
    ```
+
+5. **Create Provider Utilities and Handlers**:
+   - Add a new module at `instructor/utils/myprovider.py`
+   - Implement `reask` functions for validation errors and `handle_*` functions
+     for formatting requests
+   - Define `MYPROVIDER_HANDLERS` mapping `Mode` values to these functions
+
+6. **Register the Provider**:
+   - Add a value in `instructor/utils/providers.py` to the `Provider` enum
+   - Extend `get_provider` with detection logic for your base URL
+
+7. **Update `process_response.py`**:
+   - Import your handler functions and include them in the `mode_handlers`
+     dictionary so the library can route requests to your provider
+   - `process_response.py` relies on these handlers to format arguments and
+     parse results for each `Mode`
 
 ## How to Contribute
 
