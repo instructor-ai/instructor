@@ -458,6 +458,12 @@ def reask_gemini_tools(
     response: Any,  # Replace with actual response type for Gemini
     exception: Exception,
 ):
+    """
+    Handle reask for Gemini tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "contents" (tool response messages indicating validation errors)
+    """
     from google.ai import generativelanguage as glm  # type: ignore
 
     reask_msgs = [
@@ -495,6 +501,12 @@ def reask_gemini_json(
     response: Any,  # Replace with actual response type for Gemini
     exception: Exception,
 ):
+    """
+    Handle reask for Gemini JSON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "contents" (user message requesting JSON correction)
+    """
     kwargs["contents"].append(
         {
             "role": "user",
@@ -512,6 +524,12 @@ def reask_vertexai_tools(
     response: Any,  # Replace with actual response type for Vertex AI
     exception: Exception,
 ):
+    """
+    Handle reask for Vertex AI tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "contents" (tool response messages indicating validation errors)
+    """
     from instructor.client_vertexai import vertexai_function_response_parser
 
     kwargs = kwargs.copy()
@@ -528,6 +546,12 @@ def reask_vertexai_json(
     response: Any,  # Replace with actual response type for Vertex AI
     exception: Exception,
 ):
+    """
+    Handle reask for Vertex AI JSON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "contents" (user message requesting JSON correction)
+    """
     from instructor.client_vertexai import vertexai_message_parser
 
     kwargs = kwargs.copy()
@@ -553,6 +577,12 @@ def reask_genai_tools(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Google GenAI tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "contents" (tool response messages indicating validation errors)
+    """
     from google.genai import types
 
     kwargs = kwargs.copy()
@@ -578,6 +608,12 @@ def reask_genai_structured_outputs(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Google GenAI structured outputs mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "contents" (user message describing validation errors)
+    """
     from google.genai import types
 
     kwargs = kwargs.copy()
@@ -601,36 +637,31 @@ def reask_genai_structured_outputs(
 
 
 # Response handlers
-def handle_genai_message_conversion(new_kwargs: dict[str, Any], autodetect_images: bool = False) -> dict[str, Any]:
+def handle_genai_message_conversion(
+    new_kwargs: dict[str, Any], autodetect_images: bool = False
+) -> dict[str, Any]:
     """
-    Handle message conversion for GenAI modes when response_model is None.
-    
-    This function centralizes the message conversion logic for Google GenAI:
-    - Converts OpenAI-style messages to GenAI-style contents
-    - Extracts and processes multimodal content (images, PDFs, etc.)
-    - Handles system message extraction and configuration
-    - Removes the original 'messages' key after conversion
-    
-    Args:
-        new_kwargs: The kwargs dictionary containing messages
-        autodetect_images: Whether to automatically detect and process image content
-        
-    Returns:
-        Updated kwargs with GenAI-compatible format
+    Convert OpenAI-style messages to GenAI contents.
+
+    Kwargs modifications:
+    - Removes: "messages"
+    - Adds: "contents" (GenAI-style messages)
+    - Adds: "config" (system instruction) when system not provided
     """
     from google.genai import types
-    
+
     messages = new_kwargs.get("messages", [])
-    
+
     # Convert OpenAI-style messages to GenAI-style contents
     new_kwargs["contents"] = convert_to_genai_messages(messages)
-    
+
     # Extract multimodal content for GenAI
     from instructor.multimodal import extract_genai_multimodal_content
+
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
     )
-    
+
     # Handle system message for GenAI
     if "system" not in new_kwargs:
         system_message = extract_genai_system_message(messages)
@@ -638,10 +669,10 @@ def handle_genai_message_conversion(new_kwargs: dict[str, Any], autodetect_image
             new_kwargs["config"] = types.GenerateContentConfig(
                 system_instruction=system_message
             )
-    
+
     # Remove messages since we converted to contents
     new_kwargs.pop("messages", None)
-    
+
     return new_kwargs
 
 
@@ -650,16 +681,16 @@ def handle_gemini_json(
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle Gemini JSON mode.
-    
+
     When response_model is None:
         - Updates kwargs for Gemini compatibility (converts messages format)
         - No JSON schema or response format is configured
-        
+
     When response_model is provided:
         - Adds/modifies system message with JSON schema instructions
         - Sets response_mime_type to "application/json"
         - Updates kwargs for Gemini compatibility
-        
+
     Kwargs modifications:
     - Modifies: "messages" (adds/modifies system message with JSON schema) - only when response_model provided
     - Adds/Modifies: "generation_config" (sets response_mime_type to "application/json") - only when response_model provided
@@ -704,7 +735,7 @@ def handle_gemini_tools(
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle Gemini tools mode.
-    
+
     Kwargs modifications:
     - When response_model is None: Only applies update_gemini_kwargs transformations
     - When response_model is provided:
@@ -735,11 +766,13 @@ def handle_gemini_tools(
 
 
 def handle_genai_structured_outputs(
-    response_model: type[Any] | None, new_kwargs: dict[str, Any], autodetect_images: bool = False
+    response_model: type[Any] | None,
+    new_kwargs: dict[str, Any],
+    autodetect_images: bool = False,
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle Google GenAI structured outputs mode.
-    
+
     Kwargs modifications:
     - When response_model is None: Applies handle_genai_message_conversion
     - When response_model is provided:
@@ -767,9 +800,10 @@ def handle_genai_structured_outputs(
         system_message = None
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
-    
+
     # Extract multimodal content for GenAI
     from instructor.multimodal import extract_genai_multimodal_content
+
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
     )
@@ -795,11 +829,13 @@ def handle_genai_structured_outputs(
 
 
 def handle_genai_tools(
-    response_model: type[Any] | None, new_kwargs: dict[str, Any], autodetect_images: bool = False
+    response_model: type[Any] | None,
+    new_kwargs: dict[str, Any],
+    autodetect_images: bool = False,
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle Google GenAI tools mode.
-    
+
     Kwargs modifications:
     - When response_model is None: Applies handle_genai_message_conversion
     - When response_model is provided:
@@ -848,9 +884,10 @@ def handle_genai_tools(
 
     new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
-    
+
     # Extract multimodal content for GenAI
     from instructor.multimodal import extract_genai_multimodal_content
+
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
     )
@@ -866,6 +903,13 @@ def handle_genai_tools(
 def handle_vertexai_parallel_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[Any, dict[str, Any]]:
+    """
+    Handle Vertex AI parallel tools mode.
+
+    Kwargs modifications:
+    - Adds: "contents", "tools", "tool_config" via vertexai_process_response
+    - Validates: stream=False
+    """
     from typing import get_args
 
     from instructor.client_vertexai import vertexai_process_response
@@ -891,6 +935,15 @@ def handle_vertexai_tools(
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     from instructor.client_vertexai import vertexai_process_response
 
+    """
+    Handle Vertex AI tools mode.
+
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Adds: "contents", "tools", "tool_config" via vertexai_process_response
+    """
+
     if response_model is None:
         # Just handle message conversion - keep the messages as they are
         return None, new_kwargs
@@ -907,6 +960,15 @@ def handle_vertexai_json(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     from instructor.client_vertexai import vertexai_process_json_response
+
+    """
+    Handle Vertex AI JSON mode.
+
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Adds: "contents" and "generation_config" via vertexai_process_json_response
+    """
 
     if response_model is None:
         # Just handle message conversion - keep the messages as they are

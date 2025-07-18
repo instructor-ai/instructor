@@ -18,6 +18,12 @@ def reask_writer_tools(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Writer tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user instructions to correct tool call)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     reask_msgs.append(
@@ -41,6 +47,12 @@ def reask_writer_json(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Writer JSON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting JSON correction)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     reask_msgs.append(
@@ -57,6 +69,13 @@ def reask_writer_json(
 def handle_writer_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Writer tools mode.
+
+    Kwargs modifications:
+    - Adds: "tools" (list with function schema)
+    - Sets: "tool_choice" to "auto"
+    """
     new_kwargs["tools"] = [
         {
             "type": "function",
@@ -70,6 +89,12 @@ def handle_writer_tools(
 def handle_writer_json(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Writer JSON mode.
+
+    Kwargs modifications:
+    - Adds: "response_format" with json_schema
+    """
     new_kwargs["response_format"] = {
         "type": "json_schema",
         "json_schema": {"schema": response_model.model_json_schema()},

@@ -140,6 +140,12 @@ def reask_anthropic_tools(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Anthropic tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (tool result messages indicating validation errors)
+    """
     kwargs = kwargs.copy()
     from anthropic.types import Message
 
@@ -187,6 +193,12 @@ def reask_anthropic_json(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Anthropic JSON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting JSON correction)
+    """
     kwargs = kwargs.copy()
     from anthropic.types import Message
 
@@ -212,21 +224,21 @@ def reask_anthropic_json(
 def handle_anthropic_message_conversion(new_kwargs: dict[str, Any]) -> dict[str, Any]:
     """
     Handle message conversion for Anthropic modes when response_model is None.
-    
+
     Kwargs modifications:
     - Modifies: "messages" (removes system messages)
     - Adds/Modifies: "system" (if system messages found in messages)
     """
     messages = new_kwargs.get("messages", [])
-    
+
     # Handle Anthropic style messages
     new_kwargs["messages"] = [m for m in messages if m["role"] != "system"]
-    
+
     if "system" not in new_kwargs:
         system_messages = extract_system_messages(messages)
         if system_messages:
             new_kwargs["system"] = system_messages
-    
+
     return new_kwargs
 
 
@@ -235,19 +247,19 @@ def handle_anthropic_tools(
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle Anthropic tools mode.
-    
+
     When response_model is None:
         - Extracts system messages from the messages list and moves them to the 'system' parameter
         - Filters out system messages from the messages list
         - No tools are configured
         - Allows for unstructured responses from Claude
-        
+
     When response_model is provided:
         - Generates Anthropic tool schema from the response model
         - Sets up forced tool use with the specific tool name
         - Extracts and combines system messages
         - Filters system messages from the messages list
-        
+
     Kwargs modifications:
     - Modifies: "messages" (removes system messages)
     - Adds/Modifies: "system" (combines existing with extracted system messages)
@@ -258,7 +270,7 @@ def handle_anthropic_tools(
         # Just handle message conversion
         new_kwargs = handle_anthropic_message_conversion(new_kwargs)
         return None, new_kwargs
-    
+
     tool_descriptions = generate_anthropic_schema(response_model)
     new_kwargs["tools"] = [tool_descriptions]
     new_kwargs["tool_choice"] = {
@@ -285,21 +297,21 @@ def handle_anthropic_reasoning_tools(
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle Anthropic reasoning tools mode.
-    
+
     This mode is similar to regular tools mode but with reasoning enabled:
     - Uses "auto" tool choice instead of forced tool use
     - Adds a system message encouraging tool use only when relevant
     - Allows Claude to reason about whether to use tools
-    
+
     When response_model is None:
         - Performs the same message conversion as handle_anthropic_tools
         - No tools are configured
-        
+
     When response_model is provided:
         - Sets up tools as in regular tools mode
         - Changes tool_choice to "auto" to allow reasoning
         - Adds system message to guide tool usage
-        
+
     Kwargs modifications:
     - All modifications from handle_anthropic_tools, plus:
     - Modifies: "tool_choice" (changes to {"type": "auto"}) - only when response_model provided
@@ -335,21 +347,21 @@ def handle_anthropic_json(
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle Anthropic JSON mode.
-    
+
     This mode instructs Claude to return JSON responses:
     - System messages are extracted and combined
     - A JSON schema message is added to guide the response format
-    
+
     When response_model is None:
         - Extracts and moves system messages to the 'system' parameter
         - Filters system messages from the messages list
         - No JSON schema is added
-        
+
     When response_model is provided:
         - Performs system message handling as above
         - Adds a system message with the JSON schema
         - Instructs Claude to return an instance matching the schema
-        
+
     Kwargs modifications:
     - Modifies: "messages" (removes system messages)
     - Adds/Modifies: "system" (combines existing with extracted system messages)
@@ -394,6 +406,16 @@ def handle_anthropic_json(
 def handle_anthropic_parallel_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[Any, dict[str, Any]]:
+    """
+    Handle Anthropic parallel tools mode.
+
+    Kwargs modifications:
+    - Adds: "tools" (multiple function schemas from parallel model)
+    - Adds: "tool_choice" ("auto" to allow model to choose which tools to call)
+    - Modifies: "system" (moves system messages into system parameter)
+    - Removes: "system" messages from "messages" list
+    - Validates: stream=False
+    """
     from instructor.dsl.parallel import (
         AnthropicParallelModel,
         handle_anthropic_parallel_model,

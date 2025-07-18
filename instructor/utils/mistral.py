@@ -18,6 +18,12 @@ def reask_mistral_structured_outputs(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Mistral structured outputs mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (assistant content and user correction request)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [
         {
@@ -42,6 +48,12 @@ def reask_mistral_tools(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Mistral tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (tool response messages indicating validation errors)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     for tool_call in response.choices[0].message.tool_calls:
@@ -62,6 +74,13 @@ def reask_mistral_tools(
 def handle_mistral_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Mistral tools mode.
+
+    Kwargs modifications:
+    - Adds: "tools" (list with function schema)
+    - Adds: "tool_choice" set to "any"
+    """
     new_kwargs["tools"] = [
         {
             "type": "function",
@@ -75,6 +94,13 @@ def handle_mistral_tools(
 def handle_mistral_structured_outputs(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Mistral structured outputs mode.
+
+    Kwargs modifications:
+    - Adds: "response_format" derived from the response model
+    - Removes: "tools" and "response_model" from kwargs
+    """
     from mistralai.extra import response_format_from_pydantic_model
 
     new_kwargs["response_format"] = response_format_from_pydantic_model(response_model)

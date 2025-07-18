@@ -14,6 +14,12 @@ from instructor.utils.core import dump_message
 
 
 def reask_fireworks_tools(kwargs: dict[str, Any], response: Any, exception: Exception):
+    """
+    Handle reask for Fireworks tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (tool response messages indicating validation errors)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     for tool_call in response.choices[0].message.tool_calls:
@@ -36,6 +42,12 @@ def reask_fireworks_json(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Fireworks JSON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting JSON correction)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     reask_msgs.append(
@@ -51,6 +63,14 @@ def reask_fireworks_json(
 def handle_fireworks_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Fireworks tools mode.
+
+    Kwargs modifications:
+    - Adds: "tools" (list with function schema)
+    - Adds: "tool_choice" (forced function call)
+    - Sets default: stream=False
+    """
     if "stream" not in new_kwargs:
         new_kwargs["stream"] = False
     new_kwargs["tools"] = [
@@ -69,6 +89,13 @@ def handle_fireworks_tools(
 def handle_fireworks_json(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Fireworks JSON mode.
+
+    Kwargs modifications:
+    - Adds: "response_format" with json_schema
+    - Sets default: stream=False
+    """
     if "stream" not in new_kwargs:
         new_kwargs["stream"] = False
 

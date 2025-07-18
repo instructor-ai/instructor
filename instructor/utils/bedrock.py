@@ -18,6 +18,12 @@ def reask_bedrock_json(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Bedrock JSON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting JSON correction)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [response["output"]["message"]]
     reask_msgs.append(
@@ -37,9 +43,14 @@ def reask_bedrock_json(
 def _prepare_bedrock_converse_kwargs_internal(
     call_kwargs: dict[str, Any],
 ) -> dict[str, Any]:
-    """Minimal processing to support `converse` parameters for the Bedrock client
+    """
+    Prepare kwargs for the Bedrock Converse API.
 
-    See: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse.html
+    Kwargs modifications:
+    - Moves: system list to messages as a system role
+    - Renames: "model" -> "modelId"
+    - Collects: temperature, max_tokens, top_p, stop into inferenceConfig
+    - Converts: messages content to Bedrock format
     """
     # Handle Bedrock-native system parameter format: system=[{'text': '...'}]
     # Convert to OpenAI format by adding to messages as system role
@@ -176,6 +187,14 @@ def _prepare_bedrock_converse_kwargs_internal(
 def handle_bedrock_json(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Bedrock JSON mode.
+
+    Kwargs modifications:
+    - Adds: "response_format" with json_schema
+    - Adds/Modifies: "system" (prepends JSON instructions)
+    - Applies: _prepare_bedrock_converse_kwargs_internal transformations
+    """
     new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
     json_message = dedent(
         f"""
@@ -207,6 +226,12 @@ def handle_bedrock_json(
 def handle_bedrock_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Bedrock tools mode.
+
+    Kwargs modifications:
+    - Applies: _prepare_bedrock_converse_kwargs_internal transformations
+    """
     new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
     return response_model, new_kwargs
 

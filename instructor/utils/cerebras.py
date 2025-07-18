@@ -18,6 +18,12 @@ def reask_cerebras_tools(
     response: Any,
     exception: Exception,
 ):
+    """
+    Handle reask for Cerebras tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (tool response messages indicating validation errors)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     for tool_call in response.choices[0].message.tool_calls:
@@ -38,6 +44,14 @@ def reask_cerebras_tools(
 def handle_cerebras_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Cerebras tools mode.
+
+    Kwargs modifications:
+    - Adds: "tools" (list with function schema)
+    - Adds: "tool_choice" (forced function call)
+    - Validates: stream=False
+    """
     if new_kwargs.get("stream", False):
         raise ValueError("Stream is not supported for Cerebras Tool Calling")
     new_kwargs["tools"] = [
@@ -56,6 +70,12 @@ def handle_cerebras_tools(
 def handle_cerebras_json(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Cerebras JSON mode.
+
+    Kwargs modifications:
+    - Adds: "messages" (system instruction with JSON schema)
+    """
     instruction = f"""
 You are a helpful assistant that excels at following instructions.Your task is to understand the content and provide the parsed objects in json that match the following json_schema:\n
 

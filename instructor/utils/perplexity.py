@@ -17,7 +17,12 @@ def reask_perplexity_json(
     response: Any,
     exception: Exception,
 ):
-    """Handle reasking for Perplexity JSON mode."""
+    """
+    Handle reask for Perplexity JSON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting JSON correction)
+    """
     kwargs = kwargs.copy()
     reask_msgs = [dump_message(response.choices[0].message)]
     reask_msgs.append(
@@ -33,6 +38,12 @@ def reask_perplexity_json(
 def handle_perplexity_json(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Perplexity JSON mode.
+
+    Kwargs modifications:
+    - Adds: "response_format" with json_schema
+    """
     new_kwargs["response_format"] = {
         "type": "json_schema",
         "json_schema": {"schema": response_model.model_json_schema()},
