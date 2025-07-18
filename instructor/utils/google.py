@@ -693,12 +693,9 @@ def handle_gemini_tools(
 
 
 def handle_genai_structured_outputs(
-    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+    response_model: type[Any] | None, new_kwargs: dict[str, Any], autodetect_images: bool = False
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     from google.genai import types
-
-    # Extract autodetect_images before processing
-    autodetect_images = new_kwargs.pop("autodetect_images", False)
 
     if response_model is None:
         # Just handle message conversion
@@ -745,12 +742,9 @@ def handle_genai_structured_outputs(
 
 
 def handle_genai_tools(
-    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+    response_model: type[Any] | None, new_kwargs: dict[str, Any], autodetect_images: bool = False
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     from google.genai import types
-
-    # Extract autodetect_images before processing
-    autodetect_images = new_kwargs.pop("autodetect_images", False)
 
     if response_model is None:
         # Just handle message conversion

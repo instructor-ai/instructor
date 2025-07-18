@@ -258,8 +258,8 @@ def handle_response_model(
 
     new_kwargs = kwargs.copy()
     # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
-    # Don't pop autodetect_images yet - let handlers access it
-    autodetect_images = new_kwargs.get("autodetect_images", False)
+    # Extract autodetect_images for message conversion
+    autodetect_images = new_kwargs.pop("autodetect_images", False)
 
     PARALLEL_MODES = {
         Mode.PARALLEL_TOOLS: handle_parallel_tools,
@@ -305,8 +305,8 @@ def handle_response_model(
         Mode.COHERE_TOOLS: handle_cohere_tools,
         Mode.GEMINI_JSON: handle_gemini_json,
         Mode.GEMINI_TOOLS: handle_gemini_tools,
-        Mode.GENAI_TOOLS: handle_genai_tools,
-        Mode.GENAI_STRUCTURED_OUTPUTS: handle_genai_structured_outputs,
+        Mode.GENAI_TOOLS: lambda rm, nk: handle_genai_tools(rm, nk, autodetect_images),
+        Mode.GENAI_STRUCTURED_OUTPUTS: lambda rm, nk: handle_genai_structured_outputs(rm, nk, autodetect_images),
         Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
         Mode.VERTEXAI_JSON: handle_vertexai_json,
         Mode.CEREBRAS_JSON: handle_cerebras_json,
