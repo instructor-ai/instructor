@@ -113,9 +113,22 @@ def handle_parallel_tools(
 
 
 def handle_functions(
-    response_model: type[Any], new_kwargs: dict[str, Any]
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle OpenAI functions mode (deprecated).
+    
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Adds: "functions" (list with function schema)
+      - Adds: "function_call" (forced function call)
+    """
     Mode.warn_mode_functions_deprecation()
+    
+    if response_model is None:
+        return None, new_kwargs
+        
     new_kwargs["functions"] = [generate_openai_schema(response_model)]
     new_kwargs["function_call"] = {
         "name": generate_openai_schema(response_model)["name"]
@@ -124,8 +137,20 @@ def handle_functions(
 
 
 def handle_tools_strict(
-    response_model: type[Any], new_kwargs: dict[str, Any]
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle OpenAI strict tools mode.
+    
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Adds: "tools" (list with strict function schema)
+      - Adds: "tool_choice" (forced function call)
+    """
+    if response_model is None:
+        return None, new_kwargs
+        
     response_model_schema = pydantic_function_tool(response_model)
     response_model_schema["function"]["strict"] = True
     new_kwargs["tools"] = [response_model_schema]
@@ -137,8 +162,20 @@ def handle_tools_strict(
 
 
 def handle_tools(
-    response_model: type[Any], new_kwargs: dict[str, Any]
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle OpenAI tools mode.
+    
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Adds: "tools" (list with function schema)
+      - Adds: "tool_choice" (forced function call)
+    """
+    if response_model is None:
+        return None, new_kwargs
+        
     new_kwargs["tools"] = [
         {
             "type": "function",
@@ -226,11 +263,23 @@ def handle_responses_tools_with_inbuilt_tools(
 
 
 def handle_json_o1(
-    response_model: type[Any], new_kwargs: dict[str, Any]
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle OpenAI o1 JSON mode.
+    
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Modifies: "messages" (appends user message with JSON schema)
+      - Validates: No system messages allowed for O1 models
+    """
     roles = [message["role"] for message in new_kwargs.get("messages", [])]
     if "system" in roles:
         raise ValueError("System messages are not supported For the O1 models")
+
+    if response_model is None:
+        return None, new_kwargs
 
     message = dedent(
         f"""
@@ -253,8 +302,21 @@ def handle_json_o1(
 
 
 def handle_json_modes(
-    response_model: type[Any], new_kwargs: dict[str, Any], mode: Mode
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any], mode: Mode
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle OpenAI JSON modes (JSON, MD_JSON, JSON_SCHEMA).
+    
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Mode.JSON_SCHEMA: Adds "response_format" with json_schema
+      - Mode.JSON: Adds "response_format" with type="json_object", modifies system message
+      - Mode.MD_JSON: Appends user message for markdown JSON response
+    """
+    if response_model is None:
+        return None, new_kwargs
+        
     message = dedent(
         f"""
         As a genius expert, your task is to understand the content and provide
