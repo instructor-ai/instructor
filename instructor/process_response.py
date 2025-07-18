@@ -23,6 +23,7 @@ from instructor.dsl.parallel import (
     VertexAIParallelModel,
     get_types_array,
     handle_parallel_model,
+    handle_anthropic_parallel_model,
 )
 from instructor.dsl.partial import PartialBase, Partial
 from instructor.dsl.simple_type import (
@@ -228,8 +229,7 @@ def handle_anthropic_parallel_tools(
             "stream=True is not supported when using ANTHROPIC_PARALLEL_TOOLS mode"
         )
 
-    model_types = list(get_types_array(response_model))
-    new_kwargs["tools"] = [m.anthropic_schema for m in model_types]
+    new_kwargs["tools"] = handle_anthropic_parallel_model(response_model)
     new_kwargs["tool_choice"] = {"type": "auto"}
 
     system_messages = extract_system_messages(new_kwargs.get("messages", []))

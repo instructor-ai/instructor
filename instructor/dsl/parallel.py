@@ -113,6 +113,13 @@ def handle_parallel_model(typehint: type[Iterable[T]]) -> list[dict[str, Any]]:
     ]
 
 
+def handle_anthropic_parallel_model(
+    typehint: type[Iterable[T]],
+) -> list[dict[str, Any]]:
+    the_types = get_types_array(typehint)
+    return [openai_schema(model).anthropic_schema for model in the_types]
+
+
 def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
     the_types = get_types_array(typehint)
     return ParallelBase(*[model for model in the_types])

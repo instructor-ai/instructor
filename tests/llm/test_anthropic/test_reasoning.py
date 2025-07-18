@@ -9,6 +9,7 @@ class Answer(BaseModel):
 def test_reasoning():
     client = instructor.from_provider(
         "anthropic/claude-3-7-sonnet-latest",
+        mode=instructor.Mode.ANTHROPIC_REASONING_TOOLS,
     )
     response = client.chat.completions.create(
         response_model=Answer,

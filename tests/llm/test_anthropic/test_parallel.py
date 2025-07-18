@@ -6,12 +6,12 @@ from pydantic import BaseModel
 from .util import models
 
 
-class Weather(OpenAISchema):
+class Weather(BaseModel):
     location: str
     units: Literal["imperial", "metric"]
 
 
-class GoogleSearch(OpenAISchema):
+class GoogleSearch(BaseModel):
     query: str
 
 
