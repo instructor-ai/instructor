@@ -9,7 +9,7 @@ Parallel Function Calling is a feature that allows you to call multiple function
 
 !!! warning "Experimental Feature"
 
-    Parallel Function calling is only supported by Google and OpenAI at the moment. Make sure to use the equivalent parallel tool `mode` for your client.
+    Parallel Function calling is supported by Google, OpenAI, and Anthropic. Make sure to use the equivalent parallel tool `mode` for your client.
 
 ## Understanding Parallel Function Calling
 
@@ -95,6 +95,46 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         #> location='Toronto' units='metric'
         #> location='Dallas' units='imperial'
         #> query='who won the super bowl'
+    ```
+
+=== "Anthropic"
+
+    ```python hl_lines="20 32"
+    import instructor
+    from typing import Iterable, Literal
+    from pydantic import BaseModel
+
+
+    class Weather(BaseModel):
+        location: str
+        units: Literal["imperial", "metric"]
+
+
+    class GoogleSearch(BaseModel):
+        query: str
+
+
+    client = instructor.from_provider(
+        "anthropic/claude-3-haiku-20240307",
+        mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
+    )
+
+    function_calls = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You must always use tools"},
+            {
+                "role": "user",
+                "content": "What is the weather in toronto and dallas and who won the super bowl?",
+            },
+        ],
+        response_model=Iterable[Weather | GoogleSearch],
+    )
+
+    for fc in function_calls:
+        print(fc)
+        #> location='Toronto' units='metric'
+        #> location='Dallas' units='metric'
+        #> query='who won the super bowl 2023'
     ```
 
 We need to set the response model to `Iterable[Weather | GoogleSearch]` to indicate that the response will be a list of `Weather` and `GoogleSearch` objects.

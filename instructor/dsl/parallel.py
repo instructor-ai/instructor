@@ -121,3 +121,34 @@ def ParallelModel(typehint: type[Iterable[T]]) -> ParallelBase:
 def VertexAIParallelModel(typehint: type[Iterable[T]]) -> VertexAIParallelBase:
     the_types = get_types_array(typehint)
     return VertexAIParallelBase(*[model for model in the_types])
+
+
+class AnthropicParallelBase(ParallelBase):
+    def from_response(
+        self,
+        response: Any,
+        mode: Mode,
+        validation_context: Optional[Any] = None,
+        strict: Optional[bool] = None,
+    ) -> Generator[BaseModel, None, None]:
+        assert mode == Mode.ANTHROPIC_PARALLEL_TOOLS, (
+            "Mode must be ANTHROPIC_PARALLEL_TOOLS"
+        )
+
+        if not response or not hasattr(response, "content"):
+            return
+
+        for content in response.content:
+            if getattr(content, "type", None) == "tool_use":
+                name = content.name
+                arguments = content.input
+                if name in self.registry:
+                    json_str = json.dumps(arguments)
+                    yield self.registry[name].model_validate_json(
+                        json_str, context=validation_context, strict=strict
+                    )
+
+
+def AnthropicParallelModel(typehint: type[Iterable[T]]) -> AnthropicParallelBase:
+    the_types = get_types_array(typehint)
+    return AnthropicParallelBase(*[model for model in the_types])

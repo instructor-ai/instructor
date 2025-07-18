@@ -17,6 +17,8 @@ from instructor.dsl.iterable import IterableBase, IterableModel
 from instructor.dsl.parallel import (
     ParallelBase,
     ParallelModel,
+    AnthropicParallelBase,
+    AnthropicParallelModel,
     VertexAIParallelBase,
     VertexAIParallelModel,
     get_types_array,
@@ -214,6 +216,34 @@ def handle_parallel_tools(
     new_kwargs["tools"] = handle_parallel_model(response_model)
     new_kwargs["tool_choice"] = "auto"
     return ParallelModel(typehint=response_model), new_kwargs
+
+
+def handle_anthropic_parallel_tools(
+    response_model: type[Iterable[T]], new_kwargs: dict[str, Any]
+) -> tuple[AnthropicParallelBase, dict[str, Any]]:
+    if new_kwargs.get("stream", False):
+        from instructor.exceptions import ConfigurationError
+
+        raise ConfigurationError(
+            "stream=True is not supported when using ANTHROPIC_PARALLEL_TOOLS mode"
+        )
+
+    model_types = list(get_types_array(response_model))
+    new_kwargs["tools"] = [m.anthropic_schema for m in model_types]
+    new_kwargs["tool_choice"] = {"type": "auto"}
+
+    system_messages = extract_system_messages(new_kwargs.get("messages", []))
+
+    if system_messages:
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
+        )
+
+    new_kwargs["messages"] = [
+        m for m in new_kwargs.get("messages", []) if m["role"] != "system"
+    ]
+
+    return AnthropicParallelModel(typehint=response_model), new_kwargs
 
 
 def handle_functions(
@@ -1186,6 +1216,8 @@ def handle_response_model(
         return handle_parallel_tools(response_model, new_kwargs)
     elif mode in {Mode.VERTEXAI_PARALLEL_TOOLS}:
         return handle_vertexai_parallel_tools(response_model, new_kwargs)
+    elif mode in {Mode.ANTHROPIC_PARALLEL_TOOLS}:
+        return handle_anthropic_parallel_tools(response_model, new_kwargs)
 
     response_model = prepare_response_model(response_model)
 

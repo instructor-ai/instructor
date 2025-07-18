@@ -112,6 +112,43 @@ user = asyncio.run(extract_user())
 print(user)
 ```
 
+### Parallel Tool Calling
+
+```python
+from typing import Iterable, Literal
+from pydantic import BaseModel
+import instructor
+
+
+class Weather(BaseModel):
+    location: str
+    units: Literal["imperial", "metric"]
+
+
+class GoogleSearch(BaseModel):
+    query: str
+
+
+client = instructor.from_provider(
+    "anthropic/claude-3-haiku-20240307",
+    mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
+)
+
+results = client.chat.completions.create(
+    messages=[
+        {"role": "system", "content": "You must always use tools"},
+        {
+            "role": "user",
+            "content": "What is the weather in toronto and dallas and who won the super bowl?",
+        },
+    ],
+    response_model=Iterable[Weather | GoogleSearch],
+)
+
+for item in results:
+    print(item)
+```
+
 ## Multimodal
 
 > We've provided a few different sample files for you to use to test out these new features. All examples below use these files.
@@ -399,6 +436,7 @@ We provide several modes to make it easy to work with the different response mod
 
 1. `instructor.Mode.ANTHROPIC_JSON` : This uses the text completion API from the Anthropic API and then extracts out the desired response model from the text completion model
 2. `instructor.Mode.ANTHROPIC_TOOLS` : This uses Anthropic's [tools calling API](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) to return structured outputs to the client
+3. `instructor.Mode.ANTHROPIC_PARALLEL_TOOLS` : Runs multiple tools in parallel and returns a list of tool calls
 
 In general, we recommend using `Mode.ANTHROPIC_TOOLS` because it's the best way to ensure you have the desired response schema that you want.
 

@@ -591,6 +591,7 @@ class AsyncInstructor(Instructor):
             not in {
                 instructor.Mode.PARALLEL_TOOLS,
                 instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
+                instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
             }
         ):
             return self.create_iterable(

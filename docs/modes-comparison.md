@@ -18,7 +18,7 @@ Here's a quick comparison:
 | `TOOLS` | Uses function/tool calling API | Most OpenAI use cases | OpenAI, Azure, LiteLLM, etc. |
 | `JSON` | Asks for direct JSON output | Models without tool calling | Most providers |
 | `FUNCTIONS` (Legacy) | Legacy OpenAI function calling | Backward compatibility | OpenAI, Azure |
-| `PARALLEL_TOOLS` | Runs multiple tools in parallel | Complex, multi-step tasks | OpenAI only |
+| `PARALLEL_TOOLS` | Runs multiple tools in parallel | Complex, multi-step tasks | OpenAI, Anthropic, Vertex AI |
 | `MD_JSON` | JSON in Markdown code blocks | Cleaner prompts | Most providers |
 | `TOOLS_STRICT` | Stricter version of TOOLS | Production systems | OpenAI, Azure |
 | `JSON_O1` | One-shot completion with JSON | Simple extractions | OpenAI, Azure |
@@ -227,7 +227,7 @@ client = instructor.from_provider(
 | Provider   | Tool-based Modes | JSON-based Modes |
 |------------|------------------|------------------|
 | OpenAI     | TOOLS, TOOLS_STRICT, PARALLEL_TOOLS, FUNCTIONS | JSON, MD_JSON, JSON_O1 |
-| Anthropic  | ANTHROPIC_TOOLS | ANTHROPIC_JSON |
+| Anthropic  | ANTHROPIC_TOOLS, ANTHROPIC_PARALLEL_TOOLS | ANTHROPIC_JSON |
 | Gemini     | GENAI_TOOLS | GENAI_STRUCTURED_OUTPUTS |
 | Vertex AI  | VERTEXAI_TOOLS | VERTEXAI_JSON |
 | Cohere     | COHERE_TOOLS | JSON, MD_JSON |
