@@ -2,20 +2,23 @@ import instructor
 import pytest
 from typing import Union, Literal
 from collections.abc import Iterable
+from pydantic import BaseModel
+from .util import models
 
 
-class Weather(BaseModel):
+class Weather(OpenAISchema):
     location: str
     units: Literal["imperial", "metric"]
 
 
-class GoogleSearch(BaseModel):
+class GoogleSearch(OpenAISchema):
     query: str
 
 
-def test_sync_parallel_tools_or():
+@pytest.mark.parametrize("model", models)
+def test_sync_parallel_tools_or(model):
     client = instructor.from_provider(
-        "anthropic/claude-3-7-sonnet-latest",
+        model,
         mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
     )
     resp = client.chat.completions.create(
@@ -40,9 +43,10 @@ def test_sync_parallel_tools_or():
 
 
 @pytest.mark.asyncio
-async def test_async_parallel_tools_or():
+@pytest.mark.parametrize("model", models)
+async def test_async_parallel_tools_or(model):
     client = instructor.from_provider(
-        model="anthropic/claude-3-7-sonnet-latest",
+        model,
         async_client=True,
         mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
     )
