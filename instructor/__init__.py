@@ -7,6 +7,8 @@ from .dsl import (
     Maybe,
     Partial,
     IterableModel,
+    llm_validator,
+    openai_moderation,
 )
 from .function_calls import OpenAISchema, openai_schema
 from .patch import apatch, patch

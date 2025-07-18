@@ -612,9 +612,6 @@ def fetch_anthropic_results_with_status(
     return "ended", extracted_results
 
 
-d
-
-
 def fetch_openai_results(batch_id: str, validate: bool) -> list[User]:
     """Fetch OpenAI batch results using BatchProcessor"""
     processor = BatchProcessor("openai/gpt-4o-mini", User)

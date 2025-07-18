@@ -1,7 +1,7 @@
 import unittest
 import sys
 from instructor.dsl.simple_type import is_simple_type
-from instructor.process_response import prepare_response_model
+from instructor.utils.core import prepare_response_model
 
 
 class TestFizzbuzzFix(unittest.TestCase):
