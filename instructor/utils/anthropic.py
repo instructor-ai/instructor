@@ -209,9 +209,29 @@ def reask_anthropic_json(
     return kwargs
 
 
+def handle_anthropic_message_conversion(new_kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Handle message conversion for Anthropic modes when response_model is None."""
+    messages = new_kwargs.get("messages", [])
+    
+    # Handle Anthropic style messages
+    new_kwargs["messages"] = [m for m in messages if m["role"] != "system"]
+    
+    if "system" not in new_kwargs:
+        system_messages = extract_system_messages(messages)
+        if system_messages:
+            new_kwargs["system"] = system_messages
+    
+    return new_kwargs
+
+
 def handle_anthropic_tools(
-    response_model: type[Any], new_kwargs: dict[str, Any]
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    if response_model is None:
+        # Just handle message conversion
+        new_kwargs = handle_anthropic_message_conversion(new_kwargs)
+        return None, new_kwargs
+    
     tool_descriptions = generate_anthropic_schema(response_model)
     new_kwargs["tools"] = [tool_descriptions]
     new_kwargs["tool_choice"] = {
@@ -234,11 +254,15 @@ def handle_anthropic_tools(
 
 
 def handle_anthropic_reasoning_tools(
-    response_model: type[Any], new_kwargs: dict[str, Any]
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
     # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
 
     response_model, new_kwargs = handle_anthropic_tools(response_model, new_kwargs)
+
+    if response_model is None:
+        # Just handle message conversion - already done by handle_anthropic_tools
+        return None, new_kwargs
 
     # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
     # Reasoning does not allow forced tool use
@@ -258,8 +282,8 @@ def handle_anthropic_reasoning_tools(
 
 
 def handle_anthropic_json(
-    response_model: type[Any], new_kwargs: dict[str, Any]
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
     import json
 
     system_messages = extract_system_messages(new_kwargs.get("messages", []))
@@ -272,6 +296,10 @@ def handle_anthropic_json(
     new_kwargs["messages"] = [
         m for m in new_kwargs.get("messages", []) if m["role"] != "system"
     ]
+
+    if response_model is None:
+        # Just handle message conversion - already done above
+        return None, new_kwargs
 
     json_schema_message = dedent(
         f"""

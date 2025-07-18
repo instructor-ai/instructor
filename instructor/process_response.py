@@ -260,63 +260,6 @@ def handle_response_model(
     # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 
-    if response_model is None:
-        if mode in {Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS}:
-            # This is cause cohere uses 'message' and 'chat_history' instead of 'messages'
-            return handle_cohere_modes(new_kwargs)
-        # Handle images without a response model
-        if "messages" in new_kwargs:
-            messages = convert_messages(
-                new_kwargs["messages"],
-                mode,
-                autodetect_images=autodetect_images,
-            )
-            if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOOLS}:
-                # Handle OpenAI style or Anthropic style messages
-                new_kwargs["messages"] = [m for m in messages if m["role"] != "system"]
-                if "system" not in new_kwargs:
-                    system_message = extract_system_messages(messages)
-                    if system_message:
-                        new_kwargs["system"] = system_message
-
-            elif mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
-                # Handle GenAI mode - convert messages to contents and extract system message
-                from instructor.utils.google import (
-                    convert_to_genai_messages,
-                    extract_genai_system_message,
-                )
-
-                # Convert OpenAI-style messages to GenAI-style contents
-                new_kwargs["contents"] = convert_to_genai_messages(messages)
-
-                # Extract multimodal content for GenAI
-                new_kwargs["contents"] = extract_genai_multimodal_content(
-                    new_kwargs["contents"], autodetect_images
-                )
-
-                # Handle system message for GenAI
-                if "system" not in new_kwargs:
-                    system_message = extract_genai_system_message(messages)
-                    if system_message:
-                        from google.genai import types
-
-                        new_kwargs["config"] = types.GenerateContentConfig(
-                            system_instruction=system_message
-                        )
-
-                # Remove messages since we converted to contents
-                new_kwargs.pop("messages", None)
-
-            else:
-                if mode in {
-                    Mode.RESPONSES_TOOLS,
-                    Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
-                } and new_kwargs.get("max_tokens"):
-                    new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
-
-                new_kwargs["messages"] = messages
-        return None, new_kwargs
-
     if mode in {Mode.PARALLEL_TOOLS}:
         return handle_parallel_tools(response_model, new_kwargs)
     elif mode in {Mode.VERTEXAI_PARALLEL_TOOLS}:
@@ -324,7 +267,9 @@ def handle_response_model(
     elif mode in {Mode.ANTHROPIC_PARALLEL_TOOLS}:
         return handle_anthropic_parallel_tools(response_model, new_kwargs)
 
-    response_model = prepare_response_model(response_model)
+    # Only prepare response_model if it's not None
+    if response_model is not None:
+        response_model = prepare_response_model(response_model)
 
     mode_handlers = {  # type: ignore
         Mode.FUNCTIONS: handle_functions,
@@ -366,7 +311,15 @@ def handle_response_model(
     else:
         raise ValueError(f"Invalid patch mode: {mode}")
 
+    # Handle message conversion for modes that don't already handle it
     if "messages" in new_kwargs:
+        # Handle special case for RESPONSES_TOOLS modes
+        if response_model is None and mode in {
+            Mode.RESPONSES_TOOLS,
+            Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+        } and new_kwargs.get("max_tokens"):
+            new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
+        
         new_kwargs["messages"] = convert_messages(
             new_kwargs["messages"],
             mode,
