@@ -601,7 +601,7 @@ def reask_genai_structured_outputs(
 
 
 # Response handlers
-def handle_genai_message_conversion(new_kwargs: dict[str, Any]) -> dict[str, Any]:
+def handle_genai_message_conversion(new_kwargs: dict[str, Any], autodetect_images: bool = False) -> dict[str, Any]:
     """Handle message conversion for GenAI modes when response_model is None."""
     from google.genai import types
     
@@ -609,6 +609,12 @@ def handle_genai_message_conversion(new_kwargs: dict[str, Any]) -> dict[str, Any
     
     # Convert OpenAI-style messages to GenAI-style contents
     new_kwargs["contents"] = convert_to_genai_messages(messages)
+    
+    # Extract multimodal content for GenAI
+    from instructor.multimodal import extract_genai_multimodal_content
+    new_kwargs["contents"] = extract_genai_multimodal_content(
+        new_kwargs["contents"], autodetect_images
+    )
     
     # Handle system message for GenAI
     if "system" not in new_kwargs:
@@ -691,9 +697,12 @@ def handle_genai_structured_outputs(
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     from google.genai import types
 
+    # Extract autodetect_images before processing
+    autodetect_images = new_kwargs.pop("autodetect_images", False)
+
     if response_model is None:
         # Just handle message conversion
-        new_kwargs = handle_genai_message_conversion(new_kwargs)
+        new_kwargs = handle_genai_message_conversion(new_kwargs, autodetect_images)
         return None, new_kwargs
 
     # Automatically wrap regular models with Partial when streaming is enabled
@@ -708,6 +717,12 @@ def handle_genai_structured_outputs(
         system_message = None
 
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
+    
+    # Extract multimodal content for GenAI
+    from instructor.multimodal import extract_genai_multimodal_content
+    new_kwargs["contents"] = extract_genai_multimodal_content(
+        new_kwargs["contents"], autodetect_images
+    )
 
     # We validate that the schema doesn't contain any Union fields
     map_to_gemini_function_schema(response_model.model_json_schema())
@@ -734,9 +749,12 @@ def handle_genai_tools(
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     from google.genai import types
 
+    # Extract autodetect_images before processing
+    autodetect_images = new_kwargs.pop("autodetect_images", False)
+
     if response_model is None:
         # Just handle message conversion
-        new_kwargs = handle_genai_message_conversion(new_kwargs)
+        new_kwargs = handle_genai_message_conversion(new_kwargs, autodetect_images)
         return None, new_kwargs
 
     # Automatically wrap regular models with Partial when streaming is enabled
@@ -772,6 +790,12 @@ def handle_genai_tools(
 
     new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
+    
+    # Extract multimodal content for GenAI
+    from instructor.multimodal import extract_genai_multimodal_content
+    new_kwargs["contents"] = extract_genai_multimodal_content(
+        new_kwargs["contents"], autodetect_images
+    )
 
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)

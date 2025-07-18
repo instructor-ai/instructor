@@ -20,7 +20,7 @@ from instructor.dsl.simple_type import (
 )
 from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
-from instructor.multimodal import convert_messages, extract_genai_multimodal_content
+from instructor.multimodal import convert_messages
 from instructor.utils.anthropic import (
     extract_system_messages,
     handle_anthropic_tools,
@@ -258,14 +258,31 @@ def handle_response_model(
 
     new_kwargs = kwargs.copy()
     # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
-    autodetect_images = new_kwargs.pop("autodetect_images", False)
+    # Don't pop autodetect_images yet - let handlers access it
+    autodetect_images = new_kwargs.get("autodetect_images", False)
 
-    if mode in {Mode.PARALLEL_TOOLS}:
-        return handle_parallel_tools(response_model, new_kwargs)
-    elif mode in {Mode.VERTEXAI_PARALLEL_TOOLS}:
-        return handle_vertexai_parallel_tools(response_model, new_kwargs)
-    elif mode in {Mode.ANTHROPIC_PARALLEL_TOOLS}:
-        return handle_anthropic_parallel_tools(response_model, new_kwargs)
+    PARALLEL_MODES = {
+        Mode.PARALLEL_TOOLS: handle_parallel_tools,
+        Mode.VERTEXAI_PARALLEL_TOOLS: handle_vertexai_parallel_tools,
+        Mode.ANTHROPIC_PARALLEL_TOOLS: handle_anthropic_parallel_tools,
+    }
+
+    if mode in PARALLEL_MODES:
+        response_model, new_kwargs = PARALLEL_MODES[mode](response_model, new_kwargs)
+        logger.debug(
+            f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
+            extra={
+                "mode": mode.value,
+                "response_model": (
+                    response_model.__name__
+                    if response_model is not None
+                    and hasattr(response_model, "__name__")
+                    else str(response_model)
+                ),
+                "new_kwargs": new_kwargs,
+            },
+        )
+        return response_model, new_kwargs
 
     # Only prepare response_model if it's not None
     if response_model is not None:
@@ -314,21 +331,21 @@ def handle_response_model(
     # Handle message conversion for modes that don't already handle it
     if "messages" in new_kwargs:
         # Handle special case for RESPONSES_TOOLS modes
-        if response_model is None and mode in {
-            Mode.RESPONSES_TOOLS,
-            Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
-        } and new_kwargs.get("max_tokens"):
+        if (
+            response_model is None
+            and mode
+            in {
+                Mode.RESPONSES_TOOLS,
+                Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+            }
+            and new_kwargs.get("max_tokens")
+        ):
             new_kwargs["max_output_tokens"] = new_kwargs.pop("max_tokens")
-        
+
         new_kwargs["messages"] = convert_messages(
             new_kwargs["messages"],
             mode,
             autodetect_images=autodetect_images,
-        )
-
-    if mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
-        new_kwargs["contents"] = extract_genai_multimodal_content(
-            new_kwargs["contents"], autodetect_images
         )
 
     logger.debug(
