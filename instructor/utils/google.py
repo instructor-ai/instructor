@@ -659,6 +659,11 @@ def handle_gemini_json(
         - Adds/modifies system message with JSON schema instructions
         - Sets response_mime_type to "application/json"
         - Updates kwargs for Gemini compatibility
+        
+    Kwargs modifications:
+    - Modifies: "messages" (adds/modifies system message with JSON schema) - only when response_model provided
+    - Adds/Modifies: "generation_config" (sets response_mime_type to "application/json") - only when response_model provided
+    - All modifications from update_gemini_kwargs (converts messages to Gemini format)
     """
     if "model" in new_kwargs:
         raise ConfigurationError(
@@ -697,6 +702,16 @@ def handle_gemini_json(
 def handle_gemini_tools(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Gemini tools mode.
+    
+    Kwargs modifications:
+    - When response_model is None: Only applies update_gemini_kwargs transformations
+    - When response_model is provided:
+      - Adds: "tools" (list with gemini schema)
+      - Adds: "tool_config" (function calling config with mode and allowed functions)
+      - All modifications from update_gemini_kwargs
+    """
     if "model" in new_kwargs:
         raise ConfigurationError(
             "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
@@ -722,6 +737,17 @@ def handle_gemini_tools(
 def handle_genai_structured_outputs(
     response_model: type[Any] | None, new_kwargs: dict[str, Any], autodetect_images: bool = False
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Google GenAI structured outputs mode.
+    
+    Kwargs modifications:
+    - When response_model is None: Applies handle_genai_message_conversion
+    - When response_model is provided:
+      - Removes: "messages", "response_model", "generation_config", "safety_settings"
+      - Adds: "contents" (GenAI-style messages)
+      - Adds: "config" (GenerateContentConfig with system_instruction, response_mime_type, response_schema)
+      - Handles multimodal content extraction
+    """
     from google.genai import types
 
     if response_model is None:
@@ -771,6 +797,17 @@ def handle_genai_structured_outputs(
 def handle_genai_tools(
     response_model: type[Any] | None, new_kwargs: dict[str, Any], autodetect_images: bool = False
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Google GenAI tools mode.
+    
+    Kwargs modifications:
+    - When response_model is None: Applies handle_genai_message_conversion
+    - When response_model is provided:
+      - Removes: "messages", "response_model", "generation_config", "safety_settings"
+      - Adds: "contents" (GenAI-style messages)
+      - Adds: "config" (GenerateContentConfig with tools and tool_config)
+      - Handles multimodal content extraction
+    """
     from google.genai import types
 
     if response_model is None:

@@ -210,7 +210,13 @@ def reask_anthropic_json(
 
 
 def handle_anthropic_message_conversion(new_kwargs: dict[str, Any]) -> dict[str, Any]:
-    """Handle message conversion for Anthropic modes when response_model is None."""
+    """
+    Handle message conversion for Anthropic modes when response_model is None.
+    
+    Kwargs modifications:
+    - Modifies: "messages" (removes system messages)
+    - Adds/Modifies: "system" (if system messages found in messages)
+    """
     messages = new_kwargs.get("messages", [])
     
     # Handle Anthropic style messages
@@ -241,6 +247,12 @@ def handle_anthropic_tools(
         - Sets up forced tool use with the specific tool name
         - Extracts and combines system messages
         - Filters system messages from the messages list
+        
+    Kwargs modifications:
+    - Modifies: "messages" (removes system messages)
+    - Adds/Modifies: "system" (combines existing with extracted system messages)
+    - Adds: "tools" (list with tool schema) - only when response_model provided
+    - Adds: "tool_choice" (forced tool use) - only when response_model provided
     """
     if response_model is None:
         # Just handle message conversion
@@ -287,6 +299,11 @@ def handle_anthropic_reasoning_tools(
         - Sets up tools as in regular tools mode
         - Changes tool_choice to "auto" to allow reasoning
         - Adds system message to guide tool usage
+        
+    Kwargs modifications:
+    - All modifications from handle_anthropic_tools, plus:
+    - Modifies: "tool_choice" (changes to {"type": "auto"}) - only when response_model provided
+    - Modifies: "system" (adds implicit forced tool message)
     """
     # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
 
@@ -332,6 +349,11 @@ def handle_anthropic_json(
         - Performs system message handling as above
         - Adds a system message with the JSON schema
         - Instructs Claude to return an instance matching the schema
+        
+    Kwargs modifications:
+    - Modifies: "messages" (removes system messages)
+    - Adds/Modifies: "system" (combines existing with extracted system messages)
+    - Modifies: "system" (adds JSON schema message) - only when response_model provided
     """
     import json
 

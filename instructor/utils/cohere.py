@@ -66,6 +66,14 @@ def handle_cohere_json_schema(
     When response_model is provided:
         - Converts messages from OpenAI format to Cohere format
         - Adds the model's JSON schema to response_format
+        
+    Kwargs modifications:
+    - Removes: "messages" (converted to message + chat_history)
+    - Adds: "message" (last message content)
+    - Adds: "chat_history" (all messages except last)
+    - Modifies: "model" (if "model_name" exists, renames to "model")
+    - Removes: "strict"
+    - Adds: "response_format" (with JSON schema) - only when response_model provided
     """
     if response_model is None:
         # Just handle message conversion
@@ -96,6 +104,10 @@ def handle_cohere_tools(
         - Prepends extraction instructions to the chat history
         - Includes the model's JSON schema in the instructions
         - The model is instructed to extract a valid object matching the schema
+        
+    Kwargs modifications:
+    - All modifications from handle_cohere_modes (message format conversion)
+    - Modifies: "chat_history" (prepends extraction instruction) - only when response_model provided
     """
     if response_model is None:
         # Just handle message conversion
