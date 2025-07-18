@@ -32,6 +32,7 @@ supported_providers = [
     "fireworks",
     "ollama",
     "xai",
+    "litellm",
 ]
 
 
@@ -934,6 +935,39 @@ def from_provider(
             raise ConfigurationError(
                 "The xai-sdk package is required to use the xAI provider. "
                 "Install it with `pip install xai-sdk`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
+            )
+            raise
+
+    elif provider == "litellm":
+        try:
+            from litellm import completion, acompletion
+            from instructor import from_litellm
+
+            completion_func = acompletion if async_client else completion
+            result = from_litellm(
+                completion_func,
+                mode=mode if mode else instructor.Mode.TOOLS,
+                **kwargs,
+            )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
+        except ImportError:
+            from instructor.exceptions import ConfigurationError
+
+            raise ConfigurationError(
+                "The litellm package is required to use the LiteLLM provider. "
+                "Install it with `pip install litellm`."
             ) from None
         except Exception as e:
             logger.error(
