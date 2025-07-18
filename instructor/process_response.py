@@ -22,7 +22,6 @@ from instructor.function_calls import OpenAISchema
 from instructor.mode import Mode
 from instructor.multimodal import convert_messages
 from instructor.utils.anthropic import (
-    extract_system_messages,
     handle_anthropic_tools,
     handle_anthropic_json,
     handle_anthropic_reasoning_tools,
@@ -50,7 +49,6 @@ from instructor.utils.openai import (
     handle_openrouter_structured_outputs,
 )
 from instructor.utils.cohere import (
-    handle_cohere_modes,
     handle_cohere_json_schema,
     handle_cohere_tools,
 )

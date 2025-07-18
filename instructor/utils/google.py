@@ -602,7 +602,22 @@ def reask_genai_structured_outputs(
 
 # Response handlers
 def handle_genai_message_conversion(new_kwargs: dict[str, Any], autodetect_images: bool = False) -> dict[str, Any]:
-    """Handle message conversion for GenAI modes when response_model is None."""
+    """
+    Handle message conversion for GenAI modes when response_model is None.
+    
+    This function centralizes the message conversion logic for Google GenAI:
+    - Converts OpenAI-style messages to GenAI-style contents
+    - Extracts and processes multimodal content (images, PDFs, etc.)
+    - Handles system message extraction and configuration
+    - Removes the original 'messages' key after conversion
+    
+    Args:
+        new_kwargs: The kwargs dictionary containing messages
+        autodetect_images: Whether to automatically detect and process image content
+        
+    Returns:
+        Updated kwargs with GenAI-compatible format
+    """
     from google.genai import types
     
     messages = new_kwargs.get("messages", [])
@@ -633,6 +648,18 @@ def handle_genai_message_conversion(new_kwargs: dict[str, Any], autodetect_image
 def handle_gemini_json(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Gemini JSON mode.
+    
+    When response_model is None:
+        - Updates kwargs for Gemini compatibility (converts messages format)
+        - No JSON schema or response format is configured
+        
+    When response_model is provided:
+        - Adds/modifies system message with JSON schema instructions
+        - Sets response_mime_type to "application/json"
+        - Updates kwargs for Gemini compatibility
+    """
     if "model" in new_kwargs:
         raise ConfigurationError(
             "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"

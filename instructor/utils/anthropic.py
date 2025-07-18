@@ -227,6 +227,21 @@ def handle_anthropic_message_conversion(new_kwargs: dict[str, Any]) -> dict[str,
 def handle_anthropic_tools(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Anthropic tools mode.
+    
+    When response_model is None:
+        - Extracts system messages from the messages list and moves them to the 'system' parameter
+        - Filters out system messages from the messages list
+        - No tools are configured
+        - Allows for unstructured responses from Claude
+        
+    When response_model is provided:
+        - Generates Anthropic tool schema from the response model
+        - Sets up forced tool use with the specific tool name
+        - Extracts and combines system messages
+        - Filters system messages from the messages list
+    """
     if response_model is None:
         # Just handle message conversion
         new_kwargs = handle_anthropic_message_conversion(new_kwargs)
@@ -256,6 +271,23 @@ def handle_anthropic_tools(
 def handle_anthropic_reasoning_tools(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Anthropic reasoning tools mode.
+    
+    This mode is similar to regular tools mode but with reasoning enabled:
+    - Uses "auto" tool choice instead of forced tool use
+    - Adds a system message encouraging tool use only when relevant
+    - Allows Claude to reason about whether to use tools
+    
+    When response_model is None:
+        - Performs the same message conversion as handle_anthropic_tools
+        - No tools are configured
+        
+    When response_model is provided:
+        - Sets up tools as in regular tools mode
+        - Changes tool_choice to "auto" to allow reasoning
+        - Adds system message to guide tool usage
+    """
     # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
 
     response_model, new_kwargs = handle_anthropic_tools(response_model, new_kwargs)
@@ -284,6 +316,23 @@ def handle_anthropic_reasoning_tools(
 def handle_anthropic_json(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Anthropic JSON mode.
+    
+    This mode instructs Claude to return JSON responses:
+    - System messages are extracted and combined
+    - A JSON schema message is added to guide the response format
+    
+    When response_model is None:
+        - Extracts and moves system messages to the 'system' parameter
+        - Filters system messages from the messages list
+        - No JSON schema is added
+        
+    When response_model is provided:
+        - Performs system message handling as above
+        - Adds a system message with the JSON schema
+        - Instructs Claude to return an instance matching the schema
+    """
     import json
 
     system_messages = extract_system_messages(new_kwargs.get("messages", []))

@@ -83,6 +83,20 @@ def handle_cohere_json_schema(
 def handle_cohere_tools(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Cohere tools mode.
+    
+    When response_model is None:
+        - Converts messages from OpenAI format to Cohere format (message + chat_history)
+        - No tools or schema instructions are added
+        - Allows for unstructured responses from Cohere
+        
+    When response_model is provided:
+        - Converts messages from OpenAI format to Cohere format
+        - Prepends extraction instructions to the chat history
+        - Includes the model's JSON schema in the instructions
+        - The model is instructed to extract a valid object matching the schema
+    """
     if response_model is None:
         # Just handle message conversion
         return handle_cohere_modes(new_kwargs)
