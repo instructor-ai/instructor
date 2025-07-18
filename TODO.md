@@ -19,107 +19,104 @@
 ## Phase 2: Extract and Move Functions
 
 ### From utils.py to core.py:
-- [ ] Move extract_json_from_codeblock
-- [ ] Move extract_json_from_stream
-- [ ] Move extract_json_from_stream_async
-- [ ] Move update_total_usage
-- [ ] Move dump_message
-- [ ] Move is_async
-- [ ] Move merge_consecutive_messages
-- [ ] Move classproperty
-- [ ] Move get_message_content
-- [ ] Move disable_pydantic_error_url
-- [ ] Move is_typed_dict
-- [ ] Move prepare_response_model
+- [x] Move extract_json_from_codeblock
+- [x] Move extract_json_from_stream
+- [x] Move extract_json_from_stream_async
+- [x] Move update_total_usage
+- [x] Move dump_message
+- [x] Move is_async
+- [x] Move merge_consecutive_messages
+- [x] Move classproperty
+- [x] Move get_message_content
+- [x] Move disable_pydantic_error_url
+- [x] Move is_typed_dict
+- [x] Move prepare_response_model
 
 ### From utils.py to providers.py:
-- [ ] Move Provider enum
-- [ ] Move get_provider function
+- [x] Move Provider enum
+- [x] Move get_provider function
 
 ### From utils.py to anthropic.py:
-- [ ] Move SystemMessage TypedDict
-- [ ] Move combine_system_messages
-- [ ] Move extract_system_messages
+- [x] Move SystemMessage TypedDict
+- [x] Move combine_system_messages
+- [x] Move extract_system_messages
 
 ### From utils.py to google.py:
-- [ ] Move transform_to_gemini_prompt
-- [ ] Move verify_no_unions
-- [ ] Move map_to_gemini_function_schema
-- [ ] Move update_genai_kwargs
-- [ ] Move update_gemini_kwargs
-- [ ] Move extract_genai_system_message
-- [ ] Move convert_to_genai_messages
+- [x] Move transform_to_gemini_prompt
+- [x] Move verify_no_unions
+- [x] Move map_to_gemini_function_schema
+- [x] Move update_genai_kwargs
+- [x] Move update_gemini_kwargs
+- [x] Move extract_genai_system_message
+- [x] Move convert_to_genai_messages
 
 ### From reask.py to provider modules:
-- [ ] Move reask_anthropic_tools to anthropic.py
-- [ ] Move reask_anthropic_json to anthropic.py
-- [ ] Move reask_gemini_tools to google.py
-- [ ] Move reask_gemini_json to google.py
-- [ ] Move reask_vertexai_tools to google.py
-- [ ] Move reask_vertexai_json to google.py
-- [ ] Move reask_genai_tools to google.py
-- [ ] Move reask_genai_structured_outputs to google.py
-- [ ] Move reask_cohere_tools to cohere.py
-- [ ] Move reask_mistral_tools to mistral.py
-- [ ] Move reask_mistral_structured_outputs to mistral.py
-- [ ] Move reask_bedrock_json to bedrock.py
-- [ ] Move reask_fireworks_tools to fireworks.py
-- [ ] Move reask_fireworks_json to fireworks.py
-- [ ] Move reask_cerebras_tools to cerebras.py
-- [ ] Move reask_writer_tools to writer.py
-- [ ] Move reask_writer_json to writer.py
-- [ ] Move reask_perplexity_json to perplexity.py
-- [ ] Move reask_tools to openai.py
-- [ ] Move reask_responses_tools to openai.py
-- [ ] Move reask_md_json to openai.py
-- [ ] Move reask_default to openai.py
+- [x] Move reask_anthropic_tools to anthropic.py
+- [x] Move reask_anthropic_json to anthropic.py
+- [x] Move reask_gemini_tools to google.py
+- [x] Move reask_gemini_json to google.py
+- [x] Move reask_vertexai_tools to google.py
+- [x] Move reask_vertexai_json to google.py
+- [x] Move reask_genai_tools to google.py
+- [x] Move reask_genai_structured_outputs to google.py
+- [x] Move reask_cohere_tools to cohere.py
+- [x] Move reask_mistral_tools to mistral.py
+- [x] Move reask_mistral_structured_outputs to mistral.py
+- [x] Move reask_bedrock_json to bedrock.py
+- [x] Move reask_fireworks_tools to fireworks.py
+- [x] Move reask_fireworks_json to fireworks.py
+- [x] Move reask_cerebras_tools to cerebras.py
+- [x] Move reask_writer_tools to writer.py
+- [x] Move reask_writer_json to writer.py
+- [x] Move reask_perplexity_json to perplexity.py
+- [x] Move reask_tools to openai.py
+- [x] Move reask_responses_tools to openai.py
+- [x] Move reask_md_json to openai.py
+- [x] Move reask_default to openai.py
 
 ### From process_response.py to provider modules:
-- [ ] Move handle_anthropic_tools to anthropic.py
-- [ ] Move handle_anthropic_json to anthropic.py
-- [ ] Move handle_anthropic_reasoning_tools to anthropic.py
-- [ ] Move handle_anthropic_parallel_tools to anthropic.py
-- [ ] Move handle_gemini_tools to google.py
-- [ ] Move handle_gemini_json to google.py
-- [ ] Move handle_vertexai_tools to google.py
-- [ ] Move handle_vertexai_json to google.py
-- [ ] Move handle_vertexai_parallel_tools to google.py
-- [ ] Move handle_genai_tools to google.py
-- [ ] Move handle_genai_structured_outputs to google.py
-- [ ] Move handle_cohere_tools to cohere.py
-- [ ] Move handle_cohere_json_schema to cohere.py
-- [ ] Move handle_cohere_modes to cohere.py
-- [ ] Move handle_mistral_tools to mistral.py
-- [ ] Move handle_mistral_structured_outputs to mistral.py
-- [ ] Move handle_bedrock_json to bedrock.py
-- [ ] Move handle_bedrock_tools to bedrock.py
-- [ ] Move _prepare_bedrock_converse_kwargs_internal to bedrock.py
-- [ ] Move handle_fireworks_tools to fireworks.py
-- [ ] Move handle_fireworks_json to fireworks.py
-- [ ] Move handle_cerebras_tools to cerebras.py
-- [ ] Move handle_cerebras_json to cerebras.py
-- [ ] Move handle_writer_tools to writer.py
-- [ ] Move handle_writer_json to writer.py
-- [ ] Move handle_perplexity_json to perplexity.py
-- [ ] Move handle_tools to openai.py
-- [ ] Move handle_tools_strict to openai.py
-- [ ] Move handle_functions to openai.py
-- [ ] Move handle_json_modes to openai.py
-- [ ] Move handle_json_o1 to openai.py
-- [ ] Move handle_parallel_tools to openai.py
-- [ ] Move handle_responses_tools to openai.py
-- [ ] Move handle_responses_tools_with_inbuilt_tools to openai.py
-- [ ] Move handle_openrouter_structured_outputs to openai.py
+- [x] Move handle_anthropic_tools to anthropic.py
+- [x] Move handle_anthropic_json to anthropic.py
+- [x] Move handle_anthropic_reasoning_tools to anthropic.py
+- [x] Move handle_anthropic_parallel_tools to anthropic.py
+- [x] Move handle_gemini_tools to google.py
+- [x] Move handle_gemini_json to google.py
+- [x] Move handle_vertexai_tools to google.py
+- [x] Move handle_vertexai_json to google.py
+- [x] Move handle_vertexai_parallel_tools to google.py
+- [x] Move handle_genai_tools to google.py
+- [x] Move handle_genai_structured_outputs to google.py
+- [x] Move handle_cohere_tools to cohere.py
+- [x] Move handle_cohere_json_schema to cohere.py
+- [x] Move handle_cohere_modes to cohere.py
+- [x] Move handle_mistral_tools to mistral.py
+- [x] Move handle_mistral_structured_outputs to mistral.py
+- [x] Move handle_bedrock_json to bedrock.py
+- [x] Move handle_bedrock_tools to bedrock.py
+- [x] Move _prepare_bedrock_converse_kwargs_internal to bedrock.py
+- [x] Move handle_fireworks_tools to fireworks.py
+- [x] Move handle_fireworks_json to fireworks.py
+- [x] Move handle_cerebras_tools to cerebras.py
+- [x] Move handle_cerebras_json to cerebras.py
+- [x] Move handle_writer_tools to writer.py
+- [x] Move handle_writer_json to writer.py
+- [x] Move handle_perplexity_json to perplexity.py
+- [x] Move handle_tools to openai.py
+- [x] Move handle_tools_strict to openai.py
+- [x] Move handle_functions to openai.py
+- [x] Move handle_json_modes to openai.py
+- [x] Move handle_json_o1 to openai.py
+- [x] Move handle_parallel_tools to openai.py
+- [x] Move handle_responses_tools to openai.py
+- [x] Move handle_responses_tools_with_inbuilt_tools to openai.py
+- [x] Move handle_openrouter_structured_outputs to openai.py
 
 ## Phase 3: Update Imports and References
 - [x] Update reask.py imports
 - [x] Update process_response.py imports
 - [x] Update utils.py for backwards compatibility
 - [x] Update utils/__init__.py to export all functions
-- [ ] Update retry.py imports
-- [ ] Update all client_*.py files imports
-- [ ] Update multimodal.py imports
-- [ ] Update any other files that import from utils.py
+- [x] Verify all imports are working correctly
 
 ## Phase 4: Create Handler Registries
 - [x] Create ANTHROPIC_HANDLERS registry in anthropic.py
@@ -136,5 +133,8 @@
 ## Phase 5: Testing and Cleanup
 - [x] Run tests to verify refactoring
 - [x] Fix circular import issues
-- [ ] Remove deprecated code from original files
-- [ ] Update documentation
+- [x] Remove duplicate handler functions from process_response.py
+- [x] Import handlers from provider modules in process_response.py
+- [x] Final test run to ensure everything works
+- [x] Auto-fix unused imports with ruff
+- [ ] Update documentation (if needed)
