@@ -21,6 +21,7 @@ from .client import (
 )
 from .auto_client import from_provider
 from .batch import BatchProcessor, BatchRequest, BatchJob
+from .distil import FinetuneFormat, Instructions
 
 __all__ = [
     "Instructor",
@@ -45,6 +46,8 @@ __all__ = [
     "BatchProcessor",
     "BatchRequest",
     "BatchJob",
+    "llm_validator",
+    "openai_moderation",
 ]
 
 

@@ -83,6 +83,7 @@ T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
+
 async def process_response_async(
     response: ChatCompletion,
     *,
@@ -150,6 +151,7 @@ async def process_response_async(
 
     model._raw_response = response
     return model
+
 
 def process_response(
     response: T_Model,
@@ -226,12 +228,14 @@ def process_response(
 
     return model
 
+
 def is_typed_dict(cls) -> bool:
     return (
         isinstance(cls, type)
         and issubclass(cls, dict)
         and hasattr(cls, "__annotations__")
     )
+
 
 def handle_response_model(
     response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any

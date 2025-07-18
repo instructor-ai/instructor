@@ -295,7 +295,6 @@ def handle_anthropic_parallel_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[Any, dict[str, Any]]:
     from instructor.dsl.parallel import (
-        AnthropicParallelBase,
         AnthropicParallelModel,
         handle_anthropic_parallel_model,
     )

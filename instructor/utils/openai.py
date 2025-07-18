@@ -8,16 +8,13 @@ from __future__ import annotations
 
 import json
 from textwrap import dedent
-from typing import Any, Iterable, get_args
+from typing import Any
 
 from openai import pydantic_function_tool
-from pydantic import BaseModel, create_model
 
-from instructor.dsl.iterable import IterableModel
-from instructor.dsl.parallel import ParallelBase, ParallelModel, handle_parallel_model
+from instructor.dsl.parallel import ParallelModel, handle_parallel_model
 from instructor.exceptions import ConfigurationError
 from instructor.mode import Mode
-from instructor.multimodal import convert_messages
 from instructor.utils.core import dump_message, merge_consecutive_messages
 
 

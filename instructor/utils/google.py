@@ -741,10 +741,10 @@ def handle_genai_tools(
 def handle_vertexai_parallel_tools(
     response_model: type[Any], new_kwargs: dict[str, Any]
 ) -> tuple[Any, dict[str, Any]]:
-    from typing import Iterable, get_args
+    from typing import get_args
 
     from instructor.client_vertexai import vertexai_process_response
-    from instructor.dsl.parallel import VertexAIParallelBase, VertexAIParallelModel
+    from instructor.dsl.parallel import VertexAIParallelModel
 
     if new_kwargs.get("stream", False):
         raise ConfigurationError(
