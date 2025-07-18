@@ -1,0 +1,95 @@
+"""Mistral-specific utilities.
+
+This module contains utilities specific to the Mistral provider,
+including reask functions, response handlers, and message formatting.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from instructor.mode import Mode
+from instructor.utils.core import dump_message
+
+
+def reask_mistral_structured_outputs(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [
+        {
+            "role": "assistant",
+            "content": response.choices[0].message.content,
+        }
+    ]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": (
+                f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+            ),
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def reask_mistral_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+    for tool_call in response.choices[0].message.tool_calls:
+        reask_msgs.append(
+            {
+                "role": "tool",  # type: ignore
+                "tool_call_id": tool_call.id,
+                "name": tool_call.function.name,
+                "content": (
+                    f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+                ),
+            }
+        )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def handle_mistral_tools(
+    response_model: type[Any], new_kwargs: dict[str, Any]
+) -> tuple[type[Any], dict[str, Any]]:
+    new_kwargs["tools"] = [
+        {
+            "type": "function",
+            "function": response_model.openai_schema,
+        }
+    ]
+    new_kwargs["tool_choice"] = "any"
+    return response_model, new_kwargs
+
+
+def handle_mistral_structured_outputs(
+    response_model: type[Any], new_kwargs: dict[str, Any]
+) -> tuple[type[Any], dict[str, Any]]:
+    from mistralai.extra import response_format_from_pydantic_model
+
+    new_kwargs["response_format"] = response_format_from_pydantic_model(response_model)
+    new_kwargs.pop("tools", None)
+    new_kwargs.pop("response_model", None)
+    return response_model, new_kwargs
+
+
+# Handler registry for Mistral
+MISTRAL_HANDLERS = {
+    Mode.MISTRAL_TOOLS: {
+        "reask": reask_mistral_tools,
+        "response": handle_mistral_tools,
+    },
+    Mode.MISTRAL_STRUCTURED_OUTPUTS: {
+        "reask": reask_mistral_structured_outputs,
+        "response": handle_mistral_structured_outputs,
+    },
+}

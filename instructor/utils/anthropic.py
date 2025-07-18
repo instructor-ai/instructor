@@ -1,0 +1,344 @@
+"""Anthropic-specific utilities.
+
+This module contains utilities specific to the Anthropic provider,
+including reask functions, response handlers, and message formatting.
+"""
+
+from __future__ import annotations
+
+from textwrap import dedent
+from typing import Any, TypedDict, Union
+
+from pydantic import ValidationError
+
+from instructor.mode import Mode
+
+
+class SystemMessage(TypedDict, total=False):
+    type: str
+    text: str
+    cache_control: dict[str, str]
+
+
+def combine_system_messages(
+    existing_system: Union[str, list[SystemMessage], None],  # noqa: UP007
+    new_system: Union[str, list[SystemMessage]],  # noqa: UP007
+) -> Union[str, list[SystemMessage]]:  # noqa: UP007
+    """
+    Combine existing and new system messages.
+
+    This optimized version uses a more direct approach with fewer branches.
+
+    Args:
+        existing_system: Existing system message(s) or None
+        new_system: New system message(s) to add
+
+    Returns:
+        Combined system message(s)
+    """
+    # Fast path for None existing_system (avoid unnecessary operations)
+    if existing_system is None:
+        return new_system
+
+    # Validate input types
+    if not isinstance(existing_system, (str, list)) or not isinstance(
+        new_system, (str, list)
+    ):
+        raise ValueError(
+            f"System messages must be strings or lists, got {type(existing_system)} and {type(new_system)}"
+        )
+
+    # Use direct type comparison instead of isinstance for better performance
+    if isinstance(existing_system, str) and isinstance(new_system, str):
+        # Both are strings, join with newlines
+        # Avoid creating intermediate strings by joining only once
+        return f"{existing_system}\n\n{new_system}"
+    elif isinstance(existing_system, list) and isinstance(new_system, list):
+        # Both are lists, use list extension in place to avoid creating intermediate lists
+        # First create a new list to avoid modifying the original
+        result = list(existing_system)
+        result.extend(new_system)
+        return result
+    elif isinstance(existing_system, str) and isinstance(new_system, list):
+        # existing is string, new is list
+        # Create a pre-sized list to avoid resizing
+        result = [SystemMessage(type="text", text=existing_system)]
+        result.extend(new_system)
+        return result
+    elif isinstance(existing_system, list) and isinstance(new_system, str):
+        # existing is list, new is string
+        # Create message once and add to existing
+        new_message = SystemMessage(type="text", text=new_system)
+        result = list(existing_system)
+        result.append(new_message)
+        return result
+
+    # This should never happen due to validation above
+    return existing_system
+
+
+def extract_system_messages(messages: list[dict[str, Any]]) -> list[SystemMessage]:
+    """
+    Extract system messages from a list of messages.
+
+    This optimized version pre-allocates the result list and
+    reduces function call overhead.
+
+    Args:
+        messages: List of messages to extract system messages from
+
+    Returns:
+        List of system messages
+    """
+    # Fast path for empty messages
+    if not messages:
+        return []
+
+    # First count system messages to pre-allocate result list
+    system_count = sum(1 for m in messages if m.get("role") == "system")
+
+    # If no system messages, return empty list
+    if system_count == 0:
+        return []
+
+    # Helper function to convert a message content to SystemMessage
+    def convert_message(content: Any) -> SystemMessage:
+        if isinstance(content, str):
+            return SystemMessage(type="text", text=content)
+        elif isinstance(content, dict):
+            return SystemMessage(**content)
+        else:
+            raise ValueError(f"Unsupported content type: {type(content)}")
+
+    # Process system messages
+    result: list[SystemMessage] = []
+
+    for message in messages:
+        if message.get("role") == "system":
+            content = message.get("content")
+
+            # Skip empty content
+            if not content:
+                continue
+
+            # Handle list or single content
+            if isinstance(content, list):
+                # Process each item in the list
+                for item in content:
+                    if item:  # Skip empty items
+                        result.append(convert_message(item))
+            else:
+                # Process single content
+                result.append(convert_message(content))
+
+    return result
+
+
+def reask_anthropic_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    from anthropic.types import Message
+
+    assert isinstance(response, Message), "Response must be a Anthropic Message"
+
+    assistant_content = []
+    tool_use_id = None
+    for content in response.content:
+        assistant_content.append(content.model_dump())  # type: ignore
+        if (
+            content.type == "tool_use"
+            and isinstance(exception, ValidationError)
+            and content.name == exception.title
+        ):
+            tool_use_id = content.id
+
+    reask_msgs = [{"role": "assistant", "content": assistant_content}]  # type: ignore
+    if tool_use_id is not None:
+        reask_msgs.append(  # type: ignore
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": tool_use_id,
+                        "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+                        "is_error": True,
+                    }
+                ],
+            }
+        )
+    else:
+        reask_msgs.append(  # type: ignore
+            {
+                "role": "user",
+                "content": f"Validation Error due to no tool invocation:\n{exception}\nRecall the function correctly, fix the errors",
+            }
+        )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def reask_anthropic_json(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    kwargs = kwargs.copy()
+    from anthropic.types import Message
+
+    assert isinstance(response, Message), "Response must be a Anthropic Message"
+
+    # Filter for text blocks to handle ThinkingBlock and other non-text content
+    text_blocks = [c for c in response.content if c.type == "text"]
+    if not text_blocks:
+        # Fallback if no text blocks found
+        text_content = "No text content found in response"
+    else:
+        # Use the last text block, similar to function_calls.py:396-397
+        text_content = text_blocks[-1].text
+
+    reask_msg = {
+        "role": "user",
+        "content": f"""Validation Errors found:\n{exception}\nRecall the function correctly, fix the errors found in the following attempt:\n{text_content}""",
+    }
+    kwargs["messages"].append(reask_msg)
+    return kwargs
+
+
+def handle_anthropic_tools(
+    response_model: type[Any], new_kwargs: dict[str, Any]
+) -> tuple[type[Any], dict[str, Any]]:
+    tool_descriptions = response_model.anthropic_schema
+    new_kwargs["tools"] = [tool_descriptions]
+    new_kwargs["tool_choice"] = {
+        "type": "tool",
+        "name": response_model.__name__,
+    }
+
+    system_messages = extract_system_messages(new_kwargs.get("messages", []))
+
+    if system_messages:
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
+        )
+
+    new_kwargs["messages"] = [
+        m for m in new_kwargs.get("messages", []) if m["role"] != "system"
+    ]
+
+    return response_model, new_kwargs
+
+
+def handle_anthropic_reasoning_tools(
+    response_model: type[Any], new_kwargs: dict[str, Any]
+) -> tuple[type[Any], dict[str, Any]]:
+    # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
+
+    response_model, new_kwargs = handle_anthropic_tools(response_model, new_kwargs)
+
+    # https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#forcing-tool-use
+    # Reasoning does not allow forced tool use
+    new_kwargs["tool_choice"] = {"type": "auto"}
+
+    # But add a message recommending only to use the tools if they are relevant
+    implict_forced_tool_message = dedent(
+        f"""
+        Return only the tool call and no additional text.
+        """
+    )
+    new_kwargs["system"] = combine_system_messages(
+        new_kwargs.get("system"),
+        [{"type": "text", "text": implict_forced_tool_message}],
+    )
+    return response_model, new_kwargs
+
+
+def handle_anthropic_json(
+    response_model: type[Any], new_kwargs: dict[str, Any]
+) -> tuple[type[Any], dict[str, Any]]:
+    import json
+
+    system_messages = extract_system_messages(new_kwargs.get("messages", []))
+
+    if system_messages:
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
+        )
+
+    new_kwargs["messages"] = [
+        m for m in new_kwargs.get("messages", []) if m["role"] != "system"
+    ]
+
+    json_schema_message = dedent(
+        f"""
+        As a genius expert, your task is to understand the content and provide
+        the parsed objects in json that match the following json_schema:\n
+
+        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+        Make sure to return an instance of the JSON, not the schema itself
+        """
+    )
+
+    new_kwargs["system"] = combine_system_messages(
+        new_kwargs.get("system"),
+        [{"type": "text", "text": json_schema_message}],
+    )
+
+    return response_model, new_kwargs
+
+
+def handle_anthropic_parallel_tools(
+    response_model: type[Any], new_kwargs: dict[str, Any]
+) -> tuple[Any, dict[str, Any]]:
+    from instructor.dsl.parallel import (
+        AnthropicParallelBase,
+        AnthropicParallelModel,
+        handle_anthropic_parallel_model,
+    )
+    from instructor.exceptions import ConfigurationError
+
+    if new_kwargs.get("stream", False):
+        raise ConfigurationError(
+            "stream=True is not supported when using ANTHROPIC_PARALLEL_TOOLS mode"
+        )
+
+    new_kwargs["tools"] = handle_anthropic_parallel_model(response_model)
+    new_kwargs["tool_choice"] = {"type": "auto"}
+
+    system_messages = extract_system_messages(new_kwargs.get("messages", []))
+
+    if system_messages:
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
+        )
+
+    new_kwargs["messages"] = [
+        m for m in new_kwargs.get("messages", []) if m["role"] != "system"
+    ]
+
+    return AnthropicParallelModel(typehint=response_model), new_kwargs
+
+
+# Handler registry for Anthropic
+ANTHROPIC_HANDLERS = {
+    Mode.ANTHROPIC_TOOLS: {
+        "reask": reask_anthropic_tools,
+        "response": handle_anthropic_tools,
+    },
+    Mode.ANTHROPIC_JSON: {
+        "reask": reask_anthropic_json,
+        "response": handle_anthropic_json,
+    },
+    Mode.ANTHROPIC_REASONING_TOOLS: {
+        "reask": reask_anthropic_tools,
+        "response": handle_anthropic_reasoning_tools,
+    },
+    Mode.ANTHROPIC_PARALLEL_TOOLS: {
+        "reask": reask_anthropic_tools,
+        "response": handle_anthropic_parallel_tools,
+    },
+}

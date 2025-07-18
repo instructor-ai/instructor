@@ -1,7 +1,6 @@
-"""Backwards compatibility module for utils.
+"""Utility modules for instructor library.
 
-This module re-exports functions from the new utils submodules
-to maintain backward compatibility with existing code.
+This package contains utility functions organized by provider and functionality.
 """
 
 # Re-export everything from core

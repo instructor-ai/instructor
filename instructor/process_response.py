@@ -34,13 +34,15 @@ from instructor.dsl.simple_type import (
 from instructor.function_calls import OpenAISchema, openai_schema
 from instructor.mode import Mode
 from instructor.multimodal import convert_messages, extract_genai_multimodal_content
-from instructor.utils import (
+from instructor.utils.anthropic import (
     combine_system_messages,
+    extract_system_messages,
+)
+from instructor.utils.core import merge_consecutive_messages
+from instructor.utils.google import (
     convert_to_genai_messages,
     extract_genai_system_message,
-    extract_system_messages,
     map_to_gemini_function_schema,
-    merge_consecutive_messages,
     update_genai_kwargs,
 )
 
@@ -601,7 +603,7 @@ def handle_gemini_json(
             "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
         )
 
-    from .utils import update_gemini_kwargs
+    from instructor.utils.google import update_gemini_kwargs
 
     message = dedent(
         f"""
@@ -637,7 +639,7 @@ def handle_gemini_tools(
             "Gemini `model` must be set while patching the client, not passed as a parameter to the create method"
         )
 
-    from .utils import update_gemini_kwargs
+    from instructor.utils.google import update_gemini_kwargs
 
     new_kwargs["tools"] = [response_model.gemini_schema]
     new_kwargs["tool_config"] = {
@@ -1176,7 +1178,7 @@ def handle_response_model(
 
             elif mode in {Mode.GENAI_TOOLS, Mode.GENAI_STRUCTURED_OUTPUTS}:
                 # Handle GenAI mode - convert messages to contents and extract system message
-                from instructor.utils import (
+                from instructor.utils.google import (
                     convert_to_genai_messages,
                     extract_genai_system_message,
                 )
