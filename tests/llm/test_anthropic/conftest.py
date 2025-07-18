@@ -1,6 +1,8 @@
 # conftest.py
 import os
 import pytest
+import importlib
+
 
 if not os.getenv("ANTHROPIC_API_KEY"):
     pytest.skip(
@@ -8,7 +10,7 @@ if not os.getenv("ANTHROPIC_API_KEY"):
         allow_module_level=True,
     )
 
-try:
-    from anthropic import AsyncAnthropic, Anthropic
-except ImportError:  # pragma: no cover - optional dependency
+if (
+    importlib.util.find_spec("anthropic") is None
+):  # pragma: no cover - optional dependency
     pytest.skip("anthropic package is not installed", allow_module_level=True)
