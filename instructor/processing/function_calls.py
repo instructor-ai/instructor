@@ -355,7 +355,9 @@ class OpenAISchema(BaseModel):
             # read: https://docs.anthropic.com/en/docs/build-with-claude/tool-use/web-search-tool#response
             text_blocks = [c for c in completion.content if c.type == "text"]
             last_block = text_blocks[-1]
-            # strip (\u0000-\u001F) control characters
+            # Strip raw control characters (0x00-0x1F) that would cause json.loads to fail
+            # Note: This preserves escaped sequences like \n in JSON strings, which are handled
+            # correctly by the JSON parser. Only raw, unescaped control bytes are removed.
             text = re.sub(r"[\u0000-\u001F]", "", last_block.text)
 
         extra_text = extract_json_from_codeblock(text)
