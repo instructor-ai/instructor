@@ -1,5 +1,4 @@
-"""Response processing and transformation for multiple LLM providers.
-
+"""
 This module serves as the central dispatcher for processing responses from various LLM providers
 (OpenAI, Anthropic, Google, Cohere, etc.) and transforming them into structured Pydantic models.
 It handles different response formats, streaming responses, validation, and error recovery.

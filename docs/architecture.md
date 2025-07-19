@@ -11,53 +11,15 @@ This document explains how Instructor works internally and how it integrates wit
 
 Instructor is a Python library that provides a unified interface for extracting structured data from Large Language Models (LLMs). It supports 40+ different modes across 15+ providers, handling the complexity of different APIs while providing a consistent developer experience.
 
-## Core Architecture
+## Core Flow
 
 ```mermaid
-graph TD
-    User[User Code] --> PydanticModel[Pydantic Model]
-    User --> ClientInit[Initialize Provider Client]
-    ClientInit --> InstructorPatch[Instructor Patch]
-    InstructorPatch --> PatchedClient[Patched LLM Client]
+graph LR
+    A[Pydantic Model] --> B[Instructor]
+    B --> C[LLM API]
+    C --> D[Structured Data]
     
-    PydanticModel --> HandleResponseModel[handle_response_model]
-    HandleResponseModel --> ModeHandler{Mode Handler}
-    
-    ModeHandler --> ToolHandler[Tool/Function Handler]
-    ModeHandler --> JSONHandler[JSON Mode Handler]
-    ModeHandler --> ParallelHandler[Parallel Handler]
-    
-    ToolHandler --> SchemaGen[Schema Generation]
-    JSONHandler --> SystemPrompt[System Prompt]
-    ParallelHandler --> ModelWrapper[Model Wrapper]
-    
-    PatchedClient --> APIRequest[API Request]
-    SchemaGen --> APIRequest
-    SystemPrompt --> APIRequest
-    ModelWrapper --> APIRequest
-    
-    APIRequest --> LLMProvider[LLM Provider API]
-    LLMProvider --> RawResponse[Raw Response]
-    
-    RawResponse --> ProcessResponse[process_response]
-    ProcessResponse --> ResponseParser{Response Type?}
-    
-    ResponseParser --> StreamingHandler[Streaming Handler]
-    ResponseParser --> StandardHandler[Standard Handler]
-    ResponseParser --> IterableHandler[Iterable Handler]
-    ResponseParser --> ParallelResponseHandler[Parallel Handler]
-    
-    StandardHandler --> Validator[Pydantic Validator]
-    StreamingHandler --> Validator
-    IterableHandler --> Validator
-    ParallelResponseHandler --> Validator
-    
-    Validator -- Valid --> StructuredOutput[Structured Output]
-    Validator -- Invalid --> HandleReaskKwargs[handle_reask_kwargs]
-    HandleReaskKwargs --> ReaskHandler{Reask Handler}
-    
-    ReaskHandler --> ProviderReask[Provider-Specific Reask]
-    ProviderReask --> APIRequest
+    D -.->|Validation Error| B
 ```
 
 ## Key Components
@@ -177,53 +139,102 @@ Each mode determines:
 - How to handle errors
 - What features are available
 
+## Request Flow Timeline
+
+The following timeline diagram shows the core request flow through Instructor:
+
+```mermaid
+sequenceDiagram
+    participant User as User Code
+    participant Client as Instructor Client
+    participant HandleModel as handle_response_model
+    participant API as LLM API
+    participant ProcessResp as process_response
+    participant Reask as handle_reask_kwargs
+    
+    %% Request Phase
+    User->>Client: create(response_model=User, messages=[...])
+    Client->>HandleModel: handle_response_model(User, mode, kwargs)
+    
+    Note over HandleModel: Example: TOOLS mode
+    HandleModel->>HandleModel: Convert Pydantic model to tool schema
+    HandleModel->>HandleModel: Add tools parameter to kwargs
+    
+    HandleModel->>Client: Return (model, prepared_kwargs)
+    Client->>API: Make API call with tools
+    API->>API: LLM processes request
+    API->>Client: Return raw response with tool calls
+    
+    %% Response Processing Phase
+    Client->>ProcessResp: process_response(response, User, mode)
+    ProcessResp->>ProcessResp: model = User.from_response(response)
+    ProcessResp->>ProcessResp: Validate with Pydantic
+    
+    alt Validation Success
+        ProcessResp->>ProcessResp: Attach _raw_response
+        ProcessResp->>Client: Return validated model
+        Client->>User: Return User instance
+    else Validation Failure
+        ProcessResp->>Client: Raise ValidationError
+        Client->>Reask: handle_reask_kwargs(kwargs, mode, response, error)
+        Reask->>Reask: Add error context to messages
+        Reask->>Client: Return retry_kwargs
+        Client->>API: Retry with error feedback
+        Note over API,ProcessResp: Retry loop continues
+    end
+```
+
 ## Request Flow Detail
 
-### 1. Request Preparation
+### Example: User Perspective
+
+Here's what users actually write:
 
 ```python
-user_model = UserModel(name=str, age=int)
-messages = [{"role": "user", "content": "Extract user data"}]
+import instructor
+from pydantic import BaseModel
 
-# handle_response_model transforms this into provider-specific format
-response_model, kwargs = handle_response_model(
-    response_model=user_model,
-    mode=Mode.TOOLS,
-    messages=messages
+# Define the structure they want
+class User(BaseModel):
+    name: str
+    age: int
+
+# Create a client for any provider
+client = instructor.from_provider("openai/gpt-4o-mini")
+
+# Extract structured data with one call
+user = client.chat.completions.create(
+    response_model=User,
+    messages=[{"role": "user", "content": "John is 25 years old"}],
 )
+
+print(user)  # User(name='John', age=25)
 ```
 
-### 2. API Call
+### What Happens Under the Hood
 
-The patched client makes the actual API call with prepared parameters:
-- Tool/function definitions added
-- System prompts injected
-- Provider-specific parameters mapped
+When the user calls `create()`, here's the internal flow:
 
-### 3. Response Processing
+1. **Request Preparation** (`handle_response_model`):
+   - Converts the `User` Pydantic model into provider-specific format
+   - For OpenAI: Creates a tool/function schema
+   - For Anthropic: Creates a tool schema or JSON system prompt
+   - Adds these to the request kwargs
 
-```python
-# process_response handles the transformation
-result = process_response(
-    response=raw_response,
-    response_model=user_model,
-    mode=Mode.TOOLS,
-    stream=False
-)
-```
+2. **API Call**:
+   - Patched client sends request to LLM provider
+   - Includes generated schemas/prompts
+   - Provider returns response in their format
 
-### 4. Validation and Retry
+3. **Response Processing** (`process_response`):
+   - Extracts structured data from provider's response format
+   - Validates against the Pydantic model
+   - Returns typed, validated object
 
-If validation fails:
-```python
-# handle_reask_kwargs prepares retry
-retry_kwargs = handle_reask_kwargs(
-    kwargs=original_kwargs,
-    mode=Mode.TOOLS,
-    response=failed_response,
-    exception=validation_error
-)
-```
+4. **Automatic Retry** (if validation fails):
+   - `handle_reask_kwargs` formats the error
+   - Sends back to LLM with error context
+   - Repeats until valid or max_retries reached
 
 ## Performance Optimizations
 
