@@ -45,7 +45,7 @@ from pydantic import BaseModel
 from typing_extensions import ParamSpec
 
 from instructor.dsl.iterable import IterableBase
-from instructor.dsl.parallel import ParallelBase, VertexAIParallelBase
+from instructor.dsl.parallel import ParallelBase
 from instructor.dsl.partial import PartialBase
 from instructor.dsl.simple_type import AdapterBase
 from instructor.function_calls import OpenAISchema
@@ -264,7 +264,7 @@ def process_response(
     validation_context: dict[str, Any] | None = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model | list[T_Model] | VertexAIParallelBase | None:
+) -> T_Model | list[T_Model] | None:
     """Process and transform LLM responses into structured models (synchronous).
 
     This is the main entry point for converting raw LLM responses into validated Pydantic
@@ -295,7 +295,7 @@ def process_response(
             - Special modes: PARALLEL_TOOLS, MD_JSON, JSON_SCHEMA, etc.
 
     Returns:
-        T_Model | list[T_Model] | VertexAIParallelBase | None: The processed response:
+        T_Model | list[T_Model] | None: The processed response:
             - If response_model is None: Original response unchanged
             - If IterableBase: List of extracted model instances
             - If ParallelBase: Special parallel response object
@@ -368,7 +368,7 @@ def is_typed_dict(cls) -> bool:
 
 def handle_response_model(
     response_model: type[T] | None, mode: Mode = Mode.TOOLS, **kwargs: Any
-) -> tuple[type[T] | VertexAIParallelBase | None, dict[str, Any]]:
+) -> tuple[type[T] | None, dict[str, Any]]:
     """
     Handles the response model based on the specified mode and prepares the kwargs for the API call.
     This really should be named 'prepare_create_kwargs' as its job is to map the openai create kwargs
