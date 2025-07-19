@@ -100,7 +100,7 @@ def handle_reask_kwargs(
         Mode.ANTHROPIC_PARALLEL_TOOLS: reask_anthropic_tools,
         # Cohere modes
         Mode.COHERE_TOOLS: reask_cohere_tools,
-        Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,
+        Mode.COHERE_JSON_SCHEMA: reask_default,
         # Gemini/Google modes
         Mode.GEMINI_TOOLS: reask_gemini_tools,
         Mode.GEMINI_JSON: reask_gemini_json,
