@@ -161,6 +161,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.BEDROCK_JSON:
             return cls.parse_bedrock_json(completion, validation_context, strict)
 
+        if mode == Mode.BEDROCK_TOOLS:
+            return cls.parse_bedrock_tools(completion, validation_context, strict)
+
         if mode in {Mode.VERTEXAI_TOOLS, Mode.GEMINI_TOOLS}:
             return cls.parse_vertexai_tools(completion, validation_context)
 
@@ -387,6 +390,34 @@ class OpenAISchema(BaseModel):
         else:
             text = completion.text
         return cls.model_validate_json(text, context=validation_context, strict=strict)
+
+    @classmethod
+    def parse_bedrock_tools(
+        cls: type[BaseModel],
+        completion: Any,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        if isinstance(completion, dict):
+            # Extract the tool use from Bedrock response
+            message = completion.get("output", {}).get("message", {})
+            content = message.get("content", [])
+            
+            # Find the tool use content block
+            for content_block in content:
+                if "toolUse" in content_block:
+                    tool_use = content_block["toolUse"]
+                    assert tool_use.get("name") == cls.__name__, f"Tool name mismatch: expected {cls.__name__}, got {tool_use.get('name')}"
+                    return cls.model_validate(
+                        tool_use.get("input", {}),
+                        context=validation_context,
+                        strict=strict
+                    )
+            
+            raise ValueError("No tool use found in Bedrock response")
+        else:
+            # Fallback for other response formats
+            return cls.model_validate_json(completion.text, context=validation_context, strict=strict)
 
     @classmethod
     def parse_gemini_json(

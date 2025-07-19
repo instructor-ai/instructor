@@ -13,6 +13,33 @@ from typing import Any
 from instructor.mode import Mode
 
 
+def generate_bedrock_schema(response_model: type[Any]) -> dict[str, Any]:
+    """
+    Generate Bedrock tool schema from a Pydantic model.
+
+    Bedrock Converse API expects tools in this format:
+    {
+        "toolSpec": {
+            "name": "tool_name",
+            "description": "tool description",
+            "inputSchema": {
+                "json": { JSON Schema }
+            }
+        }
+    }
+    """
+    schema = response_model.model_json_schema()
+
+    return {
+        "toolSpec": {
+            "name": response_model.__name__,
+            "description": response_model.__doc__
+            or f"Correctly extracted `{response_model.__name__}` with all the required parameters with correct types",
+            "inputSchema": {"json": schema},
+        }
+    }
+
+
 def reask_bedrock_json(
     kwargs: dict[str, Any],
     response: Any,
@@ -36,6 +63,68 @@ def reask_bedrock_json(
             ],
         }
     )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def reask_bedrock_tools(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """
+    Handle reask for Bedrock tools mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (assistant message with tool use, then user message with tool result error)
+    """
+    kwargs = kwargs.copy()
+
+    # Add the assistant's response message
+    assistant_message = response["output"]["message"]
+    reask_msgs = [assistant_message]
+
+    # Find the tool use ID from the assistant's response to reference in the error
+    tool_use_id = None
+    if "content" in assistant_message:
+        for content_block in assistant_message["content"]:
+            if "toolUse" in content_block:
+                tool_use_id = content_block["toolUse"]["toolUseId"]
+                break
+
+    # Add a user message with tool result indicating validation error
+    if tool_use_id:
+        reask_msgs.append(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "toolResult": {
+                            "toolUseId": tool_use_id,
+                            "content": [
+                                {
+                                    "text": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
+                                }
+                            ],
+                            "status": "error",
+                        }
+                    }
+                ],
+            }
+        )
+    else:
+        # Fallback if no tool use ID found
+        reask_msgs.append(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "text": f"Validation Error due to no tool invocation:\n{exception}\nRecall the function correctly, fix the errors"
+                    }
+                ],
+            }
+        )
+
     kwargs["messages"].extend(reask_msgs)
     return kwargs
 
@@ -224,15 +313,35 @@ def handle_bedrock_json(
 
 
 def handle_bedrock_tools(
-    response_model: type[Any], new_kwargs: dict[str, Any]
-) -> tuple[type[Any], dict[str, Any]]:
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
     """
     Handle Bedrock tools mode.
 
     Kwargs modifications:
-    - Applies: _prepare_bedrock_converse_kwargs_internal transformations
+    - When response_model is None: Only applies _prepare_bedrock_converse_kwargs_internal transformations
+    - When response_model is provided:
+      - Adds: "toolConfig" with tools list and toolChoice configuration
+      - Applies: _prepare_bedrock_converse_kwargs_internal transformations
     """
     new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
+    
+    if response_model is None:
+        return None, new_kwargs
+    
+    # Generate Bedrock tool schema
+    tool_schema = generate_bedrock_schema(response_model)
+    
+    # Set up tools configuration for Bedrock Converse API
+    new_kwargs["toolConfig"] = {
+        "tools": [tool_schema],
+        "toolChoice": {
+            "tool": {
+                "name": response_model.__name__
+            }
+        }
+    }
+    
     return response_model, new_kwargs
 
 
@@ -243,7 +352,7 @@ BEDROCK_HANDLERS = {
         "response": handle_bedrock_json,
     },
     Mode.BEDROCK_TOOLS: {
-        "reask": reask_bedrock_json,  # Uses same reask as JSON
+        "reask": reask_bedrock_tools,
         "response": handle_bedrock_tools,
     },
 }

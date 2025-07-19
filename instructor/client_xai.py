@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 import instructor
 from instructor.function_calls import _validate_model_from_json
+from instructor.utils.xai import _convert_messages
 
 from typing import TYPE_CHECKING, Any
 
@@ -24,32 +25,13 @@ else:
         xchat = None
 
 
-def _convert_messages(messages: list[dict[str, Any]]):
-    converted = []
-    for m in messages:
-        role = m["role"]
-        content = m.get("content", "")
-        if isinstance(content, str):
-            c = xchat.text(content)
-        else:
-            raise ValueError("Only string content supported for xAI provider")
-        if role == "user":
-            converted.append(xchat.user(c))
-        elif role == "assistant":
-            converted.append(xchat.assistant(c))
-        elif role == "system":
-            converted.append(xchat.system(c))
-        elif role == "tool":
-            converted.append(xchat.tool_result(content))
-        else:
-            raise ValueError(f"Unsupported role: {role}")
-    return converted
+
 
 
 @overload
 def from_xai(
     client: SyncClient,
-    mode: instructor.Mode = instructor.Mode.JSON,
+    mode: instructor.Mode = instructor.Mode.XAI_JSON,
     **kwargs: Any,
 ) -> instructor.Instructor: ...
 
@@ -57,17 +39,17 @@ def from_xai(
 @overload
 def from_xai(
     client: AsyncClient,
-    mode: instructor.Mode = instructor.Mode.JSON,
+    mode: instructor.Mode = instructor.Mode.XAI_JSON,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
 
 
 def from_xai(
     client: SyncClient | AsyncClient,
-    mode: instructor.Mode = instructor.Mode.JSON,
+    mode: instructor.Mode = instructor.Mode.XAI_JSON,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    valid_modes = {instructor.Mode.JSON, instructor.Mode.TOOLS}
+    valid_modes = {instructor.Mode.XAI_JSON, instructor.Mode.XAI_TOOLS}
 
     if mode not in valid_modes:
         from instructor.exceptions import ModeError
@@ -103,7 +85,7 @@ def from_xai(
         if response_model is None:
             resp = await chat.sample()
             return resp
-        if mode == instructor.Mode.JSON:
+        if mode == instructor.Mode.XAI_JSON:
             _, parsed = await chat.parse(response_model)
             return parsed
         else:
@@ -137,7 +119,7 @@ def from_xai(
         if response_model is None:
             resp = chat.sample()
             return resp
-        if mode == instructor.Mode.JSON:
+        if mode == instructor.Mode.XAI_JSON:
             _, parsed = chat.parse(response_model)
             return parsed
         else:

@@ -73,6 +73,10 @@ from instructor.utils.writer import (
     handle_writer_json,
 )
 from instructor.utils.perplexity import handle_perplexity_json
+from instructor.utils.xai import (
+    handle_xai_json,
+    handle_xai_tools,
+)
 
 logger = logging.getLogger("instructor")
 
@@ -304,7 +308,9 @@ def handle_response_model(
         Mode.GEMINI_JSON: handle_gemini_json,
         Mode.GEMINI_TOOLS: handle_gemini_tools,
         Mode.GENAI_TOOLS: lambda rm, nk: handle_genai_tools(rm, nk, autodetect_images),
-        Mode.GENAI_STRUCTURED_OUTPUTS: lambda rm, nk: handle_genai_structured_outputs(rm, nk, autodetect_images),
+        Mode.GENAI_STRUCTURED_OUTPUTS: lambda rm, nk: handle_genai_structured_outputs(
+            rm, nk, autodetect_images
+        ),
         Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
         Mode.VERTEXAI_JSON: handle_vertexai_json,
         Mode.CEREBRAS_JSON: handle_cerebras_json,
@@ -319,6 +325,8 @@ def handle_response_model(
         Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
         Mode.RESPONSES_TOOLS: handle_responses_tools,
         Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: handle_responses_tools_with_inbuilt_tools,
+        Mode.XAI_JSON: handle_xai_json,
+        Mode.XAI_TOOLS: handle_xai_tools,
     }
 
     if mode in mode_handlers:

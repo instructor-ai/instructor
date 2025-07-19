@@ -28,6 +28,10 @@ class Mode(enum.Enum):
     RESPONSES_TOOLS = "responses_tools"
     RESPONSES_TOOLS_WITH_INBUILT_TOOLS = "responses_tools_with_inbuilt_tools"
 
+    # XAI modes
+    XAI_JSON = "xai_json"
+    XAI_TOOLS = "xai_tools"
+
     # Anthropic modes
     ANTHROPIC_TOOLS = "anthropic_tools"
     ANTHROPIC_REASONING_TOOLS = "anthropic_reasoning_tools"
@@ -90,6 +94,7 @@ class Mode(enum.Enum):
             cls.BEDROCK_TOOLS,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
+            cls.XAI_TOOLS,
         }
 
     @classmethod
@@ -111,6 +116,7 @@ class Mode(enum.Enum):
             cls.PERPLEXITY_JSON,
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
+            cls.XAI_JSON,
         }
 
     @classmethod
