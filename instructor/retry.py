@@ -9,10 +9,10 @@ from typing import Any, Callable, TypeVar
 from instructor.exceptions import InstructorRetryException
 from instructor.hooks import Hooks
 from instructor.mode import Mode
-from instructor.reask import handle_reask_kwargs
 from instructor.process_response import (
     process_response,
     process_response_async,
+    handle_reask_kwargs,
 )
 from instructor.utils import update_total_usage
 from instructor.validators import AsyncValidationError

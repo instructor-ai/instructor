@@ -56,7 +56,6 @@ def handler(error) -> None: ...
 ## Implementation Details
 
 The Hooks system is implemented in the `instructor/hooks.py` file. The `Hooks` class handles the registration and emission of hook events. You can refer to this file to see how hooks work under the hood.
-The retry logic that uses Hooks is implemented in the `instructor/retry.py` file. This shows how Hooks are used when trying again after errors during completions.
 
 ### Hook Types
 

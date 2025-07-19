@@ -10,7 +10,7 @@ Dictionary operations are one of the most common operations in the Instructor co
 
 ### Message Extraction
 
-The `extract_messages` function in `retry.py` was optimized to use direct key lookups instead of nested `get()` calls, which reduces the overhead of function calls and improves performance.
+The `extract_messages` function was optimized to use direct key lookups instead of nested `get()` calls, which reduces the overhead of function calls and improves performance.
 
 **Before:**
 ```python
@@ -38,16 +38,16 @@ def extract_messages(kwargs: dict[str, Any]) -> Any:
     return []
 ```
 
-### Retry Functions
+### Response Processing Functions
 
-The retry functions (`retry_sync` and `retry_async`) were optimized to:
+The response processing functions were optimized to:
 1. Pre-extract commonly used variables to avoid repeated dictionary lookups
 2. Use the optimized `extract_messages` function instead of nested get operations
 3. Reduce redundant dictionary operations in error handling
 
 ### Message Handler Selection
 
-The `handle_reask_kwargs` function in `reask.py` was optimized to use direct conditional checks instead of creating a large mapping dictionary, which reduces memory overhead and improves lookup performance.
+The `handle_reask_kwargs` function was optimized to use direct conditional checks instead of creating a large mapping dictionary, which reduces memory overhead and improves lookup performance.
 
 **Before:**
 ```python
