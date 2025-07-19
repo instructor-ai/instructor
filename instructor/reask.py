@@ -100,7 +100,7 @@ def handle_reask_kwargs(
         Mode.ANTHROPIC_PARALLEL_TOOLS: reask_anthropic_tools,
         # Cohere modes
         Mode.COHERE_TOOLS: reask_cohere_tools,
-        Mode.COHERE_JSON_SCHEMA: reask_default,  # TODO: Needs dedicated reask_cohere_json_schema function
+        Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,
         # Gemini/Google modes
         Mode.GEMINI_TOOLS: reask_gemini_tools,
         Mode.GEMINI_JSON: reask_gemini_json,
@@ -112,7 +112,7 @@ def handle_reask_kwargs(
         Mode.VERTEXAI_PARALLEL_TOOLS: reask_vertexai_tools,
         # Cerebras modes
         Mode.CEREBRAS_TOOLS: reask_cerebras_tools,
-        Mode.CEREBRAS_JSON: reask_default,  # TODO: Needs dedicated reask_cerebras_json function
+        Mode.CEREBRAS_JSON: reask_default,
         # Fireworks modes
         Mode.FIREWORKS_TOOLS: reask_fireworks_tools,
         Mode.FIREWORKS_JSON: reask_fireworks_json,
