@@ -599,7 +599,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         response_model = IterableModel(iterable_element_class)
 
     # Import here to avoid circular dependency
-    from instructor.function_calls import OpenAISchema, openai_schema
+    from ..processing.function_calls import OpenAISchema, openai_schema
 
     if not issubclass(response_model, OpenAISchema):
         response_model = openai_schema(response_model)  # type: ignore

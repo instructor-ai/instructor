@@ -20,7 +20,7 @@ from openai.types.chat.chat_completion_message_param import ChatCompletionMessag
 from pydantic import BaseModel, validate_call
 
 from openai import OpenAI
-from instructor.function_calls import openai_schema
+from .processing.function_calls import openai_schema
 
 
 P = ParamSpec("P")

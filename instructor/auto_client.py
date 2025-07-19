@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any, Union, Literal, overload
-from instructor.client import AsyncInstructor, Instructor
+from .core.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
 from instructor.cache import BaseCache
@@ -122,7 +122,7 @@ def from_provider(
     try:
         provider, model_name = model.split("/", 1)
     except ValueError:
-        from instructor.exceptions import ConfigurationError
+        from .core.exceptions import ConfigurationError
 
         raise ConfigurationError(
             'Model string must be in format "provider/model-name" '
@@ -175,7 +175,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The openai package is required to use the OpenAI provider. "
@@ -205,7 +205,7 @@ def from_provider(
             api_version = kwargs.pop("api_version", "2024-02-01")
 
             if not api_key:
-                from instructor.exceptions import ConfigurationError
+                from .core.exceptions import ConfigurationError
 
                 raise ConfigurationError(
                     "AZURE_OPENAI_API_KEY is not set. "
@@ -213,7 +213,7 @@ def from_provider(
                 )
 
             if not azure_endpoint:
-                from instructor.exceptions import ConfigurationError
+                from .core.exceptions import ConfigurationError
 
                 raise ConfigurationError(
                     "AZURE_OPENAI_ENDPOINT is not set. "
@@ -245,7 +245,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The openai package is required to use the Azure OpenAI provider. "
@@ -285,7 +285,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The anthropic package is required to use the Anthropic provider. "
@@ -340,7 +340,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The google-genai package is required to use the Google provider. "
@@ -384,7 +384,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The mistralai package is required to use the Mistral provider. "
@@ -417,7 +417,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The cohere package is required to use the Cohere provider. "
@@ -462,7 +462,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The openai package is required to use the Perplexity provider. "
@@ -495,7 +495,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The groq package is required to use the Groq provider. "
@@ -528,7 +528,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The writerai package is required to use the Writer provider. "
@@ -604,7 +604,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The boto3 package is required to use the AWS Bedrock provider. "
@@ -637,7 +637,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The cerebras package is required to use the Cerebras provider. "
@@ -670,7 +670,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The fireworks-ai package is required to use the Fireworks provider. "
@@ -728,7 +728,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The google-genai package is required to use the VertexAI provider. "
@@ -770,7 +770,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The google-genai package is required to use the Google GenAI provider. "
@@ -837,7 +837,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The openai package is required to use the Ollama provider. "
@@ -863,7 +863,7 @@ def from_provider(
             api_key = api_key or os.environ.get("DEEPSEEK_API_KEY")
 
             if not api_key:
-                from instructor.exceptions import ConfigurationError
+                from .core.exceptions import ConfigurationError
 
                 raise ConfigurationError(
                     "DEEPSEEK_API_KEY is not set. "
@@ -891,7 +891,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The openai package is required to use the DeepSeek provider. "
@@ -930,7 +930,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The xai-sdk package is required to use the xAI provider. "
@@ -963,7 +963,7 @@ def from_provider(
             )
             return result
         except ImportError:
-            from instructor.exceptions import ConfigurationError
+            from .core.exceptions import ConfigurationError
 
             raise ConfigurationError(
                 "The litellm package is required to use the LiteLLM provider. "
@@ -980,7 +980,7 @@ def from_provider(
             raise
 
     else:
-        from instructor.exceptions import ConfigurationError
+        from .core.exceptions import ConfigurationError
 
         logger.error(
             "Error initializing %s client: unsupported provider",

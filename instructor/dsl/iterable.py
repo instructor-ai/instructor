@@ -1,10 +1,21 @@
 from collections.abc import AsyncGenerator, Generator, Iterable
-from typing import Any, ClassVar, Optional, cast, get_origin, get_args, Union
+from typing import (
+    Any,
+    ClassVar,
+    Optional,
+    cast,
+    get_origin,
+    get_args,
+    Union,
+    TYPE_CHECKING,
+)
 import json
 from pydantic import BaseModel, Field, create_model
-from instructor.function_calls import OpenAISchema
-from instructor.mode import Mode
-from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
+from ..mode import Mode
+from ..utils import extract_json_from_stream, extract_json_from_stream_async
+
+if TYPE_CHECKING:
+    pass
 
 
 class IterableBase:
@@ -302,6 +313,9 @@ def IterableModel(
     name: Optional[str] = None,
     description: Optional[str] = None,
 ) -> type[BaseModel]:
+    # Import at runtime to avoid circular import
+    from ..processing.function_calls import OpenAISchema
+
     """
     Dynamically create a IterableModel OpenAISchema that can be used to segment multiple
     tasks given a base class. This creates class that can be used to create a toolkit

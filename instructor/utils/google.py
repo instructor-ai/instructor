@@ -14,11 +14,11 @@ from typing import TYPE_CHECKING, Any, Union
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
-from instructor.dsl.partial import Partial, PartialBase
-from instructor.exceptions import ConfigurationError
-from instructor.mode import Mode
-from instructor.multimodal import Audio, Image, PDF
-from instructor.utils.core import get_message_content
+from ..dsl.partial import Partial, PartialBase
+from ..core.exceptions import ConfigurationError
+from ..mode import Mode
+from ..processing.multimodal import Audio, Image, PDF
+from .core import get_message_content
 
 if TYPE_CHECKING:
     from google.genai import types
@@ -656,7 +656,7 @@ def handle_genai_message_conversion(
     new_kwargs["contents"] = convert_to_genai_messages(messages)
 
     # Extract multimodal content for GenAI
-    from instructor.multimodal import extract_genai_multimodal_content
+    from ..processing.multimodal import extract_genai_multimodal_content
 
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
@@ -802,7 +802,7 @@ def handle_genai_structured_outputs(
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
     # Extract multimodal content for GenAI
-    from instructor.multimodal import extract_genai_multimodal_content
+    from ..processing.multimodal import extract_genai_multimodal_content
 
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
@@ -886,7 +886,7 @@ def handle_genai_tools(
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
     # Extract multimodal content for GenAI
-    from instructor.multimodal import extract_genai_multimodal_content
+    from ..processing.multimodal import extract_genai_multimodal_content
 
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images

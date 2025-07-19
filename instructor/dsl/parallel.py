@@ -7,19 +7,25 @@ from typing import (
     Union,
     get_args,
     get_origin,
+    TYPE_CHECKING,
 )
 from collections.abc import Generator
 from pydantic import BaseModel
-from instructor.function_calls import OpenAISchema, openai_schema
 from collections.abc import Iterable
 
-from instructor.mode import Mode
+from ..mode import Mode
 
-T = TypeVar("T", bound=OpenAISchema)
+if TYPE_CHECKING:
+    from ..processing.function_calls import OpenAISchema
+
+    T = TypeVar("T", bound=OpenAISchema)
+else:
+    # At runtime, we'll bind to BaseModel instead to avoid circular import
+    T = TypeVar("T", bound=BaseModel)
 
 
 class ParallelBase:
-    def __init__(self, *models: type[OpenAISchema]):
+    def __init__(self, *models: type[BaseModel]):
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
         self.models = models
@@ -106,6 +112,9 @@ def get_types_array(typehint: type[Iterable[T]]) -> tuple[type[T], ...]:
 
 
 def handle_parallel_model(typehint: type[Iterable[T]]) -> list[dict[str, Any]]:
+    # Import at runtime to avoid circular import
+    from ..processing.function_calls import openai_schema
+
     the_types = get_types_array(typehint)
     return [
         {"type": "function", "function": openai_schema(model).openai_schema}
@@ -116,6 +125,9 @@ def handle_parallel_model(typehint: type[Iterable[T]]) -> list[dict[str, Any]]:
 def handle_anthropic_parallel_model(
     typehint: type[Iterable[T]],
 ) -> list[dict[str, Any]]:
+    # Import at runtime to avoid circular import
+    from ..processing.function_calls import openai_schema
+
     the_types = get_types_array(typehint)
     return [openai_schema(model).anthropic_schema for model in the_types]
 

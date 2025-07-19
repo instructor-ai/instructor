@@ -3,10 +3,12 @@ from inspect import isclass
 import typing
 from pydantic import BaseModel, create_model
 from enum import Enum
-
+from typing import TYPE_CHECKING
 
 from instructor.dsl.partial import Partial
-from instructor.function_calls import OpenAISchema
+
+if TYPE_CHECKING:
+    pass
 
 
 T = typing.TypeVar("T")
@@ -22,6 +24,9 @@ class ModelAdapter(typing.Generic[T]):
     """
 
     def __class_getitem__(cls, response_model: type[BaseModel]) -> type[BaseModel]:
+        # Import at runtime to avoid circular import
+        from ..processing.function_calls import OpenAISchema
+
         assert is_simple_type(response_model), "Only simple types are supported"
         return create_model(
             "Response",
