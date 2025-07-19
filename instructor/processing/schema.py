@@ -14,7 +14,7 @@ from typing import Any
 from docstring_parser import parse
 from pydantic import BaseModel
 
-from ..utils.google import map_to_gemini_function_schema
+from ..providers.gemini.utils import map_to_gemini_function_schema
 
 __all__ = [
     "generate_openai_schema",

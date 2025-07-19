@@ -25,14 +25,14 @@ from instructor.utils.core import (
 from instructor.utils.providers import Provider, get_provider
 
 # Re-export from anthropic
-from instructor.utils.anthropic import (
+from instructor.providers.anthropic.utils import (
     SystemMessage,
     combine_system_messages,
     extract_system_messages,
 )
 
 # Re-export from google
-from instructor.utils.google import (
+from instructor.providers.gemini.utils import (
     transform_to_gemini_prompt,
     verify_no_unions,
     map_to_gemini_function_schema,

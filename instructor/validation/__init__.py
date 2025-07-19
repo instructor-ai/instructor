@@ -2,12 +2,12 @@
 
 from .async_validators import (
     AsyncValidationContext,
-    AsyncValidationError,
     async_field_validator,
     async_model_validator,
     ASYNC_VALIDATOR_KEY,
     ASYNC_MODEL_VALIDATOR_KEY,
 )
+from ..core.exceptions import AsyncValidationError
 from .llm_validators import Validator, llm_validator, openai_moderation
 
 __all__ = [

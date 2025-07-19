@@ -95,7 +95,7 @@ from ..providers.fireworks.utils import (
 )
 
 # Google/Gemini/VertexAI utils
-from ..utils.google import (
+from ..providers.gemini.utils import (
     handle_gemini_json,
     handle_gemini_tools,
     handle_genai_structured_outputs,
@@ -120,7 +120,7 @@ from ..providers.mistral.utils import (
 )
 
 # OpenAI utils
-from ..utils.openai import (
+from ..providers.openai.utils import (
     handle_functions,
     handle_json_modes,
     handle_json_o1,
