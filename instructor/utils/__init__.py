@@ -54,3 +54,32 @@ __all__ = [
     "combine_system_messages",
     "extract_system_messages",
 ]
+
+
+# Lazy imports for backward compatibility to avoid circular imports
+def __getattr__(name):
+    # Gemini utils
+    if name in [
+        "transform_to_gemini_prompt",
+        "verify_no_unions",
+        "map_to_gemini_function_schema",
+        "update_genai_kwargs",
+        "update_gemini_kwargs",
+        "extract_genai_system_message",
+        "convert_to_genai_messages",
+    ]:
+        from ..providers.gemini import utils as gemini_utils
+
+        return getattr(gemini_utils, name)
+
+    # Anthropic utils
+    if name in [
+        "SystemMessage",
+        "combine_system_messages",
+        "extract_system_messages",
+    ]:
+        from ..providers.anthropic import utils as anthropic_utils
+
+        return getattr(anthropic_utils, name)
+
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
