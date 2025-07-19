@@ -20,14 +20,8 @@ from .core import (
     prepare_response_model,
 )
 
-# Note: Provider and get_provider are in providers.py
-# Import them directly from there when needed to avoid circular imports
-
-# Note: anthropic utils are now in providers/anthropic/utils.py
-# Import them directly from there when needed
-
-# Note: google utils are in google.py
-# Import them directly from there when needed to avoid circular imports
+# Re-export from providers
+from .providers import Provider, get_provider
 
 __all__ = [
     # Core functions
@@ -44,4 +38,19 @@ __all__ = [
     "is_typed_dict",
     "is_simple_type",
     "prepare_response_model",
+    # Provider functions
+    "Provider",
+    "get_provider",
+    # Gemini utils
+    "transform_to_gemini_prompt",
+    "verify_no_unions",
+    "map_to_gemini_function_schema",
+    "update_genai_kwargs",
+    "update_gemini_kwargs",
+    "extract_genai_system_message",
+    "convert_to_genai_messages",
+    # Anthropic utils
+    "SystemMessage",
+    "combine_system_messages",
+    "extract_system_messages",
 ]

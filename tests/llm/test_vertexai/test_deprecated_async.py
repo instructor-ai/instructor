@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from pydantic import BaseModel
-from instructor.client_vertexai import from_vertexai
+from instructor import from_vertexai
 from instructor.exceptions import ConfigurationError
 
 

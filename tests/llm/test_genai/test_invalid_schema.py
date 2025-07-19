@@ -5,7 +5,7 @@ import instructor
 from pydantic import BaseModel
 from .util import models, modes
 from itertools import product
-from instructor.utils import map_to_gemini_function_schema
+from instructor.providers.gemini.utils import map_to_gemini_function_schema
 
 
 @pytest.mark.parametrize("mode,model", product(modes, models))

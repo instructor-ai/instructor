@@ -1,7 +1,7 @@
 from typing_extensions import TypedDict
 from pydantic import BaseModel
 from instructor.process_response import handle_response_model
-from instructor.utils.bedrock import _prepare_bedrock_converse_kwargs_internal
+from instructor.providers.bedrock.utils import _prepare_bedrock_converse_kwargs_internal
 
 
 def test_typed_dict_conversion() -> None:

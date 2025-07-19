@@ -6,7 +6,10 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel
 
-from instructor.utils import map_to_gemini_function_schema, verify_no_unions
+from instructor.providers.gemini.utils import (
+    map_to_gemini_function_schema,
+    verify_no_unions,
+)
 
 
 class Priority(Enum):

@@ -29,6 +29,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
   # Provider tests run in parallel
   provider-tests:
