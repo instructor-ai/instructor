@@ -12,11 +12,11 @@ from typing import Any
 
 from openai import pydantic_function_tool
 
-from ..dsl.parallel import ParallelModel, handle_parallel_model
-from ..core.exceptions import ConfigurationError
-from ..mode import Mode
-from .core import dump_message, merge_consecutive_messages
-from ..processing.schema import generate_openai_schema
+from ...dsl.parallel import ParallelModel, handle_parallel_model
+from ...core.exceptions import ConfigurationError
+from ...mode import Mode
+from ...utils.core import dump_message, merge_consecutive_messages
+from ...processing.schema import generate_openai_schema
 
 
 def reask_tools(
