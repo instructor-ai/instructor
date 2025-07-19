@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from mistralai.client import MistralClient
 from instructor import from_mistral
-from instructor.function_calls import Mode
+from instructor.mode import Mode
 import os
 
 

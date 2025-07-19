@@ -7,7 +7,7 @@ import instructor
 
 from pydantic import BaseModel
 
-from instructor.function_calls import Mode
+from instructor.mode import Mode
 from ..util import models, modes
 
 
