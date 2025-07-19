@@ -200,12 +200,55 @@ def retry_sync(
                 except (ValidationError, JSONDecodeError) as e:
                     logger.debug(f"Parse error: {e}")
                     hooks.emit_parse_error(e)
+
+                    # Check if this is the last attempt
+                    if isinstance(max_retries, Retrying) and hasattr(
+                        max_retries, "stop"
+                    ):
+                        # For tenacity Retrying objects, check if next attempt would exceed limit
+                        will_retry = (
+                            attempt.retry_state.outcome is None
+                            or not attempt.retry_state.outcome.failed
+                        )
+                        is_last_attempt = (
+                            not will_retry
+                            or attempt.retry_state.attempt_number
+                            >= getattr(
+                                max_retries.stop, "max_attempt_number", float("inf")
+                            )
+                        )
+                        if is_last_attempt:
+                            hooks.emit_completion_last_attempt(e)
+
                     kwargs = handle_reask_kwargs(
                         kwargs=kwargs,
                         mode=mode,
                         response=response,
                         exception=e,
                     )
+                    raise e
+                except Exception as e:
+                    # Emit completion:error for non-validation errors (API errors, network errors, etc.)
+                    logger.debug(f"Completion error: {e}")
+                    hooks.emit_completion_error(e)
+
+                    # Check if this is the last attempt for completion errors
+                    if isinstance(max_retries, Retrying) and hasattr(
+                        max_retries, "stop"
+                    ):
+                        will_retry = (
+                            attempt.retry_state.outcome is None
+                            or not attempt.retry_state.outcome.failed
+                        )
+                        is_last_attempt = (
+                            not will_retry
+                            or attempt.retry_state.attempt_number
+                            >= getattr(
+                                max_retries.stop, "max_attempt_number", float("inf")
+                            )
+                        )
+                        if is_last_attempt:
+                            hooks.emit_completion_last_attempt(e)
                     raise e
     except RetryError as e:
         logger.debug(f"Retry error: {e}")
@@ -290,12 +333,55 @@ async def retry_async(
                 ) as e:
                     logger.debug(f"Parse error: {e}")
                     hooks.emit_parse_error(e)
+
+                    # Check if this is the last attempt
+                    if isinstance(max_retries, AsyncRetrying) and hasattr(
+                        max_retries, "stop"
+                    ):
+                        # For tenacity AsyncRetrying objects, check if next attempt would exceed limit
+                        will_retry = (
+                            attempt.retry_state.outcome is None
+                            or not attempt.retry_state.outcome.failed
+                        )
+                        is_last_attempt = (
+                            not will_retry
+                            or attempt.retry_state.attempt_number
+                            >= getattr(
+                                max_retries.stop, "max_attempt_number", float("inf")
+                            )
+                        )
+                        if is_last_attempt:
+                            hooks.emit_completion_last_attempt(e)
+
                     kwargs = handle_reask_kwargs(
                         kwargs=kwargs,
                         mode=mode,
                         response=response,
                         exception=e,
                     )
+                    raise e
+                except Exception as e:
+                    # Emit completion:error for non-validation errors (API errors, network errors, etc.)
+                    logger.debug(f"Completion error: {e}")
+                    hooks.emit_completion_error(e)
+
+                    # Check if this is the last attempt for completion errors
+                    if isinstance(max_retries, AsyncRetrying) and hasattr(
+                        max_retries, "stop"
+                    ):
+                        will_retry = (
+                            attempt.retry_state.outcome is None
+                            or not attempt.retry_state.outcome.failed
+                        )
+                        is_last_attempt = (
+                            not will_retry
+                            or attempt.retry_state.attempt_number
+                            >= getattr(
+                                max_retries.stop, "max_attempt_number", float("inf")
+                            )
+                        )
+                        if is_last_attempt:
+                            hooks.emit_completion_last_attempt(e)
                     raise e
     except RetryError as e:
         logger.debug(f"Retry error: {e}")
