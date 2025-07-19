@@ -1,4 +1,39 @@
-# type: ignore[all]
+"""Response processing and transformation for multiple LLM providers.
+
+This module serves as the central dispatcher for processing responses from various LLM providers
+(OpenAI, Anthropic, Google, Cohere, etc.) and transforming them into structured Pydantic models.
+It handles different response formats, streaming responses, validation, and error recovery.
+
+The module supports 40+ different modes across providers, each with specific handling logic
+for request formatting and response parsing. It also provides retry mechanisms (reask) for
+handling validation errors gracefully.
+
+Key Components:
+    - Response processing functions for sync/async operations
+    - Mode-based response model handlers for different providers
+    - Error recovery and retry logic for validation failures
+    - Support for streaming, partial, parallel, and iterable response models
+
+Example:
+    ```python
+    from instructor.process_response import process_response
+    from instructor.mode import Mode
+    from pydantic import BaseModel
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+    # Process an OpenAI response
+    processed = process_response(
+        response=openai_response,
+        response_model=User,
+        mode=Mode.TOOLS,
+        stream=False
+    )
+    ```
+"""
+
 from __future__ import annotations
 
 import inspect
@@ -139,22 +174,44 @@ async def process_response_async(
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
 ) -> T_Model | ChatCompletion:
-    """
-    Asynchronously processes the response from the OpenAI API.
+    """Asynchronously process and transform LLM responses into structured models.
+
+    This function is the async entry point for converting raw LLM responses into validated
+    Pydantic models. It handles various response formats from different providers and
+    supports special response types like streaming, partial objects, and parallel tool calls.
 
     Args:
-        response (ChatCompletion): The raw response from the OpenAI API.
-        response_model (type[T_Model | OpenAISchema | BaseModel] | None): The expected model type for the response.
-        stream (bool): Whether the response is streamed.
-        validation_context (dict[str, Any] | None): Additional context for validation.
-        strict (bool | None): Whether to apply strict validation.
-        mode (Mode): The processing mode to use.
+        response (ChatCompletion or Similar API Response): The raw response from the LLM API. Despite the type hint,
+            this can be responses from any supported provider (OpenAI, Anthropic, Google, etc.)
+        response_model (type[T_Model | BaseModel] | None): The target Pydantic
+            model to parse the response into. If None, returns the raw response unchanged.
+            Can also be special DSL types like ParallelBase for parallel tool calls, or IterableBase and PartialBase for streaming.
+        stream (bool): Whether this is a streaming response. Required for proper handling
+            of IterableBase and PartialBase models. Defaults to False.
+        validation_context (dict[str, Any] | None): Additional context passed to Pydantic
+            validators during model validation. Useful for dynamic validation logic. The context
+            is also used to format templated responses. Defaults to None.
+        strict (bool | None): Whether to enforce strict JSON parsing. When True, the response
+            must exactly match the model schema. When False, allows minor deviations.
+        mode (Mode): The provider/format mode that determines how to parse the response.
+            Examples: Mode.TOOLS (OpenAI), Mode.ANTHROPIC_JSON, Mode.GEMINI_TOOLS.
+            Defaults to Mode.TOOLS.
 
     Returns:
-        T_Model | ChatCompletion: The processed response, either as the specified model type or the raw ChatCompletion.
+        T_Model | ChatCompletion: The processed response. Return type depends on inputs:
+            - If response_model is None: returns raw response unchanged
+            - If response_model is IterableBase with stream=True: returns list of models
+            - If response_model is AdapterBase: returns the adapted content
+            - Otherwise: returns instance of response_model with _raw_response attached
 
-    This function handles various response types, including streaming responses and different model bases.
-    It applies the appropriate processing based on the response_model and mode provided.
+    Raises:
+        ValidationError: If the response doesn't match the expected model schema
+        IncompleteOutputException: If the response was truncated due to token limits
+        ValueError: If an invalid mode is specified
+
+    Note:
+        The function automatically detects special response model types (Iterable, Partial,
+        Parallel, Adapter) and applies appropriate processing logic for each.
     """
 
     logger.debug(
@@ -208,27 +265,53 @@ def process_response(
     strict=None,
     mode: Mode = Mode.TOOLS,
 ) -> T_Model | list[T_Model] | VertexAIParallelBase | None:
-    """
-    Process the response from the API call and convert it to the specified response model.
+    """Process and transform LLM responses into structured models (synchronous).
+
+    This is the main entry point for converting raw LLM responses into validated Pydantic
+    models. It acts as a dispatcher that handles various response formats from 40+ different
+    provider modes and transforms them according to the specified response model type.
 
     Args:
-        response (T_Model): The raw response from the API call.
-        response_model (type[OpenAISchema | BaseModel] | None): The model to convert the response to.
-        stream (bool): Whether the response is a streaming response.
-        validation_context (dict[str, Any] | None): Additional context for validation.
-        strict (bool | None): Whether to use strict validation.
-        mode (Mode): The mode used for processing the response.
+        response (T_Model): The raw response from the LLM API. The actual type varies by
+            provider (ChatCompletion for OpenAI, Message for Anthropic, etc.)
+        response_model (type[OpenAISchema | BaseModel] | None): The target Pydantic model
+            class to parse the response into. Special DSL types supported:
+            - IterableBase: For streaming multiple objects from a single response
+            - PartialBase: For incomplete/streaming partial objects
+            - ParallelBase: For parallel tool/function calls
+            - AdapterBase: For simple type adaptations (e.g., str, int)
+            If None, returns the raw response unchanged.
+        stream (bool): Whether this is a streaming response. Required to be True for
+            proper handling of IterableBase and PartialBase models.
+        validation_context (dict[str, Any] | None): Additional context passed to Pydantic
+            validators. Useful for runtime validation logic based on external state.
+        strict (bool | None): Controls JSON parsing strictness:
+            - True: Enforce exact schema matching (no extra fields)
+            - False/None: Allow minor deviations and extra fields
+        mode (Mode): The provider/format mode that determines parsing strategy.
+            Each mode corresponds to a specific provider and format combination:
+            - Tool modes: TOOLS, ANTHROPIC_TOOLS, GEMINI_TOOLS, etc.
+            - JSON modes: JSON, ANTHROPIC_JSON, VERTEXAI_JSON, etc.
+            - Special modes: PARALLEL_TOOLS, MD_JSON, JSON_SCHEMA, etc.
 
     Returns:
-        The processed response, which could be:
-        - The raw response if no response_model is specified
-        - An instance of the response_model
-        - A list of tasks if the model is an IterableBase
-        - The content of the model if it's an AdapterBase
+        T_Model | list[T_Model] | VertexAIParallelBase | None: The processed response:
+            - If response_model is None: Original response unchanged
+            - If IterableBase: List of extracted model instances
+            - If ParallelBase: Special parallel response object
+            - If AdapterBase: The adapted simple type (str, int, etc.)
+            - Otherwise: Single instance of response_model with _raw_response attached
 
-    This function handles various types of responses and models, including streaming
-    responses, iterable models, parallel models, and adapter models. It also attaches
-    the raw response to the processed model when applicable.
+    Raises:
+        ValidationError: Response doesn't match the expected model schema
+        IncompleteOutputException: Response truncated due to token limits
+        ValueError: Invalid mode specified or mode not supported
+        JSONDecodeError: Malformed JSON in response (for JSON modes)
+
+    Note:
+        The function preserves the raw response by attaching it to the parsed model
+        as `_raw_response`. This allows access to metadata like token usage, model
+        info, and other provider-specific fields after parsing.
     """
     logger.debug(
         f"Instructor Raw Response: {response}",
@@ -288,6 +371,8 @@ def handle_response_model(
 ) -> tuple[type[T] | VertexAIParallelBase | None, dict[str, Any]]:
     """
     Handles the response model based on the specified mode and prepares the kwargs for the API call.
+    This really should be named 'prepare_create_kwargs' as its job is to map the openai create kwargs
+    to the correct format for the API call based on the mode.
 
     Args:
         response_model (type[T] | None): The response model to be used for parsing the API response.
@@ -303,7 +388,6 @@ def handle_response_model(
     """
 
     new_kwargs = kwargs.copy()
-    # print(f"instructor.process_response.py: new_kwargs -> {new_kwargs}")
     # Extract autodetect_images for message conversion
     autodetect_images = new_kwargs.pop("autodetect_images", False)
 
@@ -404,9 +488,54 @@ def handle_response_model(
 def handle_reask_kwargs(
     kwargs: dict[str, Any],
     mode: Mode,
-    response: Any,  # Replace with actual response type based on the mode
+    response: Any,
     exception: Exception,
-):
+) -> dict[str, Any]:
+    """Handle validation errors by reformatting the request for retry (reask).
+
+    When a response fails validation (e.g., missing required fields, wrong types),
+    this function prepares a new request that includes information about the error.
+    This allows the LLM to understand what went wrong and correct its response.
+
+    The reask logic is provider-specific because each provider has different ways
+    of handling function/tool calls and different message formats.
+
+    Args:
+        kwargs (dict[str, Any]): The original request parameters that resulted in
+            a validation error. Includes messages, tools, temperature, etc.
+        mode (Mode): The provider/format mode that determines which reask handler
+            to use. Each mode has a specific strategy for formatting error feedback.
+        response (Any): The raw response from the LLM that failed validation.
+            Type varies by provider:
+            - OpenAI: ChatCompletion with tool_calls
+            - Anthropic: Message with tool_use blocks
+            - Google: GenerateContentResponse with function calls
+        exception (Exception): The validation error that occurred. Usually a
+            Pydantic ValidationError with details about which fields failed.
+
+    Returns:
+        dict[str, Any]: Modified kwargs for the retry request, typically including:
+            - Updated messages with error context
+            - Same tool/function definitions
+            - Preserved generation parameters
+            - Provider-specific formatting
+
+    Reask Strategies by Provider:
+        Each provider has a specific strategy for handling retries:
+
+        **JSON Modes:**
+        - Adds assistant message with failed attempt
+        - Adds user message with error details
+
+        **Tool Calls:**
+        - Preserves tool definitions
+        - Formats the errors as tool calls responses
+
+    Note:
+        This function is typically called internally by the retry logic when
+        max_retries > 1. It ensures that each retry attempt includes context
+        about previous failures, helping the LLM learn from its mistakes.
+    """
     # Create a shallow copy of kwargs to avoid modifying the original
     kwargs_copy = kwargs.copy()
 
