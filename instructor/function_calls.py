@@ -402,22 +402,26 @@ class OpenAISchema(BaseModel):
             # Extract the tool use from Bedrock response
             message = completion.get("output", {}).get("message", {})
             content = message.get("content", [])
-            
+
             # Find the tool use content block
             for content_block in content:
                 if "toolUse" in content_block:
                     tool_use = content_block["toolUse"]
-                    assert tool_use.get("name") == cls.__name__, f"Tool name mismatch: expected {cls.__name__}, got {tool_use.get('name')}"
+                    assert tool_use.get("name") == cls.__name__, (
+                        f"Tool name mismatch: expected {cls.__name__}, got {tool_use.get('name')}"
+                    )
                     return cls.model_validate(
                         tool_use.get("input", {}),
                         context=validation_context,
-                        strict=strict
+                        strict=strict,
                     )
-            
+
             raise ValueError("No tool use found in Bedrock response")
         else:
             # Fallback for other response formats
-            return cls.model_validate_json(completion.text, context=validation_context, strict=strict)
+            return cls.model_validate_json(
+                completion.text, context=validation_context, strict=strict
+            )
 
     @classmethod
     def parse_gemini_json(

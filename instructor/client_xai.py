@@ -25,9 +25,6 @@ else:
         xchat = None
 
 
-
-
-
 @overload
 def from_xai(
     client: SyncClient,

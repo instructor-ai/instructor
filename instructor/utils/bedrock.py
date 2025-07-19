@@ -325,23 +325,19 @@ def handle_bedrock_tools(
       - Applies: _prepare_bedrock_converse_kwargs_internal transformations
     """
     new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
-    
+
     if response_model is None:
         return None, new_kwargs
-    
+
     # Generate Bedrock tool schema
     tool_schema = generate_bedrock_schema(response_model)
-    
+
     # Set up tools configuration for Bedrock Converse API
     new_kwargs["toolConfig"] = {
         "tools": [tool_schema],
-        "toolChoice": {
-            "tool": {
-                "name": response_model.__name__
-            }
-        }
+        "toolChoice": {"tool": {"name": response_model.__name__}},
     }
-    
+
     return response_model, new_kwargs
 
 

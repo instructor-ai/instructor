@@ -9,7 +9,7 @@ class User(BaseModel):
     age: int
 
 
-@pytest.mark.parametrize("mode", [instructor.Mode.JSON, instructor.Mode.TOOLS])
+@pytest.mark.parametrize("mode", [instructor.Mode.XAI_JSON, instructor.Mode.XAI_TOOLS])
 @pytest.mark.asyncio
 @pytest.mark.skipif(
     not os.environ.get("XAI_API_KEY") or os.environ.get("XAI_API_KEY") == "test",
@@ -38,7 +38,7 @@ async def test_xai_async_from_provider(mode):
     assert user.age == 25
 
 
-@pytest.mark.parametrize("mode", [instructor.Mode.JSON, instructor.Mode.TOOLS])
+@pytest.mark.parametrize("mode", [instructor.Mode.XAI_JSON, instructor.Mode.XAI_TOOLS])
 @pytest.mark.skipif(
     not os.environ.get("XAI_API_KEY") or os.environ.get("XAI_API_KEY") == "test",
     reason="XAI_API_KEY not set or invalid",
