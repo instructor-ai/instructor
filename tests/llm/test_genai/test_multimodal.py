@@ -253,7 +253,7 @@ def test_local_pdf(client, model, mode, pdf_source):
                 "role": "user",
                 "content": [
                     "How much is the invoice?",
-                    instructor.multimodal.PDF.autodetect(pdf_source),
+                    instructor.processing.multimodal.PDF.autodetect(pdf_source),
                 ],
             }
         ],
@@ -275,7 +275,7 @@ def test_existing_genai_file_pdf_integration(client, model, mode):
                 "role": "user",
                 "content": [
                     "How much is the invoice?",
-                    instructor.multimodal.PDFWithGenaiFile.from_new_genai_file(
+                    instructor.processing.multimodal.PDFWithGenaiFile.from_new_genai_file(
                         pdf_path
                     ),
                 ],
@@ -300,7 +300,7 @@ def test_upload_file_genai_pdf_integration(client, model, mode):
                 "role": "user",
                 "content": [
                     "How much is the invoice?",
-                    instructor.multimodal.PDFWithGenaiFile.from_existing_genai_file(
+                    instructor.processing.multimodal.PDFWithGenaiFile.from_existing_genai_file(
                         file.name
                     ),
                 ],
@@ -325,7 +325,9 @@ def test_local_pdf_with_genai_file(client, model, mode, pdf_source):
                 "role": "user",
                 "content": [
                     "How much is the invoice?",
-                    instructor.multimodal.PDFWithGenaiFile.autodetect(pdf_source),
+                    instructor.processing.multimodal.PDFWithGenaiFile.autodetect(
+                        pdf_source
+                    ),
                 ],
             }
         ],

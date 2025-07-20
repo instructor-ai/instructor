@@ -22,7 +22,7 @@ def test_mistral_retry_validation(client, model, mode):
                 "role": "user",
                 "content": [
                     "Extract information from the invoice.",
-                    instructor.multimodal.PDF.from_url(pdf_url),
+                    instructor.processing.multimodal.PDF.from_url(pdf_url),
                 ],
             }
         ],
@@ -44,7 +44,7 @@ async def test_mistral_retry_validation_async(client, model, mode):
                 "role": "user",
                 "content": [
                     "Extract information from the invoice.",
-                    instructor.multimodal.PDF.from_url(pdf_url),
+                    instructor.processing.multimodal.PDF.from_url(pdf_url),
                 ],
             }
         ],
