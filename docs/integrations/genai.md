@@ -284,7 +284,7 @@ Let's see an example below with the sample image above where we'll load it in us
 Note that we support local files and base64 strings too with the `from_path` and the `from_base64` class methods.
 
 ```python
-from instructor.multimodal import Image
+from instructor.processing.multimodal import Image
 from pydantic import BaseModel, Field
 import instructor
 from google.genai import Client
@@ -336,7 +336,7 @@ Instructor makes it easy to analyse and extract semantic information from Audio 
 Note that we support local files and base64 strings too with the `from_path`
 
 ```python
-from instructor.multimodal import Audio
+from instructor.processing.multimodal import Audio
 from pydantic import BaseModel
 import instructor
 from google.genai import Client
@@ -382,7 +382,7 @@ Let's see an example below with the sample PDF above where we'll load it in usin
 Note that we support local files and base64 strings using this method too with the `from_path` and the `from_base64` class methods.
 
 ```python
-from instructor.multimodal import PDF
+from instructor.processing.multimodal import PDF
 from pydantic import BaseModel
 import instructor
 from google.genai import Client
@@ -435,7 +435,7 @@ PDFWithGenaiFile.from_new_genai_file(
 This makes it easier for you to work with the Gemini files API. You can use this in a normal chat completion as seen below
 
 ```python
-from instructor.multimodal import PDFWithGenaiFile
+from instructor.processing.multimodal import PDFWithGenaiFile
 from pydantic import BaseModel
 import instructor
 from google.genai import Client

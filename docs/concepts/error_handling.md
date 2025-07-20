@@ -12,7 +12,7 @@ Instructor provides a comprehensive exception hierarchy to help you handle error
 All Instructor-specific exceptions inherit from `InstructorError`, making it easy to catch all Instructor-related errors:
 
 ```python
-from instructor.exceptions import (
+from instructor.core.exceptions import (
     InstructorError,
     IncompleteOutputException,
     InstructorRetryException,
@@ -124,7 +124,7 @@ except ClientError as e:
 ### 1. Catch Specific Exceptions When Possible
 
 ```python
-from instructor.exceptions import (
+from instructor.core.exceptions import (
     IncompleteOutputException,
     InstructorRetryException,
     ValidationError
@@ -149,7 +149,7 @@ except ValidationError as e:
 ### 2. Use the Base Exception for General Error Handling
 
 ```python
-from instructor.exceptions import InstructorError
+from instructor.core.exceptions import InstructorError
 
 try:
     response = client.chat.completions.create(...)
@@ -162,7 +162,7 @@ except InstructorError as e:
 ### 3. Handle Provider Setup Errors
 
 ```python
-from instructor.exceptions import ConfigurationError, ClientError, ModeError
+from instructor.core.exceptions import ConfigurationError, ClientError, ModeError
 
 def create_client(provider: str, mode: str = None):
     try:
@@ -183,7 +183,7 @@ def create_client(provider: str, mode: str = None):
 
 ```python
 import logging
-from instructor.exceptions import InstructorError
+from instructor.core.exceptions import InstructorError
 
 logger = logging.getLogger(__name__)
 
@@ -208,7 +208,7 @@ def extract_data(content: str):
 ### 5. Graceful Degradation
 
 ```python
-from instructor.exceptions import ValidationError, InstructorRetryException
+from instructor.core.exceptions import ValidationError, InstructorRetryException
 
 def extract_with_fallback(content: str):
     # Try with strict model first
@@ -236,7 +236,7 @@ Instructor's hooks system can be used to monitor and handle errors programmatica
 
 ```python
 from instructor import Instructor
-from instructor.exceptions import ValidationError
+from instructor.core.exceptions import ValidationError
 
 def on_parse_error(error: Exception):
     if isinstance(error, ValidationError):

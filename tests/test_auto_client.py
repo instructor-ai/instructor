@@ -88,7 +88,7 @@ async def test_user_extraction_async(provider_string):
 
 def test_invalid_provider_format():
     """Test that error is raised for invalid provider format."""
-    from instructor.exceptions import ConfigurationError
+    from instructor.core.exceptions import ConfigurationError
 
     with pytest.raises(ConfigurationError) as excinfo:
         from_provider("invalid-format")
@@ -97,7 +97,7 @@ def test_invalid_provider_format():
 
 def test_unsupported_provider():
     """Test that error is raised for unsupported provider."""
-    from instructor.exceptions import ConfigurationError
+    from instructor.core.exceptions import ConfigurationError
 
     with pytest.raises(ConfigurationError) as excinfo:
         from_provider("unsupported/model")
@@ -107,7 +107,7 @@ def test_unsupported_provider():
 def test_additional_kwargs_passed():
     """Test that additional kwargs are passed to provider."""
     import instructor
-    from instructor.exceptions import InstructorRetryException
+    from instructor.core.exceptions import InstructorRetryException
     import os
 
     if os.getenv("INSTRUCTOR_ENV") == "CI":

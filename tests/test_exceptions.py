@@ -1,7 +1,7 @@
 """Test that all instructor exceptions can be imported and caught properly."""
 
 import pytest
-from instructor.exceptions import (
+from instructor.core.exceptions import (
     InstructorError,
     IncompleteOutputException,
     InstructorRetryException,
@@ -211,7 +211,7 @@ def test_multiple_exception_handling():
 def test_exception_import_from_instructor():
     """Test that exceptions can be imported from the main instructor module."""
     # Test importing from instructor.exceptions (already done in module imports)
-    from instructor.exceptions import InstructorError as ImportedError
+    from instructor.core.exceptions import InstructorError as ImportedError
 
     assert ImportedError is InstructorError
 

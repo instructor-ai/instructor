@@ -11,7 +11,7 @@ from pydantic import BaseModel, ValidationError
 
 import instructor
 from instructor import OpenAISchema, openai_schema
-from instructor.exceptions import IncompleteOutputException
+from instructor.core.exceptions import IncompleteOutputException
 from instructor.utils import disable_pydantic_error_url
 
 T = TypeVar("T")

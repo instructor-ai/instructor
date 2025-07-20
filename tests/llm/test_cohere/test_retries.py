@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from instructor import from_cohere
-from instructor.exceptions import InstructorRetryException
+from instructor.core.exceptions import InstructorRetryException
 import pytest
 
 

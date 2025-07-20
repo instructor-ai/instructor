@@ -39,7 +39,7 @@ To demonstrate how to use this new functionality, let's look at a simple example
 from openai import OpenAI
 from pydantic import BaseModel
 import instructor
-from instructor.multimodal import Audio
+from instructor.processing.multimodal import Audio
 
 client = instructor.from_openai(OpenAI())
 

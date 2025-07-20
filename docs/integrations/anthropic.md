@@ -173,7 +173,7 @@ Let's see an example below with the sample image above where we'll load it in us
 Note that we support local files and base64 strings too with the `from_path` and the `from_base64` class methods.
 
 ```python
-from instructor.multimodal import Image
+from instructor.processing.multimodal import Image
 from pydantic import BaseModel, Field
 import instructor
 from anthropic import Anthropic
@@ -228,7 +228,7 @@ Let's see an example below with the sample PDF above where we'll load it in usin
 Note that we support local files and base64 strings too with the `from_path` and the `from_base64` class methods.
 
 ```python
-from instructor.multimodal import PDF
+from instructor.processing.multimodal import PDF
 from pydantic import BaseModel, Field
 import instructor
 from anthropic import Anthropic
@@ -270,7 +270,7 @@ print(response)
 If you'd like to cache the PDF and use it across multiple different requests, we support that with the `PdfWithCacheControl` class which we can see below.
 
 ```python
-from instructor.multimodal import PdfWithCacheControl
+from instructor.processing.multimodal import PdfWithCacheControl
 from pydantic import BaseModel
 import instructor
 from anthropic import Anthropic

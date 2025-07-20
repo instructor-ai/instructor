@@ -1,5 +1,5 @@
 import pytest
-from instructor.multimodal import Image, PDF, PDFWithCacheControl
+from instructor.processing.multimodal import Image, PDF, PDFWithCacheControl
 import instructor
 from pydantic import Field, BaseModel
 from itertools import product

@@ -1,6 +1,6 @@
 """Tests to validate that the optimized dictionary operations provide the same results as before."""
 
-from instructor.retry import extract_messages
+from instructor.core.retry import extract_messages
 from instructor.utils import (
     combine_system_messages,
     extract_system_messages,

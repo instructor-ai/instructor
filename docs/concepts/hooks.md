@@ -290,7 +290,7 @@ def handle_completion_error(error: Exception) -> None:
     print(f"Message: {str(error)}")
 
     # Handle specific Instructor exceptions
-    from instructor.exceptions import (
+    from instructor.core.exceptions import (
         IncompleteOutputException,
         ValidationError,
         ProviderError
@@ -427,7 +427,7 @@ client.on("completion:error", handler)
 Hooks provide an excellent way to monitor and handle errors consistently across your application. You can use them with Instructor's exception hierarchy for sophisticated error handling:
 
 ```python
-from instructor.exceptions import (
+from instructor.core.exceptions import (
     InstructorError,
     IncompleteOutputException,
     InstructorRetryException,

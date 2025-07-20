@@ -4,12 +4,12 @@ import pytest
 from pydantic import BaseModel, Field
 from typing import Optional
 
-from instructor.schema_utils import (
+from instructor.processing.schema import (
     generate_openai_schema,
     generate_anthropic_schema,
     generate_gemini_schema,
 )
-from instructor.function_calls import OpenAISchema
+from instructor.processing.function_calls import OpenAISchema
 
 
 class TestModel(BaseModel):

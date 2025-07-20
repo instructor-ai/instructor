@@ -1,7 +1,7 @@
 from openai import OpenAI
 from pydantic import BaseModel
 import instructor
-from instructor.multimodal import Audio
+from instructor.processing.multimodal import Audio
 import base64
 
 client = instructor.from_openai(OpenAI())

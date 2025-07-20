@@ -6,7 +6,7 @@ import instructor
 from typing import Annotated
 from pydantic import BaseModel, AfterValidator, BeforeValidator, ValidationError
 
-from instructor.dsl.validators import llm_validator
+from instructor.validation import llm_validator
 from .util import models, modes
 
 

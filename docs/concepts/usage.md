@@ -42,7 +42,7 @@ CompletionUsage(
 You can catch an IncompleteOutputException whenever the context length is exceeded and react accordingly, such as by trimming your prompt by the number of exceeding tokens.
 
 ```python
-from instructor.exceptions import IncompleteOutputException
+from instructor.core.exceptions import IncompleteOutputException
 import instructor
 from pydantic import BaseModel
 

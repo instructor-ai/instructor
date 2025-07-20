@@ -39,7 +39,7 @@ You can create an `Image` instance from a URL or file path using the `from_url` 
 
 ```python
 import instructor
-from instructor.multimodal import Image
+from instructor.processing.multimodal import Image
 import openai
 from pydantic import BaseModel
 
@@ -77,7 +77,7 @@ You can see an example below.
 
 ```python
 import instructor
-from instructor.multimodal import Image
+from instructor.processing.multimodal import Image
 import openai
 from pydantic import BaseModel
 
@@ -111,7 +111,7 @@ If you'll like to support Anthropic prompt caching with images, we provide the `
 
 ```python
 import instructor
-from instructor.multimodal import ImageWithCacheControl
+from instructor.processing.multimodal import ImageWithCacheControl
 import anthropic
 from pydantic import BaseModel
 
@@ -176,7 +176,7 @@ The `Audio` class will automatically convert it to a the right format and includ
 from openai import OpenAI
 from pydantic import BaseModel
 import instructor
-from instructor.multimodal import Audio
+from instructor.processing.multimodal import Audio
 import base64
 
 # Initialize the client
@@ -235,7 +235,7 @@ We provide examples of how to use all three object classes below.
  from openai import OpenAI
  import instructor
  from pydantic import BaseModel
- from instructor.multimodal import PDF
+ from instructor.processing.multimodal import PDF
 
  # Set up the client
  url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
@@ -274,7 +274,7 @@ If you'd like to cache the PDF for Anthropic, we provide the `PDFWithCacheContro
 from anthropic import Anthropic
 import instructor
 from pydantic import BaseModel
-from instructor.multimodal import PDFWithCacheControl
+from instructor.processing.multimodal import PDFWithCacheControl
 
 # Set up the client
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
@@ -319,7 +319,7 @@ In this example below, we download the sample PDF and then upload it using the `
 from google.genai import Client
 import instructor
 from pydantic import BaseModel
-from instructor.multimodal import PDFWithGenaiFile
+from instructor.processing.multimodal import PDFWithGenaiFile
 import requests
 
 # Set up the client
@@ -366,7 +366,7 @@ If you've already uploaded your file ahead of time, we also support it. Just pro
 from google.genai import Client
 import instructor
 from pydantic import BaseModel
-from instructor.multimodal import PDFWithGenaiFile
+from instructor.processing.multimodal import PDFWithGenaiFile
 import requests
 
 # Set up the client

@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from instructor.multimodal import Image, convert_contents, convert_messages
+from instructor.processing.multimodal import Image, convert_contents, convert_messages
 from instructor.mode import Mode
 from unittest.mock import patch, MagicMock
 import instructor

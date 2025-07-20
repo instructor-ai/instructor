@@ -311,7 +311,7 @@ Instructor maintains compatibility with the latest Mistral API versions and mode
 Instructor makes it easy to analyse and extract semantic information from PDFs using Mistral's models. Let's see an example below with the sample PDF above where we'll load it in using our `from_url` method. Note that for now Mistral only supports document URLs.
 
 ```
-from instructor.multimodal import PDF
+from instructor.processing.multimodal import PDF
 from pydantic import BaseModel
 import instructor
 from mistralai import Mistral

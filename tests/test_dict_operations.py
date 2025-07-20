@@ -1,7 +1,7 @@
 """Benchmark tests for dictionary operations in instructor."""
 
 import timeit
-from instructor.retry import extract_messages
+from instructor.core.retry import extract_messages
 from instructor.utils import (
     combine_system_messages,
     extract_system_messages,

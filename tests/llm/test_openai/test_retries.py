@@ -107,7 +107,7 @@ def test_custom_retry_response_error(model, mode):
 
     client = instructor.from_openai(client, mode=mode)
     from openai import AuthenticationError
-    from instructor.exceptions import InstructorRetryException
+    from instructor.core.exceptions import InstructorRetryException
     from tenacity import Retrying, retry_if_not_exception_type, stop_after_attempt
 
     retries = Retrying(

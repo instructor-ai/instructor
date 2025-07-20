@@ -1,4 +1,4 @@
-from instructor.process_response import handle_response_model
+from instructor.processing.response import handle_response_model
 from pydantic import BaseModel, Field
 import instructor
 import pytest

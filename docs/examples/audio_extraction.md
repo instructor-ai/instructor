@@ -14,7 +14,7 @@ This example demonstrates how to use Instructor with OpenAI's audio capabilities
 from openai import OpenAI
 from pydantic import BaseModel
 import instructor
-from instructor.multimodal import Audio
+from instructor.processing.multimodal import Audio
 import base64
 
 # Initialize the OpenAI client with Instructor

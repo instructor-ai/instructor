@@ -1,6 +1,6 @@
 from typing_extensions import TypedDict
 from pydantic import BaseModel
-from instructor.process_response import handle_response_model
+from instructor.processing.response import handle_response_model
 from instructor.providers.bedrock.utils import _prepare_bedrock_converse_kwargs_internal
 
 

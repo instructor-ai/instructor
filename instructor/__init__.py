@@ -3,10 +3,6 @@ import importlib.util
 from .mode import Mode
 from .processing.multimodal import Image, Audio
 
-# Backward compatibility
-from . import processing
-
-multimodal = processing.multimodal
 from .dsl import (
     CitationMixin,
     Maybe,
@@ -14,11 +10,6 @@ from .dsl import (
     IterableModel,
 )
 
-# Backward compatibility for dsl.validators
-from . import dsl
-from . import validation
-
-dsl.validators = validation
 from .validation import llm_validator, openai_moderation
 from .processing.function_calls import OpenAISchema, openai_schema
 from .processing.schema import (
@@ -68,7 +59,6 @@ __all__ = [
     "llm_validator",
     "openai_moderation",
     "hooks",
-    "multimodal",
 ]
 
 
