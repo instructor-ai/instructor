@@ -50,7 +50,7 @@ pythonPlatform = "Linux"
 [project.optional-dependencies]
 dev = [
     "pytest<9.0.0,>=8.3.3",
-    "pytest-asyncio<1.0.0,>=0.24.0",
+    "pytest-asyncio>=0.24.0,<2.0.0",
     "coverage<8.0.0,>=7.3.2",
     "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
@@ -73,7 +73,7 @@ docs = [
     "mkdocs-material>=9.6.14",
 ]
 test-docs = [
-    "fastapi<0.116.0,>=0.109.2",
+    "fastapi>=0.109.2,<0.117.0",
     "redis>=5.0.1,<7.0.0",
     "diskcache<6.0.0,>=5.6.3",
     "pandas<3.0.0,>=2.2.0",
@@ -82,8 +82,8 @@ test-docs = [
     "litellm<2.0.0,>=1.35.31",
     "mistralai<2.0.0,>=1.5.1",
 ]
-anthropic = ["anthropic==0.53.0", "xmltodict<0.15,>=0.13"]
-groq = ["groq>=0.4.2,<0.27.0"]
+anthropic = ["anthropic==0.58.2", "xmltodict<0.15,>=0.13"]
+groq = ["groq>=0.4.2,<0.31.0"]
 cohere = ["cohere<6.0.0,>=5.1.8"]
 vertexai = ["google-cloud-aiplatform<2.0.0,>=1.53.0", "jsonref<2.0.0,>=1.1.0"]
 cerebras_cloud_sdk = ["cerebras-cloud-sdk<2.0.0,>=1.5.0"]
@@ -100,7 +100,7 @@ graphviz = ["graphviz<1.0.0,>=0.20.3"]
 sqlmodel = ["sqlmodel<1.0.0,>=0.0.22"]
 trafilatura = ["trafilatura<3.0.0,>=1.12.2"]
 pydub = ["pydub<1.0.0,>=0.25.1"]
-datasets = ["datasets<4.0.0,>=3.0.1"]
+datasets = ["datasets>=3.0.1,<5.0.0"]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"
@@ -108,7 +108,7 @@ instructor = "instructor.cli.cli:app"
 [dependency-groups]
 dev = [
     "pytest<9.0.0,>=8.3.3",
-    "pytest-asyncio<1.0.0,>=0.24.0",
+    "pytest-asyncio>=0.24.0,<2.0.0",
     "coverage<8.0.0,>=7.3.2",
     "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
@@ -132,18 +132,18 @@ docs = [
     "cairosvg>=2.7.1",
     "pillow>=10.4.0",
 ]
-anthropic = ["anthropic==0.53.0", "xmltodict<0.15,>=0.13"]
+anthropic = ["anthropic==0.58.2", "xmltodict<0.15,>=0.13"]
 test-docs = [
-    "fastapi<0.116.0,>=0.109.2",
+    "fastapi>=0.109.2,<0.117.0",
     "redis>=5.0.1,<7.0.0",
     "diskcache<6.0.0,>=5.6.3",
     "pandas<3.0.0,>=2.2.0",
     "tabulate<1.0.0,>=0.9.0",
     "pydantic-extra-types<3.0.0,>=2.6.0",
     "litellm<2.0.0,>=1.35.31",
-    "anthropic==0.53.0",
+    "anthropic==0.58.2",
     "xmltodict<0.15,>=0.13",
-    "groq>=0.4.2,<0.27.0",
+    "groq>=0.4.2,<0.31.0",
     "phonenumbers>=8.13.33,<10.0.0",
     "cohere<6.0.0,>=5.1.8",
     "mistralai<2.0.0,>=1.5.1",
@@ -153,7 +153,7 @@ test-docs = [
     "sqlmodel<1.0.0,>=0.0.22",
     "trafilatura<3.0.0,>=1.12.2",
     "pydub<1.0.0,>=0.25.1",
-    "datasets<4.0.0,>=3.0.1",
+    "datasets>=3.0.1,<5.0.0",
     "writer-sdk<3.0.0,>=2.2.0",
 ]
 litellm = ["litellm<2.0.0,>=1.35.31"]
@@ -161,7 +161,7 @@ vertexai = ["google-cloud-aiplatform<2.0.0,>=1.53.0", "jsonref<2.0.0,>=1.1.0"]
 bedrock = ["boto3<2.0.0,>=1.34.0"]
 mistral = ["mistralai<2.0.0,>=1.5.1"]
 perplexity = ["openai<2.0.0,>=1.52.0"]
-groq = ["groq>=0.4.2,<0.27.0"]
+groq = ["groq>=0.4.2,<0.31.0"]
 cohere = ["cohere<6.0.0,>=5.1.8"]
 cerebras_cloud_sdk = ["cerebras-cloud-sdk<2.0.0,>=1.5.0"]
 fireworks-ai = ["fireworks-ai<1.0.0,>=0.15.4"]
