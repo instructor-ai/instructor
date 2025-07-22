@@ -119,7 +119,8 @@ def from_xai(
             resp = chat.sample()
             return resp
         if mode == instructor.Mode.XAI_JSON:
-            _, parsed = chat.parse(response_model)
+            raw, parsed = chat.parse(response_model)
+            parsed._raw_response = raw
             return parsed
         else:
             tool = xchat.tool(

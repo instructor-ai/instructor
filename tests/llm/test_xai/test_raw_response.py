@@ -44,7 +44,7 @@ def test_xai_raw_response_sync(model, mode):
             },
             {
                 "role": "user",
-                "content": "Extract: Jason is 25 years old.",
+                "content": "Extract: Jason is 25 years old. Make sure the name is in UPPERCASE format.",
             },
         ],
     )
@@ -77,7 +77,7 @@ async def test_xai_raw_response_async(model, mode):
             },
             {
                 "role": "user",
-                "content": "Extract: Jason is 25 years old.",
+                "content": "Extract: Jason is 25 years old. Make sure the name is in UPPERCASE format.",
             },
         ],
     )
@@ -110,7 +110,7 @@ def test_xai_raw_response_with_validator_sync(model, mode):
             },
             {
                 "role": "user",
-                "content": "Extract: Jason is 25 years old.",
+                "content": "Extract: Jason is 25 years old. Make sure the name is in UPPERCASE format.",
             },
         ],
     )
@@ -144,7 +144,7 @@ async def test_xai_raw_response_with_validator_async(model, mode):
             },
             {
                 "role": "user",
-                "content": "Extract: Jason is 25 years old.",
+                "content": "Extract: Jason is 25 years old. Make sure the name is in UPPERCASE format.",
             },
         ],
     )
@@ -175,7 +175,7 @@ def test_xai_create_with_completion():
             },
             {
                 "role": "user",
-                "content": "Extract: Jason is 25 years old.",
+                "content": "Extract: Jason is 25 years old. Make sure the name is in UPPERCASE format.",
             },
         ],
     )
@@ -208,7 +208,7 @@ async def test_xai_create_with_completion_async():
             },
             {
                 "role": "user",
-                "content": "Extract: Jason is 25 years old.",
+                "content": "Extract: Jason is 25 years old. Make sure the name is in UPPERCASE format.",
             },
         ],
     )
