@@ -1,7 +1,7 @@
 """Test that validation errors properly trigger retry mechanism."""
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from pydantic import BaseModel, ValidationError as PydanticValidationError
 from instructor.core.exceptions import ValidationError as InstructorValidationError, InstructorRetryException
 from instructor.core.retry import retry_sync, retry_async
@@ -15,7 +15,7 @@ class TestModel(BaseModel):
 
 def test_retry_sync_handles_pydantic_validation_error():
     """Test that retry_sync catches pydantic ValidationError and calls handle_reask_kwargs."""
-    def mock_func(*args, **kwargs):
+    def mock_func(*_args, **_kwargs):
         raise PydanticValidationError.from_exception_data("TestModel", [])
     
     with patch('instructor.core.retry.handle_reask_kwargs') as mock_handle_reask:
@@ -36,7 +36,7 @@ def test_retry_sync_handles_pydantic_validation_error():
 
 def test_retry_sync_handles_instructor_validation_error():
     """Test that retry_sync catches instructor ValidationError and calls handle_reask_kwargs."""
-    def mock_func(*args, **kwargs):
+    def mock_func(*_args, **_kwargs):
         raise InstructorValidationError("Test validation error")
     
     with patch('instructor.core.retry.handle_reask_kwargs') as mock_handle_reask:
@@ -58,7 +58,7 @@ def test_retry_sync_handles_instructor_validation_error():
 @pytest.mark.asyncio
 async def test_retry_async_handles_pydantic_validation_error():
     """Test that retry_async catches pydantic ValidationError and calls handle_reask_kwargs."""
-    async def mock_func(*args, **kwargs):
+    async def mock_func(*_args, **_kwargs):
         raise PydanticValidationError.from_exception_data("TestModel", [])
     
     with patch('instructor.core.retry.handle_reask_kwargs') as mock_handle_reask:
@@ -80,7 +80,7 @@ async def test_retry_async_handles_pydantic_validation_error():
 @pytest.mark.asyncio
 async def test_retry_async_handles_instructor_validation_error():
     """Test that retry_async catches instructor ValidationError and calls handle_reask_kwargs."""
-    async def mock_func(*args, **kwargs):
+    async def mock_func(*_args, **_kwargs):
         raise InstructorValidationError("Test validation error")
     
     with patch('instructor.core.retry.handle_reask_kwargs') as mock_handle_reask:
