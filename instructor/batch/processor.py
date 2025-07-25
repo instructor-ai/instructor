@@ -72,6 +72,7 @@ class BatchProcessor(Generic[T]):
             print(f"Created batch file {file_path} with {len(batch_requests)} requests")
             return file_path
         else:
+            # Create BytesIO buffer - caller is responsible for cleanup
             buffer = io.BytesIO()
             batch_requests = []
             for i, messages in enumerate(messages_list):

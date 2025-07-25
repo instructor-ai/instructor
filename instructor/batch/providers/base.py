@@ -7,7 +7,10 @@ This module defines the abstract base class that all batch providers must implem
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 import io
+import logging
 from ..models import BatchJobInfo
+
+logger = logging.getLogger(__name__)
 
 
 class BatchProvider(ABC):

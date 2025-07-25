@@ -7,8 +7,11 @@ This module contains the Anthropic batch processing provider class.
 import json
 from typing import Any, Optional, Union
 import io
+import logging
 from .base import BatchProvider
 from ..models import BatchJobInfo
+
+logger = logging.getLogger(__name__)
 
 
 class AnthropicProvider(BatchProvider):
@@ -56,8 +59,12 @@ class AnthropicProvider(BatchProvider):
 
             batch = batches_client.create(requests=requests)
             return batch.id
+        except (ValueError, TypeError) as e:
+            # Re-raise validation errors as-is
+            logger.error(f"Validation error in Anthropic batch submission: {e}")
+            raise
         except Exception as e:
-            raise Exception(f"Failed to submit Anthropic batch: {e}") from e
+            raise RuntimeError(f"Failed to submit Anthropic batch: {e}") from e
 
     def get_status(self, batch_id: str) -> dict[str, Any]:
         """Get Anthropic batch status"""

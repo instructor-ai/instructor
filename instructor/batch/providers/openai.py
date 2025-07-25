@@ -6,8 +6,11 @@ This module contains the OpenAI batch processing provider class.
 
 from typing import Any, Optional, Union
 import io
+import logging
 from .base import BatchProvider
 from ..models import BatchJobInfo
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAIProvider(BatchProvider):
@@ -28,10 +31,14 @@ class OpenAIProvider(BatchProvider):
             if metadata is None:
                 metadata = {"description": "Instructor batch job"}
 
+            logger.debug(f"Submitting batch job with metadata: {metadata}")
+
             if isinstance(file_path_or_buffer, str):
+                logger.debug(f"Creating batch file from path: {file_path_or_buffer}")
                 with open(file_path_or_buffer, "rb") as f:
                     batch_file = client.files.create(file=f, purpose="batch")
             elif isinstance(file_path_or_buffer, io.BytesIO):
+                logger.debug("Creating batch file from BytesIO buffer")
                 file_path_or_buffer.seek(0)
                 batch_file = client.files.create(
                     file=file_path_or_buffer, purpose="batch"
@@ -47,9 +54,15 @@ class OpenAIProvider(BatchProvider):
                 completion_window=kwargs.get("completion_window", "24h"),
                 metadata=metadata,
             )
+            logger.info(f"Successfully submitted batch job: {batch_job.id}")
             return batch_job.id
+        except (ValueError, TypeError) as e:
+            # Re-raise validation errors as-is
+            logger.error(f"Validation error in OpenAI batch submission: {e}")
+            raise
         except Exception as e:
-            raise Exception(f"Failed to submit OpenAI batch: {e}") from e
+            logger.error(f"Failed to submit OpenAI batch: {e}")
+            raise RuntimeError(f"Failed to submit OpenAI batch: {e}") from e
 
     def get_status(self, batch_id: str) -> dict[str, Any]:
         """Get OpenAI batch status"""
