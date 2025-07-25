@@ -47,6 +47,13 @@ reportMissingTypeStubs = false
 pythonVersion = "3.9"
 pythonPlatform = "Linux"
 
+[tool.pytest.ini_options]
+markers = [
+    "unit: marks tests as unit tests (fast, no external dependencies)",
+    "integration: marks tests as integration tests (may require API keys)",
+    "llm: marks tests that make LLM API calls",
+]
+
 [project.optional-dependencies]
 dev = [
     "pytest<9.0.0,>=8.3.3",

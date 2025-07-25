@@ -8,6 +8,9 @@ from instructor.batch.request import BatchRequest
 from instructor.batch.providers.openai import OpenAIProvider
 from instructor.batch.providers.anthropic import AnthropicProvider
 
+# Mark all tests in this module as unit tests (not integration)
+pytestmark = pytest.mark.unit
+
 
 class User(BaseModel):
     name: str

@@ -218,6 +218,31 @@ batch_id = processor.submit_batch(buffer)
 # No cleanup required - buffer is garbage collected
 ```
 
+### BytesIO Lifecycle Management
+
+When using in-memory batch processing, the BytesIO buffer lifecycle is managed as follows:
+
+1. **Creation**: The `create_batch_from_messages()` method creates and returns a BytesIO buffer
+2. **Ownership**: The caller owns the buffer and is responsible for its lifecycle
+3. **Submission**: The `submit_batch()` method reads from the buffer but doesn't close it
+4. **Cleanup**: Python's garbage collector automatically cleans up the buffer when it goes out of scope
+
+**Best Practices:**
+- The buffer is automatically cleaned up when no longer referenced
+- No explicit `.close()` call is needed for BytesIO objects
+- If you need to reuse the buffer, call `.seek(0)` to reset position
+- For very large batches, consider monitoring memory usage
+
+```python
+# Example: Reusing a buffer
+buffer = processor.create_batch_from_messages(messages, file_path=None)
+batch_id_1 = processor.submit_batch(buffer)
+
+# Reset buffer position to reuse
+buffer.seek(0)
+batch_id_2 = processor.submit_batch(buffer)
+```
+
 ## Provider-Specific Setup
 
 ### OpenAI Setup

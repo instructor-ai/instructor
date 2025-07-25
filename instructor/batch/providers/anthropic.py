@@ -37,7 +37,7 @@ class AnthropicProvider(BatchProvider):
                     f"Note: Anthropic batches don't support metadata. Ignoring: {metadata}"
                 )
 
-            # TODO: Remove beta fallback when stable API is available
+            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
             try:
                 batches_client = client.messages.batches
             except AttributeError:
@@ -73,7 +73,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO: Remove beta fallback when stable API is available
+            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
             try:
                 batches_client = client.messages.batches
             except AttributeError:
@@ -96,7 +96,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO: Remove beta fallback when stable API is available
+            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
             try:
                 batches_client = client.messages.batches
             except AttributeError:
@@ -143,7 +143,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO: Remove beta fallback when stable API is available
+            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
             try:
                 batches_client = client.messages.batches
             except AttributeError:
@@ -188,7 +188,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO: Remove beta fallback when stable API is available
+            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
             try:
                 batches_client = client.messages.batches
             except AttributeError:
@@ -206,7 +206,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO: Remove beta fallback when stable API is available
+            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
             try:
                 batches_client = client.messages.batches
             except AttributeError:
@@ -228,7 +228,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO: Remove beta fallback when stable API is available
+            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
             try:
                 batches_client = client.messages.batches
             except AttributeError:
