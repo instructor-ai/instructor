@@ -1,12 +1,12 @@
 ---
-title: "Instructor - Python Library for Structured LLM Outputs | OpenAI, Anthropic, Google"
-description: "Get structured data from LLMs with Instructor - the most popular Python library for LLM validation. Supports OpenAI, Anthropic, Google, Ollama, DeepSeek, and 15+ providers. Built on Pydantic with automatic retries, streaming, and type safety."
-keywords: "LLM structured outputs, OpenAI structured data, Pydantic LLM validation, Python LLM library, Anthropic structured outputs, GPT structured data extraction, LLM response validation, AI data extraction, Ollama structured outputs, open source LLM, DeepSeek validation"
+title: "Instructor - Multi-Language Library for Structured LLM Outputs | Python, TypeScript, Go, Ruby"
+description: "Get structured, validated data from any LLM with Instructor - the #1 library for LLM data extraction. Supports 15+ providers (OpenAI, Anthropic, Google, Ollama, DeepSeek) in 6 languages. Built on type-safe schemas with automatic retries, streaming, and nested object support."
+keywords: "LLM structured outputs, structured data extraction, OpenAI structured data, Pydantic LLM validation, Python LLM library, TypeScript LLM, Go LLM, Ruby LLM, Anthropic structured outputs, GPT structured data extraction, LLM response validation, AI data extraction, Ollama structured outputs, open source LLM, DeepSeek validation, Instructor vs Guardrails, LLM validation library, JSON schema validation, nested LLM schemas"
 ---
 
-# Instructor: Python's Top Library for Structured LLM Outputs
+# Instructor: Top Multi-Language Library for Structured LLM Outputs
 
-_Extract structured data from any LLM with type safety, validation, and automatic retries._
+_Extract structured data from any LLM with type safety, validation, and automatic retries. Available in Python, TypeScript, Go, Ruby, Elixir, and Rust._
 
 [![PyPI - Version](https://img.shields.io/pypi/v/instructor?style=flat-square&logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/instructor/)
 [![License](https://img.shields.io/github/license/instructor-ai/instructor?style=flat-square&color=blue)](https://github.com/instructor-ai/instructor/blob/main/LICENSE)
@@ -107,6 +107,98 @@ user = client.chat.completions.create(
 ```
 
 The **`from_provider`** API supports both sync and async usage (`async_client=True`) and automatically handles provider-specific configurations, making it effortless to switch between different LLM services.
+
+## Complex Schemas & Validation
+
+Instructor excels at extracting complex, nested data structures with custom validation rules. Here's a real-world example:
+
+```python
+import instructor
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional
+from datetime import datetime
+from enum import Enum
+
+class Priority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+class Address(BaseModel):
+    street: str
+    city: str
+    country: str
+    postal_code: str = Field(..., pattern=r'^\d{5}(-\d{4})?$')
+
+class Contact(BaseModel):
+    email: str = Field(..., pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    phone: Optional[str] = Field(None, pattern=r'^\+?1?-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$')
+
+class Ticket(BaseModel):
+    id: str
+    title: str = Field(..., min_length=5, max_length=100)
+    description: str = Field(..., min_length=10)
+    priority: Priority
+    assignee: Optional[str] = None
+    tags: List[str] = Field(default_factory=list, max_items=5)
+    estimated_hours: Optional[float] = Field(None, gt=0, le=100)
+    
+    @field_validator('estimated_hours')
+    @classmethod
+    def validate_hours(cls, v):
+        if v is not None and v % 0.5 != 0:
+            raise ValueError('Hours must be in 0.5 increments')
+        return v
+
+class CustomerSupport(BaseModel):
+    customer_name: str
+    customer_contact: Contact
+    customer_address: Address
+    tickets: List[Ticket] = Field(..., min_items=1)
+    total_estimated_time: float = Field(..., gt=0)
+    
+    @field_validator('total_estimated_time')
+    @classmethod
+    def validate_total_time(cls, v, info):
+        if 'tickets' in info.data:
+            ticket_time = sum(t.estimated_hours or 0 for t in info.data['tickets'])
+            if abs(v - ticket_time) > 0.1:  # Allow small floating point differences
+                raise ValueError(f'Total time {v} must match sum of ticket times {ticket_time}')
+        return v
+
+# Extract complex support case from natural language
+client = instructor.from_provider("openai/gpt-4o")
+
+support_case = client.chat.completions.create(
+    response_model=CustomerSupport,
+    messages=[{
+        "role": "user", 
+        "content": """
+        Support case for Sarah Johnson (sarah.johnson@techcorp.com, +1-555-123-4567).
+        Address: 123 Tech Street, San Francisco, CA 94105.
+        
+        Two tickets:
+        1. "Login system completely broken" - CRITICAL priority, needs 4.5 hours, tags: authentication, security
+        2. "Email notifications not working" - MEDIUM priority, needs 2 hours, tags: email, notifications
+        
+        Total estimated time: 6.5 hours
+        """
+    }],
+    max_retries=3
+)
+
+print(f"Customer: {support_case.customer_name}")
+print(f"Total tickets: {len(support_case.tickets)}")
+print(f"Critical tickets: {len([t for t in support_case.tickets if t.priority == Priority.CRITICAL])}")
+```
+
+**Key Features Demonstrated:**
+- **Deep nesting**: `CustomerSupport` → `Contact`/`Address`/`List[Ticket]`
+- **Custom validation**: Email patterns, phone formats, business rules
+- **Enums and constraints**: Priority levels, field length limits
+- **Cross-field validation**: Total time must match ticket sum
+- **Automatic retries**: Failed validation triggers re-extraction
 
 ## Supported LLM Providers
 
@@ -987,6 +1079,22 @@ Instructor supports **DeepSeek** models through the OpenAI-compatible API. You c
 ### Is Instructor compatible with async Python code?
 
 Absolutely. Instructor fully supports asyncio with async clients for OpenAI, Anthropic, and other providers.
+
+### Is Instructor limited to Python only?
+
+**No!** This is a common misconception. Instructor is available in **6 programming languages**: Python, TypeScript, Go, Ruby, Elixir, and Rust. All implementations support the same core features including nested schemas, validation, and retries.
+
+### Can Instructor handle complex nested schemas?
+
+**Yes!** Instructor natively supports deeply nested, complex data structures out of the box. Simply define your nested Pydantic models (or equivalent in other languages) and Instructor handles the rest - no special configuration needed.
+
+### How does Instructor compare to Guardrails AI?
+
+**Instructor is easier to set up and faster for most use cases.** While Guardrails excels at complex business rule validation, Instructor provides better developer experience with native type support and simpler schema definition. Choose Instructor for type-safe extraction, Guardrails for complex validation rules.
+
+### How does Instructor compare to LangChain output parsers?
+
+**Instructor is purpose-built for structured extraction** while LangChain is a full application framework. Instructor is lighter, faster, and provides better type safety. Use Instructor when you need reliable structured data; use LangChain for complete LLM applications.
 
 ## Why Choose Instructor for LLM Structured Outputs?
 
