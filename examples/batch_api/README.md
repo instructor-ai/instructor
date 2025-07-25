@@ -1,6 +1,26 @@
-# Unified Batch API Test Script
+# Batch API Examples
 
-This directory contains a unified test script that verifies the BatchProcessor works correctly with all supported providers: OpenAI, Anthropic, and Google Gemini.
+This directory contains examples and test scripts for Instructor's batch processing capabilities, including both traditional file-based and new in-memory processing.
+
+## Examples
+
+### 1. In-Memory Batch Processing (`in_memory_batch_example.py`)
+
+Demonstrates the new in-memory batch processing feature, perfect for serverless deployments:
+
+```bash
+python in_memory_batch_example.py
+```
+
+**Key Features:**
+- No disk I/O required - ideal for serverless environments
+- BytesIO buffers instead of temporary files  
+- Automatic cleanup - no file management needed
+- Security benefits - no temporary files on disk
+
+### 2. Unified Test Script (`run_batch_test.py`)
+
+Tests the unified BatchProcessor with all supported providers: OpenAI, Anthropic, and Google Gemini.
 
 The script creates a batch job to extract structured `User(name: str, age: int)` data from 10 text examples and saves the batch ID for later checking. Since batch jobs can take time to complete, the script returns immediately after creation.
 
