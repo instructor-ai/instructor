@@ -155,7 +155,20 @@ class BatchRequest(BaseModel, Generic[T]):
     def save_to_file(
         self, file_path_or_buffer: str | io.BytesIO, provider: str
     ) -> None:
-        """Save batch request to file or BytesIO buffer in provider-specific format"""
+        """Save batch request to file or BytesIO buffer in provider-specific format
+        
+        This method supports both traditional file-based batch processing and new 
+        in-memory processing using BytesIO buffers. When using BytesIO, the buffer
+        can be submitted directly to batch providers without writing to disk.
+        
+        Args:
+            file_path_or_buffer: File path (str) to append to, or BytesIO buffer 
+                               to write to in memory
+            provider: Provider name ("openai" or "anthropic") to determine output format
+            
+        Raises:
+            ValueError: If provider is not supported or file_path_or_buffer type is invalid
+        """
         if provider == "openai":
             data = self.to_openai_format()
         elif provider == "anthropic":

@@ -22,7 +22,21 @@ class OpenAIProvider(BatchProvider):
         metadata: Optional[dict[str, Any]] = None,
         **kwargs,
     ) -> str:
-        """Submit OpenAI batch job"""
+        """Submit OpenAI batch job
+        
+        Args:
+            file_path_or_buffer: Path to batch file (str) or BytesIO buffer containing 
+                               batch requests in OpenAI format
+            metadata: Optional metadata to attach to the batch job
+            **kwargs: Additional OpenAI-specific arguments like completion_window
+            
+        Returns:
+            str: The batch job ID
+            
+        Raises:
+            ValueError: If file_path_or_buffer is not str or BytesIO
+            RuntimeError: If batch submission fails due to API errors
+        """
         try:
             from openai import OpenAI
 

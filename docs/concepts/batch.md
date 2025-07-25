@@ -540,6 +540,52 @@ if __name__ == "__main__":
     - `file_path_or_buffer`: File path (str) or BytesIO buffer
     - `metadata`: Optional metadata dict
   - **Returns:** Batch job ID (str)
+
+## In-Memory Batch Processing API Reference
+
+### BatchRequest.save_to_file()
+
+```python
+def save_to_file(
+    self, 
+    file_path_or_buffer: str | io.BytesIO, 
+    provider: str
+) -> None
+```
+
+Save batch request to file or BytesIO buffer in provider-specific format.
+
+**Parameters:**
+- `file_path_or_buffer`: File path (str) to append to, or BytesIO buffer for in-memory processing
+- `provider`: Provider name ("openai" or "anthropic")
+
+**In-Memory Usage:**
+```python
+import io
+buffer = io.BytesIO()
+batch_request.save_to_file(buffer, "openai")
+# Buffer now contains the batch request data
+```
+
+### Provider submit_batch() Methods
+
+All providers support both file paths and BytesIO buffers:
+
+```python
+# File-based
+batch_id = provider.submit_batch("batch.jsonl")
+
+# In-memory
+buffer = io.BytesIO()
+# ... populate buffer ...
+batch_id = provider.submit_batch(buffer)
+```
+
+**Benefits of BytesIO:**
+- No disk I/O required
+- Perfect for serverless environments
+- Automatic cleanup via garbage collection
+- Enhanced security (no temporary files)
   
 - **`get_batch_status(batch_id)`**: Get current status of a batch job
 - **`retrieve_results(batch_id)`**: Download and parse batch results

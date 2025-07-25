@@ -23,7 +23,21 @@ class AnthropicProvider(BatchProvider):
         metadata: Optional[dict[str, Any]] = None,
         **kwargs,
     ) -> str:
-        """Submit Anthropic batch job"""
+        """Submit Anthropic batch job
+        
+        Args:
+            file_path_or_buffer: Path to batch file (str) or BytesIO buffer containing 
+                               batch requests in Anthropic format
+            metadata: Optional metadata (ignored by Anthropic but accepted for API consistency)
+            **kwargs: Additional arguments (unused but accepted for API consistency)
+            
+        Returns:
+            str: The batch job ID
+            
+        Raises:
+            ValueError: If file_path_or_buffer is not str or BytesIO
+            RuntimeError: If batch submission fails due to API errors
+        """
         _ = kwargs  # Unused but accepted for API consistency
         try:
             import anthropic
