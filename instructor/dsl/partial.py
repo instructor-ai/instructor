@@ -292,6 +292,8 @@ class PartialBase(Generic[T_Model]):
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
+                if mode == Mode.BEDROCK_TOOLS:
+                    yield chunk.delta.partial_json
                 if mode == Mode.VERTEXAI_JSON:
                     yield chunk.candidates[0].content.parts[0].text
                 if mode == Mode.VERTEXAI_TOOLS:
@@ -364,6 +366,8 @@ class PartialBase(Generic[T_Model]):
                     if json_chunk := chunk.delta.text:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
+                    yield chunk.delta.partial_json
+                if mode == Mode.BEDROCK_TOOLS:
                     yield chunk.delta.partial_json
                 if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
                     yield chunk.data.choices[0].delta.content

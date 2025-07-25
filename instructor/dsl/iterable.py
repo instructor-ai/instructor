@@ -153,6 +153,8 @@ class IterableBase:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
                     yield chunk.delta.partial_json
+                if mode == Mode.BEDROCK_TOOLS:
+                    yield chunk.delta.partial_json
                 if mode == Mode.GEMINI_JSON:
                     yield chunk.text
                 if mode == Mode.VERTEXAI_JSON:
@@ -234,6 +236,8 @@ class IterableBase:
                     if json_chunk := chunk.delta.text:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
+                    yield chunk.delta.partial_json
+                if mode == Mode.BEDROCK_TOOLS:
                     yield chunk.delta.partial_json
                 if mode == Mode.VERTEXAI_JSON:
                     yield chunk.candidates[0].content.parts[0].text
