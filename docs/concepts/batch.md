@@ -25,6 +25,8 @@ Batch processing allows you to send multiple requests in a single operation, whi
 
 The `BatchProcessor` provides a complete interface for batch processing including job submission, status monitoring, and result retrieval.
 
+### File-based Batch Processing (Traditional)
+
 ```python
 from instructor.batch import BatchProcessor
 from pydantic import BaseModel
@@ -51,7 +53,7 @@ messages_list = [
 
 # Create batch file
 processor.create_batch_from_messages(
-    file_path="batch_requests.jsonl",
+    file_path="batch_requests.jsonl",  # Specify file path for disk-based processing
     messages_list=messages_list,
     max_tokens=200,
     temperature=0.1
@@ -84,6 +86,161 @@ if status['status'] in ['completed', 'ended', 'JOB_STATE_SUCCEEDED']:
     # Or just get the extracted objects
     for user in extracted_users:
         print(f"Name: {user.name}, Age: {user.age}")
+```
+
+### In-Memory Batch Processing (Serverless-Friendly)
+
+For serverless deployments and applications that prefer memory-only operations:
+
+```python
+import time
+from instructor.batch import BatchProcessor
+from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    age: int
+
+# Create processor
+processor = BatchProcessor("openai/gpt-4o-mini", User)
+
+# Prepare your message conversations
+messages_list = [
+    [
+        {"role": "system", "content": "Extract user information from the text."},
+        {"role": "user", "content": "John Doe is 25 years old and his email is john@example.com"}
+    ],
+    [
+        {"role": "system", "content": "Extract user information from the text."},
+        {"role": "user", "content": "Jane Smith, age 30, can be reached at jane.smith@company.com"}
+    ]
+]
+
+# Create batch in memory (no file_path = in-memory mode)
+batch_buffer = processor.create_batch_from_messages(
+    messages_list,
+    file_path=None,  # This enables in-memory mode
+    max_tokens=150,
+    temperature=0.1,
+)
+
+print(f"Created batch buffer: {type(batch_buffer)}")
+print(f"Buffer size: {len(batch_buffer.getvalue())} bytes")
+
+# Submit the batch using the in-memory buffer
+batch_id = processor.submit_batch(
+    batch_buffer, 
+    metadata={"description": "In-memory batch example"}
+)
+
+print(f"Batch submitted successfully! ID: {batch_id}")
+
+# Poll for completion
+while True:
+    status = processor.get_batch_status(batch_id)
+    current_status = status.get("status", "unknown")
+    print(f"Status: {current_status}")
+    
+    if current_status in ["completed", "failed", "cancelled", "expired"]:
+        break
+    time.sleep(10)
+
+# Retrieve results
+if status.get("status") == "completed":
+    results = processor.get_results(batch_id)
+    
+    successful_results = [r for r in results if hasattr(r, "result")]
+    error_results = [r for r in results if hasattr(r, "error_message")]
+    
+    print(f"Successful: {len(successful_results)}")
+    print(f"Errors: {len(error_results)}")
+    
+    for result in successful_results:
+        user = result.result
+        print(f"- {user.name}, {user.age} years old")
+```
+
+## In-Memory vs File-Based Processing
+
+### When to Use In-Memory Processing
+
+**✅ Ideal for:**
+- **Serverless deployments** (AWS Lambda, Google Cloud Functions, Azure Functions)
+- **Containerized applications** where disk I/O should be minimized
+- **Security-sensitive environments** where temporary files on disk are not desired
+- **High-performance applications** that want to avoid file system overhead
+
+**Key Benefits:**
+- **No disk I/O** - Perfect for serverless environments with read-only file systems
+- **Faster processing** - No file system overhead
+- **Better security** - No temporary files left on disk
+- **Cleaner code** - No file cleanup required
+- **Memory efficient** - BytesIO buffers are automatically garbage collected
+
+### When to Use File-Based Processing
+
+**✅ Ideal for:**
+- **Large batch jobs** where memory usage is a concern
+- **Long-running applications** with persistent storage
+- **Debugging scenarios** where you want to inspect the batch file
+- **Audit requirements** where batch requests need to be saved
+
+### Comparison Example
+
+```python
+from instructor.batch import BatchProcessor
+from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    age: int
+
+processor = BatchProcessor("openai/gpt-4o-mini", User)
+messages_list = [
+    [{"role": "user", "content": "Extract: John, 25, john@example.com"}],
+    [{"role": "user", "content": "Extract: Jane, 30, jane@example.com"}],
+]
+
+# File-based approach (traditional)
+file_path = processor.create_batch_from_messages(
+    messages_list,
+    file_path="temp_batch.jsonl",  # Creates file on disk
+)
+batch_id = processor.submit_batch(file_path)
+# Remember to clean up: os.remove(file_path)
+
+# In-memory approach (new)
+buffer = processor.create_batch_from_messages(
+    messages_list,
+    file_path=None,  # Returns BytesIO buffer
+)
+batch_id = processor.submit_batch(buffer)
+# No cleanup required - buffer is garbage collected
+```
+
+### BytesIO Lifecycle Management
+
+When using in-memory batch processing, the BytesIO buffer lifecycle is managed as follows:
+
+1. **Creation**: The `create_batch_from_messages()` method creates and returns a BytesIO buffer
+2. **Ownership**: The caller owns the buffer and is responsible for its lifecycle
+3. **Submission**: The `submit_batch()` method reads from the buffer but doesn't close it
+4. **Cleanup**: Python's garbage collector automatically cleans up the buffer when it goes out of scope
+
+**Best Practices:**
+- The buffer is automatically cleaned up when no longer referenced
+- No explicit `.close()` call is needed for BytesIO objects
+- If you need to reuse the buffer, call `.seek(0)` to reset position
+- For very large batches, consider monitoring memory usage
+
+```python
+# Example: Reusing a buffer
+buffer = processor.create_batch_from_messages(messages, file_path=None)
+batch_id_1 = processor.submit_batch(buffer)
+
+# Reset buffer position to reuse
+buffer.seek(0)
+batch_id_2 = processor.submit_batch(buffer)
 ```
 
 ## Provider-Specific Setup
@@ -368,11 +525,25 @@ if __name__ == "__main__":
 
 ### Core Methods
 
-- **`create_batch_from_messages()`**: Generate batch request file from message conversations
-- **`submit_batch()`**: Submit batch job to the provider and return job ID
-- **`get_batch_status()`**: Get current status of a batch job
-- **`retrieve_results()`**: Download and parse batch results
-- **`parse_results()`**: Parse raw batch results into structured objects
+- **`create_batch_from_messages(messages_list, file_path=None, max_tokens=1000, temperature=0.1)`**: 
+  - Generate batch request file from message conversations
+  - **Parameters:**
+    - `messages_list`: List of message conversations
+    - `file_path`: Path to save batch file. If `None`, returns BytesIO buffer (in-memory mode)
+    - `max_tokens`: Maximum tokens per request
+    - `temperature`: Temperature for generation
+  - **Returns:** File path (str) or BytesIO buffer
+  
+- **`submit_batch(file_path_or_buffer, metadata=None, **kwargs)`**: 
+  - Submit batch job to the provider and return job ID
+  - **Parameters:**
+    - `file_path_or_buffer`: File path (str) or BytesIO buffer
+    - `metadata`: Optional metadata dict
+  - **Returns:** Batch job ID (str)
+  
+- **`get_batch_status(batch_id)`**: Get current status of a batch job
+- **`retrieve_results(batch_id)`**: Download and parse batch results
+- **`parse_results(results_content)`**: Parse raw batch results into structured objects
 
 ## CLI Usage
 
