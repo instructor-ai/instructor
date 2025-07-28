@@ -107,7 +107,7 @@ def test_iterable_model_with_thinking_config(model, mode, client):
     """Test that create_iterable works with thinking_config without raising unexpected keyword argument exception."""
     client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
 
-    thinking_config = {"thinking_budget": 0}
+    thinking_config = {"thinkingBudget": 0}
     model_iter = client.chat.completions.create_iterable(
         model=model,
         response_model=UserExtract,
@@ -135,7 +135,7 @@ async def test_iterable_model_with_thinking_config_async(model, mode):
     """Test that async create_iterable works with thinking_config without raising unexpected keyword argument exception."""
     client = instructor.from_provider(f"google/{model}", mode=mode, async_client=True)
 
-    thinking_config = {"thinking_budget": 0}
+    thinking_config = {"thinkingBudget": 0}
     model_iter = client.chat.completions.create_iterable(
         model=model,
         response_model=UserExtract,
@@ -162,7 +162,7 @@ def test_create_with_thinking_config(model, mode, client):
     """Test that regular create works with thinking_config."""
     client = instructor.from_provider(f"google/{model}", mode=mode, async_client=False)
 
-    thinking_config = {"thinking_budget": 0}
+    thinking_config = {"thinkingBudget": 0}
     user = client.chat.completions.create(
         model=model,
         response_model=UserExtract,
@@ -187,7 +187,7 @@ async def test_create_with_thinking_config_async(model, mode):
     """Test that async create works with thinking_config."""
     client = instructor.from_provider(f"google/{model}", mode=mode, async_client=True)
 
-    thinking_config = {"thinking_budget": 0}
+    thinking_config = {"thinkingBudget": 0}
     user = await client.chat.completions.create(
         model=model,
         response_model=UserExtract,
