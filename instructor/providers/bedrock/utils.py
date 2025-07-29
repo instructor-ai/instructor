@@ -341,6 +341,46 @@ def handle_bedrock_tools(
     return response_model, new_kwargs
 
 
+def handle_bedrock_mistral_json(
+    response_model: type[Any], new_kwargs: dict[str, Any]
+) -> tuple[type[Any], dict[str, Any]]:
+    """
+    Handle Bedrock JSON mode for Mistral models that don't support system messages.
+
+    Kwargs modifications:
+    - Does NOT add system messages (unlike handle_bedrock_json)
+    - Adds JSON schema instructions to the last user message instead
+    - Applies: _prepare_bedrock_converse_kwargs_internal transformations
+    """
+    new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
+
+    json_message = dedent(
+        f"""
+        As a genius expert, your task is to understand the content and provide
+        the parsed objects in json that match the following json_schema:\n
+
+        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+        Make sure to return an instance of the JSON, not the schema itself
+        and don't include any other text in the response apart from the json
+        """
+    )
+
+    # Add the JSON schema instructions to the last user message instead of system
+    if "messages" in new_kwargs and new_kwargs["messages"]:
+        last_message = new_kwargs["messages"][-1]
+        if last_message.get("role") == "user":
+            if isinstance(last_message["content"], list):
+                last_message["content"].append({"text": f"\n\n{json_message}"})
+            elif isinstance(last_message["content"], str):
+                last_message["content"] = [
+                    {"text": last_message["content"]},
+                    {"text": f"\n\n{json_message}"}
+                ]
+
+    return response_model, new_kwargs
+
+
 # Handler registry for Bedrock
 BEDROCK_HANDLERS = {
     Mode.BEDROCK_JSON: {
@@ -350,5 +390,9 @@ BEDROCK_HANDLERS = {
     Mode.BEDROCK_TOOLS: {
         "reask": reask_bedrock_tools,
         "response": handle_bedrock_tools,
+    },
+    Mode.BEDROCK_MISTRAL_JSON: {
+        "reask": reask_bedrock_json,
+        "response": handle_bedrock_mistral_json,
     },
 }
