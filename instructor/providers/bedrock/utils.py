@@ -359,7 +359,9 @@ def handle_bedrock_mistral_json(
         As a genius expert, your task is to understand the content and provide
         the parsed objects in json that match the following json_schema:\n
 
+        <schema>
         {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+        </schema>
 
         Make sure to return an instance of the JSON, not the schema itself
         and don't include any other text in the response apart from the json
