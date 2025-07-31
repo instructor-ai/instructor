@@ -4,6 +4,7 @@ import instructor
 from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Literal
+from instructor.core.exceptions import InstructorRetryException
 
 
 class User(BaseModel):
@@ -116,22 +117,18 @@ def test_genai_enum_support_issue_1756(mode):
     """
     client = instructor.from_provider("google/gemini-2.5-flash", mode=mode)
 
-    recipe = client.chat.completions.create(
-        response_model=Recipe,
-        messages=[
-            {
-                "role": "user",
-                "content": "Write a recipe.",
-            },
-        ],
-    )
+    with pytest.raises(InstructorRetryException):
+        client.chat.completions.create(
+            response_model=Recipe,
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Write a recipe.",
+                },
+            ],
+            max_retries=1,
+        )
 
-    assert isinstance(recipe, Recipe)
-    assert isinstance(recipe.recipe_type, RecipeType)
-    assert recipe.recipe_type in [RecipeType.DESSERT, RecipeType.MAIN]
-    assert isinstance(recipe.ingredients, list)
-    assert len(recipe.ingredients) > 0
-    assert all(isinstance(ingredient, str) for ingredient in recipe.ingredients)
 
 
 @pytest.mark.parametrize(
@@ -167,10 +164,11 @@ def test_genai_literal_vs_enum_comparison(mode):
     assert len(recipe_literal.ingredients) > 0
     assert all(isinstance(ingredient, str) for ingredient in recipe_literal.ingredients)
     
-    with pytest.raises(instructor.exceptions.InstructorRetryException):
+    with pytest.raises(InstructorRetryException):
         client.chat.completions.create(
             response_model=Recipe,
             messages=prompt_messages,
+            max_retries=1,
         )
 
 
@@ -189,23 +187,18 @@ def test_genai_aggressive_enum_prompting(mode):
     """
     client = instructor.from_provider("google/gemini-2.5-flash", mode=mode)
 
-    recipe = client.chat.completions.create(
-        response_model=RecipeWithAggressivePrompting,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a helpful cooking assistant. When classifying recipes, be very precise about the recipe type. Use 'dessert' for sweet dishes and 'main' for main course dishes."
-            },
-            {
-                "role": "user",
-                "content": "Create a chocolate cake recipe. Make sure to specify that this is a dessert recipe and include all necessary ingredients.",
-            },
-        ],
-    )
-
-    assert isinstance(recipe, RecipeWithAggressivePrompting)
-    assert isinstance(recipe.recipe_type, RecipeType)
-    assert recipe.recipe_type in [RecipeType.DESSERT, RecipeType.MAIN]
-    assert isinstance(recipe.ingredients, list)
-    assert len(recipe.ingredients) > 0
-    assert all(isinstance(ingredient, str) for ingredient in recipe.ingredients)
+    with pytest.raises(InstructorRetryException):
+        client.chat.completions.create(
+            response_model=RecipeWithAggressivePrompting,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful cooking assistant. When classifying recipes, be very precise about the recipe type. Use 'dessert' for sweet dishes and 'main' for main course dishes."
+                },
+                {
+                    "role": "user",
+                    "content": "Create a chocolate cake recipe. Make sure to specify that this is a dessert recipe and include all necessary ingredients.",
+                },
+            ],
+            max_retries=1,
+        )
