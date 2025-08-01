@@ -269,6 +269,11 @@ def update_genai_kwargs(
     if thinking_config is not None:
         base_config["thinking_config"] = thinking_config
 
+    # Extract and preserve labels from original config
+    original_config = new_kwargs.pop("config", {})
+    if isinstance(original_config, dict) and "labels" in original_config:
+        base_config["labels"] = original_config["labels"]
+
     return base_config
 
 
