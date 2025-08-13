@@ -950,6 +950,33 @@ def from_provider(
         try:
             from litellm import completion, acompletion
             from instructor import from_litellm
+            import os
+
+            api_base = kwargs.pop("api_base", None) or kwargs.pop("base_url", None)
+            api_key = api_key or kwargs.pop("api_key", None) or os.environ.get("LITELLM_API_KEY")
+            
+            if api_base:
+                os.environ["HOSTED_VLLM_API_BASE"] = api_base
+            elif os.environ.get("HOSTED_VLLM_API_BASE"):
+                api_base = os.environ.get("HOSTED_VLLM_API_BASE")
+                
+            if api_key:
+                os.environ["HOSTED_VLLM_API_KEY"] = api_key
+            elif os.environ.get("HOSTED_VLLM_API_KEY"):
+                api_key = os.environ.get("HOSTED_VLLM_API_KEY")
+
+            if api_base:
+                logger.debug(
+                    "LiteLLM configured with api_base: %s",
+                    api_base,
+                    extra=provider_info,
+                )
+            if api_key:
+                logger.debug(
+                    "LiteLLM configured with API key (length: %d characters)",
+                    len(api_key),
+                    extra=provider_info,
+                )
 
             completion_func = acompletion if async_client else completion
             result = from_litellm(

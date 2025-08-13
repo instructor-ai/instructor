@@ -107,6 +107,71 @@ print(raw_completion._hidden_params["response_cost"])
 #> 0.00189
 ```
 
+## Hosted VLLM Support
+
+LiteLLM supports hosted VLLM endpoints with OpenAI-compatible APIs. Instructor now provides seamless integration with these endpoints.
+
+### Using Direct Parameters
+
+```python
+import instructor
+
+# Using api_base parameter
+client = instructor.from_provider(
+    "litellm/hosted_vllm/my-model",
+    api_base="https://my-vllm-server.com",
+    api_key="your-api-key"  # optional
+)
+
+# Using base_url parameter (alternative)
+client = instructor.from_provider(
+    "litellm/hosted_vllm/my-model", 
+    base_url="https://my-vllm-server.com",
+    api_key="your-api-key"
+)
+```
+
+### Using Environment Variables
+
+```bash
+export HOSTED_VLLM_API_BASE="https://my-vllm-server.com"
+export HOSTED_VLLM_API_KEY="your-api-key"  # optional
+```
+
+```python
+import instructor
+
+client = instructor.from_provider("litellm/hosted_vllm/my-model")
+```
+
+### Complete Example
+
+```python
+import instructor
+from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    age: int
+
+# Configure hosted VLLM client
+client = instructor.from_provider(
+    "litellm/hosted_vllm/llama-2-7b-chat",
+    api_base="https://my-vllm-server.com",
+    api_key="your-api-key"
+)
+
+# Extract structured data
+user = client.chat.completions.create(
+    messages=[
+        {"role": "user", "content": "Extract: Jason is 25 years old"},
+    ],
+    response_model=User,
+)
+
+print(user)  # User(name='Jason', age=25)
+```
+
 ## Related Resources
 
 - [LiteLLM Documentation](https://docs.litellm.ai/)
