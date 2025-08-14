@@ -142,7 +142,7 @@ nav:
     - Help with Instructor: 'help.md'
     - Contributing: 'contributing.md'
     - Newsletter: 'newsletter.md'
-    - Tutorials: 'tutorials.md'
+    - Tutorials: 'tutorials/index.md'
   - Learning:
     - Installation: 'learning/getting_started/installation.md'
     - Overview: 'learning/index.md'
