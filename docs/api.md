@@ -7,7 +7,7 @@ description: Explore the comprehensive API reference with details on instructors
 
 ::: instructor.from_openai
 
-::: instructor.dsl.validators
+::: instructor.validation
 
 ::: instructor.dsl.iterable
 
@@ -17,4 +17,4 @@ description: Explore the comprehensive API reference with details on instructors
 
 ::: instructor.dsl.maybe
 
-::: instructor.function_calls
+::: instructor.processing.function_calls
