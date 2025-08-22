@@ -7,7 +7,7 @@ used throughout the batch processing system.
 
 from __future__ import annotations
 from typing import Any, Union, TypeVar, Generic
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, timezone
 from enum import Enum
 
@@ -21,8 +21,7 @@ class BatchSuccess(BaseModel, Generic[T]):
     result: T
     success: bool = True
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class BatchError(BaseModel):

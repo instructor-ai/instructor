@@ -7,7 +7,7 @@ provider-specific batch requests with JSON schema generation.
 
 from __future__ import annotations
 from typing import Any, Generic
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import json
 import io
 from .models import T
@@ -50,8 +50,7 @@ class BatchRequest(BaseModel, Generic[T]):
     max_tokens: int | None = Field(default=1000)
     temperature: float | None = Field(default=0.1)
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def get_json_schema(self) -> dict[str, Any]:
         """Generate JSON schema from response_model"""
