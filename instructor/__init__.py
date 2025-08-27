@@ -29,6 +29,17 @@ from .utils.providers import Provider
 from .auto_client import from_provider
 from .batch import BatchProcessor, BatchRequest, BatchJob
 from .distil import FinetuneFormat, Instructions
+from .exceptions import (
+    InstructorError,
+    IncompleteOutputException,
+    InstructorRetryException,
+    ValidationError,
+    ProviderError,
+    ConfigurationError,
+    ModeError,
+    ClientError,
+    AsyncValidationError,
+)
 
 __all__ = [
     "Instructor",
@@ -59,6 +70,15 @@ __all__ = [
     "llm_validator",
     "openai_moderation",
     "hooks",
+    "InstructorError",
+    "IncompleteOutputException",
+    "InstructorRetryException",
+    "ValidationError",
+    "ProviderError",
+    "ConfigurationError",
+    "ModeError",
+    "ClientError",
+    "AsyncValidationError",
 ]
 
 
