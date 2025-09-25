@@ -168,6 +168,27 @@ T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
 
+def _add_usage_property(model: BaseModel) -> None:
+    """
+    Add a usage property to the model that provides convenient access to usage information.
+    
+    This function extracts usage information from the _raw_response attribute and exposes it
+    as a direct property on the model. It handles both OpenAI and Anthropic usage formats.
+    
+    Args:
+        model: The Pydantic model to add the usage property to
+    """
+    if not hasattr(model, '_raw_response') or model._raw_response is None:
+        return
+    
+    raw_response = model._raw_response
+    usage_info = getattr(raw_response, 'usage', None)
+    
+    if usage_info is not None:
+        # Set usage directly on the instance for immediate access
+        model.__dict__['usage'] = usage_info
+
+
 async def process_response_async(
     response: ChatCompletion,
     *,
@@ -256,6 +277,7 @@ async def process_response_async(
         return model.content
 
     model._raw_response = response
+    _add_usage_property(model)
     return model
 
 
@@ -357,6 +379,7 @@ def process_response(
         return model.content
 
     model._raw_response = response
+    _add_usage_property(model)
 
     return model
 
