@@ -6,7 +6,7 @@ providers. The API uses a Maybe/Result-like pattern with custom_id
 tracking for type-safe handling of batch results.
 
 Supported Providers:
-- OpenAI: 50% cost savings on batch requests
+- OpenAI: 50% cost savings on batch requests (supports GPT-4, GPT-5, O1 models)
 - Anthropic: 50% cost savings on batch requests (Message Batches API)
 
 Features:
@@ -24,6 +24,7 @@ Example usage:
         age: int
 
     processor = BatchProcessor("openai/gpt-4o-mini", User)
+    # GPT-5 example: processor = BatchProcessor("openai/gpt-5-turbo", User)
     batch_id = processor.submit_batch("requests.jsonl")
 
     # Results are BatchSuccess[T] | BatchError union types

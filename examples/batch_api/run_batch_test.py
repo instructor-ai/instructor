@@ -5,7 +5,7 @@ Test script to verify the unified BatchProcessor works correctly with all suppor
 Creates a batch job to extract User(name: str, age: int) data from text examples.
 
 Supports:
-- OpenAI: openai/gpt-4o-mini, openai/gpt-4o, etc.
+- OpenAI: openai/gpt-4o-mini, openai/gpt-4o, openai/gpt-5-turbo, openai/o1-preview, openai/o1-mini, etc.
 - Anthropic: anthropic/claude-3-5-sonnet-20241022, anthropic/claude-3-opus-20240229, etc.
 - Google: google/gemini-2.5-flash, google/gemini-pro, etc.
 
@@ -17,6 +17,11 @@ Usage:
     # OpenAI
     export OPENAI_API_KEY="your-key"
     python run_batch_test.py --model "openai/gpt-4o-mini"
+    
+    # OpenAI GPT-5
+    export OPENAI_API_KEY="your-key"
+    python run_batch_test.py --model "openai/gpt-5-turbo"
+    python run_batch_test.py --model "openai/o1-preview"
 
     # Anthropic
     export ANTHROPIC_API_KEY="your-key"
@@ -830,6 +835,11 @@ def list_models():
     typer.echo("  • openai/gpt-4o-mini")
     typer.echo("  • openai/gpt-4o")
     typer.echo("  • openai/gpt-4-turbo")
+    typer.echo("  • openai/gpt-5-turbo")
+    typer.echo("  • openai/gpt-5")
+    typer.echo("  • openai/gpt-5-preview")
+    typer.echo("  • openai/o1-preview")
+    typer.echo("  • openai/o1-mini")
     typer.echo()
 
     typer.echo("Anthropic:")

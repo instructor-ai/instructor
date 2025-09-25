@@ -5,7 +5,7 @@ Batch processing allows you to send multiple requests in a single operation, whi
 ## Supported Providers
 
 ### OpenAI
-- **Models**: gpt-4o, gpt-4.1-mini, gpt-4-turbo, etc.
+- **Models**: gpt-4o, gpt-4.1-mini, gpt-4-turbo, gpt-5-turbo, gpt-5, gpt-5-preview, o1-preview, o1-mini, etc.
 - **Cost Savings**: 50% discount on batch requests
 - **Format**: Uses OpenAI's batch API with JSON schema for structured outputs
 
@@ -20,6 +20,49 @@ Batch processing allows you to send multiple requests in a single operation, whi
 - **Cost Savings**: 50% discount on batch requests
 - **Format**: Uses Google Cloud Vertex AI batch prediction API
 - **Documentation**: [Google Cloud Batch Prediction](https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/batch-prediction-gemini)
+
+## GPT-5 Support
+
+Instructor fully supports GPT-5 models for batch processing, including:
+
+- `gpt-5-turbo` - Latest GPT-5 model optimized for speed and cost
+- `gpt-5` - Standard GPT-5 model
+- `gpt-5-preview` - Preview version of GPT-5
+- `o1-preview` - Advanced reasoning model
+- `o1-mini` - Smaller version of the O1 model
+
+All GPT-5 models work with the same batch API and provide the same 50% cost savings.
+
+### GPT-5 Example
+
+```python
+from instructor.batch import BatchProcessor
+from pydantic import BaseModel
+
+class Analysis(BaseModel):
+    reasoning: str
+    conclusion: str
+    confidence: float
+
+# Use GPT-5 for complex reasoning tasks
+processor = BatchProcessor("openai/o1-preview", Analysis)
+
+messages_list = [
+    [
+        {"role": "system", "content": "Analyze the provided data and give a detailed reasoning."},
+        {"role": "user", "content": "Sales data shows a 15% increase in Q1, but customer complaints rose by 23%. Analyze the situation."}
+    ]
+]
+
+# Create and submit batch
+batch_file = processor.create_batch_from_messages(
+    messages_list=messages_list,
+    max_tokens=500,
+    temperature=0.1
+)
+
+batch_id = processor.submit_batch(batch_file)
+```
 
 ## Basic Usage
 
@@ -36,8 +79,11 @@ class User(BaseModel):
     name: str
     age: int
 
-# Create processor with model specification
+# Create processor with model specification (supports GPT-5 models)
 processor = BatchProcessor("openai/gpt-4.1-mini", User)
+# GPT-5 examples:
+# processor = BatchProcessor("openai/gpt-5-turbo", User)
+# processor = BatchProcessor("openai/o1-preview", User)
 
 # Prepare your message conversations
 messages_list = [
