@@ -54,10 +54,10 @@ def extract_json_from_codeblock(content: str) -> str:
         The extracted JSON string
     """
 
-    first_paren = content.find("{")
-    last_paren = content.rfind("}")
-    if first_paren != -1 and last_paren != -1:
-        json_content = content[first_paren : last_paren + 1]
+    first_brace = content.find("{")
+    last_brace = content.rfind("}")
+    if first_brace != -1 and last_brace != -1:
+        json_content = content[first_brace : last_brace + 1]
     else:
         json_content = content  # Return as is if no JSON-like content found
 
