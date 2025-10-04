@@ -9,7 +9,6 @@ import inspect
 import json
 import logging
 import os
-import re
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
     TYPE_CHECKING,
@@ -39,16 +38,14 @@ R_co = TypeVar("R_co", covariant=True)
 T_Model = TypeVar("T_Model", bound=BaseModel)
 T = TypeVar("T")
 
-# Regex patterns for JSON extraction
-_JSON_CODEBLOCK_PATTERN = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL)
-_JSON_PATTERN = re.compile(r"({\s*[\s\S]*})")
-
 
 def extract_json_from_codeblock(content: str) -> str:
     """
-    Extract JSON from a string that may contain markdown code blocks or plain JSON.
+    Extract JSON from a string that may contain extra text.
 
-    This optimized version uses regex patterns to extract JSON more efficiently.
+    The function looks for the first '{' and the last '}' in the string and
+    returns the content between them, inclusive. If no braces are found,
+    the original string is returned.
 
     Args:
         content: The string that may contain JSON
@@ -56,23 +53,13 @@ def extract_json_from_codeblock(content: str) -> str:
     Returns:
         The extracted JSON string
     """
-    # First try to find JSON in code blocks
-    match = _JSON_CODEBLOCK_PATTERN.search(content)
-    if match:
-        json_content = match.group(1).strip()
+
+    first_paren = content.find("{")
+    last_paren = content.rfind("}")
+    if first_paren != -1 and last_paren != -1:
+        json_content = content[first_paren : last_paren + 1]
     else:
-        # Look for JSON objects with the pattern { ... }
-        match = _JSON_PATTERN.search(content)
-        if match:
-            json_content = match.group(1)
-        else:
-            # Fallback to the old method if regex doesn't find anything
-            first_paren = content.find("{")
-            last_paren = content.rfind("}")
-            if first_paren != -1 and last_paren != -1:
-                json_content = content[first_paren : last_paren + 1]
-            else:
-                json_content = content  # Return as is if no JSON-like content found
+        json_content = content  # Return as is if no JSON-like content found
 
     return json_content
 
