@@ -1,5 +1,5 @@
 """
-Tests for the improved JSON extraction functionality.
+Tests for JSON extraction functionality.
 """
 
 import json
