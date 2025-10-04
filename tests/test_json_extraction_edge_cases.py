@@ -100,16 +100,7 @@ class TestJSONExtractionEdgeCases:
         ```
         Outer end
         """
-        # Our regex might have limitations with nested code blocks
-        # Let's test this a different way
-
-        # Simplified test with just the JSON part
-        simplified = """
-        ```json
-        {"level": "inner"}
-        ```
-        """
-        result = extract_json_from_codeblock(simplified)
+        result = extract_json_from_codeblock(text)
         parsed = json.loads(result)
         assert parsed["level"] == "inner"
 
