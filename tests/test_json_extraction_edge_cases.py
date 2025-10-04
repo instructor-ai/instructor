@@ -104,6 +104,17 @@ class TestJSONExtractionEdgeCases:
         parsed = json.loads(result)
         assert parsed["level"] == "inner"
 
+    def test_json_with_codeblock_in_a_value(self):
+        """Test extraction of JSON that has a value containing a codeblock."""
+        text = """
+        ```json
+        {"name": "```string value with a codeblock```"}
+        ```
+        """
+        result = extract_json_from_codeblock(text)
+        parsed = json.loads(result)
+        assert parsed["name"] == "```string value with a codeblock```"
+
     def test_malformed_codeblock(self):
         """Test extraction with malformed code block markers."""
         text = """
