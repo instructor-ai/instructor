@@ -238,6 +238,9 @@ class OpenAISchema(BaseModel):
         }:
             return cls.parse_json(completion, validation_context, strict)
 
+        if mode == Mode.YAML:
+            return cls.parse_yaml(completion, validation_context, strict)
+
         raise ValueError(f"Invalid patch mode: {mode}")
 
     @classmethod
@@ -638,6 +641,69 @@ class OpenAISchema(BaseModel):
 
         # Validate the model from the JSON
         return _validate_model_from_json(cls, json_content, validation_context, strict)
+
+    @classmethod
+    def parse_yaml(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        """Parse YAML mode responses using optimized extraction and validation."""
+        import yaml
+
+        # Check for incomplete output
+        _handle_incomplete_output(completion)
+
+        # Extract text from the response
+        message = _extract_text_content(completion)
+        if not message:
+            # Fallback for OpenAI format if _extract_text_content doesn't handle it
+            message = completion.choices[0].message.content or ""
+
+        # Extract YAML from the text - first try to find YAML in codeblock
+        yaml_content = message
+
+        # Look for YAML in code blocks
+        import re
+
+        yaml_match = re.search(
+            r"```(?:yaml|yml)\s*(.*?)\s*```", message, re.DOTALL | re.IGNORECASE
+        )
+        if yaml_match:
+            yaml_content = yaml_match.group(1).strip()
+        else:
+            # Look for generic code blocks that might contain YAML
+            code_match = re.search(r"```\s*(.*?)\s*```", message, re.DOTALL)
+            if code_match:
+                potential_yaml = code_match.group(1).strip()
+                # Simple heuristic: if it doesn't start with { or [, might be YAML
+                if not potential_yaml.startswith(("{", "[")):
+                    yaml_content = potential_yaml
+
+        try:
+            # Parse YAML to dictionary
+            yaml_data = yaml.safe_load(yaml_content)
+
+            if yaml_data is None:
+                raise ValueError("YAML content is empty or invalid")
+
+            # Validate the model from the parsed data
+            if strict:
+                return cls.model_validate(
+                    yaml_data, context=validation_context, strict=True
+                )
+            else:
+                return cls.model_validate(
+                    yaml_data, context=validation_context, strict=False
+                )
+
+        except yaml.YAMLError as e:
+            logger.debug(f"YAML parse error: {e}")
+            raise ValueError(f"Failed to parse YAML: {e}") from e
+        except Exception as e:
+            logger.debug(f"Model validation error: {e}")
+            raise
 
 
 def openai_schema(cls: type[BaseModel]) -> OpenAISchema:

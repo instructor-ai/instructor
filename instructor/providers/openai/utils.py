@@ -77,6 +77,31 @@ def reask_responses_tools(
     return kwargs
 
 
+def reask_yaml(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+    failed_attempts: list[Any] | None = None,  # noqa: ARG001
+):
+    """
+    Handle reask for OpenAI YAML mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting YAML correction)
+    """
+    kwargs = kwargs.copy()
+    reask_msgs = [dump_message(response.choices[0].message)]
+
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": f"Correct your YAML ONLY RESPONSE, based on the following errors:\n{exception}",
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
 def reask_md_json(
     kwargs: dict[str, Any],
     response: Any,
@@ -393,6 +418,51 @@ def handle_json_o1(
     return response_model, new_kwargs
 
 
+def handle_yaml_mode(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle OpenAI YAML mode.
+
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Modifies: "messages" (appends user message with YAML schema)
+    """
+    if response_model is None:
+        return None, new_kwargs
+
+    message = dedent(
+        f"""
+        You must respond with YAML that matches the following schema:
+
+        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+
+        Return only the YAML data instance matching this schema, not the schema itself.
+        Do not include any other text or explanation in your response.
+        """
+    )
+
+    if new_kwargs["messages"][0]["role"] != "system":
+        new_kwargs["messages"].insert(
+            0,
+            {
+                "role": "system",
+                "content": message,
+            },
+        )
+    elif isinstance(new_kwargs["messages"][0]["content"], str):
+        new_kwargs["messages"][0]["content"] += f"\n\n{message}"
+    elif isinstance(new_kwargs["messages"][0]["content"], list):
+        new_kwargs["messages"][0]["content"][0]["text"] += f"\n\n{message}"
+    else:
+        raise ValueError(
+            "Invalid message format, must be a string or a list of messages"
+        )
+
+    return response_model, new_kwargs
+
+
 def handle_json_modes(
     response_model: type[Any] | None, new_kwargs: dict[str, Any], mode: Mode
 ) -> tuple[type[Any] | None, dict[str, Any]]:
@@ -511,6 +581,10 @@ OPENAI_HANDLERS = {
     Mode.JSON_O1: {
         "reask": reask_md_json,
         "response": handle_json_o1,
+    },
+    Mode.YAML: {
+        "reask": reask_yaml,
+        "response": handle_yaml_mode,
     },
     Mode.PARALLEL_TOOLS: {
         "reask": reask_tools,

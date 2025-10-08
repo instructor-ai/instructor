@@ -132,10 +132,12 @@ from ..providers.openai.utils import (
     handle_responses_tools_with_inbuilt_tools,
     handle_tools,
     handle_tools_strict,
+    handle_yaml_mode,
     reask_default,
     reask_md_json,
     reask_responses_tools,
     reask_tools,
+    reask_yaml,
 )
 
 # Perplexity utils
@@ -431,6 +433,7 @@ def handle_response_model(
         Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON),  # type: ignore
         Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
         Mode.JSON_SCHEMA: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON_SCHEMA),  # type: ignore
+        Mode.YAML: handle_yaml_mode,
         Mode.ANTHROPIC_TOOLS: handle_anthropic_tools,
         Mode.ANTHROPIC_REASONING_TOOLS: handle_anthropic_reasoning_tools,
         Mode.ANTHROPIC_JSON: handle_anthropic_json,
@@ -610,6 +613,7 @@ def handle_reask_kwargs(
         Mode.JSON: reask_md_json,
         Mode.MD_JSON: reask_md_json,
         Mode.JSON_SCHEMA: reask_md_json,
+        Mode.YAML: reask_yaml,
         Mode.PARALLEL_TOOLS: reask_tools,
         Mode.RESPONSES_TOOLS: reask_responses_tools,
         Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: reask_responses_tools,
