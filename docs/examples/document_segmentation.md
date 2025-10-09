@@ -5,7 +5,7 @@ description: Learn effective document segmentation techniques using Cohere's LLM
 
 # Document Segmentation
 
-In this guide, we demonstrate how to do document segmentation using structured output from an LLM. We'll be using [command-a-reasoning-08-2025](https://docs.cohere.com/docs/command-a-reasoning) - one of Cohere's latest LLMs with 256k context length and testing the approach on an article explaining the Transformer architecture. Same approach to document segmentation can be applied to any other domain where we need to break down a complex long document into smaller chunks.
+In this guide, we demonstrate how to do document segmentation using structured output from an LLM. We'll be using [command-a](https://docs.cohere.com/docs/command-a) - one of Cohere's latest LLMs with 256k context length and testing the approach on an article explaining the Transformer architecture. Same approach to document segmentation can be applied to any other domain where we need to break down a complex long document into smaller chunks.
 
 !!! tips "Motivation"
 Sometimes we need a way to split the document into meaningful parts that center around a single key concept/idea. Simple length-based / rule-based text-splitters are not reliable enough. Consider the cases where documents contain code snippets or math equations - we don't want to split those on `'\n\n'` or have to write extensive rules for different types of documents. It turns out that LLMs with sufficiently long context length are well suited for this task.
@@ -77,7 +77,7 @@ import cohere
 
 # Apply the patch to the cohere client
 # enables response_model keyword
-client = instructor.from_cohere(cohere.Client())
+client = instructor.from_cohere(cohere.ClientV2())
 
 
 system_prompt = f"""\
@@ -89,7 +89,7 @@ Each line of the document is marked with its line number in square brackets (e.g
 
 def get_structured_document(document_with_line_numbers) -> StructuredDocument:
     return client.chat.completions.create(
-        model="command-a-reasoning-08-2025",
+        model="command-a-03-2025",
         response_model=StructuredDocument,
         messages=[
             {
@@ -148,7 +148,7 @@ def doc_with_lines(document):
     return document_with_line_numbers, line2text
 
 
-client = instructor.from_cohere(cohere.Client())
+client = instructor.from_cohere(cohere.ClientV2())
 
 
 system_prompt = f"""\
@@ -172,7 +172,7 @@ class StructuredDocument(BaseModel):
 
 def get_structured_document(document_with_line_numbers) -> StructuredDocument:
     return client.chat.completions.create(
-        model="command-a-reasoning-08-2025",
+        model="command-a-03-2025",
         response_model=StructuredDocument,
         messages=[
             {

@@ -27,11 +27,11 @@ KnownModelName = TypeAliasType(
         "cohere/command-r7b-12-2024",
         "cohere/command-a-translate-08-2025",
         "cohere/command-a-reasoning-08-2025",
-        "cohere/command-r",
-        "cohere/command-r-03-2024",
+        "cohere/command-r",  # deprecated 2025-09-15
+        "cohere/command-r-03-2024",  # deprecated 2025-09-15
         "cohere/command-r-08-2024",
-        "cohere/command-r-plus",
-        "cohere/command-r-plus-04-2024",
+        "cohere/command-r-plus",  # deprecated 2025-09-15
+        "cohere/command-r-plus-04-2024",  # deprecated 2025-09-15
         "cohere/command-r-plus-08-2024",
         "cohere/command-r7b-12-2024",
         # OpenAI Models

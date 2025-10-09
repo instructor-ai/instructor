@@ -35,7 +35,7 @@ import instructor
 
 # Patching the Cohere client with the instructor for enhanced capabilities
 client = instructor.from_provider(
-    "cohere/command-a-reasoning-08-2025",
+    "cohere/command-a-03-2025",
     max_tokens=1000,
 )
 
@@ -94,7 +94,7 @@ print(group.model_dump_json(indent=2))
 import instructor
 
 async_client = instructor.from_provider(
-    "cohere/command-a-reasoning-08-2025",
+    "cohere/command-a-03-2025",
     async_client=True,
     max_tokens=1000,
 )

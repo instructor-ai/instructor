@@ -407,11 +407,11 @@ def from_provider(
             from instructor import from_cohere
 
             client = (
-                cohere.AsyncClient(api_key=api_key)
+                cohere.AsyncClientV2(api_key=api_key)
                 if async_client
-                else cohere.Client(api_key=api_key)
+                else cohere.ClientV2(api_key=api_key)
             )
-            result = from_cohere(client, **kwargs)
+            result = from_cohere(client, model=model_name, **kwargs)
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -809,7 +809,10 @@ def from_provider(
                 "llama4",
                 "mistral-nemo",
                 "firefunction-v2",
-                "command-a-reasoning-08-2025",
+                "command-a",
+                "command-r",
+                "command-r-plus",
+                "command-r7b",
                 "qwen2.5",
                 "qwen2.5-coder",
                 "qwen3",

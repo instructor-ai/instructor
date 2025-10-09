@@ -263,11 +263,11 @@ async def test_async_client_anthropic_bedrock_response():
 
 @pytest.mark.skip(reason="Skipping if Cohere API is not available")
 def test_client_cohere_response():
-    client = cohere.Client()
+    client = cohere.ClientV2()
     instructor_client = instructor.from_cohere(
         client,
         max_tokens=1000,
-        model="command-a-reasoning-08-2025",
+        model="command-a-03-2025",
     )
 
     user = instructor_client.messages.create(
@@ -281,11 +281,11 @@ def test_client_cohere_response():
 
 @pytest.mark.skip(reason="Skipping if Cohere API is not available")
 def test_client_cohere_response_with_nested_classes():
-    client = cohere.Client()
+    client = cohere.ClientV2()
     instructor_client = instructor.from_cohere(
         client,
         max_tokens=1000,
-        model="command-a-reasoning-08-2025",
+        model="command-a-03-2025",
     )
 
     class Person(BaseModel):
@@ -318,11 +318,11 @@ def test_client_cohere_response_with_nested_classes():
 @pytest.mark.skip(reason="Skipping if Cohere API is not available")
 @pytest.mark.asyncio
 async def test_client_cohere_async():
-    client = cohere.AsyncClient()
+    client = cohere.AsyncClientV2()
     instructor_client = instructor.from_cohere(
         client,
         max_tokens=1000,
-        model="command-a-reasoning-08-2025",
+        model="command-a-03-2025",
     )
 
     class Person(BaseModel):

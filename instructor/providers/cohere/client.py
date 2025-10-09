@@ -25,14 +25,30 @@ def from_cohere(
 
 @overload
 def from_cohere(
+    client: cohere.ClientV2,
+    mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
+    **kwargs: Any,
+) -> instructor.Instructor: ...
+
+
+@overload
+def from_cohere(
     client: cohere.AsyncClient,
     mode: instructor.Mode = instructor.Mode.COHERE_JSON_SCHEMA,
     **kwargs: Any,
 ) -> instructor.AsyncInstructor: ...
 
 
+@overload
 def from_cohere(
-    client: cohere.Client | cohere.AsyncClient,
+    client: cohere.AsyncClientV2,
+    mode: instructor.Mode = instructor.Mode.COHERE_JSON_SCHEMA,
+    **kwargs: Any,
+) -> instructor.AsyncInstructor: ...
+
+
+def from_cohere(
+    client: cohere.Client | cohere.AsyncClient | cohere.ClientV2 | cohere.AsyncClientV2,
     mode: instructor.Mode = instructor.Mode.COHERE_TOOLS,
     **kwargs: Any,
 ):
@@ -48,25 +64,32 @@ def from_cohere(
             mode=str(mode), provider="Cohere", valid_modes=[str(m) for m in valid_modes]
         )
 
-    if not isinstance(client, (cohere.Client, cohere.AsyncClient)):
+    # Determine if we're dealing with an async client
+    is_async = isinstance(client, (cohere.AsyncClient, cohere.AsyncClientV2))
+
+    if isinstance(client, (cohere.ClientV2, cohere.AsyncClientV2)):
+        client_version = "v2"
+    elif isinstance(client, (cohere.Client, cohere.AsyncClient)):
+        client_version = "v1"
+    else:
         from ...core.exceptions import ClientError
 
         raise ClientError(
-            f"Client must be an instance of cohere.Client or cohere.AsyncClient. "
+            f"Client must be an instance of cohere.Client or cohere.AsyncClient or cohere.ClientV2 or cohere.AsyncClientV2. "
             f"Got: {type(client).__name__}"
         )
+    kwargs["_cohere_client_version"] = client_version
 
-    if isinstance(client, cohere.Client):
-        return instructor.Instructor(
+    if is_async:
+        return instructor.AsyncInstructor(
             client=client,
             create=instructor.patch(create=client.chat, mode=mode),
             provider=instructor.Provider.COHERE,
             mode=mode,
             **kwargs,
         )
-
-    if isinstance(client, cohere.AsyncClient):
-        return instructor.AsyncInstructor(
+    else:
+        return instructor.Instructor(
             client=client,
             create=instructor.patch(create=client.chat, mode=mode),
             provider=instructor.Provider.COHERE,

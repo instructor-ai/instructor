@@ -21,9 +21,11 @@ def process_message(
         return types.Content(
             role=message.role,
             parts=[
-                types.Part.from_text(text=apply_template(part.text, context))
-                if hasattr(part, "text")
-                else part
+                (
+                    types.Part.from_text(text=apply_template(part.text, context))
+                    if hasattr(part, "text")
+                    else part
+                )
                 for part in message.parts
             ],
         )

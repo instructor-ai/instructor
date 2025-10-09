@@ -63,7 +63,7 @@ For Cohere's models:
 import instructor
 import cohere
 
-cohere_client = cohere.Client("YOUR_API_KEY")
+cohere_client = cohere.ClientV2("YOUR_API_KEY")
 client = instructor.from_cohere(cohere_client)
 ```
 

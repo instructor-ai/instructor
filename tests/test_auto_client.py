@@ -23,7 +23,7 @@ PROVIDERS = [
     "openai/gpt-4o-mini",
     "azure_openai/gpt-4o-mini",
     "mistral/ministral-8b-latest",
-    "cohere/command-a-reasoning-08-2025",
+    "cohere/command-a-03-2025",
     "perplexity/sonar-pro",
     "groq/llama-3.1-8b-instant",
     "writer/palmyra-x5",
@@ -39,7 +39,7 @@ def should_skip_provider(provider_string: str) -> bool:
 
     if os.getenv("INSTRUCTOR_ENV") == "CI":
         return provider_string not in [
-            "cohere/command-a-reasoning-08-2025",
+            "cohere/command-a-03-2025",
             "google/gemini-2.0-flash",
             "openai/gpt-4o-mini",
         ]

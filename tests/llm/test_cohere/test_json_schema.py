@@ -13,11 +13,12 @@ class User(BaseModel):
 
 
 @pytest.mark.parametrize("mode", modes)
-def test_parse_user_sync(client, mode):
-    client = instructor.from_cohere(client, mode=mode)
+def test_parse_user_sync(client_v2, mode):
+    client = instructor.from_cohere(client_v2, mode=mode)
 
     resp = client.chat.completions.create(
         response_model=User,
+        model="command-a-03-2025",
         messages=[
             {
                 "role": "user",
@@ -31,8 +32,8 @@ def test_parse_user_sync(client, mode):
 
 
 @pytest.mark.parametrize("mode", modes)
-def test_parse_user_sync_jinja(client, mode):
-    client = instructor.from_cohere(client, mode=mode)
+def test_parse_user_sync_jinja(client_v1, mode):
+    client = instructor.from_cohere(client_v1, mode=mode, model="command-a-03-2025")
 
     resp = client.chat.completions.create(
         response_model=User,
@@ -64,11 +65,12 @@ class ValidatedUser(BaseModel):
 
 
 @pytest.mark.parametrize("mode", modes)
-def test_parse_validated_user_sync(client, mode):
-    client = instructor.from_cohere(client, mode=mode)
+def test_parse_validated_user_sync(client_v1, mode):
+    client = instructor.from_cohere(client_v1, mode=mode)
 
     resp = client.chat.completions.create(
         response_model=ValidatedUser,
+        model="command-a-03-2025",
         messages=[
             {
                 "role": "user",
@@ -83,12 +85,12 @@ def test_parse_validated_user_sync(client, mode):
 
 @pytest.mark.parametrize("mode", modes)
 @pytest.mark.asyncio
-async def test_parse_user_async(aclient, mode):
-    client = instructor.from_cohere(aclient, mode=mode)
+async def test_parse_user_async(aclient_v2, mode):
+    client = instructor.from_cohere(aclient_v2, mode=mode)
 
     resp = await client.chat.completions.create(
         response_model=ValidatedUser,
-        model="command-a-reasoning-08-2025",
+        model="command-a-03-2025",
         messages=[
             {
                 "role": "user",
@@ -104,12 +106,12 @@ async def test_parse_user_async(aclient, mode):
 
 @pytest.mark.parametrize("mode", modes)
 @pytest.mark.asyncio
-async def test_parse_user_async_jinja(aclient, mode):
-    client = instructor.from_cohere(aclient, mode=mode)
+async def test_parse_user_async_jinja(aclient_v2, mode):
+    client = instructor.from_cohere(aclient_v2, mode=mode)
 
     resp = await client.chat.completions.create(
         response_model=ValidatedUser,
-        model="command-a-reasoning-08-2025",
+        model="command-a-03-2025",
         messages=[
             {
                 "role": "user",

@@ -682,18 +682,22 @@ class PDF(BaseModel):
             if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
                 return {
                     "type": input_file_type,
-                    "filename": self.source
-                    if isinstance(self.source, str)
-                    else str(self.source),
+                    "filename": (
+                        self.source
+                        if isinstance(self.source, str)
+                        else str(self.source)
+                    ),
                     "file_data": f"data:{self.media_type};base64,{data}",
                 }
             else:
                 return {
                     "type": input_file_type,
                     "file": {
-                        "filename": self.source
-                        if isinstance(self.source, str)
-                        else str(self.source),
+                        "filename": (
+                            self.source
+                            if isinstance(self.source, str)
+                            else str(self.source)
+                        ),
                         "file_data": f"data:{self.media_type};base64,{data}",
                     },
                 }

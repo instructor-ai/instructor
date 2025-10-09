@@ -154,7 +154,7 @@ Available Modes:
 import instructor
 import cohere
 
-client = instructor.from_cohere(cohere.Client())
+client = instructor.from_cohere(cohere.ClientV2())
 ```
 
 Available Modes:
