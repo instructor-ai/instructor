@@ -27,6 +27,9 @@ def reask_cohere_tools(
     V2 kwargs modifications:
     - Modifies: "messages" (appends error correction message)
     """
+    # Default to marker stored on kwargs (set during client initialization)
+    client_version = kwargs.get("_cohere_client_version")
+
     # Detect V1 vs V2 response structure and extract text
     if hasattr(response, "text"):
         client_version = "v1"
@@ -50,6 +53,11 @@ def reask_cohere_tools(
     else:
         # Fallback to string representation
         response_text = str(response)
+        if client_version is None:
+            if "messages" in kwargs:
+                client_version = "v2"
+            elif "chat_history" in kwargs or "message" in kwargs:
+                client_version = "v1"
 
     # Create the correction message
     correction_msg = (
