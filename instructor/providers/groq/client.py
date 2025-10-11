@@ -30,7 +30,7 @@ def from_groq(
     valid_modes = {
         instructor.Mode.JSON,
         instructor.Mode.TOOLS,
-        instructor.Mode.YAML,
+        instructor.Mode.MD_YAML,
     }
 
     if mode not in valid_modes:

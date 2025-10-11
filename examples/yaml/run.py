@@ -11,7 +11,7 @@ class User(BaseModel):
 
 
 # Initialize the client with YAML mode
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.YAML)
+client = instructor.from_openai(OpenAI(), mode=instructor.Mode.MD_YAML)
 
 # Extract structured data using YAML mode
 user = client.chat.completions.create(

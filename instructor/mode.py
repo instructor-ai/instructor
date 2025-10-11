@@ -23,7 +23,7 @@ class Mode(enum.Enum):
     JSON_O1 = "json_o1"
     MD_JSON = "markdown_json_mode"
     JSON_SCHEMA = "json_schema_mode"
-    YAML = "yaml_mode"
+    MD_YAML = "md_yaml_mode"
 
     # Add new modes to support responses api
     RESPONSES_TOOLS = "responses_tools"
@@ -106,7 +106,7 @@ class Mode(enum.Enum):
             cls.JSON_O1,
             cls.MD_JSON,
             cls.JSON_SCHEMA,
-            cls.YAML,
+            cls.MD_YAML,
             cls.ANTHROPIC_JSON,
             cls.VERTEXAI_JSON,
             cls.GEMINI_JSON,

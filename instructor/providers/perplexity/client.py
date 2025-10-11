@@ -36,7 +36,7 @@ def from_perplexity(
     Returns:
         An Instructor client
     """
-    valid_modes = {instructor.Mode.PERPLEXITY_JSON, instructor.Mode.YAML}
+    valid_modes = {instructor.Mode.PERPLEXITY_JSON, instructor.Mode.MD_YAML}
 
     if mode not in valid_modes:
         from ...core.exceptions import ModeError

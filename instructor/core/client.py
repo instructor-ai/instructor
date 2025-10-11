@@ -828,7 +828,7 @@ def from_openai(
             instructor.Mode.MD_JSON,
             instructor.Mode.TOOLS_STRICT,
             instructor.Mode.JSON_O1,
-            instructor.Mode.YAML,
+            instructor.Mode.MD_YAML,
             instructor.Mode.RESPONSES_TOOLS,
             instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
         }

@@ -53,7 +53,7 @@ def from_xai(
     valid_modes = {
         instructor.Mode.XAI_JSON,
         instructor.Mode.XAI_TOOLS,
-        instructor.Mode.YAML,
+        instructor.Mode.MD_YAML,
     }
 
     if mode not in valid_modes:

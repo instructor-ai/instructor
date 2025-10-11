@@ -52,7 +52,7 @@ def from_bedrock(
     valid_modes = {
         instructor.Mode.BEDROCK_TOOLS,
         instructor.Mode.BEDROCK_JSON,
-        instructor.Mode.YAML,
+        instructor.Mode.MD_YAML,
     }
 
     if mode not in valid_modes:

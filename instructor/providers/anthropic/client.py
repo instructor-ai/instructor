@@ -63,7 +63,7 @@ def from_anthropic(
         instructor.Mode.ANTHROPIC_TOOLS,
         instructor.Mode.ANTHROPIC_REASONING_TOOLS,
         instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
-        instructor.Mode.YAML,
+        instructor.Mode.MD_YAML,
     }
 
     if mode not in valid_modes:

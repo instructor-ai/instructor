@@ -31,7 +31,7 @@ def from_writer(
     valid_modes = {
         instructor.Mode.WRITER_TOOLS,
         instructor.Mode.WRITER_JSON,
-        instructor.Mode.YAML,
+        instructor.Mode.MD_YAML,
     }
 
     if mode not in valid_modes:

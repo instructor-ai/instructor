@@ -238,8 +238,8 @@ class OpenAISchema(BaseModel):
         }:
             return cls.parse_json(completion, validation_context, strict)
 
-        if mode == Mode.YAML:
-            return cls.parse_yaml(completion, validation_context, strict)
+        if mode == Mode.MD_YAML:
+            return cls.parse_md_yaml(completion, validation_context, strict)
 
         raise ValueError(f"Invalid patch mode: {mode}")
 
@@ -735,7 +735,7 @@ class OpenAISchema(BaseModel):
         return _validate_model_from_json(cls, json_content, validation_context, strict)
 
     @classmethod
-    def parse_yaml(
+    def parse_md_yaml(
         cls: type[BaseModel],
         completion: ChatCompletion,
         validation_context: Optional[dict[str, Any]] = None,

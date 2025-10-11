@@ -33,7 +33,7 @@ def from_cerebras(
     valid_modes = {
         instructor.Mode.CEREBRAS_TOOLS,
         instructor.Mode.CEREBRAS_JSON,
-        instructor.Mode.YAML,
+        instructor.Mode.MD_YAML,
     }
 
     if mode not in valid_modes:

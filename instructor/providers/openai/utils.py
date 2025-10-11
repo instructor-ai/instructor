@@ -77,7 +77,7 @@ def reask_responses_tools(
     return kwargs
 
 
-def reask_yaml(
+def reask_md_yaml(
     kwargs: dict[str, Any],
     response: Any,
     exception: Exception,
@@ -418,7 +418,7 @@ def handle_json_o1(
     return response_model, new_kwargs
 
 
-def handle_yaml_mode(
+def handle_md_yaml_mode(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
@@ -583,9 +583,9 @@ OPENAI_HANDLERS = {
         "reask": reask_md_json,
         "response": handle_json_o1,
     },
-    Mode.YAML: {
-        "reask": reask_yaml,
-        "response": handle_yaml_mode,
+    Mode.MD_YAML: {
+        "reask": reask_md_yaml,
+        "response": handle_md_yaml_mode,
     },
     Mode.PARALLEL_TOOLS: {
         "reask": reask_tools,

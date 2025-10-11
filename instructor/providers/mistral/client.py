@@ -34,7 +34,7 @@ def from_mistral(
     valid_modes = {
         instructor.Mode.MISTRAL_TOOLS,
         instructor.Mode.MISTRAL_STRUCTURED_OUTPUTS,
-        instructor.Mode.YAML,
+        instructor.Mode.MD_YAML,
     }
 
     if mode not in valid_modes:
