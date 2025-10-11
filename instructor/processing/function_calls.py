@@ -741,7 +741,7 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        """Parse YAML mode responses using optimized extraction and validation."""
+        """Parse MD_YAML mode responses (YAML in markdown code blocks)."""
         import yaml
 
         # Check for incomplete output

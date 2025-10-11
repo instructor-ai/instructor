@@ -84,7 +84,7 @@ def reask_md_yaml(
     failed_attempts: list[Any] | None = None,  # noqa: ARG001
 ):
     """
-    Handle reask for OpenAI YAML mode when validation fails.
+    Handle reask for MD_YAML mode when validation fails.
 
     Kwargs modifications:
     - Adds: "messages" (user message requesting YAML correction)
@@ -422,12 +422,12 @@ def handle_md_yaml_mode(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
     """
-    Handle OpenAI YAML mode.
+    Handle MD_YAML mode (markdown YAML responses).
 
     Kwargs modifications:
     - When response_model is None: No modifications
     - When response_model is provided:
-      - Modifies: "messages" (appends user message with YAML schema)
+      - Modifies: "messages" (appends system message with YAML schema and instructions)
     """
     if response_model is None:
         return None, new_kwargs
