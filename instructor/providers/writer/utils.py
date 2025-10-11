@@ -113,4 +113,8 @@ WRITER_HANDLERS = {
         "reask": reask_writer_json,
         "response": handle_writer_json,
     },
+    Mode.MD_YAML: {
+        "reask": reask_writer_json,
+        "response": handle_writer_json,
+    },
 }

@@ -238,4 +238,8 @@ COHERE_HANDLERS = {
         "reask": reask_cohere_tools,
         "response": handle_cohere_json_schema,
     },
+    Mode.MD_YAML: {
+        "reask": reask_cohere_tools,
+        "response": handle_cohere_json_schema,
+    },
 }

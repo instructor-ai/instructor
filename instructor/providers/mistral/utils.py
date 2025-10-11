@@ -119,4 +119,8 @@ MISTRAL_HANDLERS = {
         "reask": reask_mistral_structured_outputs,
         "response": handle_mistral_structured_outputs,
     },
+    Mode.MD_YAML: {
+        "reask": reask_mistral_structured_outputs,
+        "response": handle_mistral_structured_outputs,
+    },
 }

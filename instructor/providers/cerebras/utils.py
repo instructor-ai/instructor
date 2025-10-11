@@ -104,4 +104,8 @@ CEREBRAS_HANDLERS = {
         "reask": reask_cerebras_tools,  # Uses same reask as tools
         "response": handle_cerebras_json,
     },
+    Mode.MD_YAML: {
+        "reask": reask_cerebras_tools,
+        "response": handle_cerebras_json,
+    },
 }

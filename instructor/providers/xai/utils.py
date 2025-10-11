@@ -176,4 +176,8 @@ XAI_HANDLERS = {
         "reask": reask_xai_tools,
         "response": handle_xai_tools,
     },
+    Mode.MD_YAML: {
+        "reask": reask_xai_json,
+        "response": handle_xai_json,
+    },
 }

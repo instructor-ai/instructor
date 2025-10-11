@@ -116,4 +116,8 @@ FIREWORKS_HANDLERS = {
         "reask": reask_fireworks_json,
         "response": handle_fireworks_json,
     },
+    Mode.MD_YAML: {
+        "reask": reask_fireworks_json,
+        "response": handle_fireworks_json,
+    },
 }

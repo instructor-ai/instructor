@@ -58,4 +58,8 @@ PERPLEXITY_HANDLERS = {
         "reask": reask_perplexity_json,
         "response": handle_perplexity_json,
     },
+    Mode.MD_YAML: {
+        "reask": reask_perplexity_json,
+        "response": handle_perplexity_json,
+    },
 }

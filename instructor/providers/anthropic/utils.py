@@ -463,4 +463,8 @@ ANTHROPIC_HANDLERS = {
         "reask": reask_anthropic_tools,
         "response": handle_anthropic_parallel_tools,
     },
+    Mode.MD_YAML: {
+        "reask": reask_anthropic_json,
+        "response": handle_anthropic_json,
+    },
 }

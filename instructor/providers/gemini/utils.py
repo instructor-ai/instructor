@@ -1015,4 +1015,8 @@ GOOGLE_HANDLERS = {
         "reask": reask_vertexai_tools,
         "response": handle_vertexai_parallel_tools,
     },
+    Mode.MD_YAML: {
+        "reask": reask_gemini_json,
+        "response": handle_gemini_json,
+    },
 }
