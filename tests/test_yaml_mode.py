@@ -3,6 +3,7 @@
 import pytest
 from pydantic import BaseModel
 from instructor.mode import Mode
+from instructor.processing.function_calls import openai_schema
 
 
 class SimpleModel(BaseModel):
@@ -17,7 +18,7 @@ class NestedModel(BaseModel):
 
     name: str
     items: list[str]
-    metadata: dict
+    metadata: dict[str, str]
 
 
 def test_yaml_mode_exists():
@@ -39,6 +40,9 @@ def test_yaml_parsing_simple():
     """Test YAML parsing with simple model."""
     from unittest.mock import Mock
 
+    # Wrap the model to get OpenAISchema functionality
+    WrappedModel = openai_schema(SimpleModel)
+
     # Create a mock completion with YAML response
     mock_completion = Mock()
     mock_completion.choices = [Mock()]
@@ -49,7 +53,7 @@ age: 35
     mock_completion.choices[0].finish_reason = "stop"
 
     # Parse YAML using the model's from_response method
-    result = SimpleModel.from_response(
+    result = WrappedModel.from_response(
         mock_completion,
         mode=Mode.MD_YAML,
     )
@@ -62,6 +66,8 @@ def test_yaml_parsing_with_codeblock():
     """Test YAML parsing when wrapped in code block."""
     from unittest.mock import Mock
 
+    WrappedModel = openai_schema(SimpleModel)
+
     mock_completion = Mock()
     mock_completion.choices = [Mock()]
     mock_completion.choices[0].message.content = """
@@ -72,7 +78,7 @@ age: 28
 """
     mock_completion.choices[0].finish_reason = "stop"
 
-    result = SimpleModel.from_response(
+    result = WrappedModel.from_response(
         mock_completion,
         mode=Mode.MD_YAML,
     )
@@ -84,6 +90,8 @@ age: 28
 def test_yaml_parsing_nested():
     """Test YAML parsing with nested structures."""
     from unittest.mock import Mock
+
+    WrappedModel = openai_schema(NestedModel)
 
     mock_completion = Mock()
     mock_completion.choices = [Mock()]
@@ -99,7 +107,7 @@ metadata:
 """
     mock_completion.choices[0].finish_reason = "stop"
 
-    result = NestedModel.from_response(
+    result = WrappedModel.from_response(
         mock_completion,
         mode=Mode.MD_YAML,
     )
@@ -114,6 +122,8 @@ def test_yaml_invalid_response():
     """Test YAML parsing with invalid YAML."""
     from unittest.mock import Mock
 
+    WrappedModel = openai_schema(SimpleModel)
+
     mock_completion = Mock()
     mock_completion.choices = [Mock()]
     mock_completion.choices[0].message.content = """
@@ -124,7 +134,7 @@ invalid: yaml: content:
     mock_completion.choices[0].finish_reason = "stop"
 
     with pytest.raises(ValueError, match="Failed to parse YAML"):
-        SimpleModel.from_response(
+        WrappedModel.from_response(
             mock_completion,
             mode=Mode.MD_YAML,
         )
