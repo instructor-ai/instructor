@@ -742,7 +742,13 @@ class OpenAISchema(BaseModel):
         strict: Optional[bool] = None,
     ) -> BaseModel:
         """Parse MD_YAML mode responses (YAML in markdown code blocks)."""
-        import yaml
+        try:
+            import yaml
+        except ImportError as e:
+            raise ImportError(
+                "PyYAML is required for MD_YAML mode. "
+                "Install it with: pip install pyyaml"
+            ) from e
 
         # Check for incomplete output
         _handle_incomplete_output(completion)

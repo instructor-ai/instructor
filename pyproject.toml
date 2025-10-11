@@ -16,6 +16,7 @@ dependencies = [
     "requests<3.0.0,>=2.32.3",
     "diskcache>=5.6.3",
     "pre-commit>=4.3.0",
+    "pyyaml<7.0.0,>=6.0.0",
 ]
 name = "instructor"
 version = "1.12.0"
