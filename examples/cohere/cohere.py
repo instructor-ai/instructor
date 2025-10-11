@@ -5,9 +5,9 @@ from pydantic import BaseModel, Field
 
 # Patching the Cohere client with the instructor for enhanced capabilities
 client = instructor.from_cohere(
-    cohere.Client(),
+    cohere.ClientV2(),
     max_tokens=1000,
-    model="command-r-plus",
+    model="command-a-03-2025",
 )
 
 

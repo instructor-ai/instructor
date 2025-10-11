@@ -167,6 +167,7 @@ def from_vertexai(
         instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
         instructor.Mode.VERTEXAI_TOOLS,
         instructor.Mode.VERTEXAI_JSON,
+        instructor.Mode.YAML,
     }
 
     if mode not in valid_modes:

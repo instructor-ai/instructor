@@ -449,9 +449,9 @@ def calculate_cost_savings(baseline_stats: dict, cached_stats: dict) -> dict[str
         "cost_savings_percent": savings_percent,
         "time_saved": time_saved,
         "time_savings_percent": time_savings_percent,
-        "speed_improvement": baseline_time / cached_time
-        if cached_time > 0
-        else float("inf"),
+        "speed_improvement": (
+            baseline_time / cached_time if cached_time > 0 else float("inf")
+        ),
     }
 
 

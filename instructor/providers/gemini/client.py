@@ -56,6 +56,7 @@ def from_gemini(
     valid_modes = {
         instructor.Mode.GEMINI_JSON,
         instructor.Mode.GEMINI_TOOLS,
+        instructor.Mode.YAML,
     }
 
     if mode not in valid_modes:

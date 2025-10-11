@@ -33,6 +33,7 @@ def from_fireworks(
     valid_modes = {
         instructor.Mode.FIREWORKS_TOOLS,
         instructor.Mode.FIREWORKS_JSON,
+        instructor.Mode.YAML,
     }
 
     if mode not in valid_modes:

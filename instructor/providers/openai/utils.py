@@ -439,6 +439,7 @@ def handle_yaml_mode(
         {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
 
         Return only the YAML data instance matching this schema, not the schema itself.
+        Wrap your response in ```yaml code blocks.
         Do not include any other text or explanation in your response.
         """
     )
