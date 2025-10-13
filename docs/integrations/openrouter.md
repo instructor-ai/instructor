@@ -34,6 +34,7 @@ class User(BaseModel):
 client = instructor.from_provider(
     "openrouter/google/gemini-2.0-flash-lite-001",
     base_url="https://openrouter.ai/api/v1",
+    async_client=False
 )
 
 resp = client.chat.completions.create(
@@ -113,6 +114,7 @@ class User(BaseModel):
 client = instructor.from_provider(
     "openrouter/google/gemini-2.0-flash-lite-001",
     base_url="https://openrouter.ai/api/v1",
+    async_client=False
 )
 
 # Create structured output with nested objects
@@ -161,6 +163,7 @@ class User(BaseModel):
 client = instructor.from_provider(
     "openrouter/google/gemini-2.0-flash-lite-001",
     base_url="https://openrouter.ai/api/v1",
+    async_client=False
 )
 
 # Create structured output with nested objects
@@ -209,6 +212,7 @@ class User(BaseModel):
 client = instructor.from_provider(
     "openrouter/google/gemini-2.0-flash-lite-001",
     base_url="https://openrouter.ai/api/v1",
+    async_client=False
 )
 
 # Create structured output with nested objects
