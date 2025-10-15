@@ -11,6 +11,16 @@ You can now use any of the Cohere's [command models](https://docs.cohere.com/doc
 
 You'll need a cohere API key which can be obtained by signing up [here](https://dashboard.cohere.com/) and gives you [free](https://cohere.com/pricing), rate-limited usage for learning and prototyping.
 
+## Cohere V2 API Support
+
+As of version 1.12.0, Instructor supports both Cohere V1 and V2 SDK clients. The V2 API provides an OpenAI-compatible interface with support for the latest Cohere models.
+
+**Key differences:**
+- **V2 API** (recommended): Uses `cohere.ClientV2` / `cohere.AsyncClientV2` with OpenAI-compatible message format
+- **V1 API** (legacy): Uses `cohere.Client` / `cohere.AsyncClient` with Cohere-specific message format
+
+The V2 API is recommended for new projects as it provides better compatibility with the OpenAI SDK interface and supports the latest models like `command-a-03-2025`.
+
 ## Setup
 
 ```
@@ -18,24 +28,27 @@ pip install "instructor[cohere]"
 
 ```
 
+This installs `cohere>=5.1.8`, which includes both V1 and V2 client support.
+
 Export your key:
 
 ```
 export CO_API_KEY=<YOUR_COHERE_API_KEY>
 ```
 
-## Example
+## Example (V2 API - Recommended)
+
+The easiest way to use Cohere with Instructor is through the `from_provider` factory, which automatically uses the V2 API:
 
 ```python
 from pydantic import BaseModel, Field
 from typing import List
-import cohere
 import instructor
 
 
-# Patching the Cohere client with the instructor for enhanced capabilities
+# Using from_provider automatically uses Cohere V2 API
 client = instructor.from_provider(
-    "cohere/command-r-plus",
+    "cohere/command-a-03-2025",
     max_tokens=1000,
 )
 
@@ -94,8 +107,56 @@ print(group.model_dump_json(indent=2))
 import instructor
 
 async_client = instructor.from_provider(
-    "cohere/command-r-plus",
+    "cohere/command-a-03-2025",
     async_client=True,
     max_tokens=1000,
 )
 ```
+
+## Using Cohere SDK Directly
+
+You can also explicitly create a Cohere client and patch it with Instructor:
+
+### V2 API (Recommended)
+
+```python
+import cohere
+import instructor
+
+# Create a Cohere V2 client
+cohere_client = cohere.ClientV2(api_key="your-api-key")
+
+# Patch with instructor
+client = instructor.from_cohere(cohere_client, mode=instructor.Mode.COHERE_TOOLS)
+
+# Now use it with structured outputs
+response = client.chat.completions.create(
+    response_model=YourModel,
+    model="command-a-03-2025",
+    messages=[{"role": "user", "content": "Extract..."}],
+)
+```
+
+### V1 API (Legacy Support)
+
+The V1 API is still supported for backward compatibility:
+
+```python
+import cohere
+import instructor
+
+# Create a Cohere V1 client
+cohere_client = cohere.Client(api_key="your-api-key")
+
+# Patch with instructor
+client = instructor.from_cohere(cohere_client, mode=instructor.Mode.COHERE_TOOLS)
+
+# V1 uses different message format internally but instructor handles the conversion
+response = client.chat.completions.create(
+    response_model=YourModel,
+    model="command-r-plus",
+    messages=[{"role": "user", "content": "Extract..."}],
+)
+```
+
+**Note**: Instructor automatically detects whether you're using V1 or V2 client and handles message format conversion accordingly. The V2 API uses OpenAI-compatible message format (`messages`), while V1 uses Cohere's legacy format (`message` + `chat_history`).

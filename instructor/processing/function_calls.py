@@ -289,12 +289,38 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ):
-        assert hasattr(completion, "text"), (
-            "Completion is not of type NonStreamedChatResponse"
-        )
-        return cls.model_validate_json(
-            completion.text, context=validation_context, strict=strict
-        )
+        # Handle both V1 and V2 response structures
+        if hasattr(completion, "text"):
+            # V1 format: direct text access
+            text = completion.text
+        elif hasattr(completion, "message") and hasattr(completion.message, "content"):
+            # V2 format: nested structure (message.content[].text)
+            # V2 responses may have multiple content items (thinking, text, etc.)
+            content_items = completion.message.content
+            if content_items and len(content_items) > 0:
+                # Find the text content item (skip thinking/other types)
+                # TODO handle these other content types
+                text = None
+                for item in content_items:
+                    if (
+                        hasattr(item, "type")
+                        and item.type == "text"
+                        and hasattr(item, "text")
+                    ):
+                        text = item.text
+                        break
+
+                if text is None:
+                    raise ValueError("Cohere V2 response has no text content item")
+            else:
+                raise ValueError("Cohere V2 response has no content")
+        else:
+            raise ValueError(
+                f"Unsupported Cohere response format. Expected 'text' (V1) or "
+                f"'message.content[].text' (V2), got: {type(completion)}"
+            )
+
+        return cls.model_validate_json(text, context=validation_context, strict=strict)
 
     @classmethod
     def parse_anthropic_tools(
@@ -479,7 +505,73 @@ class OpenAISchema(BaseModel):
         validation_context: Optional[dict[str, Any]] = None,
         strict: Optional[bool] = None,
     ) -> BaseModel:
-        text = cast(str, completion.text)  # type: ignore - TODO update with cohere specific types
+        """
+        Parse Cohere tools response.
+
+        Supports:
+        - V1 native tool calls: completion.tool_calls[0].parameters
+        - V2 native tool calls: completion.message.tool_calls[0].function.arguments (JSON string)
+        - V1 text-based: completion.text (prompt-based approach)
+        - V2 text-based: completion.message.content[].text (prompt-based approach)
+        """
+        # First, check for native Cohere tool calls (V1 and V2)
+        # V1: completion.tool_calls with tc.parameters (dict)
+        if hasattr(completion, "tool_calls") and completion.tool_calls:
+            # V1 tool call format
+            tool_call = completion.tool_calls[0]
+            # Parameters in V1 are already a dict
+            return cls.model_validate(
+                tool_call.parameters, context=validation_context, strict=strict
+            )
+
+        # V2: completion.message.tool_calls with tc.function.arguments (JSON string)
+        if (
+            hasattr(completion, "message")
+            and hasattr(completion.message, "tool_calls")
+            and completion.message.tool_calls
+        ):
+            # V2 tool call format
+            tool_call = completion.message.tool_calls[0]
+            # Arguments in V2 are a JSON string
+            import json
+
+            arguments = json.loads(tool_call.function.arguments)
+            return cls.model_validate(
+                arguments, context=validation_context, strict=strict
+            )
+
+        # Fallback to text-based extraction (current prompt-based approach)
+        # Handle both V1 and V2 text response structures
+        if hasattr(completion, "text"):
+            # V1 format: direct text access
+            text = completion.text
+        elif hasattr(completion, "message") and hasattr(completion.message, "content"):
+            # V2 format: nested structure (message.content[].text)
+            # V2 responses may have multiple content items (thinking, text, etc.)
+            content_items = completion.message.content
+            if content_items and len(content_items) > 0:
+                # Find the text content item (skip thinking/other types)
+                text = None
+                for item in content_items:
+                    if (
+                        hasattr(item, "type")
+                        and item.type == "text"
+                        and hasattr(item, "text")
+                    ):
+                        text = item.text
+                        break
+
+                if text is None:
+                    raise ValueError("Cohere V2 response has no text content item")
+            else:
+                raise ValueError("Cohere V2 response has no content")
+        else:
+            raise ValueError(
+                f"Unsupported Cohere response format. Expected tool_calls or text content. "
+                f"Got: {type(completion)}"
+            )
+
+        # Extract JSON from text (for prompt-based approach)
         extra_text = extract_json_from_codeblock(text)
         return cls.model_validate_json(
             extra_text, context=validation_context, strict=strict

@@ -1,18 +1,18 @@
 ---
-title: 'Document Segmentation with LLMs: A Comprehensive Guide'
+title: "Document Segmentation with LLMs: A Comprehensive Guide"
 description: Learn effective document segmentation techniques using Cohere's LLM, enhancing comprehension of complex texts.
 ---
 
 # Document Segmentation
 
-In this guide, we demonstrate how to do document segmentation using structured output from an LLM. We'll be using [command-r-plus](https://docs.cohere.com/docs/command-r-plus) - one of Cohere's latest LLMs with 128k context length and testing the approach on an article explaining the Transformer architecture. Same approach to document segmentation can be applied to any other domain where we need to break down a complex long document into smaller chunks.
+In this guide, we demonstrate how to do document segmentation using structured output from an LLM. We'll be using [command-a](https://docs.cohere.com/docs/command-a) - one of Cohere's latest LLMs with 256k context length and testing the approach on an article explaining the Transformer architecture. Same approach to document segmentation can be applied to any other domain where we need to break down a complex long document into smaller chunks.
 
 !!! tips "Motivation"
-    Sometimes we need a way to split the document into meaningful parts that center around a single key concept/idea. Simple length-based / rule-based text-splitters are not reliable enough. Consider the cases where documents contain code snippets or math equations - we don't want to split those on `'\n\n'` or have to write extensive rules for different types of documents. It turns out that LLMs with sufficiently long context length are well suited for this task.
+Sometimes we need a way to split the document into meaningful parts that center around a single key concept/idea. Simple length-based / rule-based text-splitters are not reliable enough. Consider the cases where documents contain code snippets or math equations - we don't want to split those on `'\n\n'` or have to write extensive rules for different types of documents. It turns out that LLMs with sufficiently long context length are well suited for this task.
 
 ## Defining the Data Structures
 
-First, we need to define a **`Section`** class for each of the document's segments.  **`StructuredDocument`** class will then encapsulate a list of these sections.
+First, we need to define a **`Section`** class for each of the document's segments. **`StructuredDocument`** class will then encapsulate a list of these sections.
 
 Note that in order to avoid LLM regenerating the content of each section, we can simply enumerate each line of the input document and then ask LLM to segment it by providing start-end line numbers for each section.
 
@@ -77,7 +77,7 @@ import cohere
 
 # Apply the patch to the cohere client
 # enables response_model keyword
-client = instructor.from_cohere(cohere.Client())
+client = instructor.from_cohere(cohere.ClientV2())
 
 
 system_prompt = f"""\
@@ -89,7 +89,7 @@ Each line of the document is marked with its line number in square brackets (e.g
 
 def get_structured_document(document_with_line_numbers) -> StructuredDocument:
     return client.chat.completions.create(
-        model="command-r-plus",
+        model="command-a-03-2025",
         response_model=StructuredDocument,
         messages=[
             {
@@ -103,7 +103,6 @@ def get_structured_document(document_with_line_numbers) -> StructuredDocument:
         ],
     )  # type: ignore
 ```
-
 
 Next, we need to get back the section text based on the start/end indices and our `line2text` dict from the preprocessing step.
 
@@ -124,7 +123,6 @@ def get_sections_text(structured_doc, line2text):
         )
     return segments
 ```
-
 
 ## Example
 
@@ -150,7 +148,7 @@ def doc_with_lines(document):
     return document_with_line_numbers, line2text
 
 
-client = instructor.from_cohere(cohere.Client())
+client = instructor.from_cohere(cohere.ClientV2())
 
 
 system_prompt = f"""\
@@ -174,7 +172,7 @@ class StructuredDocument(BaseModel):
 
 def get_structured_document(document_with_line_numbers) -> StructuredDocument:
     return client.chat.completions.create(
-        model="command-r-plus",
+        model="command-a-03-2025",
         response_model=StructuredDocument,
         messages=[
             {

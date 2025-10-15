@@ -13,11 +13,11 @@ class User(BaseModel):
         raise ValueError("Name must be Bob")
 
 
-def test_user_creation_retry(client):
+def test_user_creation_retry(client_v1):
     try:
-        client = from_cohere(client)
+        client = from_cohere(client_v1)
         res = client.chat.completions.create(
-            model="command-r",
+            model="command-a-03-2025",
             messages=[{"role": "user", "content": "What is the capital of the moon?"}],
             response_model=User,
         )
@@ -27,11 +27,11 @@ def test_user_creation_retry(client):
 
 
 @pytest.mark.asyncio()
-async def test_user_async_creation_retry(aclient):
-    client = from_cohere(aclient)
+async def test_user_async_creation_retry(aclient_v1):
+    client = from_cohere(aclient_v1)
     try:
         res = await client.chat.completions.create(
-            model="command-r",
+            model="command-a-03-2025",
             messages=[{"role": "user", "content": "What is the capital of the moon?"}],
             response_model=User,
         )

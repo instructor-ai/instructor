@@ -357,7 +357,6 @@ def process_response(
         return model.content
 
     model._raw_response = response
-
     return model
 
 

@@ -18,55 +18,127 @@ def reask_cohere_tools(
 ):
     """
     Handle reask for Cohere tools and JSON schema modes.
+    Supports both V1 and V2 formats.
 
-    Kwargs modifications:
+    V1 kwargs modifications:
     - Adds/Modifies: "chat_history" (appends prior message)
     - Modifies: "message" (user prompt describing validation errors)
+
+    V2 kwargs modifications:
+    - Modifies: "messages" (appends error correction message)
     """
-    # Get message outside the function
-    message = kwargs.get("message", "")
+    # Default to marker stored on kwargs (set during client initialization)
+    client_version = kwargs.get("_cohere_client_version")
 
-    # Fetch or initialize chat_history in one operation
-    if "chat_history" in kwargs:
-        # Only modify chat_history if it exists
-        kwargs["chat_history"].append({"role": "user", "message": message})
+    # Detect V1 vs V2 response structure and extract text
+    if hasattr(response, "text"):
+        client_version = "v1"
+        response_text = response.text
+    elif hasattr(response, "message") and hasattr(response.message, "content"):
+        client_version = "v2"
+        content_items = response.message.content
+        response_text = ""
+        if content_items:
+            # Find the text content item (skip thinking/other types)
+            for item in content_items:
+                if (
+                    hasattr(item, "type")
+                    and item.type == "text"
+                    and hasattr(item, "text")
+                ):
+                    response_text = item.text
+                    break
+        if not response_text:
+            response_text = str(response)
     else:
-        # Create a new chat_history if it doesn't exist
-        kwargs["chat_history"] = [{"role": "user", "message": message}]
+        # Fallback to string representation
+        response_text = str(response)
+        if client_version is None:
+            if "messages" in kwargs:
+                client_version = "v2"
+            elif "chat_history" in kwargs or "message" in kwargs:
+                client_version = "v1"
 
-    # Set the message directly without string concatenation with f-strings
-    kwargs["message"] = (
+    # Create the correction message
+    correction_msg = (
         "Correct the following JSON response, based on the errors given below:\n\n"
-        f"JSON:\n{response.text}\n\nExceptions:\n{exception}"
+        f"JSON:\n{response_text}\n\nExceptions:\n{exception}"
     )
+
+    if client_version == "v2":
+        # V2 format: append to messages list
+        kwargs["messages"].append({"role": "user", "content": correction_msg})
+    elif client_version == "v1":
+        # V1 format: use chat_history and message
+        message = kwargs.get("message", "")
+
+        # Fetch or initialize chat_history in one operation
+        if "chat_history" in kwargs:
+            kwargs["chat_history"].append({"role": "user", "message": message})
+        else:
+            kwargs["chat_history"] = [{"role": "user", "message": message}]
+
+        kwargs["message"] = correction_msg
+    else:
+        # Unknown version - raise error for future compatibility
+        raise ValueError(
+            f"Unsupported Cohere client version: {client_version}. "
+            f"Expected 'v1' or 'v2'."
+        )
+
     return kwargs
 
 
 def handle_cohere_modes(new_kwargs: dict[str, Any]) -> tuple[None, dict[str, Any]]:
     """
     Convert OpenAI-style messages to Cohere format.
+    Handles both V1 and V2 client formats.
 
-    Kwargs modifications:
+    V1 format:
     - Removes: "messages"
     - Adds: "message" (last user message)
     - Adds: "chat_history" (prior messages)
+
+    V2 format:
+    - Keeps: "messages" (compatible with OpenAI format)
+
+    Both versions:
     - Renames: "model_name" -> "model"
     - Removes: "strict"
+    - Removes: "_cohere_client_version" (internal marker)
     """
-    messages = new_kwargs.pop("messages", [])
-    chat_history = []
-    for message in messages[:-1]:
-        chat_history.append(  # type: ignore
-            {
-                "role": message["role"],
-                "message": message["content"],
-            }
+    new_kwargs = new_kwargs.copy()
+    client_version = new_kwargs.pop("_cohere_client_version")
+
+    if client_version == "v2":
+        # V2 uses OpenAI-style messages directly - no conversion needed
+        # Just clean up incompatible fields
+        if "model_name" in new_kwargs and "model" not in new_kwargs:
+            new_kwargs["model"] = new_kwargs.pop("model_name")
+        new_kwargs.pop("strict", None)
+    elif client_version == "v1":
+        # V1 needs conversion from OpenAI format to Cohere V1 format
+        messages = new_kwargs.pop("messages", [])
+        chat_history = []
+        for message in messages[:-1]:
+            chat_history.append(  # type: ignore
+                {
+                    "role": message["role"],
+                    "message": message["content"],
+                }
+            )
+        new_kwargs["message"] = messages[-1]["content"]
+        new_kwargs["chat_history"] = chat_history
+        if "model_name" in new_kwargs and "model" not in new_kwargs:
+            new_kwargs["model"] = new_kwargs.pop("model_name")
+        new_kwargs.pop("strict", None)
+    else:
+        # Unknown version - raise error for future compatibility
+        raise ValueError(
+            f"Unsupported Cohere client version: {client_version}. "
+            f"Expected 'v1' or 'v2'."
         )
-    new_kwargs["message"] = messages[-1]["content"]
-    new_kwargs["chat_history"] = chat_history
-    if "model_name" in new_kwargs and "model" not in new_kwargs:
-        new_kwargs["model"] = new_kwargs.pop("model_name")
-    new_kwargs.pop("strict", None)
+
     return None, new_kwargs
 
 
@@ -112,19 +184,19 @@ def handle_cohere_tools(
     Handle Cohere tools mode.
 
     When response_model is None:
-        - Converts messages from OpenAI format to Cohere format (message + chat_history)
+        - Converts messages from OpenAI format to Cohere format (message + chat_history for V1, messages for V2)
         - No tools or schema instructions are added
         - Allows for unstructured responses from Cohere
 
     When response_model is provided:
         - Converts messages from OpenAI format to Cohere format
-        - Prepends extraction instructions to the chat history
+        - Prepends extraction instructions to the chat history (V1) or messages (V2)
         - Includes the model's JSON schema in the instructions
         - The model is instructed to extract a valid object matching the schema
 
     Kwargs modifications:
     - All modifications from handle_cohere_modes (message format conversion)
-    - Modifies: "chat_history" (prepends extraction instruction) - only when response_model provided
+    - Modifies: "chat_history" (V1) or "messages" (V2) to prepend extraction instruction - only when response_model provided
     """
     if response_model is None:
         # Just handle message conversion
@@ -142,9 +214,17 @@ schema = {response_model.__name__}.model_json_schema()
 
 The output must be a valid JSON object that `{response_model.__name__}.model_validate_json()` can successfully parse.
 """
-    new_kwargs["chat_history"] = [
-        {"role": "user", "message": instruction}
-    ] + new_kwargs["chat_history"]
+    # Check client version explicitly (marker already removed by handle_cohere_modes)
+    # Use presence of messages vs chat_history as indicator since marker is already consumed
+    if "messages" in new_kwargs:
+        # V2 format: prepend to messages
+        new_kwargs["messages"].insert(0, {"role": "user", "content": instruction})
+    else:
+        # V1 format: prepend to chat_history
+        new_kwargs["chat_history"] = [
+            {"role": "user", "message": instruction}
+        ] + new_kwargs["chat_history"]
+
     return response_model, new_kwargs
 
 
