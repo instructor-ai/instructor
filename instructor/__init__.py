@@ -1,7 +1,7 @@
 import importlib.util
 
 from .mode import Mode
-from .processing.multimodal import Image, Audio
+from .processing.multimodal import Image, Audio, Video, VideoWithGenaiFile
 
 from .dsl import (
     CitationMixin,
@@ -38,6 +38,8 @@ __all__ = [
     "Instructor",
     "Image",
     "Audio",
+    "Video",
+    "VideoWithGenaiFile",
     "from_openai",
     "from_litellm",
     "from_provider",

@@ -22,13 +22,19 @@ In this post, we'll explore how to use Google's Gemini model with Instructor to 
 
 ## Setting Up the Environment
 
-First, let's set up our environment with the necessary libraries:
+First, install the required dependencies:
 
-```python
-
+```bash
+pip install "instructor[google-genai]" pydantic
 ```
 
 <!-- more -->
+
+Make sure you have your Google API key set as an environment variable:
+
+```bash
+export GOOGLE_API_KEY=your_api_key_here
+```
 
 ## Defining Our Data Models
 
@@ -49,32 +55,37 @@ class Recommendations(BaseModel):
 
 ## Initializing the Gemini Client
 
-Next, we'll set up our Gemini client using Instructor:
+Next, set up the Gemini client using Instructor's unified provider interface:
 
 ```python
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",
-    ),
+import instructor
+
+client = instructor.from_provider(
+    "google/gemini-2.0-flash-exp",
+    async_client=False,
 )
 ```
 
 ## Uploading and Processing the Video
 
-To analyze a video, we first need to upload it:
+To analyze a video, first upload it using `VideoWithGenaiFile`:
 
 ```python
-file = genai.upload_file("./takayama.mp4")
+# Upload the video and wait for processing
+video = instructor.VideoWithGenaiFile.from_new_genai_file("./takayama.mp4")
 ```
 
-Then, we can process the video and extract recommendations:
+Then, process the video and extract recommendations:
 
 ```python
-resp = client.chat.completions.create(
+resp = client.messages.create(
     messages=[
         {
             "role": "user",
-            "content": ["What places do they recommend in this video?", file],
+            "content": [
+                "What places do they recommend in this video?",
+                video,
+            ],
         }
     ],
     response_model=Recommendations,
@@ -217,9 +228,67 @@ To address these limitations and expand the capabilities of our video analysis s
 
 By addressing these challenges and exploring these new directions, we can create a more comprehensive and nuanced video analysis system, opening up even more possibilities for applications in travel, education, and beyond.
 
+## Complete Working Example
+
+Here's a complete, runnable example that you can use with your own videos:
+
+```python
+import instructor
+from pydantic import BaseModel
+
+
+class TouristDestination(BaseModel):
+    name: str
+    description: str
+    location: str
+
+
+class Recommendations(BaseModel):
+    chain_of_thought: str
+    description: str
+    destinations: list[TouristDestination]
+
+
+def analyze_video(video_path: str):
+    # Initialize the client
+    client = instructor.from_provider(
+        "google/gemini-2.0-flash-exp",
+        async_client=False,
+    )
+    
+    # Upload the video
+    video = instructor.VideoWithGenaiFile.from_new_genai_file(video_path)
+    
+    # Extract structured data
+    recommendations = client.messages.create(
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    "What tourist destinations do they recommend in this video?",
+                    video,
+                ],
+            }
+        ],
+        response_model=Recommendations,
+    )
+    
+    return recommendations
+
+
+# Usage
+results = analyze_video("./travel_video.mp4")
+for dest in results.destinations:
+    print(f"{dest.name} - {dest.location}")
+    print(f"  {dest.description}\n")
+```
+
+For a more detailed example with proper error handling and formatting, check out our [video extraction example](https://github.com/instructor-ai/instructor/tree/main/examples/video-extraction-gemini).
+
 ## Related Documentation
 - [Multimodal Concepts](../../concepts/multimodal.md) - Working with images, video, and audio
 - [Google Integration](../../integrations/google.md) - Complete Gemini setup guide
+- [Video Extraction Example](https://github.com/instructor-ai/instructor/tree/main/examples/video-extraction-gemini) - Complete working example with video
 
 ## See Also
 - [OpenAI Multimodal](openai-multimodal.md) - Compare multimodal approaches

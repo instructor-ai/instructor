@@ -41,6 +41,18 @@ VALID_AUDIO_MIME_TYPES = [
     "audio/webm",
 ]
 VALID_PDF_MIME_TYPES = ["application/pdf"]
+VALID_VIDEO_MIME_TYPES = [
+    "video/mp4",
+    "video/mpeg",
+    "video/mov",
+    "video/avi",
+    "video/x-flv",
+    "video/mpg",
+    "video/webm",
+    "video/wmv",
+    "video/3gpp",
+    "video/quicktime",
+]
 CacheControlType = Mapping[str, str]
 OptionalCacheControlType = Optional[CacheControlType]
 
@@ -458,6 +470,213 @@ class Audio(BaseModel):
         )
 
 
+class Video(BaseModel):
+    """Represents a video that can be loaded from a URL or file path."""
+
+    source: Union[str, Path] = Field(description="URL or file path of the video")  # noqa: UP007
+    data: Union[str, None] = Field(  # noqa: UP007
+        None, description="Base64 encoded video data", repr=False
+    )
+    media_type: str = Field(description="MIME type of the video")
+
+    @classmethod
+    def autodetect(cls, source: str | Path) -> Video:
+        """Attempt to autodetect a video from a source string or Path."""
+        if isinstance(source, str):
+            if cls.is_base64(source):
+                return cls.from_base64(source)
+            if source.startswith(("http://", "https://")):
+                return cls.from_url(source)
+            if source.startswith("gs://"):
+                return cls.from_gs_url(source)
+            try:
+                path = Path(source)
+                if path.is_file():
+                    return cls.from_path(path)
+            except OSError:
+                pass
+
+            raise ValueError("Unable to determine video source")
+
+        if isinstance(source, Path):
+            return cls.from_path(source)
+
+    @classmethod
+    def autodetect_safely(cls, source: Union[str, Path]) -> Union[Video, str]:  # noqa: UP007
+        """Safely attempt to autodetect a video from a source string or path.
+
+        Args:
+            source (Union[str,path]): The source string or path.
+        Returns:
+            A Video if the source is detected to be a valid video, otherwise
+            the source itself as a string.
+        """
+        try:
+            return cls.autodetect(source)
+        except ValueError:
+            return str(source)
+
+    @classmethod
+    def is_base64(cls, s: str) -> bool:
+        return bool(re.match(r"^data:video/[a-zA-Z0-9+-]+;base64,", s))
+
+    @classmethod
+    def from_base64(cls, data_uri: str) -> Video:
+        header, encoded = data_uri.split(",", 1)
+        media_type = header.split(":")[1].split(";")[0]
+        if media_type not in VALID_VIDEO_MIME_TYPES:
+            raise ValueError(f"Unsupported video format: {media_type}")
+        return cls(
+            source=data_uri,
+            media_type=media_type,
+            data=encoded,
+        )
+
+    @classmethod
+    def from_url(cls, url: str) -> Video:
+        """Create a Video instance from a URL."""
+        if url.startswith("gs://"):
+            return cls.from_gs_url(url)
+        response = requests.get(url)
+        content_type = response.headers.get("content-type")
+        assert content_type in VALID_VIDEO_MIME_TYPES, (
+            f"Invalid video format. Must be one of: {', '.join(VALID_VIDEO_MIME_TYPES)}"
+        )
+
+        data = base64.b64encode(response.content).decode("utf-8")
+        return cls(source=url, data=data, media_type=content_type)
+
+    @classmethod
+    def from_path(cls, path: Union[str, Path]) -> Video:  # noqa: UP007
+        """Create a Video instance from a file path."""
+        path = Path(path)
+        assert path.is_file(), f"Video file not found: {path}"
+
+        mime_type = mimetypes.guess_type(str(path))[0]
+
+        assert mime_type in VALID_VIDEO_MIME_TYPES, (
+            f"Invalid video format. Must be one of: {', '.join(VALID_VIDEO_MIME_TYPES)}"
+        )
+
+        data = base64.b64encode(path.read_bytes()).decode("utf-8")
+        return cls(source=str(path), data=data, media_type=mime_type)
+
+    @classmethod
+    def from_gs_url(cls, data_uri: str, timeout: int = 30) -> Video:
+        """
+        Create a Video instance from a Google Cloud Storage URL.
+
+        Args:
+            data_uri: GCS URL starting with gs://
+            timeout: Request timeout in seconds (default: 30)
+        """
+        if not data_uri.startswith("gs://"):
+            raise ValueError("URL must start with gs://")
+
+        public_url = f"https://storage.googleapis.com/{data_uri[5:]}"
+
+        try:
+            response = requests.get(public_url, timeout=timeout)
+            response.raise_for_status()
+            media_type = response.headers.get("Content-Type")
+            if media_type not in VALID_VIDEO_MIME_TYPES:
+                raise ValueError(f"Unsupported video format: {media_type}")
+
+            data = base64.b64encode(response.content).decode("utf-8")
+
+            return cls(source=data_uri, media_type=media_type, data=data)
+        except requests.RequestException as e:
+            raise ValueError(
+                "Failed to access GCS video (must be publicly readable)"
+            ) from e
+
+    def to_openai(self, mode: Mode) -> dict[str, Any]:
+        """Convert the Video instance to OpenAI's API format."""
+        raise NotImplementedError("OpenAI does not support video inputs yet")
+
+    def to_anthropic(self) -> dict[str, Any]:
+        raise NotImplementedError("Anthropic does not support video inputs yet")
+
+    def to_genai(self):
+        """
+        Convert the Video instance to Google GenAI's API format.
+        """
+        try:
+            from google.genai import types
+        except ImportError as err:
+            raise ImportError(
+                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
+            ) from err
+
+        return types.Part.from_bytes(
+            data=base64.b64decode(self.data),  # type: ignore
+            mime_type=self.media_type,
+        )
+
+
+class VideoWithGenaiFile(Video):
+    @classmethod
+    def from_new_genai_file(
+        cls, file_path: str, retry_delay: int = 10, max_retries: int = 20
+    ) -> VideoWithGenaiFile:
+        """Create a new VideoWithGenaiFile from a file path by uploading to Gemini API."""
+        from google.genai.types import FileState
+        import time
+        from google.genai import Client
+
+        client = Client()
+        file = client.files.upload(file=file_path)
+        while file.state != FileState.ACTIVE:
+            time.sleep(retry_delay)
+            file = client.files.get(name=file.name)  # type: ignore
+            if max_retries > 0:
+                max_retries -= 1
+            else:
+                raise Exception(
+                    "Max retries reached. File upload has been started but is still pending"
+                )
+
+        return cls(source=file.uri, media_type=file.mime_type, data=None)  # type: ignore
+
+    @classmethod
+    def from_existing_genai_file(cls, file_name: str) -> VideoWithGenaiFile:
+        """Create a new VideoWithGenaiFile from an existing uploaded file."""
+        from google.genai import types
+        from google.genai.types import FileState
+        from google.genai import Client
+
+        client = Client()
+        file = client.files.get(name=file_name)
+        if file.source == types.FileSource.UPLOADED and file.state == FileState.ACTIVE:
+            return cls(
+                source=file.uri,  # type: ignore
+                media_type=file.mime_type,  # type: ignore
+                data=None,
+            )
+        else:
+            raise ValueError("We only support uploaded videos for now")
+
+    def to_genai(self):
+        try:
+            from google.genai import types
+        except ImportError as err:
+            raise ImportError(
+                "google-genai package is required for GenAI integration. Install with: pip install google-genai"
+            ) from err
+
+        if (
+            self.source
+            and isinstance(self.source, str)
+            and "https://generativelanguage.googleapis.com/v1beta/files/" in self.source
+        ):
+            return types.Part.from_uri(
+                file_uri=self.source,
+                mime_type=self.media_type,
+            )
+
+        return super().to_genai()
+
+
 class ImageWithCacheControl(Image):
     """Image with Anthropic prompt caching support."""
 
@@ -841,14 +1060,15 @@ def convert_contents(
         dict[str, Any],
         Image,
         Audio,
-        list[Union[str, dict[str, Any], Image, Audio]],  # noqa: UP007
+        Video,
+        list[Union[str, dict[str, Any], Image, Audio, Video]],  # noqa: UP007
     ],
     mode: Mode,
 ) -> Union[str, list[dict[str, Any]]]:  # noqa: UP007
     """Convert content items to the appropriate format based on the specified mode."""
     if isinstance(contents, str):
         return contents
-    if isinstance(contents, (Image, Audio, PDF)) or isinstance(contents, dict):
+    if isinstance(contents, (Image, Audio, Video, PDF)) or isinstance(contents, dict):
         contents = [contents]
 
     converted_contents: list[dict[str, Union[str, Image]]] = []  # noqa: UP007
@@ -862,7 +1082,7 @@ def convert_contents(
             converted_contents.append({"type": text_file_type, "text": content})
         elif isinstance(content, dict):
             converted_contents.append(content)
-        elif isinstance(content, (Image, Audio, PDF)):
+        elif isinstance(content, (Image, Audio, Video, PDF)):
             if mode in {
                 Mode.ANTHROPIC_JSON,
                 Mode.ANTHROPIC_TOOLS,
@@ -884,18 +1104,18 @@ def convert_contents(
 
 
 def autodetect_media(
-    source: str | Path | Image | Audio | PDF,
-) -> Image | Audio | PDF | str:
-    """Autodetect images, audio, or PDFs from a given source.
+    source: str | Path | Image | Audio | Video | PDF,
+) -> Image | Audio | Video | PDF | str:
+    """Autodetect images, audio, videos, or PDFs from a given source.
 
     Args:
         source: URL, file path, Path, or data URI to inspect.
 
     Returns:
-        The detected :class:`Image`, :class:`Audio`, or :class:`PDF` instance.
+        The detected :class:`Image`, :class:`Audio`, :class:`Video`, or :class:`PDF` instance.
         If detection fails, the original source is returned.
     """
-    if isinstance(source, (Image, Audio, PDF)):
+    if isinstance(source, (Image, Audio, Video, PDF)):
         return source
 
     # Normalize once for cheap checks and mimetype guess
@@ -905,6 +1125,8 @@ def autodetect_media(
         return Image.autodetect_safely(source)
     if source.startswith("data:audio/"):
         return Audio.autodetect_safely(source)
+    if source.startswith("data:video/"):
+        return Video.autodetect_safely(source)
     if source.startswith("data:application/pdf"):
         return PDF.autodetect_safely(source)
 
@@ -913,10 +1135,12 @@ def autodetect_media(
         return Image.autodetect_safely(source)
     if media_type in VALID_AUDIO_MIME_TYPES:
         return Audio.autodetect_safely(source)
+    if media_type in VALID_VIDEO_MIME_TYPES:
+        return Video.autodetect_safely(source)
     if media_type in VALID_PDF_MIME_TYPES:
         return PDF.autodetect_safely(source)
 
-    for cls in (Image, Audio, PDF):
+    for cls in (Image, Audio, Video, PDF):
         item = cls.autodetect_safely(source)  # type: ignore[arg-type]
         if not isinstance(item, str):
             return item
@@ -932,8 +1156,9 @@ def convert_messages(
                 dict[str, Any],
                 Image,
                 Audio,
+                Video,
                 PDF,
-                list[Union[str, dict[str, Any], Image, Audio, PDF]],  # noqa: UP007
+                list[Union[str, dict[str, Any], Image, Audio, Video, PDF]],  # noqa: UP007
             ],
         ]
     ],
@@ -948,7 +1173,7 @@ def convert_messages(
 
     for message in messages:
         if "type" in message:
-            if message["type"] in {"audio", "image"}:
+            if message["type"] in {"audio", "image", "video"}:
                 converted_messages.append(message)  # type: ignore
             else:
                 raise ValueError(f"Unsupported message type: {message['type']}")
@@ -959,7 +1184,7 @@ def convert_messages(
         }
         if autodetect_images:
             if isinstance(content, list):
-                new_content: list[str | dict[str, Any] | Image | Audio | PDF] = []  # noqa: UP007
+                new_content: list[str | dict[str, Any] | Image | Audio | Video | PDF] = []  # noqa: UP007
                 for item in content:
                     if isinstance(item, str):
                         new_content.append(autodetect_media(item))
@@ -1023,7 +1248,7 @@ def extract_genai_multimodal_content(
             if content_part.text and autodetect_images:
                 converted_item = autodetect_media(content_part.text)
 
-                if isinstance(converted_item, (Image, Audio, PDF)):
+                if isinstance(converted_item, (Image, Audio, Video, PDF)):
                     converted_contents.append(converted_item.to_genai())
                     continue
 
