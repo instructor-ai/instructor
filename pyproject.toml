@@ -16,6 +16,7 @@ dependencies = [
     "requests<3.0.0,>=2.32.3",
     "diskcache>=5.6.3",
     "pre-commit>=4.3.0",
+    "ty>=0.0.1a23",
 ]
 name = "instructor"
 version = "1.12.0"
@@ -32,22 +33,6 @@ package = true
 [project.urls]
 repository = "https://github.com/instructor-ai/instructor"
 
-[tool.pyright]
-include = ["instructor"]
-exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-    "src/experimental",
-    "src/typestubs",
-    "**/tests/**",
-]
-
-reportMissingImports = "warning"
-reportMissingTypeStubs = false
-
-pythonVersion = "3.9"
-pythonPlatform = "Linux"
-
 [tool.pytest.ini_options]
 markers = [
     "unit: marks tests as unit tests (fast, no external dependencies)",
@@ -60,7 +45,6 @@ dev = [
     "pytest<9.0.0,>=8.3.3",
     "pytest-asyncio<1.0.0,>=0.24.0",
     "coverage<8.0.0,>=7.3.2",
-    "pyright<2.0.0",
     "jsonref<2.0.0,>=1.1.0",
     "pytest-examples>=0.0.15",
     "python-dotenv>=1.0.1",

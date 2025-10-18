@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Run tests: `uv run pytest tests/`
 - Run specific test: `uv run pytest tests/path_to_test.py::test_name`
 - Skip LLM tests: `uv run pytest tests/ -k 'not llm and not openai'`
-- Type check: `uv run pyright`
+- Type check: `uv run ty check`
 - Lint: `uv run ruff check instructor examples tests`
 - Format: `uv run ruff format instructor examples tests`
 - Generate coverage: `uv run coverage run -m pytest tests/ -k "not docs"` then `uv run coverage report`
@@ -159,14 +159,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Type System and Best Practices
 
-### PyRight Configuration
-- **Type Checking Mode**: Basic (not strict) for gradual typing adoption
-- **Python Version**: 3.9 for compatibility
-- **Settings in pyrightconfig.json**:
-  - `reportMissingImports = "warning"` - Missing imports are warnings
-  - `reportMissingTypeStubs = false` - Type stubs optional
-  - Exclusions for certain client files (bedrock, cerebras)
-- Run `uv run pyright` before committing - zero errors required
+### Type Checking with ty
+- **Type Checker**: Using `ty` for fast, incremental type checking
+- **Python Version**: 3.9+ for compatibility
+- **Configuration**: Uses `pyproject.toml` settings for type checking
+- Run `uv run ty check` before committing - aim for zero errors
 
 ### Type Patterns
 - **Bounded TypeVars**: Use `T = TypeVar("T", bound=Union[BaseModel, ...])` for constraints
@@ -277,7 +274,7 @@ pip install "instructor[groq]"
 uv pip install -e ".[dev]"
 ```
 Includes:
-- `pyright<2.0.0` - Type checking
+- ty 
 - `pytest` and `pytest-asyncio` - Testing
 - `ruff` - Linting and formatting
 - `coverage` - Test coverage
