@@ -159,7 +159,7 @@ def reask_anthropic_tools(
         if (
             content.type == "tool_use"
             and isinstance(exception, (ValidationError, InstructorValidationError))
-            and content.name == exception.title
+            and content.name == getattr(exception, "title", None)
         ):
             tool_use_id = content.id
 

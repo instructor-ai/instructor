@@ -24,6 +24,43 @@ if TYPE_CHECKING:
     from google.genai import types
 
 
+def _get_model_schema(response_model: Any) -> dict[str, Any]:
+    """
+    Safely get the JSON schema from a response model.
+
+    Handles both regular models and Partial-wrapped models by using hasattr
+    to check for the model_json_schema method.
+
+    Args:
+        response_model: The response model (may be regular or Partial-wrapped)
+
+    Returns:
+        The JSON schema dictionary
+    """
+    if hasattr(response_model, "model_json_schema") and callable(
+        response_model.model_json_schema
+    ):
+        return response_model.model_json_schema()
+    # Fallback for wrapped types
+    return getattr(response_model, "model_json_schema", {})  # type: ignore[return-value]
+
+
+def _get_model_name(response_model: Any) -> str:
+    """
+    Safely get the name of a response model.
+
+    Handles both regular models and Partial-wrapped models by using getattr
+    with a fallback to 'Model'.
+
+    Args:
+        response_model: The response model (may be regular or Partial-wrapped)
+
+    Returns:
+        The model name
+    """
+    return getattr(response_model, "__name__", "Model")
+
+
 def transform_to_gemini_prompt(
     messages_chatgpt: list[ChatCompletionMessageParam],
 ) -> list[dict[str, Any]]:
@@ -711,7 +748,7 @@ def handle_gemini_json(
         As a genius expert, your task is to understand the content and provide
         the parsed objects in json that match the following json_schema:\n
 
-        {json.dumps(response_model.model_json_schema(), indent=2, ensure_ascii=False)}
+        {json.dumps(_get_model_schema(response_model), indent=2, ensure_ascii=False)}
 
         Make sure to return an instance of the JSON, not the schema itself
         """
@@ -757,7 +794,7 @@ def handle_gemini_tools(
     new_kwargs["tool_config"] = {
         "function_calling_config": {
             "mode": "ANY",
-            "allowed_function_names": [response_model.__name__],
+            "allowed_function_names": [_get_model_name(response_model)],
         },
     }
 
@@ -809,7 +846,7 @@ def handle_genai_structured_outputs(
     )
 
     # We validate that the schema doesn't contain any Union fields
-    map_to_gemini_function_schema(response_model.model_json_schema())
+    map_to_gemini_function_schema(_get_model_schema(response_model))
 
     base_config = {
         "system_instruction": system_message,
@@ -856,10 +893,10 @@ def handle_genai_tools(
     if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
         response_model = Partial[response_model]
 
-    schema = map_to_gemini_function_schema(response_model.model_json_schema())
+    schema = map_to_gemini_function_schema(_get_model_schema(response_model))
     function_definition = types.FunctionDeclaration(
-        name=response_model.__name__,
-        description=response_model.__doc__,
+        name=_get_model_name(response_model),
+        description=getattr(response_model, "__doc__", None),
         parameters=schema,
     )
 
@@ -876,7 +913,7 @@ def handle_genai_tools(
         "tools": [types.Tool(function_declarations=[function_definition])],
         "tool_config": types.ToolConfig(
             function_calling_config=types.FunctionCallingConfig(
-                mode="ANY", allowed_function_names=[response_model.__name__]
+                mode="ANY", allowed_function_names=[_get_model_name(response_model)]
             ),
         ),
     }
