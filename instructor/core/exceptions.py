@@ -18,7 +18,7 @@ class InstructorError(Exception):
 
     def __init__(
         self,
-        *args: list[Any],
+        *args: Any,
         failed_attempts: list[FailedAttempt] | None = None,
         **kwargs: dict[str, Any],
     ):
@@ -70,7 +70,7 @@ class IncompleteOutputException(InstructorError):
 
     def __init__(
         self,
-        *args: list[Any],
+        *args: Any,
         last_completion: Any | None = None,
         message: str = "The output is incomplete due to a max_tokens length limit.",
         **kwargs: dict[str, Any],
@@ -84,7 +84,7 @@ class InstructorRetryException(InstructorError):
 
     def __init__(
         self,
-        *args: list[Any],
+        *args: Any,
         last_completion: Any | None = None,
         messages: list[Any] | None = None,
         n_attempts: int,
