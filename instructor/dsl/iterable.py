@@ -371,7 +371,7 @@ def IterableModel(
     name = f"Iterable{task_name}"
 
     list_tasks = (
-        list[subtask_class],
+        list[subtask_class],  # type: ignore
         Field(
             default_factory=list,
             repr=False,

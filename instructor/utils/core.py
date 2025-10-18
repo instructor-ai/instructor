@@ -16,6 +16,7 @@ from typing import (
     Callable,
     Generic,
     TypeVar,
+    cast,
     get_args,
     get_origin,
 )
@@ -346,7 +347,7 @@ def update_total_usage(
         ):
             tpd.audio_tokens = (tpd.audio_tokens or 0) + (rpd.audio_tokens or 0)
             tpd.cached_tokens = (tpd.cached_tokens or 0) + (rpd.cached_tokens or 0)
-        response.usage = total_usage  # Replace each response usage with the total usage
+        response.usage = total_usage  # type: ignore  # Replace each response usage with the total usage
         return response
 
     # Anthropic usage.
@@ -370,7 +371,7 @@ def update_total_usage(
             total_usage.cache_read_input_tokens += (
                 response_usage.cache_read_input_tokens or 0
             )
-            response.usage = total_usage
+            response.usage = total_usage  # type: ignore
             return response
     except ImportError:
         pass
@@ -583,7 +584,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         from instructor.dsl.iterable import IterableModel
 
         iterable_element_class = get_args(response_model)[0]
-        response_model = IterableModel(iterable_element_class)
+        response_model = cast(BaseModel, IterableModel(iterable_element_class))  # type: ignore
 
     # Import here to avoid circular dependency
     from ..processing.function_calls import OpenAISchema, openai_schema

@@ -983,7 +983,8 @@ def convert_messages(
                 {"role": role, "content": content, **other_kwargs}
             )
         else:
-            converted_content = convert_contents(content, mode)
+            # At this point content is narrowed to non-str types accepted by convert_contents
+            converted_content = convert_contents(content, mode)  # type: ignore
             converted_messages.append(  # type: ignore
                 {"role": role, "content": converted_content, **other_kwargs}
             )

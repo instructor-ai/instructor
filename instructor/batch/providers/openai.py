@@ -135,6 +135,8 @@ class OpenAIProvider(BatchProvider):
                             f"Batch status: {batch.status}, Request counts: {getattr(batch, 'request_counts', 'unknown')}. "
                         )
 
+            if batch.output_file_id is None:
+                raise RuntimeError("Batch has no output file ID available")
             file_response = client.files.content(batch.output_file_id)
             return file_response.text
         except Exception as e:
@@ -191,6 +193,8 @@ class OpenAIProvider(BatchProvider):
                             f"Batch status: {batch.status}, Request counts: {getattr(batch, 'request_counts', 'unknown')}."
                         )
 
+            if batch.output_file_id is None:
+                raise RuntimeError("Batch has no output file ID available")
             file_response = client.files.content(batch.output_file_id)
             with open(file_path, "w") as f:
                 f.write(file_response.text)
