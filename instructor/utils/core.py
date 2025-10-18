@@ -589,7 +589,10 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     # Import here to avoid circular dependency
     from ..processing.function_calls import OpenAISchema, openai_schema
 
-    if not issubclass(response_model, OpenAISchema):
+    # response_model is guaranteed to be a type at this point due to earlier checks
+    if inspect.isclass(response_model) and not issubclass(response_model, OpenAISchema):
+        response_model = openai_schema(response_model)  # type: ignore
+    elif not inspect.isclass(response_model):
         response_model = openai_schema(response_model)  # type: ignore
 
     return response_model
