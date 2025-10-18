@@ -12,6 +12,41 @@ from pydantic import BaseModel
 import instructor
 from .utils import _convert_messages
 
+
+def _get_model_schema(response_model: Any) -> dict[str, Any]:
+    """
+    Safely get JSON schema from a response model.
+
+    Handles both regular models and wrapped types by checking for the
+    model_json_schema method with hasattr.
+
+    Args:
+        response_model: The response model (may be regular or wrapped)
+
+    Returns:
+        The JSON schema dictionary
+    """
+    if hasattr(response_model, "model_json_schema") and callable(
+        response_model.model_json_schema
+    ):
+        schema_method = response_model.model_json_schema
+        return schema_method()
+    return {}
+
+
+def _get_model_name(response_model: Any) -> str:
+    """
+    Safely get the name of a response model.
+
+    Args:
+        response_model: The response model
+
+    Returns:
+        The model name or 'Model' as fallback
+    """
+    return getattr(response_model, "__name__", "Model")
+
+
 if TYPE_CHECKING:
     from xai_sdk.sync.client import Client as SyncClient
     from xai_sdk.aio.client import Client as AsyncClient
@@ -97,7 +132,7 @@ def from_xai(
                 chat.proto.response_format.CopyFrom(
                     xchat.chat_pb2.ResponseFormat(
                         format_type=xchat.chat_pb2.FormatType.FORMAT_TYPE_JSON_SCHEMA,
-                        schema=json.dumps(response_model.model_json_schema()),
+                        schema=json.dumps(_get_model_schema(response_model)),
                     )
                 )
                 json_chunks = (chunk.content async for _, chunk in chat.stream())
@@ -109,7 +144,7 @@ def from_xai(
                     return rm.model_from_chunks_async(json_chunks)  # type: ignore
                 else:
                     raise ValueError(
-                        f"Unsupported response model type for streaming: {response_model.__name__}"
+                        f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
                 raw, parsed = await chat.parse(response_model)
@@ -117,9 +152,9 @@ def from_xai(
                 return parsed
         else:
             tool = xchat.tool(
-                name=response_model.__name__,
+                name=_get_model_name(response_model),
                 description=response_model.__doc__ or "",
-                parameters=response_model.model_json_schema(),
+                parameters=_get_model_schema(response_model),
             )
             chat.proto.tools.append(tool)
             chat.proto.tool_choice.mode = xchat.chat_pb2.ToolMode.TOOL_MODE_AUTO
@@ -136,7 +171,7 @@ def from_xai(
                     return rm.model_from_chunks_async(args)  # type: ignore
                 else:
                     raise ValueError(
-                        f"Unsupported response model type for streaming: {response_model.__name__}"
+                        f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
                 resp = await chat.sample()
@@ -180,7 +215,7 @@ def from_xai(
                 chat.proto.response_format.CopyFrom(
                     xchat.chat_pb2.ResponseFormat(
                         format_type=xchat.chat_pb2.FormatType.FORMAT_TYPE_JSON_SCHEMA,
-                        schema=json.dumps(response_model.model_json_schema()),
+                        schema=json.dumps(_get_model_schema(response_model)),
                     )
                 )
                 json_chunks = (chunk.content for _, chunk in chat.stream())
@@ -191,7 +226,7 @@ def from_xai(
                     return rm.model_from_chunks(json_chunks)
                 else:
                     raise ValueError(
-                        f"Unsupported response model type for streaming: {response_model.__name__}"
+                        f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
                 raw, parsed = chat.parse(response_model)
@@ -199,9 +234,9 @@ def from_xai(
                 return parsed
         else:
             tool = xchat.tool(
-                name=response_model.__name__,
+                name=_get_model_name(response_model),
                 description=response_model.__doc__ or "",
-                parameters=response_model.model_json_schema(),
+                parameters=_get_model_schema(response_model),
             )
             chat.proto.tools.append(tool)
             chat.proto.tool_choice.mode = xchat.chat_pb2.ToolMode.TOOL_MODE_AUTO
@@ -219,7 +254,7 @@ def from_xai(
                             return rm.model_from_chunks(args)
                         else:
                             raise ValueError(
-                                f"Unsupported response model type for streaming: {response_model.__name__}"
+                                f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                             )
             else:
                 resp = chat.sample()
