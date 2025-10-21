@@ -268,14 +268,22 @@ class TestModelValidation:
         assert result.skills == ["testing"]
 
     def test_validate_model_json_error(self):
-        """Test handling JSON decode errors."""
+        """Test handling JSON decode errors.
+
+        In strict mode, Pydantic raises ValidationError with an 'Invalid JSON' message.
+        """
         invalid_json = '{"name": "Invalid, "age": 20}'  # Missing quote
 
         with pytest.raises(Exception) as excinfo:
             _validate_model_from_json(Person, invalid_json, None, True)
-
-        # Pydantic directly raises validation errors now, not our custom message
         assert "Invalid JSON" in str(excinfo.value)
+
+    def test_validate_model_json_error_non_strict(self):
+        """In non-strict mode, json.loads should raise JSONDecodeError (not wrapped)."""
+        invalid_json = '{"name": "Invalid, "age": 20}'  # Missing quote
+
+        with pytest.raises(json.JSONDecodeError):
+            _validate_model_from_json(Person, invalid_json, None, False)
 
 
 class PersonSchema(OpenAISchema):

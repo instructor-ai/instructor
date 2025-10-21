@@ -92,7 +92,7 @@ def _validate_model_from_json(
             return cls.model_validate(parsed, context=validation_context, strict=False)
     except json.JSONDecodeError as e:
         logger.debug(f"JSON decode error: {e}")
-        raise ValueError(f"Failed to parse JSON: {e}") from e
+        raise
     except Exception as e:
         logger.debug(f"Model validation error: {e}")
         raise
