@@ -7,7 +7,7 @@ This is a regression test for issue #1856.
 
 import json
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from pydantic import BaseModel, ValidationError
 
 import instructor
