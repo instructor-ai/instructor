@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.9, <4.0"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -1904,8 +1904,8 @@ requires-dist = [
     { name = "mkdocs-rss-plugin", marker = "extra == 'docs'", specifier = ">=1.12.0,<2.0.0" },
     { name = "mkdocstrings", marker = "extra == 'docs'", specifier = ">=0.27.1,<0.30.0" },
     { name = "mkdocstrings-python", marker = "extra == 'docs'", specifier = ">=1.12.2,<2.0.0" },
-    { name = "openai", specifier = ">=1.70.0,<2.0.0" },
-    { name = "openai", marker = "extra == 'perplexity'", specifier = ">=1.52.0,<2.0.0" },
+    { name = "openai", specifier = ">=2.0.0,<3.0.0" },
+    { name = "openai", marker = "extra == 'perplexity'", specifier = ">=2.0.0,<3.0.0" },
     { name = "pandas", marker = "extra == 'test-docs'", specifier = ">=2.2.0,<3.0.0" },
     { name = "phonenumbers", marker = "extra == 'phonenumbers'", specifier = ">=8.13.33,<10.0.0" },
     { name = "pre-commit", specifier = ">=4.3.0" },
@@ -3289,7 +3289,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.102.0"
+version = "2.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -3301,9 +3301,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/55/da5598ed5c6bdd9939633854049cddc5cbac0da938dfcfcb3c6b119c16c0/openai-1.102.0.tar.gz", hash = "sha256:2e0153bcd64a6523071e90211cbfca1f2bbc5ceedd0993ba932a5869f93b7fc9", size = 519027, upload-time = "2025-08-26T20:50:29.397Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ee/c7/e42bcd89dfd47fec8a30b9e20f93e512efdbfbb3391b05bbb79a2fb295fa/openai-2.6.0.tar.gz", hash = "sha256:f119faf7fc07d7e558c1e7c32c873e241439b01bd7480418234291ee8c8f4b9d", size = 592904, upload-time = "2025-10-20T17:17:24.588Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/0d/c9e7016d82c53c5b5e23e2bad36daebb8921ed44f69c0a985c6529a35106/openai-1.102.0-py3-none-any.whl", hash = "sha256:d751a7e95e222b5325306362ad02a7aa96e1fab3ed05b5888ce1c7ca63451345", size = 812015, upload-time = "2025-08-26T20:50:27.219Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/0a/58e9dcd34abe273eaeac3807a8483073767b5609d01bb78ea2f048e515a0/openai-2.6.0-py3-none-any.whl", hash = "sha256:f33fa12070fe347b5787a7861c8dd397786a4a17e1c3186e239338dac7e2e743", size = 1005403, upload-time = "2025-10-20T17:17:22.091Z" },
 ]
 
 [[package]]
