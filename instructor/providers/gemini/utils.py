@@ -961,7 +961,7 @@ def handle_vertexai_tools(
 def handle_vertexai_json(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
-    from instructor.client_vertexai import vertexai_process_json_response
+    from instructor.providers.vertexai.client import vertexai_process_json_response
 
     """
     Handle Vertex AI JSON mode.
