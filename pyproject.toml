@@ -11,7 +11,7 @@ dependencies = [
     "aiohttp<4.0.0,>=3.9.1",
     "tenacity<10.0.0,>=8.2.3",
     "pydantic-core<3.0.0,>=2.18.0",
-    "jiter>=0.6.1,<0.11",
+    "jiter>=0.6.1,<0.12",
     "jinja2<4.0.0,>=3.1.4",
     "requests<3.0.0,>=2.32.3",
     "diskcache>=5.6.3",
@@ -43,7 +43,7 @@ markers = [
 [project.optional-dependencies]
 dev = [
     "pytest<9.0.0,>=8.3.3",
-    "pytest-asyncio<1.0.0,>=0.24.0",
+    "pytest-asyncio>=0.24.0,<2.0.0",
     "coverage<8.0.0,>=7.3.2",
     "jsonref<2.0.0,>=1.1.0",
     "pytest-examples>=0.0.15",
@@ -54,7 +54,7 @@ dev = [
 docs = [
     "mkdocs<2.0.0,>=1.6.1",
     "mkdocs-material[imaging]<10.0.0,>=9.5.9",
-    "mkdocstrings>=0.27.1,<0.30.0",
+    "mkdocstrings>=0.27.1,<0.31.0",
     "mkdocstrings-python<2.0.0,>=1.12.2",
     "pytest-examples>=0.0.15",
     "mkdocs-jupyter<0.26.0,>=0.24.6",
@@ -65,8 +65,8 @@ docs = [
     "mkdocs-material>=9.6.14",
 ]
 test-docs = [
-    "fastapi<0.116.0,>=0.109.2",
-    "redis>=5.0.1,<7.0.0",
+    "fastapi>=0.109.2,<0.121.0",
+    "redis>=5.0.1,<8.0.0",
     "diskcache<6.0.0,>=5.6.3",
     "pandas<3.0.0,>=2.2.0",
     "tabulate<1.0.0,>=0.9.0",
@@ -74,8 +74,8 @@ test-docs = [
     "litellm<2.0.0,>=1.35.31",
     "mistralai<2.0.0,>=1.5.1",
 ]
-anthropic = ["anthropic==0.53.0", "xmltodict<0.15,>=0.13"]
-groq = ["groq>=0.4.2,<0.27.0"]
+anthropic = ["anthropic==0.71.0", "xmltodict>=0.13,<1.1"]
+groq = ["groq>=0.4.2,<0.34.0"]
 cohere = ["cohere<6.0.0,>=5.1.8"]
 vertexai = ["google-cloud-aiplatform<2.0.0,>=1.53.0", "jsonref<2.0.0,>=1.1.0"]
 cerebras_cloud_sdk = ["cerebras-cloud-sdk<2.0.0,>=1.5.0"]
@@ -92,7 +92,7 @@ graphviz = ["graphviz<1.0.0,>=0.20.3"]
 sqlmodel = ["sqlmodel<1.0.0,>=0.0.22"]
 trafilatura = ["trafilatura<3.0.0,>=1.12.2"]
 pydub = ["pydub<1.0.0,>=0.25.1"]
-datasets = ["datasets<4.0.0,>=3.0.1"]
+datasets = ["datasets>=3.0.1,<5.0.0"]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"
