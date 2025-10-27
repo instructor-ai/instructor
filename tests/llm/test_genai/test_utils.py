@@ -34,10 +34,15 @@ def test_update_genai_kwargs_safety_settings():
     """Test that safety settings are properly configured."""
     from google.genai.types import HarmCategory, HarmBlockThreshold
 
+    # Exclude JAILBREAK category as it's only for Vertex AI, not google.genai
+    excluded_categories = {HarmCategory.HARM_CATEGORY_UNSPECIFIED}
+    if hasattr(HarmCategory, 'HARM_CATEGORY_JAILBREAK'):
+        excluded_categories.add(HarmCategory.HARM_CATEGORY_JAILBREAK)
+
     supported_categories = [
         c
         for c in HarmCategory
-        if c != HarmCategory.HARM_CATEGORY_UNSPECIFIED
+        if c not in excluded_categories
         and not c.name.startswith("HARM_CATEGORY_IMAGE_")
     ]
 
@@ -65,10 +70,15 @@ def test_update_genai_kwargs_with_custom_safety_settings():
     """Test that custom safety settings are properly handled."""
     from google.genai.types import HarmCategory, HarmBlockThreshold
 
+    # Exclude JAILBREAK category as it's only for Vertex AI, not google.genai
+    excluded_categories = {HarmCategory.HARM_CATEGORY_UNSPECIFIED}
+    if hasattr(HarmCategory, 'HARM_CATEGORY_JAILBREAK'):
+        excluded_categories.add(HarmCategory.HARM_CATEGORY_JAILBREAK)
+
     supported_categories = [
         c
         for c in HarmCategory
-        if c != HarmCategory.HARM_CATEGORY_UNSPECIFIED
+        if c not in excluded_categories
         and not c.name.startswith("HARM_CATEGORY_IMAGE_")
     ]
 
