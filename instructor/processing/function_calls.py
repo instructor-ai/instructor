@@ -263,8 +263,15 @@ class OpenAISchema(BaseModel):
         assert isinstance(completion, types.GenerateContentResponse)
         assert len(completion.candidates) == 1
 
+        # Check if content exists and is not None
+        content = completion.candidates[0].content
+        assert content is not None, (
+            f"No content in response. This typically indicates an API error or blocked response. "
+            f"Check the finish_reason: {completion.candidates[0].finish_reason}"
+        )
+
         # Filter out thought parts (parts with thought: true)
-        parts = completion.candidates[0].content.parts
+        parts = content.parts
         non_thought_parts = [
             part for part in parts if not (hasattr(part, "thought") and part.thought)
         ]
