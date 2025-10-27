@@ -8,7 +8,7 @@ from __future__ import annotations
 import inspect
 import json
 import logging
-import os
+
 from collections.abc import AsyncGenerator, Generator, Iterable
 from typing import (
     TYPE_CHECKING,

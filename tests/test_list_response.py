@@ -2,13 +2,14 @@
 Unit tests for ListResponse class (#1303, #1305)
 """
 
-import pytest
 from pydantic import BaseModel
+
 from instructor.dsl import ListResponse
 
 
 class User(BaseModel):
     """Test user model"""
+
     name: str
     age: int
 
@@ -157,7 +158,9 @@ class TestListResponseRepresentation:
 
     def test_repr_with_raw_response(self):
         """Test repr() with raw response"""
-        response = ListResponse([User(name="John", age=30)], _raw_response={"data": "test"})
+        response = ListResponse(
+            [User(name="John", age=30)], _raw_response={"data": "test"}
+        )
         repr_str = repr(response)
         assert "ListResponse" in repr_str
         assert "_raw_response=..." in repr_str

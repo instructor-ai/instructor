@@ -5,7 +5,7 @@ This module provides a list-like container that supports attaching
 a raw LLM response, enabling proper usage with create_with_completion().
 """
 
-from typing import Any, Generic, Iterator, Optional, TypeVar, overload
+from typing import Any, Generic, Optional, TypeVar
 
 T = TypeVar("T")
 

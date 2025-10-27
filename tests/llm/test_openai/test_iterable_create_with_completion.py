@@ -2,16 +2,19 @@
 Integration tests for create_with_completion with List[T] and Iterable[T] (#1303, #1305)
 """
 
+from collections.abc import Iterable
+
 import pytest
-from typing import List, Iterable
 from pydantic import BaseModel
+
 import instructor
 from instructor.dsl import ListResponse
-from openai import OpenAI, AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 
 
 class User(BaseModel):
     """Test user model"""
+
     name: str
     age: int
 
@@ -26,7 +29,7 @@ class TestIterableCreateWithCompletion:
 
         users, completion = client.chat.completions.create_with_completion(
             model="gpt-4o-mini",
-            response_model=List[User],
+            response_model=list[User],
             messages=[
                 {
                     "role": "user",
@@ -60,7 +63,7 @@ class TestIterableCreateWithCompletion:
 
         users, completion = client.chat.completions.create_with_completion(
             model="gpt-4o-mini",
-            response_model=List[User],
+            response_model=list[User],
             messages=[
                 {
                     "role": "user",
@@ -125,7 +128,7 @@ class TestIterableCreateWithCompletion:
 
         users, completion = await client.chat.completions.create_with_completion(
             model="gpt-4o-mini",
-            response_model=List[User],
+            response_model=list[User],
             messages=[
                 {
                     "role": "user",
@@ -183,7 +186,7 @@ class TestListResponseRawResponseAccess:
 
         users, completion = client.chat.completions.create_with_completion(
             model="gpt-4o-mini",
-            response_model=List[User],
+            response_model=list[User],
             messages=[
                 {
                     "role": "user",
@@ -204,7 +207,7 @@ class TestListResponseRawResponseAccess:
 
         users, completion = client.chat.completions.create_with_completion(
             model="gpt-4o-mini",
-            response_model=List[User],
+            response_model=list[User],
             messages=[
                 {
                     "role": "user",
