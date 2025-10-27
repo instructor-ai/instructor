@@ -265,3 +265,48 @@ def test_api_key_logging():
                     8,
                     extra={"provider": "openai", "operation": "initialize"},
                 )
+
+
+def test_genai_mode_parameter_passed_to_provider():
+    """Test that mode parameter is correctly passed to provider functions."""
+    from unittest.mock import patch, MagicMock
+    import instructor
+
+    with patch("google.genai.Client") as mock_genai_class:
+        mock_client = MagicMock()
+        mock_genai_class.return_value = mock_client
+
+        with patch("instructor.from_genai") as mock_from_genai:
+            mock_instructor = MagicMock()
+            mock_from_genai.return_value = mock_instructor
+
+            from_provider(
+                "google/gemini-2.5-flash",
+                mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+            )
+
+            mock_from_genai.assert_called_once()
+            _, kwargs = mock_from_genai.call_args
+            assert "mode" in kwargs
+            assert kwargs["mode"] == instructor.Mode.GENAI_STRUCTURED_OUTPUTS
+
+
+def test_genai_mode_defaults_when_not_provided():
+    """Test that GenAI provider uses GENAI_TOOLS mode when mode is not provided."""
+    from unittest.mock import patch, MagicMock
+    import instructor
+
+    with patch("google.genai.Client") as mock_genai_class:
+        mock_client = MagicMock()
+        mock_genai_class.return_value = mock_client
+
+        with patch("instructor.from_genai") as mock_from_genai:
+            mock_instructor = MagicMock()
+            mock_from_genai.return_value = mock_instructor
+
+            from_provider("google/gemini-2.0-flash")
+
+            mock_from_genai.assert_called_once()
+            _, kwargs = mock_from_genai.call_args
+            assert "mode" in kwargs
+            assert kwargs["mode"] == instructor.Mode.GENAI_TOOLS

@@ -332,9 +332,20 @@ def from_provider(
                 **client_kwargs,
             )  # type: ignore
             if async_client:
-                result = from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    use_async=True,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             else:
-                result = from_genai(client, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -720,9 +731,16 @@ def from_provider(
             )  # type: ignore
             kwargs["model"] = model_name  # Pass model as part of kwargs
             if async_client:
-                result = from_genai(client, use_async=True, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    use_async=True,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             else:
-                result = from_genai(client, **kwargs)  # type: ignore
+                result = from_genai(
+                    client, mode=mode if mode else instructor.Mode.GENAI_TOOLS, **kwargs
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -762,9 +780,20 @@ def from_provider(
 
             client = genai.Client(vertexai=False, api_key=api_key)
             if async_client:
-                result = from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    use_async=True,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             else:
-                result = from_genai(client, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},

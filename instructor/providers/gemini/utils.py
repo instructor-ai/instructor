@@ -285,10 +285,15 @@ def update_genai_kwargs(
 
     # Filter out image related harm categories which are not
     # supported for text based models
+    # Exclude JAILBREAK category as it's only for Vertex AI, not google.genai
+    excluded_categories = {HarmCategory.HARM_CATEGORY_UNSPECIFIED}
+    if hasattr(HarmCategory, 'HARM_CATEGORY_JAILBREAK'):
+        excluded_categories.add(HarmCategory.HARM_CATEGORY_JAILBREAK)
+
     supported_categories = [
         c
         for c in HarmCategory
-        if c != HarmCategory.HARM_CATEGORY_UNSPECIFIED
+        if c not in excluded_categories
         and not c.name.startswith("HARM_CATEGORY_IMAGE_")
     ]
 
@@ -998,7 +1003,7 @@ def handle_vertexai_tools(
 def handle_vertexai_json(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
-    from instructor.client_vertexai import vertexai_process_json_response
+    from instructor.providers.vertexai.client import vertexai_process_json_response
 
     """
     Handle Vertex AI JSON mode.
