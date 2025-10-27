@@ -53,7 +53,7 @@ def get_signature_from_fn(fn: Callable[..., Any]) -> str:
     :return: Function signature as a string.
     """
     sig = inspect.signature(fn)
-    lines = f"def {fn.__name__}{sig}"
+    lines = f"def {fn.__name__}{sig}"  # type: ignore
     docstring = inspect.getdoc(fn)
     if docstring:
         formatted_docstring = f'"""\n{docstring}\n"""'
@@ -77,7 +77,7 @@ def format_function(func: Callable[..., Any]) -> str:
         formatted_docstring = ""
 
     body = inspect.getsource(func)
-    body = body.replace(f"def {func.__name__}", "")
+    body = body.replace(f"def {func.__name__}", "")  # type: ignore
 
     return f"{definition}\n{formatted_docstring}\n{body}"
 
@@ -175,7 +175,7 @@ class Instructions:
             @functools.wraps(fn)
             def _dispatch(*args: P.args, **kwargs: P.kwargs) -> ChatCompletion:
                 openai_kwargs = self.openai_kwargs(
-                    name=name if name else fn.__name__,
+                    name=name if name else fn.__name__,  # type: ignore
                     fn=fn,
                     args=args,
                     kwargs=kwargs,
@@ -227,7 +227,7 @@ class Instructions:
         :param name: Name of the function to track. Defaults to the function name.
         :param finetune_format: Format to use for finetuning. Defaults to "raw".
         """
-        name = name if name else fn.__name__
+        name = name if name else fn.__name__  # type: ignore
         base_model = type(resp)
 
         if finetune_format == FinetuneFormat.MESSAGES:

@@ -1,12 +1,18 @@
 from __future__ import annotations
 
-from typing import Any, overload
+from typing import TYPE_CHECKING, Any, overload
 
 import instructor
 from ...core.client import AsyncInstructor, Instructor
 
-
-from fireworks.client import Fireworks, AsyncFireworks  # type:ignore
+if TYPE_CHECKING:
+    from fireworks.client import AsyncFireworks, Fireworks
+else:
+    try:
+        from fireworks.client import AsyncFireworks, Fireworks
+    except ImportError:
+        AsyncFireworks = None  # type:ignore
+        Fireworks = None  # type:ignore
 
 
 @overload
@@ -26,7 +32,7 @@ def from_fireworks(
 
 
 def from_fireworks(
-    client: Fireworks | AsyncFireworks,
+    client: Fireworks | AsyncFireworks,  # type: ignore
     mode: instructor.Mode = instructor.Mode.FIREWORKS_JSON,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
@@ -75,3 +81,6 @@ def from_fireworks(
             mode=mode,
             **kwargs,
         )
+
+    # Should never reach here due to earlier validation, but needed for type checker
+    raise AssertionError("Client must be AsyncFireworks or Fireworks")

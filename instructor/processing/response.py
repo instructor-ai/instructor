@@ -228,13 +228,18 @@ async def process_response_async(
         and issubclass(response_model, (IterableBase, PartialBase))
         and stream
     ):
-        model = await response_model.from_streaming_response_async(
-            response,
+        # from_streaming_response_async returns an AsyncGenerator
+        # Collect all yielded values into a list
+        # Note: response type varies by mode (ChatCompletion, AsyncGenerator, etc.)
+        tasks = []
+        async for task in response_model.from_streaming_response_async(  # type: ignore[arg-type]
+            cast(AsyncGenerator[Any, None], response),  # type: ignore[arg-type]
             mode=mode,
-        )
-        return model
+        ):
+            tasks.append(task)
+        return tasks  # type: ignore
 
-    model = response_model.from_response(
+    model = response_model.from_response(  # type: ignore
         response,
         validation_context=validation_context,
         strict=strict,
@@ -245,7 +250,7 @@ async def process_response_async(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]
+        return [task for task in model.tasks]  # type: ignore
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
@@ -329,13 +334,17 @@ def process_response(
         and issubclass(response_model, (IterableBase, PartialBase))
         and stream
     ):
-        model = response_model.from_streaming_response(
-            response,
-            mode=mode,
+        # from_streaming_response returns a Generator
+        # Collect all yielded values into a list
+        tasks = list(
+            response_model.from_streaming_response(  # type: ignore
+                response,
+                mode=mode,
+            )
         )
-        return model
+        return tasks
 
-    model = response_model.from_response(
+    model = response_model.from_response(  # type: ignore
         response,
         validation_context=validation_context,
         strict=strict,
@@ -346,7 +355,7 @@ def process_response(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]
+        return [task for task in model.tasks]  # type: ignore
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
@@ -357,7 +366,6 @@ def process_response(
         return model.content
 
     model._raw_response = response
-
     return model
 
 
@@ -401,7 +409,7 @@ def handle_response_model(
     }
 
     if mode in PARALLEL_MODES:
-        response_model, new_kwargs = PARALLEL_MODES[mode](response_model, new_kwargs)
+        response_model, new_kwargs = PARALLEL_MODES[mode](response_model, new_kwargs)  # type: ignore
         logger.debug(
             f"Instructor Request: {mode.value=}, {response_model=}, {new_kwargs=}",
             extra={
@@ -461,7 +469,7 @@ def handle_response_model(
     }
 
     if mode in mode_handlers:
-        response_model, new_kwargs = mode_handlers[mode](response_model, new_kwargs)
+        response_model, new_kwargs = mode_handlers[mode](response_model, new_kwargs)  # type: ignore
     else:
         raise ValueError(f"Invalid patch mode: {mode}")
 

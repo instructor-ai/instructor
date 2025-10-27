@@ -157,7 +157,7 @@ def from_provider(
     if provider == "openai":
         try:
             import openai
-            from instructor import from_openai
+            from instructor import from_openai  # type: ignore[attr-defined]
 
             client = (
                 openai.AsyncOpenAI(api_key=api_key)
@@ -196,7 +196,7 @@ def from_provider(
         try:
             import os
             from openai import AzureOpenAI, AsyncAzureOpenAI
-            from instructor import from_openai
+            from instructor import from_openai  # type: ignore[attr-defined]
 
             # Get required Azure OpenAI configuration from environment
             api_key = api_key or os.environ.get("AZURE_OPENAI_API_KEY")
@@ -265,7 +265,7 @@ def from_provider(
     elif provider == "anthropic":
         try:
             import anthropic
-            from instructor import from_anthropic
+            from instructor import from_anthropic  # type: ignore[attr-defined]  # type: ignore[attr-defined]
 
             client = (
                 anthropic.AsyncAnthropic(api_key=api_key)
@@ -305,7 +305,7 @@ def from_provider(
     elif provider == "google":
         try:
             import google.genai as genai
-            from instructor import from_genai
+            from instructor import from_genai  # type: ignore[attr-defined]
             import os
 
             # Remove vertexai from kwargs if present to avoid passing it twice
@@ -332,9 +332,20 @@ def from_provider(
                 **client_kwargs,
             )  # type: ignore
             if async_client:
-                result = from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    use_async=True,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             else:
-                result = from_genai(client, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -360,7 +371,7 @@ def from_provider(
     elif provider == "mistral":
         try:
             from mistralai import Mistral
-            from instructor import from_mistral
+            from instructor import from_mistral  # type: ignore[attr-defined]
             import os
 
             api_key = api_key or os.environ.get("MISTRAL_API_KEY")
@@ -404,14 +415,14 @@ def from_provider(
     elif provider == "cohere":
         try:
             import cohere
-            from instructor import from_cohere
+            from instructor import from_cohere  # type: ignore[attr-defined]
 
             client = (
-                cohere.AsyncClient(api_key=api_key)
+                cohere.AsyncClientV2(api_key=api_key)
                 if async_client
-                else cohere.Client(api_key=api_key)
+                else cohere.ClientV2(api_key=api_key)
             )
-            result = from_cohere(client, **kwargs)
+            result = from_cohere(client, model=model_name, **kwargs)
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -437,7 +448,7 @@ def from_provider(
     elif provider == "perplexity":
         try:
             import openai
-            from instructor import from_perplexity
+            from instructor import from_perplexity  # type: ignore[attr-defined]
             import os
 
             api_key = api_key or os.environ.get("PERPLEXITY_API_KEY")
@@ -482,7 +493,7 @@ def from_provider(
     elif provider == "groq":
         try:
             import groq
-            from instructor import from_groq
+            from instructor import from_groq  # type: ignore[attr-defined]
 
             client = (
                 groq.AsyncGroq(api_key=api_key)
@@ -515,7 +526,7 @@ def from_provider(
     elif provider == "writer":
         try:
             from writerai import AsyncWriter, Writer
-            from instructor import from_writer
+            from instructor import from_writer  # type: ignore[attr-defined]
 
             client = (
                 AsyncWriter(api_key=api_key)
@@ -549,7 +560,7 @@ def from_provider(
         try:
             import os
             import boto3
-            from instructor import from_bedrock
+            from instructor import from_bedrock  # type: ignore[attr-defined]
 
             # Get AWS configuration from environment or kwargs
             if "region" in kwargs:
@@ -624,7 +635,7 @@ def from_provider(
     elif provider == "cerebras":
         try:
             from cerebras.cloud.sdk import AsyncCerebras, Cerebras
-            from instructor import from_cerebras
+            from instructor import from_cerebras  # type: ignore[attr-defined]
 
             client = (
                 AsyncCerebras(api_key=api_key)
@@ -657,7 +668,7 @@ def from_provider(
     elif provider == "fireworks":
         try:
             from fireworks.client import AsyncFireworks, Fireworks
-            from instructor import from_fireworks
+            from instructor import from_fireworks  # type: ignore[attr-defined]
 
             client = (
                 AsyncFireworks(api_key=api_key)
@@ -696,7 +707,7 @@ def from_provider(
         )
         try:
             import google.genai as genai  # type: ignore
-            from instructor import from_genai
+            from instructor import from_genai  # type: ignore[attr-defined]
             import os
 
             # Get project and location from kwargs or environment
@@ -720,9 +731,16 @@ def from_provider(
             )  # type: ignore
             kwargs["model"] = model_name  # Pass model as part of kwargs
             if async_client:
-                result = from_genai(client, use_async=True, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    use_async=True,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             else:
-                result = from_genai(client, **kwargs)  # type: ignore
+                result = from_genai(
+                    client, mode=mode if mode else instructor.Mode.GENAI_TOOLS, **kwargs
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -754,7 +772,7 @@ def from_provider(
         )
         try:
             from google import genai
-            from instructor import from_genai
+            from instructor import from_genai  # type: ignore[attr-defined]
             import os
 
             # Get API key from kwargs or environment
@@ -762,9 +780,20 @@ def from_provider(
 
             client = genai.Client(vertexai=False, api_key=api_key)
             if async_client:
-                result = from_genai(client, use_async=True, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    use_async=True,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             else:
-                result = from_genai(client, model=model_name, **kwargs)  # type: ignore
+                result = from_genai(
+                    client,
+                    model=model_name,
+                    mode=mode if mode else instructor.Mode.GENAI_TOOLS,
+                    **kwargs,
+                )  # type: ignore
             logger.info(
                 "Client initialized",
                 extra={**provider_info, "status": "success"},
@@ -790,7 +819,7 @@ def from_provider(
     elif provider == "ollama":
         try:
             import openai
-            from instructor import from_openai
+            from instructor import from_openai  # type: ignore[attr-defined]
 
             # Get base_url from kwargs or use default
             base_url = kwargs.pop("base_url", "http://localhost:11434/v1")
@@ -809,7 +838,10 @@ def from_provider(
                 "llama4",
                 "mistral-nemo",
                 "firefunction-v2",
+                "command-a",
+                "command-r",
                 "command-r-plus",
+                "command-r7b",
                 "qwen2.5",
                 "qwen2.5-coder",
                 "qwen3",
@@ -857,7 +889,7 @@ def from_provider(
     elif provider == "deepseek":
         try:
             import openai
-            from instructor import from_openai
+            from instructor import from_openai  # type: ignore[attr-defined]
             import os
 
             # Get API key from kwargs or environment
@@ -912,7 +944,7 @@ def from_provider(
         try:
             from xai_sdk.sync.client import Client as SyncClient
             from xai_sdk.aio.client import Client as AsyncClient
-            from instructor import from_xai
+            from instructor import from_xai  # type: ignore[attr-defined]
 
             client = (
                 AsyncClient(api_key=api_key)
@@ -950,7 +982,7 @@ def from_provider(
     elif provider == "openrouter":
         try:
             import openai
-            from instructor import from_openai
+            from instructor import from_openai  # type: ignore[attr-defined]
             import os
 
             # Get API key from kwargs or environment

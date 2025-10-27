@@ -173,7 +173,7 @@ async def tag_single_request(text: str, tags: List[Tag]) -> Tag:
             },
         ],
         response_model=Tag,  # Minimizes the hallucination of tags that are not in the allowed tags.
-        validation_context={"tags": tags},
+        context={"tags": tags},
     )
 
 
@@ -255,7 +255,7 @@ async def tag_single_request(text: str, tags: List[Tag]) -> Tag:
             },
         ],
         response_model=Tag,  # Minimizes the hallucination of tags that are not in the allowed tags.
-        validation_context={"tags": tags},
+        context={"tags": tags},
     )
 
 
@@ -521,7 +521,7 @@ async def get_tags(text: List[str], tags: List[Tag]) -> List[Tag]:
             },
         ],
         response_model=Iterable[Tag],
-        validation_context={"tags": tags},
+        context={"tags": tags},
     )
 
 

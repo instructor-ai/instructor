@@ -5,7 +5,7 @@
 - Run tests: `uv run pytest tests/`
 - Run single test: `uv run pytest tests/path_to_test.py::test_name`
 - Skip LLM tests: `uv run pytest tests/ -k 'not llm and not openai'`
-- Type check: `uv run pyright`
+- Type check: `uv run ty check`
 - Lint: `uv run ruff check instructor examples tests`
 - Format: `uv run ruff format instructor examples tests`
 - Build docs: `uv run mkdocs serve` (local) or `./build_mkdocs.sh` (production)

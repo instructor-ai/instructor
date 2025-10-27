@@ -1,6 +1,6 @@
 """Provider implementations for instructor."""
 
-import importlib
+import importlib.util
 
 __all__ = []
 

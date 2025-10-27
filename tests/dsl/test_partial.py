@@ -195,3 +195,34 @@ def test_union_with_nested():
     partial.get_partial_model().model_validate_json(
         '{"a": [{"b": "b"}, {"d": "d"}], "b": [{"b": "b"}], "c": {"d": "d"}, "e": [1, "a"]}'
     )
+
+
+def test_partial_with_default_factory():
+    """Test that Partial works with fields that have default_factory.
+
+    This test ensures that when making fields optional, the default_factory
+    is properly cleared to avoid Pydantic validation errors about having
+    both default and default_factory set.
+    """
+
+    class ModelWithDefaultFactory(BaseModel):
+        items: list[str] = Field(default_factory=list)
+        tags: dict[str, str] = Field(default_factory=dict)
+        name: str
+
+    # This should not raise a validation error about both default and default_factory
+    partial = Partial[ModelWithDefaultFactory]
+    partial_model = partial.get_partial_model()
+
+    # Verify we can instantiate and validate
+    # In Partial models, all fields are made Optional with default=None
+    instance = partial_model()
+    assert instance.items is None
+    assert instance.tags is None
+    assert instance.name is None
+
+    # Test with partial data
+    instance2 = partial_model.model_validate({"items": ["a", "b"]})
+    assert instance2.items == ["a", "b"]
+    assert instance2.tags is None
+    assert instance2.name is None

@@ -19,7 +19,7 @@ tags:
 
 # Announcing instructor=1.0.0
 
-Over the past 10 months, we've build up instructor with the [principle](../../why.md) of 'easy to try, and easy to delete'. We accomplished this by patching the openai client with the `instructor` package and adding new arguments like `response_model`, `max_retries`, and `validation_context`. As a result I truly believe isntructor is the [best way](./best_framework.md) to get structured data out of llm apis.
+Over the past 10 months, we've build up instructor with the [principle](../../why.md) of 'easy to try, and easy to delete'. We accomplished this by patching the openai client with the `instructor` package and adding new arguments like `response_model`, `max_retries`, and `context`. As a result I truly believe isntructor is the [best way](./best_framework.md) to get structured data out of llm apis.
 
 But as a result, we've been a bit stuck on getting typing to work well while giving you more control at development time. I'm excited to launch version 1.0.0 which cleans up the api w.r.t. typing without compromising the ease of use.
 
@@ -263,7 +263,7 @@ for user in users:
 
 ## Validation and Error Handling
 
-Instructor has always supported validation and error handling. But now, we've added a new `validation_context` argument to the `create` call. This allows you to pass in a `ValidationContext` object which will be passed to the `response_model`. This allows you to add custom validation logic to the `response_model`.
+Instructor has always supported validation and error handling. But now, we've added a new `context` argument to the `create` call. This allows you to pass in a `ValidationContext` object which will be passed to the `response_model`. This allows you to add custom validation logic to the `response_model`.
 
 If you want to learn more check out the docs on [retrying](../../concepts/retrying.md) and [reasking](../../concepts/reask_validation.md)
 

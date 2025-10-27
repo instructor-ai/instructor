@@ -10,9 +10,9 @@ modes = [
 
 
 @pytest.mark.parametrize("mode", modes)
-def test_none_response_model(client, mode):
+def test_none_response_model(mode):
     client = instructor.from_provider(
-        "cohere/command-r",
+        "cohere/command-a-03-2025",
         max_tokens=1000,
         mode=mode,
     )
@@ -23,14 +23,14 @@ def test_none_response_model(client, mode):
         temperature=0,
     )
 
-    assert response.text
+    assert response.message
 
 
 @pytest.mark.asyncio()
 @pytest.mark.parametrize("mode", modes)
 async def test_none_response_model_async(mode):
     client = instructor.from_provider(
-        "cohere/command-r",
+        "cohere/command-a-03-2025",
         max_tokens=1000,
         async_client=True,
         mode=mode,
@@ -42,4 +42,4 @@ async def test_none_response_model_async(mode):
         temperature=0,
     )
 
-    assert response.text
+    assert response.message

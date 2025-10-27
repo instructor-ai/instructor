@@ -46,7 +46,6 @@ except ValidationError as e:
     1 validation error for UserDetail
     name
       Value error, Name must contain a space. [type=value_error, input_value='Jason', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
     """
 ```
 
@@ -199,10 +198,70 @@ except ValidationError as e:
 
 ## Advanced Validation Techniques
 
-The docs are currently incomplete, but we have a few advanced validation techniques that we're working on documenting better such as model level validation, and using a validation context. Check out our example on [verifying citations](../examples/exact_citations.md) which covers:
+### Using Context for Dynamic Validation
 
-1. Validate the entire object with all attributes rather than one attribute at a time
-2. Using some 'context' to validate the object: In this case, we use the `context` to check if the citation existed in the original text.
+The `context` parameter allows you to pass additional data to your validators, enabling validation against runtime data like source documents, allowed values, or external references. This is accessed in validators via `ValidationInfo`.
+
+Here's a complete example showing context-based validation:
+
+```python
+import instructor
+from pydantic import BaseModel, ValidationInfo, field_validator
+from typing import List
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
+
+class QuoteExtraction(BaseModel):
+    """Extract a claim with a supporting quote from source text."""
+    claim: str
+    supporting_quote: str
+    
+    @field_validator('supporting_quote')
+    @classmethod
+    def verify_quote_in_source(cls, v: str, info: ValidationInfo):
+        """Verify the quote exists in the source text."""
+        context = info.context
+        if context:
+            source_text = context.get('source_text', '')
+            if v not in source_text:
+                raise ValueError(
+                    f"The quote must be an exact substring from the source text. "
+                    f"Quote '{v}' was not found in the source."
+                )
+        return v
+
+source_text = """
+The Python programming language was created by Guido van Rossum 
+and first released in 1991. It emphasizes code readability and 
+simplicity, making it popular for beginners and experts alike.
+"""
+
+extraction = client.chat.completions.create(
+    response_model=QuoteExtraction,
+    max_retries=2,
+    messages=[
+        {
+            "role": "system",
+            "content": "Extract a claim and find an exact quote from the text that supports it."
+        },
+        {
+            "role": "user",
+            "content": "Source text: {{ source_text }}\n\nExtract a claim about Python."
+        }
+    ],
+    context={"source_text": source_text}
+)
+
+print(f"Claim: {extraction.claim}")
+print(f"Quote: {extraction.supporting_quote}")
+```
+
+In this example:
+- The `context` parameter passes the source text to the validator
+- `ValidationInfo` provides access to the context in the validator
+- If the LLM generates a quote that doesn't exist in the source, validation fails and the model is re-asked
+
+For more advanced examples including multi-field validation and citation verification, check out our [exact citations example](../examples/exact_citations.md).
 
 ## Optimizing Token usage
 
@@ -238,7 +297,6 @@ except ValidationError as e:
     1 validation error for UserDetail
     name
       Value error, Name must contain a space. [type=value_error, input_value='Jason', input_type=str]
-        For further information visit https://errors.pydantic.dev/2.9/v/value_error
     """
 ```
 

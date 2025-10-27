@@ -410,7 +410,7 @@ Value error, Citation `Jason is cool` not found in text chunks [type=value_error
 
 ## Putting it all together with `client = instructor.from_openai(OpenAI())`
 
-To pass this context from the `client.chat.completions.create` call, `client = instructor.from_openai(OpenAI())` also passes the `validation_context`, which will be accessible from the `info` argument in the decorated validator functions.
+To pass this context from the `client.chat.completions.create` call, `client = instructor.from_openai(OpenAI())` also passes the `context`, which will be accessible from the `info` argument in the decorated validator functions.
 
 ```python
 from openai import OpenAI
@@ -430,13 +430,13 @@ def answer_question(question: str, text_chunk: str) -> AnswerWithCitation:
             },
         ],
         response_model=AnswerWithCitation,
-        validation_context={"text_chunk": text_chunk},
+        context={"text_chunk": text_chunk},
     )
 ```
 
 ## Error Handling and Re-Asking
 
-Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. Then by running `client = instructor.from_openai(OpenAI())` not only do we add `response_model` and `validation_context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
+Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. Then by running `client = instructor.from_openai(OpenAI())` not only do we add `response_model` and `context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
 
 This approach provides a layer of defense against two types of bad outputs:
 

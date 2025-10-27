@@ -123,9 +123,7 @@ def test_empty_and_missing_content() -> None:
 def test_bedrock_invalid_content_format() -> None:
     """Invalid content types should raise NotImplementedError."""
     call_kwargs = {
-        "messages": [
-            {"role": "user", "content": 12345}  # Invalid content type
-        ]
+        "messages": [{"role": "user", "content": 12345}]  # Invalid content type
     }
     try:
         _prepare_bedrock_converse_kwargs_internal(call_kwargs)

@@ -15,7 +15,7 @@ The Hooks system in Instructor is based on the `Hooks` class, which manages even
 
 ### `completion:kwargs`
 
-This hook is emitted when completion arguments are provided. It receives all arguments passed to the completion function. These will contain the `model`, `messages`, `tools`, AFTER any `response_model` or `validation_context` parameters have been converted to their respective values.
+This hook is emitted when completion arguments are provided. It receives all arguments passed to the completion function. These will contain the `model`, `messages`, `tools`, AFTER any `response_model` or `context` parameters have been converted to their respective values.
 
 ```python
 def handler(*args, **kwargs) -> None: ...

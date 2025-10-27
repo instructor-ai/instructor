@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from textwrap import dedent
-from typing import Any
+from typing import Any, cast
 
 from openai import pydantic_function_tool
 
@@ -170,7 +170,7 @@ def handle_parallel_tools(
         )
     new_kwargs["tools"] = handle_parallel_model(response_model)
     new_kwargs["tool_choice"] = "auto"
-    return ParallelModel(typehint=response_model), new_kwargs
+    return cast(type[Any], ParallelModel(typehint=response_model)), new_kwargs
 
 
 def handle_functions(

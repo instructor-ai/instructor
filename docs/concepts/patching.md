@@ -13,7 +13,7 @@ Instructor adds three key parameters to the client's `chat.completions.create` m
 
 - `response_model`: Defines the expected response type (Pydantic model or simple type)
 - `max_retries`: Controls how many retry attempts should be made if validation fails
-- `validation_context`: Provides additional context for validation hooks
+- `context`: Provides additional context for validation hooks
 
 ## Patching Modes
 

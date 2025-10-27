@@ -86,7 +86,7 @@ def yield_clips(segments: Iterable[TranscriptSegment]) -> Iterable[YoutubeClips]
             },
         ],
         response_model=instructor.Partial[YoutubeClips],
-        validation_context={"segments": segments},
+        context={"segments": segments},
     )  # type: ignore
 
 

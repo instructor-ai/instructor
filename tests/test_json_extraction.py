@@ -1,5 +1,5 @@
 """
-Tests for the improved JSON extraction functionality.
+Tests for JSON extraction functionality.
 """
 
 import json
@@ -9,6 +9,7 @@ from instructor.utils import extract_json_from_codeblock, extract_json_from_stre
 from instructor.processing.function_calls import (
     _extract_text_content,
     _validate_model_from_json,
+    OpenAISchema,
 )
 from pydantic import BaseModel
 
@@ -267,11 +268,125 @@ class TestModelValidation:
         assert result.skills == ["testing"]
 
     def test_validate_model_json_error(self):
-        """Test handling JSON decode errors."""
+        """Test handling JSON decode errors.
+
+        In strict mode, Pydantic raises ValidationError with an 'Invalid JSON' message.
+        """
         invalid_json = '{"name": "Invalid, "age": 20}'  # Missing quote
 
         with pytest.raises(Exception) as excinfo:
             _validate_model_from_json(Person, invalid_json, None, True)
-
-        # Pydantic directly raises validation errors now, not our custom message
         assert "Invalid JSON" in str(excinfo.value)
+
+    def test_validate_model_json_error_non_strict(self):
+        """In non-strict mode, json.loads should raise JSONDecodeError (not wrapped)."""
+        invalid_json = '{"name": "Invalid, "age": 20}'  # Missing quote
+
+        with pytest.raises(json.JSONDecodeError):
+            _validate_model_from_json(Person, invalid_json, None, False)
+
+
+class PersonSchema(OpenAISchema):
+    """Test model that inherits from OpenAISchema."""
+
+    name: str
+    age: int
+    skills: list[str] = []
+
+
+class TestBedrockJSONParsing:
+    """Test the parse_bedrock_json functionality."""
+
+    def test_parse_bedrock_json_simple(self):
+        """Test parsing Bedrock JSON with simple text content."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [{"text": '{"name": "John", "age": 30, "skills": []}'}]
+                }
+            }
+        }
+
+        result = PersonSchema.parse_bedrock_json(completion)
+        assert result.name == "John"
+        assert result.age == 30
+        assert result.skills == []
+
+    def test_parse_bedrock_json_with_reasoning_content(self):
+        """Test parsing Bedrock JSON when reasoningText comes before text content.
+
+        This tests the fix for reasoning models where content array may have
+        reasoningText as first element instead of text.
+        """
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {"reasoningText": "Thinking about the response..."},
+                        {"text": '{"name": "Alice", "age": 25, "skills": ["python"]}'},
+                    ]
+                }
+            }
+        }
+
+        result = PersonSchema.parse_bedrock_json(completion)
+        assert result.name == "Alice"
+        assert result.age == 25
+        assert result.skills == ["python"]
+
+    def test_parse_bedrock_json_with_codeblock(self):
+        """Test parsing Bedrock JSON when response is wrapped in markdown codeblock."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {
+                            "text": '```json\n{"name": "Bob", "age": 40, "skills": ["go", "rust"]}\n```'
+                        }
+                    ]
+                }
+            }
+        }
+
+        result = PersonSchema.parse_bedrock_json(completion)
+        assert result.name == "Bob"
+        assert result.age == 40
+        assert result.skills == ["go", "rust"]
+
+    def test_parse_bedrock_json_no_text_content(self):
+        """Test parsing Bedrock JSON when no text content is found."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {"reasoningText": "Only reasoning, no text response"},
+                        {"otherContent": "Some other type"},
+                    ]
+                }
+            }
+        }
+
+        with pytest.raises(ValueError) as excinfo:
+            PersonSchema.parse_bedrock_json(completion)
+
+        assert "No text content found" in str(excinfo.value)
+
+    def test_parse_bedrock_json_multiple_text_contents(self):
+        """Test parsing Bedrock JSON picks the first text content when multiple exist."""
+        completion = {
+            "output": {
+                "message": {
+                    "content": [
+                        {"reasoningText": "Thinking..."},
+                        {"text": '{"name": "First", "age": 30, "skills": ["python"]}'},
+                        {"text": '{"name": "Second", "age": 40, "skills": ["java"]}'},
+                    ]
+                }
+            }
+        }
+
+        result = PersonSchema.parse_bedrock_json(completion)
+        # Should pick the first text content
+        assert result.name == "First"
+        assert result.age == 30
+        assert result.skills == ["python"]

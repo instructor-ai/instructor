@@ -14,7 +14,11 @@ modes = [
 
 def get_system_prompt(user_tool_definition, mode):
     if mode == instructor.Mode.ANTHROPIC_JSON:
-        return user_tool_definition["system"]
+        system = user_tool_definition["system"]
+        # Handle both string and list[dict] formats
+        if isinstance(system, list):
+            return "".join(block.get("text", "") for block in system)
+        return system
     elif mode == instructor.Mode.GEMINI_JSON:
         return "\n".join(user_tool_definition["contents"][0]["parts"])
     elif mode == instructor.Mode.VERTEXAI_JSON:

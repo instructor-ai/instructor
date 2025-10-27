@@ -154,7 +154,7 @@ Available Modes:
 import instructor
 import cohere
 
-client = instructor.from_cohere(cohere.Client())
+client = instructor.from_cohere(cohere.ClientV2())
 ```
 
 Available Modes:
@@ -885,7 +885,7 @@ old, distant, or faint for the Hubble Space Telescope. The telescope is
 named after James E. Webb, who was the administrator of NASA from 1961 to 1968.
 """
 
-# Use the template with variables from validation_context
+# Use the template with variables from context
 question = "When was the James Webb Space Telescope launched and what can it do?"
 
 result = client.chat.completions.create(

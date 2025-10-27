@@ -151,9 +151,19 @@ class Image(BaseModel):
     def from_raw_base64(cls, data: str) -> Image:
         try:
             decoded = base64.b64decode(data)
-            import imghdr
 
-            img_type = imghdr.what(None, decoded)
+            # Detect image type from file signature (magic bytes)
+            # This replaces imghdr which was removed in Python 3.13
+            img_type = None
+            if decoded.startswith(b'\xff\xd8\xff'):
+                img_type = 'jpeg'
+            elif decoded.startswith(b'\x89PNG\r\n\x1a\n'):
+                img_type = 'png'
+            elif decoded.startswith(b'GIF87a') or decoded.startswith(b'GIF89a'):
+                img_type = 'gif'
+            elif decoded.startswith(b'RIFF') and decoded[8:12] == b'WEBP':
+                img_type = 'webp'
+
             if img_type:
                 media_type = f"image/{img_type}"
                 if media_type in VALID_MIME_TYPES:
@@ -682,18 +692,22 @@ class PDF(BaseModel):
             if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
                 return {
                     "type": input_file_type,
-                    "filename": self.source
-                    if isinstance(self.source, str)
-                    else str(self.source),
+                    "filename": (
+                        self.source
+                        if isinstance(self.source, str)
+                        else str(self.source)
+                    ),
                     "file_data": f"data:{self.media_type};base64,{data}",
                 }
             else:
                 return {
                     "type": input_file_type,
                     "file": {
-                        "filename": self.source
-                        if isinstance(self.source, str)
-                        else str(self.source),
+                        "filename": (
+                            self.source
+                            if isinstance(self.source, str)
+                            else str(self.source)
+                        ),
                         "file_data": f"data:{self.media_type};base64,{data}",
                     },
                 }
@@ -979,7 +993,8 @@ def convert_messages(
                 {"role": role, "content": content, **other_kwargs}
             )
         else:
-            converted_content = convert_contents(content, mode)
+            # At this point content is narrowed to non-str types accepted by convert_contents
+            converted_content = convert_contents(content, mode)  # type: ignore
             converted_messages.append(  # type: ignore
                 {"role": role, "content": converted_content, **other_kwargs}
             )

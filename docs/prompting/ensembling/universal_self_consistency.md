@@ -88,7 +88,7 @@ async def select_consistent_response(responses: list[Response], query: str):
                 ),
             }
         ],
-        validation_context={"number_responses": len(responses)},
+        context={"number_responses": len(responses)},
     )
 
 

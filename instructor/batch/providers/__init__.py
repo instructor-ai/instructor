@@ -6,7 +6,7 @@ batch processing APIs.
 """
 
 from .base import BatchProvider
-import importlib
+import importlib.util
 
 if importlib.util.find_spec("openai") is not None:
     from .openai import OpenAIProvider

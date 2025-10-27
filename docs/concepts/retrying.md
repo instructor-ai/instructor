@@ -201,6 +201,145 @@ def network_resilient_extraction(text: str) -> UserInfo:
     )
 ```
 
+## Method 6: Context-Based Validation with Retries
+
+The `context` parameter allows you to pass additional data to your validators, enabling dynamic validation rules. This is particularly useful when validation depends on external data or runtime conditions.
+
+```python
+import instructor
+from pydantic import BaseModel, ValidationInfo, field_validator
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from pydantic import ValidationError
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
+
+class Citation(BaseModel):
+    """A claim with a supporting quote from source text."""
+    claim: str
+    quote: str
+    
+    @field_validator('quote')
+    @classmethod
+    def verify_quote_exists(cls, v: str, info: ValidationInfo):
+        """Verify that the quote actually exists in the source text."""
+        context = info.context
+        if context:
+            source_text = context.get('source_text', '')
+            if v not in source_text:
+                raise ValueError(
+                    f"Quote '{v}' not found in source text. "
+                    "All quotes must be exact substrings from the source."
+                )
+        return v
+
+@retry(
+    retry=retry_if_exception_type(ValidationError),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10)
+)
+def extract_citation_with_context(claim: str, source_text: str) -> Citation:
+    """Extract a citation and verify it exists in the source text."""
+    return client.chat.completions.create(
+        response_model=Citation,
+        messages=[
+            {
+                "role": "system",
+                "content": "Extract the claim and find an exact quote from the source text that supports it."
+            },
+            {
+                "role": "user",
+                "content": "Source: {{ source_text }}\n\nClaim to verify: {{ claim }}"
+            }
+        ],
+        context={"source_text": source_text, "claim": claim}
+    )
+
+source = "The Eiffel Tower was completed in 1889 and stands 330 meters tall."
+claim = "The Eiffel Tower is over 300 meters tall"
+
+try:
+    citation = extract_citation_with_context(claim, source)
+    print(f"Claim: {citation.claim}")
+    print(f"Supporting quote: {citation.quote}")
+except Exception as e:
+    print(f"Failed to extract valid citation: {e}")
+```
+
+### Context with Templating
+
+You can also combine context-based validation with Jinja templating for even more powerful validation patterns:
+
+```python
+import instructor
+from pydantic import BaseModel, ValidationInfo, field_validator
+from tenacity import retry, stop_after_attempt
+from typing import List
+
+client = instructor.from_provider("openai/gpt-4.1-mini")
+
+class ProductReview(BaseModel):
+    """A product review with context-aware validation."""
+    product_name: str
+    rating: int
+    comment: str
+    
+    @field_validator('product_name')
+    @classmethod
+    def validate_product_exists(cls, v: str, info: ValidationInfo):
+        """Ensure the product name matches one of the allowed products."""
+        context = info.context
+        if context:
+            allowed_products = context.get('products', [])
+            if v not in allowed_products:
+                raise ValueError(
+                    f"Product '{v}' not recognized. "
+                    f"Must be one of: {', '.join(allowed_products)}"
+                )
+        return v
+
+@retry(stop=stop_after_attempt(3))
+def extract_review_with_validation(
+    review_text: str,
+    allowed_products: List[str]
+) -> ProductReview:
+    """Extract a review ensuring the product is valid."""
+    return client.chat.completions.create(
+        response_model=ProductReview,
+        messages=[
+            {
+                "role": "system",
+                "content": "Extract product review details. Valid products: {{ products|join(', ') }}"
+            },
+            {
+                "role": "user", 
+                "content": "Review: {{ review }}"
+            }
+        ],
+        context={
+            "products": allowed_products,
+            "review": review_text
+        }
+    )
+
+allowed = ["Widget Pro", "Gadget Max", "Device Ultra"]
+review_text = "The Widget Pro is amazing! Rating: 5 stars. Highly recommended."
+
+try:
+    review = extract_review_with_validation(review_text, allowed)
+    print(f"Product: {review.product_name}, Rating: {review.rating}/5")
+except Exception as e:
+    print(f"Validation failed: {e}")
+```
+
+### Key Benefits of Context-Based Validation
+
+1. **Dynamic Rules**: Validation rules can adapt based on runtime data
+2. **External Data**: Validate against databases, APIs, or other external sources
+3. **Multi-Field Dependencies**: Use context to validate relationships between fields
+4. **Reusable Validators**: Same validator can work with different context data
+
+For more details on context and templating, see the [Templating Guide](./templating.md) and [Validation Context Example](../examples/exact_citations.md).
+
 ## Method 6: Logging and Monitoring
 
 ```python

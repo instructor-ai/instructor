@@ -113,7 +113,7 @@ from openai import OpenAI
 import instructor
 
 # Apply the patch to the OpenAI client
-# enables response_model, validation_context keyword
+# enables response_model, context keyword
 client = instructor.from_openai(OpenAI())
 
 
@@ -166,7 +166,7 @@ def ask_ai(question: str, context: str) -> QuestionAnswer:
             {"role": "user", "content": f"{context}"},
             {"role": "user", "content": f"Question: {question}"},
         ],
-        validation_context={"text_chunk": context},
+        context={"text_chunk": context},
     )
 ```
 
