@@ -226,7 +226,7 @@ async def process_response_async(
 
     if (
         inspect.isclass(response_model)
-        and issubclass(response_model, (IterableBase, PartialBase))
+        and issubclass(response_model, IterableBase)
         and stream
     ):
         # from_streaming_response_async returns an AsyncGenerator
@@ -242,6 +242,17 @@ async def process_response_async(
         async for task in async_generator:
             tasks.append(task)
         return ListResponse.from_list(tasks, raw_response=response)  # type: ignore
+
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, PartialBase)
+        and stream
+    ):
+        # Return the AsyncGenerator directly for streaming Partial
+        return await response_model.from_streaming_response_async(  # type: ignore[arg-type]
+            cast(AsyncGenerator[Any, None], response),  # type: ignore[arg-type]
+            mode=mode,
+        )
 
     model = response_model.from_response(  # type: ignore
         response,
@@ -341,7 +352,7 @@ def process_response(
 
     if (
         inspect.isclass(response_model)
-        and issubclass(response_model, (IterableBase, PartialBase))
+        and issubclass(response_model, IterableBase)
         and stream
     ):
         # from_streaming_response returns a Generator
@@ -355,6 +366,17 @@ def process_response(
             )
         )
         return ListResponse.from_list(tasks, raw_response=response)
+
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, PartialBase)
+        and stream
+    ):
+        # Return the Generator directly for streaming Partial
+        return response_model.from_streaming_response(  # type: ignore
+            response,
+            mode=mode,
+        )
 
     model = response_model.from_response(  # type: ignore
         response,
