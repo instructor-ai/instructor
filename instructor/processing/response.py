@@ -231,13 +231,14 @@ async def process_response_async(
         # from_streaming_response_async returns an AsyncGenerator
         # Collect all yielded values into a list
         # Note: response type varies by mode (ChatCompletion, AsyncGenerator, etc.)
+        from ..dsl.response_list import ListResponse
         tasks = []
         async for task in response_model.from_streaming_response_async(  # type: ignore[arg-type]
             cast(AsyncGenerator[Any, None], response),  # type: ignore[arg-type]
             mode=mode,
         ):
             tasks.append(task)
-        return tasks  # type: ignore
+        return ListResponse.from_list(tasks, raw_response=response)  # type: ignore
 
     model = response_model.from_response(  # type: ignore
         response,
@@ -336,13 +337,14 @@ def process_response(
     ):
         # from_streaming_response returns a Generator
         # Collect all yielded values into a list
+        from ..dsl.response_list import ListResponse
         tasks = list(
             response_model.from_streaming_response(  # type: ignore
                 response,
                 mode=mode,
             )
         )
-        return tasks
+        return ListResponse.from_list(tasks, raw_response=response)
 
     model = response_model.from_response(  # type: ignore
         response,
@@ -355,10 +357,16 @@ def process_response(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]  # type: ignore
+        from ..dsl.response_list import ListResponse
+        tasks = ListResponse.from_list(
+            [task for task in model.tasks],  # type: ignore
+            raw_response=response,
+        )
+        return tasks
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
+        model._raw_response = response
         return model
 
     if isinstance(model, AdapterBase):

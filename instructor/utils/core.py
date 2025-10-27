@@ -596,7 +596,15 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     if response_model is None:
         return None
 
-    if is_simple_type(response_model):
+    # Check for Iterable[T] and List[T] BEFORE simple type check
+    # because is_simple_type may incorrectly classify them
+    origin = get_origin(response_model)
+    if origin is Iterable or origin is list:
+        from instructor.dsl.iterable import IterableModel
+
+        iterable_element_class = get_args(response_model)[0]
+        response_model = cast(BaseModel, IterableModel(iterable_element_class))  # type: ignore
+    elif is_simple_type(response_model):
         from instructor.dsl.simple_type import ModelAdapter
 
         response_model = ModelAdapter[response_model]
@@ -606,12 +614,6 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
             response_model.__name__,
             **{k: (v, ...) for k, v in response_model.__annotations__.items()},
         )
-
-    if get_origin(response_model) is Iterable:
-        from instructor.dsl.iterable import IterableModel
-
-        iterable_element_class = get_args(response_model)[0]
-        response_model = cast(BaseModel, IterableModel(iterable_element_class))  # type: ignore
 
     # Import here to avoid circular dependency
     from ..processing.function_calls import OpenAISchema, openai_schema
