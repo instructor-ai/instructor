@@ -235,10 +235,11 @@ async def process_response_async(
         from ..dsl.response_list import ListResponse
 
         tasks = []
-        async for task in response_model.from_streaming_response_async(  # type: ignore[arg-type]
+        async_generator = await response_model.from_streaming_response_async(  # type: ignore[arg-type]
             cast(AsyncGenerator[Any, None], response),  # type: ignore[arg-type]
             mode=mode,
-        ):
+        )
+        async for task in async_generator:
             tasks.append(task)
         return ListResponse.from_list(tasks, raw_response=response)  # type: ignore
 
