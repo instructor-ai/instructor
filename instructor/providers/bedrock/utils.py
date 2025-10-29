@@ -6,7 +6,10 @@ including reask functions, response handlers, and message formatting.
 
 from __future__ import annotations
 
+import base64
 import json
+import mimetypes
+import requests
 from textwrap import dedent
 from typing import Any
 
@@ -129,6 +132,151 @@ def reask_bedrock_tools(
     return kwargs
 
 
+def _normalize_bedrock_image_format(mime_or_ext: str) -> str:
+    """
+    Map common/variant image types to Bedrock's required image.format enum:
+    one of {'gif','jpeg','png','webp'}.
+    """
+    if not mime_or_ext:
+        return "jpeg"
+    val = mime_or_ext.strip().lower()
+    if "/" in val:
+        val = val.split("/", 1)[1]  # take subtype, e.g., 'image/jpeg' -> 'jpeg'
+    if val in ("jpg", "pjpeg", "x-jpeg", "x-jpg"):
+        return "jpeg"
+    if val in ("png", "x-png"):
+        return "png"
+    if val in ("gif", "x-gif"):
+        return "gif"
+    if val in ("webp", "image/webp"):
+        return "webp"
+    return "jpeg"
+
+
+def _openai_image_part_to_bedrock(part: dict[str, Any]) -> dict[str, Any]:
+    """
+    Convert OpenAI-style image part:
+      {"type":"image_url","image_url":{"url": "<data:... or http(s):...>"}}
+    into Bedrock Converse image content:
+      {"image":{"format": "<fmt>","source":{"bytes": <raw-bytes>}}}
+    """
+    image_url = (part.get("image_url") or {}).get("url")
+    if not image_url:
+        raise ValueError("image_url.url is required for OpenAI-style image parts")
+
+    guessed_mime = mimetypes.guess_type(image_url)[0] or "image/jpeg"
+    fmt = _normalize_bedrock_image_format(guessed_mime)
+
+    # data URL to bytes
+    if image_url.startswith("data:"):
+        try:
+            header, b64 = image_url.split(",", 1)
+        except ValueError as e:
+            raise ValueError("Invalid data URL in image_url.url") from e
+        if ";base64" not in header:
+            raise ValueError("Only base64 data URLs are supported for Bedrock")
+        return {"image": {"format": fmt, "source": {"bytes": base64.b64decode(b64)}}}
+
+    # http(s) URL to bytes
+    elif image_url.startswith(("http://", "https://")):
+        try:
+            resp = requests.get(image_url, timeout=15)
+            resp.raise_for_status()
+            ctype = resp.headers.get("Content-Type")
+            if ctype and "/" in ctype:
+                fmt = _normalize_bedrock_image_format(ctype)
+            return {"image": {"format": fmt, "source": {"bytes": resp.content}}}
+        except requests.exceptions.Timeout as e:
+            raise ValueError(f"Timed out while fetching image from {image_url}") from e
+        except requests.exceptions.ConnectionError as e:
+            raise ValueError(
+                f"Connection error while fetching image from {image_url}: {e}"
+            ) from e
+        except requests.exceptions.HTTPError as e:
+            raise ValueError(
+                f"HTTP error while fetching image from {image_url}: {e}"
+            ) from e
+        except requests.exceptions.RequestException as e:
+            raise ValueError(
+                f"Request error while fetching image from {image_url}: {e}"
+            ) from e
+        except Exception as e:
+            raise ValueError(
+                f"Unexpected error while fetching image from {image_url}: {e}"
+            ) from e
+    else:
+        raise ValueError(
+            "Unsupported image_url scheme. Use http(s) or data:image/...;base64,..."
+        )
+
+
+def _to_bedrock_content_items(content: Any) -> list[dict[str, Any]]:
+    """
+    Normalize content into Bedrock Converse content list.
+
+    Allowed inputs:
+      - string -> [{"text": "..."}]
+      - list of parts:
+          OpenAI-style:
+            {"type":"text","text":"..."}
+            {"type":"input_text","text":"..."}
+            {"type":"image_url","image_url":{"url":"<data:... or https:...>"}}
+          Bedrock-native (passed through as-is):
+            {"text":"..."}
+            {"image":{"format":"jpeg|png|gif|webp","source":{"bytes": <raw bytes>}}}
+
+    Note:
+      - We do not validate or normalize Bedrock-native image blocks here.
+        Caller is responsible for providing valid 'format' and raw 'bytes'.
+    """
+    # Plain string
+    if isinstance(content, str):
+        return [{"text": content}]
+
+    # List of parts
+    if isinstance(content, list):
+        items: list[dict[str, Any]] = []
+        for p in content:
+            # OpenAI-style parts (have "type")
+            if isinstance(p, dict) and "type" in p:
+                t = p.get("type")
+                if t in ("text", "input_text"):
+                    txt = p.get("text") or p.get("input_text") or ""
+                    items.append({"text": txt})
+                    continue
+                if t == "image_url":
+                    items.append(_openai_image_part_to_bedrock(p))
+                    continue
+                raise ValueError(f"Unsupported OpenAI-style part type for Bedrock: {t}")
+
+            # Bedrock-native pass-throughs (no "type")
+            if isinstance(p, dict):
+                # Pass-through pure text
+                if (
+                    "text" in p
+                    and isinstance(p["text"], str)
+                    and set(p.keys()) == {"text"}
+                ):
+                    items.append(p)
+                    continue
+                # Pass-through Bedrock-native image as-is (assumes correct format and raw bytes)
+                if "image" in p and isinstance(p["image"], dict):
+                    items.append(p)
+                    continue
+
+                raise ValueError(f"Unsupported dict content for Bedrock: {p}")
+
+            # Plain string elements inside list
+            if isinstance(p, str):
+                items.append({"text": p})
+                continue
+
+            raise ValueError(f"Unsupported content part for Bedrock: {type(p)}")
+        return items
+
+    raise ValueError(f"Unsupported message content type for Bedrock: {type(content)}")
+
+
 def _prepare_bedrock_converse_kwargs_internal(
     call_kwargs: dict[str, Any],
 ) -> dict[str, Any]:
@@ -245,22 +393,10 @@ def _prepare_bedrock_converse_kwargs_internal(
                     )
             else:  # For user, assistant, or other roles that go into Bedrock's 'messages' list
                 if "content" in current_message_for_api:
-                    if isinstance(content, str):
-                        current_message_for_api["content"] = [{"text": content}]
-                    elif (
-                        isinstance(content, list)
-                        and content
-                        and isinstance(content[0], dict)
-                        and "text" in content[0]
-                    ):
-                        # Handle Bedrock-native content format: [{'text': "..."}]
-                        current_message_for_api["content"] = content
-                    else:  # Content is not a string or supported list format (e.g., None, int, unsupported list).
-                        # This matches the original behavior which raised for any non-string content.
-                        raise NotImplementedError(
-                            "Non-text prompts are not currently supported in the Bedrock provider."
-                        )
-                # If 'content' key is not in current_message_for_api, message is added as is (e.g. for tool calls without content)
+                    # Sort out the content from the messages
+                    current_message_for_api["content"] = _to_bedrock_content_items(
+                        content
+                    )
                 bedrock_user_assistant_messages_list.append(current_message_for_api)
 
         if bedrock_system_list:
