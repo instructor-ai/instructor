@@ -368,6 +368,29 @@ class Instructor:
     ) -> T | Any | Awaitable[T] | Awaitable[Any]:
         kwargs = self.handle_kwargs(kwargs)
 
+        if kwargs.get("stream") is True and response_model is not None:
+            from ..dsl.partial import PartialBase
+            
+            # Check if response_model is Iterable[T]
+            origin = get_origin(response_model)
+            is_iterable = origin is not None and issubclass(origin, Iterable)
+            
+            # Check if response_model is Partial[T] (which inherits from PartialBase)
+            is_partial = False
+            if isinstance(response_model, type):
+                try:
+                    is_partial = issubclass(response_model, PartialBase)
+                except TypeError:
+                    is_partial = False
+            
+            if not is_iterable and not is_partial:
+                raise ValueError(
+                    "Streaming requires using Partial[Model] or Iterable[Model] as the response_model. "
+                    "Use client.chat.completions.create_partial(response_model=YourModel, ...) "
+                    "or client.chat.completions.create_iterable(response_model=YourModel, ...) instead. "
+                    "See https://python.useinstructor.com/concepts/partial/ for more information."
+                )
+
         # Combine client hooks with per-call hooks
         combined_hooks = self.hooks
         if hooks is not None:
@@ -617,6 +640,27 @@ class AsyncInstructor(Instructor):
         **kwargs: Any,
     ) -> T | Any:
         kwargs = self.handle_kwargs(kwargs)
+
+        if kwargs.get("stream") is True and response_model is not None:
+            from ..dsl.partial import PartialBase
+            
+            origin = get_origin(response_model)
+            is_iterable = origin is not None and issubclass(origin, Iterable)
+            
+            is_partial = False
+            if isinstance(response_model, type):
+                try:
+                    is_partial = issubclass(response_model, PartialBase)
+                except TypeError:
+                    is_partial = False
+            
+            if not is_iterable and not is_partial:
+                raise ValueError(
+                    "Streaming requires using Partial[Model] or Iterable[Model] as the response_model. "
+                    "Use client.chat.completions.create_partial(response_model=YourModel, ...) "
+                    "or client.chat.completions.create_iterable(response_model=YourModel, ...) instead. "
+                    "See https://python.useinstructor.com/concepts/partial/ for more information."
+                )
 
         # Combine client hooks with per-call hooks
         combined_hooks = self.hooks
