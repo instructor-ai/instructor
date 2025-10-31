@@ -17,7 +17,7 @@ from ..mode import Mode
 from ..processing.response import (
     process_response,
     process_response_async,
-    handle_reask_kwargs,
+    perform_reask,
 )
 from ..utils import update_total_usage
 from openai.types.chat import ChatCompletion
@@ -240,7 +240,7 @@ def retry_sync(
                         if is_last_attempt:
                             hooks.emit_completion_last_attempt(e)
 
-                    kwargs = handle_reask_kwargs(
+                    kwargs = perform_reask(
                         kwargs=kwargs,
                         mode=mode,
                         response=response,
@@ -397,7 +397,7 @@ async def retry_async(
                         if is_last_attempt:
                             hooks.emit_completion_last_attempt(e)
 
-                    kwargs = handle_reask_kwargs(
+                    kwargs = perform_reask(
                         kwargs=kwargs,
                         mode=mode,
                         response=response,

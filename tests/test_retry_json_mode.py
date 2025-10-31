@@ -25,7 +25,7 @@ def test_json_decode_error_caught_by_retry():
 
     This is a regression test for issue #1856 where JSONDecodeError was wrapped
     in ValueError, causing it to be caught by the generic Exception handler instead
-    of the specific validation error handler that calls handle_reask_kwargs.
+    of the specific validation error handler that calls perform_reask.
 
     Note: In strict mode, Pydantic raises ValidationError with 'Invalid JSON' message.
     In non-strict mode, json.loads raises JSONDecodeError directly.

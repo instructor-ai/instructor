@@ -1,31 +1,29 @@
 from __future__ import annotations
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Protocol,
-    TypeVar,
-    overload,
-)
+from typing import Any, Callable, Protocol, TypeVar, overload
 from collections.abc import Awaitable
-from typing_extensions import ParamSpec
+import logging
 
 from openai import AsyncOpenAI, OpenAI  # type: ignore[import-not-found]
 from pydantic import BaseModel  # type: ignore[import-not-found]
-
-from ..processing.response import handle_response_model
-from .retry import retry_async, retry_sync
-from ..utils import is_async
-from .hooks import Hooks
-from ..templating import handle_templating
+from tenacity import AsyncRetrying, Retrying  # type: ignore[import-not-found]
+from typing_extensions import ParamSpec
 
 from ..mode import Mode
-import logging
-
-from tenacity import (  # type: ignore[import-not-found]
-    AsyncRetrying,
-    Retrying,
+from ..utils import is_async
+from .create_pipeline import (
+    CreatePipelineState,
+    cache_lookup_middleware,
+    cache_store_middleware,
+    context_middleware,
+    response_model_middleware,
+    retry_async_middleware,
+    retry_sync_middleware,
+    run_async_pipeline,
+    run_sync_pipeline,
+    templating_middleware,
 )
+from .hooks import Hooks
 
 logger = logging.getLogger("instructor")
 
@@ -56,36 +54,6 @@ class AsyncInstructorChatCompletionCreate(Protocol):
         *args: Any,
         **kwargs: Any,
     ) -> T_Model: ...
-
-
-def handle_context(
-    context: dict[str, Any] | None = None,
-    validation_context: dict[str, Any] | None = None,
-) -> dict[str, Any] | None:
-    """
-    Handle the context and validation_context parameters.
-    If both are provided, raise an error.
-    If validation_context is provided, issue a deprecation warning and use it as context.
-    If neither is provided, return None.
-    """
-    if context is not None and validation_context is not None:
-        from .exceptions import ConfigurationError
-
-        raise ConfigurationError(
-            "Cannot provide both 'context' and 'validation_context'. Use 'context' instead."
-        )
-    if validation_context is not None and context is None:
-        import warnings
-
-        warnings.warn(
-            "'validation_context' is deprecated. Use 'context' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        context = validation_context
-    return context
-
-
 @overload
 def patch(
     client: OpenAI,
@@ -153,10 +121,7 @@ def patch(  # type: ignore
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
-        # -----------------------------
-        # Cache handling (async path)
-        # -----------------------------
-        from ..cache import BaseCache, make_cache_key, load_cached_response
+        from ..cache import BaseCache
 
         cache: BaseCache | None = kwargs.pop("cache", None)  # type: ignore[assignment]
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
@@ -164,52 +129,32 @@ def patch(  # type: ignore
             cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
         )
 
-        context = handle_context(context, validation_context)
-
-        response_model, new_kwargs = handle_response_model(
-            response_model=response_model, mode=mode, **kwargs
-        )  # type: ignore
-        new_kwargs = handle_templating(new_kwargs, mode=mode, context=context)
-
-        # Attempt cache lookup **before** hitting retry layer
-        if cache is not None and response_model is not None:
-            key = make_cache_key(
-                messages=new_kwargs.get("messages")
-                or new_kwargs.get("contents")
-                or new_kwargs.get("chat_history"),
-                model=new_kwargs.get("model"),
-                response_model=response_model,
-                mode=mode.value if hasattr(mode, "value") else str(mode),
-            )
-            obj = load_cached_response(cache, key, response_model)
-            if obj is not None:
-                return obj  # type: ignore[return-value]
-
-        response = await retry_async(
-            func=func,  # type:ignore
+        state = CreatePipelineState(
+            func=func,  # type: ignore[arg-type]
+            mode=mode,
+            args=args,
+            kwargs=dict(kwargs),
             response_model=response_model,
+            validation_context=validation_context,
             context=context,
             max_retries=max_retries,
-            args=args,
-            kwargs=new_kwargs,
             strict=strict,
-            mode=mode,
             hooks=hooks,
+            cache=cache,
+            cache_ttl=cache_ttl,
         )
 
-        # Store in cache *after* successful call
-        if cache is not None and response_model is not None:
-            try:
-                from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
+        middlewares = (
+            context_middleware,
+            response_model_middleware,
+            templating_middleware,
+            cache_lookup_middleware,
+            retry_async_middleware,
+            cache_store_middleware,
+        )
 
-                if isinstance(response, _BM):
-                    # mypy: ignore-next-line
-                    from ..cache import store_cached_response
-
-                    store_cached_response(cache, key, response, ttl=cache_ttl)
-            except ModuleNotFoundError:
-                pass
-        return response  # type: ignore
+        result = await run_async_pipeline(state, middlewares)
+        return result  # type: ignore[return-value]
 
     @wraps(func)  # type: ignore
     def new_create_sync(
@@ -222,10 +167,7 @@ def patch(  # type: ignore
         *args: T_ParamSpec.args,
         **kwargs: T_ParamSpec.kwargs,
     ) -> T_Model:
-        # -----------------------------
-        # Cache handling (sync path)
-        # -----------------------------
-        from ..cache import BaseCache, make_cache_key, load_cached_response
+        from ..cache import BaseCache
 
         cache: BaseCache | None = kwargs.pop("cache", None)  # type: ignore[assignment]
         cache_ttl_raw = kwargs.pop("cache_ttl", None)
@@ -233,53 +175,32 @@ def patch(  # type: ignore
             cache_ttl_raw if isinstance(cache_ttl_raw, int) else None
         )
 
-        context = handle_context(context, validation_context)
-        # print(f"instructor.patch: patched_function {func.__name__}")
-        response_model, new_kwargs = handle_response_model(
-            response_model=response_model, mode=mode, **kwargs
-        )  # type: ignore
-
-        new_kwargs = handle_templating(new_kwargs, mode=mode, context=context)
-
-        # Attempt cache lookup
-        if cache is not None and response_model is not None:
-            key = make_cache_key(
-                messages=new_kwargs.get("messages")
-                or new_kwargs.get("contents")
-                or new_kwargs.get("chat_history"),
-                model=new_kwargs.get("model"),
-                response_model=response_model,
-                mode=mode.value if hasattr(mode, "value") else str(mode),
-            )
-            obj = load_cached_response(cache, key, response_model)
-            if obj is not None:
-                return obj  # type: ignore[return-value]
-
-        response = retry_sync(
-            func=func,  # type: ignore
+        state = CreatePipelineState(
+            func=func,  # type: ignore[arg-type]
+            mode=mode,
+            args=args,
+            kwargs=dict(kwargs),
             response_model=response_model,
+            validation_context=validation_context,
             context=context,
             max_retries=max_retries,
-            args=args,
-            hooks=hooks,
             strict=strict,
-            kwargs=new_kwargs,
-            mode=mode,
+            hooks=hooks,
+            cache=cache,
+            cache_ttl=cache_ttl,
         )
 
-        # Save to cache
-        if cache is not None and response_model is not None:
-            try:
-                from pydantic import BaseModel as _BM  # type: ignore[import-not-found]
+        middlewares = (
+            context_middleware,
+            response_model_middleware,
+            templating_middleware,
+            cache_lookup_middleware,
+            retry_sync_middleware,
+            cache_store_middleware,
+        )
 
-                if isinstance(response, _BM):
-                    # mypy: ignore-next-line
-                    from ..cache import store_cached_response
-
-                    store_cached_response(cache, key, response, ttl=cache_ttl)
-            except ModuleNotFoundError:
-                pass
-        return response  # type: ignore
+        result = run_sync_pipeline(state, middlewares)
+        return result  # type: ignore[return-value]
 
     new_create = new_create_async if func_is_async else new_create_sync
 

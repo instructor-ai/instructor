@@ -38,7 +38,7 @@ sequenceDiagram
 
     rect rgb(255,240,240)
     Note over R,H: On validation/JSON errors → reask path
-    R->>H: handle_reask_kwargs(..., exception, failed_attempts)
+    R->>H: perform_reask(..., exception, failed_attempts)
     H-->>R: new kwargs/messages for next attempt
     end
 ```
@@ -161,7 +161,7 @@ client.on(HookName.PARSE_ERROR, lambda e: print("PARSE", e))
 ## Error Handling at a Glance
 
 - Validation or JSON decode errors trigger the reask path.
-- Reask handlers (`handle_reask_kwargs`) append/adjust messages with error feedback so the next attempt can correct itself.
+- Reask handlers (`perform_reask`) append/adjust messages with error feedback so the next attempt can correct itself.
 - If all retries fail, `InstructorRetryException` is raised containing `failed_attempts`, the last completion, usage totals, and the create kwargs for reproduction.
 
 ## Extensibility Notes

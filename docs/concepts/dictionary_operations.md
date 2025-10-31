@@ -47,11 +47,11 @@ The response processing functions were optimized to:
 
 ### Message Handler Selection
 
-The `handle_reask_kwargs` function was optimized to use direct conditional checks instead of creating a large mapping dictionary, which reduces memory overhead and improves lookup performance.
+The `perform_reask` function was optimized to use direct conditional checks instead of creating a large mapping dictionary, which reduces memory overhead and improves lookup performance.
 
 **Before:**
 ```python
-def handle_reask_kwargs(kwargs, mode, response, exception):
+def perform_reask(kwargs, mode, response, exception):
     kwargs = kwargs.copy()
     functions = {
         Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
@@ -64,7 +64,7 @@ def handle_reask_kwargs(kwargs, mode, response, exception):
 
 **After:**
 ```python
-def handle_reask_kwargs(kwargs, mode, response, exception):
+def perform_reask(kwargs, mode, response, exception):
     kwargs_copy = kwargs.copy()
 
     if mode in {Mode.ANTHROPIC_TOOLS, Mode.ANTHROPIC_REASONING_TOOLS}:
@@ -90,7 +90,7 @@ Benchmarks show significant improvements in dictionary operation performance:
 | Operation | Before (ms) | After (ms) | Improvement |
 |-----------|-------------|------------|-------------|
 | extract_messages | ~0.08 | ~0.03 | ~62% |
-| handle_reask_kwargs | ~0.09 | ~0.05 | ~44% |
+| perform_reask | ~0.09 | ~0.05 | ~44% |
 | combine_system_messages | ~0.12 | ~0.07 | ~42% |
 
 The exact improvement depends on the specific use case and data patterns.

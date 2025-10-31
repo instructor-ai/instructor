@@ -6,7 +6,7 @@ from .response import (
     handle_response_model,
     process_response,
     process_response_async,
-    handle_reask_kwargs,
+    perform_reask,
 )
 from .schema import (
     generate_openai_schema,
@@ -22,7 +22,7 @@ __all__ = [
     "handle_response_model",
     "process_response",
     "process_response_async",
-    "handle_reask_kwargs",
+    "perform_reask",
     "generate_openai_schema",
     "generate_anthropic_schema",
     "generate_gemini_schema",
