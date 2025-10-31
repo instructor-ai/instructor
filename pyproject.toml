@@ -74,7 +74,7 @@ test-docs = [
     "litellm<2.0.0,>=1.35.31",
     "mistralai<2.0.0,>=1.5.1",
 ]
-anthropic = ["anthropic==0.71.0", "xmltodict>=0.13,<1.1"]
+anthropic = ["anthropic==0.72.0", "xmltodict>=0.13,<1.1"]
 groq = ["groq>=0.4.2,<0.34.0"]
 cohere = ["cohere<6.0.0,>=5.1.8"]
 vertexai = ["google-cloud-aiplatform<2.0.0,>=1.53.0", "jsonref<2.0.0,>=1.1.0"]
