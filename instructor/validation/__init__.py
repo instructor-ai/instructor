@@ -8,7 +8,8 @@ from .async_validators import (
     ASYNC_MODEL_VALIDATOR_KEY,
 )
 from ..core.exceptions import AsyncValidationError
-from .llm_validators import Validator, llm_validator, openai_moderation
+from .llm_validators import llm_validator, openai_moderation
+from .models import Validator
 
 __all__ = [
     "AsyncValidationContext",
@@ -17,7 +18,7 @@ __all__ = [
     "async_model_validator",
     "ASYNC_VALIDATOR_KEY",
     "ASYNC_MODEL_VALIDATOR_KEY",
-    "Validator",
     "llm_validator",
     "openai_moderation",
+    "Validator",
 ]

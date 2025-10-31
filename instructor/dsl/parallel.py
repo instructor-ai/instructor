@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from collections.abc import Iterable
 
 from ..mode import Mode
+from .base import DSLProviderHooksMixin
 
 if TYPE_CHECKING:
     from ..processing.function_calls import OpenAISchema
@@ -24,7 +25,7 @@ else:
     T = TypeVar("T", bound=BaseModel)
 
 
-class ParallelBase:
+class ParallelBase(DSLProviderHooksMixin):
     def __init__(self, *models: type[BaseModel]):
         # Note that for everything else we've created a class, but for parallel base it is an instance
         assert len(models) > 0, "At least one model is required"
@@ -50,6 +51,12 @@ class ParallelBase:
             yield self.registry[name].model_validate_json(
                 arguments, context=validation_context, strict=strict
             )
+
+    @classmethod
+    def finalize_response(cls, model: Any, raw_response: Any) -> Any:
+        """Return the parallel response unchanged."""
+
+        return model
 
 
 class VertexAIParallelBase(ParallelBase):

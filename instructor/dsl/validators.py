@@ -1,19 +1,22 @@
-"""Backwards compatibility module for instructor.dsl.validators.
+"""Backwards compatibility module for instructor.dsl.validators."""
 
-This module provides lazy imports to avoid circular import issues.
-"""
+from __future__ import annotations
+
+import warnings
 
 
 def __getattr__(name: str):
     """Lazy import to avoid circular dependencies."""
-    from ..processing import validators as processing_validators
+
+    warnings.warn(
+        "Importing from 'instructor.dsl.validators' is deprecated and will be removed in v2.0.0. "
+        "Please update your imports to use 'instructor.validation'.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     from .. import validation
 
-    # Try processing.validators first
-    if hasattr(processing_validators, name):
-        return getattr(processing_validators, name)
-
-    # Then try validation module
     if hasattr(validation, name):
         return getattr(validation, name)
 

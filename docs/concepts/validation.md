@@ -9,7 +9,9 @@ This guide covers validation concepts and best practices when using Instructor f
 
 ## Overview
 
-Validation in Instructor ensures that the output from language models matches your expected schema. This is crucial for:
+Validation in Instructor ensures that the output from language models matches your expected schema. The `instructor.validation`
+module is the primary entry point for runtime helpers like `llm_validator` and `openai_moderation`; legacy shims continue to
+work but will be removed in a future major release. This is crucial for:
 - Data consistency
 - Error handling
 - Type safety
@@ -123,7 +125,7 @@ from typing import Annotated
 # Third-party imports
 from pydantic import BaseModel, BeforeValidator
 import instructor
-from instructor import llm_validator
+from instructor.validation import llm_validator
 
 # Initialize client
 client = instructor.from_provider("openai/gpt-4.1-mini")

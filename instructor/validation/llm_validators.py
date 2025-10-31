@@ -2,8 +2,8 @@ from typing import Callable
 
 from openai import OpenAI
 
-from ..processing.validators import Validator
 from ..core.client import Instructor
+from .models import Validator
 
 
 def llm_validator(

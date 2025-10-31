@@ -32,6 +32,7 @@ from pydantic.fields import FieldInfo
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
+from .base import DSLProviderHooksMixin
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
@@ -130,7 +131,8 @@ def _make_field_optional(
     return tmp_field.annotation, tmp_field  # type: ignore
 
 
-class PartialBase(Generic[T_Model]):
+class PartialBase(DSLProviderHooksMixin, Generic[T_Model]):
+    stream_consumer: ClassVar[bool] = True
     @classmethod
     @cache
     def get_partial_model(cls) -> type[T_Model]:
@@ -181,6 +183,25 @@ class PartialBase(Generic[T_Model]):
             return cls.writer_model_from_chunks_async(json_chunks, **kwargs)
 
         return cls.model_from_chunks_async(json_chunks, **kwargs)
+
+    @classmethod
+    def consume_stream_sync(
+        cls, completion: Iterable[Any], mode: Mode
+    ) -> list[T_Model]:
+        """Collect streaming partial models synchronously."""
+
+        return list(cls.from_streaming_response(completion, mode=mode))
+
+    @classmethod
+    async def consume_stream_async(
+        cls, completion: AsyncGenerator[Any, None], mode: Mode
+    ) -> list[T_Model]:
+        """Collect streaming partial models asynchronously."""
+
+        results: list[T_Model] = []
+        async for item in cls.from_streaming_response_async(completion, mode=mode):
+            results.append(item)
+        return results
 
     @classmethod
     def writer_model_from_chunks(

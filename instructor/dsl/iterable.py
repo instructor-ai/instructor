@@ -13,13 +13,15 @@ import json
 from pydantic import BaseModel, Field, create_model
 from ..mode import Mode
 from ..utils import extract_json_from_stream, extract_json_from_stream_async
+from .base import DSLProviderHooksMixin
 
 if TYPE_CHECKING:
     pass
 
 
-class IterableBase:
+class IterableBase(DSLProviderHooksMixin):
     task_type: ClassVar[Optional[type[BaseModel]]] = None
+    stream_consumer: ClassVar[bool] = True
 
     @classmethod
     def from_streaming_response(
@@ -57,6 +59,27 @@ class IterableBase:
             return cls.tasks_from_mistral_chunks(json_chunks, **kwargs)
 
         return cls.tasks_from_chunks_async(json_chunks, **kwargs)
+
+    @classmethod
+    def consume_stream_sync(
+        cls, completion: Iterable[Any], mode: Mode
+    ) -> list[BaseModel]:
+        """Collect streaming chunks synchronously for iterable responses."""
+
+        return list(cls.from_streaming_response(completion, mode=mode))
+
+    @classmethod
+    async def consume_stream_async(
+        cls, completion: AsyncGenerator[Any, None], mode: Mode
+    ) -> list[BaseModel]:
+        """Collect streaming chunks asynchronously for iterable responses."""
+
+        tasks: list[BaseModel] = []
+        async for task in cls.from_streaming_response_async(
+            completion, mode=mode
+        ):
+            tasks.append(task)
+        return tasks
 
     @classmethod
     async def tasks_from_mistral_chunks(
@@ -141,6 +164,12 @@ class IterableBase:
         raise ValueError(
             f"Failed to extract task type with {task_json} for {cls.task_type}"
         )
+
+    @classmethod
+    def finalize_response(cls, model: Any, raw_response: Any) -> list[BaseModel]:
+        """Return the extracted tasks when not streaming."""
+
+        return [task for task in model.tasks]
 
     @staticmethod
     def extract_json(

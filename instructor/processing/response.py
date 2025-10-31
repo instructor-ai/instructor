@@ -35,9 +35,9 @@ Example:
 
 from __future__ import annotations
 
-import inspect
 import logging
-from typing import Any, TypeVar, TYPE_CHECKING
+from collections.abc import AsyncGenerator
+from typing import Any, TypeVar, TYPE_CHECKING, cast
 
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
@@ -45,9 +45,7 @@ from typing_extensions import ParamSpec
 
 from instructor.core.exceptions import InstructorError
 
-from ..dsl.iterable import IterableBase
-from ..dsl.parallel import ParallelBase
-from ..dsl.partial import PartialBase
+from ..dsl.base import get_dsl_provider_hooks
 from ..dsl.simple_type import AdapterBase
 
 if TYPE_CHECKING:
@@ -223,20 +221,13 @@ async def process_response_async(
     if response_model is None:
         return response
 
-    if (
-        inspect.isclass(response_model)
-        and issubclass(response_model, (IterableBase, PartialBase))
-        and stream
-    ):
-        # from_streaming_response_async returns an AsyncGenerator
-        # Collect all yielded values into a list
-        # Note: response type varies by mode (ChatCompletion, AsyncGenerator, etc.)
-        tasks = []
-        async for task in response_model.from_streaming_response_async(  # type: ignore[arg-type]
-            cast(AsyncGenerator[Any, None], response),  # type: ignore[arg-type]
+    hook_target = get_dsl_provider_hooks(response_model)
+
+    if hook_target and hook_target.stream_consumer and stream:
+        tasks = await hook_target.consume_stream_async(  # type: ignore[arg-type]
+            cast(AsyncGenerator[Any, None], response),
             mode=mode,
-        ):
-            tasks.append(task)
+        )
         return tasks  # type: ignore
 
     model = response_model.from_response(  # type: ignore
@@ -246,22 +237,20 @@ async def process_response_async(
         mode=mode,
     )
 
-    # ? This really hints at the fact that we need a better way of
-    # ? attaching usage data and the raw response to the model we return.
-    if isinstance(model, IterableBase):
-        logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]  # type: ignore
+    if hook_target:
+        result = hook_target.finalize_response(model, response)
+    else:
+        result = model
 
-    if isinstance(response_model, ParallelBase):
-        logger.debug(f"Returning model from ParallelBase")
-        return model
-
-    if isinstance(model, AdapterBase):
+    if isinstance(result, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
-        return model.content
+        return result.content
 
-    model._raw_response = response
-    return model
+    if hook_target is None:
+        result._raw_response = response  # type: ignore[attr-defined]
+        return result
+
+    return result
 
 
 def process_response(
@@ -329,20 +318,10 @@ def process_response(
         logger.debug("No response model, returning response as is")
         return response
 
-    if (
-        inspect.isclass(response_model)
-        and issubclass(response_model, (IterableBase, PartialBase))
-        and stream
-    ):
-        # from_streaming_response returns a Generator
-        # Collect all yielded values into a list
-        tasks = list(
-            response_model.from_streaming_response(  # type: ignore
-                response,
-                mode=mode,
-            )
-        )
-        return tasks
+    hook_target = get_dsl_provider_hooks(response_model)
+
+    if hook_target and hook_target.stream_consumer and stream:
+        return hook_target.consume_stream_sync(response, mode=mode)
 
     model = response_model.from_response(  # type: ignore
         response,
@@ -351,22 +330,20 @@ def process_response(
         mode=mode,
     )
 
-    # ? This really hints at the fact that we need a better way of
-    # ? attaching usage data and the raw response to the model we return.
-    if isinstance(model, IterableBase):
-        logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]  # type: ignore
+    if hook_target:
+        result = hook_target.finalize_response(model, response)
+    else:
+        result = model
 
-    if isinstance(response_model, ParallelBase):
-        logger.debug(f"Returning model from ParallelBase")
-        return model
-
-    if isinstance(model, AdapterBase):
+    if isinstance(result, AdapterBase):
         logger.debug(f"Returning model from AdapterBase")
-        return model.content
+        return result.content
 
-    model._raw_response = response
-    return model
+    if hook_target is None:
+        result._raw_response = response  # type: ignore[attr-defined]
+        return result
+
+    return result
 
 
 def is_typed_dict(cls) -> bool:
@@ -428,6 +405,14 @@ def handle_response_model(
     # Only prepare response_model if it's not None
     if response_model is not None:
         response_model = prepare_response_model(response_model)
+
+    hook_target = (
+        get_dsl_provider_hooks(response_model) if response_model is not None else None
+    )
+    if hook_target:
+        response_model, new_kwargs = hook_target.apply_provider_hook(
+            mode, new_kwargs
+        )
 
     mode_handlers = {  # type: ignore
         Mode.FUNCTIONS: handle_functions,
