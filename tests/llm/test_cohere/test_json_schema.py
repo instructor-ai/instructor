@@ -8,7 +8,7 @@ modes = [Mode.COHERE_JSON_SCHEMA, Mode.COHERE_TOOLS]
 
 
 class User(BaseModel):
-    name: str = Field("User's first name")
+    name: str = Field(description="User's first name")
     age: int
 
 
@@ -51,7 +51,7 @@ def test_parse_user_sync_jinja(client_v1, mode):
 
 
 class ValidatedUser(BaseModel):
-    name: str = Field("User's first name")
+    name: str = Field(description="User's first name")
     age: int
 
     @field_validator("name")
@@ -77,6 +77,7 @@ def test_parse_validated_user_sync(client_v1, mode):
                 "content": "Extract user data from this sentence - Ivan is a 27 year old developer from Singapore",
             }
         ],
+        max_retries=3,
     )
 
     assert resp.name == "IVAN"
