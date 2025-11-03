@@ -287,7 +287,7 @@ def update_genai_kwargs(
     # supported for text based models
     # Exclude JAILBREAK category as it's only for Vertex AI, not google.genai
     excluded_categories = {HarmCategory.HARM_CATEGORY_UNSPECIFIED}
-    if hasattr(HarmCategory, 'HARM_CATEGORY_JAILBREAK'):
+    if hasattr(HarmCategory, "HARM_CATEGORY_JAILBREAK"):
         excluded_categories.add(HarmCategory.HARM_CATEGORY_JAILBREAK)
 
     supported_categories = [
