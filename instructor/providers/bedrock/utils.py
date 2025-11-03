@@ -186,17 +186,17 @@ def _openai_image_part_to_bedrock(part: dict[str, Any]) -> dict[str, Any]:
             if ctype and "/" in ctype:
                 fmt = _normalize_bedrock_image_format(ctype)
             return {"image": {"format": fmt, "source": {"bytes": resp.content}}}
-        except requests.exceptions.Timeout as e:
+        except requests.exceptions.Timeout as e:  # type: ignore[attr-defined]
             raise ValueError(f"Timed out while fetching image from {image_url}") from e
-        except requests.exceptions.ConnectionError as e:
+        except requests.exceptions.ConnectionError as e:  # type: ignore[attr-defined]
             raise ValueError(
                 f"Connection error while fetching image from {image_url}: {e}"
             ) from e
-        except requests.exceptions.HTTPError as e:
+        except requests.exceptions.HTTPError as e:  # type: ignore[attr-defined]
             raise ValueError(
                 f"HTTP error while fetching image from {image_url}: {e}"
             ) from e
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException as e:  # type: ignore[attr-defined]
             raise ValueError(
                 f"Request error while fetching image from {image_url}: {e}"
             ) from e

@@ -3,7 +3,6 @@ from __future__ import annotations  # type: ignore
 from typing import Any, Literal, overload
 import warnings
 
-import boto3
 from botocore.client import BaseClient
 
 import instructor
@@ -12,7 +11,7 @@ from ...core.client import AsyncInstructor, Instructor
 
 @overload  # type: ignore
 def from_bedrock(
-    client: boto3.client,
+    client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
     async_client: Literal[False] = False,
     **kwargs: Any,
@@ -21,7 +20,7 @@ def from_bedrock(
 
 @overload  # type: ignore
 def from_bedrock(
-    client: boto3.client,
+    client: BaseClient,
     mode: instructor.Mode = instructor.Mode.BEDROCK_TOOLS,
     async_client: Literal[True] = True,
     **kwargs: Any,

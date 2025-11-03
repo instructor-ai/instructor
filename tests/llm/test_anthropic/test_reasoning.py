@@ -16,12 +16,13 @@ def test_reasoning():
         messages=[
             {
                 "role": "user",
-                "content": "Which is larger, 9.11 or 9.8",
+                "content": "Which is larger, 9.11 or 9.8? Think carefully about decimal places.",
             },
         ],
-        temperature=1,
+        temperature=0,  # Use temperature=0 for deterministic results
         max_tokens=2000,
         thinking={"type": "enabled", "budget_tokens": 1024},
+        max_retries=3,  # Retry if the model gets it wrong
     )
 
     # Assertions to validate the response
