@@ -37,7 +37,8 @@ from __future__ import annotations
 
 import inspect
 import logging
-from typing import Any, TypeVar, TYPE_CHECKING
+from typing import Any, TypeVar, TYPE_CHECKING, cast
+from collections.abc import AsyncGenerator
 
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
