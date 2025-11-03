@@ -16,19 +16,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: 3.11
-          cache: "poetry"
+          enable-cache: true
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.1
+      - name: Set up Python
+        run: uv python install 3.11
 
       - name: Install dependencies
-        run: poetry install --with dev,anthropic
+        run: uv sync --all-extras --dev
 
       - name: Run all tests
-        run: poetry run pytest tests/
+        run: uv run pytest tests/
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
