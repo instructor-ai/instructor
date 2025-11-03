@@ -54,9 +54,11 @@ class IterableBase:
             json_chunks = extract_json_from_stream_async(json_chunks)
 
         if mode in {Mode.MISTRAL_TOOLS, Mode.VERTEXAI_TOOLS}:
-            return cls.tasks_from_mistral_chunks(json_chunks, **kwargs)
-
-        return cls.tasks_from_chunks_async(json_chunks, **kwargs)
+            async for item in cls.tasks_from_mistral_chunks(json_chunks, **kwargs):
+                yield item
+        else:
+            async for item in cls.tasks_from_chunks_async(json_chunks, **kwargs):
+                yield item
 
     @classmethod
     async def tasks_from_mistral_chunks(
