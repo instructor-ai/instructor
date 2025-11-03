@@ -230,15 +230,12 @@ async def process_response_async(
         and stream
     ):
         # from_streaming_response_async returns an AsyncGenerator
-        # Collect all yielded values into a list
+        # Yield each item as it comes in
         # Note: response type varies by mode (ChatCompletion, AsyncGenerator, etc.)
-        tasks = []
-        async for task in response_model.from_streaming_response_async(  # type: ignore[arg-type]
+        return response_model.from_streaming_response_async(  # type: ignore[return-value]
             cast(AsyncGenerator[Any, None], response),  # type: ignore[arg-type]
             mode=mode,
-        ):
-            tasks.append(task)
-        return tasks  # type: ignore
+        )
 
     model = response_model.from_response(  # type: ignore
         response,

@@ -121,12 +121,12 @@ def test_empty_and_missing_content() -> None:
 
 
 def test_bedrock_invalid_content_format() -> None:
-    """Invalid content types should raise NotImplementedError."""
+    """Invalid content types should raise ValueError."""
     call_kwargs = {
         "messages": [{"role": "user", "content": 12345}]  # Invalid content type
     }
     try:
         _prepare_bedrock_converse_kwargs_internal(call_kwargs)
-        raise AssertionError("Should have raised NotImplementedError")
-    except NotImplementedError as e:
-        assert "Non-text prompts are not currently supported" in str(e)
+        raise AssertionError("Should have raised ValueError")
+    except ValueError as e:
+        assert "Unsupported message content type for Bedrock" in str(e)

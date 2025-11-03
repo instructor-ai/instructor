@@ -177,10 +177,13 @@ class PartialBase(Generic[T_Model]):
 
         if mode == Mode.MD_JSON:
             json_chunks = extract_json_from_stream_async(json_chunks)
-        elif mode == Mode.WRITER_TOOLS:
-            return cls.writer_model_from_chunks_async(json_chunks, **kwargs)
 
-        return cls.model_from_chunks_async(json_chunks, **kwargs)
+        if mode == Mode.WRITER_TOOLS:
+            async for item in cls.writer_model_from_chunks_async(json_chunks, **kwargs):
+                yield item
+        else:
+            async for item in cls.model_from_chunks_async(json_chunks, **kwargs):
+                yield item
 
     @classmethod
     def writer_model_from_chunks(
