@@ -5,6 +5,7 @@ from instructor.dsl.partial import Partial, PartialLiteralMixin
 import pytest
 import instructor
 from openai import OpenAI, AsyncOpenAI
+import os
 
 models = ["gpt-4o-mini"]
 modes = [
@@ -137,6 +138,7 @@ async def test_async_partial_with_whitespace():
     assert model.model_dump() == {"a": None, "b": {"b": 1}}
 
 
+@pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
 def test_summary_extraction():
     class Summary(BaseModel, PartialLiteralMixin):
         summary: str = Field(description="A detailed summary")
@@ -163,6 +165,7 @@ def test_summary_extraction():
     assert updates == 1
 
 
+@pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
 @pytest.mark.asyncio
 async def test_summary_extraction_async():
     class Summary(BaseModel, PartialLiteralMixin):
