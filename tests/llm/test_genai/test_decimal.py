@@ -14,8 +14,8 @@ class Receipt(BaseModel):
     @field_validator("price", "total", mode="before")
     @classmethod
     def parse_decimals(cls, v):
-        if isinstance(v, str):
-            return Decimal(v)
+        if isinstance(v, (str, float, int)):
+            return Decimal(str(v))
         return v
 
 
@@ -26,8 +26,8 @@ class Invoice(BaseModel):
     @field_validator("grand_total", mode="before")
     @classmethod
     def parse_grand_total(cls, v):
-        if isinstance(v, str):
-            return Decimal(v)
+        if isinstance(v, (str, float, int)):
+            return Decimal(str(v))
         return v
 
 
@@ -103,8 +103,8 @@ class SimpleProduct(BaseModel):
     @field_validator("price", mode="before")
     @classmethod
     def parse_price(cls, v):
-        if isinstance(v, str):
-            return Decimal(v)
+        if isinstance(v, (str, float, int)):
+            return Decimal(str(v))
         return v
 
 
