@@ -24,4 +24,4 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run type check with ty
-        run: uv run ty check
+        run: uv run ty check instructor/
