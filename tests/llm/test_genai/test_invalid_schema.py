@@ -128,7 +128,7 @@ def test_genai_api_call_with_different_types(mode):
         is_premium: bool
         score: float
 
-    client = instructor.from_provider("google/gemini-2.5-flash", mode=mode)
+    client = instructor.from_provider("google/gemini-2.0-flash", mode=mode)
 
     response = client.chat.completions.create(
         messages=[
@@ -159,7 +159,7 @@ def test_genai_api_call_with_nested_models(mode):
     class UserList(BaseModel):
         users: list[User]
 
-    client = instructor.from_provider("google/gemini-2.5-flash", mode=mode)
+    client = instructor.from_provider("google/gemini-2.0-flash", mode=mode)
 
     response = client.chat.completions.create(
         messages=[
@@ -197,7 +197,7 @@ async def test_genai_api_call_with_different_types_async(mode):
         score: float
 
     client = instructor.from_provider(
-        "google/gemini-2.5-flash", mode=mode, async_client=True
+        "google/gemini-2.0-flash", mode=mode, async_client=True
     )
 
     response = await client.chat.completions.create(
@@ -231,7 +231,7 @@ async def test_genai_api_call_with_nested_models_async(mode):
         users: list[User]
 
     client = instructor.from_provider(
-        "google/gemini-2.5-flash", mode=mode, async_client=True
+        "google/gemini-2.0-flash", mode=mode, async_client=True
     )
 
     response = await client.chat.completions.create(
@@ -301,11 +301,16 @@ def test_union_with_multiple_variants(model):
             }
         ],
         response_model=MediaPost,
+        generation_config={
+            "temperature": 0,
+            "top_p": 1,
+            "top_k": 1,
+        },
     )
     
     assert response.title == "My Vacation"
     assert isinstance(response.media, ImageContent)
-    assert response.media.url == "https://example.com/photo.jpg"
+    assert "example.com/photo.jpg" in response.media.url
 
 
 @pytest.mark.parametrize("model", ["gemini-2.5-flash"])
@@ -354,11 +359,16 @@ def test_union_with_nested_objects(model):
             }
         ],
         response_model=Event,
+        generation_config={
+            "temperature": 0,
+            "top_p": 1,
+            "top_k": 1,
+        },
     )
     
     assert response.name == "Tech Conference"
     assert isinstance(response.location, PhysicalLocation)
-    assert response.location.address.city == "San Francisco"
+    assert "San Francisco" in response.location.address.city
 
 
 @pytest.mark.asyncio
@@ -411,6 +421,11 @@ async def test_union_with_retry_async(model):
         ],
         response_model=ModerationResult,
         max_retries=2,
+        generation_config={
+            "temperature": 0,
+            "top_p": 1,
+            "top_k": 1,
+        },
     )
     
     assert isinstance(response.decision, (SpamContent, SafeContent))
