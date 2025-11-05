@@ -815,12 +815,15 @@ def handle_genai_structured_outputs(
     """
     Handle Google GenAI structured outputs mode.
 
+    Uses response_json_schema for explicit JSON Schema support with expanded features
+    including anyOf (unions), $ref (recursive schemas), and other JSON Schema keywords.
+
     Kwargs modifications:
     - When response_model is None: Applies handle_genai_message_conversion
     - When response_model is provided:
       - Removes: "messages", "response_model", "generation_config", "safety_settings"
       - Adds: "contents" (GenAI-style messages)
-      - Adds: "config" (GenerateContentConfig with system_instruction, response_mime_type, response_schema)
+      - Adds: "config" (GenerateContentConfig with system_instruction, response_mime_type, response_json_schema)
       - Handles multimodal content extraction
     """
     from google.genai import types
@@ -850,13 +853,12 @@ def handle_genai_structured_outputs(
         new_kwargs["contents"], autodetect_images
     )
 
-    # We validate that the schema doesn't contain any Union fields
-    map_to_gemini_function_schema(_get_model_schema(response_model))
-
+    # including anyOf (unions), $ref (recursive schemas), and other keywords
+    # Ref: https://x.com/googleaistudio/status/1986127034800914543
     base_config = {
         "system_instruction": system_message,
         "response_mime_type": "application/json",
-        "response_schema": response_model,
+        "response_json_schema": _get_model_schema(response_model),
     }
 
     generation_config = update_genai_kwargs(new_kwargs, base_config)
