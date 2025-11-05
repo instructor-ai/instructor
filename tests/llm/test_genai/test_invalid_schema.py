@@ -38,22 +38,51 @@ def test_nested(mode, model):
 
 @pytest.mark.parametrize("mode,model", product(modes, models))
 def test_union(mode, model):
-    """Test that union types raise appropriate error with Gemini."""
+    """Test union type behavior with Gemini.
+    
+    GENAI_STRUCTURED_OUTPUTS mode now supports Union types via response_json_schema
+    (when the SDK supports it), while GENAI_TOOLS mode still rejects them.
+    """
     client = instructor.from_provider(f"google/{model}", mode=mode)
 
     class UserData(BaseModel):
         name: str
         id_value: Union[str, int]
 
-    with pytest.raises(
-        ValueError,
-        match=r"Gemini does not support Union types \(except Optional\)\. Please change your function schema",
-    ):
-        client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": "User name is Alice with ID 12345"}],
-            response_model=UserData,
-        )  # type: ignore
+    if mode == instructor.Mode.GENAI_STRUCTURED_OUTPUTS:
+        from google.genai import types
+        supports_json_schema = hasattr(types.GenerateContentConfig, "__annotations__") and (
+            "response_json_schema" in types.GenerateContentConfig.__annotations__
+        )
+        
+        if supports_json_schema:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": "User name is Alice with ID 12345"}],
+                response_model=UserData,
+            )
+            assert response.name == "Alice"
+            assert response.id_value in [12345, "12345"]
+        else:
+            with pytest.raises(
+                ValueError,
+                match=r"Gemini does not support Union types \(except Optional\)\. Please change your function schema",
+            ):
+                client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": "User name is Alice with ID 12345"}],
+                    response_model=UserData,
+                )
+    else:
+        with pytest.raises(
+            ValueError,
+            match=r"Gemini does not support Union types \(except Optional\)\. Please change your function schema",
+        ):
+            client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": "User name is Alice with ID 12345"}],
+                response_model=UserData,
+            )
 
 
 def test_optional_types_allowed():
