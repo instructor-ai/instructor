@@ -667,7 +667,8 @@ def reask_genai_structured_outputs(
     )
 
     kwargs["contents"].append(
-        types.ModelContent(
+        types.Content(
+            role="user",
             parts=[
                 types.Part.from_text(
                     text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors in the following attempt:\n{genai_response}"
@@ -853,13 +854,27 @@ def handle_genai_structured_outputs(
         new_kwargs["contents"], autodetect_images
     )
 
-    # including anyOf (unions), $ref (recursive schemas), and other keywords
+    # otherwise fall back to response_schema for backward compatibility
     # Ref: https://x.com/googleaistudio/status/1986127034800914543
-    base_config = {
-        "system_instruction": system_message,
-        "response_mime_type": "application/json",
-        "response_json_schema": _get_model_schema(response_model),
-    }
+    supports_json_schema = hasattr(types.GenerateContentConfig, "__annotations__") and (
+        "response_json_schema" in types.GenerateContentConfig.__annotations__
+    )
+
+    if supports_json_schema:
+        # including anyOf (unions), $ref (recursive schemas), and other keywords
+        base_config = {
+            "system_instruction": system_message,
+            "response_mime_type": "application/json",
+            "response_json_schema": _get_model_schema(response_model),
+        }
+    else:
+        # Fallback path: use response_schema with union validation for older SDKs
+        map_to_gemini_function_schema(_get_model_schema(response_model))
+        base_config = {
+            "system_instruction": system_message,
+            "response_mime_type": "application/json",
+            "response_schema": response_model,
+        }
 
     generation_config = update_genai_kwargs(new_kwargs, base_config)
 
