@@ -38,7 +38,7 @@ class ModerationResult(BaseModel):
 
 def main():
     client = instructor.from_provider(
-        "google/gemini-2.0-flash-exp",
+        "google/gemini-2.5-flash",
         mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
     )
 
@@ -48,7 +48,7 @@ Content: 'Congratulations! You've won a free cruise to the Bahamas. Click here t
 """
 
     result = client.chat.completions.create(
-        model="gemini-2.0-flash-exp",
+        model="gemini-2.5-flash",
         response_model=ModerationResult,
         messages=[{"role": "user", "content": prompt}],
     )

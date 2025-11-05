@@ -280,10 +280,135 @@ for user in users:
 We provide several modes to make it easy to work with the different response models that Gemini supports:
 
 1. `instructor.Mode.GENAI_TOOLS` : This uses Gemini's tool calling API to return structured outputs (default)
-2. `instructor.Mode.GENAI_STRUCTURED_OUTPUTS` : This uses Gemini's JSON schema mode for structured outputs
+2. `instructor.Mode.GENAI_STRUCTURED_OUTPUTS` : This uses Gemini's JSON schema mode for structured outputs with enhanced support for Union types, recursive schemas, and more
 
 !!! info "Mode Selection"
     When using `from_provider`, the appropriate mode is automatically selected based on the provider and model capabilities.
+
+## Enhanced Structured Outputs with Union Types
+
+Google recently announced improvements to structured outputs in the Gemini API, including expanded JSON Schema support. Instructor now supports these new features in `GENAI_STRUCTURED_OUTPUTS` mode, including:
+
+- **Union types (anyOf)**: Support for discriminated unions and conditional structures
+- **Recursive schemas ($ref)**: Support for self-referential data structures
+- **Property ordering**: Implicit preservation of key order in schemas
+- **Enhanced validation**: Automatic retry with error feedback when validation fails
+
+### Union Types Example
+
+Union types allow you to define models that can be one of several different types. This is particularly useful for content moderation, event handling, and other scenarios where the response structure varies based on the input.
+
+```python
+import instructor
+from pydantic import BaseModel, Field
+from typing import Union, Literal
+
+
+class SpamDetails(BaseModel):
+    """Details for content classified as spam."""
+    type: Literal["spam"] = "spam"
+    reason: str = Field(description="The reason why the content is considered spam.")
+    spam_type: Literal["phishing", "scam", "unsolicited promotion", "other"]
+
+
+class SafeDetails(BaseModel):
+    """Details for content classified as safe."""
+    type: Literal["safe"] = "safe"
+    summary: str = Field(description="A brief summary of the content.")
+    is_safe: bool = Field(description="Whether the content is safe for all audiences.")
+
+
+class ModerationResult(BaseModel):
+    """The result of content moderation."""
+    decision: Union[SpamDetails, SafeDetails]
+
+
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+)
+
+result = client.chat.completions.create(
+    model="gemini-2.5-flash",
+    response_model=ModerationResult,
+    messages=[
+        {
+            "role": "user",
+            "content": "Moderate this: 'Congratulations! You've won a free cruise. Click here to claim your prize: www.definitely-not-a-scam.com'"
+        }
+    ],
+)
+
+print(f"Decision type: {type(result.decision).__name__}")
+if isinstance(result.decision, SpamDetails):
+    print(f"Classification: SPAM")
+    print(f"Reason: {result.decision.reason}")
+    print(f"Spam Type: {result.decision.spam_type}")
+else:
+    print(f"Classification: SAFE")
+    print(f"Summary: {result.decision.summary}")
+```
+
+### Complex Union Types
+
+You can also use Union types with multiple variants (3+) and nested objects:
+
+```python
+import instructor
+from pydantic import BaseModel
+from typing import Union, Literal, Optional
+
+
+class TextContent(BaseModel):
+    type: Literal["text"] = "text"
+    content: str
+
+
+class ImageContent(BaseModel):
+    type: Literal["image"] = "image"
+    url: str
+    alt_text: Optional[str] = None
+
+
+class VideoContent(BaseModel):
+    type: Literal["video"] = "video"
+    url: str
+    duration: int
+
+
+class MediaPost(BaseModel):
+    title: str
+    media: Union[TextContent, ImageContent, VideoContent]
+
+
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+)
+
+response = client.chat.completions.create(
+    model="gemini-2.5-flash",
+    messages=[
+        {
+            "role": "user",
+            "content": "Create a post with title 'My Vacation' and an image at https://example.com/photo.jpg",
+        }
+    ],
+    response_model=MediaPost,
+)
+
+print(f"Title: {response.title}")
+print(f"Media type: {response.media.type}")
+if isinstance(response.media, ImageContent):
+    print(f"Image URL: {response.media.url}")
+```
+
+### Important Notes
+
+- Union type support is available in `GENAI_STRUCTURED_OUTPUTS` mode with the latest `google-genai` SDK
+- The `GENAI_TOOLS` mode does not support Union types (except `Optional`)
+- Use discriminator fields (like `type: Literal["spam"]`) to help the model distinguish between union variants
+- Instructor automatically handles retry/reask when validation fails
 
 ## Available Models
 

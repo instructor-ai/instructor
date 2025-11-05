@@ -128,7 +128,7 @@ def test_genai_api_call_with_different_types(mode):
         is_premium: bool
         score: float
 
-    client = instructor.from_provider("google/gemini-2.0-flash", mode=mode)
+    client = instructor.from_provider("google/gemini-2.5-flash", mode=mode)
 
     response = client.chat.completions.create(
         messages=[
@@ -159,7 +159,7 @@ def test_genai_api_call_with_nested_models(mode):
     class UserList(BaseModel):
         users: list[User]
 
-    client = instructor.from_provider("google/gemini-2.0-flash", mode=mode)
+    client = instructor.from_provider("google/gemini-2.5-flash", mode=mode)
 
     response = client.chat.completions.create(
         messages=[
@@ -197,7 +197,7 @@ async def test_genai_api_call_with_different_types_async(mode):
         score: float
 
     client = instructor.from_provider(
-        "google/gemini-2.0-flash", mode=mode, async_client=True
+        "google/gemini-2.5-flash", mode=mode, async_client=True
     )
 
     response = await client.chat.completions.create(
@@ -231,7 +231,7 @@ async def test_genai_api_call_with_nested_models_async(mode):
         users: list[User]
 
     client = instructor.from_provider(
-        "google/gemini-2.0-flash", mode=mode, async_client=True
+        "google/gemini-2.5-flash", mode=mode, async_client=True
     )
 
     response = await client.chat.completions.create(
@@ -253,3 +253,166 @@ async def test_genai_api_call_with_nested_models_async(mode):
         "Engineering",
         "Marketing",
     }
+
+
+@pytest.mark.parametrize("model", ["gemini-2.5-flash"])
+def test_union_with_multiple_variants(model):
+    """Test Union types with multiple variants (3+) in GENAI_STRUCTURED_OUTPUTS mode."""
+    from google.genai import types
+    
+    supports_json_schema = hasattr(types.GenerateContentConfig, "__annotations__") and (
+        "response_json_schema" in types.GenerateContentConfig.__annotations__
+    )
+    
+    if not supports_json_schema:
+        pytest.skip("response_json_schema not supported in this SDK version")
+    
+    from typing import Literal
+    
+    class TextContent(BaseModel):
+        type: Literal["text"] = "text"
+        content: str
+    
+    class ImageContent(BaseModel):
+        type: Literal["image"] = "image"
+        url: str
+        alt_text: Optional[str] = None
+    
+    class VideoContent(BaseModel):
+        type: Literal["video"] = "video"
+        url: str
+        duration: int
+    
+    class MediaPost(BaseModel):
+        title: str
+        media: Union[TextContent, ImageContent, VideoContent]
+    
+    client = instructor.from_provider(
+        f"google/{model}",
+        mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+    
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": "Create a post with title 'My Vacation' and an image at https://example.com/photo.jpg",
+            }
+        ],
+        response_model=MediaPost,
+    )
+    
+    assert response.title == "My Vacation"
+    assert isinstance(response.media, ImageContent)
+    assert response.media.url == "https://example.com/photo.jpg"
+
+
+@pytest.mark.parametrize("model", ["gemini-2.5-flash"])
+def test_union_with_nested_objects(model):
+    """Test Union types with nested objects in GENAI_STRUCTURED_OUTPUTS mode."""
+    from google.genai import types
+    
+    supports_json_schema = hasattr(types.GenerateContentConfig, "__annotations__") and (
+        "response_json_schema" in types.GenerateContentConfig.__annotations__
+    )
+    
+    if not supports_json_schema:
+        pytest.skip("response_json_schema not supported in this SDK version")
+    
+    from typing import Literal
+    
+    class Address(BaseModel):
+        street: str
+        city: str
+        country: str
+    
+    class PhysicalLocation(BaseModel):
+        type: Literal["physical"] = "physical"
+        address: Address
+    
+    class VirtualLocation(BaseModel):
+        type: Literal["virtual"] = "virtual"
+        url: str
+        platform: str
+    
+    class Event(BaseModel):
+        name: str
+        location: Union[PhysicalLocation, VirtualLocation]
+    
+    client = instructor.from_provider(
+        f"google/{model}",
+        mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+    
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": "Create an event called 'Tech Conference' at 123 Main St, San Francisco, USA",
+            }
+        ],
+        response_model=Event,
+    )
+    
+    assert response.name == "Tech Conference"
+    assert isinstance(response.location, PhysicalLocation)
+    assert response.location.address.city == "San Francisco"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("model", ["gemini-2.5-flash"])
+async def test_union_with_retry_async(model):
+    """Test Union types with retry/reask mechanism in GENAI_STRUCTURED_OUTPUTS mode."""
+    from google.genai import types
+    
+    supports_json_schema = hasattr(types.GenerateContentConfig, "__annotations__") and (
+        "response_json_schema" in types.GenerateContentConfig.__annotations__
+    )
+    
+    if not supports_json_schema:
+        pytest.skip("response_json_schema not supported in this SDK version")
+    
+    from typing import Literal
+    from pydantic import field_validator
+    
+    class SpamContent(BaseModel):
+        type: Literal["spam"] = "spam"
+        reason: str
+        
+        @field_validator("reason")
+        @classmethod
+        def reason_must_be_detailed(cls, v):
+            if len(v) < 10:
+                raise ValueError("Reason must be at least 10 characters")
+            return v
+    
+    class SafeContent(BaseModel):
+        type: Literal["safe"] = "safe"
+        summary: str
+    
+    class ModerationResult(BaseModel):
+        decision: Union[SpamContent, SafeContent]
+    
+    client = instructor.from_provider(
+        f"google/{model}",
+        mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+        async_client=True,
+    )
+    
+    response = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": "Moderate this: 'Buy cheap watches now!'",
+            }
+        ],
+        response_model=ModerationResult,
+        max_retries=2,
+    )
+    
+    assert isinstance(response.decision, (SpamContent, SafeContent))
+    if isinstance(response.decision, SpamContent):
+        assert len(response.decision.reason) >= 10
