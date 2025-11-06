@@ -50,7 +50,6 @@ import time
 
 # Initialize the client
 client = instructor.from_provider("google/gemini-2.5-flash")
-)
 
 
 # Define your output structure
