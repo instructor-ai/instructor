@@ -16,7 +16,7 @@ from instructor.templating import handle_templating
 from instructor.utils import is_async
 from instructor.v2.core.mode_types import ModeType, Provider
 from instructor.v2.core.registry import mode_registry
-from instructor.v2.core.retry import retry_sync_v2
+from instructor.v2.core.retry import retry_async_v2, retry_sync_v2
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -198,16 +198,17 @@ def _create_async_wrapper(
             context=context,
         )
 
-        # Use v1 retry logic (reuses existing retry infrastructure)
-        response = await retry_async(
+        # Use v2 retry logic with registry handlers
+        response = await retry_async_v2(
             func=func,
             response_model=response_model,
+            provider=provider,
+            mode_type=mode_type,
             context=context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
             strict=strict,
-            mode=(provider, mode_type),  # Pass as tuple
             hooks=hooks,
         )
 
