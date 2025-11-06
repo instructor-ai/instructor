@@ -165,6 +165,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Configuration**: Uses `pyproject.toml` settings for type checking
 - Run `uv run ty check` before committing - aim for zero errors
 
+### Code Quality Checks Before Committing
+Always run these checks before committing code:
+1. **Ruff linting**: `uv run ruff check .` - Fix all errors
+2. **Ruff formatting**: `uv run ruff format .` - Apply consistent formatting
+3. **Type checking**: `uv run ty check` - Aim for zero type errors
+4. **Tests**: Run relevant tests to ensure changes don't break functionality
+
 ### Type Patterns
 - **Bounded TypeVars**: Use `T = TypeVar("T", bound=Union[BaseModel, ...])` for constraints
 - **Version Compatibility**: Handle Python 3.9 vs 3.10+ typing differences explicitly
