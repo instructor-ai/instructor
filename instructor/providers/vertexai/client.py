@@ -17,12 +17,34 @@ def _create_gemini_json_schema(model: BaseModel):
 
     schema = model.model_json_schema()
     schema_without_refs: dict[str, Any] = jsonref.replace_refs(schema)  # type: ignore
+
+    required_fields: list[str] = []
+    if "required" in schema_without_refs:
+        raw_required = schema_without_refs["required"]
+        if isinstance(raw_required, (list, tuple, set)):
+            required_fields = list(raw_required)
+        elif raw_required is None:
+            required_fields = []
+        else:
+            required_fields = list(raw_required)  # type: ignore[arg-type]
+
+    properties = schema_without_refs.get("properties", {})
+
+    if "tasks" in properties and properties["tasks"].get("type") == "array":
+        # Vertex AI rejects function declarations when array-valued wrapper fields
+        # are marked as required. Iterable models expose their payload through a
+        # top-level `tasks` array. When this field is required the Vertex AI
+        # service returns: `INVALID_ARGUMENT: Function parameters with required
+        # array fields are not supported`. We strip it from the required list to
+        # keep Iterable streaming compatible while the platform limitation
+        # persists. Callers can still enforce non-empty collections via
+        # minItems in the schema.
+        required_fields = [field for field in required_fields if field != "tasks"]
+
     gemini_schema: dict[Any, Any] = {
         "type": schema_without_refs["type"],
-        "properties": schema_without_refs["properties"],
-        "required": (
-            schema_without_refs["required"] if "required" in schema_without_refs else []
-        ),  # TODO: Temporary Fix for Iterables which throw an error when their tasks field is specified in the required field
+        "properties": properties,
+        "required": required_fields,
     }
     return gemini_schema
 

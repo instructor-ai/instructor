@@ -74,6 +74,24 @@ def _extract_text_content(completion: Any) -> str:
     return ""
 
 
+def _normalize_anthropic_content(value: Any) -> Any:
+    """Convert Anthropic content blocks into JSON-serializable data."""
+    # Anthropic SDK objects are pydantic models and provide model_dump
+    if hasattr(value, "model_dump"):
+        try:
+            return value.model_dump(mode="json")
+        except TypeError:
+            return value.model_dump()
+
+    if isinstance(value, dict):
+        return {k: _normalize_anthropic_content(v) for k, v in value.items()}
+
+    if isinstance(value, (list, tuple, set)):
+        return [_normalize_anthropic_content(v) for v in value]
+
+    return value
+
+
 def _validate_model_from_json(
     cls: type[Model],
     json_str: str,
@@ -298,8 +316,7 @@ class OpenAISchema(BaseModel):
             # V2 responses may have multiple content items (thinking, text, etc.)
             content_items = completion.message.content
             if content_items and len(content_items) > 0:
-                # Find the text content item (skip thinking/other types)
-                # TODO handle these other content types
+                # Find the text content item (skip thinking/other supported types)
                 text = None
                 for item in content_items:
                     if (
@@ -309,6 +326,15 @@ class OpenAISchema(BaseModel):
                     ):
                         text = item.text
                         break
+                    # Ignore multimodal payloads (images/audio/tool output) that
+                    # Cohere may include alongside text.
+                    if hasattr(item, "type") and item.type in {
+                        "image",
+                        "tool_execution",
+                        "tool_result",
+                        "audio",
+                    }:
+                        continue
 
                 if text is None:
                     raise ValueError("Cohere V2 response has no text content item")
@@ -334,10 +360,24 @@ class OpenAISchema(BaseModel):
         if isinstance(completion, Message) and completion.stop_reason == "max_tokens":
             raise IncompleteOutputException(last_completion=completion)
 
-        # Anthropic returns arguments as a dict, dump to json for model validation below
-        tool_calls = [
-            json.dumps(c.input) for c in completion.content if c.type == "tool_use"
-        ]  # TODO update with anthropic specific types
+        tool_calls = []
+
+        for block in completion.content:
+            if getattr(block, "type", None) != "tool_use":
+                # Skip text, image, audio, and tool_result blocks — they are not
+                # part of the tool invocation payload.
+                continue
+
+            normalized_input = _normalize_anthropic_content(getattr(block, "input", {}))
+
+            try:
+                tool_calls.append(json.dumps(normalized_input))
+            except TypeError as exc:
+                raise TypeError(
+                    "Unable to serialize Anthropic tool input. Ensure image/audio "
+                    "blocks are converted to base64 data URIs via instructor's "
+                    "multimodal helpers."
+                ) from exc
 
         tool_calls_validator = TypeAdapter(
             Annotated[list[Any], Field(min_length=1, max_length=1)]
