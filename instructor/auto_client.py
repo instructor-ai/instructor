@@ -4,7 +4,6 @@ from .core.client import AsyncInstructor, Instructor
 import instructor
 from instructor.models import KnownModelName
 from instructor.cache import BaseCache
-import warnings
 import logging
 
 # Type alias for the return type
@@ -265,6 +264,7 @@ def from_provider(
     elif provider == "anthropic":
         try:
             import anthropic
+            import warnings
             from instructor.v2 import from_anthropic as from_anthropic_v2, ModeType
 
             # Route Anthropic to v2 registry system
@@ -273,16 +273,35 @@ def from_provider(
                 if async_client
                 else anthropic.Anthropic(api_key=api_key)
             )
-            max_tokens = kwargs.pop("max_tokens", 4096)
 
             # Convert v1 Mode to v2 ModeType if needed
             # Default to TOOLS mode
             mode_type = ModeType.TOOLS
             if mode is not None:
-                # Map v1 modes to v2 mode types
+                # Map v1 modes to v2 mode types with deprecation warnings
                 if mode == instructor.Mode.ANTHROPIC_TOOLS:
+                    warnings.warn(
+                        "Mode.ANTHROPIC_TOOLS is deprecated. Use ModeType.TOOLS from instructor.v2 instead:\n"
+                        "  from instructor.v2 import ModeType\n"
+                        "  from_provider('anthropic/...', mode_type=ModeType.TOOLS)",
+                        DeprecationWarning,
+                        stacklevel=2,
+                    )
                     mode_type = ModeType.TOOLS
                 elif mode == instructor.Mode.ANTHROPIC_JSON:
+                    warnings.warn(
+                        "Mode.ANTHROPIC_JSON is deprecated. Use ModeType.JSON from instructor.v2 instead:\n"
+                        "  from instructor.v2 import ModeType\n"
+                        "  from_provider('anthropic/...', mode_type=ModeType.JSON)",
+                        DeprecationWarning,
+                        stacklevel=2,
+                    )
+                    mode_type = ModeType.JSON
+                elif mode == instructor.Mode.TOOLS:
+                    # Generic TOOLS mode is fine, no deprecation warning
+                    mode_type = ModeType.TOOLS
+                elif mode == instructor.Mode.JSON:
+                    # Generic JSON mode is fine, no deprecation warning
                     mode_type = ModeType.JSON
                 # Note: REASONING_TOOLS and PARALLEL_TOOLS not yet implemented in v2
 
