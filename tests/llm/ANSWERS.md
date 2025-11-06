@@ -47,34 +47,38 @@ uv run pytest tests/llm/test_core_providers/test_basic_extraction.py --collect-o
 
 ### Truly Provider-Specific Tests (Should Stay Separate)
 
-#### ✅ OpenAI-Specific (3 files)
+#### ✅ OpenAI-Specific (3 files → 2 files)
 1. **test_hooks.py** - OpenAI hook system (`instructor.hooks`)
-2. **test_multimodal.py** - OpenAI vision/multimodal API (different from others)
-3. **test_validation_context.py** - OpenAI-specific validation context
+2. **test_validation_context.py** - OpenAI-specific validation context
+3. **test_multimodal.py** - **PARTIALLY** - only Audio tests are OpenAI-specific
+   - ✅ Image tests → MOVE TO CORE (unified API)
+   - ❌ Audio tests → KEEP (OpenAI has audio models)
 
-#### ✅ Anthropic-Specific (3 files)
+#### ✅ Anthropic-Specific (3 files → 2 files)
 1. **test_reasoning.py** - `thinking` parameter, `ANTHROPIC_REASONING_TOOLS` mode
 2. **test_system.py** - Anthropic's unique system prompt handling
-3. **test_multimodal.py** - Anthropic multimodal API (different format than OpenAI/Google)
+3. **test_multimodal.py** - **PARTIALLY** - only PDF cache control is Anthropic-specific
+   - ✅ Image tests → MOVE TO CORE (unified API)
+   - ❌ PDF with cache control → KEEP (Anthropic-specific feature)
 
-#### ✅ Google-Specific (6 files)
+#### ✅ Google-Specific (6 files → 5 files)
 1. **test_schema_conversion.py** - Google's schema conversion quirks
 2. **test_format.py** - Google-specific format handling
 3. **test_decimal.py** - Google's decimal number handling issues
 4. **test_invalid_schema.py** - Google schema validation errors
-5. **test_multimodal.py** - Google multimodal API (different from others)
-6. **test_utils.py** - Google-specific utilities
+5. **test_utils.py** - Google-specific utilities
+6. **test_multimodal.py** - **MOVE TO CORE** (uses same unified API)
 
-#### ✅ Gemini-Specific (3 files + evals)
+#### ✅ Gemini-Specific (3 files + evals → 2 files + evals)
 1. **test_list_content.py** - Gemini list content formatting
-2. **test_multimodal_content.py** - Gemini multimodal content structure
-3. **evals/** - Model capability evaluation tests
+2. **evals/** - Model capability evaluation tests
+3. **test_multimodal_content.py** - **REVIEW** - may be same as genai multimodal
 
 #### ✅ Cohere-Specific (1 file)
 1. **test_json_schema.py** - `COHERE_JSON_SCHEMA` mode
 
-#### ✅ Mistral-Specific (1 file)
-1. **test_multimodal.py** - Mistral multimodal API
+#### ✅ Mistral-Specific (1 file → 0 files)
+1. **test_multimodal.py** - **MOVE TO CORE** (if Mistral supports multimodal)
 
 #### ✅ Writer-Specific (1 directory)
 1. **evals/** - Model capability evaluation tests

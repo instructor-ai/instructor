@@ -17,6 +17,7 @@ These tests verify that core instructor functionality works consistently across 
 - **test_validation.py** - Validators, field constraints, custom validation
 - **test_retries.py** - Retry logic and max_retries parameter
 - **test_response_modes.py** - Different client methods (create, messages.create, etc.)
+- **test_multimodal.py** - Image description with unified `Image.from_url()` API ✨ NEW
 
 ### Provider-Specific Tests
 
