@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 - Install deps: `uv pip install -e ".[dev,anthropic]"` or `poetry install --with dev,anthropic`
-- Run tests: `uv run pytest tests/`
+- Run tests: `uv run pytest tests/ -n auto`
 - Run specific test: `uv run pytest tests/path_to_test.py::test_name`
 - Skip LLM tests: `uv run pytest tests/ -k 'not llm and not openai'`
 - Type check: `uv run ty check`

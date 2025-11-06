@@ -157,7 +157,7 @@ def from_xai(
                 parameters=_get_model_schema(response_model),
             )
             chat.proto.tools.append(tool)
-            chat.proto.tool_choice.mode = xchat.chat_pb2.ToolMode.TOOL_MODE_AUTO
+            chat.proto.tool_choice.CopyFrom(xchat.required_tool(tool.function.name))
             if is_stream:
                 args = (
                     resp.tool_calls[0].function.arguments
@@ -175,6 +175,34 @@ def from_xai(
                     )
             else:
                 resp = await chat.sample()
+                if not resp.tool_calls:
+                    # If no tool calls, try to extract from text content
+                    from ...processing.function_calls import _validate_model_from_json
+                    from ...utils import extract_json_from_codeblock
+
+                    # Try to extract JSON from text content
+                    text_content = ""
+                    if hasattr(resp, "text") and resp.text:
+                        text_content = resp.text
+                    elif hasattr(resp, "content") and resp.content:
+                        if isinstance(resp.content, str):
+                            text_content = resp.content
+                        elif isinstance(resp.content, list) and resp.content:
+                            text_content = str(resp.content[0])
+
+                    if text_content:
+                        json_str = extract_json_from_codeblock(text_content)
+                        parsed = _validate_model_from_json(
+                            response_model, json_str, None, strict
+                        )
+                        parsed._raw_response = resp
+                        return parsed
+
+                    raise ValueError(
+                        f"No tool calls returned from xAI and no text content available. "
+                        f"Response: {resp}"
+                    )
+
                 args = resp.tool_calls[0].function.arguments
                 from ...processing.function_calls import _validate_model_from_json
 
@@ -239,7 +267,7 @@ def from_xai(
                 parameters=_get_model_schema(response_model),
             )
             chat.proto.tools.append(tool)
-            chat.proto.tool_choice.mode = xchat.chat_pb2.ToolMode.TOOL_MODE_AUTO
+            chat.proto.tool_choice.CopyFrom(xchat.required_tool(tool.function.name))
             if is_stream:
                 for resp, _ in chat.stream():
                     # For xAI, tool_calls are returned at the end of the response.
@@ -258,6 +286,34 @@ def from_xai(
                             )
             else:
                 resp = chat.sample()
+                if not resp.tool_calls:
+                    # If no tool calls, try to extract from text content
+                    from ...processing.function_calls import _validate_model_from_json
+                    from ...utils import extract_json_from_codeblock
+
+                    # Try to extract JSON from text content
+                    text_content = ""
+                    if hasattr(resp, "text") and resp.text:
+                        text_content = resp.text
+                    elif hasattr(resp, "content") and resp.content:
+                        if isinstance(resp.content, str):
+                            text_content = resp.content
+                        elif isinstance(resp.content, list) and resp.content:
+                            text_content = str(resp.content[0])
+
+                    if text_content:
+                        json_str = extract_json_from_codeblock(text_content)
+                        parsed = _validate_model_from_json(
+                            response_model, json_str, None, strict
+                        )
+                        parsed._raw_response = resp
+                        return parsed
+
+                    raise ValueError(
+                        f"No tool calls returned from xAI and no text content available. "
+                        f"Response: {resp}"
+                    )
+
                 args = resp.tool_calls[0].function.arguments
                 from ...processing.function_calls import _validate_model_from_json
 

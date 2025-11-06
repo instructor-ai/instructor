@@ -8,6 +8,8 @@ from pydantic import BaseModel
 import pytest
 import instructor
 
+from .capabilities import skip_if_unsupported
+
 
 class Task(BaseModel):
     title: str
@@ -75,6 +77,7 @@ def test_messages_create_method(provider_config):
 
 def test_create_with_completion(provider_config):
     """Test create_with_completion() returns both model and raw response."""
+    skip_if_unsupported(provider_config, "create_with_completion")
     model, mode = provider_config
     client = instructor.from_provider(model, mode=mode)
 
@@ -96,6 +99,7 @@ def test_create_with_completion(provider_config):
 
 def test_response_model_none(provider_config):
     """Test that response_model=None returns raw response."""
+    skip_if_unsupported(provider_config, "response_model_none")
     model, mode = provider_config
     client = instructor.from_provider(model, mode=mode)
 
@@ -133,6 +137,7 @@ async def test_async_create_method(provider_config):
 @pytest.mark.asyncio
 async def test_async_create_with_completion(provider_config):
     """Test async create_with_completion() method."""
+    skip_if_unsupported(provider_config, "create_with_completion")
     model, mode = provider_config
     client = instructor.from_provider(model, mode=mode, async_client=True)
 
@@ -154,6 +159,7 @@ async def test_async_create_with_completion(provider_config):
 @pytest.mark.asyncio
 async def test_async_response_model_none(provider_config):
     """Test async with response_model=None."""
+    skip_if_unsupported(provider_config, "response_model_none")
     model, mode = provider_config
     client = instructor.from_provider(model, mode=mode, async_client=True)
 
