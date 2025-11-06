@@ -52,7 +52,7 @@ class Recommendations(BaseModel):
 Next, we'll set up our Gemini client using Instructor:
 
 ```python
-client = instructor.from_provider("google/gemini-2.5-flash"),
+client = instructor.from_provider("google/gemini-2.5-flash")
 )
 ```
 
