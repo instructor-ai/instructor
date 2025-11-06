@@ -64,7 +64,7 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_provider("google/gemini-2.5-flash")!
+client = instructor.from_provider("google/gemini-2.5-flash")
     )
 )
 
