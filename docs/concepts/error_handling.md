@@ -123,6 +123,8 @@ except ClientError as e:
 
 ### 1. Catch Specific Exceptions When Possible
 
+Prefer catching specific exception types instead of generic `Exception` or `InstructorError`:
+
 ```python
 from instructor.core.exceptions import (
     IncompleteOutputException,
@@ -147,6 +149,8 @@ except ValidationError as e:
 ```
 
 ### 2. Use the Base Exception for General Error Handling
+
+When you need to catch all Instructor errors but handle them uniformly:
 
 ```python
 from instructor.core.exceptions import InstructorError
@@ -180,6 +184,8 @@ def create_client(provider: str, mode: str = None):
 ```
 
 ### 4. Logging and Monitoring
+
+Use structured logging with exception context:
 
 ```python
 import logging
@@ -230,6 +236,23 @@ def extract_with_fallback(content: str):
         return None
 ```
 
+### 6. Exception Message Context
+
+Instructor exceptions include helpful context in their messages:
+
+- **InstructorRetryException**: Automatically includes model name, attempt count, and last error when no explicit message is provided
+- **ProviderError**: Always includes provider name
+- **ModeError**: Includes invalid mode, provider, and valid alternatives
+
+```python
+# InstructorRetryException with enhanced context
+try:
+    response = client.chat.completions.create(...)
+except InstructorRetryException as e:
+    # Error message includes: "Failed after 3 attempt(s) with model 'gpt-4'. Last error: ..."
+    print(f"Model: {e.create_kwargs.get('model')}, Attempts: {e.n_attempts}")
+```
+
 ## Integration with Hooks
 
 Instructor's hooks system can be used to monitor and handle errors programmatically:
@@ -278,6 +301,50 @@ try:
     )
 except ModeError as e:
     print(f"Use one of these modes instead: {e.valid_modes}")
+```
+
+## Error Message Format
+
+Instructor exceptions follow a consistent format for better debugging:
+
+- **What failed**: Clear description of the operation that failed
+- **Why it failed**: Specific error details or validation issues
+- **Context**: Provider name, model name, mode, or operation details when available
+- **Actionable guidance**: Suggestions for fixing the issue when applicable
+
+Exception messages automatically include relevant context:
+
+```python
+# InstructorRetryException example
+# Message: "Failed after 3 attempt(s) with model 'gpt-4'. Last error: Validation failed"
+
+# ProviderError example  
+# Message: "anthropic: Rate limit exceeded"
+
+# ModeError example
+# Message: "Invalid mode 'invalid_mode' for provider 'openai'. Valid modes: json, tools"
+```
+
+## Exception Handling Guidelines
+
+### Specific vs Generic Exception Handling
+
+- **Prefer specific exceptions**: Catch `ValidationError`, `IncompleteOutputException`, etc. when you know what error to expect
+- **Use base exception sparingly**: Catch `InstructorError` when you need to handle all Instructor errors uniformly
+- **Avoid bare Exception**: Never catch bare `Exception` unless you're handling truly unexpected errors and logging them
+
+### Exception Context Preservation
+
+Instructor exceptions preserve context through chaining:
+
+```python
+try:
+    # Some operation
+    pass
+except ValueError as e:
+    # Wrap in InstructorError while preserving original exception
+    raise InstructorError("Operation failed") from e
+    # The original exception is accessible via e.__cause__
 ```
 
 ## See Also

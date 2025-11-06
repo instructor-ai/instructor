@@ -588,3 +588,100 @@ def test_failed_attempts_exception_chaining():
         assert chained_error.failed_attempts == original_attempts
         assert len(chained_error.failed_attempts) == 1
         assert chained_error.failed_attempts[0].exception.args[0] == "Original failure"
+
+
+def test_instructor_retry_exception_enhanced_message():
+    """Test that InstructorRetryException includes enhanced context in message."""
+    create_kwargs = {"model": "gpt-4", "temperature": 0.7}
+    failed_attempts = [
+        FailedAttempt(1, ValueError("Validation failed"), None)
+    ]
+
+    # Test with no explicit message - should auto-generate enhanced message
+    exc = InstructorRetryException(
+        n_attempts=3,
+        total_usage=100,
+        create_kwargs=create_kwargs,
+        failed_attempts=failed_attempts,
+    )
+
+    error_str = str(exc)
+    assert "Failed after 3 attempt(s)" in error_str
+    assert "model 'gpt-4'" in error_str
+    assert "Validation failed" in error_str
+
+    # Test with explicit message - should use provided message
+    exc_explicit = InstructorRetryException(
+        "Custom error message",
+        n_attempts=2,
+        total_usage=50,
+        create_kwargs=create_kwargs,
+        failed_attempts=failed_attempts,
+    )
+    assert str(exc_explicit) == "Custom error message"
+
+
+def test_exception_message_consistency():
+    """Test that exception messages follow consistent format."""
+    # ProviderError should include provider name
+    provider_error = ProviderError("anthropic", "Rate limit exceeded")
+    assert "anthropic" in str(provider_error)
+    assert "Rate limit exceeded" in str(provider_error)
+
+    # ModeError should include mode and provider
+    mode_error = ModeError("invalid_mode", "openai", ["json", "tools"])
+    error_str = str(mode_error)
+    assert "Invalid mode 'invalid_mode'" in error_str
+    assert "provider 'openai'" in error_str
+    assert "json, tools" in error_str
+
+
+def test_exception_context_preservation():
+    """Test that exception context is preserved through exception chaining."""
+    original_error = ValueError("Original error")
+    
+    # Test InstructorError.from_exception preserves context
+    instructor_error = InstructorError.from_exception(original_error)
+    assert str(instructor_error) == "Original error"
+    
+    # Test that exceptions can be chained with 'from'
+    try:
+        raise original_error
+    except ValueError as e:
+        chained = InstructorError("Wrapped error") from e
+        assert chained.__cause__ == e
+        assert str(chained.__cause__) == "Original error"
+
+
+def test_exception_with_minimal_context():
+    """Test exceptions work correctly with minimal or missing context."""
+    # InstructorRetryException with minimal kwargs
+    minimal_exc = InstructorRetryException(
+        n_attempts=1,
+        total_usage=0,
+        create_kwargs=None,
+        failed_attempts=None,
+    )
+    assert minimal_exc.n_attempts == 1
+    assert minimal_exc.total_usage == 0
+    assert minimal_exc.create_kwargs is None
+    
+    # Should still generate a message even without context
+    error_str = str(minimal_exc)
+    assert "Failed after 1 attempt(s)" in error_str
+    assert "model 'unknown'" in error_str
+
+
+def test_validation_error_context():
+    """Test that ValidationError can include context and failed attempts."""
+    failed_attempts = [
+        FailedAttempt(1, ValueError("Field validation failed"), None)
+    ]
+    
+    validation_error = ValidationError(
+        "Validation failed: required field missing",
+        failed_attempts=failed_attempts,
+    )
+    
+    assert validation_error.failed_attempts == failed_attempts
+    assert "Validation failed" in str(validation_error)

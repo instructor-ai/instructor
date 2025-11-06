@@ -137,12 +137,17 @@ class Hooks:
         for handler in self._handlers[hook_name]:
             try:
                 handler(*args, **kwargs)  # type: ignore
-            except Exception:
+            except Exception as e:
+                # Log hook errors but don't break execution flow
+                # Hook handlers are meant to be side-effect functions (logging, monitoring, etc.)
+                # and their failures shouldn't interrupt the main processing flow
                 error_traceback = traceback.format_exc()
                 warnings.warn(
-                    f"Error in {hook_name.value} handler:\n{error_traceback}",
+                    f"Error in {hook_name.value} handler: {e}\n{error_traceback}",
                     stacklevel=2,
                 )
+                # Continue processing other handlers even if one fails
+                continue
 
     def emit_completion_arguments(self, *args: Any, **kwargs: Any) -> None:
         """

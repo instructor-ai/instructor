@@ -37,6 +37,9 @@ Documentation:
 """
 
 from typing import Any, Optional
+import logging
+from json import JSONDecodeError
+from pydantic import ValidationError
 
 # Import all public symbols from the modules
 from .models import (
@@ -101,12 +104,20 @@ class BatchJob:
                     try:
                         result = response_model(**extracted_data)
                         res.append(result)
-                    except Exception:
+                    except (ValidationError, TypeError, ValueError, KeyError) as e:
+                        logger.debug(
+                            f"Failed to parse batch result: {e}",
+                            exc_info=True,
+                        )
                         error_objs.append(data)
                 else:
                     error_objs.append(data)
 
-            except Exception:
+            except (JSONDecodeError, ValueError, TypeError, KeyError) as e:
+                logger.debug(
+                    f"Failed to parse JSON line: {e}",
+                    exc_info=True,
+                )
                 error_objs.append({"error": "Failed to parse JSON", "raw_line": line})
 
         return res, error_objs
@@ -148,10 +159,12 @@ class BatchJob:
                             text = item.get("text", "")
                             return json.loads(text)
 
-        except Exception:
-            pass
-
-        return None
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError, AttributeError) as e:
+            logger.debug(
+                f"Failed to extract structured data from batch response: {e}",
+                exc_info=True,
+            )
+            return None
 
 
 # Define what gets exported when someone does "from instructor.batch import *"

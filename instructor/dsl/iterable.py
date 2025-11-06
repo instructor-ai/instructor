@@ -10,7 +10,8 @@ from typing import (
     TYPE_CHECKING,
 )
 import json
-from pydantic import BaseModel, Field, create_model
+from json import JSONDecodeError
+from pydantic import BaseModel, Field, ValidationError, create_model
 from ..mode import Mode
 from ..utils import extract_json_from_stream, extract_json_from_stream_async
 
@@ -136,8 +137,9 @@ class IterableBase:
                 try:
                     obj = member.model_validate_json(task_json, **kwargs)
                     return obj
-                except Exception:
-                    pass
+                except (ValidationError, JSONDecodeError, ValueError, TypeError):
+                    # Try next union member if this one fails validation
+                    continue
         else:
             return cls.task_type.model_validate_json(task_json, **kwargs)
         raise ValueError(

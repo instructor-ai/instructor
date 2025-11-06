@@ -10,9 +10,14 @@ from typing import Any, Generic
 import json
 import os
 import io
+import logging
+from json import JSONDecodeError
+from pydantic import ValidationError
 from .models import BatchResult, BatchSuccess, BatchError, BatchJobInfo, T
 from .request import BatchRequest
 from .providers import get_provider
+
+logger = logging.getLogger(__name__)
 
 
 class BatchProcessor(Generic[T]):
@@ -198,7 +203,11 @@ class BatchProcessor(Generic[T]):
                             custom_id=custom_id, result=result
                         )
                         results.append(batch_result)
-                    except Exception as e:
+                    except (ValidationError, TypeError, ValueError, KeyError) as e:
+                        logger.debug(
+                            f"Failed to parse batch result for custom_id={custom_id}: {e}",
+                            exc_info=True,
+                        )
                         error_result = BatchError(
                             custom_id=custom_id,
                             error_type="parsing_error",
@@ -235,7 +244,11 @@ class BatchProcessor(Generic[T]):
                     )
                     results.append(error_result)
 
-            except Exception as e:
+            except (JSONDecodeError, ValueError, TypeError, KeyError) as e:
+                logger.debug(
+                    f"Failed to parse JSON line in batch results: {e}",
+                    exc_info=True,
+                )
                 error_result = BatchError(
                     custom_id="unknown",
                     error_type="json_parse_error",
@@ -286,7 +299,11 @@ class BatchProcessor(Generic[T]):
 
                 return None
 
-        except Exception:
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError, AttributeError) as e:
+            logger.debug(
+                f"Failed to extract structured data from provider response: {e}",
+                exc_info=True,
+            )
             return None
 
         return None

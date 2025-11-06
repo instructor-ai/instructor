@@ -98,7 +98,18 @@ class InstructorRetryException(InstructorError):
         self.n_attempts = n_attempts
         self.total_usage = total_usage
         self.create_kwargs = create_kwargs
-        super().__init__(*args, failed_attempts=failed_attempts, **kwargs)
+        # Enhance error message with context if not already provided
+        if not args:
+            model = create_kwargs.get("model", "unknown") if create_kwargs else "unknown"
+            last_exception = failed_attempts[-1].exception if failed_attempts else None
+            error_detail = str(last_exception) if last_exception else "Unknown error"
+            message = (
+                f"Failed after {n_attempts} attempt(s) with model '{model}'. "
+                f"Last error: {error_detail}"
+            )
+            super().__init__(message, failed_attempts=failed_attempts, **kwargs)
+        else:
+            super().__init__(*args, failed_attempts=failed_attempts, **kwargs)
 
 
 class ValidationError(InstructorError):
@@ -112,7 +123,9 @@ class ProviderError(InstructorError):
 
     def __init__(self, provider: str, message: str, *args: Any, **kwargs: Any):
         self.provider = provider
-        super().__init__(f"{provider}: {message}", *args, **kwargs)
+        # Format message with provider context
+        formatted_message = f"{provider}: {message}"
+        super().__init__(formatted_message, *args, **kwargs)
 
 
 class ConfigurationError(InstructorError):

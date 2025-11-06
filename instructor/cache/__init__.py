@@ -200,6 +200,10 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
         model_json = data["model"]
         raw_json = data.get("raw")
     except Exception:  # noqa: BLE001
+        # Generic catch needed here because the cached value format may vary:
+        # - Old format: just the JSON string of the model
+        # - New format: {"model": "...", "raw": "..."}
+        # We need to handle both formats gracefully without breaking on format changes
         model_json = cached
         raw_json = None
 

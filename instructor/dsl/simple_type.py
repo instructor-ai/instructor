@@ -52,7 +52,9 @@ def validateIsSubClass(response_model: type):
 
         if isinstance(response_model, types.GenericAlias):
             return False
-    except Exception:
+    except (AttributeError, TypeError):
+        # types.GenericAlias may not be available in all Python versions
+        # or response_model may not support isinstance checks
         pass
 
     return issubclass(response_model, BaseModel)
