@@ -53,7 +53,6 @@ Install Instructor and start extracting structured data immediately:
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
 
 
 class Person(BaseModel):
@@ -62,9 +61,8 @@ class Person(BaseModel):
     occupation: str
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 person = client.chat.completions.create(
-    model="gpt-4o-mini",
     response_model=Person,
     messages=[
         {"role": "user", "content": "Extract: John is a 30-year-old software engineer"}
@@ -228,13 +226,12 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         You can now use OpenAI's structured output response with Instructor. This feature combines the strengths of Instructor with OpenAI's precise sampling.
 
         ```python
-        client = instructor.from_openai(OpenAI(), mode=Mode.TOOLS_STRICT)
+        client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.TOOLS_STRICT)
         ```
 
     ```python
     import instructor
     from pydantic import BaseModel
-    from openai import OpenAI
 
 
     # Define your desired output structure
@@ -243,12 +240,11 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
-    # Patch the OpenAI client
-    client = instructor.from_openai(OpenAI())
+    # Create instructor client with provider
+    client = instructor.from_provider("openai/gpt-4o-mini")
 
     # Extract structured data from natural language
     res = client.chat.completions.create(
-        model="gpt-4o-mini",
         response_model=ExtractUser,
         messages=[{"role": "user", "content": "John Doe is 30 years old."}],
     )
@@ -266,7 +262,6 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     ```
 
     ```python
-    from openai import OpenAI
     from pydantic import BaseModel
     import instructor
 
@@ -276,16 +271,9 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
-    client = instructor.from_openai(
-        OpenAI(
-            base_url="http://localhost:11434/v1",
-            api_key="ollama",
-        ),
-        mode=instructor.Mode.JSON,
-    )
+    client = instructor.from_provider("ollama/llama3")
 
     resp = client.chat.completions.create(
-        model="llama3",
         messages=[
             {
                 "role": "user",
@@ -355,7 +343,6 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
     ```python
     import instructor
-    from anthropic import Anthropic
     from pydantic import BaseModel
 
 
@@ -364,11 +351,10 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
-    client = instructor.from_anthropic(Anthropic())
+    client = instructor.from_provider("anthropic/claude-3-5-sonnet-20240620")
 
     # note that client.chat.completions.create will also work
     resp = client.messages.create(
-        model="claude-3-5-sonnet-20240620",
         max_tokens=1024,
         messages=[
             {
@@ -393,7 +379,6 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
     ```python
     import instructor
-    import google.generativeai as genai
     from pydantic import BaseModel
 
 
@@ -402,12 +387,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
-    client = instructor.from_gemini(
-        client=genai.GenerativeModel(
-            model_name="models/gemini-1.5-flash-latest",
-        ),
-        mode=instructor.Mode.GEMINI_JSON,
-    )
+    client = instructor.from_provider("google/gemini-1.5-flash")
 
     # note that client.chat.completions.create will also work
     resp = client.messages.create(
@@ -434,11 +414,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
     ```python
     import instructor
-    import vertexai  # type: ignore
-    from vertexai.generative_models import GenerativeModel  # type: ignore
     from pydantic import BaseModel
-
-    vertexai.init()
 
 
     class ExtractUser(BaseModel):
@@ -446,9 +422,9 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
-    client = instructor.from_vertexai(
-        client=GenerativeModel("gemini-1.5-pro-preview-0409"),
-        mode=instructor.Mode.VERTEXAI_TOOLS,
+    client = instructor.from_provider(
+        "google/gemini-1.5-pro",
+        vertexai=True
     )
 
     # note that client.chat.completions.create will also work
@@ -476,10 +452,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
     ```python
     import instructor
-    from groq import Groq
     from pydantic import BaseModel
-
-    client = instructor.from_groq(Groq())
 
 
     class ExtractUser(BaseModel):
@@ -487,8 +460,9 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
+    client = instructor.from_provider("groq/llama3-70b-8192")
+
     resp = client.chat.completions.create(
-        model="llama3-70b-8192",
         response_model=ExtractUser,
         messages=[{"role": "user", "content": "Extract Jason is 25 years old."}],
     )
@@ -506,7 +480,6 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
     ```python
     import instructor
-    from litellm import completion
     from pydantic import BaseModel
 
 
@@ -515,7 +488,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
-    client = instructor.from_litellm(completion)
+    client = instructor.from_provider("litellm/claude-3-opus-20240229")
 
     resp = client.chat.completions.create(
         model="claude-3-opus-20240229",
@@ -544,7 +517,6 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     ```python
     import instructor
     from pydantic import BaseModel
-    from cohere import Client
 
 
     class ExtractUser(BaseModel):
@@ -552,7 +524,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
-    client = instructor.from_cohere(Client())
+    client = instructor.from_provider("cohere/command-r-plus")
 
     resp = client.chat.completions.create(
         response_model=ExtractUser,
@@ -576,15 +548,8 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     ```
 
     ```python
-    from cerebras.cloud.sdk import Cerebras
     import instructor
     from pydantic import BaseModel
-    import os
-
-    client = Cerebras(
-        api_key=os.environ.get("CEREBRAS_API_KEY"),
-    )
-    client = instructor.from_cerebras(client)
 
 
     class ExtractUser(BaseModel):
@@ -592,8 +557,9 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
+    client = instructor.from_provider("cerebras/llama3.1-70b")
+
     resp = client.chat.completions.create(
-        model="llama3.1-70b",
         response_model=ExtractUser,
         messages=[
             {
@@ -615,15 +581,8 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
     ```
 
     ```python
-    from fireworks.client import Fireworks
     import instructor
     from pydantic import BaseModel
-    import os
-
-    client = Fireworks(
-        api_key=os.environ.get("FIREWORKS_API_KEY"),
-    )
-    client = instructor.from_fireworks(client)
 
 
     class ExtractUser(BaseModel):
@@ -631,8 +590,9 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
+    client = instructor.from_provider("fireworks/llama-v3p2-1b-instruct")
+
     resp = client.chat.completions.create(
-        model="accounts/fireworks/models/llama-v3p2-1b-instruct",
         response_model=ExtractUser,
         messages=[
             {
@@ -720,8 +680,8 @@ class UserInfo(BaseModel):
     age: int
 
 
-# Initialize the OpenAI client with Instructor
-client = instructor.from_openai(OpenAI())
+# Initialize the client with from_provider
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 # Define hook functions
@@ -737,7 +697,6 @@ client.on("completion:kwargs", log_kwargs)
 client.on("completion:error", log_exception)
 
 user_info = client.chat.completions.create(
-    model="gpt-4o-mini",
     response_model=UserInfo,
     messages=[
         {"role": "user", "content": "Extract the user name: 'John is 20 years old'"}
@@ -807,10 +766,9 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4-turbo-preview")
 
 user = client.chat.completions.create(
-    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -827,12 +785,11 @@ Now if you use a IDE, you can see the type is correctly infered.
 This will also work correctly with asynchronous clients.
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_openai(openai.AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-4-turbo-preview", async_client=True)
 
 
 class User(BaseModel):
@@ -842,7 +799,6 @@ class User(BaseModel):
 
 async def extract():
     return await client.chat.completions.create(
-        model="gpt-4-turbo-preview",
         messages=[
             {"role": "user", "content": "Create a user"},
         ],
@@ -859,12 +815,11 @@ Notice that simply because we return the `create` method, the `extract()` functi
 You can also return the original completion object
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4-turbo-preview")
 
 
 class User(BaseModel):
@@ -873,7 +828,6 @@ class User(BaseModel):
 
 
 user, completion = client.chat.completions.create_with_completion(
-    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -888,12 +842,11 @@ user, completion = client.chat.completions.create_with_completion(
 In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but to simply the type inference, we've added `create_iterable` and `create_partial` methods as well!
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4-turbo-preview")
 
 
 class User(BaseModel):
@@ -902,7 +855,6 @@ class User(BaseModel):
 
 
 user_stream = client.chat.completions.create_partial(
-    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -938,12 +890,11 @@ Notice now that the type infered is `Generator[User, None]`
 We get an iterable of objects when we want to extract multiple objects.
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4-turbo-preview")
 
 
 class User(BaseModel):
@@ -952,7 +903,6 @@ class User(BaseModel):
 
 
 users = client.chat.completions.create_iterable(
-    model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create 2 users"},
     ],
@@ -974,11 +924,10 @@ for user in users:
 Instructor supports templating with Jinja, which lets you create dynamic prompts. This is useful when you want to fill in parts of a prompt with data. Here's a simple example:
 
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 class User(BaseModel):
@@ -988,7 +937,6 @@ class User(BaseModel):
 
 # Create a completion using a Jinja template in the message content
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
     messages=[
         {
             "role": "user",
@@ -1011,13 +959,12 @@ You can also use Pydantic to validate your outputs and get the llm to retry on f
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, ValidationError, BeforeValidator
 from typing_extensions import Annotated
 from instructor import llm_validator
 
-# Apply the patch to the OpenAI client
-client = instructor.from_openai(OpenAI())
+# Create instructor client
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 class QuestionAnswer(BaseModel):

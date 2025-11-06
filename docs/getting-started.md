@@ -58,7 +58,6 @@ Let's start with a simple example using OpenAI:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 
 # Define your output structure
@@ -66,12 +65,11 @@ class UserInfo(BaseModel):
     name: str
     age: int
 
-# Create an instructor-patched client
-client = instructor.from_openai(OpenAI())
+# Create an instructor client with from_provider
+client = instructor.from_provider("openai/gpt-3.5-turbo")
 
 # Extract structured data
 user_info = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=UserInfo,
     messages=[
         {"role": "user", "content": "John Doe is 30 years old."}
@@ -173,18 +171,16 @@ Instructor supports multiple LLM providers. Here's how to use Anthropic:
 
 ```python
 import instructor
-from anthropic import Anthropic
 from pydantic import BaseModel
 
 class UserInfo(BaseModel):
     name: str
     age: int
 
-# Create an instructor-patched Anthropic client
-client = instructor.from_anthropic(Anthropic())
+# Create an instructor client with from_provider
+client = instructor.from_provider("anthropic/claude-3-opus-20240229")
 
 user_info = client.messages.create(
-    model="claude-3-opus-20240229",
     max_tokens=1024,
     response_model=UserInfo,
     messages=[

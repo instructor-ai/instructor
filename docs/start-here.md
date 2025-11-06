@@ -46,7 +46,6 @@ Let's see Instructor in action with a basic example:
 ```python
 # Import the necessary libraries
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 
 # Define the structure you want
@@ -56,11 +55,10 @@ class Person:
     city: str
 
 # Connect to the LLM with Instructor
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 # Extract structured data
 person = client.chat.completions.create(
-    model="gpt-3.5-turbo",
     response_model=Person,
     messages=[
         {"role": "user", "content": "Extract a person from: John is 30 years old and lives in New York."}
@@ -98,10 +96,10 @@ Patching connects Instructor to your LLM provider (like OpenAI or Anthropic).
 
 ```python
 # For OpenAI
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 # For Anthropic
-client = instructor.from_anthropic(Anthropic())
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
 ```
 
 ### 3. Modes
@@ -110,10 +108,10 @@ Modes control how Instructor gets structured data from the LLM. Different provid
 
 ```python
 # Using OpenAI's function calling
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.TOOLS)
 
 # Using JSON output directly
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.JSON)
+client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.JSON)
 ```
 
 ## Common Use Cases
