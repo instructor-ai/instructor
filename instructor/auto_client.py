@@ -265,23 +265,34 @@ def from_provider(
     elif provider == "anthropic":
         try:
             import anthropic
-            from instructor import from_anthropic  # type: ignore[attr-defined]  # type: ignore[attr-defined]
+            from instructor.v2 import from_anthropic as from_anthropic_v2, ModeType
 
+            # Route Anthropic to v2 registry system
             client = (
                 anthropic.AsyncAnthropic(api_key=api_key)
                 if async_client
                 else anthropic.Anthropic(api_key=api_key)
             )
             max_tokens = kwargs.pop("max_tokens", 4096)
-            result = from_anthropic(
+
+            # Convert v1 Mode to v2 ModeType if needed
+            # Default to TOOLS mode
+            mode_type = ModeType.TOOLS
+            if mode is not None:
+                # Map v1 modes to v2 mode types
+                if mode == instructor.Mode.ANTHROPIC_TOOLS:
+                    mode_type = ModeType.TOOLS
+                elif mode == instructor.Mode.ANTHROPIC_JSON:
+                    mode_type = ModeType.JSON
+                # Note: REASONING_TOOLS and PARALLEL_TOOLS not yet implemented in v2
+
+            result = from_anthropic_v2(
                 client,
-                model=model_name,
-                mode=mode if mode else instructor.Mode.ANTHROPIC_TOOLS,
-                max_tokens=max_tokens,
+                mode_type=mode_type,
                 **kwargs,
             )
             logger.info(
-                "Client initialized",
+                "Client initialized with v2 registry",
                 extra={**provider_info, "status": "success"},
             )
             return result
