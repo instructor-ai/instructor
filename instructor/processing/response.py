@@ -44,7 +44,7 @@ from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 from typing_extensions import ParamSpec
 
-from instructor.core.exceptions import InstructorError
+from instructor.core.exceptions import InstructorError, ConfigurationError
 
 from ..dsl.iterable import IterableBase
 from ..dsl.parallel import ParallelBase
@@ -469,7 +469,11 @@ def handle_response_model(
     if mode in mode_handlers:
         response_model, new_kwargs = mode_handlers[mode](response_model, new_kwargs)  # type: ignore
     else:
-        raise ValueError(f"Invalid patch mode: {mode}")
+        raise ConfigurationError(
+            f"Invalid or unsupported mode: {mode}. "
+            f"This mode may not be implemented. "
+            f"Available modes: {', '.join(str(m) for m in mode_handlers.keys())}"
+        )
 
     # Handle message conversion for modes that don't already handle it
     if "messages" in new_kwargs:

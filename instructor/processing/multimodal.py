@@ -18,6 +18,8 @@ from urllib.parse import urlparse
 import mimetypes
 import requests
 from pydantic import BaseModel, Field
+
+from ..core.exceptions import MultimodalError
 from ..mode import Mode
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -111,7 +113,10 @@ class Image(BaseModel):
         header, encoded = data_uri.split(",", 1)
         media_type = header.split(":")[1].split(";")[0]
         if media_type not in VALID_MIME_TYPES:
-            raise ValueError(f"Unsupported image format: {media_type}")
+            raise MultimodalError(
+                f"Unsupported image format: {media_type}. Supported formats: {', '.join(VALID_MIME_TYPES)}",
+                content_type="image",
+            )
         return cls(
             source=data_uri,
             media_type=media_type,
@@ -524,11 +529,23 @@ class PDF(BaseModel):
                 if Path(source).is_file():
                     return cls.from_path(source)
             except FileNotFoundError as err:
-                raise ValueError("PDF file not found") from err
+                raise MultimodalError(
+                    "PDF file not found",
+                    content_type="pdf",
+                    file_path=str(source),
+                ) from err
             except OSError as e:
                 if e.errno == 63:  # File name too long
-                    raise ValueError("PDF file name too long") from e
-                raise ValueError("Unable to read PDF file") from e
+                    raise MultimodalError(
+                        "PDF file name too long",
+                        content_type="pdf",
+                        file_path=str(source),
+                    ) from e
+                raise MultimodalError(
+                    "Unable to read PDF file",
+                    content_type="pdf",
+                    file_path=str(source),
+                ) from e
 
             return cls.from_raw_base64(source)
         elif isinstance(source, Path):
