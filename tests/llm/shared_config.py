@@ -21,7 +21,7 @@ PROVIDER_CONFIGS = [
         "openai",
     ),
     (
-        "anthropic/claude-haiku-4-5-latest",
+        "anthropic/claude-3-5-haiku-latest",
         instructor.Mode.ANTHROPIC_TOOLS,
         "ANTHROPIC_API_KEY",
         "anthropic",
@@ -125,21 +125,13 @@ def pytest_generate_tests(metafunc):
 
 def pytest_configure(config):
     """Register custom markers for provider-specific tests."""
-    config.addinivalue_line(
-        "markers", "openai: mark test as requiring OpenAI provider"
-    )
+    config.addinivalue_line("markers", "openai: mark test as requiring OpenAI provider")
     config.addinivalue_line(
         "markers", "anthropic: mark test as requiring Anthropic provider"
     )
-    config.addinivalue_line(
-        "markers", "google: mark test as requiring Google provider"
-    )
-    config.addinivalue_line(
-        "markers", "cohere: mark test as requiring Cohere provider"
-    )
-    config.addinivalue_line(
-        "markers", "xai: mark test as requiring xAI provider"
-    )
+    config.addinivalue_line("markers", "google: mark test as requiring Google provider")
+    config.addinivalue_line("markers", "cohere: mark test as requiring Cohere provider")
+    config.addinivalue_line("markers", "xai: mark test as requiring xAI provider")
     config.addinivalue_line(
         "markers", "mistral: mark test as requiring Mistral provider"
     )
@@ -149,9 +141,7 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "fireworks: mark test as requiring Fireworks provider"
     )
-    config.addinivalue_line(
-        "markers", "writer: mark test as requiring Writer provider"
-    )
+    config.addinivalue_line("markers", "writer: mark test as requiring Writer provider")
     config.addinivalue_line(
         "markers", "perplexity: mark test as requiring Perplexity provider"
     )

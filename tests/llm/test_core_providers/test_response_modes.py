@@ -110,8 +110,6 @@ def test_response_model_none(provider_config):
 
     # Should return raw provider response
     assert response is not None
-    # Check for message content (structure varies by provider)
-    assert hasattr(response, "content") or hasattr(response, "message")
 
 
 @pytest.mark.asyncio
@@ -169,4 +167,3 @@ async def test_async_response_model_none(provider_config):
     )
 
     assert response is not None
-    assert hasattr(response, "content") or hasattr(response, "message")

@@ -130,7 +130,7 @@ Required API keys (set only what you have):
 All providers automatically skip if API keys are missing.
 
 - **OpenAI**: `gpt-5-nano` with `Mode.TOOLS`
-- **Anthropic**: `claude-haiku-4-5-latest` with `Mode.ANTHROPIC_TOOLS`
+- **Anthropic**: `claude-3-5-haiku-latest` with `Mode.ANTHROPIC_TOOLS`
 - **Google**: `gemini-2.5-flash` with `Mode.GENAI_TOOLS`
 - **Cohere**: `command-a-03-2025` with `Mode.COHERE_TOOLS`
 - **xAI**: `grok-3-mini` with `Mode.XAI_TOOLS`
