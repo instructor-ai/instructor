@@ -21,13 +21,13 @@ PROVIDER_CONFIGS = [
         "openai",
     ),
     (
-        "anthropic/claude-3-7-sonnet-latest",
+        "anthropic/claude-haiku-4-5-latest",
         instructor.Mode.ANTHROPIC_TOOLS,
         "ANTHROPIC_API_KEY",
         "anthropic",
     ),
     (
-        "google/gemini-2.0-flash-exp",
+        "google/gemini-2.5-flash",
         instructor.Mode.GENAI_TOOLS,
         "GOOGLE_API_KEY",
         "google.genai",
