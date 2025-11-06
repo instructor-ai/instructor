@@ -23,19 +23,19 @@ These tests verify that core instructor functionality works consistently across 
 
 Tests for provider-specific features remain in their respective directories:
 
-- `test_openai/` - OpenAI-specific features (hooks, multimodal, validation_context)
-- `test_anthropic/` - Anthropic-specific features (reasoning, extended thinking, system prompts, multimodal)
-- `test_genai/` - Google-specific features (schema conversion, format handling, decimal, multimodal)
+- `test_openai/` - OpenAI-specific features (hooks, multimodal, validation_context, etc.)
+- `test_anthropic/` - Anthropic-specific features (reasoning, system prompts, multimodal)
+- `test_genai/` - Google-specific features (schema conversion, format, decimal, utils)
 - `test_gemini/` - Gemini-specific features (content formatting, multimodal, evals)
-- `test_cohere/` - Cohere-specific features (JSON schema mode)
-- `test_xai/` - xAI-specific features (raw response handling)
-- `test_mistral/` - Mistral-specific features (multimodal)
-- `test_writer/` - Writer-specific features (evals)
+- `test_writer/` - Writer-specific features (format tests, evals)
 
-**Deleted directories** (tests moved to core):
-- ~~`test_cerebras/`~~ - all tests were generic
-- ~~`test_fireworks/`~~ - all tests were generic
-- ~~`test_perplexity/`~~ - all tests were generic
+**Deleted directories** (all tests were generic/duplicates):
+- ~~`test_cerebras/`~~ - all tests generic
+- ~~`test_fireworks/`~~ - all tests generic
+- ~~`test_perplexity/`~~ - all tests generic
+- ~~`test_cohere/`~~ - all tests generic (json_schema just another mode)
+- ~~`test_xai/`~~ - all tests generic (raw_response is generic feature)
+- ~~`test_mistral/`~~ - all tests generic (multimodal, retries, stream)
 
 ## Configuration
 
