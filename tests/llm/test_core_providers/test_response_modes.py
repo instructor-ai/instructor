@@ -1,0 +1,166 @@
+"""
+Response mode tests that run across all core providers.
+
+Tests different response modes and methods available on the client.
+"""
+
+from pydantic import BaseModel
+import pytest
+import instructor
+
+
+class Task(BaseModel):
+    title: str
+    description: str
+    priority: int
+
+
+def test_create_method(provider_config):
+    """Test the create() method."""
+    model, mode = provider_config
+    client = instructor.from_provider(model, mode=mode)
+
+    task = client.create(
+        response_model=Task,
+        messages=[
+            {
+                "role": "user",
+                "content": "Create a task: Fix bug in login, high priority (9)",
+            }
+        ],
+    )
+
+    assert isinstance(task, Task)
+    assert "bug" in task.title.lower() or "login" in task.title.lower()
+    assert task.priority == 9
+
+
+def test_chat_completions_create_method(provider_config):
+    """Test the chat.completions.create() method."""
+    model, mode = provider_config
+    client = instructor.from_provider(model, mode=mode)
+
+    task = client.chat.completions.create(
+        response_model=Task,
+        messages=[
+            {
+                "role": "user",
+                "content": "Task: Update documentation, medium priority (5)",
+            }
+        ],
+    )
+
+    assert isinstance(task, Task)
+    assert task.priority == 5
+
+
+def test_messages_create_method(provider_config):
+    """Test the messages.create() method."""
+    model, mode = provider_config
+    client = instructor.from_provider(model, mode=mode)
+
+    task = client.messages.create(
+        response_model=Task,
+        messages=[
+            {
+                "role": "user",
+                "content": "Task: Review PR, low priority (3)",
+            }
+        ],
+    )
+
+    assert isinstance(task, Task)
+    assert task.priority == 3
+
+
+def test_create_with_completion(provider_config):
+    """Test create_with_completion() returns both model and raw response."""
+    model, mode = provider_config
+    client = instructor.from_provider(model, mode=mode)
+
+    task, completion = client.chat.completions.create_with_completion(
+        response_model=Task,
+        messages=[
+            {
+                "role": "user",
+                "content": "Task: Deploy to production, priority 10",
+            }
+        ],
+    )
+
+    assert isinstance(task, Task)
+    assert task.priority == 10
+    # completion should be the raw response object from the provider
+    assert completion is not None
+
+
+def test_response_model_none(provider_config):
+    """Test that response_model=None returns raw response."""
+    model, mode = provider_config
+    client = instructor.from_provider(model, mode=mode)
+
+    response = client.messages.create(
+        response_model=None,
+        messages=[{"role": "user", "content": "Say hello!"}],
+    )
+
+    # Should return raw provider response
+    assert response is not None
+    # Check for message content (structure varies by provider)
+    assert hasattr(response, "content") or hasattr(response, "message")
+
+
+@pytest.mark.asyncio
+async def test_async_create_method(provider_config):
+    """Test async create() method."""
+    model, mode = provider_config
+    client = instructor.from_provider(model, mode=mode, async_client=True)
+
+    task = await client.create(
+        response_model=Task,
+        messages=[
+            {
+                "role": "user",
+                "content": "Task: Write tests, priority 8",
+            }
+        ],
+    )
+
+    assert isinstance(task, Task)
+    assert task.priority == 8
+
+
+@pytest.mark.asyncio
+async def test_async_create_with_completion(provider_config):
+    """Test async create_with_completion() method."""
+    model, mode = provider_config
+    client = instructor.from_provider(model, mode=mode, async_client=True)
+
+    task, completion = await client.chat.completions.create_with_completion(
+        response_model=Task,
+        messages=[
+            {
+                "role": "user",
+                "content": "Task: Refactor code, priority 6",
+            }
+        ],
+    )
+
+    assert isinstance(task, Task)
+    assert task.priority == 6
+    assert completion is not None
+
+
+@pytest.mark.asyncio
+async def test_async_response_model_none(provider_config):
+    """Test async with response_model=None."""
+    model, mode = provider_config
+    client = instructor.from_provider(model, mode=mode, async_client=True)
+
+    response = await client.messages.create(
+        response_model=None,
+        messages=[{"role": "user", "content": "Tell me a joke"}],
+    )
+
+    assert response is not None
+    assert hasattr(response, "content") or hasattr(response, "message")
