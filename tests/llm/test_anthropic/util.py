@@ -1,6 +1,6 @@
 import instructor
 
-models = ["anthropic/claude-3-7-sonnet-latest"]
+models = ["anthropic/claude-haiku-4-5-latest"]
 modes = [
     instructor.Mode.ANTHROPIC_TOOLS,
 ]
