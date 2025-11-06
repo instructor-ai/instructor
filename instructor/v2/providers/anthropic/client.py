@@ -24,6 +24,7 @@ def from_anthropic(
     ),
     mode_type: ModeType = ModeType.TOOLS,
     beta: bool = False,
+    model: str | None = None,
     **kwargs: Any,
 ) -> Instructor: ...
 
@@ -37,6 +38,7 @@ def from_anthropic(
     ),
     mode_type: ModeType = ModeType.TOOLS,
     beta: bool = False,
+    model: str | None = None,
     **kwargs: Any,
 ) -> AsyncInstructor: ...
 
@@ -52,6 +54,7 @@ def from_anthropic(
     ),
     mode_type: ModeType = ModeType.TOOLS,
     beta: bool = False,
+    model: str | None = None,
     **kwargs: Any,
 ) -> Instructor | AsyncInstructor:
     """Create an Instructor instance from an Anthropic client using v2 registry.
@@ -115,11 +118,12 @@ def from_anthropic(
     else:
         create = client.messages.create
 
-    # Patch using v2 registry
+    # Patch using v2 registry, passing the model for injection
     patched_create = patch_v2(
         func=create,
         provider=Provider.ANTHROPIC,
         mode_type=mode_type,
+        default_model=model,
     )
 
     # Return sync or async instructor

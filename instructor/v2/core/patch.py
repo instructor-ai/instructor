@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from pydantic import BaseModel
 
 from instructor.core.hooks import Hooks
-from instructor.core.retry import retry_async, retry_sync
 from instructor.templating import handle_templating
 from instructor.utils import is_async
 from instructor.v2.core.mode_types import ModeType, Provider
 from instructor.v2.core.registry import mode_registry
+from instructor.v2.core.retry import retry_sync_v2
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -65,6 +65,7 @@ def patch_v2(
     func: Callable[..., Any],
     provider: Provider,
     mode_type: ModeType,
+    default_model: str | None = None,
 ) -> Callable[..., T_Model]:
     """Patch a function to use v2 registry for structured outputs.
 
@@ -72,11 +73,14 @@ def patch_v2(
         func: Function to patch (e.g., client.messages.create)
         provider: Provider enum value
         mode_type: Mode type enum value
+        default_model: Default model to inject if not provided in request
 
     Returns:
         Patched function that supports response_model parameter
     """
-    logger.debug(f"Patching with v2 registry: {provider=}, {mode_type=}")
+    logger.debug(
+        f"Patching with v2 registry: {provider=}, {mode_type=}, {default_model=}"
+    )
 
     # Check if handlers are registered
     if not mode_registry.is_registered(provider, mode_type):
@@ -88,15 +92,16 @@ def patch_v2(
     func_is_async = is_async(func)
 
     if func_is_async:
-        return _create_async_wrapper(func, provider, mode_type)
+        return _create_async_wrapper(func, provider, mode_type, default_model)
     else:
-        return _create_sync_wrapper(func, provider, mode_type)
+        return _create_sync_wrapper(func, provider, mode_type, default_model)
 
 
 def _create_sync_wrapper(
     func: Callable[..., Any],
     provider: Provider,
     mode_type: ModeType,
+    default_model: str | None = None,
 ) -> Callable[..., T_Model]:
     """Create synchronous wrapper for patched function."""
 
@@ -114,6 +119,10 @@ def _create_sync_wrapper(
         """Patched synchronous create function."""
         context = handle_context(context, validation_context)
 
+        # Inject default model if not provided and available
+        if default_model is not None and "model" not in kwargs:
+            kwargs["model"] = default_model
+
         # Get request handler from registry
         request_handler = mode_registry.get_handler(provider, mode_type, "request")
 
@@ -129,17 +138,17 @@ def _create_sync_wrapper(
             context=context,
         )
 
-        # Use v1 retry logic (reuses existing retry infrastructure)
-        # The retry logic will call the reask handler from registry
-        response = retry_sync(
+        # Use v2 retry logic with registry handlers
+        response = retry_sync_v2(
             func=func,
             response_model=response_model,
+            provider=provider,
+            mode_type=mode_type,
             context=context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
             strict=strict,
-            mode=(provider, mode_type),  # Pass as tuple
             hooks=hooks,
         )
 
@@ -152,6 +161,7 @@ def _create_async_wrapper(
     func: Callable[..., Awaitable[Any]],
     provider: Provider,
     mode_type: ModeType,
+    default_model: str | None = None,
 ) -> Callable[..., Awaitable[T_Model]]:
     """Create asynchronous wrapper for patched function."""
 
@@ -168,6 +178,10 @@ def _create_async_wrapper(
     ) -> T_Model:
         """Patched asynchronous create function."""
         context = handle_context(context, validation_context)
+
+        # Inject default model if not provided and available
+        if default_model is not None and "model" not in kwargs:
+            kwargs["model"] = default_model
 
         # Get request handler from registry
         request_handler = mode_registry.get_handler(provider, mode_type, "request")

@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 from instructor.core.exceptions import IncompleteOutputException
 from instructor.processing.function_calls import extract_json_from_codeblock
+from instructor.processing.multimodal import Image, Audio, PDF
 from instructor.providers.anthropic.utils import (
     combine_system_messages,
     extract_system_messages,
@@ -28,6 +29,153 @@ from instructor.providers.anthropic.utils import (
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 from instructor.v2.core.mode_types import ModeType, Provider
+
+
+def serialize_message_content(content: Any) -> Any:
+    """Serialize message content, converting Pydantic models to dicts.
+
+    Args:
+        content: Message content (string, list, dict, or Pydantic model)
+
+    Returns:
+        Serialized content with Pydantic models converted to dicts
+    """
+    if isinstance(content, Image):
+        # Convert Image object to Anthropic's expected format
+        source = str(content.source)
+
+        # Determine source type based on the source value
+        if source.startswith(("http://", "https://")):
+            return {
+                "type": "image",
+                "source": {
+                    "type": "url",
+                    "url": source,
+                },
+            }
+        elif source.startswith("data:"):
+            # Base64-encoded data URL
+            return {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": content.media_type,
+                    "data": content.data or source.split(",")[1],
+                },
+            }
+        else:
+            # File path or base64 string
+            return {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": content.media_type,
+                    "data": content.data or source,
+                },
+            }
+    elif isinstance(content, PDF):
+        # Convert PDF object to Anthropic's expected format
+        source = str(content.source)
+
+        if source.startswith(("http://", "https://")):
+            return {
+                "type": "document",
+                "source": {
+                    "type": "url",
+                    "url": source,
+                },
+            }
+        elif source.startswith("data:"):
+            return {
+                "type": "document",
+                "source": {
+                    "type": "base64",
+                    "media_type": "application/pdf",
+                    "data": content.data or source.split(",")[1],
+                },
+            }
+        else:
+            return {
+                "type": "document",
+                "source": {
+                    "type": "base64",
+                    "media_type": "application/pdf",
+                    "data": content.data or source,
+                },
+            }
+    elif isinstance(content, Audio):
+        # Audio handling similar to Image
+        source = str(content.source)
+
+        if source.startswith(("http://", "https://")):
+            return {
+                "type": "audio",
+                "source": {
+                    "type": "url",
+                    "url": source,
+                },
+            }
+        else:
+            return {
+                "type": "audio",
+                "source": {
+                    "type": "base64",
+                    "media_type": content.media_type,
+                    "data": content.data or source,
+                },
+            }
+    elif isinstance(content, str):
+        # Convert plain text strings to Anthropic's text content format
+        return {
+            "type": "text",
+            "text": content,
+        }
+    elif isinstance(content, list):
+        # Process list content recursively
+        return [serialize_message_content(item) for item in content]
+    elif isinstance(content, dict):
+        # Check if already in Anthropic format (has "type" key)
+        if "type" in content:
+            # Already formatted, just recurse on values
+            return {k: serialize_message_content(v) for k, v in content.items()}
+        # Plain dict, recurse on values
+        return {k: serialize_message_content(v) for k, v in content.items()}
+    elif hasattr(content, "model_dump"):
+        # Handle any other Pydantic BaseModel
+        return content.model_dump()
+    else:
+        return content
+
+
+def process_messages_for_anthropic(
+    messages: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Process messages to serialize any Pydantic models in content.
+
+    Args:
+        messages: List of message dicts
+
+    Returns:
+        Processed messages with serialized content
+    """
+    processed = []
+    for message in messages:
+        msg_copy = message.copy()
+        if "content" in msg_copy:
+            content = msg_copy["content"]
+            # Only deeply process list content - convert strings/objects to proper format
+            # If content is a string, leave it as-is (Anthropic accepts plain strings)
+            # If content is a list, process each item
+            if isinstance(content, list):
+                msg_copy["content"] = serialize_message_content(content)
+            elif isinstance(content, (Image, Audio, PDF)) or hasattr(
+                content, "model_dump"
+            ):
+                # Serialize Pydantic models to dict
+                msg_copy["content"] = serialize_message_content(content)
+            # Leave strings as-is, and dicts with "type" key as-is
+        processed.append(msg_copy)
+    return processed
 
 
 @register_mode_handler(Provider.ANTHROPIC, ModeType.TOOLS)
@@ -55,18 +203,14 @@ class AnthropicToolsHandler(ModeHandler):
 
         if response_model is None:
             # Just handle message conversion
+            if "messages" in new_kwargs:
+                new_kwargs["messages"] = process_messages_for_anthropic(
+                    new_kwargs["messages"]
+                )
             new_kwargs = handle_anthropic_message_conversion(new_kwargs)
             return None, new_kwargs
 
-        # Generate tool schema
-        tool_descriptions = generate_anthropic_schema(response_model)
-        new_kwargs["tools"] = [tool_descriptions]
-        new_kwargs["tool_choice"] = {
-            "type": "tool",
-            "name": response_model.__name__,
-        }
-
-        # Extract and combine system messages
+        # Extract and combine system messages BEFORE serializing message content
         system_messages = extract_system_messages(new_kwargs.get("messages", []))
 
         if system_messages:
@@ -78,6 +222,20 @@ class AnthropicToolsHandler(ModeHandler):
         new_kwargs["messages"] = [
             m for m in new_kwargs.get("messages", []) if m["role"] != "system"
         ]
+
+        # Serialize message content AFTER extracting system messages
+        if "messages" in new_kwargs:
+            new_kwargs["messages"] = process_messages_for_anthropic(
+                new_kwargs["messages"]
+            )
+
+        # Generate tool schema
+        tool_descriptions = generate_anthropic_schema(response_model)
+        new_kwargs["tools"] = [tool_descriptions]
+        new_kwargs["tool_choice"] = {
+            "type": "tool",
+            "name": response_model.__name__,
+        }
 
         return response_model, new_kwargs
 
@@ -206,7 +364,7 @@ class AnthropicJSONHandler(ModeHandler):
         """
         new_kwargs = kwargs.copy()
 
-        # Extract and combine system messages
+        # Extract and combine system messages BEFORE serializing message content
         system_messages = extract_system_messages(new_kwargs.get("messages", []))
 
         if system_messages:
@@ -218,6 +376,12 @@ class AnthropicJSONHandler(ModeHandler):
         new_kwargs["messages"] = [
             m for m in new_kwargs.get("messages", []) if m["role"] != "system"
         ]
+
+        # Serialize message content AFTER extracting system messages
+        if "messages" in new_kwargs:
+            new_kwargs["messages"] = process_messages_for_anthropic(
+                new_kwargs["messages"]
+            )
 
         if response_model is None:
             return None, new_kwargs

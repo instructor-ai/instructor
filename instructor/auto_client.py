@@ -289,6 +289,7 @@ def from_provider(
             result = from_anthropic_v2(
                 client,
                 mode_type=mode_type,
+                model=model_name,
                 **kwargs,
             )
             logger.info(
