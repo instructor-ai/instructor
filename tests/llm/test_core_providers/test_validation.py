@@ -4,7 +4,7 @@ Validation and retry tests that run across all core providers.
 Tests validation logic, custom validators, and retry mechanisms.
 """
 
-from pydantic import BaseModel, Field, field_validator, ValidationError
+from pydantic import BaseModel, Field, field_validator
 import pytest
 import instructor
 

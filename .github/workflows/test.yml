@@ -23,7 +23,7 @@ jobs:
         run: uv sync --all-extras
       - name: Run core tests
         run: >-
-          uv run pytest tests/
+          uv run pytest tests/ -n auto
           -k 'not test_core_providers and not test_openai and not test_anthropic
           and not test_gemini and not test_genai and not test_writer and not
           test_vertexai and not docs'
@@ -51,7 +51,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run core provider tests
-        run: uv run pytest tests/llm/test_core_providers -v
+        run: uv run pytest tests/llm/test_core_providers -v -n auto
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -126,7 +126,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run Auto Client tests
-        run: uv run pytest tests/test_auto_client.py
+        run: uv run pytest tests/test_auto_client.py -n auto
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

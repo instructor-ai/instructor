@@ -5,10 +5,9 @@ consistently across all providers using from_provider().
 """
 
 import enum
-import pytest
-from typing import Union, Literal
+from typing import Annotated, Literal, Union
+
 from pydantic import Field
-from typing_extensions import Annotated
 
 import instructor
 
