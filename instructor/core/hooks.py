@@ -2,6 +2,10 @@ from __future__ import annotations
 from enum import Enum
 from collections import defaultdict
 from typing import Any, Literal, TypeVar, Protocol, Union
+from dataclasses import dataclass, field
+from time import time
+import asyncio
+import inspect
 
 import traceback
 import warnings
@@ -9,36 +13,240 @@ import warnings
 T = TypeVar("T")
 
 
+# ============================================================================
+# Context Objects - Rich metadata for hooks
+# ============================================================================
+
+
+@dataclass
+class HookContext:
+    """
+    Base context object containing metadata about the current request.
+
+    This context is passed to all hooks and provides essential information
+    about the request lifecycle, retry attempts, and configuration.
+
+    Attributes:
+        request_id: Unique identifier for this request
+        attempt_number: Current retry attempt (1-indexed)
+        total_attempts: Maximum number of retry attempts
+        is_retry: Whether this is a retry attempt (False on first attempt)
+        start_time: Unix timestamp when the request started
+        mode: The Mode enum value being used (e.g., Mode.TOOLS)
+        response_model: The Pydantic model class expected for the response
+    """
+    request_id: str
+    attempt_number: int
+    total_attempts: int
+    is_retry: bool
+    start_time: float
+    mode: Any  # Mode enum, using Any to avoid circular import
+    response_model: type[Any] | None
+
+
+@dataclass
+class CompletionKwargsContext:
+    """
+    Context for completion:kwargs hook.
+
+    Contains the arguments being passed to the LLM API call.
+
+    Attributes:
+        context: Base HookContext with request metadata
+        args: Positional arguments passed to the API call
+        kwargs: Keyword arguments passed to the API call (model, messages, etc.)
+    """
+    context: HookContext
+    args: tuple[Any, ...]
+    kwargs: dict[str, Any]
+
+
+@dataclass
+class CompletionResponseContext:
+    """
+    Context for completion:response hook.
+
+    Contains the raw response from the LLM API.
+
+    Attributes:
+        context: Base HookContext with request metadata
+        response: The raw response object from the API
+        duration: Time taken for the API call in seconds
+    """
+    context: HookContext
+    response: Any
+    duration: float
+
+
+@dataclass
+class ErrorContext:
+    """
+    Context for error-related hooks (completion:error, parse:error).
+
+    Contains rich information about what failed and why.
+
+    Attributes:
+        context: Base HookContext with request metadata
+        error: The exception that occurred
+        kwargs: The kwargs that were used for the failed request
+        response: Partial response if available (may be None)
+        failed_attempts: List of all previous failed attempts
+        stack_trace: Formatted traceback string
+    """
+    context: HookContext
+    error: Exception
+    kwargs: dict[str, Any]
+    response: Any | None
+    failed_attempts: list[Any]
+    stack_trace: str = field(default_factory=lambda: traceback.format_exc())
+
+
+@dataclass
+class ValidationContext:
+    """
+    Context for validation:success hook.
+
+    Contains information about successful validation.
+
+    Attributes:
+        context: Base HookContext with request metadata
+        response: The raw response from the API
+        parsed_model: The successfully validated Pydantic model instance
+    """
+    context: HookContext
+    response: Any
+    parsed_model: Any
+
+
+@dataclass
+class RetryContext:
+    """
+    Context for retry:attempt hook.
+
+    Contains information about a retry attempt.
+
+    Attributes:
+        context: Base HookContext with request metadata
+        last_error: The error that triggered this retry
+        next_kwargs: The modified kwargs for the next attempt
+    """
+    context: HookContext
+    last_error: Exception
+    next_kwargs: dict[str, Any]
+
+
+@dataclass
+class StreamChunkContext:
+    """
+    Context for stream:chunk hook.
+
+    Contains information about a streaming chunk.
+
+    Attributes:
+        context: Base HookContext with request metadata
+        chunk: The streaming chunk data
+        chunk_index: Index of this chunk in the stream (0-indexed)
+    """
+    context: HookContext
+    chunk: Any
+    chunk_index: int
+
+
+# ============================================================================
+# Hook Name Enum - All available hook events
+# ============================================================================
+
+
 class HookName(Enum):
+    """
+    Enum defining all available hook events in the request lifecycle.
+
+    Lifecycle order:
+    1. REQUEST_START - Before any processing begins
+    2. COMPLETION_KWARGS - Before API call (may repeat on retries)
+    3. COMPLETION_RESPONSE - After successful API response
+    4. STREAM_CHUNK - Each chunk in streaming mode
+    5. VALIDATION_SUCCESS - After successful Pydantic validation
+    6. PARSE_ERROR - When validation/parsing fails
+    7. COMPLETION_ERROR - When API call fails
+    8. RETRY_ATTEMPT - Before retrying after an error
+    9. COMPLETION_LAST_ATTEMPT - On final retry attempt failure
+    10. REQUEST_END - After request completes (success or failure)
+    """
+    # Request lifecycle
+    REQUEST_START = "request:start"
+    REQUEST_END = "request:end"
+
+    # Completion hooks
     COMPLETION_KWARGS = "completion:kwargs"
     COMPLETION_RESPONSE = "completion:response"
     COMPLETION_ERROR = "completion:error"
     COMPLETION_LAST_ATTEMPT = "completion:last_attempt"
+
+    # Validation hooks
     PARSE_ERROR = "parse:error"
+    VALIDATION_SUCCESS = "validation:success"
+
+    # Retry hooks
+    RETRY_ATTEMPT = "retry:attempt"
+
+    # Streaming hooks
+    STREAM_CHUNK = "stream:chunk"
 
 
-# Handler protocol types for type safety
+# ============================================================================
+# Handler Protocols - Type signatures for hook handlers
+# ============================================================================
+
+
 class CompletionKwargsHandler(Protocol):
-    """Protocol for completion kwargs handlers."""
-
-    def __call__(self, *args: Any, **kwargs: Any) -> None: ...
+    """Protocol for completion:kwargs hook handlers."""
+    def __call__(self, ctx: CompletionKwargsContext) -> None: ...
 
 
 class CompletionResponseHandler(Protocol):
-    """Protocol for completion response handlers."""
+    """Protocol for completion:response hook handlers."""
+    def __call__(self, ctx: CompletionResponseContext) -> None: ...
 
+
+class ErrorHandler(Protocol):
+    """Protocol for error hook handlers (completion:error, parse:error, completion:last_attempt)."""
+    def __call__(self, ctx: ErrorContext) -> None: ...
+
+
+class ValidationSuccessHandler(Protocol):
+    """Protocol for validation:success hook handlers."""
+    def __call__(self, ctx: ValidationContext) -> None: ...
+
+
+class RetryAttemptHandler(Protocol):
+    """Protocol for retry:attempt hook handlers."""
+    def __call__(self, ctx: RetryContext) -> None: ...
+
+
+class StreamChunkHandler(Protocol):
+    """Protocol for stream:chunk hook handlers."""
+    def __call__(self, ctx: StreamChunkContext) -> None: ...
+
+
+class RequestLifecycleHandler(Protocol):
+    """Protocol for request:start and request:end hook handlers."""
+    def __call__(self, ctx: HookContext) -> None: ...
+
+
+# Backward compatibility protocols (old-style handlers without context)
+class LegacyCompletionKwargsHandler(Protocol):
+    """Legacy protocol for old-style completion kwargs handlers."""
+    def __call__(self, *args: Any, **kwargs: Any) -> None: ...
+
+
+class LegacyCompletionResponseHandler(Protocol):
+    """Legacy protocol for old-style response handlers."""
     def __call__(self, response: Any) -> None: ...
 
 
-class CompletionErrorHandler(Protocol):
-    """Protocol for completion error and last attempt handlers."""
-
-    def __call__(self, error: Exception) -> None: ...
-
-
-class ParseErrorHandler(Protocol):
-    """Protocol for parse error handlers."""
-
+class LegacyErrorHandler(Protocol):
+    """Legacy protocol for old-style error handlers."""
     def __call__(self, error: Exception) -> None: ...
 
 
@@ -46,11 +254,16 @@ class ParseErrorHandler(Protocol):
 HookNameType = Union[
     HookName,
     Literal[
+        "request:start",
+        "request:end",
         "completion:kwargs",
         "completion:response",
         "completion:error",
         "completion:last_attempt",
         "parse:error",
+        "validation:success",
+        "retry:attempt",
+        "stream:chunk",
     ],
 ]
 
@@ -58,8 +271,15 @@ HookNameType = Union[
 HandlerType = Union[
     CompletionKwargsHandler,
     CompletionResponseHandler,
-    CompletionErrorHandler,
-    ParseErrorHandler,
+    ErrorHandler,
+    ValidationSuccessHandler,
+    RetryAttemptHandler,
+    StreamChunkHandler,
+    RequestLifecycleHandler,
+    # Legacy handlers for backward compatibility
+    LegacyCompletionKwargsHandler,
+    LegacyCompletionResponseHandler,
+    LegacyErrorHandler,
 ]
 
 
@@ -69,41 +289,53 @@ class Hooks:
 
     This class provides a mechanism to register event handlers and emit events
     for various stages of the completion process.
+
+    Features:
+    - Context objects with rich metadata
+    - Async handler support
+    - Handler priorities for execution order
+    - Backward compatibility with legacy handlers
+    - Multiple handlers per event
+    - Hook combination and composition
     """
 
     def __init__(self) -> None:
         """Initialize the hooks container."""
-        self._handlers: defaultdict[HookName, list[HandlerType]] = defaultdict(list)
+        # Store handlers as (priority, handler) tuples, sorted by priority descending
+        self._handlers: defaultdict[HookName, list[tuple[int, HandlerType]]] = defaultdict(list)
 
     def on(
         self,
         hook_name: HookNameType,
         handler: HandlerType,
+        priority: int = 0,
     ) -> None:
         """
         Register an event handler for a specific event.
 
         This method allows you to attach a handler function to a specific event.
-        When the event is emitted, all registered handlers for that event will be called.
+        When the event is emitted, all registered handlers for that event will be called
+        in priority order (higher priority = earlier execution).
 
         Args:
             hook_name: The event to listen for. This can be either a HookName enum
                        value or a string representation of the event name.
             handler: The function to be called when the event is emitted.
+            priority: Execution priority (higher values execute first). Default is 0.
 
         Raises:
             ValueError: If the hook_name is not a valid HookName enum or string representation.
 
         Example:
-            >>> def on_completion_kwargs(*args: Any, **kwargs: Any) -> None:
-            ...     print(f"Completion kwargs: {args}, {kwargs}")
+            >>> def on_completion_kwargs(ctx: CompletionKwargsContext) -> None:
+            ...     print(f"Model: {ctx.kwargs.get('model')}")
             >>> hooks = Hooks()
-            >>> hooks.on(HookName.COMPLETION_KWARGS, on_completion_kwargs)
-            >>> hooks.emit_completion_arguments(model="gpt-3.5-turbo", temperature=0.7)
-            Completion kwargs: (), {'model': 'gpt-3.5-turbo', 'temperature': 0.7}
+            >>> hooks.on(HookName.COMPLETION_KWARGS, on_completion_kwargs, priority=10)
         """
         hook_name = self.get_hook_name(hook_name)
-        self._handlers[hook_name].append(handler)
+        self._handlers[hook_name].append((priority, handler))
+        # Sort by priority descending (higher priority first)
+        self._handlers[hook_name].sort(key=lambda x: x[0], reverse=True)
 
     def get_hook_name(self, hook_name: HookNameType) -> HookName:
         """
