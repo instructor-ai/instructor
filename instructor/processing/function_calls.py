@@ -238,7 +238,31 @@ class OpenAISchema(BaseModel):
         }:
             return cls.parse_json(completion, validation_context, strict)
 
-        raise ValueError(f"Invalid patch mode: {mode}")
+        from ..core.exceptions import ModeError
+
+        # Determine provider from mode if possible
+        provider = "Unknown"
+        valid_modes = []
+        
+        # Try to infer provider based on mode
+        if "ANTHROPIC" in str(mode):
+            provider = "Anthropic"
+        elif "OPENAI" in str(mode) or mode in {Mode.TOOLS, Mode.JSON, Mode.FUNCTIONS}:
+            provider = "OpenAI"
+        elif "GEMINI" in str(mode) or "VERTEXAI" in str(mode):
+            provider = "Google/VertexAI"
+        elif "MISTRAL" in str(mode):
+            provider = "Mistral"
+        elif "COHERE" in str(mode):
+            provider = "Cohere"
+        elif "BEDROCK" in str(mode):
+            provider = "Bedrock"
+        
+        raise ModeError(
+            mode=str(mode),
+            provider=provider,
+            valid_modes=valid_modes,  # Empty list since we can't determine valid modes here
+        )
 
     @classmethod
     def parse_genai_structured_outputs(
@@ -299,7 +323,8 @@ class OpenAISchema(BaseModel):
             content_items = completion.message.content
             if content_items and len(content_items) > 0:
                 # Find the text content item (skip thinking/other types)
-                # TODO handle these other content types
+                # Cohere V2 supports multiple content types: "text", "thinking", "tool_use", etc.
+                # We only extract the "text" type for JSON schema parsing
                 text = None
                 for item in content_items:
                     if (
@@ -311,7 +336,16 @@ class OpenAISchema(BaseModel):
                         break
 
                 if text is None:
-                    raise ValueError("Cohere V2 response has no text content item")
+                    # Provide helpful error message listing available content types
+                    available_types = [
+                        getattr(item, "type", "unknown")
+                        for item in content_items
+                        if hasattr(item, "type")
+                    ]
+                    raise ValueError(
+                        f"Cohere V2 response has no text content item. "
+                        f"Available content types: {available_types}"
+                    )
             else:
                 raise ValueError("Cohere V2 response has no content")
         else:
@@ -335,9 +369,12 @@ class OpenAISchema(BaseModel):
             raise IncompleteOutputException(last_completion=completion)
 
         # Anthropic returns arguments as a dict, dump to json for model validation below
+        # Anthropic Message.content is a list of ContentBlock objects
+        # ContentBlock can be TextBlock (type="text") or ToolUseBlock (type="tool_use")
+        # We filter for tool_use blocks and extract their input arguments
         tool_calls = [
             json.dumps(c.input) for c in completion.content if c.type == "tool_use"
-        ]  # TODO update with anthropic specific types
+        ]
 
         tool_calls_validator = TypeAdapter(
             Annotated[list[Any], Field(min_length=1, max_length=1)]

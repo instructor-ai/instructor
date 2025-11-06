@@ -4,6 +4,8 @@ from textwrap import dedent
 from typing import Any, NamedTuple
 from jinja2 import Template
 
+from .errors import format_mode_error, format_config_error, format_provider_error
+
 
 class InstructorError(Exception):
     """Base exception for all Instructor-specific errors."""
@@ -110,15 +112,46 @@ class ValidationError(InstructorError):
 class ProviderError(InstructorError):
     """Exception raised for provider-specific errors."""
 
-    def __init__(self, provider: str, message: str, *args: Any, **kwargs: Any):
+    def __init__(
+        self,
+        provider: str,
+        message: str,
+        context: dict[str, Any] | None = None,
+        *args: Any,
+        **kwargs: Any,
+    ):
         self.provider = provider
-        super().__init__(f"{provider}: {message}", *args, **kwargs)
+        self.context = context
+        formatted_message = format_provider_error(provider, message, context)
+        super().__init__(formatted_message, *args, **kwargs)
 
 
 class ConfigurationError(InstructorError):
     """Exception raised for configuration-related errors."""
 
-    pass
+    def __init__(
+        self,
+        message: str,
+        provider: str | None = None,
+        env_var: str | None = None,
+        missing_key: str | None = None,
+        *args: Any,
+        **kwargs: Any,
+    ):
+        self.provider = provider
+        self.env_var = env_var
+        self.missing_key = missing_key
+        
+        # If provider is specified, use rich formatting
+        if provider:
+            formatted_message = format_config_error(provider, env_var, missing_key)
+            # Prepend the original message if provided
+            if message and message != formatted_message:
+                formatted_message = f"{message}\n\n{formatted_message}"
+        else:
+            formatted_message = message
+            
+        super().__init__(formatted_message, *args, **kwargs)
 
 
 class ModeError(InstructorError):
@@ -135,7 +168,7 @@ class ModeError(InstructorError):
         self.mode = mode
         self.provider = provider
         self.valid_modes = valid_modes
-        message = f"Invalid mode '{mode}' for provider '{provider}'. Valid modes: {', '.join(valid_modes)}"
+        message = format_mode_error(mode, provider, valid_modes)
         super().__init__(message, *args, **kwargs)
 
 

@@ -469,7 +469,29 @@ def handle_response_model(
     if mode in mode_handlers:
         response_model, new_kwargs = mode_handlers[mode](response_model, new_kwargs)  # type: ignore
     else:
-        raise ValueError(f"Invalid patch mode: {mode}")
+        # This should not happen if mode handling is correct
+        from ..core.exceptions import ModeError
+
+        # Try to infer provider from mode
+        provider = "Unknown"
+        if "ANTHROPIC" in str(mode):
+            provider = "Anthropic"
+        elif "OPENAI" in str(mode) or mode in {Mode.TOOLS, Mode.JSON}:
+            provider = "OpenAI"
+        elif "GEMINI" in str(mode) or "VERTEXAI" in str(mode):
+            provider = "Google/VertexAI"
+        elif "MISTRAL" in str(mode):
+            provider = "Mistral"
+        elif "COHERE" in str(mode):
+            provider = "Cohere"
+        elif "BEDROCK" in str(mode):
+            provider = "Bedrock"
+        
+        raise ModeError(
+            mode=str(mode),
+            provider=provider,
+            valid_modes=[],  # Empty list since we can't determine valid modes here
+        )
 
     # Handle message conversion for modes that don't already handle it
     if "messages" in new_kwargs:

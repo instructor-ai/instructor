@@ -14,6 +14,36 @@ from ..models import BatchJobInfo
 logger = logging.getLogger(__name__)
 
 
+def _get_anthropic_batches_client(client):
+    """
+    Get the Anthropic batches client, preferring stable API over beta.
+
+    The stable API (client.messages.batches) was introduced in a later version
+    of the anthropic SDK. This function provides a fallback to the beta API
+    (client.beta.messages.batches) for backwards compatibility.
+
+    Args:
+        client: An anthropic.Anthropic client instance
+
+    Returns:
+        The batches client (either stable or beta)
+
+    Note:
+        Once the stable API is widely available, this fallback can be removed.
+        Check Anthropic SDK documentation for when the stable API became available.
+    """
+    try:
+        # Try stable API first
+        return client.messages.batches
+    except AttributeError:
+        # Fallback to beta API for backwards compatibility
+        logger.debug(
+            "Using Anthropic beta.batches API. "
+            "Consider upgrading anthropic SDK for stable API access."
+        )
+        return client.beta.messages.batches
+
+
 class AnthropicProvider(BatchProvider):
     """Anthropic batch processing provider"""
 
@@ -33,15 +63,11 @@ class AnthropicProvider(BatchProvider):
             # Note: Anthropic doesn't support metadata in batch creation
             # but we accept it for API consistency
             if metadata:
-                print(
-                    f"Note: Anthropic batches don't support metadata. Ignoring: {metadata}"
+                logger.warning(
+                    f"Anthropic batches don't support metadata. Ignoring: {metadata}"
                 )
 
-            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
+            batches_client = _get_anthropic_batches_client(client)
 
             if isinstance(file_path_or_buffer, str):
                 with open(file_path_or_buffer) as f:
@@ -73,12 +99,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
-
+            batches_client = _get_anthropic_batches_client(client)
             batch = batches_client.retrieve(batch_id)
             return {
                 "id": batch.id,
@@ -96,12 +117,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
-
+            batches_client = _get_anthropic_batches_client(client)
             batch = batches_client.retrieve(batch_id)
 
             # Check for various terminal states
@@ -143,12 +159,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
-
+            batches_client = _get_anthropic_batches_client(client)
             batch = batches_client.retrieve(batch_id)
 
             # Check for various terminal states
@@ -188,12 +199,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
-
+            batches_client = _get_anthropic_batches_client(client)
             batch = batches_client.cancel(batch_id)
             return batch.model_dump()
         except Exception as e:
@@ -206,12 +212,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
-
+            batches_client = _get_anthropic_batches_client(client)
             batch = batches_client.retrieve(batch_id)
             return {
                 "id": batch.id,
@@ -228,12 +229,7 @@ class AnthropicProvider(BatchProvider):
 
             client = anthropic.Anthropic()
 
-            # TODO(#batch-api-stable): Remove beta fallback when stable API is available
-            try:
-                batches_client = client.messages.batches
-            except AttributeError:
-                batches_client = client.beta.messages.batches
-
+            batches_client = _get_anthropic_batches_client(client)
             batches = batches_client.list(limit=limit)
             return [
                 BatchJobInfo.from_anthropic(batch.model_dump())

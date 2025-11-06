@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import functools
 import warnings
-from typing import Any
+from typing import Any, Optional
 
 from docstring_parser import parse
 from pydantic import BaseModel
 
 from ..providers.gemini.utils import map_to_gemini_function_schema
+from ..mode import Mode
 
 __all__ = [
     "generate_openai_schema",
@@ -24,12 +25,14 @@ __all__ = [
 
 
 @functools.lru_cache(maxsize=256)
-def generate_openai_schema(model: type[BaseModel]) -> dict[str, Any]:
+def generate_openai_schema(model: type[BaseModel], mode: Optional[Mode] = None) -> dict[str, Any]:
     """
     Generate OpenAI function schema from a Pydantic model.
 
     Args:
         model: A Pydantic BaseModel subclass
+        mode: Optional Mode parameter for mode-specific schema variations.
+              Currently unused but reserved for future mode-specific schema formats.
 
     Returns:
         A dictionary in the format of OpenAI's function schema
@@ -37,7 +40,12 @@ def generate_openai_schema(model: type[BaseModel]) -> dict[str, Any]:
     Note:
         The model's docstring will be used for the function description.
         Parameter descriptions from the docstring will enrich field descriptions.
+        The mode parameter is included in the cache key for potential future mode-specific variations.
     """
+    # Mode is included in cache key via functools.lru_cache based on function arguments
+    # No mode-specific logic yet, but infrastructure is in place for future enhancements
+    _ = mode  # Reserved for future use
+    
     schema = model.model_json_schema()
     docstring = parse(model.__doc__ or "")
     parameters = {k: v for k, v in schema.items() if k not in ("title", "description")}
@@ -71,18 +79,24 @@ def generate_openai_schema(model: type[BaseModel]) -> dict[str, Any]:
 
 
 @functools.lru_cache(maxsize=256)
-def generate_anthropic_schema(model: type[BaseModel]) -> dict[str, Any]:
+def generate_anthropic_schema(model: type[BaseModel], mode: Optional[Mode] = None) -> dict[str, Any]:
     """
     Generate Anthropic tool schema from a Pydantic model.
 
     Args:
         model: A Pydantic BaseModel subclass
+        mode: Optional Mode parameter for mode-specific schema variations.
+              Currently unused but reserved for future mode-specific schema formats.
 
     Returns:
         A dictionary in the format of Anthropic's tool schema
     """
+    # Mode is included in cache key via functools.lru_cache based on function arguments
+    # No mode-specific logic yet, but infrastructure is in place for future enhancements
+    _ = mode  # Reserved for future use
+    
     # Generate the Anthropic schema based on the OpenAI schema to avoid redundant schema generation
-    openai_schema = generate_openai_schema(model)
+    openai_schema = generate_openai_schema(model, mode)
     return {
         "name": openai_schema["name"],
         "description": openai_schema["description"],
@@ -91,12 +105,14 @@ def generate_anthropic_schema(model: type[BaseModel]) -> dict[str, Any]:
 
 
 @functools.lru_cache(maxsize=256)
-def generate_gemini_schema(model: type[BaseModel]) -> Any:
+def generate_gemini_schema(model: type[BaseModel], mode: Optional[Mode] = None) -> Any:
     """
     Generate Gemini function schema from a Pydantic model.
 
     Args:
         model: A Pydantic BaseModel subclass
+        mode: Optional Mode parameter for mode-specific schema variations.
+              Currently unused but reserved for future mode-specific schema formats.
 
     Returns:
         A Gemini FunctionDeclaration object
@@ -104,6 +120,10 @@ def generate_gemini_schema(model: type[BaseModel]) -> Any:
     Note:
         This function is deprecated. The google-generativeai library is being replaced by google-genai.
     """
+    # Mode is included in cache key via functools.lru_cache based on function arguments
+    # No mode-specific logic yet, but infrastructure is in place for future enhancements
+    _ = mode  # Reserved for future use
+    
     # This is kept for backward compatibility but deprecated
     warnings.warn(
         "generate_gemini_schema is deprecated. The google-generativeai library is being replaced by google-genai.",
@@ -115,7 +135,7 @@ def generate_gemini_schema(model: type[BaseModel]) -> Any:
         import google.generativeai.types as genai_types
 
         # Use OpenAI schema
-        openai_schema = generate_openai_schema(model)
+        openai_schema = generate_openai_schema(model, mode)
 
         # Transform to Gemini format
         function = genai_types.FunctionDeclaration(
