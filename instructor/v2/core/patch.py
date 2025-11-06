@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from pydantic import BaseModel
 
 from instructor.core.hooks import Hooks
-from instructor.core.retry import retry_async, retry_sync
 from instructor.templating import handle_templating
 from instructor.utils import is_async
 from instructor.v2.core.mode_types import ModeType, Provider
 from instructor.v2.core.registry import mode_registry
+from instructor.v2.core.retry import retry_sync_v2
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -129,17 +129,17 @@ def _create_sync_wrapper(
             context=context,
         )
 
-        # Use v1 retry logic (reuses existing retry infrastructure)
-        # The retry logic will call the reask handler from registry
-        response = retry_sync(
+        # Use v2 retry logic with registry handlers
+        response = retry_sync_v2(
             func=func,
             response_model=response_model,
+            provider=provider,
+            mode_type=mode_type,
             context=context,
             max_retries=max_retries,
             args=args,
             kwargs=new_kwargs,
             strict=strict,
-            mode=(provider, mode_type),  # Pass as tuple
             hooks=hooks,
         )
 
