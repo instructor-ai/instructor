@@ -24,7 +24,6 @@ from instructor.providers.anthropic.utils import (
     combine_system_messages,
     extract_system_messages,
     generate_anthropic_schema,
-    handle_anthropic_message_conversion,
 )
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
@@ -201,15 +200,6 @@ class AnthropicToolsHandler(ModeHandler):
         """
         new_kwargs = kwargs.copy()
 
-        if response_model is None:
-            # Just handle message conversion
-            if "messages" in new_kwargs:
-                new_kwargs["messages"] = process_messages_for_anthropic(
-                    new_kwargs["messages"]
-                )
-            new_kwargs = handle_anthropic_message_conversion(new_kwargs)
-            return None, new_kwargs
-
         # Extract and combine system messages BEFORE serializing message content
         system_messages = extract_system_messages(new_kwargs.get("messages", []))
 
@@ -228,6 +218,10 @@ class AnthropicToolsHandler(ModeHandler):
             new_kwargs["messages"] = process_messages_for_anthropic(
                 new_kwargs["messages"]
             )
+
+        if response_model is None:
+            # Just return with processed messages and extracted system
+            return None, new_kwargs
 
         # Generate tool schema
         tool_descriptions = generate_anthropic_schema(response_model)
