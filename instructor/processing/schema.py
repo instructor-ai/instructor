@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import functools
 import warnings
-from typing import Any, Optional
+from typing import Any
 
 from docstring_parser import parse
 from pydantic import BaseModel
@@ -25,7 +25,7 @@ __all__ = [
 
 
 @functools.lru_cache(maxsize=256)
-def generate_openai_schema(model: type[BaseModel], mode: Optional[Mode] = None) -> dict[str, Any]:
+def generate_openai_schema(model: type[BaseModel], mode: Mode | None = None) -> dict[str, Any]:
     """
     Generate OpenAI function schema from a Pydantic model.
 
@@ -79,7 +79,7 @@ def generate_openai_schema(model: type[BaseModel], mode: Optional[Mode] = None) 
 
 
 @functools.lru_cache(maxsize=256)
-def generate_anthropic_schema(model: type[BaseModel], mode: Optional[Mode] = None) -> dict[str, Any]:
+def generate_anthropic_schema(model: type[BaseModel], mode: Mode | None = None) -> dict[str, Any]:
     """
     Generate Anthropic tool schema from a Pydantic model.
 
@@ -105,7 +105,7 @@ def generate_anthropic_schema(model: type[BaseModel], mode: Optional[Mode] = Non
 
 
 @functools.lru_cache(maxsize=256)
-def generate_gemini_schema(model: type[BaseModel], mode: Optional[Mode] = None) -> Any:
+def generate_gemini_schema(model: type[BaseModel], mode: Mode | None = None) -> Any:
     """
     Generate Gemini function schema from a Pydantic model.
 
