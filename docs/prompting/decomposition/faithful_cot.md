@@ -21,10 +21,8 @@ We can implement it in `instructor` as seen below
 
 ```python hl_lines="30-45"
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class ReasoningStep(BaseModel):

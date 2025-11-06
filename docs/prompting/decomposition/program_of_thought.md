@@ -9,13 +9,11 @@ Program of Thought aims to leverage an external python interpreter in order to g
 We can implement it in `instructor` as seen below
 
 ```python hl_lines="120-125"
-from openai import OpenAI
 from pydantic import BaseModel, Field, field_validator
 import instructor
 from textwrap import dedent
 from typing import Literal
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 prefix = """
 # Answer this question by implementing a solver()

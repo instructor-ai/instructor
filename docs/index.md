@@ -61,7 +61,7 @@ class Person(BaseModel):
     occupation: str
 
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 person = client.chat.completions.create(
     response_model=Person,
     messages=[
@@ -226,7 +226,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         You can now use OpenAI's structured output response with Instructor. This feature combines the strengths of Instructor with OpenAI's precise sampling.
 
         ```python
-        client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.TOOLS_STRICT)
+        client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
         ```
 
     ```python
@@ -241,7 +241,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
 
     # Create instructor client with provider
-    client = instructor.from_provider("openai/gpt-4o-mini")
+    client = instructor.from_provider("openai/gpt-5-nano")
 
     # Extract structured data from natural language
     res = client.chat.completions.create(
@@ -387,7 +387,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
         age: int
 
 
-    client = instructor.from_provider("google/gemini-1.5-flash")
+    client = instructor.from_provider("google/gemini-2.5-flash")
 
     # note that client.chat.completions.create will also work
     resp = client.messages.create(
@@ -423,7 +423,7 @@ Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Tu
 
 
     client = instructor.from_provider(
-        "google/gemini-1.5-pro",
+        "google/gemini-2.5-flash",
         vertexai=True
     )
 
@@ -681,7 +681,7 @@ class UserInfo(BaseModel):
 
 
 # Initialize the client with from_provider
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 # Define hook functions
@@ -766,7 +766,7 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_provider("openai/gpt-4-turbo-preview")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 user = client.chat.completions.create(
     messages=[
@@ -789,7 +789,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_provider("openai/gpt-4-turbo-preview", async_client=True)
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class User(BaseModel):
@@ -819,7 +819,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_provider("openai/gpt-4-turbo-preview")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):
@@ -846,7 +846,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_provider("openai/gpt-4-turbo-preview")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):
@@ -894,7 +894,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_provider("openai/gpt-4-turbo-preview")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):
@@ -927,7 +927,7 @@ Instructor supports templating with Jinja, which lets you create dynamic prompts
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):
@@ -964,7 +964,7 @@ from typing_extensions import Annotated
 from instructor import llm_validator
 
 # Create instructor client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class QuestionAnswer(BaseModel):

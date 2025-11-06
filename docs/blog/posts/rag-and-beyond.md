@@ -100,10 +100,8 @@ Note how we model a rewritten query, range of published dates, and a list of dom
 
 ```python
 import instructor
-from openai import OpenAI
-
 # Enables response_model in the openai client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 query = client.chat.completions.create(
     model="gpt-4",
@@ -181,10 +179,8 @@ Now we can call this with a simple query like "What do I have today?" and it wil
 
 ```python
 import instructor
-from openai import OpenAI
-
 # Enables response_model in the openai client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 retrieval = client.chat.completions.create(
     model="gpt-4",

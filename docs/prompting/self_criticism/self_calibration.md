@@ -12,10 +12,8 @@ We can implement this using `instructor` as seen below
 
 ```python hl_lines="23-27"
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class SelfCalibration(BaseModel):

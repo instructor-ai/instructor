@@ -11,13 +11,11 @@ This enables us to support a greater variety of different response formats and a
 We can implement this in `instructor` as seen below.
 
 ```python hl_lines="71-73"
-from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 import instructor
 from textwrap import dedent
 import asyncio
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class Response(BaseModel):

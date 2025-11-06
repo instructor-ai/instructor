@@ -109,12 +109,10 @@ This function takes a string `question` and a string `context` and returns a `Qu
 To understand the validation context work from pydantic check out [pydantic's docs](https://docs.pydantic.dev/usage/validators/#model-validators)
 
 ```python hl_lines="5 6 14"
-from openai import OpenAI
 import instructor
-
 # Apply the patch to the OpenAI client
 # enables response_model, context keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 # <%hide%>

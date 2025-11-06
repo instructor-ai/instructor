@@ -56,9 +56,7 @@ Using Instructor, we can prompt the LLM to generate a `SearchQuery` object based
 
 ```python
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 response = client.chat.completions.create(
     model="gpt-4o",

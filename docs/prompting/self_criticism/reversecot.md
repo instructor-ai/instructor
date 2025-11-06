@@ -14,10 +14,8 @@ We can implement this using `instructor` as seen below.
 
 ```python hl_lines="54-59 76-83 98-107 127-140 155-167"
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class ReconstructedPrompt(BaseModel):

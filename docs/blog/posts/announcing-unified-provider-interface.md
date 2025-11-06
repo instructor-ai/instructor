@@ -42,7 +42,7 @@ The `from_provider()` function is designed to streamline several common workflow
 
 ## How it Works: A Look Under the Hood
 
-Internally, `from_provider()` (located in `instructor/auto_client.py`) parses the model string (e.g., `"openai/gpt-4o-mini"`) to identify the provider and model name. It then uses conditional logic to import the correct libraries, instantiate the client, and apply the appropriate Instructor patch. For instance, the conceptual handling for an OpenAI client would involve importing the `openai` SDK and `instructor.from_openai`.
+Internally, `from_provider()` (located in `instructor/auto_client.py`) parses the model string (e.g., `"openai/gpt-5-nano"`) to identify the provider and model name. It then uses conditional logic to import the correct libraries, instantiate the client, and apply the appropriate Instructor patch. For instance, the conceptual handling for an OpenAI client would involve importing the `openai` SDK and `instructor.from_openai`.
 
 ```python
 # Conceptual illustration of internal logic for OpenAI:

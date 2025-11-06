@@ -10,12 +10,10 @@ This example demonstrates how to perform single-label classification using the O
 ```python
 from pydantic import BaseModel, Field
 from typing import Literal
-from openai import OpenAI
 import instructor
-
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class ClassificationResponse(BaseModel):

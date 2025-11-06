@@ -46,9 +46,7 @@ Let's see how to use this recursive schema with Instructor:
 
 ```python
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def parse_hierarchy(text: str) -> RecursiveNode:

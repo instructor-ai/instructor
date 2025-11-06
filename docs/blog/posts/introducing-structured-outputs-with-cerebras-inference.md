@@ -66,7 +66,7 @@ import instructor
 from cerebras.cloud.sdk import Cerebras
 from pydantic import BaseModel
 
-client = instructor.from_cerebras(Cerebras())
+client = instructor.from_provider("cerebras/llama3.1-70b")
 
 
 class Person(BaseModel):

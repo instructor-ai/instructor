@@ -170,7 +170,7 @@ With our inbuilt support for `jinja` formatting using the `context` keyword that
 import openai
 import instructor
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 resp = client.chat.completions.create(
     model="gpt-4o",

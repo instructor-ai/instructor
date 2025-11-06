@@ -39,7 +39,7 @@ class Response(BaseModel):
     content: str = Field(description="The model's response to the prompt")
     confidence: float = Field(description="Confidence score between 0 and 1")
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 def generate_responses(prompt: str, n: int = 3) -> List[Response]:
     responses = []

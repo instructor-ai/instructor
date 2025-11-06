@@ -11,7 +11,7 @@ import instructor
 from openai import OpenAI
 
 # Default mode (TOOLS)
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # With JSON mode
 client = instructor.from_openai(
@@ -26,16 +26,11 @@ For Anthropic's Claude models:
 
 ```python
 import instructor
-from anthropic import Anthropic
-
 # Default mode (ANTHROPIC_TOOLS)
-client = instructor.from_anthropic(Anthropic())
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
 
 # With JSON mode
-client = instructor.from_anthropic(
-    Anthropic(),
-    mode=instructor.Mode.JSON
-)
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.JSON)
 ```
 
 ## Google Gemini
@@ -49,10 +44,7 @@ import google.generativeai as genai
 genai.configure(api_key="YOUR_API_KEY")
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-client = instructor.from_gemini(
-    model,
-    mode=instructor.Mode.GEMINI_TOOLS  # or GEMINI_JSON
-)
+client = instructor.from_provider("google/gemini-2.5-flash")
 ```
 
 ## Cohere
@@ -119,7 +111,7 @@ class User(BaseModel):
     age: int
 
 async def extract_user():
-    async_client = instructor.from_openai(AsyncOpenAI())
+    async_client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
     return await async_client.chat.completions.create(
         model="gpt-3.5-turbo",
         response_model=User,
@@ -148,18 +140,10 @@ client = instructor.from_openai(
 )
 
 # With API key explicitly defined
-client = instructor.from_openai(
-    OpenAI(api_key="your-api-key"),
-    mode=instructor.Mode.JSON
-)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.JSON)
 
 # With organization ID
-client = instructor.from_openai(
-    OpenAI(
-        api_key="your-api-key",
-        organization="org-..."
-    )
-)
+client = instructor.from_provider("openai/gpt-5-nano")
 ```
 
 ## Using with Other Providers via OpenAI-Compatible Interface
@@ -168,23 +152,11 @@ Many providers offer an OpenAI-compatible API:
 
 ```python
 import instructor
-from openai import OpenAI
-
 # Example for Azure OpenAI
-azure_client = instructor.from_openai(
-    OpenAI(
-        api_key="your-azure-api-key",
-        base_url="https://your-resource-name.openai.azure.com/openai/deployments/your-deployment-name"
-    )
-)
+azure_client = instructor.from_provider("openai/gpt-5-nano")
 
 # Example for Groq
-groq_client = instructor.from_openai(
-    OpenAI(
-        api_key="your-groq-api-key",
-        base_url="https://api.groq.com/openai/v1"
-    )
-)
+groq_client = instructor.from_provider("openai/gpt-5-nano")
 ```
 
 ## Next Steps

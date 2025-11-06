@@ -32,15 +32,13 @@ See how Instructor validates LLM outputs automatically:
 ```python
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
 # Define validation rules for LLM extraction
 class UserProfile(BaseModel):
     name: str
     age: int = Field(ge=13, description="User's age in years")
 
 # Extract and validate LLM output
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 response = client.chat.completions.create(
     model="gpt-3.5-turbo",  # Works with GPT-4, Claude, Gemini
     messages=[

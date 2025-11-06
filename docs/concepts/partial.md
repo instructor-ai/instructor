@@ -164,7 +164,7 @@ import instructor
 from pydantic import BaseModel
 
 client = instructor.from_provider(
-    "openai/gpt-4-turbo-preview",
+    "openai/gpt-5-nano",
     async_client=True,
 )
 

@@ -8,12 +8,10 @@ We can implement this using `instructor` as seen below.
 
 ```python hl_lines="41-42 57-61 96-99"
 import instructor
-from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 import asyncio
 from typing import Optional
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class ReasoningAndResponse(BaseModel):

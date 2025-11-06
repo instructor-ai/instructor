@@ -28,7 +28,7 @@ import instructor
 from pydantic import BaseModel, Field
 from typing import Iterable
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class KnownFact(BaseModel):

@@ -19,12 +19,10 @@ This takes advantage of the various forms of knowledge that the LLM has acquired
 We can implement this using `instructor` as seen below with some slight modifications.
 
 ```python hl_lines="33-36"
-from openai import OpenAI
 from pydantic import BaseModel, Field
 import instructor
 from textwrap import dedent
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class RelevantProblem(BaseModel):

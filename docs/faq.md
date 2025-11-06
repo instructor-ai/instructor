@@ -163,10 +163,8 @@ Instructor works seamlessly with FastAPI:
 from fastapi import FastAPI
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
 app = FastAPI()
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class UserInfo(BaseModel):
     name: str
@@ -188,9 +186,7 @@ Use the async client:
 ```python
 import instructor
 import asyncio
-from openai import AsyncOpenAI
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 async def extract_data():
     result = await client.chat.completions.create(

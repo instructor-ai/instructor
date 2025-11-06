@@ -47,9 +47,7 @@ class PIIDataExtraction(BaseModel):
 The OpenAI API is utilized to extract PII information from a given document.
 
 ```python
-from openai import OpenAI
 import instructor
-
 # <%hide%>
 from typing import List
 from pydantic import BaseModel
@@ -81,7 +79,7 @@ class PIIDataExtraction(BaseModel):
 
 # <%hide%>
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 EXAMPLE_DOCUMENT = """
 # Fake Document with PII for Testing PII Scrubbing Model

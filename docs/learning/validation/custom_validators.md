@@ -11,7 +11,7 @@ from pydantic import BaseModel, field_validator
 import instructor
 
 # Initialize the client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Person(BaseModel):
     name: str
@@ -45,11 +45,9 @@ You can create more complex validators that check multiple fields or have condit
 ```python
 from pydantic import BaseModel, field_validator, model_validator
 import instructor
-from openai import OpenAI
 from typing import List, Optional
 from datetime import date
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Employee(BaseModel):
     name: str
@@ -80,10 +78,8 @@ Custom validators can also process more complex data types and perform transform
 ```python
 from pydantic import BaseModel, field_validator
 import instructor
-from openai import OpenAI
 import re
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Contact(BaseModel):
     name: str
@@ -117,10 +113,8 @@ You can also use external services or APIs for validation:
 ```python
 from pydantic import BaseModel, field_validator
 import instructor
-from openai import OpenAI
 import requests
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Address(BaseModel):
     street: str
@@ -148,7 +142,7 @@ from pydantic import BaseModel, BeforeValidator
 import instructor
 from instructor import llm_validator
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class ProductDescription(BaseModel):
     product_name: str

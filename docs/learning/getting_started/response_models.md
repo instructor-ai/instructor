@@ -139,9 +139,7 @@ Once you've defined your model, you can use it for extraction:
 
 ```python
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 forecast = client.chat.completions.create(
     model="gpt-3.5-turbo",

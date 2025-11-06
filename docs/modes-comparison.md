@@ -39,10 +39,7 @@ Here's a quick comparison:
 #### `TOOLS` Mode
 
 ```python
-client = instructor.from_openai(
-    OpenAI(),
-    mode=instructor.Mode.TOOLS
-)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS)
 ```
 
 This is the **recommended mode** for OpenAI models. It uses OpenAI's tool calling API to:
@@ -61,10 +58,7 @@ This is the **recommended mode** for OpenAI models. It uses OpenAI's tool callin
 #### `JSON` Mode
 
 ```python
-client = instructor.from_openai(
-    OpenAI(),
-    mode=instructor.Mode.JSON
-)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.JSON)
 ```
 
 This mode instructs the model to output direct JSON. It:
@@ -82,10 +76,7 @@ This mode instructs the model to output direct JSON. It:
 #### `MD_JSON` Mode
 
 ```python
-client = instructor.from_openai(
-    OpenAI(),
-    mode=instructor.Mode.MD_JSON
-)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.MD_JSON)
 ```
 
 This mode instructs the model to output JSON inside a Markdown code block. It:
@@ -100,10 +91,7 @@ This mode instructs the model to output JSON inside a Markdown code block. It:
 #### `ANTHROPIC_TOOLS` Mode
 
 ```python
-client = instructor.from_anthropic(
-    Anthropic(),
-    mode=instructor.Mode.ANTHROPIC_TOOLS
-)
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.ANTHROPIC_TOOLS)
 ```
 
 This mode uses Anthropic's Tool Calling API, available on Claude 3+ models. It:
@@ -116,10 +104,7 @@ This mode uses Anthropic's Tool Calling API, available on Claude 3+ models. It:
 #### `ANTHROPIC_JSON` Mode
 
 ```python
-client = instructor.from_anthropic(
-    Anthropic(),
-    mode=instructor.Mode.ANTHROPIC_JSON
-)
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.ANTHROPIC_JSON)
 ```
 
 This mode requests direct JSON output from Anthropic models. It:
@@ -135,7 +120,7 @@ This mode requests direct JSON output from Anthropic models. It:
 
 ```python
 client = instructor.from_provider(
-    "google/gemini-1.5-pro",
+    "google/gemini-2.5-flash",
     mode=instructor.Mode.GENAI_TOOLS
 )
 ```
@@ -153,7 +138,7 @@ This mode uses Google's function calling for Gemini models. It:
 
 ```python
 client = instructor.from_provider(
-    "google/gemini-1.5-pro",
+    "google/gemini-2.5-flash",
     mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
 )
 ```
@@ -187,23 +172,23 @@ This mode requests direct JSON from Gemini models. It:
 
 ```python
 # Best for most OpenAI use cases
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS)
 
 # For very simple extractions
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.JSON)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.JSON)
 
 # For complex, multi-step processes
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.PARALLEL_TOOLS)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.PARALLEL_TOOLS)
 ```
 
 ### Anthropic
 
 ```python
 # For Claude 3+ with complex structures
-client = instructor.from_anthropic(Anthropic(), mode=instructor.Mode.ANTHROPIC_TOOLS)
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.ANTHROPIC_TOOLS)
 
 # For simpler extractions or older Claude models
-client = instructor.from_anthropic(Anthropic(), mode=instructor.Mode.ANTHROPIC_JSON)
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.ANTHROPIC_JSON)
 ```
 
 ### Google/Gemini
@@ -211,13 +196,13 @@ client = instructor.from_anthropic(Anthropic(), mode=instructor.Mode.ANTHROPIC_J
 ```python
 # For complex structures (recommended)
 client = instructor.from_provider(
-    "google/gemini-1.5-pro",
+    "google/gemini-2.5-flash",
     mode=instructor.Mode.GENAI_TOOLS
 )
 
 # For structured outputs with JSON (recommended)
 client = instructor.from_provider(
-    "google/gemini-1.5-pro",
+    "google/gemini-2.5-flash",
     mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
 )
 ```

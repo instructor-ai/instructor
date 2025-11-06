@@ -11,11 +11,9 @@ Chain Of Verification ( CoVe )<sup><a href="https://arxiv.org/pdf/2309.11495">1<
 
 ```python hl_lines="49-52 95-100"
 import instructor
-from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 import asyncio
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class QueryResponse(BaseModel):

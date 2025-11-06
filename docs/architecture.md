@@ -61,7 +61,7 @@ class User(BaseModel):
     name: str
     age: int
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 model = client.chat.completions.create(
     model="gpt-4o-mini",
@@ -87,7 +87,7 @@ class User(BaseModel):
     age: int
 
 async def main():
-    aclient = instructor.from_openai(openai.AsyncOpenAI())
+    aclient = instructor.from_provider("openai/gpt-5-nano", async_client=True)
     model = await aclient.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": "{\"name\": \"Ada\", \"age\": 37}"}],

@@ -13,14 +13,12 @@ We can implement this in `instructor`. However, instead of using a `deberta-v3-l
 
 ```python
 import instructor
-from openai import AsyncOpenAI
 from pydantic import BaseModel
 from typing import Literal
 from textwrap import dedent
 import asyncio
 from collections import defaultdict
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class Response(BaseModel):

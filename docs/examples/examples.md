@@ -13,7 +13,7 @@ import instructor
 from typing import Iterable
 from pydantic import BaseModel, ConfigDict
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class SyntheticQA(BaseModel):

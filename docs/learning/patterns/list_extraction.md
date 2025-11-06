@@ -10,10 +10,8 @@ To extract a list of items, you define a model for a single item and then use Py
 from typing import List
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
 # Initialize the client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # Define a single item model
 class Person(BaseModel):
@@ -56,9 +54,7 @@ You can also extract a list directly without a wrapper model:
 from typing import List
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Book(BaseModel):
     title: str
@@ -92,9 +88,7 @@ You can extract nested lists by combining list types:
 from typing import List
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Author(BaseModel):
     name: str
@@ -133,10 +127,8 @@ You can stream list extraction results using Instructor's streaming capabilities
 ```python
 from typing import List
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Task(BaseModel):
     description: str
@@ -165,9 +157,7 @@ You can add validation for both individual items and the entire list:
 from typing import List
 from pydantic import BaseModel, Field, field_validator, model_validator
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Product(BaseModel):
     name: str
@@ -210,9 +200,7 @@ You can add constraints to lists using Pydantic's Field:
 from typing import List
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Ingredient(BaseModel):
     name: str
@@ -241,10 +229,8 @@ Here's a more complete example for extracting a list of tasks from a meeting tra
 from typing import List, Optional
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
 from datetime import date
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Assignee(BaseModel):
     name: str

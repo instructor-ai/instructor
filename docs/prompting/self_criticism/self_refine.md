@@ -25,9 +25,7 @@ graph TD
 ```python hl_lines="102-106"
 import instructor
 from pydantic import BaseModel, Field
-from openai import OpenAI
 from typing import Optional
-
 
 class Response(BaseModel):
     code: str
@@ -55,7 +53,7 @@ class History(BaseModel):
         )
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_feedback(response):

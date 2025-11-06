@@ -34,12 +34,10 @@ For single-label classification, we define a Pydantic model with a [Literal](../
 ```python
 from pydantic import BaseModel, Field
 from typing import Literal
-from openai import OpenAI
 import instructor
-
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class ClassificationResponse(BaseModel):
@@ -72,9 +70,7 @@ The function **`classify`** will perform the single-label classification.
 # <%hide%>
 from pydantic import BaseModel, Field
 from typing import Literal
-from openai import OpenAI
 import instructor
-
 
 class ClassificationResponse(BaseModel):
     """
@@ -100,7 +96,7 @@ class ClassificationResponse(BaseModel):
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 # <%hide%>
@@ -126,10 +122,8 @@ Let's run examples to see if it correctly identifies spam and non-spam messages.
 # <%hide%>
 from pydantic import BaseModel, Field
 from typing import Literal
-from openai import OpenAI
 import instructor
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class ClassificationResponse(BaseModel):
@@ -250,9 +244,7 @@ class MultiClassPrediction(BaseModel):
 
 # <%hide%>
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def multi_classify(data: str) -> MultiClassPrediction:
@@ -279,8 +271,6 @@ from typing import List
 from pydantic import BaseModel, Field
 from typing import Literal
 import instructor
-from openai import OpenAI
-
 
 class MultiClassPrediction(BaseModel):
     """
@@ -304,7 +294,7 @@ class MultiClassPrediction(BaseModel):
     )
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def multi_classify(data: str) -> MultiClassPrediction:

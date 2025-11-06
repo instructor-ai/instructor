@@ -45,9 +45,7 @@ Let's start by trying to extract some user information given a user query. We ca
 ```python
 from pydantic import BaseModel
 from fastapi import FastAPI
-from openai import AsyncOpenAI
 import instructor
-
 
 class UserData(BaseModel):
     query: str
@@ -59,7 +57,7 @@ class UserDetail(BaseModel):
 
 
 app = FastAPI()
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 @app.post("/user", response_model=UserDetail)
@@ -80,10 +78,8 @@ This simple endpoint takes in a user query and extracts out a user from the stat
 ```python hl_lines="5 18-21"
 from pydantic import BaseModel
 from fastapi import FastAPI
-from openai import AsyncOpenAI
 import instructor
 import logfire  # (1)!
-
 
 class UserData(BaseModel):
     query: str
@@ -178,11 +174,9 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     ```python
     from pydantic import BaseModel
     from fastapi import FastAPI
-    from openai import AsyncOpenAI
     import instructor
     import logfire
     import asyncio
-
 
     class UserData(BaseModel):
         query: str
@@ -306,13 +300,11 @@ Let's add a new endpoint to our server to see how this might work
     ```python
     from pydantic import BaseModel
     from fastapi import FastAPI
-    from openai import AsyncOpenAI
     import instructor
     import logfire
     import asyncio
     from collections.abc import Iterable
     from fastapi.responses import StreamingResponse
-
 
     class UserData(BaseModel):
         query: str

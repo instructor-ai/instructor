@@ -70,7 +70,7 @@ The beauty of native caching is that it works with **every provider** through th
 from instructor.cache import AutoCache, DiskCache
 
 # Works with OpenAI
-openai_client = from_provider("openai/gpt-3.5-turbo", cache=AutoCache())
+openai_client = from_provider("openai/gpt-5-nano", cache=AutoCache())
 
 # Works with Anthropic  
 anthropic_client = from_provider("anthropic/claude-3-haiku", cache=AutoCache())

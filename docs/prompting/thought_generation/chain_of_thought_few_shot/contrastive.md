@@ -21,11 +21,9 @@ We can implement Contrastive Chain Of Thought using `instructor` as seen below.
 
 ```python hl_lines="35-40"
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 from textwrap import dedent
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class ChainOfThought(BaseModel):

@@ -28,7 +28,7 @@ class Album(BaseModel):
     year: int
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def emotion_prompting(query, stimuli):

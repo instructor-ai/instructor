@@ -19,9 +19,7 @@ To make a field optional, use Python's `Optional` type and provide a default val
 from typing import Optional
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Person(BaseModel):
     name: str  # Required field
@@ -39,9 +37,7 @@ You can provide meaningful default values for optional fields:
 from typing import List
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Product(BaseModel):
     name: str
@@ -59,9 +55,7 @@ You can add the `Field` class for more control and validation:
 from typing import Optional
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class UserProfile(BaseModel):
     username: str
@@ -81,9 +75,7 @@ Entire nested structures can be optional:
 from typing import Optional
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Address(BaseModel):
     street: str
@@ -118,10 +110,8 @@ Instructor provides a `Maybe` type for uncertain or ambiguous fields:
 ```python
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
 from instructor.types import Maybe
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class PersonInfo(BaseModel):
     name: str
@@ -167,10 +157,8 @@ Optional fields can still have validation when they're present:
 from typing import Optional
 from pydantic import BaseModel, field_validator
 import instructor
-from openai import OpenAI
 import re
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class ContactInfo(BaseModel):
     email: str

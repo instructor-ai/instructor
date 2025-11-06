@@ -17,7 +17,7 @@ import openai
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Response(BaseModel):

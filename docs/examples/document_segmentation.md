@@ -77,7 +77,7 @@ import cohere
 
 # Apply the patch to the cohere client
 # enables response_model keyword
-client = instructor.from_cohere(cohere.ClientV2())
+client = instructor.from_provider("cohere/command-r-plus")
 
 
 system_prompt = f"""\
@@ -148,7 +148,7 @@ def doc_with_lines(document):
     return document_with_line_numbers, line2text
 
 
-client = instructor.from_cohere(cohere.ClientV2())
+client = instructor.from_provider("cohere/command-r-plus")
 
 
 system_prompt = f"""\

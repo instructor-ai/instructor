@@ -56,11 +56,9 @@ To extract competitors from slides we will define a function which will read ima
 
 ```python
 import instructor
-from openai import OpenAI
-
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 # <%hide%>
 from pydantic import BaseModel, Field
 from typing import Optional, List
@@ -134,11 +132,9 @@ As we can see, our model extracted the relevant information for each competitor 
 ```python
 # <%hide%>
 import instructor
-from openai import OpenAI
-
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 from pydantic import BaseModel, Field
 from typing import Optional, List
 

@@ -113,7 +113,7 @@ Now, to produce question-answer pairs:
 import instructor
 import openai
 
-instructor_client = instructor.from_openai(openai.OpenAI())
+instructor_client = instructor.from_provider("openai/gpt-5-nano")
 
 system_prompt = """Analyze the given YouTube transcript and generate question-answer pairs
 to help study and understand the topic better. Please rate all questions from 1 to 5
@@ -212,7 +212,7 @@ def generate_question_and_answers(state: State) -> State:
     youtube_url = state["youtube_url"]
 
     # create the instructor client
-    instructor_client = instructor.from_openai(openai.OpenAI())
+    instructor_client = instructor.from_provider("openai/gpt-5-nano")
     system_prompt = (
         "Analyze the given YouTube transcript and generate question-answer pairs"
         " to help study and understand the topic better. Please rate all questions from 1 to 5"

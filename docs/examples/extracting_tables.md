@@ -180,9 +180,7 @@ In this example, we apply the method to extract data from an image showing the t
 ```python
 # <%hide%>
 import instructor
-from openai import OpenAI
 from typing import Iterable
-
 from pydantic import BaseModel
 from io import StringIO
 from typing import Annotated, Any
@@ -224,7 +222,7 @@ class Table(BaseModel):
     dataframe: MarkdownDataFrame
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract_table(url: str) -> Iterable[Table]:

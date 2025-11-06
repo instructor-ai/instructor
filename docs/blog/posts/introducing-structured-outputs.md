@@ -181,7 +181,7 @@ class User(BaseModel):
         return v
 
 
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS_STRICT)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
 
 resp = client.chat.completions.create(
     response_model=User,
@@ -205,7 +205,7 @@ This built-in retry logic allows for targeted correction to the generated respon
 A common use-case is to define a single schema and extract multiple instances of it. With `instructor`, doing this is relatively straightforward by using [our `create_iterable` method](../../concepts/lists.md).
 
 ```python
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS_STRICT)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
 
 
 class User(BaseModel):
@@ -238,11 +238,9 @@ Other times, we might also want to stream out information as it's dynamically ge
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 from rich.console import Console
-
-client = instructor.from_openai(OpenAI(), mode=instructor.Mode.TOOLS_STRICT)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
 
 text_block = """
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:
@@ -313,10 +311,8 @@ This makes it incredibly flexible for users looking to migrate and test differen
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):
@@ -344,10 +340,8 @@ Now let's see how we can achieve the same with Anthropic.
 
 ```python hl_lines="2 5 14"
 import instructor
-from anthropic import Anthropic  # (1)!
 from pydantic import BaseModel
-
-client = instructor.from_anthropic(Anthropic())  # (2)!
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")  # (2)!
 
 
 class User(BaseModel):

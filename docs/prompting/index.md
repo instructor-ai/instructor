@@ -209,9 +209,7 @@ All these prompting techniques can be implemented with Instructor by:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
-
 # Example implementing Chain of Thought with a field
 class ReasonedAnswer(BaseModel):
     """Answer the following question with detailed reasoning."""
@@ -223,7 +221,7 @@ class ReasonedAnswer(BaseModel):
         description="The final conclusion after reasoning"
     )
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 response = client.chat.completions.create(
     model="gpt-4",

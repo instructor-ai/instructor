@@ -25,7 +25,7 @@ import instructor
 from pydantic import BaseModel
 from typing import Iterable, Literal
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Stepback(BaseModel):

@@ -52,10 +52,8 @@ The full pipeline with forward reasoning and backward verification can be implem
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
 from typing import Literal
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 n = 3  # Number of candidates to generate
 k = 5  # Number of times to verify

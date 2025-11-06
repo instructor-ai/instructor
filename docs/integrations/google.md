@@ -319,8 +319,7 @@ If you're currently using the legacy `google-generativeai` package with Instruct
 import instructor
 import google.generativeai as genai
 
-client = instructor.from_gemini(
-    genai.GenerativeModel("gemini-1.5-flash"),
+client = instructor.from_provider("google/gemini-2.5-flash"),
     mode=instructor.Mode.GEMINI_JSON,
 )
 ```
@@ -330,7 +329,7 @@ client = instructor.from_gemini(
 import instructor
 
 # Option 1: Using from_provider (simplest)
-client = instructor.from_provider("google/gemini-1.5-flash")
+client = instructor.from_provider("google/gemini-2.5-flash")
 
 # Option 2: Using from_genai directly
 from google import genai
@@ -350,8 +349,7 @@ import vertexai
 from vertexai.generative_models import GenerativeModel
 
 vertexai.init(project="your-project", location="us-central1")
-client = instructor.from_vertexai(
-    GenerativeModel("gemini-1.5-flash"),
+client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),
     mode=instructor.Mode.VERTEXAI_TOOLS,
 )
 ```

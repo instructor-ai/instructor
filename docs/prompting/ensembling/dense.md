@@ -11,18 +11,16 @@ We can implement this using `instructor` as seen below.
 ```python hl_lines="26-41"
 import instructor
 from pydantic import BaseModel
-from openai import AsyncOpenAI
 import asyncio
 from collections import Counter
 from typing import Literal
 from textwrap import dedent
 
-
 class DemonstrationResponse(BaseModel):
     correct_answer: Literal["Positive", "Negative", "Neutral"]
 
 
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 async def generate_self_consistent_response(prompt: str, examples: list[str]):

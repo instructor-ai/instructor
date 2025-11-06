@@ -11,15 +11,13 @@ We can implement Complexity Based Consistency using `instructor` as seen below.
 
 ```python hl_lines="40-42"
 import instructor
-from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from textwrap import dedent
 import asyncio
 from collections import Counter
 import random
 
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class ReasoningStep(BaseModel):

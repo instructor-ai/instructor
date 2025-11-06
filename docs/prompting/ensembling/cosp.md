@@ -71,7 +71,7 @@ import asyncio
 from textwrap import dedent
 import math
 
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class Response(BaseModel):

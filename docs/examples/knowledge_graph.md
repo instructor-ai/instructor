@@ -43,9 +43,7 @@ class KnowledgeGraph(BaseModel):
 The **`generate_graph`** function leverages OpenAI's API to generate a knowledge graph based on the input query.
 
 ```python hl_lines="8"
-from openai import OpenAI
 import instructor
-
 # <%hide%>
 from pydantic import BaseModel, Field
 from typing import List
@@ -73,7 +71,7 @@ class KnowledgeGraph(BaseModel):
 
 # Adds response_model to ChatCompletion
 # Allows the return of Pydantic model rather than raw JSON
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_graph(input) -> KnowledgeGraph:
@@ -99,9 +97,7 @@ from graphviz import Digraph
 # <%hide%>
 from pydantic import BaseModel, Field
 from typing import List
-from openai import OpenAI
 import instructor
-
 
 class Node(BaseModel, frozen=True):
     id: int
@@ -121,7 +117,7 @@ class KnowledgeGraph(BaseModel):
     edges: List[Edge] = Field(..., default_factory=list)
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_graph(input) -> KnowledgeGraph:
@@ -327,9 +323,7 @@ Once we've done this, we can now run this new `generate_graph` function with the
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import instructor
-from openai import OpenAI
 from graphviz import Digraph
-
 
 class Node(BaseModel, frozen=True):
     id: int
@@ -368,7 +362,7 @@ class KnowledgeGraph(BaseModel):
         dot.render(prefix, format="png", view=True)
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_graph(input: List[str]) -> KnowledgeGraph:

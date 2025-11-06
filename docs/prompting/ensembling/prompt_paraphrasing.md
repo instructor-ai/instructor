@@ -10,11 +10,9 @@ We can implement this using `instructor` as seen below.
 
 ```python hl_lines="20-25"
 import instructor
-from openai import AsyncOpenAI
 from pydantic import BaseModel
 import random
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class TranslatedPrompt(BaseModel):

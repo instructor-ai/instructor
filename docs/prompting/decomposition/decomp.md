@@ -17,11 +17,9 @@ We can implement this using `instructor` as seen below.
 
 ```python hl_lines="57-58"
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import Union
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Split(BaseModel):

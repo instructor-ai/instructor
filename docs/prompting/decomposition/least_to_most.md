@@ -17,9 +17,7 @@ These subproblems are solved sequentially, allowing the answers from earlier (si
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
 from typing import Iterable
-
 
 class Subquestion(BaseModel):
     question: str
@@ -34,7 +32,7 @@ class SubquestionWithAnswers(BaseModel):
     answer: int
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def decompose(question):

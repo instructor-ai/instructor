@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field
 import instructor
 from openai import OpenAI
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class User(BaseModel):
     name: str = Field(..., min_length=2, max_length=50)
@@ -65,7 +65,7 @@ import instructor
 from openai import OpenAI
 import re
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Product(BaseModel):
     name: str
@@ -123,7 +123,7 @@ import instructor
 from openai import OpenAI
 from datetime import date
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class DateRange(BaseModel):
     start_date: date
@@ -146,7 +146,7 @@ import instructor
 from openai import OpenAI
 from typing import List
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Address(BaseModel):
     street: str
@@ -186,7 +186,7 @@ from pydantic import BaseModel, Field, field_validator
 import instructor
 from openai import OpenAI
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class TagList(BaseModel):
     tags: List[str] = Field(..., min_items=1, max_items=5)
@@ -221,7 +221,7 @@ from pydantic import BaseModel
 import instructor
 from openai import OpenAI
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Status(str, Enum):
     PENDING = "pending"
@@ -260,7 +260,7 @@ from pydantic import BaseModel, Field
 import instructor
 from openai import OpenAI
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class CreditCard(BaseModel):
     number: str = Field(
@@ -314,12 +314,10 @@ Here's a more complete example validating form inputs:
 ```python
 from pydantic import BaseModel, Field, field_validator, model_validator
 import instructor
-from openai import OpenAI
 import re
 from datetime import date, datetime
 from typing import Optional
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class RegistrationForm(BaseModel):
     username: str = Field(..., min_length=3, max_length=20)

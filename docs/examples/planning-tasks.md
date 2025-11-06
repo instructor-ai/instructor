@@ -69,8 +69,6 @@ Now, let's demonstrate how to plan and execute a query plan using the defined mo
 
 ```python
 import instructor
-from openai import OpenAI
-
 # <%hide%>
 from typing import List, Literal
 from pydantic import Field, BaseModel
@@ -110,7 +108,7 @@ class QueryPlan(BaseModel):
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def query_planner(question: str) -> QueryPlan:

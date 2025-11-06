@@ -18,9 +18,7 @@ The simplest form of a prompt template is a string with placeholders for variabl
 ```python
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Person(BaseModel):
     name: str
@@ -92,9 +90,7 @@ For more complex templates, create dedicated template functions:
 from typing import List, Optional
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class ProductReview(BaseModel):
     product_name: str

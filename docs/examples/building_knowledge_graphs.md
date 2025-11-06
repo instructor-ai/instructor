@@ -10,9 +10,7 @@ In this tutorial, we will explore the process of constructing knowledge graphs f
 ```python
 from typing import List
 from pydantic import BaseModel, Field
-from openai import OpenAI
 import instructor
-
 
 class Node(BaseModel):
     id: int
@@ -33,7 +31,7 @@ class KnowledgeGraph(BaseModel):
 
 
 # Patch the OpenAI client to add response_model support
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_graph(input_text: str) -> KnowledgeGraph:

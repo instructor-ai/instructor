@@ -49,10 +49,7 @@ from pydantic import BaseModel
 import time
 
 # Initialize the client
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",
-    )
+client = instructor.from_provider("google/gemini-2.5-flash")
 )
 
 

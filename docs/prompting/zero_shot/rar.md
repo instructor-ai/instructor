@@ -23,9 +23,7 @@ To help the model better infer human intention from ambigious prompts, we can as
 ```python hl_lines="19"
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Response(BaseModel):

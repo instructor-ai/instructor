@@ -151,7 +151,7 @@ Example usage with metadata:
 # OpenAI batch with custom metadata
 instructor batch create-from-file \
     --file-path batch_requests.jsonl \
-    --model "openai/gpt-4o-mini" \
+    --model "openai/gpt-5-nano" \
     --description "Email classification batch - production v2.1" \
     --completion-window "24h"
 
@@ -175,7 +175,7 @@ class Classification(BaseModel):
     )
 
 # Create processor
-processor = BatchProcessor("openai/gpt-4o-mini", Classification)
+processor = BatchProcessor("openai/gpt-5-nano", Classification)
 
 # Prepare message conversations
 messages_list = [
@@ -300,7 +300,7 @@ Examples:
 instructor batch results \
     --batch-id batch_abc123 \
     --output-file openai_results.jsonl \
-    --model "openai/gpt-4o-mini"
+    --model "openai/gpt-5-nano"
 
 # Get Anthropic batch results
 instructor batch results \

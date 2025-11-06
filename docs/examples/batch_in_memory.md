@@ -26,7 +26,7 @@ class User(BaseModel):
 
 def main():
     # Initialize batch processor
-    processor = BatchProcessor("openai/gpt-4o-mini", User)
+    processor = BatchProcessor("openai/gpt-5-nano", User)
 
     # Sample messages for batch processing
     messages_list = [
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
 ```python
 # File-based approach
-processor = BatchProcessor("openai/gpt-4o-mini", User)
+processor = BatchProcessor("openai/gpt-5-nano", User)
 
 # Creates file on disk
 file_path = processor.create_batch_from_messages(
@@ -146,7 +146,7 @@ if os.path.exists(file_path):
 
 ```python
 # In-memory approach
-processor = BatchProcessor("openai/gpt-4o-mini", User)
+processor = BatchProcessor("openai/gpt-5-nano", User)
 
 # Creates BytesIO buffer in memory
 buffer = processor.create_batch_from_messages(
@@ -177,7 +177,7 @@ def lambda_handler(event, context):
     messages_list = event.get("messages", [])
     
     # Process in memory - no disk I/O
-    processor = BatchProcessor("openai/gpt-4o-mini", User)
+    processor = BatchProcessor("openai/gpt-5-nano", User)
     buffer = processor.create_batch_from_messages(
         messages_list,
         file_path=None,  # Essential for Lambda
@@ -221,7 +221,7 @@ batch_id = processor.submit_batch(buffer)
 # No cleanup required
 # Buffer is automatically garbage collected
 
-processor = BatchProcessor("openai/gpt-4o-mini", User)
+processor = BatchProcessor("openai/gpt-5-nano", User)
 
 # This approach leaves no trace on the file system
 buffer = processor.create_batch_from_messages(
@@ -260,7 +260,7 @@ All providers support in-memory batch processing:
 
 ### OpenAI
 ```python
-processor = BatchProcessor("openai/gpt-4o-mini", User)
+processor = BatchProcessor("openai/gpt-5-nano", User)
 buffer = processor.create_batch_from_messages(messages_list, file_path=None)
 batch_id = processor.submit_batch(buffer)
 ```

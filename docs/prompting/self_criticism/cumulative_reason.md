@@ -14,13 +14,11 @@ We can implement this using `instructor` as seen below
 
 ```python hl_lines="46-61 94-100 138-148"
 import instructor
-from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from textwrap import dedent
 from typing import Literal
 import asyncio
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class Proposition(BaseModel):

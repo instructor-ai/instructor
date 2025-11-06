@@ -43,7 +43,7 @@ Instructor works as a lightweight patch over the OpenAI Python SDK. To use it, y
 import instructor
 import openai
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 ```
 
 Then, you can pass a `response_model` parameter to the `completions.create` or `chat.completions.create` methods. This parameter takes in a Pydantic model class that defines the JSON structure you want the LLM output mapped to. Just like `response_model` when using FastAPI.
@@ -60,7 +60,7 @@ class User(BaseModel):
     email: str
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 user = client.chat.completions.create(
     model="gpt-3.5-turbo",

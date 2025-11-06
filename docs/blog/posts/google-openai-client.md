@@ -233,7 +233,7 @@ import instructor
 from pydantic import BaseModel
 from tenacity import Retrying, stop_after_attempt, wait_fixed
 
-client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS)
 
 
 class UserDetail(BaseModel):

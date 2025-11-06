@@ -41,10 +41,8 @@ Instructor uses Pydantic to simplify the interaction between the programmer and 
 ```python
 import pydantic
 import instructor
-from openai import OpenAI
-
 # Enables the response_model
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class UserDetail(pydantic.BaseModel):

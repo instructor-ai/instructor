@@ -64,9 +64,7 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",  # (1)!
+client = instructor.from_provider("google/gemini-2.5-flash")!
     )
 )
 
@@ -104,8 +102,7 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_vertexai(
-    client=GenerativeModel("gemini-1.5-pro-preview-0409"),  # (1)!
+client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),  # (1)!
 )
 
 

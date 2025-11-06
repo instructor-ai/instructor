@@ -37,7 +37,7 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 user = client.chat.completions.create(
     model="gpt-3.5-turbo",

@@ -27,11 +27,9 @@ To test the **`generate`** function, we provide it with a sample transcript, and
 
 ```python
 import instructor
-from openai import OpenAI
 from typing import Iterable, List, Optional
 from enum import Enum
 from pydantic import BaseModel
-
 
 class PriorityEnum(str, Enum):
     high = "High"
@@ -60,7 +58,7 @@ class Ticket(BaseModel):
 
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate(data: str) -> Iterable[Ticket]:

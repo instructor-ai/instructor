@@ -111,7 +111,7 @@ class MyModel(BaseModel):
     # fields...
     pass
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 create_kwargs = {
     # paste from InstructorRetryException.create_kwargs

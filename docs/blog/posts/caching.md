@@ -109,11 +109,9 @@ Let's first consider our canonical example, using the `OpenAI` Python client to 
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
-
 # Enables `response_model`
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class UserDetail(BaseModel):
@@ -336,10 +334,8 @@ import inspect
 import instructor
 import diskcache
 
-from openai import OpenAI
 from pydantic import BaseModel
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 cache = diskcache.Cache('./my_cache_directory')
 
 
@@ -503,9 +499,7 @@ import inspect
 import instructor
 
 from pydantic import BaseModel
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 cache = redis.Redis("localhost")
 
 

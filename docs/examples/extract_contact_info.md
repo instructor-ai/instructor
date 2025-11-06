@@ -25,11 +25,9 @@ To showcase the `parse_lead_from_message` function we can provide sample user me
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from typing import Iterable
-
 
 class Lead(BaseModel):
     name: str
@@ -40,7 +38,7 @@ class Lead(BaseModel):
     # Can define some function here to send Lead information to a database using an API
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def parse_lead_from_message(user_message: str):

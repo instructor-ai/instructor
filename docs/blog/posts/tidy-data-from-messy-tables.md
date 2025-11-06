@@ -75,8 +75,6 @@ Then with this new custom data type, it becomes easy to just pass the image to t
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
-
 
 class Table(BaseModel):
     caption: str
@@ -88,7 +86,7 @@ class TidyTables(BaseModel):
 
 
 # Patch the OpenAI client with instructor
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract_table(image_path: str) -> TidyTables:

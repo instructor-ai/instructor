@@ -88,12 +88,10 @@ Once we've done so, we can then put it all together into the following functions
 
 ```python hl_lines="30-31 38-48"
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 from youtube_transcript_api import YouTubeTranscriptApi
-
 # Set up OpenAI client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Chapter(BaseModel):

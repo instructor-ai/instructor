@@ -9,11 +9,9 @@ Here's how to stream a list of structured objects:
 ```python
 from typing import Iterable
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
-
 # Initialize the client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Book(BaseModel):
     title: str = Field(..., description="Book title")
@@ -43,11 +41,9 @@ Here's a practical example of streaming a list of tasks with progress tracking:
 ```python
 from typing import Iterable
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 import time
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Task(BaseModel):

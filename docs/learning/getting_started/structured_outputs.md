@@ -46,15 +46,13 @@ Instructor solves this problem by using Pydantic models to define the expected s
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field, EmailStr
-
 class Customer(BaseModel):
     name: str = Field(description="Customer's full name")
     age: int = Field(description="Customer's age in years", ge=0, le=120)
     email: EmailStr = Field(description="Customer's email address")
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 customer = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
@@ -85,9 +83,7 @@ Instructor shines with complex data structures:
 from typing import List, Optional
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Address(BaseModel):
     street: str

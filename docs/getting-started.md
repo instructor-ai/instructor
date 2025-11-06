@@ -66,7 +66,7 @@ class UserInfo(BaseModel):
     age: int
 
 # Create an instructor client with from_provider
-client = instructor.from_provider("openai/gpt-3.5-turbo")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # Extract structured data
 user_info = client.chat.completions.create(

@@ -21,8 +21,6 @@ We can implement Prompt Mining using `instructor` as seen below.
 ```python hl_lines="29-33"
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
 
 class PromptTemplate(BaseModel):
     prompt_template: str = Field(
@@ -38,7 +36,7 @@ class PromptTemplate(BaseModel):
     )
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_prompt_templates(prompt: str):

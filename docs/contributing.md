@@ -406,16 +406,14 @@ Example of a good documentation code block:
 ```python
 # Complete example with imports
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
-
 # Define your model
 class Person(BaseModel):
     name: str
     age: int
 
 # Create the patched client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # Use the model
 person = client.chat.completions.create(

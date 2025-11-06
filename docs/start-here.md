@@ -55,7 +55,7 @@ class Person:
     city: str
 
 # Connect to the LLM with Instructor
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # Extract structured data
 person = client.chat.completions.create(
@@ -96,7 +96,7 @@ Patching connects Instructor to your LLM provider (like OpenAI or Anthropic).
 
 ```python
 # For OpenAI
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # For Anthropic
 client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
@@ -108,10 +108,10 @@ Modes control how Instructor gets structured data from the LLM. Different provid
 
 ```python
 # Using OpenAI's function calling
-client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.TOOLS)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS)
 
 # Using JSON output directly
-client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.JSON)
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.JSON)
 ```
 
 ## Common Use Cases

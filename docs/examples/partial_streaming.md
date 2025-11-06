@@ -11,11 +11,9 @@ Instructor supports this pattern by making use of `Partial[T]`. This lets us dyn
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 from typing import List
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 text_block = """
 In our recent online meeting, participants from various backgrounds joined to discuss the upcoming tech conference. The names and contact details of the participants were as follows:

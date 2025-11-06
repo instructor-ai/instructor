@@ -52,8 +52,6 @@ The `extract_receipt` function uses OpenAI's GPT-4 model to process an image URL
 
 ```python
 import instructor
-from openai import OpenAI
-
 # <%hide%>
 from pydantic import BaseModel, model_validator
 
@@ -82,7 +80,7 @@ class Receipt(BaseModel):
 
 # <%hide%>
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract(url: str) -> Receipt:
@@ -116,8 +114,6 @@ In these examples, we apply the method to extract receipt data from two differen
 # <%hide%>
 from pydantic import BaseModel, model_validator
 import instructor
-from openai import OpenAI
-
 
 class Item(BaseModel):
     name: str
@@ -141,7 +137,7 @@ class Receipt(BaseModel):
         return values
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract(url: str) -> Receipt:

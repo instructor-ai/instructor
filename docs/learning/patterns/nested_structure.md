@@ -18,11 +18,9 @@ Here's a simple example of extracting a nested structure:
 ```python
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
 from typing import List, Optional
-
 # Initialize the client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # Define nested models
 class Address(BaseModel):
@@ -62,10 +60,8 @@ You can use multiple levels of nesting for more complex structures:
 ```python
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
 from typing import List, Optional
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class EmployeeDetails(BaseModel):
     department: str
@@ -116,10 +112,8 @@ You can combine nesting with lists to represent complex collections:
 ```python
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
 from typing import List
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Ingredient(BaseModel):
     name: str
@@ -176,10 +170,8 @@ Sometimes parts of a nested structure might be missing. Use Optional to handle t
 ```python
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
 from typing import Optional
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class SocialMedia(BaseModel):
     twitter: Optional[str] = None
@@ -205,10 +197,8 @@ You can add validation to nested structures at any level:
 ```python
 from pydantic import BaseModel, Field, field_validator, model_validator
 import instructor
-from openai import OpenAI
 import re
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class EmailContact(BaseModel):
     email: str
@@ -243,9 +233,7 @@ For more complex hierarchical data, you can use recursive structures:
 from typing import List, Optional
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Comment(BaseModel):
     text: str
@@ -293,9 +281,7 @@ Here's a more complete example extracting an organization structure:
 from typing import List, Optional
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Employee(BaseModel):
     name: str

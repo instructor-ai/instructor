@@ -26,8 +26,6 @@ Consider the example below. We'll likely generate very simple names.
 from typing import Iterable
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
 
 # Define the UserDetail model
 class UserDetail(BaseModel):
@@ -36,7 +34,7 @@ class UserDetail(BaseModel):
 
 
 # Patch the OpenAI client to enable the response_model functionality
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
@@ -66,8 +64,6 @@ We might want to set examples as part of the prompt by leveraging Pydantics conf
 from typing import Iterable
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
 
 # Define the UserDetail model
 class UserDetail(BaseModel):
@@ -76,7 +72,7 @@ class UserDetail(BaseModel):
 
 
 # Patch the OpenAI client to enable the response_model functionality
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
@@ -109,8 +105,6 @@ import instructor
 
 from typing import Iterable
 from pydantic import BaseModel, ConfigDict
-from openai import OpenAI
-
 
 # Define the UserDetail model
 class UserDetail(BaseModel):
@@ -130,7 +124,7 @@ class UserDetail(BaseModel):
 
 
 # Patch the OpenAI client to enable the response_model functionality
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
@@ -164,8 +158,6 @@ import instructor
 
 from typing import Iterable
 from pydantic import BaseModel, Field
-from openai import OpenAI
-
 
 # Define the UserDetail model
 class UserDetail(BaseModel):
@@ -174,7 +166,7 @@ class UserDetail(BaseModel):
 
 
 # Patch the OpenAI client to enable the response_model functionality
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:

@@ -57,7 +57,7 @@ MarkdownDataFrame = Annotated[
     ),
 ]
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract_df(data: str) -> pd.DataFrame:

@@ -17,13 +17,11 @@ The `Search` class is a Pydantic model that defines the structure of the search 
 
 ```python
 import instructor
-from openai import OpenAI
 from typing import Iterable, Literal
 from pydantic import BaseModel, Field
-
 # Apply the patch to the OpenAI client
 # enables response_model keyword
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Search(BaseModel):

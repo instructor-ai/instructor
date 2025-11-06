@@ -55,7 +55,7 @@ import instructor
 from instructor import llm_validator
 
 # Initialize client
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class ProductDescription(BaseModel):
     name: str

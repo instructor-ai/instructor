@@ -108,14 +108,12 @@ Test your Instructor installation with this simple LLM structured output example
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
-
 class Person(BaseModel):
     name: str
     age: int
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 person = client.chat.completions.create(
     model="gpt-3.5-turbo",
     response_model=Person,

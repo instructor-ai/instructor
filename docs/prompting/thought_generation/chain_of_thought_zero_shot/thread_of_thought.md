@@ -16,11 +16,9 @@ We can implement this using `instructor` as seen below.
 
 ```python hl_lines="42-43"
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 from textwrap import dedent
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class ThreadOfThoughtResponse(BaseModel):

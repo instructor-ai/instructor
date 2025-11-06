@@ -45,7 +45,7 @@ The `from_provider` function takes a string in the format `"provider/model-name"
 
 The string-based initialization currently supports all major providers in the ecosystem:
 
-- OpenAI: `"openai/gpt-4"`, `"openai/gpt-4o"`, `"openai/gpt-3.5-turbo"`
+- OpenAI: `"openai/gpt-4"`, `"openai/gpt-4o"`, `"openai/gpt-5-nano"`
 - Anthropic: `"anthropic/claude-3-opus-20240229"`, `"anthropic/claude-3-sonnet-20240229"`, `"anthropic/claude-3-haiku-20240307"`
 - Google Gemini: `"google/gemini-pro"`, `"google/gemini-pro-vision"`
 - Mistral: `"mistral/mistral-small-latest"`, `"mistral/mistral-medium-latest"`, `"mistral/mistral-large-latest"`
@@ -214,7 +214,7 @@ class UserInfo(BaseModel):
 
 async def main():
     # Test OpenAI
-    openai_client = instructor.from_provider("openai/gpt-3.5-turbo")
+    openai_client = instructor.from_provider("openai/gpt-5-nano")
     openai_result = openai_client.chat.completions.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": "Jane Doe is a 28-year-old data scientist."}]

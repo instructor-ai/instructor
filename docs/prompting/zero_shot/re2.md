@@ -15,11 +15,9 @@ Re2 (**Re** - **R** eading) is a technique that asks the model to read the quest
 
 ```python hl_lines="20"
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Response(BaseModel):

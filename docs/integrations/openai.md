@@ -29,7 +29,7 @@ export OPENAI_API_KEY='your-api-key-here'
 import instructor
 
 client = instructor.from_provider(
-    "openai/gpt-4o-mini",
+    "openai/gpt-5-nano",
     api_key='your-api-key-here',
 )
 ```
@@ -41,7 +41,7 @@ import instructor
 from pydantic import BaseModel
 
 # Initialize client using provider string
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class User(BaseModel):
     name: str
@@ -67,7 +67,7 @@ from pydantic import BaseModel
 import asyncio
 
 # Initialize async client using provider string
-client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 class User(BaseModel):
     name: str
@@ -110,7 +110,7 @@ class User(BaseModel):
 
 # Initialize client
 client = instructor.from_provider(
-    "openai/gpt-4o-mini",
+    "openai/gpt-5-nano",
     api_key=os.getenv('OPENAI_API_KEY'),
 )
 # Create structured output with nested objects
@@ -181,7 +181,7 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
 response = client.chat.completions.create(
@@ -233,7 +233,7 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response = client.chat.completions.create(
@@ -282,7 +282,7 @@ class AudioDescription(BaseModel):
 
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/gettysburg.wav"
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 response = client.chat.completions.create(
     response_model=AudioDescription,
@@ -318,7 +318,7 @@ Instructor has two main ways that you can use to stream responses out
 ```python
 from pydantic import BaseModel
 
-client = instructor.from_provider("openai/gpt-4o-mini")
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):

@@ -22,7 +22,7 @@ from typing import List, Generator, Iterable
 import instructor
 import openai
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract_video_id(url: str) -> str | None:

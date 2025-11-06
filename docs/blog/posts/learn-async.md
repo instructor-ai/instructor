@@ -49,10 +49,8 @@ import time
 from typing import List
 import instructor
 from pydantic import BaseModel
-from openai import AsyncOpenAI
-
 # Set up the async client with Instructor
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 class Person(BaseModel):
     name: str

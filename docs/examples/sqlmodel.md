@@ -26,14 +26,12 @@ Here's a simple example to get you started:
 
 ```python
 import instructor
-from openai import OpenAI
 from typing import Optional
 from uuid import UUID, uuid4
 from pydantic.json_schema import SkipJsonSchema
 from sqlmodel import Field, SQLModel, create_engine, Session
-
 # Initialize the Instructor client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Hero(SQLModel, instructor.OpenAISchema, table=True):
     id: SkipJsonSchema[UUID] = Field(default_factory=lambda: uuid4(), primary_key=True)
@@ -127,9 +125,7 @@ SQLModel supports relationships between tables, which can be populated using AI:
 from typing import List, Optional
 from sqlmodel import Field, SQLModel, Relationship
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Team(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -166,10 +162,8 @@ Generate multiple records efficiently:
 ```python
 from typing import List
 import instructor
-from openai import OpenAI
 from sqlmodel import Session
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 def create_hero_team(team_size: int = 5) -> List[Hero]:
     return client.chat.completions.create(
@@ -200,10 +194,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlmodel import Session, select
 from typing import List, Optional
 import instructor
-from openai import AsyncOpenAI
-
 app = FastAPI(title="Hero Management API")
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 def get_session():
     with Session(engine) as session:
@@ -307,9 +299,7 @@ Optimize AI calls for better performance:
 import asyncio
 from typing import List
 import instructor
-from openai import AsyncOpenAI
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 async def create_heroes_batch(prompts: List[str]) -> List[Hero]:
     """Generate multiple heroes concurrently"""
@@ -431,10 +421,8 @@ Implement robust error handling:
 import logging
 from fastapi import HTTPException
 import instructor
-from openai import OpenAI
-
 logger = logging.getLogger(__name__)
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 async def safe_create_hero(prompt: str) -> Hero:
     try:
@@ -463,9 +451,7 @@ Use AI to generate realistic seed data:
 ```python
 from sqlmodel import Session
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 def seed_database():
     """Generate realistic seed data for development"""
@@ -509,11 +495,9 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from collections.abc import AsyncIterable
 import instructor
-from openai import AsyncOpenAI
 import json
-
 app = FastAPI()
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 @app.post("/heroes/stream")
 async def stream_hero_creation(prompts: List[str]):

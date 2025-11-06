@@ -9,15 +9,13 @@ This LLM tutorial shows you how to extract structured information from natural l
 ```python
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
 # 1. Define your data model for LLM extraction
 class Person(BaseModel):
     name: str
     age: int
 
 # 2. Initialize Instructor with your LLM provider
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # 3. Extract structured data from LLM
 person = client.chat.completions.create(
@@ -59,7 +57,7 @@ Pydantic models define the structure for LLM outputs:
 ### Step 2: Configure Your LLM Client
 
 ```python
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 ```
 
 Instructor enhances your LLM client with structured output capabilities. Works with OpenAI, Anthropic, Google, and 15+ providers.

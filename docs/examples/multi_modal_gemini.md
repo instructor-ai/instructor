@@ -37,10 +37,7 @@ import google.generativeai as genai
 from pydantic import BaseModel
 
 
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",
-    ),
+client = instructor.from_provider("google/gemini-2.5-flash"),
     mode=instructor.Mode.GEMINI_JSON,  # (1)!
 )
 
@@ -95,10 +92,7 @@ import google.generativeai as genai
 from pydantic import BaseModel
 from pydub import AudioSegment
 
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",
-    ),
+client = instructor.from_provider("google/gemini-2.5-flash"),
     mode=instructor.Mode.GEMINI_JSON,  # (1)!
 )
 
@@ -164,10 +158,7 @@ import google.generativeai as genai
 from pydantic import BaseModel
 
 
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",
-    ),
+client = instructor.from_provider("google/gemini-2.5-flash"),
     mode=instructor.Mode.GEMINI_JSON,  # (1)!
 )
 

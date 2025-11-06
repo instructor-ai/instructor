@@ -52,10 +52,7 @@ class Recommendations(BaseModel):
 Next, we'll set up our Gemini client using Instructor:
 
 ```python
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",
-    ),
+client = instructor.from_provider("google/gemini-2.5-flash"),
 )
 ```
 

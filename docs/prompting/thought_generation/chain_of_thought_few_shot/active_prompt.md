@@ -36,14 +36,12 @@ Below is an example of uncertainty estimation for a single input example using t
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
-
 
 class Response(BaseModel):
     height: int
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def query_llm():

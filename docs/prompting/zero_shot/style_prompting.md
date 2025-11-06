@@ -27,7 +27,7 @@ class Email(BaseModel):
     message: str
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_email(subject, to, sender, tone):

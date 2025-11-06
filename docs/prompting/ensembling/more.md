@@ -21,12 +21,10 @@ Once each expert has genearted a response, they then use a random forest classif
 We can implement a simplified version of MoRE with `instructor` with a few modifications.
 
 ```python
-from openai import OpenAI
 from pydantic import BaseModel, Field
 import instructor
 from textwrap import dedent
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class MultihopExpert(BaseModel):

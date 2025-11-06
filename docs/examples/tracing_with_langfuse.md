@@ -35,7 +35,7 @@ os.environ["LANGFUSE_HOST"] = "https://us.cloud.langfuse.com"
 os.environ["OPENAI_API_KEY] = "sk-..."
 
 # Patch Langfuse wrapper of synchronous OpenAI client with instructor
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class WeatherDetail(BaseModel):
@@ -80,7 +80,7 @@ os.environ["OPENAI_API_KEY] = "sk-..."
 
 
 # Patch Langfuse wrapper of synchronous OpenAI client with instructor
-client = instructor.from_openai(openai.AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class WeatherDetail(BaseModel):
@@ -138,7 +138,7 @@ os.environ["OPENAI_API_KEY] = "sk-..."
 
 
 
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 # Initialize Langfuse (needed for scoring)
 langfuse = Langfuse()

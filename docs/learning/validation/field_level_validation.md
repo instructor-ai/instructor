@@ -20,9 +20,7 @@ You can apply simple validation using Pydantic's Field constraints:
 ```python
 from pydantic import BaseModel, Field
 import instructor
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class User(BaseModel):
     name: str = Field(..., min_length=2, description="User's full name")
@@ -43,10 +41,8 @@ For more complex rules, use the `field_validator` decorator:
 ```python
 from pydantic import BaseModel, field_validator
 import instructor
-from openai import OpenAI
 import re
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Product(BaseModel):
     name: str
@@ -76,10 +72,8 @@ Sometimes one field's validity depends on other fields. Use `model_validator` fo
 ```python
 from pydantic import BaseModel, model_validator
 import instructor
-from openai import OpenAI
 from datetime import date
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Reservation(BaseModel):
     check_in: date

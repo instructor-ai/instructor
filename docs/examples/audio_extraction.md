@@ -11,14 +11,12 @@ This example demonstrates how to use Instructor with OpenAI's audio capabilities
 ## Code Example
 
 ```python
-from openai import OpenAI
 from pydantic import BaseModel
 import instructor
 from instructor.processing.multimodal import Audio
 import base64
-
 # Initialize the OpenAI client with Instructor
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # Define the structure for extracted information
 class Person(BaseModel):

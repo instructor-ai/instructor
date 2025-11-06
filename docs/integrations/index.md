@@ -131,9 +131,9 @@ Supported provider strings:
 
 Use these example strings with `from_provider` to quickly get started:
 
-- [x] `instructor.from_provider("openai/gpt-4o-mini")`
+- [x] `instructor.from_provider("openai/gpt-5-nano")`
 - [x] `instructor.from_provider("anthropic/claude-3-sonnet")`
-- [x] `instructor.from_provider("google/gemini-1.5-flash")`
+- [x] `instructor.from_provider("google/gemini-2.5-flash")`
 - [x] `instructor.from_provider("mistral/mistral-large-latest")`
 - [x] `instructor.from_provider("cohere/command-r")`
 - [x] `instructor.from_provider("perplexity/sonar-small")`

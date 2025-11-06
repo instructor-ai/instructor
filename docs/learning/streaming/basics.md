@@ -28,9 +28,7 @@ Here's how to stream a structured response:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
-
 # Define your data structure
 class UserProfile(BaseModel):
     name: str
@@ -38,7 +36,7 @@ class UserProfile(BaseModel):
     interests: list[str]
 
 # Set up client
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 # Enable streaming
 for partial in client.chat.completions.create(
@@ -77,10 +75,8 @@ Here's a simple way to track progress:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 class Report(BaseModel):
     title: str

@@ -39,13 +39,11 @@ def validation_function(value):
 `Instructor` helps to ensure you get the exact response type you're looking for when using openai's function call api. Once you've defined the `Pydantic` model for your desired response, `Instructor` handles all the complicated logic in-between - from the parsing/validation of the response to the automatic retries for invalid responses. This means that we can build in validators 'for free' and have a clear separation of concerns between the prompt and the code that calls openai.
 
 ```python
-from openai import OpenAI
 import instructor  # pip install instructor
 from pydantic import BaseModel
-
 # This enables response_model keyword
 # from client.chat.completions.create
-client = instructor.from_openai(OpenAI())  # (1)!
+client = instructor.from_provider("openai/gpt-5-nano")  # (1)!
 
 
 class UserDetail(BaseModel):
@@ -251,10 +249,8 @@ Using this structure, we can implement the same logic as before and utilize `Ins
 
 ```python
 import instructor
-from openai import OpenAI
-
 # Enables `response_model` and `max_retries` parameters
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def validator(v):
@@ -271,7 +267,7 @@ def validator(v):
                 "content": f"Does `{v}` follow the rules: {statement}",
             },
         ],
-        # this comes from client = instructor.from_openai(OpenAI())
+        # this comes from client = instructor.from_provider("openai/gpt-5-nano")
         response_model=Validation,  # (1)!
     )
     if not resp.is_valid:
@@ -279,7 +275,7 @@ def validator(v):
     return v
 ```
 
-1. The new parameter of `response_model` comes from `client = instructor.from_openai(OpenAI())` and does not exist in the original OpenAI SDK. This
+1. The new parameter of `response_model` comes from `client = instructor.from_provider("openai/gpt-5-nano")` and does not exist in the original OpenAI SDK. This
    allows us to pass in the `Pydantic` model that we want as a response.
 
 Now we can use this validator in the same way we used the `llm_validator` from `Instructor`.
@@ -313,7 +309,7 @@ def validate_chain_of_thought(values):
                 "content": f"Verify that `{answer}` follows the chain of thought: {chain_of_thought}",
             },
         ],
-        # this comes from client = instructor.from_openai(OpenAI())
+        # this comes from client = instructor.from_provider("openai/gpt-5-nano")
         response_model=Validation,
     )
     if not resp.is_valid:
@@ -408,16 +404,14 @@ Value error, Citation `Jason is cool` not found in text chunks [type=value_error
     For further information visit https://errors.pydantic.dev/2.4/v/value_error
 ```
 
-## Putting it all together with `client = instructor.from_openai(OpenAI())`
+## Putting it all together with `client = instructor.from_provider("openai/gpt-5-nano")`
 
-To pass this context from the `client.chat.completions.create` call, `client = instructor.from_openai(OpenAI())` also passes the `context`, which will be accessible from the `info` argument in the decorated validator functions.
+To pass this context from the `client.chat.completions.create` call, `client = instructor.from_provider("openai/gpt-5-nano")` also passes the `context`, which will be accessible from the `info` argument in the decorated validator functions.
 
 ```python
-from openai import OpenAI
 import instructor
-
 # Enables `response_model` and `max_retries` parameters
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def answer_question(question: str, text_chunk: str) -> AnswerWithCitation:
@@ -436,7 +430,7 @@ def answer_question(question: str, text_chunk: str) -> AnswerWithCitation:
 
 ## Error Handling and Re-Asking
 
-Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. Then by running `client = instructor.from_openai(OpenAI())` not only do we add `response_model` and `context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
+Validators can ensure certain properties of the outputs by throwing errors, in an AI system we can use the errors and allow language model to self correct. Then by running `client = instructor.from_provider("openai/gpt-5-nano")` not only do we add `response_model` and `context` it also allows you to use the `max_retries` parameter to specify the number of times to try and self correct.
 
 This approach provides a layer of defense against two types of bad outputs:
 
@@ -471,7 +465,7 @@ model = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
     ],
-    # Powered by client = instructor.from_openai(OpenAI())
+    # Powered by client = instructor.from_provider("openai/gpt-5-nano")
     response_model=UserModel,
     max_retries=2,
 )

@@ -33,11 +33,9 @@ In this example, we use the `Statements` class to verify if a given substring qu
 
 ```python
 from typing import List
-from openai import OpenAI
 from pydantic import BaseModel, ValidationInfo, field_validator
 import instructor
-
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class Statements(BaseModel):

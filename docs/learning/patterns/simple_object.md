@@ -7,8 +7,6 @@ Learn how to extract structured objects from text using LLMs in this comprehensi
 ```python
 from pydantic import BaseModel
 import instructor
-from openai import OpenAI
-
 # Define your LLM extraction schema
 class Person(BaseModel):
     name: str
@@ -16,7 +14,7 @@ class Person(BaseModel):
     occupation: str
 
 # Extract structured data from LLM
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 person = client.chat.completions.create(
     model="gpt-3.5-turbo",  # Works with GPT-4, Claude, Gemini
     messages=[
@@ -107,7 +105,7 @@ class ContactInfo(BaseModel):
     address: Optional[Address] = None
 
 # Extract structured data
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 contact = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[

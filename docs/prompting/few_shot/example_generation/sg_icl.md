@@ -12,9 +12,7 @@ We can implement SG-ICL using `instructor` as seen below.
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
 from typing import Literal
-
 n = 4  # num examples to generate per class
 
 
@@ -27,7 +25,7 @@ class SentimentPrediction(BaseModel):
     sentiment: Literal["positive", "negative"]
 
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_sample(input_review, sentiment):

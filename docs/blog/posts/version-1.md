@@ -39,7 +39,7 @@ Honestly, nothing much, the simplest change you'll need to make is to replace `i
 import openai
 import instructor
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 ```
 
 Except now, any default arguments you want to place into the `create` call will be passed to the client. via kwargs.
@@ -71,8 +71,8 @@ from typing import TypeVar
 T = TypeVar("T")
 
 # These are all ways to create a client
-client = instructor.from_openai(openai.OpenAI())
-client = instructor.from_anthropic(anthropic.Anthropic())
+client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
 client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function
@@ -99,7 +99,7 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 user = client.chat.completions.create(
     model="gpt-4-turbo-preview",
@@ -124,7 +124,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_openai(openai.AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class User(BaseModel):
@@ -156,7 +156,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):
@@ -186,7 +186,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):
@@ -235,7 +235,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 
 
 class User(BaseModel):

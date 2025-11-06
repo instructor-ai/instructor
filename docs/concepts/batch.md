@@ -102,7 +102,7 @@ class User(BaseModel):
     age: int
 
 # Create processor
-processor = BatchProcessor("openai/gpt-4o-mini", User)
+processor = BatchProcessor("openai/gpt-5-nano", User)
 
 # Prepare your message conversations
 messages_list = [
@@ -195,7 +195,7 @@ class User(BaseModel):
     name: str
     age: int
 
-processor = BatchProcessor("openai/gpt-4o-mini", User)
+processor = BatchProcessor("openai/gpt-5-nano", User)
 messages_list = [
     [{"role": "user", "content": "Extract: John, 25, john@example.com"}],
     [{"role": "user", "content": "Extract: Jane, 30, jane@example.com"}],

@@ -12,10 +12,8 @@ Below is an example of an implementation using parallel API calls with `instruct
 ```python
 import instructor
 from pydantic import BaseModel
-from openai import AsyncOpenAI
 import asyncio
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class Point(BaseModel):

@@ -9,15 +9,13 @@ It then takes the majority answer out of these chains as the final solution only
 We can implement this using `instructor` as seen below.
 
 ```python hl_lines="74-87"
-from openai import AsyncOpenAI
 from pydantic import BaseModel
 import instructor
 from textwrap import dedent
 from typing import Literal
 import asyncio
 from collections import Counter
-
-client = instructor.from_openai(AsyncOpenAI())
+client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 class ChainOfThoughtResponse(BaseModel):

@@ -34,7 +34,7 @@ First, let's set up our environment with the necessary imports:
 import instructor
 import openai
 
-client = instructor.from_openai(openai.OpenAI())
+client = instructor.from_provider("openai/gpt-5-nano")
 ```
 
 Here, we're using the `instructor` library, which integrates seamlessly with OpenAI's API and Pydantic for structured outputs.

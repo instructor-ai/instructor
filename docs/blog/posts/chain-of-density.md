@@ -287,10 +287,8 @@ def min_entity_density(cls, v: str):
 Now that we have our models and the rough flow figured out, let's implement a function to summarize a piece of text using `Chain Of Density` summarization.
 
 ```python hl_lines="4 9-24 38-68"
-from openai import OpenAI
 import instructor
-
-client = instructor.from_openai(OpenAI()) #(1)!
+client = instructor.from_provider("openai/gpt-5-nano") #(1)!
 
 def summarize_article(article: str, summary_steps: int = 3):
     summary_chain = []
@@ -399,9 +397,7 @@ import csv
 import logging
 import instructor
 from pydantic import BaseModel
-from openai import OpenAI
-
-client = instructor.from_openai(OpenAI()) # (2)!
+client = instructor.from_provider("openai/gpt-5-nano") # (2)!
 
 logging.basicConfig(level=logging.INFO) #(3)!
 
