@@ -479,7 +479,7 @@ class AsyncValidationError(ValueError, InstructorError):
     errors: list[ValueError]
 
 
-class ResponseParsingError(InstructorError):
+class ResponseParsingError(ValueError, InstructorError):
     """Exception raised when unable to parse the LLM response.
 
     This exception occurs when the LLM's raw response cannot be parsed
@@ -488,6 +488,9 @@ class ResponseParsingError(InstructorError):
     - Missing required fields in the response
     - Unexpected response structure
     - Invalid tool call format
+
+    Note: This exception inherits from both ValueError and InstructorError
+    to maintain backwards compatibility with code that catches ValueError.
 
     Attributes:
         mode: The mode being used when parsing failed
@@ -506,6 +509,15 @@ class ResponseParsingError(InstructorError):
             print(f"Raw response: {e.raw_response}")
             # May indicate the model doesn't support this mode well
         ```
+
+        Backwards compatible with ValueError:
+        ```python
+        try:
+            response = client.chat.completions.create(...)
+        except ValueError as e:
+            # Still catches ResponseParsingError
+            print(f"Parsing error: {e}")
+        ```
     """
 
     def __init__(
@@ -522,7 +534,7 @@ class ResponseParsingError(InstructorError):
         super().__init__(f"{message}{context}", *args, **kwargs)
 
 
-class MultimodalError(InstructorError):
+class MultimodalError(ValueError, InstructorError):
     """Exception raised for multimodal content processing errors.
 
     This exception is raised when there are issues processing multimodal
@@ -531,6 +543,9 @@ class MultimodalError(InstructorError):
     - File not found
     - Invalid base64 encoding
     - Provider doesn't support multimodal content
+
+    Note: This exception inherits from both ValueError and InstructorError
+    to maintain backwards compatibility with code that catches ValueError.
 
     Attributes:
         content_type: The type of content that failed (e.g., 'image', 'audio', 'pdf')
@@ -555,6 +570,15 @@ class MultimodalError(InstructorError):
             print(f"Multimodal error with {e.content_type}: {e}")
             if e.file_path:
                 print(f"File path: {e.file_path}")
+        ```
+
+        Backwards compatible with ValueError:
+        ```python
+        try:
+            img = Image.from_path("/path/to/image.jpg")
+        except ValueError as e:
+            # Still catches MultimodalError
+            print(f"Image error: {e}")
         ```
     """
 

@@ -20,7 +20,10 @@ from instructor.core.exceptions import (
     ProviderError,
     ConfigurationError,
     ModeError,
-    ClientError
+    ClientError,
+    ResponseParsingError,
+    MultimodalError,
+    AsyncValidationError,
 )
 ```
 
@@ -117,6 +120,80 @@ try:
     client = instructor.from_provider("not_a_client")
 except ClientError as e:
     print(f"Client error: {e}")
+```
+
+#### `ResponseParsingError`
+Raised when unable to parse the LLM response into the expected format. Inherits from both `ValueError` and `InstructorError` for backwards compatibility.
+
+```python
+try:
+    response = client.chat.completions.create(
+        response_model=User,
+        mode=instructor.Mode.JSON,
+        ...
+    )
+except ResponseParsingError as e:
+    print(f"Failed to parse response in {e.mode} mode")
+    print(f"Raw response: {e.raw_response}")
+    # Access diagnostic information
+```
+
+**Key Attributes:**
+- `mode`: The mode being used when parsing failed
+- `raw_response`: The raw LLM response for debugging
+
+**Backwards Compatible:** Can still be caught as `ValueError` for existing code.
+
+#### `MultimodalError`
+Raised when processing multimodal content (images, audio, PDFs) fails. Inherits from both `ValueError` and `InstructorError` for backwards compatibility.
+
+```python
+from instructor import Image
+
+try:
+    response = client.chat.completions.create(
+        response_model=Analysis,
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Analyze this"},
+                Image.from_path("/path/to/image.jpg")
+            ]
+        }]
+    )
+except MultimodalError as e:
+    print(f"Multimodal error with {e.content_type}: {e}")
+    if e.file_path:
+        print(f"File: {e.file_path}")
+```
+
+**Key Attributes:**
+- `content_type`: The type of content (e.g., 'image', 'audio', 'pdf')
+- `file_path`: The file path if applicable
+
+**Backwards Compatible:** Can still be caught as `ValueError` for existing code.
+
+#### `AsyncValidationError`
+Raised during async validation operations. Inherits from both `ValueError` and `InstructorError`.
+
+```python
+from instructor.validation import async_field_validator
+
+class Model(BaseModel):
+    urls: list[str]
+
+    @async_field_validator('urls')
+    async def validate_urls(cls, v):
+        # Async validation logic
+        ...
+
+try:
+    response = await client.chat.completions.create(
+        response_model=Model,
+        ...
+    )
+except AsyncValidationError as e:
+    print(f"Async validation failed: {e.errors}")
 ```
 
 ## Best Practices
@@ -228,6 +305,102 @@ def extract_with_fallback(content: str):
         # Final fallback
         logger.error("All retries exhausted, returning None")
         return None
+```
+
+## Backwards Compatibility
+
+All new exception types maintain backwards compatibility by inheriting from both `ValueError` and `InstructorError`:
+
+```python
+# Old code still works - catching ValueError
+try:
+    response = client.chat.completions.create(...)
+except ValueError as e:
+    # Will catch ResponseParsingError and MultimodalError
+    print(f"Error: {e}")
+
+# New code can be more specific
+try:
+    response = client.chat.completions.create(...)
+except ResponseParsingError as e:
+    # Access additional context
+    print(f"Mode: {e.mode}")
+    print(f"Raw response: {e.raw_response}")
+except MultimodalError as e:
+    print(f"Content type: {e.content_type}")
+    print(f"File path: {e.file_path}")
+```
+
+## Diagnostic Context
+
+New exceptions include rich diagnostic context for monitoring and debugging:
+
+### Response Parsing Errors
+
+```python
+try:
+    response = client.chat.completions.create(
+        response_model=User,
+        mode=instructor.Mode.JSON,
+        ...
+    )
+except ResponseParsingError as e:
+    # Log full context for monitoring
+    logger.error(
+        "Response parsing failed",
+        extra={
+            "mode": e.mode,
+            "raw_response": e.raw_response,
+            "error_message": str(e),
+        }
+    )
+```
+
+### Multimodal Errors
+
+```python
+from instructor import Image
+
+try:
+    img = Image.from_path("/path/to/file.jpg")
+except MultimodalError as e:
+    # Log with file context
+    logger.error(
+        "Multimodal content error",
+        extra={
+            "content_type": e.content_type,
+            "file_path": e.file_path,
+            "error_message": str(e),
+        }
+    )
+```
+
+### Retry Exceptions
+
+```python
+try:
+    response = client.chat.completions.create(...)
+except InstructorRetryException as e:
+    # Access all failed attempts for analysis
+    for attempt in e.failed_attempts:
+        logger.warning(
+            f"Attempt {attempt.attempt_number} failed",
+            extra={
+                "exception": str(attempt.exception),
+                "partial_completion": attempt.completion,
+            }
+        )
+
+    # Log final failure with full context
+    logger.error(
+        "All retries exhausted",
+        extra={
+            "n_attempts": e.n_attempts,
+            "total_usage": e.total_usage,
+            "model": e.create_kwargs.get("model"),
+            "last_completion": e.last_completion,
+        }
+    )
 ```
 
 ## Integration with Hooks
