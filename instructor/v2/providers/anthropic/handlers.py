@@ -336,9 +336,14 @@ class AnthropicToolsHandler(ModeHandler):
         )
         tool_call = tool_calls_validator.validate_python(tool_calls)[0]
 
-        return response_model.model_validate_json(
+        parsed = response_model.model_validate_json(
             tool_call, context=validation_context, strict=strict
         )
+
+        # Attach raw response for access via create_with_completion
+        parsed._raw_response = response  # type: ignore
+
+        return parsed
 
 
 @register_mode_handler(Provider.ANTHROPIC, ModeType.JSON)
@@ -487,10 +492,15 @@ class AnthropicJSONHandler(ModeHandler):
         extra_text = extract_json_from_codeblock(text)
 
         if strict:
-            return response_model.model_validate_json(
+            parsed = response_model.model_validate_json(
                 extra_text, context=validation_context, strict=strict
             )
         else:
-            return response_model.model_validate_json(
+            parsed = response_model.model_validate_json(
                 extra_text, context=validation_context
             )
+
+        # Attach raw response for access via create_with_completion
+        parsed._raw_response = response  # type: ignore
+
+        return parsed
