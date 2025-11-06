@@ -91,7 +91,7 @@ This mode instructs the model to output JSON inside a Markdown code block. It:
 #### `ANTHROPIC_TOOLS` Mode
 
 ```python
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.ANTHROPIC_TOOLS)
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest", mode=instructor.Mode.ANTHROPIC_TOOLS)
 ```
 
 This mode uses Anthropic's Tool Calling API, available on Claude 3+ models. It:
@@ -104,7 +104,7 @@ This mode uses Anthropic's Tool Calling API, available on Claude 3+ models. It:
 #### `ANTHROPIC_JSON` Mode
 
 ```python
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.ANTHROPIC_JSON)
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest", mode=instructor.Mode.ANTHROPIC_JSON)
 ```
 
 This mode requests direct JSON output from Anthropic models. It:
@@ -185,10 +185,10 @@ client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.PARA
 
 ```python
 # For Claude 3+ with complex structures
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.ANTHROPIC_TOOLS)
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest", mode=instructor.Mode.ANTHROPIC_TOOLS)
 
 # For simpler extractions or older Claude models
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.ANTHROPIC_JSON)
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest", mode=instructor.Mode.ANTHROPIC_JSON)
 ```
 
 ### Google/Gemini

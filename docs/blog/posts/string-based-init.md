@@ -46,7 +46,7 @@ The `from_provider` function takes a string in the format `"provider/model-name"
 The string-based initialization currently supports all major providers in the ecosystem:
 
 - OpenAI: `"openai/gpt-4"`, `"openai/gpt-4o"`, `"openai/gpt-5-nano"`
-- Anthropic: `"anthropic/claude-3-opus-20240229"`, `"anthropic/claude-3-sonnet-20240229"`, `"anthropic/claude-3-haiku-20240307"`
+- Anthropic: `"anthropic/claude-3-opus-20240229"`, `"anthropic/claude-3-sonnet-20240229"`, `"anthropic/claude-3-5-haiku-latest"`
 - Google Gemini: `"google/gemini-pro"`, `"google/gemini-pro-vision"`
 - Mistral: `"mistral/mistral-small-latest"`, `"mistral/mistral-medium-latest"`, `"mistral/mistral-large-latest"`
 - Cohere: `"cohere/command"`, `"cohere/command-r"`, `"cohere/command-light"`
@@ -186,7 +186,7 @@ Some providers require specific parameters for API calls:
 ```python
 # Anthropic requires max_tokens
 anthropic_client = instructor.from_provider(
-    "anthropic/claude-3-haiku-20240307",
+    "anthropic/claude-3-5-haiku-latest",
     max_tokens=400  # Required for Anthropic
 )
 
@@ -224,7 +224,7 @@ async def main():
     # Test Anthropic with async client
     if os.environ.get("ANTHROPIC_API_KEY"):
         anthropic_client = instructor.from_provider(
-            model="anthropic/claude-3-haiku-20240307",
+            model="anthropic/claude-3-5-haiku-latest",
             async_client=True,
             max_tokens=400  # Required for Anthropic
         )

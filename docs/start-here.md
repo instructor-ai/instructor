@@ -99,7 +99,7 @@ Patching connects Instructor to your LLM provider (like OpenAI or Anthropic).
 client = instructor.from_provider("openai/gpt-5-nano")
 
 # For Anthropic
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 ```
 
 ### 3. Modes

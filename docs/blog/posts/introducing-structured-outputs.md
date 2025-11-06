@@ -341,7 +341,7 @@ Now let's see how we can achieve the same with Anthropic.
 ```python hl_lines="2 5 14"
 import instructor
 from pydantic import BaseModel
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")  # (2)!
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")  # (2)!
 
 
 class User(BaseModel):

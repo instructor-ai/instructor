@@ -13,7 +13,7 @@ from typing import List, Tuple
 # Default models for each provider
 DEFAULT_MODELS = {
     "openai": "openai/gpt-5-nano",
-    "anthropic": "anthropic/claude-3-haiku-20240307",
+    "anthropic": "anthropic/claude-3-5-haiku-latest",
     "google": "google/gemini-2.5-flash",
     "groq": "groq/llama3-70b-8192",
     "cohere": "cohere/command-r-plus",

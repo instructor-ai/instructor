@@ -27,10 +27,10 @@ For Anthropic's Claude models:
 ```python
 import instructor
 # Default mode (ANTHROPIC_TOOLS)
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 
 # With JSON mode
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307", mode=instructor.Mode.JSON)
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest", mode=instructor.Mode.JSON)
 ```
 
 ## Google Gemini

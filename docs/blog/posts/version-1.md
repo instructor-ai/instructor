@@ -72,7 +72,7 @@ T = TypeVar("T")
 
 # These are all ways to create a client
 client = instructor.from_provider("openai/gpt-5-nano")
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 client = instructor.from_litellm(litellm.completion)
 
 # all of these will route to the same underlying create function

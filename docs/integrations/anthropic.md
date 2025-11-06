@@ -46,7 +46,7 @@ class User(BaseModel):
     properties: List[Properties] = Field(description="List of user properties")
 
 client = instructor.from_provider(
-    "anthropic/claude-3-haiku-20240307",
+    "anthropic/claude-3-5-haiku-latest",
     mode=instructor.Mode.ANTHROPIC_TOOLS
 )
 
@@ -97,7 +97,7 @@ except Exception as e:
 import asyncio
 
 async_client = instructor.from_provider(
-    "anthropic/claude-3-haiku-20240307",
+    "anthropic/claude-3-5-haiku-latest",
     async_client=True,
     mode=instructor.Mode.ANTHROPIC_TOOLS,
 )
@@ -130,7 +130,7 @@ class GoogleSearch(BaseModel):
 
 
 client = instructor.from_provider(
-    "anthropic/claude-3-haiku-20240307",
+    "anthropic/claude-3-5-haiku-latest",
     mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
 )
 
@@ -185,7 +185,7 @@ class ImageDescription(BaseModel):
     colors: list[str] = Field(..., description="The colors in the image")
 
 
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
 response = client.chat.completions.create(
@@ -239,7 +239,7 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response = client.chat.completions.create(
@@ -281,7 +281,7 @@ class Receipt(BaseModel):
     items: list[str]
 
 
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
 response, completion = client.chat.completions.create_with_completion(
@@ -338,7 +338,7 @@ from pydantic import BaseModel, Field
 
 # Initialize client with explicit mode
 client = instructor.from_provider(
-    "anthropic/claude-3-haiku-20240307",
+    "anthropic/claude-3-5-haiku-latest",
     mode=instructor.Mode.ANTHROPIC_TOOLS,
 )
 
@@ -469,7 +469,7 @@ class Character(BaseModel):
     description: str = Field(description="A description of the character")
 
 # Initialize client with explicit mode and prompt caching
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
     mode=instructor.Mode.ANTHROPIC_TOOLS,
 )
 
@@ -543,7 +543,7 @@ class ImageAnalyzer(BaseModel):
     scene_type: str = Field(description="Type of scene shown in the images (indoor, outdoor, etc.)")
 
 # Initialize client with explicit mode and image caching enabled
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
     mode=instructor.Mode.ANTHROPIC_TOOLS,
 )
 
@@ -607,7 +607,7 @@ class Answer(BaseModel):
 
 
 client = Anthropic()
-client = instructor.from_provider("anthropic/claude-3-haiku-20240307")
+client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 response = client.chat.completions.create(
     response_model=Answer,
     messages=[
