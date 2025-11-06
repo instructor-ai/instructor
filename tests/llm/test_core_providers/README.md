@@ -81,6 +81,8 @@ Tests automatically skip if the API key or package is not available.
 
 ## Running Tests
 
+`uv` is Astral's fast Python package manager. Install it by following the [official guide](https://docs.astral.sh/uv/getting-started/install/) if it is not already on your PATH.
+
 ### Run all core provider tests:
 ```bash
 uv run pytest tests/llm/test_core_providers/ -v
@@ -134,9 +136,9 @@ All providers automatically skip if API keys are missing.
 - **xAI**: `grok-3-mini` with `Mode.XAI_TOOLS`
 - **Mistral**: `ministral-8b-latest` with `Mode.MISTRAL_TOOLS`
 - **Cerebras**: `llama3.1-70b` with `Mode.CEREBRAS_TOOLS`
-- **Fireworks**: `llama-v3p1-70b-instruct` with `Mode.TOOLS`
+- **Fireworks**: `llama-v3p1-70b-instruct` with `Mode.FIREWORKS_TOOLS`
 - **Writer**: `palmyra-x-004` with `Mode.WRITER_TOOLS`
-- **Perplexity**: `llama-3.1-sonar-large-128k-online` with `Mode.TOOLS`
+- **Perplexity**: `llama-3.1-sonar-large-128k-online` with `Mode.PERPLEXITY_JSON`
 
 To change models, edit `tests/llm/shared_config.py`.
 
@@ -169,5 +171,6 @@ To change models, edit `tests/llm/shared_config.py`.
 To add a new provider to core tests:
 
 1. Update `PROVIDER_CONFIGS` in `tests/llm/shared_config.py`
-2. Add tuple: `("provider/model-name", Mode.PROVIDER_MODE, "API_KEY_ENV_VAR", "package.name")`
-3. Tests will automatically run against the new provider!
+2. Add tuple: `("provider/model-name", instructor.Mode.PROVIDER_SPECIFIC_MODE, "API_KEY_ENV_VAR", "package.name")`
+3. Pick the mode that matches the provider's client (see `instructor.Mode` or the provider guide).
+4. Tests will automatically run against the new provider!

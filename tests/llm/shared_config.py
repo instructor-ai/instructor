@@ -7,9 +7,9 @@ Cerebras, Fireworks, Writer, Perplexity).
 """
 
 import os
-import pytest
+
 import instructor
-from typing import List, Tuple
+import pytest
 
 
 # Provider configurations: (model_string, mode, required_env_var, required_package)
@@ -58,7 +58,7 @@ PROVIDER_CONFIGS = [
     ),
     (
         "fireworks/llama-v3p1-70b-instruct",
-        instructor.Mode.TOOLS,
+        instructor.Mode.FIREWORKS_TOOLS,
         "FIREWORKS_API_KEY",
         "fireworks",
     ),
@@ -70,14 +70,14 @@ PROVIDER_CONFIGS = [
     ),
     (
         "perplexity/llama-3.1-sonar-large-128k-online",
-        instructor.Mode.TOOLS,
+        instructor.Mode.PERPLEXITY_JSON,
         "PERPLEXITY_API_KEY",
-        "openai",  # Perplexity uses OpenAI-compatible API
+        "openai",  # Perplexity transports over OpenAI-compatible API
     ),
 ]
 
 
-def get_available_providers() -> List[Tuple[str, instructor.Mode]]:
+def get_available_providers() -> list[tuple[str, instructor.Mode]]:
     """
     Get list of available providers based on API keys and installed packages.
 
