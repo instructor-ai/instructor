@@ -15,27 +15,18 @@ This guide will walk you through the basics of using Instructor to extract struc
 
 ## Installation
 
-First, install Instructor:
+First, install Instructor with Google GenAI support:
 
 ```bash
-pip install instructor
+uv add "instructor[google-genai]"
 ```
 
-To use a specific provider, install the appropriate extras:
+Add extras only when you need another provider:
 
 ```bash
-# For OpenAI (included by default)
-pip install instructor
-
-# For Anthropic
-pip install "instructor[anthropic]"
-
-# For other providers
-pip install "instructor[google-genai]"         # For Google/Gemini
-pip install "instructor[vertexai]"             # For Vertex AI
-pip install "instructor[cohere]"               # For Cohere
-pip install "instructor[litellm]"              # For LiteLLM (multiple providers)
-pip install "instructor[mistralai]"            # For Mistral
+uv add "instructor[anthropic]"
+uv add "instructor[mistralai]"
+uv add "instructor[litellm]"
 ```
 
 ## Setting Up Environment
@@ -43,41 +34,52 @@ pip install "instructor[mistralai]"            # For Mistral
 Set your API keys as environment variables:
 
 ```bash
-# For OpenAI
+# For Google GenAI (recommended)
+export GOOGLE_API_KEY=your_google_key
+
+# For Vertex AI deployments
+export GOOGLE_CLOUD_PROJECT=your_project_id
+export GOOGLE_CLOUD_LOCATION=your_region
+
+# For other providers, set their API keys when you need them
 export OPENAI_API_KEY=your_openai_api_key
-
-# For Anthropic
 export ANTHROPIC_API_KEY=your_anthropic_api_key
-
-# For other providers, set relevant API keys
 ```
 
 ## Your First Structured Output
 
-Let's start with a simple example using OpenAI:
+Let's start with a simple example using Google GenAI and the async client:
 
 ```python
+import asyncio
 import instructor
+from instructor import Mode
 from pydantic import BaseModel
 
-# Define your output structure
+
 class UserInfo(BaseModel):
     name: str
     age: int
 
-# Create an instructor client with from_provider
-client = instructor.from_provider("openai/gpt-5-nano")
 
-# Extract structured data
-user_info = client.chat.completions.create(
-    response_model=UserInfo,
-    messages=[
-        {"role": "user", "content": "John Doe is 30 years old."}
-    ],
-)
+async def main() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
 
-print(f"Name: {user_info.name}, Age: {user_info.age}")
-# Output: Name: John Doe, Age: 30
+    user_info = await client.chat.completions.create(
+        response_model=UserInfo,
+        messages=[
+            {"role": "user", "content": "John Doe is 30 years old."}
+        ],
+    )
+
+    print(f"Name: {user_info.name}, Age: {user_info.age}")
+
+
+asyncio.run(main())
 ```
 
 This example demonstrates the core workflow:
@@ -90,26 +92,40 @@ This example demonstrates the core workflow:
 Instructor leverages Pydantic's validation to ensure your data meets requirements:
 
 ```python
+import asyncio
+import instructor
+from instructor import Mode
 from pydantic import BaseModel, Field, field_validator
+
 
 class User(BaseModel):
     name: str
-    age: int = Field(gt=0, lt=120)  # Age must be between 0 and 120
+    age: int = Field(gt=0, lt=120)
 
-    @field_validator('name')
-    def name_must_have_space(cls, v):
-        if ' ' not in v:
-            raise ValueError('Name must include first and last name')
-        return v
+    @field_validator("name")
+    def name_must_have_space(cls, value: str) -> str:
+        if " " not in value:
+            raise ValueError("Name must include first and last name")
+        return value
 
-# This will make the LLM retry if validation fails
-user = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=User,
-    messages=[
-        {"role": "user", "content": "Extract: Tom is 25 years old."}
-    ],
-)
+
+async def main() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+
+    user = await client.chat.completions.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Extract: Tom is 25 years old."}],
+        max_retries=3,
+    )
+
+    print(user)
+
+
+asyncio.run(main())
 ```
 
 ## Working with Complex Models
@@ -117,8 +133,12 @@ user = client.chat.completions.create(
 Instructor works seamlessly with nested Pydantic models:
 
 ```python
-from pydantic import BaseModel
+import asyncio
+import instructor
 from typing import List
+from instructor import Mode
+from pydantic import BaseModel
+
 
 class Address(BaseModel):
     street: str
@@ -126,22 +146,38 @@ class Address(BaseModel):
     state: str
     zip_code: str
 
+
 class Person(BaseModel):
     name: str
     age: int
     addresses: List[Address]
 
-person = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=Person,
-    messages=[
-        {"role": "user", "content": """
-        Extract: John Smith is 35 years old.
-        He has homes at 123 Main St, Springfield, IL 62704 and
-        456 Oak Ave, Chicago, IL 60601.
-        """}
-    ],
-)
+
+async def main() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+
+    person = await client.chat.completions.create(
+        response_model=Person,
+        messages=[
+            {
+                "role": "user",
+                "content": (
+                    "Extract: John Smith is 35 years old. "
+                    "He has homes at 123 Main St, Springfield, IL 62704 and "
+                    "456 Oak Ave, Chicago, IL 60601."
+                ),
+            }
+        ],
+    )
+
+    print(person)
+
+
+asyncio.run(main())
 ```
 
 ## Streaming Responses
@@ -149,20 +185,41 @@ person = client.chat.completions.create(
 For larger responses or better user experience, use streaming:
 
 ```python
-from instructor import Partial
+import asyncio
+import instructor
+from instructor import Mode
+from pydantic import BaseModel
 
-# Stream the response as it's being generated
-stream = client.chat.completions.create_partial(
-    model="gpt-3.5-turbo",
-    response_model=Person,
-    messages=[
-        {"role": "user", "content": "Extract a detailed person profile for John Smith, 35, who lives in Chicago and Springfield."}
-    ],
-)
 
-for partial in stream:
-    # This will incrementally show the response being built
-    print(partial)
+class Person(BaseModel):
+    name: str
+    age: int
+    summary: str
+
+
+async def main() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+
+    stream = client.chat.completions.create_partial(
+        response_model=Person,
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract a detailed person profile for John Smith, 35, who lives in Chicago and Springfield.",
+            }
+        ],
+        stream=True,
+    )
+
+    async for partial in stream:
+        print(partial)
+
+
+asyncio.run(main())
 ```
 
 ## Using Different Providers

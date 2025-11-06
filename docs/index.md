@@ -19,7 +19,7 @@ _Extract structured data from any LLM with type safety, validation, and automati
 
 Instructor is the **most popular Python library** for extracting structured data from Large Language Models (LLMs). With over **3 million monthly downloads, 11k stars, and 100+ contributors**, it's the go-to solution for developers who need reliable, validated outputs from AI models.
 
-Built on top of **Pydantic**, Instructor provides type-safe data extraction with automatic validation, retries, and streaming support. Whether you're using OpenAI's GPT models, Anthropic's Claude, Google's Gemini, **open source models with Ollama**, **DeepSeek**, or any of 15+ supported providers, Instructor ensures your LLM outputs are always structured and validated.
+Built on top of **Pydantic**, Instructor provides type-safe data extraction with automatic validation, retries, and streaming support. We recommend starting with Google's Gemini models through the GenAI SDK, and you can still switch to OpenAI, Anthropic, or any of the 15+ supported providers without changing your application code.
 
 ## Key Features for LLM Data Extraction
 
@@ -35,23 +35,20 @@ Built on top of **Pydantic**, Instructor provides type-safe data extraction with
 
 Install Instructor and start extracting structured data immediately:
 
-=== "pip"
-    ```bash
-    pip install instructor
-    ```
-
 === "uv"
     ```bash
-    uv add instructor
+    uv add "instructor[google-genai]"
     ```
 
 === "poetry"
     ```bash
-    poetry add instructor
+    poetry add "instructor[google-genai]"
     ```
 
 ```python
+import asyncio
 import instructor
+from instructor import Mode
 from pydantic import BaseModel
 
 
@@ -61,14 +58,24 @@ class Person(BaseModel):
     occupation: str
 
 
-client = instructor.from_provider("openai/gpt-5-nano")
-person = client.chat.completions.create(
-    response_model=Person,
-    messages=[
-        {"role": "user", "content": "Extract: John is a 30-year-old software engineer"}
-    ],
-)
-print(person)  # Person(name='John', age=30, occupation='software engineer')
+async def main() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+
+    person = await client.chat.completions.create(
+        response_model=Person,
+        messages=[
+            {"role": "user", "content": "Extract: John is a 30-year-old software engineer"}
+        ],
+    )
+
+    print(person)
+
+
+asyncio.run(main())
 ```
 
 ## Universal Provider API - One Interface for All LLMs
@@ -76,7 +83,9 @@ print(person)  # Person(name='John', age=30, occupation='software engineer')
 Instructor's **`from_provider`** function provides a unified interface to work with any LLM provider. Switch between OpenAI, Anthropic, Google, Ollama, DeepSeek, and 15+ providers with the same code:
 
 ```python
+import asyncio
 import instructor
+from instructor import Mode
 from pydantic import BaseModel
 
 
@@ -85,23 +94,26 @@ class UserInfo(BaseModel):
     age: int
 
 
-# Works with any provider - same interface everywhere
-client = instructor.from_provider("openai/gpt-4")  # OpenAI
-client = instructor.from_provider("anthropic/claude-3")  # Anthropic
-client = instructor.from_provider("google/gemini-pro")  # Google
-client = instructor.from_provider("ollama/llama3")  # Ollama (local)
-client = instructor.from_provider("deepseek/deepseek-chat")  # DeepSeek
+async def main() -> None:
+    # Works with any provider - same interface everywhere
+    google_client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+    openai_client = instructor.from_provider("openai/gpt-4")
+    anthropic_client = instructor.from_provider("anthropic/claude-3")
+    ollama_client = instructor.from_provider("ollama/llama3")
 
-# Pass API keys directly (no environment variables needed)
-client = instructor.from_provider("openai/gpt-4", api_key="sk-...")
-client = instructor.from_provider("anthropic/claude-3", api_key="sk-ant-...")
-client = instructor.from_provider("groq/llama-3.1-8b-instant", api_key="gsk_...")
+    user = await google_client.chat.completions.create(
+        response_model=UserInfo,
+        messages=[{"role": "user", "content": "John Doe is 30 years old."}],
+    )
 
-# Same extraction code works with all providers
-user = client.chat.completions.create(
-    response_model=UserInfo,
-    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
-)
+    print(user)
+
+
+asyncio.run(main())
 ```
 
 The **`from_provider`** API supports both sync and async usage (`async_client=True`) and automatically handles provider-specific configurations, making it effortless to switch between different LLM services.

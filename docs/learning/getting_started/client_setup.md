@@ -2,21 +2,47 @@
 
 Setting up the right client is the first step in using Instructor with various LLM providers. This guide covers how to configure clients for different providers and explains the various modes available.
 
+## Google GenAI (Recommended)
+
+Start with Google's Gemini models using the async client:
+
+```python
+import asyncio
+import instructor
+from instructor import Mode
+
+
+async def main() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+
+    result = await client.chat.completions.create(
+        response_model=dict,
+        messages=[{"role": "user", "content": "Extract the topic and tone."}],
+    )
+
+    print(result)
+
+
+asyncio.run(main())
+```
+
+Set `vertexai=True` when you need to run against Google Cloud Vertex AI.
+
 ## OpenAI
 
-The most common configuration is with OpenAI:
+OpenAI remains fully supported:
 
 ```python
 import instructor
 from openai import OpenAI
 
-# Default mode (TOOLS)
-client = instructor.from_provider("openai/gpt-5-nano")
-
-# With JSON mode
 client = instructor.from_openai(
     OpenAI(),
-    mode=instructor.Mode.JSON  # Use JSON mode instead
+    mode=instructor.Mode.TOOLS,
 )
 ```
 
@@ -26,25 +52,11 @@ For Anthropic's Claude models:
 
 ```python
 import instructor
-# Default mode (ANTHROPIC_TOOLS)
-client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 
-# With JSON mode
-client = instructor.from_provider("anthropic/claude-3-5-haiku-latest", mode=instructor.Mode.JSON)
-```
-
-## Google Gemini
-
-For Google's Gemini models:
-
-```python
-import instructor
-import google.generativeai as genai
-
-genai.configure(api_key="YOUR_API_KEY")
-model = genai.GenerativeModel("gemini-1.5-flash")
-
-client = instructor.from_provider("google/gemini-2.5-flash")
+client = instructor.from_provider(
+    "anthropic/claude-3-5-haiku-latest",
+    mode=instructor.Mode.ANTHROPIC_TOOLS,
+)
 ```
 
 ## Cohere
@@ -78,21 +90,25 @@ Instructor supports different modes for structured extraction:
 ```python
 from instructor import Mode
 
-Mode.TOOLS         # OpenAI function calling format (default for OpenAI)
-Mode.JSON          # Plain JSON generation
-Mode.MD_JSON       # Markdown JSON (used by some providers)
-Mode.ANTHROPIC_TOOLS # Claude tools mode (default for Anthropic)
-Mode.GEMINI_TOOLS  # Gemini tools format
-Mode.GEMINI_JSON   # Gemini JSON format
+Mode.GENAI_STRUCTURED_OUTPUTS  # Preferred for Google GenAI JSON-style responses
+Mode.GENAI_TOOLS               # Google function calling format
+Mode.TOOLS                     # OpenAI function calling format
+Mode.JSON                      # Plain JSON generation
+Mode.MD_JSON                   # Markdown JSON (used by some providers)
+Mode.ANTHROPIC_TOOLS           # Claude tools mode (default for Anthropic)
+Mode.GEMINI_TOOLS              # Legacy Gemini tools format
+Mode.GEMINI_JSON               # Legacy Gemini JSON format
 ```
 
 ### When to Use Each Mode
 
-- **TOOLS/FUNCTION_CALL**: The default for OpenAI. Uses function calling for reliable structured outputs.
+- **GENAI_STRUCTURED_OUTPUTS**: Best default for Google GenAI. Returns JSON that maps straight to your model.
+- **GENAI_TOOLS**: Use when you need Google function calling or tool definitions.
+- **TOOLS/FUNCTION_CALL**: Default for OpenAI. Uses function calling for reliable structured outputs.
 - **JSON**: Works with most providers. The model generates JSON directly.
 - **MD_JSON**: For models that work well with Markdown-formatted JSON.
-- **ANTHROPIC_TOOLS**: The default for Anthropic. Uses Claude's tools API.
-- **GEMINI_TOOLS/GEMINI_JSON**: For Google's Gemini models.
+- **ANTHROPIC_TOOLS**: Default for Anthropic. Uses Claude's tools API.
+- **GEMINI_TOOLS/GEMINI_JSON**: Legacy Gemini modes. Prefer the GenAI modes for new builds.
 
 Choose the mode that works best with your selected provider and model.
 
@@ -103,22 +119,28 @@ For asynchronous operation, use the async versions of the clients:
 ```python
 import asyncio
 import instructor
-from openai import AsyncOpenAI
+from instructor import Mode
 from pydantic import BaseModel
+
 
 class User(BaseModel):
     name: str
     age: int
 
+
 async def extract_user():
-    async_client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+    async_client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
     return await async_client.chat.completions.create(
-        model="gpt-3.5-turbo",
         response_model=User,
         messages=[
             {"role": "user", "content": "John is 30 years old."}
-        ]
+        ],
     )
+
 
 user = asyncio.run(extract_user())
 ```
@@ -136,14 +158,11 @@ from openai import OpenAI
 client = instructor.from_openai(
     OpenAI(),
     mode=instructor.Mode.TOOLS,
-    max_retries=2,  # Number of retries for validation failures
+    max_retries=2,
 )
 
 # With API key explicitly defined
 client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.JSON)
-
-# With organization ID
-client = instructor.from_provider("openai/gpt-5-nano")
 ```
 
 ## Using with Other Providers via OpenAI-Compatible Interface

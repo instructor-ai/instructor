@@ -3,27 +3,38 @@
 Get reliable JSON from any LLM. Built on Pydantic for validation, type safety, and IDE support.
 
 ```python
+import asyncio
 import instructor
+from instructor import Mode
 from pydantic import BaseModel
 
 
-# Define what you want
 class User(BaseModel):
     name: str
     age: int
 
 
-# Extract it from natural language
-client = instructor.from_provider("openai/gpt-4o-mini")
-user = client.chat.completions.create(
-    response_model=User,
-    messages=[{"role": "user", "content": "John is 25 years old"}],
-)
+async def main() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
 
-print(user)  # User(name='John', age=25)
+    user = await client.chat.completions.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "John is 25 years old"}],
+    )
+
+    print(user)  # User(name='John', age=25)
+
+
+asyncio.run(main())
 ```
 
 **That's it.** No JSON parsing, no error handling, no retries. Just define a model and get structured data.
+
+> We recommend starting with Google GenAI models. They pair strong structured output support with Instructor's retries, and you can still swap to another provider later without changing your code.
 
 [![PyPI](https://img.shields.io/pypi/v/instructor?style=flat-square)](https://pypi.org/project/instructor/)
 [![Downloads](https://img.shields.io/pypi/dm/instructor?style=flat-square)](https://pypi.org/project/instructor/)
@@ -103,13 +114,14 @@ user = client.chat.completions.create(
 ## Install in seconds
 
 ```bash
-pip install instructor
+uv add "instructor[google-genai]"
 ```
 
-Or with your package manager:
+That command installs Instructor with Google GenAI support, which is our recommended starter setup. Add extra providers only when you need them.
+
 ```bash
-uv add instructor
-poetry add instructor
+uv add "instructor[anthropic]"
+uv add "instructor[mistralai]"
 ```
 
 ## Works with every major provider
@@ -117,28 +129,38 @@ poetry add instructor
 Use the same code with any LLM provider:
 
 ```python
-# OpenAI
-client = instructor.from_provider("openai/gpt-4o")
+import asyncio
+import instructor
+from instructor import Mode
+from pydantic import BaseModel
 
-# Anthropic
-client = instructor.from_provider("anthropic/claude-3-5-sonnet")
 
-# Google
-client = instructor.from_provider("google/gemini-pro")
+async def main() -> None:
+    class User(BaseModel):
+        name: str
+        age: int
 
-# Ollama (local)
-client = instructor.from_provider("ollama/llama3.2")
+    # Google (recommended default)
+    google_client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
 
-# With API keys directly (no environment variables needed)
-client = instructor.from_provider("openai/gpt-4o", api_key="sk-...")
-client = instructor.from_provider("anthropic/claude-3-5-sonnet", api_key="sk-ant-...")
-client = instructor.from_provider("groq/llama-3.1-8b-instant", api_key="gsk_...")
+    # OpenAI, Anthropic, and others keep the same API surface
+    openai_client = instructor.from_provider("openai/gpt-4o")
+    anthropic_client = instructor.from_provider("anthropic/claude-3-5-sonnet")
+    ollama_client = instructor.from_provider("ollama/llama3.2")
 
-# All use the same API!
-user = client.chat.completions.create(
-    response_model=User,
-    messages=[{"role": "user", "content": "..."}],
-)
+    user = await google_client.chat.completions.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "..."}],
+    )
+
+    print(user)
+
+
+asyncio.run(main())
 ```
 
 ## Production-ready features
@@ -232,10 +254,10 @@ Companies using Instructor include teams at OpenAI, Google, Microsoft, AWS, and 
 Extract structured data from any text:
 
 ```python
-from pydantic import BaseModel
+import asyncio
 import instructor
-
-client = instructor.from_provider("openai/gpt-4o-mini")
+from instructor import Mode
+from pydantic import BaseModel
 
 
 class Product(BaseModel):
@@ -244,13 +266,24 @@ class Product(BaseModel):
     in_stock: bool
 
 
-product = client.chat.completions.create(
-    response_model=Product,
-    messages=[{"role": "user", "content": "iPhone 15 Pro, $999, available now"}],
-)
+async def main() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
 
-print(product)
-# Product(name='iPhone 15 Pro', price=999.0, in_stock=True)
+    product = await client.chat.completions.create(
+        response_model=Product,
+        messages=[
+            {"role": "user", "content": "iPhone 15 Pro, $999, available now"}
+        ],
+    )
+
+    print(product)
+
+
+asyncio.run(main())
 ```
 
 ### Multiple languages

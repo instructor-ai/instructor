@@ -4,44 +4,38 @@ Learn how to install Instructor, the leading Python library for extracting struc
 
 ## Quick Start: Install Instructor for LLM Development
 
-Get started with structured LLM outputs in seconds. Install Instructor using pip:
+Get started with structured LLM outputs in seconds. Install Instructor with Google GenAI support using `uv`:
 
 ```shell
-pip install instructor
+uv add "instructor[google-genai]"
 ```
 
-Instructor leverages Pydantic for type-safe LLM data extraction:
-
-```shell
-pip install pydantic
-```
-
-> **Pro Tip**: Use `uv` for faster installation: `uv pip install instructor`
+This installs Instructor together with the Google GenAI SDK, which we recommend as the default path for new projects.
 
 ## LLM Provider Installation Guide
 
 Instructor supports 15+ LLM providers. Here's how to install and configure each:
 
-### OpenAI (GPT-4, GPT-3.5)
+### Google GenAI (Gemini Models)
 
-OpenAI is the default LLM provider for Instructor. Perfect for GPT-4 and GPT-3.5-turbo structured outputs:
+Google's Gemini models provide fast multimodal function calling and structured outputs. This is our recommended starting point:
 
 ```shell
-pip install instructor
+uv add "instructor[google-genai]"
 ```
 
-Configure your OpenAI API key for LLM access:
+Configure your Google API key:
 
 ```shell
-export OPENAI_API_KEY=your_openai_key
+export GOOGLE_API_KEY=your_google_key
 ```
 
 ### Anthropic Claude LLM Setup
 
-Extract structured data from Claude 3 models (Opus, Sonnet, Haiku) with native tool support:
+Install the Anthropic extra only when you need Claude models:
 
 ```shell
-pip install "instructor[anthropic]"
+uv add "instructor[anthropic]"
 ```
 
 Configure Claude API access:
@@ -50,26 +44,12 @@ Configure Claude API access:
 export ANTHROPIC_API_KEY=your_anthropic_key
 ```
 
-### Google Gemini LLM Integration
-
-Use Gemini Pro and Flash models for structured outputs with function calling:
-
-```shell
-pip install "instructor[google-genai]"
-```
-
-Set up Gemini API access:
-
-```shell
-export GOOGLE_API_KEY=your_google_key
-```
-
 ### Cohere
 
 To use with Cohere's models:
 
 ```shell
-pip install "instructor[cohere]"
+uv add "instructor[cohere]"
 ```
 
 Set up your Cohere API key:
@@ -83,7 +63,7 @@ export COHERE_API_KEY=your_cohere_key
 To use with Mistral AI's models:
 
 ```shell
-pip install "instructor[mistralai]"
+uv add "instructor[mistralai]"
 ```
 
 Set up your Mistral API key:
@@ -97,7 +77,7 @@ export MISTRAL_API_KEY=your_mistral_key
 To use LiteLLM for accessing multiple providers:
 
 ```shell
-pip install "instructor[litellm]"
+uv add "instructor[litellm]"
 ```
 
 Set up API keys for the providers you want to use.
@@ -107,22 +87,35 @@ Set up API keys for the providers you want to use.
 Test your Instructor installation with this simple LLM structured output example:
 
 ```python
+import asyncio
 import instructor
+from instructor import Mode
 from pydantic import BaseModel
+
+
 class Person(BaseModel):
     name: str
     age: int
 
-client = instructor.from_provider("openai/gpt-5-nano")
-person = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    response_model=Person,
-    messages=[
-        {"role": "user", "content": "John Doe is 30 years old"}
-    ]
-)
 
-print(f"Name: {person.name}, Age: {person.age}")
+async def verify_install() -> None:
+    client = instructor.from_provider(
+        "google/gemini-2.5-flash",
+        async_client=True,
+        mode=Mode.GENAI_STRUCTURED_OUTPUTS,
+    )
+
+    person = await client.chat.completions.create(
+        response_model=Person,
+        messages=[
+            {"role": "user", "content": "John Doe is 30 years old"}
+        ],
+    )
+
+    print(f"Name: {person.name}, Age: {person.age}")
+
+
+asyncio.run(verify_install())
 ```
 
 ## Next Steps in Your LLM Tutorial Journey
@@ -135,8 +128,8 @@ With Instructor installed, you're ready to build powerful LLM applications:
 
 ## Common Installation Issues
 
-- **Import Errors**: Ensure you've installed the provider-specific extras (e.g., `instructor[anthropic]`)
+- **Import Errors**: Ensure you've added the provider-specific extras (e.g., `uv add "instructor[anthropic]"`)
 - **API Key Issues**: Verify your environment variables are set correctly
-- **Version Conflicts**: Use `pip install --upgrade instructor` to get the latest version
+- **Version Conflicts**: Use `uv pip install --upgrade "instructor[google-genai]"` to get the latest version
 
 Ready to extract structured data from LLMs? Continue to [Your First Extraction](first_extraction.md) →
