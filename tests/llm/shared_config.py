@@ -2,7 +2,8 @@
 Shared configuration for multi-provider tests.
 
 This module provides common test configuration for running the same tests
-across multiple providers (OpenAI, Anthropic, Google).
+across multiple providers (OpenAI, Anthropic, Google, Cohere, xAI, Mistral,
+Cerebras, Fireworks, Writer, Perplexity).
 """
 
 import os
@@ -30,6 +31,48 @@ PROVIDER_CONFIGS = [
         instructor.Mode.GENAI_TOOLS,
         "GOOGLE_API_KEY",
         "google.genai",
+    ),
+    (
+        "cohere/command-a-03-2025",
+        instructor.Mode.COHERE_TOOLS,
+        "COHERE_API_KEY",
+        "cohere",
+    ),
+    (
+        "xai/grok-3-mini",
+        instructor.Mode.XAI_TOOLS,
+        "XAI_API_KEY",
+        "xai_sdk",
+    ),
+    (
+        "mistral/ministral-8b-latest",
+        instructor.Mode.MISTRAL_TOOLS,
+        "MISTRAL_API_KEY",
+        "mistralai",
+    ),
+    (
+        "cerebras/llama3.1-70b",
+        instructor.Mode.CEREBRAS_TOOLS,
+        "CEREBRAS_API_KEY",
+        "cerebras",
+    ),
+    (
+        "fireworks/llama-v3p1-70b-instruct",
+        instructor.Mode.TOOLS,
+        "FIREWORKS_API_KEY",
+        "fireworks",
+    ),
+    (
+        "writer/palmyra-x-004",
+        instructor.Mode.WRITER_TOOLS,
+        "WRITER_API_KEY",
+        "writerai",
+    ),
+    (
+        "perplexity/llama-3.1-sonar-large-128k-online",
+        instructor.Mode.TOOLS,
+        "PERPLEXITY_API_KEY",
+        "openai",  # Perplexity uses OpenAI-compatible API
     ),
 ]
 
@@ -91,6 +134,27 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "google: mark test as requiring Google provider"
     )
+    config.addinivalue_line(
+        "markers", "cohere: mark test as requiring Cohere provider"
+    )
+    config.addinivalue_line(
+        "markers", "xai: mark test as requiring xAI provider"
+    )
+    config.addinivalue_line(
+        "markers", "mistral: mark test as requiring Mistral provider"
+    )
+    config.addinivalue_line(
+        "markers", "cerebras: mark test as requiring Cerebras provider"
+    )
+    config.addinivalue_line(
+        "markers", "fireworks: mark test as requiring Fireworks provider"
+    )
+    config.addinivalue_line(
+        "markers", "writer: mark test as requiring Writer provider"
+    )
+    config.addinivalue_line(
+        "markers", "perplexity: mark test as requiring Perplexity provider"
+    )
 
 
 # Convenience function to skip if specific provider not available
@@ -99,12 +163,20 @@ def skip_if_provider_unavailable(provider_name: str):
     Skip test if specific provider is not available.
 
     Args:
-        provider_name: One of "openai", "anthropic", "google"
+        provider_name: One of "openai", "anthropic", "google", "cohere", "xai",
+                       "mistral", "cerebras", "fireworks", "writer", "perplexity"
     """
     config_map = {
         "openai": ("OPENAI_API_KEY", "openai"),
         "anthropic": ("ANTHROPIC_API_KEY", "anthropic"),
         "google": ("GOOGLE_API_KEY", "google.genai"),
+        "cohere": ("COHERE_API_KEY", "cohere"),
+        "xai": ("XAI_API_KEY", "xai_sdk"),
+        "mistral": ("MISTRAL_API_KEY", "mistralai"),
+        "cerebras": ("CEREBRAS_API_KEY", "cerebras"),
+        "fireworks": ("FIREWORKS_API_KEY", "fireworks"),
+        "writer": ("WRITER_API_KEY", "writerai"),
+        "perplexity": ("PERPLEXITY_API_KEY", "openai"),
     }
 
     if provider_name not in config_map:

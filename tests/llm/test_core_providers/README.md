@@ -1,6 +1,6 @@
 # Core Provider Tests
 
-This directory contains unified tests that run across **all core providers**: OpenAI, Anthropic, and Google (Gemini).
+This directory contains unified tests that run across **all core providers**: OpenAI, Anthropic, Google (Gemini), Cohere, xAI, Mistral, Cerebras, Fireworks, Writer, and Perplexity.
 
 ## Philosophy
 
@@ -20,14 +20,21 @@ These tests verify that core instructor functionality works consistently across 
 
 ### Provider-Specific Tests
 
-Tests for provider-specific features should remain in their respective directories:
+Tests for provider-specific features remain in their respective directories:
 
-- `test_openai/` - OpenAI-specific features (hooks, validators, specific modes)
-- `test_anthropic/` - Anthropic-specific features (reasoning, extended thinking, system prompts)
-- `test_genai/` - Google-specific features (schema conversion, format handling)
-- `test_gemini/` - Legacy Gemini tests (may be consolidated with test_genai)
+- `test_openai/` - OpenAI-specific features (hooks, multimodal, validation_context)
+- `test_anthropic/` - Anthropic-specific features (reasoning, extended thinking, system prompts, multimodal)
+- `test_genai/` - Google-specific features (schema conversion, format handling, decimal, multimodal)
+- `test_gemini/` - Gemini-specific features (content formatting, multimodal, evals)
+- `test_cohere/` - Cohere-specific features (JSON schema mode)
+- `test_xai/` - xAI-specific features (raw response handling)
+- `test_mistral/` - Mistral-specific features (multimodal)
+- `test_writer/` - Writer-specific features (evals)
 
-Multimodal tests should also remain provider-specific since each provider has different APIs for handling images/files.
+**Deleted directories** (tests moved to core):
+- ~~`test_cerebras/`~~ - all tests were generic
+- ~~`test_fireworks/`~~ - all tests were generic
+- ~~`test_perplexity/`~~ - all tests were generic
 
 ## Configuration
 
@@ -57,10 +64,19 @@ def test_something(provider_config):
     assert isinstance(result, MyModel)
 ```
 
-The test will automatically run 3 times:
-1. With OpenAI (if OPENAI_API_KEY is set and openai package installed)
-2. With Anthropic (if ANTHROPIC_API_KEY is set and anthropic package installed)
-3. With Google (if GOOGLE_API_KEY is set and google.genai package installed)
+The test will automatically run for each available provider:
+- OpenAI (if OPENAI_API_KEY is set)
+- Anthropic (if ANTHROPIC_API_KEY is set)
+- Google (if GOOGLE_API_KEY is set)
+- Cohere (if COHERE_API_KEY is set)
+- xAI (if XAI_API_KEY is set)
+- Mistral (if MISTRAL_API_KEY is set)
+- Cerebras (if CEREBRAS_API_KEY is set)
+- Fireworks (if FIREWORKS_API_KEY is set)
+- Writer (if WRITER_API_KEY is set)
+- Perplexity (if PERPLEXITY_API_KEY is set)
+
+Tests automatically skip if the API key or package is not available.
 
 ## Running Tests
 
@@ -92,13 +108,34 @@ uv run pytest tests/llm/test_core_providers/ -k "google" -v
 ```
 
 ### Skip tests when API keys are missing:
-Tests automatically skip if the required API key or package is not available. You don't need to do anything special.
+Tests automatically skip if the required API key or package is not available.
+
+Required API keys (set only what you have):
+- `OPENAI_API_KEY` - for OpenAI
+- `ANTHROPIC_API_KEY` - for Anthropic
+- `GOOGLE_API_KEY` - for Google (Gemini)
+- `COHERE_API_KEY` - for Cohere
+- `XAI_API_KEY` - for xAI (Grok)
+- `MISTRAL_API_KEY` - for Mistral
+- `CEREBRAS_API_KEY` - for Cerebras
+- `FIREWORKS_API_KEY` - for Fireworks
+- `WRITER_API_KEY` - for Writer
+- `PERPLEXITY_API_KEY` - for Perplexity
 
 ## Current Models
+
+All providers automatically skip if API keys are missing.
 
 - **OpenAI**: `gpt-5-nano` with `Mode.TOOLS`
 - **Anthropic**: `claude-3-7-sonnet-latest` with `Mode.ANTHROPIC_TOOLS`
 - **Google**: `gemini-2.0-flash-exp` with `Mode.GENAI_TOOLS`
+- **Cohere**: `command-a-03-2025` with `Mode.COHERE_TOOLS`
+- **xAI**: `grok-3-mini` with `Mode.XAI_TOOLS`
+- **Mistral**: `ministral-8b-latest` with `Mode.MISTRAL_TOOLS`
+- **Cerebras**: `llama3.1-70b` with `Mode.CEREBRAS_TOOLS`
+- **Fireworks**: `llama-v3p1-70b-instruct` with `Mode.TOOLS`
+- **Writer**: `palmyra-x-004` with `Mode.WRITER_TOOLS`
+- **Perplexity**: `llama-3.1-sonar-large-128k-online` with `Mode.TOOLS`
 
 To change models, edit `tests/llm/shared_config.py`.
 
