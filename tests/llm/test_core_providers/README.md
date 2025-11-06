@@ -17,7 +17,7 @@ These tests verify that core instructor functionality works consistently across 
 - **test_validation.py** - Validators, field constraints, custom validation
 - **test_retries.py** - Retry logic and max_retries parameter
 - **test_response_modes.py** - Different client methods (create, messages.create, etc.)
-- **test_multimodal.py** - Image description with unified `Image.from_url()` API ✨ NEW
+- **test_simple_types.py** - Simple types (int, bool, str, Literal, Union, Enum)
 
 ### Provider-Specific Tests
 
@@ -144,7 +144,7 @@ To change models, edit `tests/llm/shared_config.py`.
 
 ## Benefits
 
-✅ **Less code**: ~600-700 lines of duplicate code eliminated
+✅ **Less code**: ~3,500+ lines of duplicate code eliminated
 ✅ **Easier maintenance**: Update test logic once, applies to all providers
 ✅ **Better coverage**: Ensures all providers support core features
 ✅ **Faster development**: Add new providers by updating one config file
@@ -153,10 +153,11 @@ To change models, edit `tests/llm/shared_config.py`.
 ## Migration Status
 
 - ✅ Shared configuration created
-- ✅ Core test files created (basic_extraction, streaming, validation, retries, response_modes)
+- ✅ Core test files created (basic_extraction, streaming, validation, retries, response_modes, simple_types)
 - ✅ util.py files updated to use `provider/model` format
-- ⏳ Provider-specific tests need cleanup (remove duplicates)
-- ⏳ Documentation needs update
+- ✅ Provider-specific tests cleaned up (removed all duplicates)
+- ✅ Deleted 6 entire provider directories (cerebras, fireworks, perplexity, cohere, xai, mistral)
+- ✅ Deleted 35+ duplicate test files across remaining providers
 
 ## Adding New Core Tests
 
