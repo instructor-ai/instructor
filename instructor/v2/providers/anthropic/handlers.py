@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 from instructor.core.exceptions import IncompleteOutputException
 from instructor.processing.function_calls import extract_json_from_codeblock
+from instructor.processing.multimodal import Image, Audio, PDF
 from instructor.providers.anthropic.utils import (
     combine_system_messages,
     extract_system_messages,
@@ -28,6 +29,51 @@ from instructor.providers.anthropic.utils import (
 from instructor.v2.core.decorators import register_mode_handler
 from instructor.v2.core.handler import ModeHandler
 from instructor.v2.core.mode_types import ModeType, Provider
+
+
+def serialize_message_content(content: Any) -> Any:
+    """Serialize message content, converting Pydantic models to dicts.
+
+    Args:
+        content: Message content (string, list, dict, or Pydantic model)
+
+    Returns:
+        Serialized content with Pydantic models converted to dicts
+    """
+    if isinstance(content, (Image, Audio, PDF)):
+        # Serialize multimodal objects to their dict representations
+        return content.model_dump()
+    elif isinstance(content, list):
+        # Process list content recursively
+        return [serialize_message_content(item) for item in content]
+    elif isinstance(content, dict):
+        # Process dict recursively
+        return {k: serialize_message_content(v) for k, v in content.items()}
+    elif hasattr(content, "model_dump"):
+        # Handle any other Pydantic BaseModel
+        return content.model_dump()
+    else:
+        return content
+
+
+def process_messages_for_anthropic(
+    messages: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Process messages to serialize any Pydantic models in content.
+
+    Args:
+        messages: List of message dicts
+
+    Returns:
+        Processed messages with serialized content
+    """
+    processed = []
+    for message in messages:
+        msg_copy = message.copy()
+        if "content" in msg_copy:
+            msg_copy["content"] = serialize_message_content(msg_copy["content"])
+        processed.append(msg_copy)
+    return processed
 
 
 @register_mode_handler(Provider.ANTHROPIC, ModeType.TOOLS)
@@ -52,6 +98,12 @@ class AnthropicToolsHandler(ModeHandler):
             Tuple of (response_model, modified_kwargs)
         """
         new_kwargs = kwargs.copy()
+
+        # Serialize message content (convert Pydantic models to dicts)
+        if "messages" in new_kwargs:
+            new_kwargs["messages"] = process_messages_for_anthropic(
+                new_kwargs["messages"]
+            )
 
         if response_model is None:
             # Just handle message conversion
@@ -205,6 +257,12 @@ class AnthropicJSONHandler(ModeHandler):
             Tuple of (response_model, modified_kwargs)
         """
         new_kwargs = kwargs.copy()
+
+        # Serialize message content (convert Pydantic models to dicts)
+        if "messages" in new_kwargs:
+            new_kwargs["messages"] = process_messages_for_anthropic(
+                new_kwargs["messages"]
+            )
 
         # Extract and combine system messages
         system_messages = extract_system_messages(new_kwargs.get("messages", []))
