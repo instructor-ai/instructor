@@ -17,6 +17,7 @@ logger = logging.getLogger("instructor.auto_client")
 supported_providers = [
     "openai",
     "azure_openai",
+    "databricks",
     "anthropic",
     "google",
     "generative-ai",
@@ -262,6 +263,93 @@ def from_provider(
             )
             raise
 
+    elif provider == "databricks":
+        try:
+            import os
+            import openai
+            from instructor import from_openai  # type: ignore[attr-defined]
+
+            api_key = api_key or os.environ.get("DATABRICKS_TOKEN") or os.environ.get(
+                "DATABRICKS_API_KEY"
+            )
+            if not api_key:
+                from .core.exceptions import ConfigurationError
+
+                raise ConfigurationError(
+                    "DATABRICKS_TOKEN is not set. "
+                    "Set it with `export DATABRICKS_TOKEN=<your-token>` or `export DATABRICKS_API_KEY=<your-token>` "
+                    "or pass it as kwarg `api_key=<your-token>`."
+                )
+
+            base_url = kwargs.pop("base_url", None)
+            if base_url is None:
+                base_url = (
+                    os.environ.get("DATABRICKS_BASE_URL")
+                    or os.environ.get("DATABRICKS_HOST")
+                    or os.environ.get("DATABRICKS_WORKSPACE_URL")
+                )
+
+            if not base_url:
+                from .core.exceptions import ConfigurationError
+
+                raise ConfigurationError(
+                    "DATABRICKS_HOST is not set. "
+                    "Set it with `export DATABRICKS_HOST=<your-workspace-url>` or `export DATABRICKS_WORKSPACE_URL=<your-workspace-url>` "
+                    "or pass `base_url=<your-workspace-url>`."
+                )
+
+            base_url = str(base_url).rstrip("/")
+            if not base_url.endswith("/serving-endpoints"):
+                base_url = f"{base_url}/serving-endpoints"
+
+            openai_client_kwargs = {}
+            for key in (
+                "organization",
+                "timeout",
+                "max_retries",
+                "default_headers",
+                "http_client",
+                "app_info",
+            ):
+                if key in kwargs:
+                    openai_client_kwargs[key] = kwargs.pop(key)
+
+            client = (
+                openai.AsyncOpenAI(
+                    api_key=api_key, base_url=base_url, **openai_client_kwargs
+                )
+                if async_client
+                else openai.OpenAI(
+                    api_key=api_key, base_url=base_url, **openai_client_kwargs
+                )
+            )
+            result = from_openai(
+                client,
+                model=model_name,
+                mode=mode if mode else instructor.Mode.TOOLS,
+                **kwargs,
+            )
+            logger.info(
+                "Client initialized",
+                extra={**provider_info, "status": "success"},
+            )
+            return result
+        except ImportError:
+            from .core.exceptions import ConfigurationError
+
+            raise ConfigurationError(
+                "The openai package is required to use the Databricks provider. "
+                "Install it with `pip install openai`."
+            ) from None
+        except Exception as e:
+            logger.error(
+                "Error initializing %s client: %s",
+                provider,
+                e,
+                exc_info=True,
+                extra={**provider_info, "status": "error"},
+            )
+            raise
     elif provider == "anthropic":
         try:
             import anthropic
