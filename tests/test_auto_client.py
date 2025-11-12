@@ -270,6 +270,151 @@ def test_api_key_logging():
                 )
 
 
+def test_databricks_provider_uses_environment_configuration():
+    """Ensure Databricks provider pulls host and token from the environment."""
+    from unittest.mock import patch, MagicMock
+    import os
+
+    with patch("openai.OpenAI") as mock_openai_class:
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+
+        with patch("instructor.from_openai") as mock_from_openai:
+            mock_instructor = MagicMock()
+            mock_from_openai.return_value = mock_instructor
+
+            with patch.dict(
+                os.environ,
+                {
+                    "DATABRICKS_HOST": "https://example.cloud.databricks.com",
+                    "DATABRICKS_TOKEN": "secret-token",
+                },
+                clear=True,
+            ):
+                client = from_provider("databricks/dbrx-instruct")
+
+            mock_openai_class.assert_called_once()
+            _, kwargs = mock_openai_class.call_args
+            assert kwargs["api_key"] == "secret-token"
+            assert (
+                kwargs["base_url"]
+                == "https://example.cloud.databricks.com/serving-endpoints"
+            )
+            mock_from_openai.assert_called_once()
+            assert client is mock_instructor
+
+
+def test_databricks_provider_respects_custom_base_url():
+    """Ensure Databricks provider does not duplicate serving-endpoints suffix."""
+    from unittest.mock import patch, MagicMock
+    import os
+
+    with patch("openai.OpenAI") as mock_openai_class:
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+
+        with patch("instructor.from_openai") as mock_from_openai:
+            mock_instructor = MagicMock()
+            mock_from_openai.return_value = mock_instructor
+
+            with patch.dict(
+                os.environ,
+                {
+                    "DATABRICKS_TOKEN": "secret-token",
+                },
+                clear=True,
+            ):
+                client = from_provider(
+                    "databricks/dbrx-instruct",
+                    base_url="https://example.cloud.databricks.com/serving-endpoints",
+                )
+
+            _, kwargs = mock_openai_class.call_args
+            assert (
+                kwargs["base_url"]
+                == "https://example.cloud.databricks.com/serving-endpoints"
+            )
+            mock_from_openai.assert_called_once()
+            assert client is mock_instructor
+
+
+def test_databricks_provider_async_client():
+    """Ensure Databricks provider returns async client when requested."""
+    from unittest.mock import patch, MagicMock
+    import os
+
+    with patch("openai.AsyncOpenAI") as mock_async_openai_class:
+        mock_client = MagicMock()
+        mock_async_openai_class.return_value = mock_client
+
+        with patch("instructor.from_openai") as mock_from_openai:
+            mock_instructor = MagicMock()
+            mock_from_openai.return_value = mock_instructor
+
+            with patch.dict(
+                os.environ,
+                {
+                    "DATABRICKS_HOST": "https://example.cloud.databricks.com",
+                    "DATABRICKS_TOKEN": "secret-token",
+                },
+                clear=True,
+            ):
+                client = from_provider(
+                    "databricks/dbrx-instruct", async_client=True
+                )
+
+            mock_async_openai_class.assert_called_once()
+            _, kwargs = mock_async_openai_class.call_args
+            assert (
+                kwargs["base_url"]
+                == "https://example.cloud.databricks.com/serving-endpoints"
+            )
+            assert kwargs["api_key"] == "secret-token"
+            mock_from_openai.assert_called_once()
+            assert client is mock_instructor
+
+
+def test_databricks_provider_requires_token():
+    """Ensure Databricks provider raises when no token is available."""
+    from instructor.core.exceptions import ConfigurationError
+    from unittest.mock import patch, MagicMock
+    import os
+
+    with patch("openai.OpenAI") as mock_openai_class:
+        mock_openai_class.return_value = MagicMock()
+        with patch("instructor.from_openai") as mock_from_openai:
+            mock_from_openai.return_value = MagicMock()
+            with patch.dict(
+                os.environ,
+                {
+                    "DATABRICKS_HOST": "https://example.cloud.databricks.com",
+                },
+                clear=True,
+            ):
+                with pytest.raises(ConfigurationError):
+                    from_provider("databricks/dbrx-instruct")
+
+
+def test_databricks_provider_requires_host():
+    """Ensure Databricks provider raises when no host is available."""
+    from instructor.core.exceptions import ConfigurationError
+    from unittest.mock import patch, MagicMock
+    import os
+
+    with patch("openai.OpenAI") as mock_openai_class:
+        mock_openai_class.return_value = MagicMock()
+        with patch("instructor.from_openai") as mock_from_openai:
+            mock_from_openai.return_value = MagicMock()
+            with patch.dict(
+                os.environ,
+                {
+                    "DATABRICKS_TOKEN": "secret-token",
+                },
+                clear=True,
+            ):
+                with pytest.raises(ConfigurationError):
+                    from_provider("databricks/dbrx-instruct")
+
 def test_genai_mode_parameter_passed_to_provider():
     """Test that mode parameter is correctly passed to provider functions."""
     from unittest.mock import patch, MagicMock

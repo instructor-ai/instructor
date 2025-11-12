@@ -12,27 +12,27 @@ description: Guide to using instructor with Databricks models
 First, install the required packages:
 
 ```bash
-pip install instructor
+uv pip install instructor openai
 ```
 
-You'll need a Databricks API key and workspace URL which you can set as environment variables:
+Set your Databricks workspace URL and token as environment variables:
 
 ```bash
-export DATABRICKS_API_KEY=your_api_key_here
-export DATABRICKS_HOST=your_workspace_url
+export DATABRICKS_TOKEN="your_personal_access_token"
+export DATABRICKS_HOST="https://your-workspace.cloud.databricks.com"
 ```
+
+`DATABRICKS_API_KEY` and `DATABRICKS_WORKSPACE_URL` are also supported if you prefer those names. The provider appends `/serving-endpoints` automatically, so the host only needs the base workspace URL.
 
 ## Basic Example
 
 Here's how to extract structured data from Databricks models:
 
 ```python
-import os
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
 
-# Initialize the client with Databricks base URL
+# Initialize the client; host and token are read from the environment
 client = instructor.from_provider(
     "databricks/dbrx-instruct",
     mode=instructor.Mode.TOOLS,
@@ -54,6 +54,8 @@ user = client.chat.completions.create(
 print(user)
 # Output: UserExtract(name='Jason', age=25)
 ```
+
+If you need to point at a different workspace or testing endpoint, pass `base_url="https://alt-workspace.cloud.databricks.com/serving-endpoints"`. The helper will use that value as-is without adding another suffix.
 
 ### Async Example
 
