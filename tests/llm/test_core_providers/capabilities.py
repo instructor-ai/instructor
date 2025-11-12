@@ -18,6 +18,9 @@ Capability = Literal[
     "validation",
     "response_model_none",
     "create_with_completion",
+    "union_types",
+    "enum_types",
+    "union_streaming",
 ]
 
 # Provider capabilities mapping
@@ -52,6 +55,8 @@ PROVIDER_CAPABILITIES: dict[str, set[Capability]] = {
         "validation",
         "response_model_none",
         "create_with_completion",
+        # Note: Gemini doesn't support Union types or Enum types, only Optional
+        # Also doesn't support union streaming
     },
     "cohere": {
         "streaming",

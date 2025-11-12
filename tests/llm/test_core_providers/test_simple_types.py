@@ -11,6 +11,7 @@ import pytest
 from pydantic import Field
 
 import instructor
+from .capabilities import skip_if_unsupported
 
 
 @pytest.mark.asyncio
@@ -88,6 +89,7 @@ async def test_literal(provider_config):
 @pytest.mark.asyncio
 async def test_union(provider_config):
     """Test extracting Union type response."""
+    skip_if_unsupported(provider_config, "union_types")
     model, mode = provider_config
     client = instructor.from_provider(model, mode=mode, async_client=True)
 
@@ -106,6 +108,7 @@ async def test_union(provider_config):
 @pytest.mark.asyncio
 async def test_enum(provider_config):
     """Test extracting Enum type response."""
+    skip_if_unsupported(provider_config, "enum_types")
 
     class Color(enum.Enum):
         RED = "red"

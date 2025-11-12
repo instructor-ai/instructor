@@ -10,6 +10,7 @@ from typing import Union, Literal
 import pytest
 import instructor
 from instructor.dsl.partial import Partial
+from .capabilities import skip_if_unsupported
 
 
 class User(BaseModel):
@@ -97,6 +98,7 @@ async def test_iterable_streaming_with_stream_flag(provider_config):
 @pytest.mark.asyncio
 async def test_iterable_union_streaming(provider_config):
     """Test streaming union types with Iterable."""
+    skip_if_unsupported(provider_config, "union_streaming")
     model, mode = provider_config
     client = instructor.from_provider(model, mode=mode, async_client=True)
 
