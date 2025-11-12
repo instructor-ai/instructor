@@ -19,23 +19,6 @@ These tests verify that core instructor functionality works consistently across 
 - **test_response_modes.py** - Different client methods (create, messages.create, etc.)
 - **test_simple_types.py** - Simple types (int, bool, str, Literal, Union, Enum)
 
-### Provider-Specific Tests
-
-Tests for provider-specific features remain in their respective directories:
-
-- `test_openai/` - OpenAI-specific features (hooks, multimodal, validation_context, etc.)
-- `test_anthropic/` - Anthropic-specific features (reasoning, system prompts, multimodal)
-- `test_genai/` - Google-specific features (schema conversion, format, decimal, utils)
-- `test_gemini/` - Gemini-specific features (content formatting, multimodal, evals)
-- `test_writer/` - Writer-specific features (format tests, evals)
-
-**Deleted directories** (all tests were generic/duplicates):
-- ~~`test_cerebras/`~~ - all tests generic
-- ~~`test_fireworks/`~~ - all tests generic
-- ~~`test_perplexity/`~~ - all tests generic
-- ~~`test_cohere/`~~ - all tests generic (json_schema just another mode)
-- ~~`test_xai/`~~ - all tests generic (raw_response is generic feature)
-- ~~`test_mistral/`~~ - all tests generic (multimodal, retries, stream)
 
 ## Configuration
 
