@@ -242,9 +242,16 @@ class PartialBase(Generic[T_Model]):
         partial_mode = (
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
-        chunk_buffer = []
+        chunk_buffer: list[str] = []
         for chunk in json_chunks:
-            chunk_buffer += chunk
+            if chunk is None:
+                continue
+            if not isinstance(chunk, str):
+                try:
+                    chunk = str(chunk)
+                except Exception:
+                    continue
+            chunk_buffer.append(chunk)
             if len(chunk_buffer) < 2:
                 continue
             potential_object += remove_control_chars("".join(chunk_buffer))
@@ -254,7 +261,7 @@ class PartialBase(Generic[T_Model]):
             )
             yield obj
         if chunk_buffer:
-            potential_object += remove_control_chars(chunk_buffer[0])
+            potential_object += remove_control_chars("".join(chunk_buffer))
             obj = process_potential_object(
                 potential_object, partial_mode, partial_model, **kwargs
             )
@@ -269,12 +276,29 @@ class PartialBase(Generic[T_Model]):
         partial_mode = (
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
+        chunk_buffer: list[str] = []
         async for chunk in json_chunks:
-            potential_object += chunk
-            obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
+            if chunk is None:
+                continue
+            if not isinstance(chunk, str):
+                try:
+                    chunk = str(chunk)
+                except Exception:
+                    continue
+            chunk_buffer.append(chunk)
+            if len(chunk_buffer) < 2:
+                continue
+            potential_object += remove_control_chars("".join(chunk_buffer))
+            chunk_buffer = []
+            obj = process_potential_object(
+                potential_object, partial_mode, partial_model, **kwargs
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            yield obj
+        if chunk_buffer:
+            potential_object += remove_control_chars("".join(chunk_buffer))
+            obj = process_potential_object(
+                potential_object, partial_mode, partial_model, **kwargs
+            )
             yield obj
 
     @staticmethod
