@@ -241,7 +241,7 @@ Documentation improvements are always welcome! Follow these guidelines:
 
 We encourage contributions to our evaluation tests:
 
-1. Explore existing evals in the [evals directory](https://github.com/instructor-ai/instructor/tree/main/tests/llm/test_openai/evals)
+1. Explore existing evals in the [evals directory](https://github.com/instructor-ai/instructor/tree/main/tests/llm)
 2. Contribute new evals as pytest tests
 3. Evals should test specific capabilities or edge cases of the library or models
 4. Follow the existing patterns for structuring eval tests
