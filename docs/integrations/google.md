@@ -275,6 +275,16 @@ for user in users:
     #> name='Mike' age=28
 ```
 
+## Known Limitations (as of Nov 12, 2024)
+
+Google Gemini has the following known limitations when used with Instructor:
+
+1. **Union Types**: Gemini does not support Union types (except for Optional). Use separate response models or Literal types instead.
+2. **Enum Types**: Gemini returns string values instead of properly typed Enum instances. You may need to manually convert strings to enums after extraction.
+3. **Union Streaming**: Streaming is not supported for Union types with Iterable.
+
+These limitations are specific to Google Gemini and do not affect other providers like OpenAI or Anthropic. Tests automatically skip these features for Google to prevent failures.
+
 ## Instructor Modes
 
 We provide several modes to make it easy to work with the different response models that Gemini supports:
