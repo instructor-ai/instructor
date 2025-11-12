@@ -92,26 +92,25 @@ def test_partial():
     }, "Partial model JSON schema has changed"
 
 
+partial_chunks = ["\n", "\t", " ", "\x00", '{"b": {"b": 1}}']
+expected_model_from_chunks = [
+    # First model has default values
+    {"a": None, "b": {}},
+    # Second model has default values, unaffected by control characters
+    {"a": None, "b": {}},
+    # Last model has b populated from JSON (from the JSON chunk)
+    {"a": None, "b": {"b": 1}},
+]
+
+
 def test_partial_with_whitespace():
     partial = Partial[SamplePartial]
 
     # Get the actual models from chunks
-    models = list(partial.model_from_chunks(["\n", "\t", " ", '{"b": {"b": 1}}']))
-
-    # Print actual values for debugging
-    print(f"Number of models: {len(models)}")
+    models = list(partial.model_from_chunks(partial_chunks))
     for i, model in enumerate(models):
-        print(f"Model {i}: {model.model_dump()}")
-
-    # Actual behavior: When whitespace chunks are processed, we may get models
-    # First model has default values
-    assert models[0].model_dump() == {"a": None, "b": {}}
-
-    # Last model has b populated from JSON (from the JSON chunk)
-    assert models[-1].model_dump() == {"a": None, "b": {"b": 1}}
-
-    # Check we have the expected number of models (2 instead of 4)
-    assert len(models) == 2
+        # Expected behavior: When whitespace chunks are processed, we should always get a model
+        assert model.model_dump() == expected_model_from_chunks[i]
 
 
 @pytest.mark.asyncio
@@ -120,22 +119,14 @@ async def test_async_partial_with_whitespace():
 
     # Handle any leading whitespace from the model
     async def async_generator():
-        for chunk in ["\n", "\t", " ", '{"b": {"b": 1}}']:
+        for chunk in partial_chunks:
             yield chunk
-
-    expected_model_dicts = [
-        {"a": None, "b": {}},
-        {"a": None, "b": {}},
-        {"a": None, "b": {}},
-        {"a": None, "b": {"b": 1}},
-    ]
 
     i = 0
     async for model in partial.model_from_chunks_async(async_generator()):
-        assert model.model_dump() == expected_model_dicts[i]
+        # Expected behavior: When whitespace chunks are processed, we should always get a model
+        assert model.model_dump() == expected_model_from_chunks[i]
         i += 1
-
-    assert model.model_dump() == {"a": None, "b": {"b": 1}}
 
 
 @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
