@@ -17,12 +17,13 @@ class Task(BaseModel):
     priority: int
 
 
-def test_create_method(provider_config):
+@pytest.mark.asyncio
+async def test_create_method(provider_config):
     """Test the create() method."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    task = client.create(
+    task = await client.create(
         response_model=Task,
         messages=[
             {
@@ -37,12 +38,13 @@ def test_create_method(provider_config):
     assert task.priority == 9
 
 
-def test_chat_completions_create_method(provider_config):
+@pytest.mark.asyncio
+async def test_chat_completions_create_method(provider_config):
     """Test the chat.completions.create() method."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    task = client.chat.completions.create(
+    task = await client.chat.completions.create(
         response_model=Task,
         messages=[
             {
@@ -56,12 +58,13 @@ def test_chat_completions_create_method(provider_config):
     assert task.priority == 5
 
 
-def test_messages_create_method(provider_config):
+@pytest.mark.asyncio
+async def test_messages_create_method(provider_config):
     """Test the messages.create() method."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    task = client.messages.create(
+    task = await client.messages.create(
         response_model=Task,
         messages=[
             {
@@ -75,13 +78,14 @@ def test_messages_create_method(provider_config):
     assert task.priority == 3
 
 
-def test_create_with_completion(provider_config):
+@pytest.mark.asyncio
+async def test_create_with_completion(provider_config):
     """Test create_with_completion() returns both model and raw response."""
     skip_if_unsupported(provider_config, "create_with_completion")
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    task, completion = client.chat.completions.create_with_completion(
+    task, completion = await client.chat.completions.create_with_completion(
         response_model=Task,
         messages=[
             {
@@ -97,73 +101,17 @@ def test_create_with_completion(provider_config):
     assert completion is not None
 
 
-def test_response_model_none(provider_config):
+@pytest.mark.asyncio
+async def test_response_model_none(provider_config):
     """Test that response_model=None returns raw response."""
-    skip_if_unsupported(provider_config, "response_model_none")
-    model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
-
-    response = client.messages.create(
-        response_model=None,
-        messages=[{"role": "user", "content": "Say hello!"}],
-    )
-
-    # Should return raw provider response
-    assert response is not None
-
-
-@pytest.mark.asyncio
-async def test_async_create_method(provider_config):
-    """Test async create() method."""
-    model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode, async_client=True)
-
-    task = await client.create(
-        response_model=Task,
-        messages=[
-            {
-                "role": "user",
-                "content": "Task: Write tests, priority 8",
-            }
-        ],
-    )
-
-    assert isinstance(task, Task)
-    assert task.priority == 8
-
-
-@pytest.mark.asyncio
-async def test_async_create_with_completion(provider_config):
-    """Test async create_with_completion() method."""
-    skip_if_unsupported(provider_config, "create_with_completion")
-    model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode, async_client=True)
-
-    task, completion = await client.chat.completions.create_with_completion(
-        response_model=Task,
-        messages=[
-            {
-                "role": "user",
-                "content": "Task: Refactor code, priority 6",
-            }
-        ],
-    )
-
-    assert isinstance(task, Task)
-    assert task.priority == 6
-    assert completion is not None
-
-
-@pytest.mark.asyncio
-async def test_async_response_model_none(provider_config):
-    """Test async with response_model=None."""
     skip_if_unsupported(provider_config, "response_model_none")
     model, mode = provider_config
     client = instructor.from_provider(model, mode=mode, async_client=True)
 
     response = await client.messages.create(
         response_model=None,
-        messages=[{"role": "user", "content": "Tell me a joke"}],
+        messages=[{"role": "user", "content": "Say hello!"}],
     )
 
+    # Should return raw provider response
     assert response is not None

@@ -23,7 +23,7 @@ jobs:
         run: uv sync --all-extras
       - name: Run core tests
         run: >-
-          uv run pytest tests/ -n auto
+          uv run pytest tests/ --asyncio-mode=auto -n auto
           -k 'not test_core_providers and not test_openai and not test_anthropic
           and not test_gemini and not test_genai and not test_writer and not
           test_vertexai and not docs'
@@ -51,7 +51,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run core provider tests
-        run: uv run pytest tests/llm/test_core_providers -v -n auto
+        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -69,7 +69,7 @@ jobs:
   provider-tests:
     name: ${{ matrix.provider.name }} Tests
     runs-on: ubuntu-latest
-    needs: core-provider-tests
+    needs: core-tests
     strategy:
       fail-fast: false
       matrix:
@@ -104,7 +104,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run ${{ matrix.provider.name }} tests
-        run: uv run pytest ${{ matrix.provider.test_path }} -n auto
+        run: uv run pytest ${{ matrix.provider.test_path }} --asyncio-mode=auto -n auto
         env:
           INSTRUCTOR_ENV: CI
           ${{ matrix.provider.env_key }}: ${{ secrets[matrix.provider.env_key] }}
@@ -113,7 +113,7 @@ jobs:
   auto-client-test:
     name: Auto Client Tests
     runs-on: ubuntu-latest
-    needs: provider-tests
+    needs: core-tests
 
     steps:
       - uses: actions/checkout@v2
@@ -126,7 +126,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run Auto Client tests
-        run: uv run pytest tests/test_auto_client.py -n auto
+        run: uv run pytest tests/test_auto_client.py --asyncio-mode=auto -n auto
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

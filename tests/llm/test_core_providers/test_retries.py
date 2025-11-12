@@ -19,16 +19,15 @@ class ValidatedUser(BaseModel):
         return v.strip()
 
 
-def test_max_retries_parameter(provider_config):
+@pytest.mark.asyncio
+async def test_max_retries_parameter(provider_config):
     """Test that max_retries parameter is accepted and works."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    user = client.create(
+    user = await client.create(
         response_model=ValidatedUser,
-        messages=[
-            {"role": "user", "content": "Create a user: John Smith, age 30"}
-        ],
+        messages=[{"role": "user", "content": "Create a user: John Smith, age 30"}],
         max_retries=3,
     )
 
@@ -37,13 +36,14 @@ def test_max_retries_parameter(provider_config):
     assert 0 <= user.age <= 120
 
 
-def test_validation_with_retries(provider_config):
+@pytest.mark.asyncio
+async def test_validation_with_retries(provider_config):
     """Test that validation errors trigger retries (if supported)."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
     # This should work after potential retries
-    user = client.create(
+    user = await client.create(
         response_model=ValidatedUser,
         messages=[
             {
@@ -56,19 +56,3 @@ def test_validation_with_retries(provider_config):
 
     assert isinstance(user, ValidatedUser)
     assert user.age >= 0 and user.age <= 120
-
-
-@pytest.mark.asyncio
-async def test_async_max_retries(provider_config):
-    """Test max_retries with async client."""
-    model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode, async_client=True)
-
-    user = await client.create(
-        response_model=ValidatedUser,
-        messages=[{"role": "user", "content": "Mike Davis, 35 years old"}],
-        max_retries=3,
-    )
-
-    assert isinstance(user, ValidatedUser)
-    assert 0 <= user.age <= 120

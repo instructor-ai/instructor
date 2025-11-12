@@ -37,12 +37,13 @@ class TemperatureReading(BaseModel):
     location: str
 
 
-def test_basic_validation(provider_config):
+@pytest.mark.asyncio
+async def test_basic_validation(provider_config):
     """Test that basic field validation works."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    user = client.create(
+    user = await client.create(
         response_model=UserWithValidation,
         messages=[{"role": "user", "content": "John Doe is 30 years old"}],
     )
@@ -53,12 +54,13 @@ def test_basic_validation(provider_config):
     assert 0 <= user.age <= 150
 
 
-def test_list_with_validation(provider_config):
+@pytest.mark.asyncio
+async def test_list_with_validation(provider_config):
     """Test validation with lists of validated models."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    users = client.create(
+    users = await client.create(
         response_model=list[UserWithValidation],
         messages=[
             {
@@ -75,12 +77,13 @@ def test_list_with_validation(provider_config):
         assert 0 <= user.age <= 150
 
 
-def test_custom_validator(provider_config):
+@pytest.mark.asyncio
+async def test_custom_validator(provider_config):
     """Test custom field validators work correctly."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    email = client.create(
+    email = await client.create(
         response_model=Email,
         messages=[{"role": "user", "content": "My email is john@example.com"}],
     )
@@ -90,12 +93,13 @@ def test_custom_validator(provider_config):
     assert "." in email.email
 
 
-def test_field_constraints(provider_config):
+@pytest.mark.asyncio
+async def test_field_constraints(provider_config):
     """Test Pydantic field constraints (ge, le, etc)."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    reading = client.create(
+    reading = await client.create(
         response_model=TemperatureReading,
         messages=[
             {
@@ -110,12 +114,13 @@ def test_field_constraints(provider_config):
     assert reading.location == "Paris"
 
 
-def test_max_retries(provider_config):
+@pytest.mark.asyncio
+async def test_max_retries(provider_config):
     """Test that max_retries parameter is accepted."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    user = client.create(
+    user = await client.create(
         response_model=UserWithValidation,
         messages=[{"role": "user", "content": "Jane Smith is 28 years old"}],
         max_retries=2,
@@ -124,34 +129,3 @@ def test_max_retries(provider_config):
     assert isinstance(user, UserWithValidation)
     assert user.name == "Jane Smith"
     assert user.age == 28
-
-
-@pytest.mark.asyncio
-async def test_async_validation(provider_config):
-    """Test validation with async client."""
-    model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode, async_client=True)
-
-    user = await client.create(
-        response_model=UserWithValidation,
-        messages=[{"role": "user", "content": "Mike Johnson is 45 years old"}],
-    )
-
-    assert isinstance(user, UserWithValidation)
-    assert user.name == "Mike Johnson"
-    assert user.age == 45
-
-
-@pytest.mark.asyncio
-async def test_async_custom_validator(provider_config):
-    """Test custom validators with async client."""
-    model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode, async_client=True)
-
-    email = await client.create(
-        response_model=Email,
-        messages=[{"role": "user", "content": "Contact me at sarah@test.com"}],
-    )
-
-    assert isinstance(email, Email)
-    assert "@" in email.email

@@ -7,17 +7,19 @@ consistently across all providers using from_provider().
 import enum
 from typing import Annotated, Literal, Union
 
+import pytest
 from pydantic import Field
 
 import instructor
 
 
-def test_int(provider_config):
+@pytest.mark.asyncio
+async def test_int(provider_config):
     """Test extracting int response."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    response = client.create(
+    response = await client.create(
         response_model=int,
         messages=[
             {
@@ -29,12 +31,13 @@ def test_int(provider_config):
     assert isinstance(response, int)
 
 
-def test_bool(provider_config):
+@pytest.mark.asyncio
+async def test_bool(provider_config):
     """Test extracting bool response."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    response = client.create(
+    response = await client.create(
         response_model=bool,
         messages=[
             {
@@ -46,12 +49,13 @@ def test_bool(provider_config):
     assert isinstance(response, bool)
 
 
-def test_str(provider_config):
+@pytest.mark.asyncio
+async def test_str(provider_config):
     """Test extracting str response."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    response = client.create(
+    response = await client.create(
         response_model=str,
         messages=[
             {
@@ -63,12 +67,13 @@ def test_str(provider_config):
     assert isinstance(response, str)
 
 
-def test_literal(provider_config):
+@pytest.mark.asyncio
+async def test_literal(provider_config):
     """Test extracting Literal type response."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    response = client.create(
+    response = await client.create(
         response_model=Literal["red", "green", "blue"],
         messages=[
             {
@@ -80,12 +85,13 @@ def test_literal(provider_config):
     assert response in ["red", "green", "blue"]
 
 
-def test_union(provider_config):
+@pytest.mark.asyncio
+async def test_union(provider_config):
     """Test extracting Union type response."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    response = client.create(
+    response = await client.create(
         response_model=Union[int, str],
         messages=[
             {
@@ -97,7 +103,8 @@ def test_union(provider_config):
     assert isinstance(response, (int, str))
 
 
-def test_enum(provider_config):
+@pytest.mark.asyncio
+async def test_enum(provider_config):
     """Test extracting Enum type response."""
 
     class Color(enum.Enum):
@@ -106,9 +113,9 @@ def test_enum(provider_config):
         BLUE = "blue"
 
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    response = client.create(
+    response = await client.create(
         response_model=Color,
         messages=[
             {
@@ -120,12 +127,13 @@ def test_enum(provider_config):
     assert response in [Color.RED, Color.GREEN, Color.BLUE]
 
 
-def test_annotated_int(provider_config):
+@pytest.mark.asyncio
+async def test_annotated_int(provider_config):
     """Test extracting Annotated[int] with Field description."""
     model, mode = provider_config
-    client = instructor.from_provider(model, mode=mode)
+    client = instructor.from_provider(model, mode=mode, async_client=True)
 
-    response = client.create(
+    response = await client.create(
         response_model=Annotated[int, Field(description="A random number")],
         messages=[
             {

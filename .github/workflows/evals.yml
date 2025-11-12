@@ -28,6 +28,6 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: Run all tests
-        run: uv run pytest tests/
+        run: uv run pytest tests/ --asyncio-mode=auto
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

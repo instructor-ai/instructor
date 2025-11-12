@@ -31,6 +31,6 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run tests
-        run: uv run pytest tests/docs
+        run: uv run pytest tests/docs --asyncio-mode=auto
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
