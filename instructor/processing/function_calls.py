@@ -399,10 +399,7 @@ class OpenAISchema(BaseModel):
             # read: https://docs.anthropic.com/en/docs/build-with-claude/tool-use/web-search-tool#response
             text_blocks = [c for c in completion.content if c.type == "text"]
             last_block = text_blocks[-1]
-            # Strip raw control characters (0x00-0x1F) that would cause json.loads to fail
-            # Note: This preserves escaped sequences like \n in JSON strings, which are handled
-            # correctly by the JSON parser. Only raw, unescaped control bytes are removed.
-            text = re.sub(r"[\u0000-\u001F]", "", last_block.text)
+            text = last_block.text
 
         extra_text = extract_json_from_codeblock(text)
 
@@ -411,7 +408,7 @@ class OpenAISchema(BaseModel):
                 extra_text, context=validation_context, strict=True
             )
         else:
-            # Allow control characters.
+            # Allow control characters to pass through by using the non-strict JSON parser.
             parsed = json.loads(extra_text, strict=False)
             # Pydantic non-strict: https://docs.pydantic.dev/latest/concepts/strict_mode/
             model = cls.model_validate(parsed, context=validation_context, strict=False)

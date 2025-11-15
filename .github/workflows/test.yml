@@ -22,7 +22,11 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run core tests
-        run: uv run pytest tests/ -k 'not llm and not openai and not gemini and not anthropic and not cohere and not vertexai and not mistral and not xai and not docs'
+        run: >-
+          uv run pytest tests/ --asyncio-mode=auto -n auto
+          -k 'not test_core_providers and not test_openai and not test_anthropic
+          and not test_gemini and not test_genai and not test_writer and not
+          test_vertexai and not docs'
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -31,15 +35,110 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
+  # Core provider tests for OpenAI
+  core-openai:
+    name: Core Provider Tests (OpenAI)
+    runs-on: ubuntu-latest
+    needs: core-tests
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Install the project
+        run: uv sync --all-extras
+      - name: Run core provider tests (OpenAI)
+        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "openai"
+        env:
+          INSTRUCTOR_ENV: CI
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+  # Core provider tests for Anthropic
+  core-anthropic:
+    name: Core Provider Tests (Anthropic)
+    runs-on: ubuntu-latest
+    needs: core-tests
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Install the project
+        run: uv sync --all-extras
+      - name: Run core provider tests (Anthropic)
+        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "anthropic"
+        env:
+          INSTRUCTOR_ENV: CI
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  # Core provider tests for Google
+  core-google:
+    name: Core Provider Tests (Google)
+    runs-on: ubuntu-latest
+    needs: core-tests
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Install the project
+        run: uv sync --all-extras
+      - name: Run core provider tests (Google)
+        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "google"
+        env:
+          INSTRUCTOR_ENV: CI
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+  # Core provider tests for other providers
+  core-other:
+    name: Core Provider Tests (Other)
+    runs-on: ubuntu-latest
+    needs: core-tests
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Install the project
+        run: uv sync --all-extras
+      - name: Run core provider tests (Cohere, xAI, Mistral, etc)
+        run: uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
+        env:
+          INSTRUCTOR_ENV: CI
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+          WRITER_API_KEY: ${{ secrets.WRITER_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+
   # Provider tests run in parallel
   provider-tests:
     name: ${{ matrix.provider.name }} Tests
     runs-on: ubuntu-latest
+    needs: [core-openai, core-anthropic, core-google, core-other]
     strategy:
       fail-fast: false
       matrix:
         provider:
-          - name: Openai
+          - name: OpenAI
             env_key: OPENAI_API_KEY
             test_path: tests/llm/test_openai
           - name: Anthropic
@@ -51,12 +150,12 @@ jobs:
           - name: Google GenAI
             env_key: GOOGLE_API_KEY
             test_path: tests/llm/test_genai
-          - name: Cohere
-            env_key: COHERE_API_KEY
-            test_path: tests/llm/test_cohere
-          - name: XAI
-            env_key: XAI_API_KEY
-            test_path: tests/llm/test_xai
+          - name: Vertex AI
+            env_key: GOOGLE_API_KEY
+            test_path: tests/llm/test_vertexai
+          - name: Writer
+            env_key: WRITER_API_KEY
+            test_path: tests/llm/test_writer
 
     steps:
       - uses: actions/checkout@v2
@@ -69,7 +168,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run ${{ matrix.provider.name }} tests
-        run: uv run pytest ${{ matrix.provider.test_path }} -n auto
+        run: uv run pytest ${{ matrix.provider.test_path }} --asyncio-mode=auto -n auto
         env:
           INSTRUCTOR_ENV: CI
           ${{ matrix.provider.env_key }}: ${{ secrets[matrix.provider.env_key] }}
@@ -78,6 +177,7 @@ jobs:
   auto-client-test:
     name: Auto Client Tests
     runs-on: ubuntu-latest
+    needs: [core-openai, core-anthropic, core-google, core-other]
 
     steps:
       - uses: actions/checkout@v2
@@ -90,7 +190,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run Auto Client tests
-        run: uv run pytest tests/test_auto_client.py
+        run: uv run pytest tests/test_auto_client.py --asyncio-mode=auto -n auto
         env:
           INSTRUCTOR_ENV: CI
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

@@ -118,7 +118,7 @@ def from_xai(
         chat = client.chat.create(model=model, messages=x_messages, **call_kwargs)
 
         if response_model is None:
-            resp = await chat.sample()
+            resp = await chat.sample()  # type: ignore[misc]
             return resp
 
         assert response_model is not None
@@ -135,7 +135,7 @@ def from_xai(
                         schema=json.dumps(_get_model_schema(response_model)),
                     )
                 )
-                json_chunks = (chunk.content async for _, chunk in chat.stream())
+                json_chunks = (chunk.content async for _, chunk in chat.stream())  # type: ignore[misc]
                 # response_model is guaranteed to be a type[BaseModel] at this point due to earlier assertion
                 rm = cast(type[BaseModel], response_model)
                 if issubclass(rm, IterableBase):
@@ -147,22 +147,24 @@ def from_xai(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
-                raw, parsed = await chat.parse(response_model)
+                raw, parsed = await chat.parse(response_model)  # type: ignore[misc]
                 parsed._raw_response = raw
                 return parsed
         else:
-            tool = xchat.tool(
+            tool_obj = xchat.tool(
                 name=_get_model_name(response_model),
                 description=response_model.__doc__ or "",
                 parameters=_get_model_schema(response_model),
             )
-            chat.proto.tools.append(tool)
-            chat.proto.tool_choice.mode = xchat.chat_pb2.ToolMode.TOOL_MODE_AUTO
+            chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+            tool_name = tool_obj.function.name  # type: ignore[attr-defined]
+            chat.proto.tool_choice.CopyFrom(xchat.required_tool(tool_name))
             if is_stream:
+                stream_iter = chat.stream()  # type: ignore[misc]
                 args = (
-                    resp.tool_calls[0].function.arguments
-                    async for resp, _ in chat.stream()
-                    if resp.tool_calls and resp.finish_reason == "REASON_INVALID"
+                    resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
+                    async for resp, _ in stream_iter  # type: ignore[assignment]
+                    if resp.tool_calls and resp.finish_reason == "REASON_INVALID"  # type: ignore[attr-defined]
                 )
                 rm = cast(type[BaseModel], response_model)
                 if issubclass(rm, IterableBase):
@@ -174,8 +176,37 @@ def from_xai(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
-                resp = await chat.sample()
-                args = resp.tool_calls[0].function.arguments
+                resp = await chat.sample()  # type: ignore[misc]
+                if not resp.tool_calls:  # type: ignore[attr-defined]
+                    # If no tool calls, try to extract from text content
+                    from ...processing.function_calls import _validate_model_from_json
+                    from ...utils import extract_json_from_codeblock
+
+                    # Try to extract JSON from text content
+                    text_content: str = ""
+                    if hasattr(resp, "text") and resp.text:  # type: ignore[attr-defined]
+                        text_content = str(resp.text)  # type: ignore[attr-defined]
+                    elif hasattr(resp, "content") and resp.content:  # type: ignore[attr-defined]
+                        content = resp.content  # type: ignore[attr-defined]
+                        if isinstance(content, str):
+                            text_content = content
+                        elif isinstance(content, list) and content:
+                            text_content = str(content[0])
+
+                    if text_content:
+                        json_str = extract_json_from_codeblock(text_content)
+                        parsed = _validate_model_from_json(
+                            response_model, json_str, None, strict
+                        )
+                        parsed._raw_response = resp
+                        return parsed
+
+                    raise ValueError(
+                        f"No tool calls returned from xAI and no text content available. "
+                        f"Response: {resp}"
+                    )
+
+                args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
                 from ...processing.function_calls import _validate_model_from_json
 
                 parsed = _validate_model_from_json(response_model, args, None, strict)
@@ -201,7 +232,7 @@ def from_xai(
         chat = client.chat.create(model=model, messages=x_messages, **call_kwargs)
 
         if response_model is None:
-            resp = chat.sample()
+            resp = chat.sample()  # type: ignore[misc]
             return resp
 
         assert response_model is not None
@@ -218,7 +249,7 @@ def from_xai(
                         schema=json.dumps(_get_model_schema(response_model)),
                     )
                 )
-                json_chunks = (chunk.content for _, chunk in chat.stream())
+                json_chunks = (chunk.content for _, chunk in chat.stream())  # type: ignore[misc]
                 rm = cast(type[BaseModel], response_model)
                 if issubclass(rm, IterableBase):
                     return rm.tasks_from_chunks(json_chunks)
@@ -229,24 +260,26 @@ def from_xai(
                         f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                     )
             else:
-                raw, parsed = chat.parse(response_model)
+                raw, parsed = chat.parse(response_model)  # type: ignore[misc]
                 parsed._raw_response = raw
                 return parsed
         else:
-            tool = xchat.tool(
+            tool_obj = xchat.tool(
                 name=_get_model_name(response_model),
                 description=response_model.__doc__ or "",
                 parameters=_get_model_schema(response_model),
             )
-            chat.proto.tools.append(tool)
-            chat.proto.tool_choice.mode = xchat.chat_pb2.ToolMode.TOOL_MODE_AUTO
+            chat.proto.tools.append(tool_obj)  # type: ignore[arg-type]
+            tool_name = tool_obj.function.name  # type: ignore[attr-defined]
+            chat.proto.tool_choice.CopyFrom(xchat.required_tool(tool_name))
             if is_stream:
-                for resp, _ in chat.stream():
+                stream_iter = chat.stream()  # type: ignore[misc]
+                for resp, _ in stream_iter:  # type: ignore[assignment]
                     # For xAI, tool_calls are returned at the end of the response.
                     # Effectively, it is not a streaming response.
                     # See: https://docs.x.ai/docs/guides/function-calling
-                    if resp.tool_calls:
-                        args = resp.tool_calls[0].function.arguments
+                    if resp.tool_calls:  # type: ignore[attr-defined]
+                        args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
                         rm = cast(type[BaseModel], response_model)
                         if issubclass(rm, IterableBase):
                             return rm.tasks_from_chunks(args)
@@ -257,8 +290,37 @@ def from_xai(
                                 f"Unsupported response model type for streaming: {_get_model_name(response_model)}"
                             )
             else:
-                resp = chat.sample()
-                args = resp.tool_calls[0].function.arguments
+                resp = chat.sample()  # type: ignore[misc]
+                if not resp.tool_calls:  # type: ignore[attr-defined]
+                    # If no tool calls, try to extract from text content
+                    from ...processing.function_calls import _validate_model_from_json
+                    from ...utils import extract_json_from_codeblock
+
+                    # Try to extract JSON from text content
+                    text_content: str = ""
+                    if hasattr(resp, "text") and resp.text:  # type: ignore[attr-defined]
+                        text_content = str(resp.text)  # type: ignore[attr-defined]
+                    elif hasattr(resp, "content") and resp.content:  # type: ignore[attr-defined]
+                        content = resp.content  # type: ignore[attr-defined]
+                        if isinstance(content, str):
+                            text_content = content
+                        elif isinstance(content, list) and content:
+                            text_content = str(content[0])
+
+                    if text_content:
+                        json_str = extract_json_from_codeblock(text_content)
+                        parsed = _validate_model_from_json(
+                            response_model, json_str, None, strict
+                        )
+                        parsed._raw_response = resp
+                        return parsed
+
+                    raise ValueError(
+                        f"No tool calls returned from xAI and no text content available. "
+                        f"Response: {resp}"
+                    )
+
+                args = resp.tool_calls[0].function.arguments  # type: ignore[index,attr-defined]
                 from ...processing.function_calls import _validate_model_from_json
 
                 parsed = _validate_model_from_json(response_model, args, None, strict)
