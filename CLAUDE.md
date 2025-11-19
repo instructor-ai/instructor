@@ -84,14 +84,89 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - New features should include conceptual explanation in `docs/concepts/`
 - **Writing Style**: Grade 10 reading level, all examples must be working code
 
+## Refactoring Plan
+
+The `refactor_plan/` directory contains the comprehensive Instructor 2.0 refactoring plan:
+
+- **[OVERVIEW.md](refactor_plan/OVERVIEW.md)**: Complete refactoring roadmap organized by themes
+- **[MEASUREMENTS.md](refactor_plan/MEASUREMENTS.md)**: Baseline metrics and technical debt analysis
+- **Theme Directories**: Detailed phase-by-phase implementation guides
+
+When working on refactoring tasks:
+1. Check `refactor_plan/OVERVIEW.md` for the overall strategy
+2. Find the relevant theme and phase for your work
+3. Follow the detailed implementation guide in that phase document
+4. Update progress tracking in the phase document
+5. Use the measurements as baseline for success criteria
+
 ## Branch and Development Workflow
+
+### Standard Workflow
 1. Fork and clone the repository
 2. Create feature branch: `git checkout -b feat/your-feature`
 3. Make changes and add tests
 4. Run tests and linting
 5. Commit with conventional commit message
 6. Push to your fork and create PR
-7. Use stacked PRs for complex features
+
+### Stacked PRs with Graphite (Recommended for Complex Features)
+
+For complex features or refactoring tasks that span multiple logical changes, use **Graphite** to create stacked PRs:
+
+**Installation**:
+```bash
+brew install graphite
+gt auth --token <your-github-token>
+```
+
+**Workflow**:
+```bash
+# Start from main
+git checkout main
+gt repo init
+
+# Create first branch
+gt branch create "feat/phase1-mode-registry-infrastructure"
+# Make changes, commit
+git add <files>
+git commit -m "feat(core): add mode registry infrastructure"
+
+# Stack second branch on top
+gt branch create "feat/phase1-mode-registry-anthropic"
+# Make changes, commit
+git add <files>
+git commit -m "feat(anthropic): migrate to mode registry"
+
+# Stack third branch
+gt branch create "feat/phase1-mode-registry-tests"
+# Make changes, commit
+git add <files>
+git commit -m "test(core): add mode registry tests"
+
+# Submit all branches as stacked PRs
+gt stack submit
+```
+
+**Benefits**:
+- Break large refactoring into logical, reviewable chunks
+- Each PR can be reviewed and merged independently
+- Automatic rebasing when base PR merges
+- Clear dependency chain between changes
+
+**When to use stacked PRs**:
+- Multi-phase refactoring tasks (see `refactor_plan/`)
+- Features requiring infrastructure + implementation + tests
+- Changes spanning multiple providers or subsystems
+- Any work that naturally breaks into 3+ logical steps
+
+**Graphite Commands**:
+```bash
+gt stack            # View your stack
+gt stack submit     # Create/update PRs for entire stack
+gt stack sync       # Sync with remote changes
+gt branch checkout  # Navigate between branches in stack
+gt log short        # View commit graph
+```
 
 ## Adding New Providers
 
@@ -164,13 +239,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Python Version**: 3.9+ for compatibility
 - **Configuration**: Uses `pyproject.toml` settings for type checking
 - Run `uv run ty check` before committing - aim for zero errors
-
-### Code Quality Checks Before Committing
-Always run these checks before committing code:
-1. **Ruff linting**: `uv run ruff check .` - Fix all errors
-2. **Ruff formatting**: `uv run ruff format .` - Apply consistent formatting
-3. **Type checking**: `uv run ty check` - Aim for zero type errors
-4. **Tests**: Run relevant tests to ensure changes don't break functionality
 
 ### Type Patterns
 - **Bounded TypeVars**: Use `T = TypeVar("T", bound=Union[BaseModel, ...])` for constraints

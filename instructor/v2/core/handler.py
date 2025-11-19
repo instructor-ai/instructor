@@ -1,52 +1,94 @@
-from __future__ import annotations
+"""Base handler class for v2 mode handlers.
 
-from dataclasses import dataclass
-from typing import Any, TypeVar
+Provides the common interface and default implementations for mode handlers.
+"""
+
+from abc import ABC, abstractmethod
+from typing import Any
 
 from pydantic import BaseModel
 
-from ...mode import Mode
-from ...utils.providers import Provider
 
-T_Model = TypeVar("T_Model", bound=BaseModel)
+class ModeHandler(ABC):
+    """Base class for mode handlers.
 
+    Subclasses must implement prepare_request, handle_reask, and parse_response.
+    These methods define how requests are prepared, errors are handled, and
+    responses are parsed for a specific mode.
+    """
 
-@dataclass
-class ModeHandler:
-    """Base class for provider/mode specific request and response handlers."""
-
-    provider: Provider
-    mode: Mode
-
+    @abstractmethod
     def prepare_request(
         self,
-        response_model: type[T_Model] | None,
-        **kwargs: Any,
-    ) -> tuple[type[T_Model] | None, dict[str, Any]]:
-        """Prepare provider specific kwargs before the API call."""
-        raise NotImplementedError
+        response_model: type[BaseModel] | None,
+        kwargs: dict[str, Any],
+    ) -> tuple[type[BaseModel] | None, dict[str, Any]]:
+        """Prepare request kwargs for this mode.
 
-    def parse_response(
-        self,
-        response: Any,
-        *,
-        response_model: type[T_Model] | None,
-        validation_context: dict[str, Any] | None,
-        strict: bool | None,
-        stream: bool,
-        is_async: bool,
-    ) -> T_Model | Any:
-        """Parse a provider response into the requested response model."""
-        raise NotImplementedError
+        Args:
+            response_model: Pydantic model to extract (or None for unstructured)
+            kwargs: Original request kwargs from user
 
+        Returns:
+            Tuple of (possibly modified response_model, modified kwargs)
+
+        Example:
+            For TOOLS mode, this adds "tools" and "tool_choice" to kwargs.
+            For JSON mode, this adds JSON schema to system message.
+        """
+        ...
+
+    @abstractmethod
     def handle_reask(
         self,
-        *,
         kwargs: dict[str, Any],
         response: Any,
         exception: Exception,
-        failed_attempts: list[Any] | None = None,
     ) -> dict[str, Any]:
-        """Modify kwargs with validation error feedback before a retry."""
-        raise NotImplementedError
+        """Handle validation failure and prepare retry request.
 
+        Args:
+            kwargs: Original request kwargs
+            response: Failed API response
+            exception: Validation exception that occurred
+
+        Returns:
+            Modified kwargs for retry attempt
+
+        Example:
+            For TOOLS mode, appends tool_result with error message.
+            For JSON mode, appends user message with validation error.
+        """
+        ...
+
+    @abstractmethod
+    def parse_response(
+        self,
+        response: Any,
+        response_model: type[BaseModel],
+        validation_context: dict[str, Any] | None = None,
+        strict: bool | None = None,
+    ) -> BaseModel:
+        """Parse API response into validated Pydantic model.
+
+        Args:
+            response: Raw API response
+            response_model: Pydantic model to validate against
+            validation_context: Optional context for Pydantic validation
+            strict: Optional strict validation mode
+
+        Returns:
+            Validated Pydantic model instance
+
+        Raises:
+            ValidationError: If response doesn't match model schema
+
+        Example:
+            For TOOLS mode, extracts tool_use blocks and validates.
+            For JSON mode, extracts JSON from text blocks and validates.
+        """
+        ...
+
+    def __repr__(self) -> str:
+        """String representation of handler."""
+        return f"<{self.__class__.__name__}>"

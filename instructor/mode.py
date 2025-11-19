@@ -2,8 +2,9 @@ import enum
 import warnings
 
 
-# Track if deprecation warning has been shown
+# Track if deprecation warnings have been shown
 _functions_deprecation_shown = False
+_reasoning_tools_deprecation_shown = False
 
 
 class Mode(enum.Enum):
@@ -136,3 +137,25 @@ class Mode(enum.Enum):
                 stacklevel=2,
             )
             _functions_deprecation_shown = True
+
+    @classmethod
+    def warn_anthropic_reasoning_tools_deprecation(cls):
+        """
+        Warn about ANTHROPIC_REASONING_TOOLS mode deprecation.
+
+        ANTHROPIC_TOOLS now supports extended thinking/reasoning via the
+        'thinking' parameter. Use Mode.ANTHROPIC_TOOLS with thinking={'type': 'enabled'}
+        instead of Mode.ANTHROPIC_REASONING_TOOLS.
+
+        Shows the warning only once per session to avoid spamming logs
+        with the same message.
+        """
+        global _reasoning_tools_deprecation_shown
+        if not _reasoning_tools_deprecation_shown:
+            warnings.warn(
+                "Mode.ANTHROPIC_REASONING_TOOLS is deprecated. "
+                "Use Mode.ANTHROPIC_TOOLS with thinking={'type': 'enabled', 'budget_tokens': ...} instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            _reasoning_tools_deprecation_shown = True

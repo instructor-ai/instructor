@@ -1,13 +1,46 @@
-from __future__ import annotations
+"""Instructor v2 - Mode registry system.
 
-from .core.patch import patch_v2
+v2 uses a registry system that maps Mode enum values directly to handlers.
+This replaces the hardcoded dictionaries in v1 with a dynamic, extensible system.
 
-__all__: list[str] = ["patch_v2"]
+Usage:
+    from instructor import Mode
+    from instructor.v2 import from_anthropic
 
+    client = from_anthropic(anthropic_client, mode=Mode.ANTHROPIC_TOOLS)
+
+Benefits:
+- Dynamic registration: Modes register themselves via decorators
+- Lazy loading: Handlers loaded only when used
+- Extensible: Easy to add new modes without modifying core
+- Type-safe: Protocols ensure handler compatibility
+"""
+
+from instructor import Mode, Provider
+from instructor.v2.core.handler import ModeHandler
+from instructor.v2.core.protocols import ReaskHandler, RequestHandler, ResponseParser
+from instructor.v2.core.registry import ModeHandlers, ModeRegistry, mode_registry
+
+# Import providers (will auto-register modes)
 try:
-    from .providers.genai.client import from_genai
-    __all__.append("from_genai")
-except ModuleNotFoundError:  # google-genai not installed
-    from_genai = None  # type: ignore
+    from instructor.v2.providers.anthropic import from_anthropic
+except ImportError:
+    from_anthropic = None  # type: ignore
 
-
+__all__ = [
+    # Core types
+    "Provider",
+    "Mode",
+    # Registry
+    "mode_registry",
+    "ModeRegistry",
+    "ModeHandlers",
+    # Handler base class
+    "ModeHandler",
+    # Protocols
+    "RequestHandler",
+    "ReaskHandler",
+    "ResponseParser",
+    # Providers
+    "from_anthropic",
+]

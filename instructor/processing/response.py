@@ -54,6 +54,7 @@ from ..dsl.simple_type import AdapterBase
 if TYPE_CHECKING:
     from .function_calls import OpenAISchema
 from ..mode import Mode
+from ..utils.providers import Provider
 from .multimodal import convert_messages
 from ..utils.core import prepare_response_model
 
@@ -168,6 +169,13 @@ T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 T = TypeVar("T")
 
+ANTHROPIC_MODES = {
+    Mode.ANTHROPIC_TOOLS,
+    Mode.ANTHROPIC_REASONING_TOOLS,
+    Mode.ANTHROPIC_JSON,
+    Mode.ANTHROPIC_PARALLEL_TOOLS,
+}
+
 
 async def process_response_async(
     response: ChatCompletion,
@@ -223,6 +231,21 @@ async def process_response_async(
     )
     if response_model is None:
         return response
+
+    if mode in ANTHROPIC_MODES and response_model is not None:
+        from instructor.v2.core.registry import mode_registry
+
+        if mode_registry.is_registered(Provider.ANTHROPIC, mode):
+            handlers = mode_registry.get_handlers(Provider.ANTHROPIC, mode)
+            handler_obj = getattr(handlers.response_parser, "__self__", None)
+            if handler_obj and hasattr(handler_obj, "mark_streaming_model"):
+                handler_obj.mark_streaming_model(response_model, stream)
+            return handlers.response_parser(
+                response=response,
+                response_model=response_model,
+                validation_context=validation_context,
+                strict=strict,
+            )
 
     if (
         inspect.isclass(response_model)
@@ -326,6 +349,21 @@ def process_response(
     if response_model is None:
         logger.debug("No response model, returning response as is")
         return response
+
+    if mode in ANTHROPIC_MODES:
+        from instructor.v2.core.registry import mode_registry
+
+        if mode_registry.is_registered(Provider.ANTHROPIC, mode):
+            handlers = mode_registry.get_handlers(Provider.ANTHROPIC, mode)
+            handler_obj = getattr(handlers.response_parser, "__self__", None)
+            if handler_obj and hasattr(handler_obj, "mark_streaming_model"):
+                handler_obj.mark_streaming_model(response_model, stream)
+            return handlers.response_parser(
+                response=response,
+                response_model=response_model,
+                validation_context=validation_context,
+                strict=strict,
+            )
 
     if (
         inspect.isclass(response_model)

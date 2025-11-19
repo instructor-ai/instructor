@@ -269,8 +269,10 @@ def from_provider(
             import openai
             from instructor import from_openai  # type: ignore[attr-defined]
 
-            api_key = api_key or os.environ.get("DATABRICKS_TOKEN") or os.environ.get(
-                "DATABRICKS_API_KEY"
+            api_key = (
+                api_key
+                or os.environ.get("DATABRICKS_TOKEN")
+                or os.environ.get("DATABRICKS_API_KEY")
             )
             if not api_key:
                 from .core.exceptions import ConfigurationError
@@ -353,19 +355,21 @@ def from_provider(
     elif provider == "anthropic":
         try:
             import anthropic
-            from instructor import from_anthropic  # type: ignore[attr-defined]  # type: ignore[attr-defined]
+            from instructor.v2 import from_anthropic
 
             client = (
                 anthropic.AsyncAnthropic(api_key=api_key)
                 if async_client
                 else anthropic.Anthropic(api_key=api_key)
             )
-            max_tokens = kwargs.pop("max_tokens", 4096)
+            # Set default max_tokens if not provided (like v1)
+            if "max_tokens" not in kwargs:
+                kwargs["max_tokens"] = 4096
+            # Use Mode.TOOLS instead of Mode.ANTHROPIC_TOOLS
             result = from_anthropic(
                 client,
                 model=model_name,
-                mode=mode if mode else instructor.Mode.ANTHROPIC_TOOLS,
-                max_tokens=max_tokens,
+                mode=mode if mode else instructor.Mode.TOOLS,
                 **kwargs,
             )
             logger.info(

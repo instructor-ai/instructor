@@ -11,7 +11,6 @@ from .exceptions import (
     ModeError,
     ClientError,
     AsyncValidationError,
-    FailedAttempt,
     ResponseParsingError,
     MultimodalError,
 )
@@ -32,7 +31,6 @@ __all__ = [
     "ModeError",
     "ClientError",
     "AsyncValidationError",
-    "FailedAttempt",
     "ResponseParsingError",
     "MultimodalError",
     "Hooks",
