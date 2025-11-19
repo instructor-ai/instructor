@@ -29,9 +29,11 @@ def test_anthropic_tools_mode_registered():
 
 def test_anthropic_json_mode_registered():
     """Verify Anthropic JSON mode is registered in v2 registry."""
-    assert mode_registry.is_registered(Provider.ANTHROPIC, Mode.JSON)
+    assert mode_registry.is_registered(Provider.ANTHROPIC, Mode.ANTHROPIC_JSON)
 
-    handlers = mode_registry.get_handlers(Provider.ANTHROPIC, Mode.JSON)
+    handlers = mode_registry.get_handlers(
+        Provider.ANTHROPIC, Mode.ANTHROPIC_JSON
+    )
     assert handlers.request_handler is not None
     assert handlers.reask_handler is not None
     assert handlers.response_parser is not None
@@ -54,7 +56,7 @@ def test_v2_from_anthropic_json_mode():
     import anthropic
 
     client = anthropic.Anthropic()
-    instructor_client = from_anthropic(client, Mode.JSON)
+    instructor_client = from_anthropic(client, Mode.ANTHROPIC_JSON)
 
     assert instructor_client is not None
 
@@ -91,9 +93,10 @@ def test_query_anthropic_modes():
     modes = mode_registry.get_modes_for_provider(Provider.ANTHROPIC)
 
     assert Mode.TOOLS in modes
-    assert Mode.JSON in modes
+    assert Mode.ANTHROPIC_JSON in modes
     assert Mode.ANTHROPIC_REASONING_TOOLS in modes
-    assert len(modes) == 3  # TOOLS, JSON, and ANTHROPIC_REASONING_TOOLS
+    assert Mode.ANTHROPIC_PARALLEL_TOOLS in modes
+    assert len(modes) == 4
 
 
 def test_query_tools_providers():
