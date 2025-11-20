@@ -788,6 +788,78 @@ class PDF(BaseModel):
 
         raise ValueError("Unsupported PDF format")
 
+    def to_bedrock(self, name: str | None = None) -> dict[str, Any]:
+        """Convert to Bedrock's document format."""
+        # Determine the document name
+        if name is None:
+            if isinstance(self.source, Path):
+                name = self.source.name
+            elif isinstance(self.source, str):
+                # Try to extract filename from path or URL
+                if self.source.startswith(("http://", "https://", "gs://")):
+                    name = Path(urlparse(self.source).path).name or "document"
+                else:
+                    name = (
+                        Path(self.source).name
+                        if Path(self.source).exists()
+                        else "document"
+                    )
+            else:
+                name = "document"
+
+        # Sanitize name according to Bedrock requirements
+        # Only allow alphanumeric, whitespace (max one in row), hyphens, parentheses, square brackets
+        name = re.sub(r"[^\w\s\-\(\)\[\]]", "", name)
+        name = re.sub(r"\s+", " ", name)  # Consolidate whitespace
+        name = name.strip()
+
+        # Handle S3 URIs
+        if isinstance(self.source, str) and self.source.startswith("s3://"):
+            # Parse S3 URI: s3://bucket/key
+            s3_match = re.match(r"s3://([^/]+)/(.*)", self.source)
+            if not s3_match:
+                raise ValueError(f"Invalid S3 URI format: {self.source}")
+
+            bucket = s3_match.group(1)
+            key = s3_match.group(2)
+
+            # Note: bucketOwner is optional but recommended for cross-account access
+            return {
+                "document": {
+                    "format": "pdf",
+                    "name": name,
+                    "source": {
+                        "s3Location": {
+                            "uri": self.source
+                            # "bucketOwner": "account-id"  # Optional, can be added by user
+                        }
+                    },
+                }
+            }
+
+        # Handle bytes-based sources (URLs, paths, base64)
+        if not self.data:
+            # Need to fetch/load the data
+            if isinstance(self.source, str) and self.source.startswith(
+                ("http://", "https://")
+            ):
+                response = requests.get(self.source)
+                response.raise_for_status()
+                pdf_bytes = response.content
+            elif isinstance(self.source, Path) or (
+                isinstance(self.source, str) and Path(self.source).exists()
+            ):
+                pdf_bytes = Path(self.source).read_bytes()
+            else:
+                raise ValueError("PDF data is missing and source cannot be loaded")
+        else:
+            # Decode base64 data to bytes
+            pdf_bytes = base64.b64decode(self.data)
+
+        return {
+            "document": {"format": "pdf", "name": name, "source": {"bytes": pdf_bytes}}
+        }
+
 
 class PDFWithCacheControl(PDF):
     """PDF with Anthropic prompt caching support."""
