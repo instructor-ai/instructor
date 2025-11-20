@@ -12,3 +12,9 @@ def test_bedrock_native_image_passthrough(tiny_png_bytes: bytes):
     native = {"image": {"format": "png", "source": {"bytes": tiny_png_bytes}}}
     items = _to_bedrock_content_items([native])
     assert items[0] == native
+
+
+def test_bedrock_native_document_passthrough(tiny_pdf_bytes: bytes):
+    native = {"document": {"format": "pdf", "source": {"bytes": tiny_pdf_bytes}}}
+    items = _to_bedrock_content_items([native])
+    assert items[0] == native
