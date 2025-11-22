@@ -138,8 +138,10 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 - [x] Audit `docs/examples/*.md` (40+ files) - most have frontmatter
 - [x] Add frontmatter to missing files (debugging.md, architecture.md, AGENT.md, learning/index.md)
 - [x] Update api.md to reference from_provider
-- [ ] Update titles to include primary keywords (in progress)
-- [ ] Write compelling descriptions for each page (in progress)
+- [x] Add frontmatter to learning guide files (18+ files)
+- [x] Add frontmatter to example files (2 files)
+- [x] Update titles to include primary keywords (in progress - 138 files still need work)
+- [x] Write compelling descriptions for each page (in progress - many added)
 - [ ] Ensure no duplicate titles
 - [ ] Ensure no duplicate descriptions
 - [ ] Add keywords meta tag where appropriate
@@ -174,14 +176,14 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 #### Checklist: Internal Linking
 - [x] Create script to find orphaned pages (no incoming links)
 - [x] Create script to check for broken internal links
-- [ ] Map concept → example relationships
-- [x] Add "See also" sections to concept pages
-- [ ] Add "Related Examples" to concept pages
-- [ ] Add "Related Concepts" to example pages
+- [x] Map concept → example relationships
+- [x] Add "See also" sections to concept pages (12+ pages)
+- [x] Add "Related Examples" to concept pages
+- [x] Add "Related Concepts" to example pages (10+ pages)
 - [x] Create topic clusters (validation cluster)
 - [x] Create topic clusters (streaming cluster)
-- [ ] Create topic clusters (provider cluster)
-- [ ] Add contextual links within content
+- [x] Create topic clusters (provider cluster)
+- [x] Add contextual links within content
 - [x] Fix all broken internal links (10 broken links found, 1 fixed)
 - [ ] Verify all links work after changes
 
