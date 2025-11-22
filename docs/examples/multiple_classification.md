@@ -6,7 +6,6 @@ description: Implement multi-label classification with Instructor for support ti
 For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.
 
 ```python
-import openai
 import instructor
 
 from typing import List, Literal

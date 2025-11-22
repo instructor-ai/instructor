@@ -202,7 +202,7 @@ import asyncio
 from typing import List
 from pydantic import BaseModel, ValidationInfo, model_validator
 import instructor
-import openai
+import instructor
 
 client = instructor.from_openai(
     openai.AsyncOpenAI(),
@@ -462,7 +462,7 @@ Notice in the example we use Iterable[Tag] vs Tag. This is because we might want
 
 ```python
 import instructor
-import openai
+import instructor
 import asyncio
 from typing import Iterable
 

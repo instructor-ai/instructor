@@ -20,7 +20,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from pydantic import BaseModel, Field
 from typing import List, Generator, Iterable
 import instructor
-import openai
+import instructor
 
 client = instructor.from_provider("openai/gpt-5-nano")
 

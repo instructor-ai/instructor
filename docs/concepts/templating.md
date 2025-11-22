@@ -1,6 +1,6 @@
 ---
-title: Effective Prompt Templating with Jinja and Pydantic
-description: Learn to dynamically create prompts using Jinja templating and validate them with Pydantic for enhanced flexibility and security.
+title: Prompt Templating with Jinja - Dynamic Prompt Generation
+description: Create dynamic prompts using Jinja templating with Instructor. Build reusable, versioned prompts with Pydantic validation and security.
 ---
 
 # Prompt Templating

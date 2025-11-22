@@ -1,6 +1,6 @@
 ---
-title: Instructor Concepts
-description: Core concepts and features of the Instructor library
+title: Instructor Concepts - Core Features and Patterns
+description: Explore core concepts and features of the Instructor library. Learn about structured outputs, validation, streaming, and advanced patterns.
 ---
 
 # Instructor Concepts

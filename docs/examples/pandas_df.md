@@ -19,7 +19,7 @@ from pydantic import (
 )
 import pandas as pd
 import instructor
-import openai
+import instructor
 
 
 def md_to_df(data: Any) -> Any:
