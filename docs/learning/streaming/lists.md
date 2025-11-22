@@ -1,3 +1,8 @@
+---
+title: Streaming Lists with Instructor
+description: Learn how to stream lists of structured objects from LLMs, processing collection items as they are generated for better responsiveness.
+---
+
 # Streaming Lists
 
 This guide explains how to stream lists of structured data with Instructor. Streaming lists allows you to process collection items as they're generated, improving responsiveness for larger outputs.

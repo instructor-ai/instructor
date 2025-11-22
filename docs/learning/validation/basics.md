@@ -1,3 +1,8 @@
+---
+title: LLM Validation Basics with Instructor
+description: Master the fundamentals of validating LLM outputs to ensure reliable, business-compliant structured data from GPT-4, Claude, and other models.
+---
+
 # LLM Validation Tutorial: Ensure Data Quality with Instructor
 
 Master the fundamentals of validating LLM outputs in this comprehensive tutorial. Learn how to use Instructor's validation system to ensure GPT-4, Claude, and other language models produce reliable, business-compliant structured data.

@@ -1,3 +1,8 @@
+---
+title: Your First LLM Extraction with Instructor
+description: Step-by-step tutorial for your first structured data extraction from language models using Instructor and Pydantic.
+---
+
 # Your First LLM Extraction: Structured Outputs Tutorial
 
 Learn how to extract structured data from LLMs using Instructor in this hands-on tutorial. We'll build a simple yet powerful example that demonstrates how to transform unstructured text into validated Python objects using GPT-4, Claude, or any supported LLM.

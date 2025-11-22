@@ -1,3 +1,8 @@
+---
+title: Setting Up Instructor Clients for Different LLM Providers
+description: Learn how to configure Instructor clients for OpenAI, Anthropic, Google, and other LLM providers with proper modes and settings.
+---
+
 # Client Setup
 
 Setting up the right client is the first step in using Instructor with various LLM providers. This guide covers how to configure clients for different providers and explains the various modes available.

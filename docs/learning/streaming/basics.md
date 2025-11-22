@@ -1,3 +1,8 @@
+---
+title: Streaming Basics with Instructor
+description: Learn how to use streaming to receive partial structured responses from LLMs as they are generated.
+---
+
 # Streaming Basics
 
 Streaming allows you to receive parts of a structured response as they're generated, rather than waiting for the complete response.

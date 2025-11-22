@@ -1,3 +1,8 @@
+---
+title: Understanding Response Models in Instructor
+description: Learn how to create response models with Pydantic to define structure, validation rules, and extract complex data from LLMs.
+---
+
 # Understanding Response Models
 
 Response models are at the core of Instructor's functionality. They define the structure of the data you want to extract and provide validation rules. This guide explains how to create different types of response models for various use cases.

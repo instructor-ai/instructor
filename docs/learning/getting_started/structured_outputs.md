@@ -1,3 +1,8 @@
+---
+title: Getting Started with Structured LLM Outputs
+description: Learn the basics of extracting structured data from language models using Instructor. Understand the difference between unstructured and structured outputs.
+---
+
 # Getting Started with Structured Outputs
 
 Large language models (LLMs) are powerful tools for generating text, but extracting structured data from their outputs can be challenging. Structured outputs solve this problem by having LLMs return data in consistent, machine-readable formats.

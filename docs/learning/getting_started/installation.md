@@ -1,3 +1,8 @@
+---
+title: Installing Instructor for LLM Structured Outputs
+description: Complete installation guide for Instructor with support for OpenAI, Anthropic, Google, and 15+ LLM providers. Get started in minutes.
+---
+
 # Instructor Installation Guide: Setup for LLM Structured Outputs
 
 Learn how to install Instructor, the leading Python library for extracting structured data from LLMs like GPT-4, Claude, and Gemini. This comprehensive installation tutorial covers all major LLM providers and gets you ready for production use.

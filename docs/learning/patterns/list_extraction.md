@@ -1,3 +1,8 @@
+---
+title: List Extraction from LLMs Tutorial
+description: Master extracting multiple structured objects from language models using Instructor with type-safe list validation.
+---
+
 # List Extraction Tutorial: Extract Multiple Objects from LLMs
 
 Master the art of extracting lists and arrays from LLMs in this comprehensive tutorial. Learn how to use Instructor to extract multiple structured objects from language models like GPT-4, Claude, and Gemini with type-safe validation.

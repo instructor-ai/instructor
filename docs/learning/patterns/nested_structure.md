@@ -1,3 +1,8 @@
+---
+title: Nested Structure Extraction with Instructor
+description: Learn how to extract complex nested data structures from LLMs using hierarchical Pydantic models.
+---
+
 # Simple Nested Structure
 
 This guide explains how to extract nested structured data using Instructor. Nested structures allow you to represent complex, hierarchical data relationships.

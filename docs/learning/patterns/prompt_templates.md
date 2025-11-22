@@ -1,3 +1,8 @@
+---
+title: Using Prompt Templates with Instructor
+description: Learn how to create reusable prompt templates for consistent structured output extraction across different use cases.
+---
+
 # Prompt Templates
 
 This guide covers how to use prompt templates with Instructor to create reusable, parameterized prompts for structured data extraction.
