@@ -3,6 +3,13 @@ title: Extracting Tables from Images using GPT-Vision
 description: Learn how to use Python and GPT-Vision to extract and convert tables from images into markdown for data analysis.
 ---
 
+## See Also
+
+- [Vision Processing](./tables_from_vision.md) - More vision-based table extraction
+- [Multi-Modal Processing](./multi_modal_gemini.md) - Using Gemini for vision tasks
+- [Image Processing Examples](./index.md#vision-processing) - More vision examples
+- [Raw Response](../concepts/raw_response.md) - Access original LLM responses
+
 # Extracting Tables using GPT-Vision
 
 This post demonstrates how to use Python's type annotations and OpenAI's new vision model to extract tables from images and convert them into markdown format. This method is particularly useful for data analysis and automation tasks.

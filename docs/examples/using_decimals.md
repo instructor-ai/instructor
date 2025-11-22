@@ -1,3 +1,8 @@
+---
+title: Working with Decimal Types in Instructor
+description: Learn how to use Python Decimal types for precise financial calculations and numeric data extraction with Instructor.
+---
+
 # Using Decimals
 
 Extract precise decimal values for financial calculations using Python's `Decimal` type.
