@@ -3,6 +3,13 @@ title: "Google Gemini Tutorial: Structured Outputs with Instructor"
 description: "Learn how to use Google's Gemini models (Pro, Flash, Ultra) with Instructor for structured data extraction. Complete tutorial with examples for multimodal AI and type-safe outputs."
 ---
 
+## See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Multi-Modal Examples](../examples/multi_modal_gemini.md) - Vision and multi-modal processing
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+
 # Google Gemini Tutorial: Structured Outputs with Instructor
 
 Master structured data extraction using Google's Gemini models with Instructor. This comprehensive tutorial covers Gemini Pro, Flash, and Ultra models, including multimodal capabilities for processing text, images, and more.

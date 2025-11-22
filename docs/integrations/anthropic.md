@@ -3,6 +3,13 @@ title: "Anthropic Claude Tutorial: Structured Outputs with Instructor"
 description: "Complete guide to using Anthropic's Claude models with Instructor for structured data extraction. Learn how to use Claude 3 Opus, Sonnet, and Haiku for type-safe outputs in Python."
 ---
 
+## See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+- [Anthropic Tools Mode](../concepts/modes.md#anthropic-tools) - Using Anthropic's tool calling
+
 # Anthropic Claude Tutorial: Structured Outputs with Instructor
 
 Learn how to use Anthropic's Claude models (Claude 3 Opus, Sonnet, and Haiku) with Instructor to extract structured, validated data. This tutorial covers everything from basic setup to advanced patterns for production use.
