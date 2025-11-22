@@ -298,8 +298,8 @@ When validation fails, Instructor will:
 To control retry behavior:
 
 ```python
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4o",
     max_retries=2,  # Number of retries after the initial attempt
     throw_error=True  # Whether to raise an exception on validation failure
 )

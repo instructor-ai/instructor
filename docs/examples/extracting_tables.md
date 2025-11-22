@@ -104,7 +104,6 @@ The `extract_table` function uses OpenAI's vision model to process an image URL 
 
 ```python
 import instructor
-from openai import OpenAI
 from typing import Iterable
 
 # <%hide%>
@@ -151,9 +150,8 @@ class Table(BaseModel):
 
 # <%hide%>
 
-# Apply the patch to the OpenAI client to support response_model
-# Also use MD_JSON mode since the vision model does not support any special structured output mode
-client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+# Use MD_JSON mode since the vision model does not support any special structured output mode
+client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.MD_JSON)
 
 
 def extract_table(url: str) -> Iterable[Table]:

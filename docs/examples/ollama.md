@@ -47,11 +47,9 @@ ollama pull llama3
 ```
 
 ```python
-from openai import OpenAI
+import instructor
 from pydantic import BaseModel, Field
 from typing import List
-
-import instructor
 
 
 class Character(BaseModel):
@@ -60,12 +58,10 @@ class Character(BaseModel):
     fact: List[str] = Field(..., description="A list of facts about the character")
 
 
-# enables `response_model` in create call
-client = instructor.from_openai(
-    OpenAI(
-        base_url="http://localhost:11434/v1",
-        api_key="ollama",  # required, but unused
-    ),
+# Use from_provider with base_url for Ollama
+client = instructor.from_provider(
+    "ollama/llama3",
+    base_url="http://localhost:11434/v1",
     mode=instructor.Mode.JSON,
 )
 

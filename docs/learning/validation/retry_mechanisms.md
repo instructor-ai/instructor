@@ -149,12 +149,11 @@ For complex schemas, you can implement a progressive validation pattern:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 
 # Initialize with moderate retries
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4o",
     max_retries=2
 )
 

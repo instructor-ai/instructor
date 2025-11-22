@@ -31,7 +31,7 @@ One of the easy things to do is to allow users to define a set of tags in some k
 
 In order to do this we'll do a couple of things:
 
-0. We'll use the `instructor` library to patch the `openai` library to use the `AsyncOpenAI` client.
+0. We'll use the `instructor` library with async client support.
 1. Implement a `Tag` model that will be used to validate the tags from the context. (This will allow us to avoid hallucinating tags that are not in the context.)
 2. Helper models for the request and response.
 3. An async function to do the classification.
@@ -40,12 +40,9 @@ In order to do this we'll do a couple of things:
 If you want to learn more about how to do bad computations, check out our post on AsyncIO [here](../blog/posts/learn-async.md).
 
 ```python
-import openai
 import instructor
 
-client = instructor.from_openai(
-    openai.AsyncOpenAI(),
-)
+client = instructor.from_provider("openai/gpt-4o", async_client=True)
 ```
 
 First, we'll need to import all of our Pydantic and instructor code and use the AsyncOpenAI client. Then, we'll define the tag model along with the tag instructions to provide input and output.
