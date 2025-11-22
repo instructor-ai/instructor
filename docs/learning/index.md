@@ -13,7 +13,7 @@ Start your journey with these beginner-friendly tutorials for LLM integration:
 * [**Installation Guide**](getting_started/installation.md) - Install Instructor for Python LLM development
 * [**Your First LLM Extraction**](getting_started/first_extraction.md) - Build your first structured output with OpenAI, Anthropic, or Google LLMs
 * [**Response Models Tutorial**](getting_started/response_models.md) - Master Pydantic models for LLM outputs
-* [**LLM Client Setup**](getting_started/client_setup.md) - Configure Instructor for OpenAI, Anthropic, Gemini, and 15+ LLM providers
+* [**LLM Client Setup**](../concepts/from_provider.md) - Configure Instructor for OpenAI, Anthropic, Gemini, and 15+ LLM providers
 
 ## LLM Data Extraction Patterns
 

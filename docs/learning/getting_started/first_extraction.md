@@ -71,7 +71,6 @@ Instructor enhances your LLM client with structured output capabilities. Works w
 
 ```python
 person = client.create(
-    model="gpt-3.5-turbo",
     response_model=Person,
     messages=[
         {"role": "user", "content": "John Doe is 30 years old"}
@@ -80,9 +79,10 @@ person = client.create(
 ```
 
 Key parameters for structured LLM outputs:
-- `model`: Your chosen LLM (GPT-4, Claude, Gemini, etc.)
 - `response_model`: Pydantic model for type-safe extraction
 - `messages`: Input text for the LLM to process
+
+Note: The model is already specified when creating the client with `from_provider()`, so you don't need to pass it again.
 
 ### Step 4: Work with Validated LLM Data
 
@@ -123,7 +123,7 @@ class Person(BaseModel):
 You've successfully extracted structured data from an LLM! Next steps:
 
 1. **[Advanced Response Models](response_models.md)** - Complex schemas for LLM outputs
-2. **[Multi-Provider Setup](client_setup.md)** - Use GPT-4, Claude, Gemini interchangeably
+2. **[Multi-Provider Setup](../../concepts/from_provider.md)** - Use GPT-4, Claude, Gemini interchangeably
 3. **[Production Patterns](../patterns/simple_object.md)** - Real-world LLM extraction examples
 
 ## Common LLM Extraction Patterns

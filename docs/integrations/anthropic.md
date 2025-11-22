@@ -8,7 +8,7 @@ description: "Complete guide to using Anthropic's Claude models with Instructor 
 - [Getting Started](../getting-started.md) - Quick start guide
 - [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
-- [Anthropic Tools Mode](../concepts/modes.md) - Using Anthropic's tool calling
+- [Mode Comparison](../modes-comparison.md) - Using Anthropic's tool calling
 
 # Anthropic Claude Tutorial: Structured Outputs with Instructor
 

@@ -21,8 +21,7 @@ By the end of this blog post, you will learn how to effectively utilize instruct
 
 !!! note "Other Languages"
 
-    This blog post is written in Python, but the concepts are applicable to other languages as well, as we currently have support for [Javascript](
-        https://instructor-ai.github.io/instructor-js), [Elixir](https://hexdocs.pm/instructor/Instructor.html) and [PHP](https://github.com/cognesy/instructor-php/).
+    This blog post is written in Python, but the concepts are applicable to other languages as well, as we currently have support for [Javascript](https://instructor-ai.github.io/instructor-js), [Elixir](https://hexdocs.pm/instructor/Instructor.html) and [PHP](https://github.com/cognesy/instructor-php/).
 
 <!-- more -->
 
@@ -40,7 +39,7 @@ Instructor's patch enhances the openai api it with the following features:
 ### See Also
 
 - [Getting Started](../getting-started.md) - Quick start guide
-- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
 - [Open Source Models](../examples/open_source.md) - More open-source model examples
 

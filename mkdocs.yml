@@ -150,7 +150,6 @@ nav:
     - Getting Started with Structured Outputs: 'learning/getting_started/structured_outputs.md'
     - Your First Extraction: 'learning/getting_started/first_extraction.md'
     - Understanding Response Models: 'learning/getting_started/response_models.md'
-    - Client Setup: 'learning/getting_started/client_setup.md'
     - Simple Object Extraction: 'learning/patterns/simple_object.md'
     - List Extraction: 'learning/patterns/list_extraction.md'
     - Simple Nested Structure: 'learning/patterns/nested_structure.md'

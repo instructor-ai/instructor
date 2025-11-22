@@ -199,4 +199,4 @@ For more advanced validation techniques, check out the [Custom Validators](../va
 
 ## Next Steps
 
-In the next section, learn about [Client Setup](client_setup.md) to configure different LLM providers and understand the various modes of operation.
+In the next section, learn about [from_provider](../../concepts/from_provider.md) to configure different LLM providers and understand the various modes of operation.

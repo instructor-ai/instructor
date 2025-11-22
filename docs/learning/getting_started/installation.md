@@ -136,7 +136,7 @@ With Instructor installed, you're ready to build powerful LLM applications:
 
 1. **[Create Your First LLM Extraction](first_extraction.md)** - Build structured outputs with any LLM
 2. **[Master Response Models](response_models.md)** - Learn Pydantic models for LLM data validation
-3. **[Configure LLM Clients](client_setup.md)** - Set up OpenAI, Anthropic, Google, and more
+3. **[Configure LLM Clients](../../concepts/from_provider.md)** - Set up OpenAI, Anthropic, Google, and more
 
 ## Common Installation Issues
 

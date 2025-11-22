@@ -46,7 +46,7 @@ Instructor supports different modes for different providers:
 - `Mode.TOOLS` - Uses the OpenAI function calling API (recommended for OpenAI)
 - `Mode.JSON` - Instructs the model to return JSON directly
 - `Mode.ANTHROPIC_TOOLS` - Uses Anthropic's tool calling feature
-- `Mode.GEMINI_TOOLS` - Uses Gemini's function calling
+- `Mode.GENAI_TOOLS` - Uses Gemini's function calling (replaces deprecated GEMINI_TOOLS)
 
 The optimal mode depends on your provider and use case. See [Patching](./concepts/patching.md) for details.
 

@@ -216,7 +216,7 @@ Instructor automatically retries with validation feedback. You can configure ret
 
 Now that you've mastered the basics, here are some next steps:
 
-- Learn about [client setup](./learning/getting_started/client_setup.md) for different LLM providers
+- Learn about [client setup with from_provider](./concepts/from_provider.md) for different LLM providers
 - Explore [advanced validation](./concepts/reask_validation.md) to ensure data quality
 - Check out the [Cookbook examples](./examples/index.md) for real-world applications
 - See how to [use hooks](./concepts/hooks.md) for monitoring and debugging

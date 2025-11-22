@@ -110,7 +110,7 @@ client = instructor.from_provider("google/gemini-1.5-pro")
 
 Modes control how Instructor gets structured data from the LLM. Different providers support different modes, and Instructor automatically selects the best one. You can also specify a mode manually if needed.
 
-[Learn more about client setup →](./learning/getting_started/client_setup.md)
+[Learn more about client setup →](./concepts/from_provider.md)
 
 ## Common Use Cases
 
