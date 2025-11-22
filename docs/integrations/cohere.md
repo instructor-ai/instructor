@@ -123,11 +123,8 @@ You can also explicitly create a Cohere client and patch it with Instructor:
 import cohere
 import instructor
 
-# Create a Cohere V2 client
-cohere_client = cohere.ClientV2(api_key="your-api-key")
-
-# Patch with instructor
-client = instructor.from_cohere(cohere_client, mode=instructor.Mode.COHERE_TOOLS)
+# Use from_provider for simplified setup
+client = instructor.from_provider("cohere/command-a-03-2025", mode=instructor.Mode.COHERE_TOOLS)
 
 # Now use it with structured outputs
 response = client.create(
@@ -145,11 +142,8 @@ The V1 API is still supported for backward compatibility:
 import cohere
 import instructor
 
-# Create a Cohere V1 client
-cohere_client = cohere.Client(api_key="your-api-key")
-
-# Patch with instructor
-client = instructor.from_cohere(cohere_client, mode=instructor.Mode.COHERE_TOOLS)
+# Use from_provider for simplified setup (works with both V1 and V2)
+client = instructor.from_provider("cohere/command-a-03-2025", mode=instructor.Mode.COHERE_TOOLS)
 
 # V1 uses different message format internally but instructor handles the conversion
 response = client.create(

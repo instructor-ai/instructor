@@ -126,8 +126,12 @@ import instructor
 from instructor import Mode
 from pydantic import BaseModel
 
-bedrock_client = boto3.client('bedrock-runtime')
-client = instructor.from_bedrock(bedrock_client, mode=Mode.BEDROCK_TOOLS)
+# Use from_provider for simplified setup
+client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", mode=Mode.BEDROCK_TOOLS)
+
+# Or if you need to use a custom boto3 client:
+# bedrock_client = boto3.client('bedrock-runtime')
+# client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", client=bedrock_client, mode=Mode.BEDROCK_TOOLS)
 
 class User(BaseModel):
     name: str
@@ -271,8 +275,10 @@ bedrock_client = boto3.client(
     aws_secret_access_key='your_secret'
 )
 
-client = instructor.from_bedrock(
-    bedrock_client,
+# Use from_provider with custom client
+client = instructor.from_provider(
+    "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
+    client=bedrock_client,
     mode=instructor.Mode.BEDROCK_TOOLS
 )
 

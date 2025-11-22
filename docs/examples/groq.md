@@ -36,11 +36,8 @@ class Character(BaseModel):
     fact: List[str] = Field(..., description="A list of facts about the subject")
 
 
-client = Groq(
-    api_key=os.environ.get('GROQ_API_KEY'),
-)
-
-client = instructor.from_groq(client, mode=instructor.Mode.TOOLS)
+# Use from_provider for simplified setup
+client = instructor.from_provider("groq/mixtral-8x7b-32768", mode=instructor.Mode.TOOLS)
 
 resp = client.create(
     model="mixtral-8x7b-32768",
