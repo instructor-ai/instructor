@@ -1,6 +1,6 @@
 ---
-title: 'Query Planning with OpenAI: A Step-by-Step Guide'
-description: Learn how to effectively plan and execute complex query plans using OpenAI's Function Call model for systematic information gathering.
+title: Query Planning with Instructor - Complex Task Decomposition
+description: Plan and execute complex query plans using Instructor. Break down complex questions into sub-questions with dependencies for systematic information gathering.
 ---
 
 # Planning and Executing a Query Plan

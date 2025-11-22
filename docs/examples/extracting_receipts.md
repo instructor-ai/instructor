@@ -1,6 +1,6 @@
 ---
-title: Extracting Receipt Data with GPT-4 and Python
-description: Learn how to use Python and GPT-4 to extract and validate receipt data from images for efficient expense tracking.
+title: Receipt Data Extraction with GPT-4 Vision - Expense Tracking
+description: Extract and validate receipt data from images using GPT-4 Vision and Instructor. Automate expense tracking with structured receipt parsing.
 ---
 
 # Extracting Receipt Data using GPT-4 and Python

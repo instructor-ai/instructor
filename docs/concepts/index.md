@@ -75,7 +75,7 @@ These features help you integrate with other technologies:
 Instructor is built around a few key ideas that work together:
 
 1. **Define Structure with Pydantic**: Use Pydantic models to define exactly what data you want.
-2. **Enhance LLM Clients**: Patch provider clients to add structured output capabilities.
+2. **Create Clients with from_provider**: Use the unified interface to create clients for any provider.
 3. **Validate and Retry**: Automatically validate responses and retry if necessary.
 4. **Process Streams**: Handle streaming responses for real-time updates.
 
@@ -88,8 +88,8 @@ sequenceDiagram
     participant LLM as LLM Provider
 
     User->>Instructor: Define Pydantic model
-    User->>Instructor: Patch LLM client
-    User->>Instructor: Create completion with response_model
+    User->>Instructor: Create client with from_provider
+    User->>Instructor: Call create() with response_model
     Instructor->>LLM: Send structured request
     LLM->>Instructor: Return LLM response
     Instructor->>Instructor: Validate against model

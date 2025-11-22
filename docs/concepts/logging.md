@@ -24,7 +24,6 @@ class UserDetail(BaseModel):
 
 
 user = client.create(
-    model="gpt-4.1-mini",
     response_model=UserDetail,
     messages=[
         {"role": "user", "content": "Extract Jason is 25 years old"},

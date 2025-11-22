@@ -1,6 +1,6 @@
 ---
-title: Using IBM watsonx.ai for Inference
-description: Learn how to use IBM watsonx.ai and LiteLLM for structured outputs, including setup, installation, and coding examples.
+title: IBM watsonx.ai Integration - Enterprise LLM Inference
+description: Use IBM watsonx.ai with Instructor through LiteLLM for enterprise-grade structured outputs. Setup, authentication, and production examples.
 ---
 
 # Structured Outputs with IBM watsonx.ai

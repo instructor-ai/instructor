@@ -1,6 +1,6 @@
 ---
-title: Streaming Partial Responses with Instructor
-description: Learn how to implement field-level streaming in Python using the Instructor library for dynamic UI rendering.
+title: Partial Response Streaming - Field-Level Updates
+description: Stream partial responses with Instructor for real-time UI updates. Get incremental snapshots of response models as fields are generated.
 ---
 
 # Streaming Partial Responses

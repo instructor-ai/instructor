@@ -1,6 +1,6 @@
 ---
-title: Batch Processing with Instructor
-description: Learn how to process multiple LLM requests efficiently using batch processing techniques for cost optimization and improved performance.
+title: Batch Processing with Instructor - Cost Optimization Guide
+description: Process multiple LLM requests efficiently using batch processing for 50% cost savings. Learn file-based and in-memory batch processing with OpenAI, Anthropic, and Google.
 ---
 
 # Batch Processing

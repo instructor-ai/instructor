@@ -37,7 +37,7 @@ Different providers support different modes for structured extraction. Instructo
 
 Uses the provider's function/tool calling API. This is the default for OpenAI and provides the most reliable structured outputs.
 
-**Supported by**: OpenAI, Anthropic (ANTHROPIC_TOOLS), Google (GEMINI_TOOLS), Ollama (for supported models)
+**Supported by**: OpenAI, Anthropic (ANTHROPIC_TOOLS), Google (GENAI_TOOLS), Ollama (for supported models)
 
 ### JSON Mode
 

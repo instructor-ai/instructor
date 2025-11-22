@@ -3,6 +3,11 @@ title: Seamless Multimodal Interactions with Instructor
 description: Learn how the Image, PDF and Audio class in Instructor enables seamless handling of multimodal content across different AI models.
 ---
 
+---
+title: Multimodal Processing with Instructor - Vision and Audio
+description: Process images, audio, and video with Instructor for multimodal structured outputs. Extract data from visual content using GPT-4 Vision and Gemini models.
+---
+
 # Multimodal
 
 > We've provided a few different sample files for you to use to test out these new features. All examples below use these files.

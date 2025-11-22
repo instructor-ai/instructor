@@ -1,6 +1,6 @@
 ---
-title: Validating AI Answers with Contextual Citations in Python
-description: Learn to use Python classes to validate AI-generated answers with citations, ensuring accuracy and preventing hallucinations.
+title: Citation Validation with Instructor - Prevent Hallucinations
+description: Validate AI-generated answers with contextual citations using Instructor. Ensure every statement is backed by source quotes to prevent hallucinations.
 ---
 
 # Example: Answering Questions with Validated Citations

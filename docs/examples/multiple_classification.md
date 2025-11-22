@@ -1,6 +1,6 @@
 ---
-title: Multi-Label Classification with OpenAI and Pydantic
-description: Learn how to implement multi-label classification using OpenAI's API and Pydantic for effective support ticket classification.
+title: Multi-Label Classification - Support Ticket Categorization
+description: Implement multi-label classification with Instructor for support tickets. Assign multiple categories like ACCOUNT, BILLING, and GENERAL_QUERY simultaneously.
 ---
 
 For multi-label classification, we introduce a new enum class and a different Pydantic model to handle multiple labels.

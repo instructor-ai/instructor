@@ -1,6 +1,6 @@
 ---
-title: Single-Label Classification with OpenAI API
-description: Learn to implement single-label classification using the OpenAI API to classify text as SPAM or NOT_SPAM.
+title: Single-Label Text Classification - SPAM Detection Example
+description: Implement single-label text classification with Instructor. Classify text as SPAM or NOT_SPAM with chain-of-thought reasoning.
 ---
 
 # Single-Label Classification

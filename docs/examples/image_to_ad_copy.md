@@ -213,8 +213,7 @@ def read_images(image_urls: list[str]) -> IdentifiedProduct:
 
     logger.info(f"Identifying products in images... {len(image_urls)} images")
 
-    return client_image.chat.completions.create(
-        model="gpt-4o-mini",
+    return client_image.create(
         response_model=IdentifiedProduct,
         max_tokens=1024,  # can be changed
         temperature=0,
@@ -304,8 +303,7 @@ def generate_ad_copy(product: Product) -> AdCopy:
 
     logger.info(f"Generating ad copy for product: {product.name}")
 
-    return client_copy.chat.completions.create(
-        model="gpt-4o-mini",
+    return client_copy.create(
         response_model=AdCopy,
         temperature=0.3,
         messages=[
