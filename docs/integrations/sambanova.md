@@ -3,6 +3,13 @@ title: SambaNova
 description: Use Instructor with SambaNova's LLM API for structured outputs.
 ---
 
+## See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+- [Enterprise Integration](../examples/index.md#enterprise-integration) - More enterprise examples
+
 # SambaNova Integration
 
 Instructor supports SambaNova's LLM API, allowing you to use structured outputs with their models.

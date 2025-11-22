@@ -1,6 +1,6 @@
 ---
-title: Integrating Pydantic with FastAPI for Efficient APIs
-description: Learn how to leverage Pydantic models with FastAPI for seamless API development and automatic documentation.
+title: FastAPI Integration with Instructor - API Development Guide
+description: Build production-ready APIs with FastAPI and Instructor. Create type-safe endpoints for structured LLM outputs with automatic validation and documentation.
 ---
 
 # Integrating Pydantic Models with FastAPI

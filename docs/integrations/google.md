@@ -117,7 +117,7 @@ class User(BaseModel):
 
 client = instructor.from_provider(
     "google/gemini-1.5-flash-latest",
-    mode=instructor.Mode.GEMINI_JSON,
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
 )
 
 resp = client.create(
@@ -331,8 +331,9 @@ If you're currently using the legacy `google-generativeai` package with Instruct
 import instructor
 import google.generativeai as genai
 
-client = instructor.from_provider("google/gemini-2.5-flash"),
-    mode=instructor.Mode.GEMINI_JSON,
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
 )
 ```
 

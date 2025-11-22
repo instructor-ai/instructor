@@ -1,6 +1,6 @@
 ---
-title: 'Using Groq for Inference: Setup and Example'
-description: Learn how to use Groq for inference with the mixtral-8x7b model, including API setup and a practical Python example.
+title: Groq AI Integration - Fast Structured Outputs
+description: Use Groq AI with Instructor for fast structured outputs. Leverage Groq's high-speed inference for real-time structured data extraction.
 ---
 
 # Structured Outputs using Groq

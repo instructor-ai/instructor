@@ -37,7 +37,14 @@ Instructor's patch enhances the openai api it with the following features:
 
     To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page.
 
-## Together AI
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+- [Open Source Models](../examples/open_source.md) - More open-source model examples
+
+# Together AI
 
 The good news is that Together employs the same OpenAI client, and its models support some of these output modes too!
 

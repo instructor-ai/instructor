@@ -16,7 +16,14 @@ export PERPLEXITY_API_KEY=<your-api-key-here>
 pip install "instructor[perplexity]"
 ```
 
-## Perplexity AI
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+- [Search Examples](../examples/search.md) - Search query processing examples
+
+# Perplexity AI
 
 Perplexity AI provides access to powerful language models through their API. Instructor supports structured outputs with Perplexity's models using the OpenAI-compatible API.
 
