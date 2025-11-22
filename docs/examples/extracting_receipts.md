@@ -84,7 +84,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract(url: str) -> Receipt:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         max_tokens=4000,
         response_model=Receipt,
@@ -141,7 +141,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract(url: str) -> Receipt:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         max_tokens=4000,
         response_model=Receipt,

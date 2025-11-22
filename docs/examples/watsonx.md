@@ -46,7 +46,7 @@ class Company(BaseModel):
 
 client = instructor.from_litellm(completion, mode=Mode.JSON)
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="watsonx/meta-llama/llama-3-8b-instruct",
     max_tokens=1024,
     messages=[

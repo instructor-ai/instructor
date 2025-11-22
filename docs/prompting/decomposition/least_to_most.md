@@ -36,7 +36,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def decompose(question):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Iterable[Subquestion],
         messages=[
@@ -49,7 +49,7 @@ def decompose(question):
 
 
 def solve(question, solved_questions, original_question):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Answer,
         messages=[

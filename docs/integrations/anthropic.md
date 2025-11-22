@@ -52,7 +52,7 @@ client = instructor.from_provider(
 
 try:
     # Extract structured data
-    user_response = client.chat.completions.create(
+    user_response = client.create(
         max_tokens=1024,
         messages=[
             {
@@ -103,7 +103,7 @@ async_client = instructor.from_provider(
 )
 
 async def extract_user():
-    return await async_client.chat.completions.create(
+    return await async_client.create(
         messages=[{"role": "user", "content": "Extract: Jason is 25 years old"}],
         response_model=User,
     )
@@ -134,7 +134,7 @@ client = instructor.from_provider(
     mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
 )
 
-results = client.chat.completions.create(
+results = client.create(
     messages=[
         {"role": "system", "content": "You must always use tools"},
         {
@@ -188,7 +188,7 @@ class ImageDescription(BaseModel):
 client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
-response = client.chat.completions.create(
+response = client.create(
     response_model=ImageDescription,
     max_tokens=1000,
     messages=[
@@ -242,7 +242,7 @@ class Receipt(BaseModel):
 client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
-response = client.chat.completions.create(
+response = client.create(
     response_model=Receipt,
     max_tokens=1000,
     messages=[
@@ -284,7 +284,7 @@ class Receipt(BaseModel):
 client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
-response, completion = client.chat.completions.create_with_completion(
+response, completion = client.create_with_completion(
     response_model=Receipt,
     max_tokens=1000,
     messages=[
@@ -351,7 +351,7 @@ class User(BaseModel):
 
 try:
     # Stream partial objects as they're generated
-    for partial_user in client.chat.completions.create_partial(
+    for partial_user in client.create_partial(
         messages=[
             {"role": "system", "content": "Create a detailed user profile based on the information provided."},
             {"role": "user", "content": "Create a user profile for Jason, age 25"},
@@ -398,7 +398,7 @@ class User(BaseModel):
 
 try:
     # Create an iterable of user objects
-    users = client.chat.completions.create_iterable(
+    users = client.create_iterable(
         messages=[
             {
                 "role": "system",
@@ -481,7 +481,7 @@ try:
     # Make multiple calls using the cached context
     for _ in range(2):
         # The first time processes the large text, subsequent calls use the cache
-        resp, completion = client.chat.completions.create_with_completion(
+        resp, completion = client.create_with_completion(
             messages=[
                 {
                     "role": "system",
@@ -552,7 +552,7 @@ try:
     cache_control = {"type": "ephemeral"}
 
     # Make a request with cached images
-    response = client.chat.completions.create(
+    response = client.create(
         response_model=ImageAnalyzer,
         messages=[
             {
@@ -608,7 +608,7 @@ class Answer(BaseModel):
 
 client = Anthropic()
 client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
-response = client.chat.completions.create(
+response = client.create(
     response_model=Answer,
     messages=[
         {

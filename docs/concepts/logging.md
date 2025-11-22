@@ -23,7 +23,7 @@ class UserDetail(BaseModel):
     age: int
 
 
-user = client.chat.completions.create(
+user = client.create(
     model="gpt-4.1-mini",
     response_model=UserDetail,
     messages=[

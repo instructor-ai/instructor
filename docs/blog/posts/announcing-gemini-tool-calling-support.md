@@ -68,7 +68,7 @@ client = instructor.from_provider("google/gemini-2.5-flash")
     )
 )
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",
@@ -106,7 +106,7 @@ client = instructor.from_provider("google/gemini-2.5-flash", vertexai=True),  # 
 )
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",

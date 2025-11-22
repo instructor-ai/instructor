@@ -207,7 +207,7 @@ other of their daughters...
 # with open("./book.txt") as f:
 #     book = f.read()
 
-resp, completion = client.chat.completions.create_with_completion(
+resp, completion = client.create_with_completion(
     model="claude-3-5-sonnet-20240620",
     messages=[
         {

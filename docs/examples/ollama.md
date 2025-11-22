@@ -69,7 +69,7 @@ client = instructor.from_openai(
     mode=instructor.Mode.JSON,
 )
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="llama3",
     messages=[
         {

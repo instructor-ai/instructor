@@ -20,7 +20,7 @@ class Receipt(BaseModel):
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-receipt = client.chat.completions.create(
+receipt = client.create(
     messages=[{"role": "user", "content": "Coffee costs $4.99"}],
     response_model=Receipt,
 )

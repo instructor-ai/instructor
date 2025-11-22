@@ -26,7 +26,7 @@ class User(BaseModel):
     name: str
     age: int
 
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {"role": "user", "content": "Ivan is 28"},
     ],
@@ -54,7 +54,7 @@ class User(BaseModel):
     age: int
 
 async def get_user():
-    user = await client.chat.completions.create(
+    user = await client.create(
         messages=[
             {"role": "user", "content": "Ivan is 28"},
         ],

@@ -20,7 +20,7 @@ class User(TypedDict):
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
-response = client.chat.completions.create(
+response = client.create(
     response_model=User,
     messages=[
         {

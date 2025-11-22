@@ -42,7 +42,7 @@ client = Groq(
 
 client = instructor.from_groq(client, mode=instructor.Mode.TOOLS)
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="mixtral-8x7b-32768",
     messages=[
         {

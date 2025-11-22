@@ -35,7 +35,7 @@ class Person(BaseModel):
     address: Address  # Nested structure
 
 # Extract the nested data
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": """
@@ -86,7 +86,7 @@ class Person(BaseModel):
     employment: Optional[EmployeeDetails] = None  # Optional nested structure
 
 # Extract deeply nested data
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": """
@@ -127,7 +127,7 @@ class Recipe(BaseModel):
     steps: List[str]  # List of strings
 
 # Extract nested list data
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-4",
     messages=[
         {"role": "user", "content": """
@@ -250,7 +250,7 @@ class Post(BaseModel):
     comments: List[Comment] = []
 
 # Extract recursive nested data
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-4",
     messages=[
         {"role": "user", "content": """
@@ -302,7 +302,7 @@ class Organization(BaseModel):
     departments: List[Department]
 
 # Extract organization structure
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-4",
     messages=[
         {"role": "user", "content": """

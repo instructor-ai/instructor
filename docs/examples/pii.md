@@ -86,7 +86,7 @@ EXAMPLE_DOCUMENT = """
 # (The content here)
 """
 
-pii_data = client.chat.completions.create(
+pii_data = client.create(
     model="gpt-4o-mini",
     response_model=PIIDataExtraction,
     messages=[

@@ -159,7 +159,7 @@ class SearchQuery(BaseModel):
         return "Results for cat"
 
 
-query = client.chat.completions.create(
+query = client.create(
     model="gpt-4.1-mini",
     messages=[{"role": "user", "content": "Search for a picture of a cat"}],
     response_model=SearchQuery,

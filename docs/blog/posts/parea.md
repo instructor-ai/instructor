@@ -57,7 +57,7 @@ client = OpenAI()
 p = Parea(api_key=os.getenv("PAREA_API_KEY"))  # (2)!
 p.wrap_openai_client(client, "instructor")
 
-client = instructor.from_openai(client)
+client = instructor.from_provider("openai/gpt-4o")
 ```
 
 1. Import `Parea` from the `parea` module

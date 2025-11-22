@@ -141,7 +141,7 @@ Once you've defined your model, you can use it for extraction:
 import instructor
 client = instructor.from_provider("openai/gpt-5-nano")
 
-forecast = client.chat.completions.create(
+forecast = client.create(
     model="gpt-3.5-turbo",
     response_model=WeatherForecast,
     messages=[

@@ -75,7 +75,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_graph(input) -> KnowledgeGraph:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {
@@ -121,7 +121,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_graph(input) -> KnowledgeGraph:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {
@@ -279,7 +279,7 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
     cur_state = KnowledgeGraph()  # (1)!
     num_iterations = len(input)
     for i, inp in enumerate(input):
-        new_updates = client.chat.completions.create(
+        new_updates = client.create(
             model="gpt-3.5-turbo-16k",
             messages=[
                 {
@@ -369,7 +369,7 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
     cur_state = KnowledgeGraph()  # (1)!
     num_iterations = len(input)
     for i, inp in enumerate(input):
-        new_updates = client.chat.completions.create(
+        new_updates = client.create(
             model="gpt-4o-mini",
             messages=[
                 {

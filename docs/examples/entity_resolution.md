@@ -102,7 +102,7 @@ class DocumentExtraction(BaseModel):
 
 
 def ask_ai(content) -> DocumentExtraction:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         response_model=DocumentExtraction,
         messages=[
@@ -234,7 +234,7 @@ class DocumentExtraction(BaseModel):
 
 
 def ask_ai(content) -> DocumentExtraction:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         response_model=DocumentExtraction,
         messages=[

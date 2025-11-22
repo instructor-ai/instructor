@@ -63,7 +63,7 @@ class User(BaseModel):
 
 client = instructor.from_provider("openai/gpt-5-nano")
 
-model = client.chat.completions.create(
+model = client.create(
     model="gpt-4o-mini",
     messages=[{"role": "user", "content": "{'name': 'Ada', 'age': 37}"}],
     response_model=User,            # triggers schema/tool wiring + parsing
@@ -88,7 +88,7 @@ class User(BaseModel):
 
 async def main():
     aclient = instructor.from_provider("openai/gpt-5-nano", async_client=True)
-    model = await aclient.chat.completions.create(
+    model = await aclient.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": "{\"name\": \"Ada\", \"age\": 37}"}],
         response_model=User,
@@ -129,7 +129,7 @@ for partial in client.create_partial(messages=..., response_model=MyModel):
 ```python
 from instructor.mode import Mode
 
-result = client.chat.completions.create(
+result = client.create(
     model="gpt-4o",
     messages=[{"role": "user", "content": "Extract person and event info."}],
     response_model=[PersonInfo, EventInfo],

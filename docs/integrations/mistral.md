@@ -76,7 +76,7 @@ instructor_client = instructor.from_provider(
 )
 
 # Extract a single user
-user = instructor_client.chat.completions.create(
+user = instructor_client.create(
     response_model=UserDetails,
     messages=[{"role": "user", "content": "Jason is 25 years old"}],
     temperature=0,
@@ -111,7 +111,7 @@ instructor_client = instructor.from_provider(
 )
 
 async def extract_user():
-    user = await instructor_client.chat.completions.create(
+    user = await instructor_client.create(
         response_model=User,
         messages=[{"role": "user", "content": "Jack is 28 years old."}],
         temperature=0,
@@ -152,7 +152,7 @@ instructor_client = instructor.from_provider(
 )
 
 # Create structured output with nested objects
-user = instructor_client.chat.completions.create(
+user = instructor_client.create(
     response_model=User,
     messages=[
         {"role": "user", "content": """
@@ -199,7 +199,7 @@ client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 instructor_client = instructor.from_provider("mistral/mistral-small")
 
 # Stream partial responses
-model = instructor_client.chat.completions.create(
+model = instructor_client.create(
     response_model=Partial[UserExtract],
     stream=True,
     messages=[
@@ -233,7 +233,7 @@ client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 instructor_client = instructor.from_provider("mistral/mistral-small")
 
 # Stream iterable responses
-users = instructor_client.chat.completions.create_iterable(
+users = instructor_client.create_iterable(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Make up two people"},
@@ -267,7 +267,7 @@ client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 instructor_client = instructor.from_provider("mistral/mistral-small")
 
 async def stream_partial():
-    model = await instructor_client.chat.completions.create(
+    model = await instructor_client.create(
         response_model=Partial[UserExtract],
         stream=True,
         messages=[
@@ -279,7 +279,7 @@ async def stream_partial():
         print(f"Received update: {partial_user}")
 
 async def stream_iterable():
-    users = instructor_client.chat.completions.create_iterable(
+    users = instructor_client.create_iterable(
         response_model=UserExtract,
         messages=[
             {"role": "user", "content": "Make up two people"},
@@ -327,7 +327,7 @@ client = instructor.from_provider("mistral/mistral-small")
 
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 
-response = client.chat.completions.create(
+response = client.create(
     response_model=Receipt,
     max_tokens=1000,
     messages=[

@@ -58,7 +58,7 @@ class Person:
 client = instructor.from_provider("openai/gpt-5-nano")
 
 # Extract structured data
-person = client.chat.completions.create(
+person = client.create(
     response_model=Person,
     messages=[
         {"role": "user", "content": "Extract a person from: John is 30 years old and lives in New York."}

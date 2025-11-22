@@ -121,7 +121,7 @@ async def classify(data: str) -> QuestionClassification:
         data (str): The input text to classify.
     """
     async with sem:  # some simple rate limiting
-        return data, await client.chat.completions.create(
+        return data, await client.create(
             model="gpt-4-turbo-preview",
             response_model=QuestionClassification,
             max_retries=2,

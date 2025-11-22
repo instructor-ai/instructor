@@ -40,7 +40,7 @@ class QueryDecomposition(BaseModel):
 
 
 async def generate_queries(query: str):
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         messages=[
             {
@@ -55,7 +55,7 @@ async def generate_queries(query: str):
 
 
 async def generate_reasoning_chain(query: str) -> MaybeResponse:
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         messages=[
             {
@@ -94,7 +94,7 @@ async def generate_response(query: str, context: list[MaybeResponse]):
         ]
     )
 
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         messages=[
             {

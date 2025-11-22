@@ -19,7 +19,7 @@ class Book(BaseModel):
     year: int = Field(..., description="Publication year")
 
 # Stream a list of books
-for book in client.chat.completions.create(
+for book in client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "List 5 classic science fiction books"}
@@ -57,7 +57,7 @@ print("Generating project tasks...")
 start_time = time.time()
 received_tasks = 0
 
-for task in client.chat.completions.create(
+for task in client.create(
     model="gpt-3.5-turbo",
     messages=[
         {

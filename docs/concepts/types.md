@@ -57,7 +57,7 @@ import instructor
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Response model with simple types like str, int, float, bool
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=bool,
     messages=[
         {
@@ -85,7 +85,7 @@ client = instructor.from_provider("openai/gpt-4.1-mini")
 UpperCaseStr = Annotated[str, Field(description="string must be upper case")]
 
 # Response model with simple types like str, int, float, bool
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=UpperCaseStr,
     messages=[
         {
@@ -109,7 +109,7 @@ from typing import Literal
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=Literal["BILLING", "SHIPPING"],
     messages=[
         {
@@ -139,7 +139,7 @@ class Label(str, Enum):
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=Label,
     messages=[
         {
@@ -161,7 +161,7 @@ from typing import List
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=List[int],
     messages=[
         {
@@ -197,7 +197,7 @@ class Weather(BaseModel):
     location: str
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=Union[Add, Weather],
     messages=[
         {
@@ -264,7 +264,7 @@ MarkdownDataFrame = Annotated[
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=MarkdownDataFrame,
     messages=[
         {
@@ -306,7 +306,7 @@ class Add(BaseModel, frozen=True):
     b: int
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=List[Union[Add, Weather]],
     messages=[
         {

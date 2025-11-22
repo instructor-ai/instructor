@@ -48,7 +48,7 @@ class User(BaseModel):
     age: int
 
 # Create structured output
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -74,7 +74,7 @@ class User(BaseModel):
     age: int
 
 async def extract_user():
-    user = await client.chat.completions.create(
+    user = await client.create(
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -114,7 +114,7 @@ client = instructor.from_provider(
     api_key=os.getenv('OPENAI_API_KEY'),
 )
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {"role": "user", "content": """
             Extract: Jason is 25 years old.
@@ -184,7 +184,7 @@ class ImageDescription(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/image.jpg"
 # Multiple ways to load an image:
-response = client.chat.completions.create(
+response = client.create(
     response_model=ImageDescription,
     messages=[
         {
@@ -236,7 +236,7 @@ class Receipt(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf"
 # Multiple ways to load an PDF:
-response = client.chat.completions.create(
+response = client.create(
     response_model=Receipt,
     messages=[
         {
@@ -284,7 +284,7 @@ url = "https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/ass
 
 client = instructor.from_provider("openai/gpt-5-nano")
 
-response = client.chat.completions.create(
+response = client.create(
     response_model=AudioDescription,
     modalities=["text"],
     audio={"voice": "alloy", "format": "wav"},
@@ -327,7 +327,7 @@ class User(BaseModel):
     bio: str
 
 
-user = client.chat.completions.create_partial(
+user = client.create_partial(
     messages=[
         {"role": "user", "content": "Create a user profile for Jason, age 25"},
     ],
@@ -358,7 +358,7 @@ class User(BaseModel):
     age: int
 
 # Extract multiple users from text
-users = client.chat.completions.create_iterable(
+users = client.create_iterable(
     messages=[
         {"role": "user", "content": """
             Extract users:

@@ -36,7 +36,7 @@ class ClassificationResponse(BaseModel):
 
 def classify(data: str) -> ClassificationResponse:
     """Perform single-label classification on the input text."""
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         response_model=ClassificationResponse,
         messages=[

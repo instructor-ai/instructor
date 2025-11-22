@@ -43,7 +43,7 @@ class MeetingInfo(BaseModel):
 PartialMeetingInfo = instructor.Partial[MeetingInfo]
 
 
-extraction_stream = client.chat.completions.create(
+extraction_stream = client.create(
     model="gpt-4",
     response_model=PartialMeetingInfo,
     messages=[

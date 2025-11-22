@@ -269,8 +269,10 @@ def from_provider(
             import openai
             from instructor import from_openai  # type: ignore[attr-defined]
 
-            api_key = api_key or os.environ.get("DATABRICKS_TOKEN") or os.environ.get(
-                "DATABRICKS_API_KEY"
+            api_key = (
+                api_key
+                or os.environ.get("DATABRICKS_TOKEN")
+                or os.environ.get("DATABRICKS_API_KEY")
             )
             if not api_key:
                 from .core.exceptions import ConfigurationError

@@ -30,7 +30,7 @@ class User(BaseModel):
     email: str = Field(..., pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
 # Extract with validation
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "I'm John Smith, 35 years old, with email john@example.com"}
@@ -96,7 +96,7 @@ class Product(BaseModel):
         return v
 
 # Extract validated data
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Product: Wireless Headphones, SKU: ABC-1234, Price: $79.99"}
@@ -240,7 +240,7 @@ class Task(BaseModel):
     priority: Priority  # Must be one of the enum values
 
 # Extract with enum validation
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Task: Update website, Description: Refresh content on homepage, Status: pending, Priority: high"}

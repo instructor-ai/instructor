@@ -25,7 +25,7 @@ class Response(BaseModel):
 
 
 def role_prompting(query, role):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Response,
         messages=[

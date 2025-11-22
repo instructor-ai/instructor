@@ -70,7 +70,7 @@ class User(BaseModel):
     age: int
 
 
-users = client.chat.completions.create(
+users = client.create(
     temperature=0.1,
     response_model=Iterable[User],
     stream=False,
@@ -111,7 +111,7 @@ class User(BaseModel):
     age: int
 
 
-users = client.chat.completions.create(
+users = client.create(
     temperature=0.1,
     stream=True,
     response_model=Iterable[User],
@@ -156,7 +156,7 @@ class UserExtract(BaseModel):
 
 
 async def print_iterable_results():
-    model = await client.chat.completions.create(
+    model = await client.create(
         response_model=Iterable[UserExtract],
         max_retries=2,
         stream=True,

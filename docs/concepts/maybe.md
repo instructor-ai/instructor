@@ -64,7 +64,7 @@ class MaybeUser(BaseModel):
 
 
 def extract(content: str) -> MaybeUser:
-    return client.chat.completions.create(
+    return client.create(
         response_model=MaybeUser,
         messages=[
             {"role": "user", "content": f"Extract `{content}`"},

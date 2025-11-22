@@ -104,7 +104,7 @@ class MeetingInfo(BaseModel):
     deadline: str
 
 
-extraction_stream = client.chat.completions.create_partial(
+extraction_stream = client.create_partial(
     response_model=MeetingInfo,
     messages=[
         {
@@ -175,7 +175,7 @@ class User(BaseModel):
 
 
 async def print_partial_results():
-    user = client.chat.completions.create_partial(
+    user = client.create_partial(
         response_model=User,
         max_retries=2,
         stream=True,

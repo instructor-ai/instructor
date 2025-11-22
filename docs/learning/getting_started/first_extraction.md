@@ -18,7 +18,7 @@ class Person(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 
 # 3. Extract structured data from LLM
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-3.5-turbo",  # Works with GPT-4, Claude, Gemini, etc.
     response_model=Person,   # Type-safe extraction
     messages=[
@@ -65,7 +65,7 @@ Instructor enhances your LLM client with structured output capabilities. Works w
 ### Step 3: Execute LLM Extraction
 
 ```python
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-3.5-turbo",
     response_model=Person,
     messages=[

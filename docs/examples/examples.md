@@ -42,7 +42,7 @@ class SyntheticQA(BaseModel):
 
 
 def get_synthetic_data() -> Iterable[SyntheticQA]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "Generate synthetic examples"},

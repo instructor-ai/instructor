@@ -88,7 +88,7 @@ Each line of the document is marked with its line number in square brackets (e.g
 
 
 def get_structured_document(document_with_line_numbers) -> StructuredDocument:
-    return client.chat.completions.create(
+    return client.create(
         model="command-a-03-2025",
         response_model=StructuredDocument,
         messages=[
@@ -171,7 +171,7 @@ class StructuredDocument(BaseModel):
 
 
 def get_structured_document(document_with_line_numbers) -> StructuredDocument:
-    return client.chat.completions.create(
+    return client.create(
         model="command-a-03-2025",
         response_model=StructuredDocument,
         messages=[

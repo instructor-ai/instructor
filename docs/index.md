@@ -33,9 +33,9 @@ Built on top of **Pydantic**, Instructor provides type-safe data extraction with
 - **Type Safety**: Full IDE support with proper type inference and autocompletion
 - **Open Source Support**: Run any open source model locally with Ollama, llama-cpp-python, or vLLM
 
-## Quick Start: Extract Structured Data in 3 Lines
+## Quick Start
 
-Install Instructor and start extracting structured data immediately:
+Install Instructor and start extracting structured data in minutes:
 
 === "pip"
     ```bash
@@ -52,6 +52,10 @@ Install Instructor and start extracting structured data immediately:
     poetry add instructor
     ```
 
+### Extract Structured Data
+
+Instructor's **`from_provider`** function provides a unified interface to work with any LLM provider. Switch between OpenAI, Anthropic, Google, Ollama, DeepSeek, and 15+ providers with the same code:
+
 ```python
 import instructor
 from pydantic import BaseModel
@@ -63,8 +67,14 @@ class Person(BaseModel):
     occupation: str
 
 
+# Works with any provider - same interface everywhere
 client = instructor.from_provider("openai/gpt-5-nano")
-person = client.chat.completions.create(
+# Or: instructor.from_provider("anthropic/claude-3")
+# Or: instructor.from_provider("google/gemini-pro")
+# Or: instructor.from_provider("ollama/llama3")  # local
+
+# Extract structured data from natural language
+person = client.create(
     response_model=Person,
     messages=[
         {"role": "user", "content": "Extract: John is a 30-year-old software engineer"}
@@ -73,40 +83,7 @@ person = client.chat.completions.create(
 print(person)  # Person(name='John', age=30, occupation='software engineer')
 ```
 
-## Universal Provider API - One Interface for All LLMs
-
-Instructor's **`from_provider`** function provides a unified interface to work with any LLM provider. Switch between OpenAI, Anthropic, Google, Ollama, DeepSeek, and 15+ providers with the same code:
-
-```python
-import instructor
-from pydantic import BaseModel
-
-
-class UserInfo(BaseModel):
-    name: str
-    age: int
-
-
-# Works with any provider - same interface everywhere
-client = instructor.from_provider("openai/gpt-4")  # OpenAI
-client = instructor.from_provider("anthropic/claude-3")  # Anthropic
-client = instructor.from_provider("google/gemini-pro")  # Google
-client = instructor.from_provider("ollama/llama3")  # Ollama (local)
-client = instructor.from_provider("deepseek/deepseek-chat")  # DeepSeek
-
-# Pass API keys directly (no environment variables needed)
-client = instructor.from_provider("openai/gpt-4", api_key="sk-...")
-client = instructor.from_provider("anthropic/claude-3", api_key="sk-ant-...")
-client = instructor.from_provider("groq/llama-3.1-8b-instant", api_key="gsk_...")
-
-# Same extraction code works with all providers
-user = client.chat.completions.create(
-    response_model=UserInfo,
-    messages=[{"role": "user", "content": "John Doe is 30 years old."}],
-)
-```
-
-The **`from_provider`** API supports both sync and async usage (`async_client=True`) and automatically handles provider-specific configurations, making it effortless to switch between different LLM services.
+The **`from_provider`** API supports both sync and async usage (`async_client=True`) and automatically handles provider-specific configurations. [See all supported providers →](./integrations/index.md)
 
 ## Complex Schemas & Validation
 
@@ -116,7 +93,6 @@ Instructor excels at extracting complex, nested data structures with custom vali
 import instructor
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
-from datetime import datetime
 from enum import Enum
 
 class Priority(str, Enum):
@@ -170,7 +146,7 @@ class CustomerSupport(BaseModel):
 # Extract complex support case from natural language
 client = instructor.from_provider("openai/gpt-4o")
 
-support_case = client.chat.completions.create(
+support_case = client.create(
     response_model=CustomerSupport,
     messages=[{
         "role": "user", 
@@ -214,401 +190,83 @@ If you ever get stuck, you can always run `instructor docs` to open the document
 instructor docs [QUERY]
 ```
 
-### OpenAI GPT Models - Structured Outputs
+### Provider Examples
 
-Get structured data from OpenAI's most powerful models including GPT-4, GPT-4 Turbo, and GPT-3.5.
+All providers use the same simple interface. Here are quick examples for the most popular providers:
 
 === "OpenAI"
-    ```bash
-    pip install instructor
-    ```
-
-    !!! info "Using OpenAI's Structured Output Response"
-
-        You can now use OpenAI's structured output response with Instructor. This feature combines the strengths of Instructor with OpenAI's precise sampling.
-
-        ```python
-        client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
-        ```
-
     ```python
     import instructor
     from pydantic import BaseModel
 
-
-    # Define your desired output structure
     class ExtractUser(BaseModel):
         name: str
         age: int
 
-
-    # Create instructor client with provider
     client = instructor.from_provider("openai/gpt-5-nano")
-
-    # Extract structured data from natural language
-    res = client.chat.completions.create(
+    res = client.create(
         response_model=ExtractUser,
         messages=[{"role": "user", "content": "John Doe is 30 years old."}],
     )
-
-    assert res.name == "John Doe"
-    assert res.age == 30
     ```
 
-    [See more :material-arrow-right:](./integrations/openai.md){: .md-button }
-
-=== "Ollama"
-
-    ```bash
-    pip install "instructor[ollama]"
-    ```
-
-    ```python
-    from pydantic import BaseModel
-    import instructor
-
-
-    class ExtractUser(BaseModel):
-        name: str
-        age: int
-
-
-    client = instructor.from_provider("ollama/llama3")
-
-    resp = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
-        response_model=ExtractUser,
-    )
-    assert resp.name == "Jason"
-    assert resp.age == 25
-    ```
-
-    [See more :material-arrow-right:](./integrations/ollama.md){: .md-button }
-
-=== "llama-cpp-python"
-    ```bash
-    pip install "instructor[llama-cpp-python]"
-    ```
-
-    ```python
-    import llama_cpp
-    import instructor
-    from llama_cpp.llama_speculative import LlamaPromptLookupDecoding
-    from pydantic import BaseModel
-
-    llama = llama_cpp.Llama(
-        model_path="../../models/OpenHermes-2.5-Mistral-7B-GGUF/openhermes-2.5-mistral-7b.Q4_K_M.gguf",
-        n_gpu_layers=-1,
-        chat_format="chatml",
-        n_ctx=2048,
-        draft_model=LlamaPromptLookupDecoding(num_pred_tokens=2),
-        logits_all=True,
-        verbose=False,
-    )
-
-    create = instructor.patch(
-        create=llama.create_chat_completion_openai_v1,
-        mode=instructor.Mode.JSON_SCHEMA,
-    )
-
-
-    class ExtractUser(BaseModel):
-        name: str
-        age: int
-
-
-    user = create(
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract `Jason is 30 years old`",
-            }
-        ],
-        response_model=ExtractUser,
-    )
-
-    assert user.name == "Jason"
-    assert user.age == 30
-    ```
-
-    [See more :material-arrow-right:](./integrations/llama-cpp-python.md){: .md-button }
+    [Full OpenAI docs →](./integrations/openai.md)
 
 === "Anthropic"
-    ```bash
-    pip install "instructor[anthropic]"
-    ```
-
     ```python
     import instructor
     from pydantic import BaseModel
 
-
     class ExtractUser(BaseModel):
         name: str
         age: int
-
 
     client = instructor.from_provider("anthropic/claude-3-5-sonnet-20240620")
-
-    # note that client.chat.completions.create will also work
-    resp = client.messages.create(
-        max_tokens=1024,
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
-        response_model=ExtractUser,
-    )
-
-    assert isinstance(resp, ExtractUser)
-    assert resp.name == "Jason"
-    assert resp.age == 25
-    ```
-
-    [See more :material-arrow-right:](./integrations/anthropic.md){: .md-button }
-
-=== "Gemini"
-    ```bash
-    pip install "instructor[google-generativeai]"
-    ```
-
-    ```python
-    import instructor
-    from pydantic import BaseModel
-
-
-    class ExtractUser(BaseModel):
-        name: str
-        age: int
-
-
-    client = instructor.from_provider("google/gemini-2.5-flash")
-
-    # note that client.chat.completions.create will also work
-    resp = client.messages.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
-        response_model=ExtractUser,
-    )
-
-    assert isinstance(resp, ExtractUser)
-    assert resp.name == "Jason"
-    assert resp.age == 25
-    ```
-
-    [See more :material-arrow-right:](./integrations/google.md){: .md-button }
-
-=== "Vertex AI"
-    ```bash
-    pip install "instructor[vertexai]"
-    ```
-
-    ```python
-    import instructor
-    from pydantic import BaseModel
-
-
-    class ExtractUser(BaseModel):
-        name: str
-        age: int
-
-
-    client = instructor.from_provider(
-        "google/gemini-2.5-flash",
-        vertexai=True
-    )
-
-    # note that client.chat.completions.create will also work
     resp = client.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
-        response_model=ExtractUser,
-    )
-
-    assert isinstance(resp, ExtractUser)
-    assert resp.name == "Jason"
-    assert resp.age == 25
-    ```
-
-    [See more :material-arrow-right:](./integrations/vertex.md){: .md-button }
-
-=== "Groq"
-    ```bash
-    pip install "instructor[groq]"
-    ```
-
-    ```python
-    import instructor
-    from pydantic import BaseModel
-
-
-    class ExtractUser(BaseModel):
-        name: str
-        age: int
-
-
-    client = instructor.from_provider("groq/llama3-70b-8192")
-
-    resp = client.chat.completions.create(
         response_model=ExtractUser,
         messages=[{"role": "user", "content": "Extract Jason is 25 years old."}],
     )
-
-    assert resp.name == "Jason"
-    assert resp.age == 25
     ```
 
-    [See more :material-arrow-right:](./integrations/groq.md){: .md-button }
+    [Full Anthropic docs →](./integrations/anthropic.md)
 
-=== "Litellm"
-    ```bash
-    pip install "instructor[litellm]"
-    ```
-
+=== "Google Gemini"
     ```python
     import instructor
     from pydantic import BaseModel
-
 
     class ExtractUser(BaseModel):
         name: str
         age: int
 
-
-    client = instructor.from_provider("litellm/claude-3-opus-20240229")
-
-    resp = client.chat.completions.create(
-        model="claude-3-opus-20240229",
-        max_tokens=1024,
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
+    client = instructor.from_provider("google/gemini-2.5-flash")
+    resp = client.create(
         response_model=ExtractUser,
+        messages=[{"role": "user", "content": "Extract Jason is 25 years old."}],
     )
-
-    assert isinstance(resp, ExtractUser)
-    assert resp.name == "Jason"
-    assert resp.age == 25
     ```
 
-    [See more :material-arrow-right:](./integrations/litellm.md){: .md-button }
+    [Full Google docs →](./integrations/google.md)
 
-=== "Cohere"
-    ```bash
-    pip install "instructor[cohere]"
-    ```
-
+=== "Ollama (Local)"
     ```python
     import instructor
     from pydantic import BaseModel
-
 
     class ExtractUser(BaseModel):
         name: str
         age: int
 
-
-    client = instructor.from_provider("cohere/command-r-plus")
-
-    resp = client.chat.completions.create(
+    client = instructor.from_provider("ollama/llama3")
+    resp = client.create(
         response_model=ExtractUser,
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
+        messages=[{"role": "user", "content": "Extract Jason is 25 years old."}],
     )
-
-    assert resp.name == "Jason"
-    assert resp.age == 25
     ```
 
-    [See more :material-arrow-right:](./integrations/cohere.md){: .md-button }
+    [Full Ollama docs →](./integrations/ollama.md)
 
-=== "Cerebras"
-    ```bash
-    pip install "instructor[cerebras]"
-    ```
-
-    ```python
-    import instructor
-    from pydantic import BaseModel
-
-
-    class ExtractUser(BaseModel):
-        name: str
-        age: int
-
-
-    client = instructor.from_provider("cerebras/llama3.1-70b")
-
-    resp = client.chat.completions.create(
-        response_model=ExtractUser,
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
-    )
-
-    assert resp.name == "Jason"
-    assert resp.age == 25
-    ```
-
-    [See more :material-arrow-right:](./integrations/cerebras.md){: .md-button }
-
-=== "Fireworks"
-    ```bash
-    pip install "instructor[fireworks]"
-    ```
-
-    ```python
-    import instructor
-    from pydantic import BaseModel
-
-
-    class ExtractUser(BaseModel):
-        name: str
-        age: int
-
-
-    client = instructor.from_provider("fireworks/llama-v3p2-1b-instruct")
-
-    resp = client.chat.completions.create(
-        response_model=ExtractUser,
-        messages=[
-            {
-                "role": "user",
-                "content": "Extract Jason is 25 years old.",
-            }
-        ],
-    )
-
-    assert resp.name == "Jason"
-    assert resp.age == 25
-    ```
-
-    [See more :material-arrow-right:](./integrations/fireworks.md){: .md-button }
+[View all 15+ providers →](./integrations/index.md)
 
 ## Citation
 
@@ -683,7 +341,7 @@ class UserInfo(BaseModel):
 
 
 # Initialize the client with from_provider
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 # Define hook functions
@@ -698,7 +356,7 @@ def log_exception(exception: Exception):
 client.on("completion:kwargs", log_kwargs)
 client.on("completion:error", log_exception)
 
-user_info = client.chat.completions.create(
+user_info = client.create(
     response_model=UserInfo,
     messages=[
         {"role": "user", "content": "Extract the user name: 'John is 20 years old'"}
@@ -768,9 +426,9 @@ class User(BaseModel):
     age: int
 
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -791,7 +449,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
+client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
 
 
 class User(BaseModel):
@@ -800,7 +458,7 @@ class User(BaseModel):
 
 
 async def extract():
-    return await client.chat.completions.create(
+    return await client.create(
         messages=[
             {"role": "user", "content": "Create a user"},
         ],
@@ -821,7 +479,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 class User(BaseModel):
@@ -829,7 +487,7 @@ class User(BaseModel):
     age: int
 
 
-user, completion = client.chat.completions.create_with_completion(
+user, completion = client.create_with_completion(
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -848,7 +506,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 class User(BaseModel):
@@ -856,7 +514,7 @@ class User(BaseModel):
     age: int
 
 
-user_stream = client.chat.completions.create_partial(
+user_stream = client.create_partial(
     messages=[
         {"role": "user", "content": "Create a user"},
     ],
@@ -896,7 +554,7 @@ import instructor
 from pydantic import BaseModel
 
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 class User(BaseModel):
@@ -904,7 +562,7 @@ class User(BaseModel):
     age: int
 
 
-users = client.chat.completions.create_iterable(
+users = client.create_iterable(
     messages=[
         {"role": "user", "content": "Create 2 users"},
     ],
@@ -929,7 +587,7 @@ Instructor supports templating with Jinja, which lets you create dynamic prompts
 import instructor
 from pydantic import BaseModel
 
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 class User(BaseModel):
@@ -938,7 +596,7 @@ class User(BaseModel):
 
 
 # Create a completion using a Jinja template in the message content
-response = client.chat.completions.create(
+response = client.create(
     messages=[
         {
             "role": "user",
@@ -966,7 +624,7 @@ from typing_extensions import Annotated
 from instructor import llm_validator
 
 # Create instructor client
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 
 class QuestionAnswer(BaseModel):
@@ -998,65 +656,3 @@ If you want to help out, checkout some of the issues marked as `good-first-issue
 ## License
 
 This project is licensed under the terms of the MIT License.
-
-## Frequently Asked Questions
-
-### How do I get structured data from OpenAI GPT models?
-
-Use Instructor with OpenAI to automatically extract structured data with Pydantic models. Simply define your data structure and let Instructor handle validation and retries.
-
-### What LLM providers work with Instructor?
-
-Instructor supports 15+ providers including OpenAI (GPT-4, ChatGPT), Anthropic (Claude), Google (Gemini), Mistral, Cohere, Groq, **Ollama for open source models**, **DeepSeek**, and many more.
-
-### How does Instructor handle LLM validation errors?
-
-Instructor automatically retries failed requests with detailed error messages, ensuring your structured outputs always match your Pydantic schema.
-
-### Can I use Instructor with local LLM models?
-
-Yes! Instructor works with local models through **Ollama**, llama-cpp-python, and other local inference frameworks. Perfect for running **open source models** like Llama, Mistral, or CodeLlama locally.
-
-### Does Instructor support Ollama for open source models?
-
-Absolutely! Instructor has first-class support for **Ollama**, making it easy to run open source models locally while getting the same structured output validation. Simply point Instructor to your Ollama endpoint.
-
-### How do I use DeepSeek models with Instructor?
-
-Instructor supports **DeepSeek** models through the OpenAI-compatible API. You can use DeepSeek's powerful reasoning capabilities while maintaining full validation and retry logic.
-
-### Is Instructor compatible with async Python code?
-
-Absolutely. Instructor fully supports asyncio with async clients for OpenAI, Anthropic, and other providers.
-
-### Is Instructor limited to Python only?
-
-**No!** This is a common misconception. Instructor is available in **6 programming languages**: Python, TypeScript, Go, Ruby, Elixir, and Rust. All implementations support the same core features including nested schemas, validation, and retries.
-
-### Can Instructor handle complex nested schemas?
-
-**Yes!** Instructor natively supports deeply nested, complex data structures out of the box. Simply define your nested Pydantic models (or equivalent in other languages) and Instructor handles the rest - no special configuration needed.
-
-### How does Instructor compare to Guardrails AI?
-
-**Instructor is easier to set up and faster for most use cases.** While Guardrails excels at complex business rule validation, Instructor provides better developer experience with native type support and simpler schema definition. Choose Instructor for type-safe extraction, Guardrails for complex validation rules.
-
-### How does Instructor compare to LangChain output parsers?
-
-**Instructor is purpose-built for structured extraction** while LangChain is a full application framework. Instructor is lighter, faster, and provides better type safety. Use Instructor when you need reliable structured data; use LangChain for complete LLM applications.
-
-## Why Choose Instructor for LLM Structured Outputs?
-
-- **🏆 Industry Standard**: Over 1M monthly downloads make it the most trusted Python library for LLM data extraction
-- **⚡ Production Ready**: Built-in error handling, retries, and validation for reliable production deployments
-- **🔧 Developer Friendly**: Full IDE support with type hints, autocompletion, and comprehensive documentation
-- **🌐 Provider Agnostic**: Switch between LLM providers without changing your code structure
-- **📈 Scalable**: From simple scripts to enterprise applications, Instructor scales with your needs
-
-## Related Topics
-
-- [LLM Response Validation](./concepts/reask_validation.md) - Ensure quality outputs
-- [Streaming LLM Outputs](./concepts/partial.md) - Real-time data processing
-- [Multi-Provider Setup](./integrations/index.md) - Use any LLM service
-- [Production Deployment](./concepts/retrying.md) - Error handling and retries
-- [Type Safety with Pydantic](./concepts/models.md) - Schema validation

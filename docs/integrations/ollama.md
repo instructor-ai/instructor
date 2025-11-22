@@ -50,7 +50,7 @@ client = instructor.from_provider(
     mode=instructor.Mode.JSON,
 )
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",
@@ -98,7 +98,7 @@ class Character(BaseModel):
 # Simple setup - automatically configured for Ollama
 client = instructor.from_provider("ollama/llama2")
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[{"role": "user", "content": "Tell me about Harry Potter"}],
     response_model=Character,
 )
@@ -121,7 +121,7 @@ class Character(BaseModel):
     age: int
 
 async def get_character():
-    return await async_client.chat.completions.create(
+    return await async_client.create(
         messages=[{"role": "user", "content": "Tell me about Harry Potter"}],
         response_model=Character,
     )
@@ -179,7 +179,7 @@ client = instructor.from_provider(
     mode=instructor.Mode.JSON,
 )
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",

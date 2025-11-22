@@ -237,7 +237,7 @@ client = instructor.from_provider("openai/gpt-4.1-mini", mode=instructor.Mode.JS
 
 try:
     # Attempt to extract with validation using Jinja templating
-    user = client.chat.completions.create(
+    user = client.create(
         response_model=User,
         messages=[
             {
@@ -365,7 +365,7 @@ class FactCheckedClaim(BaseModel):
 
     @classmethod
     def validate_claim(cls, text: str) -> "FactCheckedClaim":
-        return client.chat.completions.create(
+        return client.create(
             response_model=FactCheckedClaim,
             messages=[
                 {
@@ -436,7 +436,7 @@ class Report(BaseModel):
     @model_validator(mode='after')
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
-        validation_result = client.chat.completions.create(
+        validation_result = client.create(
             response_model=Validator,
             messages=[
                 {

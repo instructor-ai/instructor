@@ -107,7 +107,7 @@ class User(BaseModel):
 
 
 # Synchronous usage
-user = client.chat.completions.create(
+user = client.create(
     messages=[{"role": "user", "content": "John is 30 years old"}],
     response_model=User,
 )
@@ -141,7 +141,7 @@ class User(BaseModel):
 
 
 async def get_user_async():
-    return await client.chat.completions.create(
+    return await client.create(
         messages=[{"role": "user", "content": "John is 30 years old"}],
         response_model=User,
     )
@@ -183,7 +183,7 @@ class UserWithAddress(BaseModel):
     addresses: list[Address]
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",
@@ -241,7 +241,7 @@ class User(BaseModel):
 
 
 # Stream partial objects as they're generated
-user = client.chat.completions.create_partial(
+user = client.create_partial(
     messages=[
         {"role": "user", "content": "Create a user profile for Jason, age 25"},
     ],
@@ -274,7 +274,7 @@ class User(BaseModel):
 
 
 # Extract multiple users from text
-users = client.chat.completions.create_iterable(
+users = client.create_iterable(
     messages=[
         {
             "role": "user",

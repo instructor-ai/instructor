@@ -159,7 +159,7 @@ class UserDetails(BaseModel):
     age: int
 
 
-model = client.chat.completions.create(
+model = client.create(
     response_model=UserDetails,
     max_retries=2,
     messages=[
@@ -236,7 +236,7 @@ and first released in 1991. It emphasizes code readability and
 simplicity, making it popular for beginners and experts alike.
 """
 
-extraction = client.chat.completions.create(
+extraction = client.create(
     response_model=QuoteExtraction,
     max_retries=2,
     messages=[

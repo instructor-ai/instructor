@@ -416,7 +416,7 @@ class Person(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 
 # Use the model
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-3.5-turbo",
     response_model=Person,
     messages=[

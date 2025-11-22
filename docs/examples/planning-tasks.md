@@ -125,7 +125,7 @@ def query_planner(question: str) -> QueryPlan:
         },
     ]
 
-    root = client.chat.completions.create(
+    root = client.create(
         model=PLANNING_MODEL,
         temperature=0,
         response_model=QueryPlan,

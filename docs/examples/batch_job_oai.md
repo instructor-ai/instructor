@@ -46,7 +46,7 @@ class QuestionAnswerPair(BaseModel):
 
 
 def generate_question(chunk: str) -> QuestionAnswerPair:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {

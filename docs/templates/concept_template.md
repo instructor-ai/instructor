@@ -49,7 +49,7 @@ client = instructor.from_openai(
 
 # Use the concept with proper error handling
 try:
-    result = client.chat.completions.create(
+    result = client.create(
         model="gpt-4o",  # Use latest stable model
         messages=[
             {"role": "system", "content": "Generate structured data based on the user request."},

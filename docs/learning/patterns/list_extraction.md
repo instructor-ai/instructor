@@ -23,7 +23,7 @@ class PeopleList(BaseModel):
     people: List[Person] = Field(..., description="List of people mentioned in the text")
 
 # Extract the list
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": """
@@ -62,7 +62,7 @@ class Book(BaseModel):
     publication_year: int
 
 # Extract a list directly
-books = client.chat.completions.create(
+books = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": """
@@ -100,7 +100,7 @@ class Book(BaseModel):
     publication_year: int
 
 # Extract data with nested lists
-books = client.chat.completions.create(
+books = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": """
@@ -136,7 +136,7 @@ class Task(BaseModel):
     deadline: str
 
 # Stream a list of tasks
-for task in client.chat.completions.create(
+for task in client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Generate a list of 5 sample tasks for a project manager"}
@@ -181,7 +181,7 @@ class ProductList(BaseModel):
         return self
 
 # Extract list with validation
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "List of products: Headphones ($50), Speakers ($80), Earbuds ($30)"}
@@ -243,7 +243,7 @@ class ActionItem(BaseModel):
     priority: str = Field(..., description="Priority level: Low, Medium, or High")
 
 # Extract action items from meeting notes
-action_items = client.chat.completions.create(
+action_items = client.create(
     model="gpt-4",
     messages=[
         {"role": "user", "content": """

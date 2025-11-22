@@ -21,7 +21,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user, completion = client.chat.completions.create_with_completion(
+user, completion = client.create_with_completion(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -86,7 +86,7 @@ import instructor
 client = instructor.from_provider("anthropic/claude-3-5-sonnet-latest")
 
 
-user, completion = client.chat.completions.create_with_completion(
+user, completion = client.create_with_completion(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},

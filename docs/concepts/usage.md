@@ -18,7 +18,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user, completion = client.chat.completions.create_with_completion(
+user, completion = client.create_with_completion(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -55,7 +55,7 @@ class UserExtract(BaseModel):
 
 
 try:
-    client.chat.completions.create_with_completion(
+    client.create_with_completion(
         response_model=UserExtract,
         messages=[
             {"role": "user", "content": "Extract jason is 25 years old"},

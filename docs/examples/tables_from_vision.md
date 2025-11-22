@@ -92,7 +92,7 @@ example = MultipleTables(
 
 
 def extract(url: str) -> MultipleTables:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4-turbo",
         max_tokens=4000,
         response_model=MultipleTables,

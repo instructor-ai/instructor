@@ -172,7 +172,7 @@ import instructor
 
 client = instructor.from_provider("openai/gpt-5-nano")
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="gpt-4o",
     messages=[
         {

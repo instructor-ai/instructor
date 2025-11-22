@@ -69,7 +69,7 @@ class UserInfo(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 
 # Extract structured data
-user_info = client.chat.completions.create(
+user_info = client.create(
     response_model=UserInfo,
     messages=[
         {"role": "user", "content": "John Doe is 30 years old."}
@@ -103,7 +103,7 @@ class User(BaseModel):
         return v
 
 # This will make the LLM retry if validation fails
-user = client.chat.completions.create(
+user = client.create(
     model="gpt-3.5-turbo",
     response_model=User,
     messages=[
@@ -131,7 +131,7 @@ class Person(BaseModel):
     age: int
     addresses: List[Address]
 
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-3.5-turbo",
     response_model=Person,
     messages=[
@@ -152,7 +152,7 @@ For larger responses or better user experience, use streaming:
 from instructor import Partial
 
 # Stream the response as it's being generated
-stream = client.chat.completions.create_partial(
+stream = client.create_partial(
     model="gpt-3.5-turbo",
     response_model=Person,
     messages=[

@@ -10,7 +10,7 @@ Let's look at what happens when we ask an LLM to extract information without any
 from openai import OpenAI
 
 client = OpenAI()
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {
@@ -53,7 +53,7 @@ class Customer(BaseModel):
     email: EmailStr = Field(description="Customer's email address")
 
 client = instructor.from_provider("openai/gpt-5-nano")
-customer = client.chat.completions.create(
+customer = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {
@@ -103,7 +103,7 @@ class Person(BaseModel):
     contact: Contact
     skills: List[str] = Field(description="List of professional skills")
 
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-4",
     messages=[
         {

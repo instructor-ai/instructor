@@ -130,7 +130,7 @@ cohere_client = cohere.ClientV2(api_key="your-api-key")
 client = instructor.from_cohere(cohere_client, mode=instructor.Mode.COHERE_TOOLS)
 
 # Now use it with structured outputs
-response = client.chat.completions.create(
+response = client.create(
     response_model=YourModel,
     model="command-a-03-2025",
     messages=[{"role": "user", "content": "Extract..."}],
@@ -152,7 +152,7 @@ cohere_client = cohere.Client(api_key="your-api-key")
 client = instructor.from_cohere(cohere_client, mode=instructor.Mode.COHERE_TOOLS)
 
 # V1 uses different message format internally but instructor handles the conversion
-response = client.chat.completions.create(
+response = client.create(
     response_model=YourModel,
     model="command-r-plus",
     messages=[{"role": "user", "content": "Extract..."}],

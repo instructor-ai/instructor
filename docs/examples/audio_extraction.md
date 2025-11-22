@@ -28,7 +28,7 @@ with open("./output.wav", "rb") as f:
     encoded_string = base64.b64encode(f.read()).decode("utf-8")
 
 # Extract information from the audio
-resp = client.chat.completions.create(
+resp = client.create(
     model="gpt-4-audio-preview",
     response_model=Person,
     modalities=["text"],

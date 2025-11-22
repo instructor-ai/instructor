@@ -22,7 +22,7 @@ Here's a simple example showing how to extract multiple users from a single sent
         name: str
         age: int
 
-    resp = client.chat.completions.create_iterable(
+    resp = client.create_iterable(
         messages=[
             {
                 "role": "user",
@@ -49,7 +49,7 @@ Here's a simple example showing how to extract multiple users from a single sent
         name: str
         age: int
 
-    resp = client.chat.completions.create(
+    resp = client.create(
         messages=[
             {
                 "role": "user",
@@ -93,7 +93,7 @@ We also support more complex extraction patterns such as Unions as you'll see be
         "openai/gpt-4.1-mini", mode=instructor.Mode.TOOLS
     )
 
-    results = client.chat.completions.create(
+    results = client.create(
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
@@ -125,7 +125,7 @@ We also support more complex extraction patterns such as Unions as you'll see be
         "openai/gpt-4.1-mini", mode=instructor.Mode.TOOLS
     )
 
-    results = client.chat.completions.create_iterable(
+    results = client.create_iterable(
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
@@ -161,7 +161,7 @@ We also support more complex extraction patterns such as Unions as you'll see be
     )
 
     async def main():
-        results = await aclient.chat.completions.create(
+        results = await aclient.create(
             messages=[
                 {"role": "system", "content": "You must always use tools"},
                 {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},
@@ -195,7 +195,7 @@ We also support more complex extraction patterns such as Unions as you'll see be
     )
 
     async def main():
-        results = await aclient.chat.completions.create_iterable(
+        results = await aclient.create_iterable(
             messages=[
                 {"role": "system", "content": "You must always use tools"},
                 {"role": "user", "content": "What is the weather in toronto and dallas and who won the super bowl?"},

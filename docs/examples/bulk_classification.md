@@ -159,7 +159,7 @@ async def tag_single_request(text: str, tags: List[Tag]) -> Tag:
     allowed_tags = [(tag.id, tag.name) for tag in tags]
     allowed_tags_str = ", ".join([f"`{tag}`" for tag in allowed_tags])
 
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o-mini",
         messages=[
             {
@@ -241,7 +241,7 @@ async def tag_single_request(text: str, tags: List[Tag]) -> Tag:
     allowed_tags = [(tag.id, tag.name) for tag in tags]
     allowed_tags_str = ", ".join([f"`{tag}`" for tag in allowed_tags])
 
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o-mini",
         messages=[
             {
@@ -507,7 +507,7 @@ async def get_tags(text: List[str], tags: List[Tag]) -> List[Tag]:
     allowed_tags = [(tag.id, tag.name) for tag in tags]
     allowed_tags_str = ", ".join([f"`{tag}`" for tag in allowed_tags])
 
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o-mini",
         messages=[
             {

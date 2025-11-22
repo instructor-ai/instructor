@@ -30,7 +30,7 @@ class Response(BaseModel):
 
 
 oai = OpenAI()
-client = instructor.from_openai(oai)
+client = instructor.from_provider("openai/gpt-4o")
 
 
 def distance(a: list[float], b: list[float]):
@@ -64,7 +64,7 @@ def knn(
 
 def generate_response(examples: list[str], query: str):
     formatted_examples = "\n".join(examples)
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Response,
         messages=[

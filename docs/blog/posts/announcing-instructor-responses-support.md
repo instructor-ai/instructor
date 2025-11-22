@@ -127,7 +127,7 @@ client = instructor.from_provider(
     mode=instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
 )
 
-response = client.chat.completions.create(
+response = client.create(
     messages=[
         {
             "role": "user",

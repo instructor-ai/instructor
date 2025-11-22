@@ -69,7 +69,7 @@ async def extract_user():
         async_client=True,
     )
 
-    user = await client.chat.completions.create(
+    user = await client.create(
         messages=[
             {
                 "role": "user",
@@ -159,7 +159,7 @@ client = instructor.from_provider(
     "google/gemini-1.5-flash-latest",
 )
 
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {
             "role": "user",
@@ -218,7 +218,7 @@ class User(BaseModel):
     bio: str
 
 
-user = client.chat.completions.create_partial(
+user = client.create_partial(
     messages=[
         {
             "role": "user",
@@ -253,7 +253,7 @@ class User(BaseModel):
 
 
 # Extract multiple users from text
-users = client.chat.completions.create_iterable(
+users = client.create_iterable(
     messages=[
         {
             "role": "user",

@@ -38,7 +38,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=Iterable[UserDetail],
         messages=[
@@ -76,7 +76,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=Iterable[UserDetail],
         messages=[
@@ -128,7 +128,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4-turbo-preview",
         response_model=Iterable[UserDetail],
         messages=[
@@ -170,7 +170,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_fake_users(count: int) -> Iterable[UserDetail]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=Iterable[UserDetail],
         messages=[

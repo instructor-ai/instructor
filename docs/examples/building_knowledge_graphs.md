@@ -36,7 +36,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def generate_graph(input_text: str) -> KnowledgeGraph:
     """Generates a knowledge graph from the input text."""
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {

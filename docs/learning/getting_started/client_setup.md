@@ -8,14 +8,13 @@ The most common configuration is with OpenAI:
 
 ```python
 import instructor
-from openai import OpenAI
 
 # Default mode (TOOLS)
 client = instructor.from_provider("openai/gpt-5-nano")
 
 # With JSON mode
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4o",
     mode=instructor.Mode.JSON  # Use JSON mode instead
 )
 ```
@@ -56,7 +55,7 @@ import instructor
 import cohere
 
 cohere_client = cohere.ClientV2("YOUR_API_KEY")
-client = instructor.from_cohere(cohere_client)
+client = instructor.from_provider("cohere/claude-3-5-sonnet-20241022")
 ```
 
 ## Mistral
@@ -68,7 +67,7 @@ import instructor
 from mistralai.client import MistralClient
 
 mistral_client = MistralClient(api_key="YOUR_API_KEY")
-client = instructor.from_mistral(mistral_client)
+client = instructor.from_provider("mistral/claude-3-5-sonnet-20241022")
 ```
 
 ## Understanding Modes
@@ -112,7 +111,7 @@ class User(BaseModel):
 
 async def extract_user():
     async_client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
-    return await async_client.chat.completions.create(
+    return await async_client.create(
         model="gpt-3.5-turbo",
         response_model=User,
         messages=[
@@ -133,8 +132,8 @@ You can pass additional parameters to the OpenAI client:
 import instructor
 from openai import OpenAI
 
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4o",
     mode=instructor.Mode.TOOLS,
     max_retries=2,  # Number of retries for validation failures
 )

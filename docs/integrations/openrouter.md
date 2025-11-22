@@ -37,7 +37,7 @@ client = instructor.from_provider(
     async_client=False
 )
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",
@@ -72,7 +72,7 @@ client = instructor.from_provider(
 
 
 async def extract_user():
-    user = await client.chat.completions.create(
+    user = await client.create(
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -118,7 +118,7 @@ client = instructor.from_provider(
 )
 
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {
             "role": "user",
@@ -167,7 +167,7 @@ client = instructor.from_provider(
 )
 
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {
             "role": "user",
@@ -216,7 +216,7 @@ client = instructor.from_provider(
 )
 
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {
             "role": "user",
@@ -255,7 +255,7 @@ client = instructor.from_provider(
 )
 
 # Create structured output with nested objects
-user = client.chat.completions.create_partial(
+user = client.create_partial(
     messages=[
         {
             "role": "user",

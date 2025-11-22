@@ -121,7 +121,7 @@ class ProductDescription(BaseModel):
 
 # Example usage with Jinja templating
 try:
-    product = client.chat.completions.create(
+    product = client.create(
         response_model=ProductDescription,
         messages=[
             {
@@ -201,7 +201,7 @@ class ForumPost(BaseModel):
     # Using Jinja templating for validation against dynamic values
     @classmethod
     def validate_post(cls, topic_name: str, post_content: str) -> "ForumPost":
-        return client.chat.completions.create(
+        return client.create(
             response_model=cls,
             messages=[
                 {
@@ -252,7 +252,7 @@ class FactCheckedClaim(BaseModel):
 
     @classmethod
     def validate_claim(cls, text: str) -> "FactCheckedClaim":
-        return client.chat.completions.create(
+        return client.create(
             response_model=cls,
             messages=[
                 {
@@ -290,7 +290,7 @@ class Report(BaseModel):
     @model_validator(mode='after')
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
-        validation_result = client.chat.completions.create(
+        validation_result = client.create(
             response_model=Validator,
             messages=[
                 {

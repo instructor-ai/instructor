@@ -157,7 +157,7 @@ client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD
 
 
 def extract_table(url: str) -> Iterable[Table]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         response_model=Iterable[Table],
         max_tokens=1800,
@@ -226,7 +226,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract_table(url: str) -> Iterable[Table]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Iterable[Table],
         max_tokens=1800,

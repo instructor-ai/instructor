@@ -24,7 +24,7 @@ client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 
 async def generate_self_consistent_response(prompt: str):
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         messages=[
             {

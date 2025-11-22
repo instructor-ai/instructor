@@ -39,7 +39,7 @@ class UserProfile(BaseModel):
 
 # Extract and validate LLM output
 client = instructor.from_provider("openai/gpt-5-nano")
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",  # Works with GPT-4, Claude, Gemini
     messages=[
         {"role": "user", "content": "My name is Jane Smith and I'm 25 years old."}

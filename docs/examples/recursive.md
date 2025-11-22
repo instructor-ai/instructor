@@ -51,7 +51,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 def parse_hierarchy(text: str) -> RecursiveNode:
     """Parse text into a hierarchical structure."""
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         messages=[
             {

@@ -40,7 +40,7 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         mode=instructor.Mode.PARALLEL_TOOLS,
     )
 
-    function_calls = client.chat.completions.create(
+    function_calls = client.create(
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {
@@ -119,7 +119,7 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
     )
 
-    function_calls = client.chat.completions.create(
+    function_calls = client.create(
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {

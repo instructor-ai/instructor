@@ -65,13 +65,13 @@ import instructor
 from pydantic import BaseModel
 
 bedrock_client = boto3.client('bedrock-runtime')
-client = instructor.from_bedrock(bedrock_client)
+client = instructor.from_provider("bedrock/claude-3-5-sonnet-20241022")
 
 class User(BaseModel):
     name: str
     age: int
 
-user = client.chat.completions.create(
+user = client.create(
     modelId="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -100,7 +100,7 @@ class User(BaseModel):
     age: int
 
 def get_user():
-    return client.chat.completions.create(
+    return client.create(
         modelId="anthropic.claude-3-sonnet-20240229-v1:0",
         messages=[{"role": "user", "content": "Extract Jason is 25 years old"}],
         response_model=User,
@@ -191,7 +191,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client
-client = instructor.from_bedrock(bedrock_client)
+client = instructor.from_provider("bedrock/claude-3-5-sonnet-20241022")
 
 
 class Address(BaseModel):
@@ -207,7 +207,7 @@ class User(BaseModel):
 
 
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     modelId="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
         {
@@ -277,7 +277,7 @@ client = instructor.from_bedrock(
 )
 
 # Advanced inference configuration
-user = client.chat.completions.create(
+user = client.create(
     modelId="anthropic.claude-3-5-sonnet-20241022-v2:0",
     messages=[{"role": "user", "content": "Extract user info"}],
     response_model=User,

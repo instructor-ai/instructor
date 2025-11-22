@@ -152,7 +152,7 @@ class QuestionAnswer(BaseModel):
 
 # <%hide%>
 def ask_ai(question: str, context: str) -> QuestionAnswer:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         temperature=0,
         response_model=QuestionAnswer,

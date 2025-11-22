@@ -105,7 +105,7 @@ def process_data(input_text: str) -> MyResponseModel:
         A structured MyResponseModel object
     """
     try:
-        result = client.chat.completions.create(
+        result = client.create(
             model="gpt-4o",  # Use a consistent, current model version
             messages=[
                 {"role": "system", "content": "Extract structured information from the user input."},

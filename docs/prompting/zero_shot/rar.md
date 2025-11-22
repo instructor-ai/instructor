@@ -32,7 +32,7 @@ class Response(BaseModel):
 
 
 def rephrase_and_respond(query):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         messages=[
             {

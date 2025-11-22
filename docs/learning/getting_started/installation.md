@@ -114,7 +114,7 @@ class Person(BaseModel):
     age: int
 
 client = instructor.from_provider("openai/gpt-5-nano")
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-3.5-turbo",
     response_model=Person,
     messages=[

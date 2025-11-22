@@ -40,7 +40,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_prompt_templates(prompt: str):
-    return client.chat.completions.create(
+    return client.create(
         messages=[
             {
                 "role": "system",

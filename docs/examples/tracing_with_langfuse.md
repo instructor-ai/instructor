@@ -44,7 +44,7 @@ class WeatherDetail(BaseModel):
 
 
 # Run synchronous OpenAI client
-weather_info = client.chat.completions.create(
+weather_info = client.create(
     model="gpt-4o",
     response_model=WeatherDetail,
     messages=[
@@ -90,7 +90,7 @@ class WeatherDetail(BaseModel):
 
 async def main():
     # Run synchronous OpenAI client
-    weather_info = await client.chat.completions.create(
+    weather_info = await client.create(
         model="gpt-4o",
         response_model=WeatherDetail,
         messages=[
@@ -180,7 +180,7 @@ async def classify_feedback(feedback: str):
     Classify customer feedback into categories and evaluate relevance.
     """
     async with sem:  # simple rate limiting
-        response = await client.chat.completions.create(
+        response = await client.create(
             model="gpt-4o",
             response_model=FeedbackClassification,
             max_retries=2,
