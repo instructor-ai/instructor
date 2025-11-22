@@ -130,14 +130,16 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
   - Example pages (`docs/examples/*.md`)
 
 #### Checklist: Meta Tags
-- [ ] Create script to audit all files for missing frontmatter
+- [x] Create script to audit all files for missing frontmatter
 - [ ] Create script to validate title length (50-60 chars)
 - [ ] Create script to validate description length (150-160 chars)
-- [ ] Audit `docs/integrations/*.md` (33 files)
-- [ ] Audit `docs/concepts/*.md` (30+ files)
-- [ ] Audit `docs/examples/*.md` (40+ files)
-- [ ] Update titles to include primary keywords
-- [ ] Write compelling descriptions for each page
+- [x] Audit `docs/integrations/*.md` (33 files) - most have frontmatter
+- [x] Audit `docs/concepts/*.md` (30+ files) - most have frontmatter
+- [x] Audit `docs/examples/*.md` (40+ files) - most have frontmatter
+- [x] Add frontmatter to missing files (debugging.md, architecture.md, AGENT.md, learning/index.md)
+- [x] Update api.md to reference from_provider
+- [ ] Update titles to include primary keywords (in progress)
+- [ ] Write compelling descriptions for each page (in progress)
 - [ ] Ensure no duplicate titles
 - [ ] Ensure no duplicate descriptions
 - [ ] Add keywords meta tag where appropriate
