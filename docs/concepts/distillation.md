@@ -3,6 +3,13 @@ title: Seamless Fine-Tuning of Python Functions Using Instructor's Distillation
 description: Learn how to fine-tune language models with Python functions using Instructor's `Instructions` for efficient data preparation and logging.
 ---
 
+## See Also
+
+- [Response Models](./models.md) - Working with Pydantic models
+- [Validation](./validation.md) - Ensuring output quality
+- [Types](./types.md) - Working with different data types
+- [Custom Validators](../learning/validation/custom_validators.md) - Build custom validation logic
+
 # Distilling python functions into LLM
 
 `Instructions` from the `Instructor` library offers a seamless way to make language models backward compatible with existing Python functions. By employing Pydantic type hints, it not only ensures compatibility but also facilitates fine-tuning `gpt-4.1-mini` to emulate these functions end-to-end.

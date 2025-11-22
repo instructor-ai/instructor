@@ -13,6 +13,8 @@ These are the fundamental concepts you need to understand to use Instructor effe
 
 - [Models](./models.md) - Using Pydantic models to define output structures
 - [Patching](./patching.md) - How Instructor patches LLM clients
+- [from_provider](./from_provider.md) - Unified interface for creating clients across all providers
+- [Migration Guide](./migration.md) - Migrating from older patterns to from_provider
 - [Types](./types.md) - Working with different data types in your models
 - [Validation](./validation.md) - Validating LLM outputs against your models
 - [Prompting](./prompting.md) - Creating effective prompts for structured output extraction
@@ -104,7 +106,8 @@ sequenceDiagram
 
 ## What to Read Next
 
-- If you're new to Instructor, start with [Models](./models.md) and [Patching](./patching.md)
+- If you're new to Instructor, start with [Models](./models.md) and [from_provider](./from_provider.md)
+- If you're migrating from older patterns, see the [Migration Guide](./migration.md)
 - If you're having validation issues, check out [Validators](./reask_validation.md) and [Retrying](./retrying.md)
 - For streaming applications, read [Stream Partial](./partial.md) and [Stream Iterable](./iterable.md)
 - To optimize your application, look at [Caching](./caching.md) and [Usage Tokens](./usage.md)

@@ -7,6 +7,9 @@ description: Learn how Instructor enhances LLM client libraries with structured 
 
 Instructor enhances LLM client functionality by patching them with additional capabilities for structured outputs. This allows you to use the enhanced client as usual, while gaining structured output benefits.
 
+!!! tip "Recommended Approach"
+    For most use cases, we recommend using [`from_provider`](./from_provider.md) instead of manual patching. It provides a simpler, unified interface that works across all providers. See the [Migration Guide](./migration.md) if you're using older patching patterns.
+
 ## Core Patching Features
 
 Instructor adds three key parameters to the client's `chat.completions.create` method:
