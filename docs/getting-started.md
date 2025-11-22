@@ -82,7 +82,7 @@ print(f"Name: {user_info.name}, Age: {user_info.age}")
 
 This example demonstrates the core workflow:
 1. Define a Pydantic model for your output structure
-2. Patch your LLM client with Instructor
+2. Create an Instructor client with `from_provider`
 3. Request structured output using the `response_model` parameter
 
 ## Validation and Error Handling
@@ -104,7 +104,6 @@ class User(BaseModel):
 
 # This will make the LLM retry if validation fails
 user = client.create(
-    model="gpt-3.5-turbo",
     response_model=User,
     messages=[
         {"role": "user", "content": "Extract: Tom is 25 years old."}
@@ -132,7 +131,6 @@ class Person(BaseModel):
     addresses: List[Address]
 
 person = client.create(
-    model="gpt-3.5-turbo",
     response_model=Person,
     messages=[
         {"role": "user", "content": """
@@ -153,7 +151,6 @@ from instructor import Partial
 
 # Stream the response as it's being generated
 stream = client.create_partial(
-    model="gpt-3.5-turbo",
     response_model=Person,
     messages=[
         {"role": "user", "content": "Extract a detailed person profile for John Smith, 35, who lives in Chicago and Springfield."}
@@ -180,8 +177,7 @@ class UserInfo(BaseModel):
 # Create an instructor client with from_provider
 client = instructor.from_provider("anthropic/claude-3-opus-20240229")
 
-user_info = client.messages.create(
-    max_tokens=1024,
+user_info = client.create(
     response_model=UserInfo,
     messages=[
         {"role": "user", "content": "John Doe is 30 years old."}
@@ -195,10 +191,12 @@ print(f"Name: {user_info.name}, Age: {user_info.age}")
 
 Now that you've mastered the basics, here are some next steps:
 
-- Learn about [Mode settings](./concepts/patching.md) for different LLM providers
+- Learn about [client setup](./learning/getting_started/client_setup.md) for different LLM providers
 - Explore [advanced validation](./concepts/reask_validation.md) to ensure data quality
 - Check out the [Cookbook examples](./examples/index.md) for real-world applications
 - See how to [use hooks](./concepts/hooks.md) for monitoring and debugging
+
+**New to Instructor?** Start with [Start Here](./start-here.md) for a conceptual overview.
 
 For more detailed information on any topic, visit the [Concepts](./concepts/index.md) section.
 
