@@ -212,6 +212,14 @@ print(resp)
 #> a=5 b=5
 ```
 
+## See Also
+
+- [Response Models](./models.md) - Using Pydantic models for structured outputs
+- [Enums](./enums.md) - Working with enumerated types
+- [Union Types](./unions.md) - Handling multiple possible types
+- [Lists](./lists.md) - Working with collections
+- [Optional Fields](../learning/patterns/optional_fields.md) - Handling missing data
+
 ## Complex Types
 
 ### Pandas DataFrame

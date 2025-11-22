@@ -329,6 +329,15 @@ class ImageResponse(BaseModel):
 Response = Union[TextResponse, ImageResponse]
 
 # Patched client
+```
+
+## See Also
+
+- [Types](./types.md) - Working with different data types in Instructor
+- [Enums](./enums.md) - Using enumerated types for structured choices
+- [Optional Fields](../learning/patterns/optional_fields.md) - Handling optional data
+- [Validation](./validation.md) - Validating union type responses
+- [Union Examples](../examples/index.md) - Practical union type examples
 client = instructor.from_provider("openai/gpt-4o")
 response = client.create(
     response_model=Response,
