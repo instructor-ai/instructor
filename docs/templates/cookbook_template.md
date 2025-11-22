@@ -36,7 +36,6 @@ from typing import List, Optional, Dict, Any
 
 # Third-party imports
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 
 # Set up environment (typically handled before script execution)
@@ -72,7 +71,6 @@ from typing import List, Optional, Dict, Any
 
 # Third-party imports
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 
 # Local imports (if any)
