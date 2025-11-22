@@ -87,7 +87,7 @@ The **`from_provider`** API supports both sync and async usage (`async_client=Tr
 
 ## Complex Schemas & Validation
 
-Instructor excels at extracting complex, nested data structures with custom validation rules. Here's a real-world example:
+Instructor excels at extracting complex, nested data structures with custom validation rules. Here's a concise example:
 
 ```python
 import instructor
@@ -101,23 +101,9 @@ class Priority(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-class Address(BaseModel):
-    street: str
-    city: str
-    country: str
-    postal_code: str = Field(..., pattern=r'^\d{5}(-\d{4})?$')
-
-class Contact(BaseModel):
-    email: str = Field(..., pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-    phone: Optional[str] = Field(None, pattern=r'^\+?1?-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$')
-
 class Ticket(BaseModel):
-    id: str
     title: str = Field(..., min_length=5, max_length=100)
-    description: str = Field(..., min_length=10)
     priority: Priority
-    assignee: Optional[str] = None
-    tags: List[str] = Field(default_factory=list, max_items=5)
     estimated_hours: Optional[float] = Field(None, gt=0, le=100)
     
     @field_validator('estimated_hours')
@@ -129,52 +115,24 @@ class Ticket(BaseModel):
 
 class CustomerSupport(BaseModel):
     customer_name: str
-    customer_contact: Contact
-    customer_address: Address
     tickets: List[Ticket] = Field(..., min_items=1)
-    total_estimated_time: float = Field(..., gt=0)
-    
-    @field_validator('total_estimated_time')
-    @classmethod
-    def validate_total_time(cls, v, info):
-        if 'tickets' in info.data:
-            ticket_time = sum(t.estimated_hours or 0 for t in info.data['tickets'])
-            if abs(v - ticket_time) > 0.1:  # Allow small floating point differences
-                raise ValueError(f'Total time {v} must match sum of ticket times {ticket_time}')
-        return v
 
-# Extract complex support case from natural language
 client = instructor.from_provider("openai/gpt-4o")
 
 support_case = client.create(
     response_model=CustomerSupport,
-    messages=[{
-        "role": "user", 
-        "content": """
-        Support case for Sarah Johnson (sarah.johnson@techcorp.com, +1-555-123-4567).
-        Address: 123 Tech Street, San Francisco, CA 94105.
-        
-        Two tickets:
-        1. "Login system completely broken" - CRITICAL priority, needs 4.5 hours, tags: authentication, security
-        2. "Email notifications not working" - MEDIUM priority, needs 2 hours, tags: email, notifications
-        
-        Total estimated time: 6.5 hours
-        """
-    }],
+    messages=[{"role": "user", "content": "Extract support case details..."}],
     max_retries=3
 )
-
-print(f"Customer: {support_case.customer_name}")
-print(f"Total tickets: {len(support_case.tickets)}")
-print(f"Critical tickets: {len([t for t in support_case.tickets if t.priority == Priority.CRITICAL])}")
 ```
 
-**Key Features Demonstrated:**
-- **Deep nesting**: `CustomerSupport` → `Contact`/`Address`/`List[Ticket]`
-- **Custom validation**: Email patterns, phone formats, business rules
-- **Enums and constraints**: Priority levels, field length limits
-- **Cross-field validation**: Total time must match ticket sum
-- **Automatic retries**: Failed validation triggers re-extraction
+**Key Features:**
+- Deep nesting with nested models and lists
+- Custom validation with Pydantic validators
+- Automatic retries on validation failures
+- Type-safe extraction with full IDE support
+
+[Learn more about validation and complex schemas →](./concepts/reask_validation.md)
 
 ## Supported LLM Providers
 
@@ -327,257 +285,71 @@ If you use Instructor in your research or project, please cite it using:
 
 ### Using Hooks
 
-Instructor includes a hooks system that lets you manage events during the language model interaction process. Hooks allow you to intercept, log, and handle events at different stages, such as when completion arguments are provided or when a response is received. This system is based on the `Hooks` class, which handles event registration and emission. You can use hooks to add custom behavior like logging or error handling. Here's a simple example demonstrating how to use hooks:
+Instructor's hooks system lets you intercept and handle events during LLM interactions. Use hooks for logging, monitoring, or custom error handling:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel
-
 
 class UserInfo(BaseModel):
     name: str
     age: int
 
-
-# Initialize the client with from_provider
 client = instructor.from_provider("openai/gpt-4o-mini")
 
-
-# Define hook functions
-def log_kwargs(**kwargs):
-    print(f"Function called with kwargs: {kwargs}")
-
-
-def log_exception(exception: Exception):
-    print(f"An exception occurred: {str(exception)}")
-
-
-client.on("completion:kwargs", log_kwargs)
-client.on("completion:error", log_exception)
+# Attach hooks for logging and error handling
+client.on("completion:kwargs", lambda **kw: print("Called with:", kw))
+client.on("completion:error", lambda e: print(f"Error: {e}"))
 
 user_info = client.create(
     response_model=UserInfo,
-    messages=[
-        {"role": "user", "content": "Extract the user name: 'John is 20 years old'"}
-    ],
+    messages=[{"role": "user", "content": "Extract: John is 20 years old"}],
 )
-
-"""
-{
-        'args': (),
-        'kwargs': {
-            'messages': [
-                {
-                    'role': 'user',
-                    'content': "Extract the user name: 'John is 20 years old'",
-                }
-            ],
-            'model': 'gpt-3.5-turbo',
-            'tools': [
-                {
-                    'type': 'function',
-                    'function': {
-                        'name': 'UserInfo',
-                        'description': 'Correctly extracted `UserInfo` with all the required parameters with correct types',
-                        'parameters': {
-                            'properties': {
-                                'name': {'title': 'Name', 'type': 'string'},
-                                'age': {'title': 'Age', 'type': 'integer'},
-                            },
-                            'required': ['age', 'name'],
-                            'type': 'object',
-                        },
-                    },
-                }
-            ],
-            'tool_choice': {'type': 'function', 'function': {'name': 'UserInfo'}},
-        },
-    }
-"""
-
-print(f"Name: {user_info.name}, Age: {user_info.age}")
-#> Name: John, Age: 20
 ```
 
-This example demonstrates:
-1. A pre-execution hook that logs all kwargs passed to the function.
-2. An exception hook that logs any exceptions that occur during execution.
+[Learn more about hooks →](./concepts/hooks.md)
 
-The hooks provide valuable insights into the function's inputs and any errors,
-enhancing debugging and monitoring capabilities.
+## Type Inference & Advanced Methods
 
-[Learn more about hooks :octicons-arrow-right:](./concepts/hooks.md){: .md-button .md-button-primary }
+Instructor provides full type inference for better IDE support and type safety. The client includes specialized methods for different use cases:
 
-## Correct Type Inference
-
-This was the dream of instructor but due to the patching of openai, it wasnt possible for me to get typing to work well. Now, with the new client, we can get typing to work well! We've also added a few `create_*` methods to make it easier to create iterables and partials, and to access the original completion.
-
-### Calling `create`
-
+**Basic extraction:**
 ```python
-import openai
 import instructor
 from pydantic import BaseModel
-
 
 class User(BaseModel):
     name: str
     age: int
 
-
 client = instructor.from_provider("openai/gpt-4o-mini")
-
-user = client.create(
-    messages=[
-        {"role": "user", "content": "Create a user"},
-    ],
-    response_model=User,
-)
+user = client.create(response_model=User, messages=[...])  # Type: User
 ```
 
-Now if you use a IDE, you can see the type is correctly infered.
-
-![type](./blog/posts/img/type.png)
-
-### Handling async: `await create`
-
-This will also work correctly with asynchronous clients.
-
+**Async support:**
 ```python
-import instructor
-from pydantic import BaseModel
-
-
 client = instructor.from_provider("openai/gpt-4o-mini", async_client=True)
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-async def extract():
-    return await client.create(
-        messages=[
-            {"role": "user", "content": "Create a user"},
-        ],
-        response_model=User,
-    )
+user = await client.create(...)  # Type: User
 ```
 
-Notice that simply because we return the `create` method, the `extract()` function will return the correct user type.
-
-![async](./blog/posts/img/async_type.png)
-
-### Returning the original completion: `create_with_completion`
-
-You can also return the original completion object
-
+**Access original completion:**
 ```python
-import instructor
-from pydantic import BaseModel
-
-
-client = instructor.from_provider("openai/gpt-4o-mini")
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-user, completion = client.create_with_completion(
-    messages=[
-        {"role": "user", "content": "Create a user"},
-    ],
-    response_model=User,
-)
+user, completion = client.create_with_completion(...)  # Returns tuple
 ```
 
-![with_completion](./blog/posts/img/with_completion.png)
-
-### Streaming Partial Objects: `create_partial`
-
-In order to handle streams, we still support `Iterable[T]` and `Partial[T]` but to simply the type inference, we've added `create_iterable` and `create_partial` methods as well!
-
+**Stream partial objects:**
 ```python
-import instructor
-from pydantic import BaseModel
+for partial in client.create_partial(...):  # Type: Generator[User, None]
+    print(partial)
+```
 
-
-client = instructor.from_provider("openai/gpt-4o-mini")
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-user_stream = client.create_partial(
-    messages=[
-        {"role": "user", "content": "Create a user"},
-    ],
-    response_model=User,
-)
-
-for user in user_stream:
+**Stream multiple objects:**
+```python
+for user in client.create_iterable(...):  # Type: Generator[User, None]
     print(user)
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=None
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name=None age=25
-    #> name='John Doe' age=25
-    # name=None age=None
-    # name='' age=None
-    # name='John' age=None
-    # name='John Doe' age=None
-    # name='John Doe' age=30
 ```
 
-Notice now that the type infered is `Generator[User, None]`
-
-![generator](./blog/posts/img/generator.png)
-
-### Streaming Iterables: `create_iterable`
-
-We get an iterable of objects when we want to extract multiple objects.
-
-```python
-import instructor
-from pydantic import BaseModel
-
-
-client = instructor.from_provider("openai/gpt-4o-mini")
-
-
-class User(BaseModel):
-    name: str
-    age: int
-
-
-users = client.create_iterable(
-    messages=[
-        {"role": "user", "content": "Create 2 users"},
-    ],
-    response_model=User,
-)
-
-for user in users:
-    print(user)
-    #> name='John Doe' age=30
-    #> name='Jane Doe' age=28
-    # User(name='John Doe', age=30)
-    # User(name='Jane Smith', age=25)
-```
-
-![iterable](./blog/posts/img/iterable.png)
+All methods provide full type inference for better IDE autocomplete and type checking.
 
 ## Templating
 

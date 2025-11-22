@@ -681,7 +681,6 @@ This approach allows you to test your code without mocking the entire client.
 ### Using Hooks
 
 ```python
-from openai import OpenAI
 import instructor
 
 
@@ -698,7 +697,6 @@ response = client.create(
 ```python
 from enum import Enum, auto
 import instructor
-from openai import OpenAI
 
 
 # Define standard hook names

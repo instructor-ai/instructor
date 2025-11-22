@@ -36,21 +36,21 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
   - `docs/blog/posts/*.md`
 
 #### Checklist: API Standardization
-- [ ] Create script to find all `client.chat.completions.create` instances
-- [ ] Create script to replace `client.chat.completions.create` → `client.create`
-- [ ] Create script to replace `client.chat.completions.create_partial` → `client.create_partial`
-- [ ] Create script to replace `client.chat.completions.create_iterable` → `client.create_iterable`
-- [ ] Create script to replace `client.chat.completions.create_with_completion` → `client.create_with_completion`
-- [ ] Test scripts on sample files (5-10 files)
-- [ ] Run scripts on `docs/getting-started.md`
-- [ ] Run scripts on `docs/start-here.md`
-- [ ] Run scripts on all `docs/integrations/*.md` files
-- [ ] Run scripts on all `docs/examples/*.md` files
-- [ ] Run scripts on all `docs/concepts/*.md` files
-- [ ] Run scripts on all `docs/learning/*.md` files
-- [ ] Run scripts on all `docs/blog/posts/*.md` files
-- [ ] Verify no broken code examples
-- [ ] Test documentation builds successfully
+- [x] Create script to find all `client.chat.completions.create` instances
+- [x] Create script to replace `client.chat.completions.create` → `client.create`
+- [x] Create script to replace `client.chat.completions.create_partial` → `client.create_partial`
+- [x] Create script to replace `client.chat.completions.create_iterable` → `client.create_iterable`
+- [x] Create script to replace `client.chat.completions.create_with_completion` → `client.create_with_completion`
+- [x] Test scripts on sample files (5-10 files)
+- [x] Run scripts on `docs/getting-started.md`
+- [x] Run scripts on `docs/start-here.md`
+- [x] Run scripts on all `docs/integrations/*.md` files
+- [x] Run scripts on all `docs/examples/*.md` files
+- [x] Run scripts on all `docs/concepts/*.md` files
+- [x] Run scripts on all `docs/learning/*.md` files
+- [x] Run scripts on all `docs/blog/posts/*.md` files
+- [x] Verify no broken code examples
+- [x] Test documentation builds successfully
 
 ### 1.2 Audit and Replace Old Client Initialization Patterns
 - **Issue**: Found 125 instances of old `from_*` patterns and 22 instances of `instructor.patch()` across docs
@@ -64,36 +64,36 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 - **Files Found**: 43 files with old `from_*` patterns, 16 files with `instructor.patch()`
 
 #### Checklist: Old Pattern Replacement
-- [ ] Create script to find all `instructor.from_openai(` patterns
-- [ ] Create script to find all `instructor.from_anthropic(` patterns
-- [ ] Create script to find all `instructor.from_google(` patterns
-- [ ] Create script to find all `instructor.from_*` patterns (all providers)
-- [ ] Create script to find all `instructor.patch(` patterns
-- [ ] Create script to replace `instructor.from_openai(OpenAI())` → `instructor.from_provider("openai/model")`
-- [ ] Create script to replace `instructor.from_anthropic(Anthropic())` → `instructor.from_provider("anthropic/model")`
-- [ ] Create script to replace `instructor.patch(OpenAI())` → `instructor.from_provider("openai/model")`
-- [ ] Create script to replace `instructor.patch(Anthropic())` → `instructor.from_provider("anthropic/model")`
-- [ ] Handle model name extraction from old patterns
-- [ ] Test scripts on sample files (5-10 files)
-- [ ] Fix `docs/integrations/google.md` (6 instances)
-- [ ] Fix `docs/integrations/vertex.md` (6 instances)
-- [ ] Fix `docs/integrations/bedrock.md` (5 instances)
-- [ ] Fix `docs/integrations/truefoundry.md` (3 instances)
-- [ ] Fix `docs/examples/bulk_classification.md` (3 instances)
-- [ ] Fix `docs/examples/mistral.md` (3 instances)
-- [ ] Fix `docs/examples/groq.md` (2 instances)
-- [ ] Fix `docs/examples/batch_job_oai.md` (2 instances)
-- [ ] Fix `docs/learning/getting_started/client_setup.md` (4 instances)
-- [ ] Fix `docs/learning/validation/retry_mechanisms.md` (3 instances)
-- [ ] Fix all blog posts with old patterns (15+ files)
-- [ ] Fix all tutorial notebooks (7 files with `instructor.patch`)
-- [ ] Fix `docs/concepts/hooks.md` (2 instances)
-- [ ] Fix `docs/concepts/unions.md` (3 instances)
+- [x] Create script to find all `instructor.from_openai(` patterns
+- [x] Create script to find all `instructor.from_anthropic(` patterns
+- [x] Create script to find all `instructor.from_google(` patterns
+- [x] Create script to find all `instructor.from_*` patterns (all providers)
+- [x] Create script to find all `instructor.patch(` patterns
+- [x] Create script to replace `instructor.from_openai(OpenAI())` → `instructor.from_provider("openai/model")`
+- [x] Create script to replace `instructor.from_anthropic(Anthropic())` → `instructor.from_provider("anthropic/model")`
+- [x] Create script to replace `instructor.patch(OpenAI())` → `instructor.from_provider("openai/model")`
+- [x] Create script to replace `instructor.patch(Anthropic())` → `instructor.from_provider("anthropic/model")`
+- [x] Handle model name extraction from old patterns
+- [x] Test scripts on sample files (5-10 files)
+- [x] Fix `docs/integrations/google.md` (6 instances)
+- [x] Fix `docs/integrations/vertex.md` (6 instances)
+- [x] Fix `docs/integrations/bedrock.md` (5 instances)
+- [x] Fix `docs/integrations/truefoundry.md` (3 instances)
+- [x] Fix `docs/examples/bulk_classification.md` (3 instances)
+- [x] Fix `docs/examples/mistral.md` (3 instances)
+- [x] Fix `docs/examples/groq.md` (2 instances)
+- [x] Fix `docs/examples/batch_job_oai.md` (2 instances)
+- [x] Fix `docs/learning/getting_started/client_setup.md` (4 instances)
+- [x] Fix `docs/learning/validation/retry_mechanisms.md` (3 instances)
+- [x] Fix all blog posts with old patterns (15+ files)
+- [x] Fix all tutorial notebooks (7 files with `instructor.patch`)
+- [x] Fix `docs/concepts/hooks.md` (2 instances)
+- [x] Fix `docs/concepts/unions.md` (3 instances)
 - [ ] Fix `docs/debugging.md` (1 instance)
 - [ ] Fix `docs/integrations/llama-cpp-python.md` (1 instance - may need special handling)
 - [ ] Fix `docs/integrations/cerebras.md` (1 instance)
 - [ ] Fix template files (`docs/templates/*.md`)
-- [ ] Verify all replacements work correctly
+- [x] Verify all replacements work correctly
 - [ ] Update any related documentation text explaining old patterns
 
 ### 1.3 Remove Unused Imports

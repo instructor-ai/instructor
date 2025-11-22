@@ -24,9 +24,6 @@ from pydantic import BaseModel
 
 client = instructor.from_provider("cerebras/llama3.1-70b")
 
-# Enable instructor patches
-client = instructor.from_provider("cerebras/llama3.1-70b")
-
 class User(BaseModel):
     name: str
     age: int
