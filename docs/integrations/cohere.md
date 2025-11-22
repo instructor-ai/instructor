@@ -14,7 +14,7 @@ You'll need a cohere API key which can be obtained by signing up [here](https://
 ### See Also
 
 - [Getting Started](../getting-started.md) - Quick start guide
-- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
 - [Document Segmentation](../examples/document_segmentation.md) - Cohere example for document processing
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
 
@@ -76,7 +76,7 @@ Given the following text, create a Group object for 'The Beatles' band
 Text:
 The Beatles were an English rock band formed in Liverpool in 1960. With a line-up comprising John Lennon, Paul McCartney, George Harrison and Ringo Starr, they are regarded as the most influential band of all time. The group were integral to the development of 1960s counterculture and popular music's recognition as an art form.
 """
-group = client.messages.create(
+group = client.create(
     response_model=Group,
     messages=[{"role": "user", "content": task}],
     temperature=0,

@@ -6,7 +6,7 @@ description: "Learn how to use Google's Gemini models (Pro, Flash, Ultra) with I
 ## See Also
 
 - [Getting Started](../getting-started.md) - Quick start guide
-- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
 - [Multi-Modal Examples](../examples/multi_modal_gemini.md) - Vision and multi-modal processing
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
 
@@ -39,15 +39,14 @@ client = instructor.from_provider(
     "google/gemini-1.5-flash-latest",
 )
 
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
+resp = client.create(
+    response_model=User,
     messages=[
         {
             "role": "user",
             "content": "Extract Jason is 25 years old.",
         }
     ],
-    response_model=User,
 )
 
 print(resp)  # User(name='Jason', age=25)
@@ -108,7 +107,6 @@ For more details on configuration options, see [Google's documentation on Gemini
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 
@@ -122,15 +120,14 @@ client = instructor.from_provider(
     mode=instructor.Mode.GEMINI_JSON,
 )
 
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
+resp = client.create(
+    response_model=User,
     messages=[
         {
             "role": "user",
             "content": "Extract Jason is 25 years old.",
         },
     ],
-    response_model=User,
     generation_config={
         "temperature": 0.5,
         "max_tokens": 1000,
@@ -146,7 +143,6 @@ print(resp)
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 
@@ -210,7 +206,6 @@ Instructor has two main ways that you can use to stream responses out
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 

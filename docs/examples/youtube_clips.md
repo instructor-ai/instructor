@@ -13,7 +13,7 @@ First, install the necessary packages:
 pip install youtube_transcript_api instructor rich
 ```
 
-![youtube clip streaming](../img/youtube.gif)
+![YouTube clip streaming demonstration showing real-time video segment extraction](../img/youtube.gif)
 
 ```python
 from youtube_transcript_api import YouTubeTranscriptApi

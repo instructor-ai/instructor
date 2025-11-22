@@ -18,7 +18,7 @@ pip install "instructor[groq]"
 
 - [Getting Started](../getting-started.md) - Quick start guide
 - [Groq Examples](../examples/groq.md) - Practical Groq examples
-- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
 
 # Groq AI

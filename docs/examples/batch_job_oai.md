@@ -8,7 +8,7 @@ description: Learn to use OpenAI's Batch API for large-scale synthetic data gene
 - [In-Memory Batch Processing](./batch_in_memory.md) - Serverless batch processing without disk I/O
 - [Bulk Classification](./bulk_classification.md) - Process multiple classifications efficiently
 - [Cost Optimization](../examples/index.md#api-integration) - Reduce API costs
-- [Async Processing](../learning/getting_started/client_setup.md#async-clients) - Async client setup
+- [from_provider Guide](../concepts/from_provider.md#async-clients) - Async client setup
 
 # Bulk Generation of Synthetic Data
 

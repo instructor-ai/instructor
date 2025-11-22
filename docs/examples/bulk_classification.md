@@ -8,7 +8,7 @@ description: Learn to classify user-provided tags effectively using async functi
 - [Batch Processing](./batch_job_oai.md) - Process large datasets efficiently
 - [Classification Examples](./classification.md) - More classification patterns
 - [FastAPI Integration](../integrations/index.md) - Building APIs with Instructor
-- [Async Processing](../learning/getting_started/client_setup.md#async-clients) - Async client setup
+- [from_provider Guide](../concepts/from_provider.md#async-clients) - Async client setup
 
 # Bulk Classification from User-Provided Tags.
 

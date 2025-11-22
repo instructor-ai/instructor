@@ -18,7 +18,7 @@ pip install "instructor[bedrock]"
 ### See Also
 
 - [Getting Started](../getting-started.md) - Quick start guide
-- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
 - [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
 - [AWS Integration Guide](../examples/index.md#aws-integration) - More AWS examples
 

@@ -602,6 +602,6 @@ By following the patterns and best practices outlined in this guide, you can bui
 - Check out [validation techniques](../concepts/validation.md) for robust data handling
 - Learn about [streaming responses](partial_streaming.md) for real-time applications
 
-![Image of hero record in the database](db.png)
+![Database screenshot showing AI-generated hero records stored in SQLite database](db.png)
 
 *Example of AI-generated hero data stored in SQLite database*

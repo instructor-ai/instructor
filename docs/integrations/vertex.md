@@ -42,15 +42,14 @@ client = instructor.from_provider(
     "vertexai/gemini-1.5-flash",
 )
 
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
+resp = client.create(
+    response_model=User,
     messages=[
         {
             "role": "user",
             "content": "Extract Jason is 25 years old.",
         }
     ],
-    response_model=User,
 )
 
 print(resp)

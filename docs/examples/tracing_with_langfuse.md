@@ -9,7 +9,7 @@ description: Learn how to trace and monitor Instructor API calls using Langfuse 
 
 > **What is Langfuse?** [Langfuse](https://langfuse.com) ([GitHub](https://github.com/langfuse/langfuse)) is an open source LLM engineering platform that helps teams trace API calls, monitor performance, and debug issues in their AI applications.
 
-![Instructor Trace in Langfuse](https://langfuse.com/images/docs/instructor-trace.png)
+![Instructor Trace in Langfuse showing structured output monitoring and observability](https://langfuse.com/images/docs/instructor-trace.png)
 
 This cookbook shows how to use Langfuse to trace and monitor model calls made with the Instructor library.
 

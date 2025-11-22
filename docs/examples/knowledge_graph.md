@@ -155,7 +155,7 @@ graph = generate_graph("Teach me about quantum mechanics")
 visualize_knowledge_graph(graph)
 ```
 
-![Knowledge Graph](knowledge_graph.png)
+![Knowledge Graph visualization showing interconnected concepts and relationships](knowledge_graph.png)
 
 This will produce a visual representation of the knowledge graph, stored as "knowledge_graph.gv". You can open this file to explore the key concepts and their relationships in quantum mechanics.
 

@@ -7,7 +7,7 @@ description: Learn how to use Instructor's in-memory batch processing feature fo
 
 - [Batch Processing](./batch_job_oai.md) - File-based batch processing
 - [Bulk Classification](./bulk_classification.md) - Process multiple classifications
-- [Async Processing](../learning/getting_started/client_setup.md#async-clients) - Async client setup
+- [from_provider Guide](../concepts/from_provider.md#async-clients) - Async client setup
 - [Cost Optimization](./batch_job_oai.md) - Reduce API costs with batch processing
 
 # In-Memory Batch Processing for Serverless

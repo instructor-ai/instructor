@@ -311,4 +311,4 @@ generate_graph(model)
 
 This will produce a graphical representation of the entities and their dependencies, stored as "entity.gv".
 
-![Entity Graph](entity_resolution.png)
+![Entity Graph visualization showing relationships between legal document entities](entity_resolution.png)
