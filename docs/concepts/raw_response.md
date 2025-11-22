@@ -76,6 +76,12 @@ ChatCompletion(
 """
 ```
 
+## See Also
+
+- [Hooks](./hooks.md) - Monitor LLM interactions without accessing raw responses
+- [Debugging](../debugging.md) - Debugging techniques for LLM outputs
+- [Response Models](./models.md) - Working with structured response models
+
 ## Anthropic Raw Response
 
 You can also access the raw response from Anthropic models. This is useful for debugging or when you need to access additional information from the response.

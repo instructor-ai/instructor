@@ -139,6 +139,13 @@ We also support more complex extraction patterns such as Unions as you'll see be
 
 ---
 
+## See Also
+
+- [Streaming Lists](./lists.md) - Similar functionality with different API
+- [Streaming Partial](./partial.md) - Stream partially completed objects
+- [List Extraction Tutorial](../learning/patterns/list_extraction.md) - Step-by-step guide
+- [Streaming Basics](../learning/streaming/basics.md) - Introduction to streaming
+
 ## Asynchronous Usage
 
 === "Using `create`"
