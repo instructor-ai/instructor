@@ -69,13 +69,13 @@ def validate_file(file_path: Path) -> Dict[str, List[str]]:
         else:
             title = frontmatter["title"]
             title_len = len(title)
-            if title_len < 20:
+            if title_len < 50:
                 issues["title_too_short"] = [
-                    f"Title is {title_len} chars (recommend 30-60)"
+                    f"Title is {title_len} chars (recommend 50-60 for SEO)"
                 ]
-            elif title_len > 70:
+            elif title_len > 60:
                 issues["title_too_long"] = [
-                    f"Title is {title_len} chars (recommend 30-60)"
+                    f"Title is {title_len} chars (recommend 50-60 for SEO)"
                 ]
 
         # Check description
@@ -84,13 +84,13 @@ def validate_file(file_path: Path) -> Dict[str, List[str]]:
         else:
             desc = frontmatter["description"]
             desc_len = len(desc)
-            if desc_len < 80:
+            if desc_len < 150:
                 issues["description_too_short"] = [
-                    f"Description is {desc_len} chars (recommend 120-160)"
+                    f"Description is {desc_len} chars (recommend 150-160 for SEO)"
                 ]
-            elif desc_len > 180:
+            elif desc_len > 160:
                 issues["description_too_long"] = [
-                    f"Description is {desc_len} chars (recommend 120-160)"
+                    f"Description is {desc_len} chars (recommend 150-160 for SEO)"
                 ]
 
         return issues
