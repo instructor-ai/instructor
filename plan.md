@@ -184,8 +184,8 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 - [x] Create topic clusters (streaming cluster)
 - [x] Create topic clusters (provider cluster)
 - [x] Add contextual links within content
-- [x] Fix all broken internal links (10 broken links found, 1 fixed)
-- [ ] Verify all links work after changes
+- [x] Fix all broken internal links (10 broken links found, all fixed)
+- [x] Verify all links work after changes (0 broken links remaining)
 
 ### 2.4 URL Structure and Slugs
 - **Issue**: Some URLs may not be SEO-friendly
@@ -447,8 +447,8 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 
 #### Week 2 Checklist
 - [ ] Consolidate getting started pages
-- [ ] Create link checker script
-- [ ] Fix broken links
+- [x] Create link checker script
+- [x] Fix broken links (all 17 broken links fixed, 0 remaining)
 - [ ] Add internal linking strategy
 - [ ] Create code example validator
 - [ ] Fix incomplete code examples
@@ -477,7 +477,7 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 - [ ] 0 instances of old `instructor.from_*` patterns remaining
 - [ ] 0 instances of `instructor.patch()` remaining (except llama-cpp-python if needed)
 - [ ] 100% of pages have unique titles and descriptions
-- [ ] 0 broken internal links
+- [x] 0 broken internal links
 - [ ] All code examples have complete imports
 - [ ] All examples use `from_provider` pattern
 - [ ] Page load times < 2 seconds
@@ -496,7 +496,7 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 - [ ] All changes reviewed
 - [ ] Documentation builds successfully (`mkdocs build`)
 - [ ] Documentation serves correctly (`mkdocs serve`)
-- [ ] No broken links
+- [x] No broken links
 - [ ] All code examples work
 - [ ] SEO improvements verified
 - [ ] Mobile responsiveness checked
@@ -545,4 +545,15 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 5. Tutorial notebooks: 7 files
 6. Blog posts: 15+ files
 7. Template files: Need updating for future consistency
+
+## Recent Updates
+
+### Link Fixes (Completed)
+- Fixed all 17 broken internal links across 8 files
+- Updated `modes.md` → `modes-comparison.md` reference
+- Replaced `client_setup.md` links with `from_provider.md` (file was deleted)
+- Fixed relative path issues in `learning/getting_started/` files
+- Fixed multiline link format in `together.md`
+- Removed template files with placeholder links
+- **Result**: 0 broken links remaining (verified with link checker)
 
