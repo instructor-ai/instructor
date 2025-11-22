@@ -1,3 +1,8 @@
+---
+title: Instructor Architecture Overview
+description: Learn about the internal architecture and design decisions of the Instructor library
+---
+
 # Architecture Overview
 
 This page explains the core execution flow and where to plug in or debug. It highlights the minimal sync/async code paths and how streaming, partial, and parallel modes integrate.
