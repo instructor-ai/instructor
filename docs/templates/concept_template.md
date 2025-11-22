@@ -42,7 +42,7 @@ class ExampleModel(BaseModel):
     # Additional fields demonstrating the concept
 
 # Initialize client with explicit mode
-client = instructor.from_openai(
+client = instructor.from_provider("openai/gpt-4o")(
     OpenAI(),
     mode=instructor.Mode.JSON  # Always specify mode explicitly
 )
