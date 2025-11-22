@@ -28,7 +28,6 @@ from typing import List, Optional
 
 # Third-party imports
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 
 # Set up environment (typically handled before script execution)
