@@ -14,7 +14,14 @@ export GROQ_API_KEY=<your-api-key-here>
 pip install "instructor[groq]"
 ```
 
-## Groq AI
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Groq Examples](../examples/groq.md) - Practical Groq examples
+- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+
+# Groq AI
 
 Groq supports structured outputs with their new `llama-3-groq-70b-8192-tool-use-preview` model.
 

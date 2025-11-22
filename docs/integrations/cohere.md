@@ -11,7 +11,14 @@ You can now use any of the Cohere's [command models](https://docs.cohere.com/doc
 
 You'll need a cohere API key which can be obtained by signing up [here](https://dashboard.cohere.com/) and gives you [free](https://cohere.com/pricing), rate-limited usage for learning and prototyping.
 
-## Cohere V2 API Support
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Document Segmentation](../examples/document_segmentation.md) - Cohere example for document processing
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+
+# Cohere V2 API Support
 
 As of version 1.12.0, Instructor supports both Cohere V1 and V2 SDK clients. The V2 API provides an OpenAI-compatible interface with support for the latest Cohere models.
 
