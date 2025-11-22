@@ -3,6 +3,13 @@ title: Entity Resolution and Visualization for Legal Documents
 description: Learn how to extract, resolve, and visualize entities from legal contracts for better understanding and analysis.
 ---
 
+## See Also
+
+- [Knowledge Graph](./knowledge_graph.md) - Build knowledge graphs from entities
+- [Building Knowledge Graphs](./building_knowledge_graphs.md) - Advanced graph construction
+- [Document Segmentation](./document_segmentation.md) - Break down documents for analysis
+- [Response Models](../concepts/models.md) - Working with complex data structures
+
 # Entity Resolution and Visualization for Legal Documents
 
 In this guide, we demonstrate how to extract and resolve entities from a sample legal contract. Then, we visualize these entities and their dependencies as an entity graph. This approach can be invaluable for legal tech applications, aiding in the understanding of complex documents.
