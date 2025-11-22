@@ -89,10 +89,7 @@ class MyResponseModel(BaseModel):
     optional_field: Optional[List[str]] = Field(None, description="Optional field example")
 
 # Initialize the client with explicit mode
-client = instructor.from_provider("openai/gpt-4o")(
-    OpenAI(),
-    mode=instructor.Mode.JSON  # Always specify mode explicitly
-)
+client = instructor.from_provider("openai/gpt-4o", mode=instructor.Mode.JSON)
 
 def process_data(input_text: str) -> MyResponseModel:
     """

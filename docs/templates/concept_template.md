@@ -41,10 +41,7 @@ class ExampleModel(BaseModel):
     # Additional fields demonstrating the concept
 
 # Initialize client with explicit mode
-client = instructor.from_provider("openai/gpt-4o")(
-    OpenAI(),
-    mode=instructor.Mode.JSON  # Always specify mode explicitly
-)
+client = instructor.from_provider("openai/gpt-4o", mode=instructor.Mode.JSON)
 
 # Use the concept with proper error handling
 try:

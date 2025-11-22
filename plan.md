@@ -89,12 +89,12 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 - [x] Fix all tutorial notebooks (7 files with `instructor.patch`)
 - [x] Fix `docs/concepts/hooks.md` (2 instances)
 - [x] Fix `docs/concepts/unions.md` (3 instances)
-- [ ] Fix `docs/debugging.md` (1 instance)
-- [ ] Fix `docs/integrations/llama-cpp-python.md` (1 instance - may need special handling)
-- [ ] Fix `docs/integrations/cerebras.md` (1 instance)
-- [ ] Fix template files (`docs/templates/*.md`)
+- [ ] Fix `docs/debugging.md` (1 instance - mention in comment, may be OK)
+- [ ] Fix `docs/integrations/llama-cpp-python.md` (1 instance - legitimate use case)
+- [ ] Fix `docs/integrations/cerebras.md` (1 instance - may be legitimate)
+- [x] Fix template files (`docs/templates/*.md`)
 - [x] Verify all replacements work correctly
-- [ ] Update any related documentation text explaining old patterns
+- [x] Update integration docs with from_provider examples
 
 ### 1.3 Remove Unused Imports
 - **Issue**: Files import `openai` or other providers but use `from_provider`
