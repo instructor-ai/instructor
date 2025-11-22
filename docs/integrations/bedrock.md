@@ -15,7 +15,14 @@ You'll need to have an AWS account with access to Bedrock and the appropriate pe
 pip install "instructor[bedrock]"
 ```
 
-## AWS Bedrock
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+- [AWS Integration Guide](../examples/index.md#aws-integration) - More AWS examples
+
+# AWS Bedrock
 
 AWS Bedrock is a fully managed service that offers a choice of high-performing foundation models (FMs) from leading AI companies like AI21 Labs, Anthropic, Cohere, Meta, Stability AI, and Amazon through a single API.
 
