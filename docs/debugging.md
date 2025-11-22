@@ -1,3 +1,8 @@
+---
+title: Debugging Instructor Applications
+description: Learn how to debug Instructor applications with hooks, logging, and exception handling. Practical techniques for inspecting inputs, outputs, and retries.
+---
+
 # Debugging
 
 This guide shows how to quickly inspect inputs/outputs, capture retries, and reproduce failures when working with Instructor. It focuses on practical techniques using hooks, logging, and exception data.
