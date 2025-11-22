@@ -717,3 +717,10 @@ class CustomHookName(Enum):
 # Initialize client with custom hooks
 client = instructor.from_provider("openai/gpt-4o")
 ```
+
+## See Also
+
+- [Debugging](../debugging.md) - Practical debugging techniques using hooks
+- [Retrying](./retrying.md) - Monitor retry attempts with hooks
+- [Validation](./validation.md) - Use hooks for validation monitoring
+- [Hooks Tutorial](../learning/getting_started/client_setup.md#using-hooks) - Learn hooks basics

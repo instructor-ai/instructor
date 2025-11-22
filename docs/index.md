@@ -351,6 +351,34 @@ for user in client.create_iterable(...):  # Type: Generator[User, None]
 
 All methods provide full type inference for better IDE autocomplete and type checking.
 
+## Frequently Asked Questions
+
+### What is Instructor?
+
+Instructor is a Python library that extracts structured, validated data from Large Language Models (LLMs). It uses Pydantic models to define output schemas and automatically handles validation, retries, and error handling.
+
+### Which LLM providers does Instructor support?
+
+Instructor supports 15+ providers including OpenAI, Anthropic, Google Gemini, Mistral, Cohere, Ollama, DeepSeek, and many more. See our [integrations page](./integrations/index.md) for the complete list.
+
+### Do I need to know Pydantic to use Instructor?
+
+Basic Pydantic knowledge helps, but you can get started with simple models. Instructor works with any Pydantic BaseModel, and you can learn advanced features as you need them.
+
+### How does Instructor compare to other libraries?
+
+Instructor focuses specifically on structured outputs with automatic validation and retries. Unlike larger frameworks, Instructor does one thing very well: getting reliable, validated data from LLMs.
+
+### Can I use Instructor with open source models?
+
+Yes! Instructor works with Ollama, llama-cpp-python, and other local models. See our [Ollama integration guide](./integrations/ollama.md) to get started.
+
+### Does Instructor work with async code?
+
+Yes, Instructor fully supports async/await. Use `async_client=True` when creating your client, then use `await client.create()`.
+
+[View all FAQs →](./faq.md)
+
 ## Templating
 
 Instructor supports templating with Jinja, which lets you create dynamic prompts. This is useful when you want to fill in parts of a prompt with data. Here's a simple example:

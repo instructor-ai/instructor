@@ -187,6 +187,31 @@ user_info = client.create(
 print(f"Name: {user_info.name}, Age: {user_info.age}")
 ```
 
+## Frequently Asked Questions
+
+### What's the difference between `start-here.md` and `getting-started.md`?
+
+- **[Start Here](./start-here.md)**: Explains what Instructor is and why you'd use it (conceptual overview)
+- **Getting Started**: This guide - shows you how to install and use Instructor (practical steps)
+
+### Which provider should I start with?
+
+OpenAI is the most popular choice for beginners due to reliability and wide support. Once comfortable, you can explore Anthropic Claude, Google Gemini, or open-source models.
+
+### Do I need to understand Pydantic?
+
+Basic knowledge helps, but you can start with simple models. Instructor works with any Pydantic BaseModel. Learn more advanced features as you need them.
+
+### Can I use Instructor with async code?
+
+Yes! Use `async_client=True` when creating your client: `client = instructor.from_provider("openai/gpt-4o", async_client=True)`, then use `await client.create()`.
+
+### What if validation fails?
+
+Instructor automatically retries with validation feedback. You can configure retry behavior with `max_retries` parameter. See [retry mechanisms](./learning/validation/retry_mechanisms.md) for details.
+
+[View all FAQs →](./faq.md)
+
 ## Next Steps
 
 Now that you've mastered the basics, here are some next steps:
