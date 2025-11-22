@@ -248,6 +248,8 @@ nav:
     - Prompting: 'concepts/prompting.md'
     - Multimodal : 'concepts/multimodal.md'
     - Patching: 'concepts/patching.md'
+    - from_provider: 'concepts/from_provider.md'
+    - Migration Guide: 'concepts/migration.md'
     - Hooks: 'concepts/hooks.md'
     - Types: 'concepts/types.md'
     - TypedDicts: 'concepts/typeddicts.md'

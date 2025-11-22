@@ -221,6 +221,8 @@ Now that you've mastered the basics, here are some next steps:
 - Check out the [Cookbook examples](./examples/index.md) for real-world applications
 - See how to [use hooks](./concepts/hooks.md) for monitoring and debugging
 
+**Using older patterns?** If you're using `instructor.patch()` or provider-specific functions like `from_openai()`, check out the [Migration Guide](./concepts/migration.md) to modernize your code.
+
 **New to Instructor?** Start with [Start Here](./start-here.md) for a conceptual overview.
 
 For more detailed information on any topic, visit the [Concepts](./concepts/index.md) section.
