@@ -3,6 +3,13 @@ title: Generating Synthetic Data with OpenAI's Batch API
 description: Learn to use OpenAI's Batch API for large-scale synthetic data generation, focusing on question-answer pairs from the ms-marco dataset.
 ---
 
+## See Also
+
+- [In-Memory Batch Processing](./batch_in_memory.md) - Serverless batch processing without disk I/O
+- [Bulk Classification](./bulk_classification.md) - Process multiple classifications efficiently
+- [Cost Optimization](../examples/index.md#api-integration) - Reduce API costs
+- [Async Processing](../learning/getting_started/client_setup.md#async-clients) - Async client setup
+
 # Bulk Generation of Synthetic Data
 
 This tutorial shows how to use `instructor` to generate large quantities of synthetic data at scale using Open AI's new Batch API. In this example, we'll be generating synthetic questions using the `ms-marco` dataset to evaluate RAG retrieval.
