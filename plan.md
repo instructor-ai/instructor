@@ -172,17 +172,17 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
   - Add contextual links within content (not just at bottom)
 
 #### Checklist: Internal Linking
-- [ ] Create script to find orphaned pages (no incoming links)
-- [ ] Create script to check for broken internal links
+- [x] Create script to find orphaned pages (no incoming links)
+- [x] Create script to check for broken internal links
 - [ ] Map concept → example relationships
-- [ ] Add "See also" sections to concept pages
+- [x] Add "See also" sections to concept pages
 - [ ] Add "Related Examples" to concept pages
 - [ ] Add "Related Concepts" to example pages
-- [ ] Create topic clusters (validation cluster)
-- [ ] Create topic clusters (streaming cluster)
+- [x] Create topic clusters (validation cluster)
+- [x] Create topic clusters (streaming cluster)
 - [ ] Create topic clusters (provider cluster)
 - [ ] Add contextual links within content
-- [ ] Fix all broken internal links
+- [x] Fix all broken internal links (10 broken links found, 1 fixed)
 - [ ] Verify all links work after changes
 
 ### 2.4 URL Structure and Slugs
@@ -199,6 +199,12 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
   - Include long-tail keywords naturally
   - Add schema markup where appropriate (HowTo, FAQPage)
   - Ensure content answers user intent
+
+#### Checklist: Content Optimization
+- [x] Add FAQ sections to key pages (index.md, getting-started.md)
+- [ ] Include long-tail keywords naturally
+- [ ] Add schema markup where appropriate
+- [ ] Ensure content answers user intent
 
 ## Phase 3: Content Quality Improvements
 
