@@ -101,15 +101,15 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
 - **Action**: Clean up imports in examples (e.g., `docs/index.md` line 419, `docs/concepts/hooks.md`)
 
 #### Checklist: Import Cleanup
-- [ ] Create script to find files with `import openai` but using `from_provider`
-- [ ] Create script to find files with `from openai import` but using `from_provider`
-- [ ] Create script to find files with `import anthropic` but using `from_provider`
-- [ ] Create script to find files with `from anthropic import` but using `from_provider`
-- [ ] Review `docs/index.md` for unused imports
-- [ ] Review `docs/concepts/hooks.md` for unused imports
-- [ ] Review all integration docs for unused provider imports
-- [ ] Remove unused imports manually or via script
-- [ ] Verify code examples still work after import removal
+- [x] Create script to find files with `import openai` but using `from_provider`
+- [x] Create script to find files with `from openai import` but using `from_provider`
+- [x] Create script to find files with `import anthropic` but using `from_provider`
+- [x] Create script to find files with `from anthropic import` but using `from_provider`
+- [x] Review `docs/index.md` for unused imports
+- [x] Review `docs/concepts/hooks.md` for unused imports
+- [x] Review all integration docs for unused provider imports
+- [x] Remove unused imports manually or via script
+- [x] Verify code examples still work after import removal
 
 ## Phase 2: SEO Optimization
 
@@ -210,18 +210,18 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
   - Improve flow and reduce cognitive load
 
 #### Checklist: Index Page Cleanup
-- [ ] Review current `docs/index.md` structure
-- [ ] Condense "Complex Schemas & Validation" section (reduce from ~90 lines to ~30 lines)
-- [ ] Add link to detailed validation docs
-- [ ] Simplify "Using Hooks" section
-- [ ] Remove unused `from openai import OpenAI` import
-- [ ] Shorten hooks output example (remove large docstring)
-- [ ] Condense "Correct Type Inference" section (reduce from ~170 lines to ~50 lines)
-- [ ] Add links to type inference concept pages
-- [ ] Remove redundant provider list from "Why use Instructor?"
-- [ ] Improve overall page flow
-- [ ] Verify page still under 1000 lines
-- [ ] Test page renders correctly
+- [x] Review current `docs/index.md` structure
+- [x] Condense "Complex Schemas & Validation" section (reduce from ~90 lines to ~30 lines)
+- [x] Add link to detailed validation docs
+- [x] Simplify "Using Hooks" section
+- [x] Remove unused `from openai import OpenAI` import
+- [x] Shorten hooks output example (remove large docstring)
+- [x] Condense "Correct Type Inference" section (reduce from ~170 lines to ~50 lines)
+- [x] Add links to type inference concept pages
+- [x] Remove redundant provider list from "Why use Instructor?"
+- [x] Improve overall page flow
+- [x] Verify page still under 1000 lines
+- [x] Test page renders correctly
 
 ### 3.2 Getting Started Pages Consolidation
 - **Issue**: Overlap between `start-here.md`, `getting-started.md`, and `index.md`
@@ -233,17 +233,17 @@ Comprehensive audit and improvement plan for Instructor documentation covering A
   - Remove duplicate content
 
 #### Checklist: Getting Started Consolidation
-- [ ] Audit content overlap between three files
-- [ ] Define clear role for `start-here.md` (what/why only)
-- [ ] Define clear role for `getting-started.md` (how-to only)
-- [ ] Define clear role for `index.md` (landing/quick start)
-- [ ] Remove duplicate content from `start-here.md`
-- [ ] Remove duplicate content from `getting-started.md`
-- [ ] Remove duplicate content from `index.md`
-- [ ] Add navigation links between pages
-- [ ] Add "Next Steps" sections with links
-- [ ] Verify each page has unique value
-- [ ] Test user flow through all three pages
+- [x] Audit content overlap between three files
+- [x] Define clear role for `start-here.md` (what/why only)
+- [x] Define clear role for `getting-started.md` (how-to only)
+- [x] Define clear role for `index.md` (landing/quick start)
+- [x] Remove duplicate content from `start-here.md`
+- [x] Remove duplicate content from `getting-started.md`
+- [x] Remove duplicate content from `index.md`
+- [x] Add navigation links between pages
+- [x] Add "Next Steps" sections with links
+- [x] Verify each page has unique value
+- [x] Test user flow through all three pages
 
 ### 3.3 Code Example Quality
 - **Issue**: Inconsistent code examples, some incomplete
