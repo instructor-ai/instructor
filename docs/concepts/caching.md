@@ -5,6 +5,11 @@
 - [Cost Optimization](../examples/batch_job_oai.md) - Reduce API costs
 - [Hooks](./hooks.md) - Monitor cache hits and misses
 
+---
+title: Caching Strategies with Instructor
+description: Learn how to implement caching strategies with Instructor to reduce API costs, improve performance, and optimize LLM application efficiency.
+---
+
 If you want to learn more about concepts in caching and how to use them in your own projects, check out our [blog](../blog/posts/caching.md) on the topic.
 
 ## Built-in caching in Instructor (v1.9.1 and later)

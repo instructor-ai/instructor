@@ -1,3 +1,8 @@
+---
+title: Audio Information Extraction with OpenAI
+description: Learn how to extract structured information from audio files using OpenAI's audio capabilities and Instructor for type-safe data extraction.
+---
+
 # Audio Information Extraction with OpenAI
 
 This example demonstrates how to use Instructor with OpenAI's audio capabilities to extract structured information from audio files. The example shows how to process audio input and extract specific fields into a Pydantic model.

@@ -1,3 +1,8 @@
+---
+title: Observability & Tracing with Langfuse
+description: Learn how to trace and monitor Instructor API calls using Langfuse for comprehensive observability in your LLM applications.
+---
+
 # Observability & Tracing with Langfuse
 
 **What is Langfuse?**

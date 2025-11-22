@@ -1,3 +1,8 @@
+---
+title: Batch Processing with Instructor
+description: Learn how to process multiple LLM requests efficiently using batch processing techniques for cost optimization and improved performance.
+---
+
 # Batch Processing
 
 Batch processing allows you to send multiple requests in a single operation, which is more cost-effective and efficient for processing large datasets. Instructor supports batch processing across multiple providers with a unified interface.
