@@ -499,6 +499,6 @@ After migrating, you'll notice:
 ## Related Documentation
 
 - [from_provider Guide](./from_provider.md) - Complete guide to using from_provider
-- [Client Setup](../learning/getting_started/client_setup.md) - Client configuration details
+- [from_provider Guide](./from_provider.md) - Complete client configuration guide
 - [Patching](./patching.md) - How Instructor enhances clients
 

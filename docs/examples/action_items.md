@@ -99,7 +99,7 @@ Alice: Sounds like a plan. Let's get these tasks modeled out and get started."""
 
 In order to quickly visualize the data we used code interpreter to create a graphviz export of the json version of the ActionItems array.
 
-![action items](../img/action_items.png)
+![Action items visualization showing extracted tasks with priorities and dependencies](../img/action_items.png)
 
 ```json
 [

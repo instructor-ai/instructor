@@ -5,7 +5,7 @@ description: Learn about parallel tools in OpenAI, Google, and Anthropic.
 
 ## See Also
 
-- [Async Processing](../learning/getting_started/client_setup.md#async-clients) - Async client setup
+- [from_provider Guide](./from_provider.md#async-clients) - Async client setup
 - [Batch Processing](../examples/batch_job_oai.md) - Process multiple requests efficiently
 - [Iterable](./iterable.md) - Extract multiple objects
 - [Lists](./lists.md) - Working with collections

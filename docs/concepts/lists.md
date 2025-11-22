@@ -1,6 +1,6 @@
 ---
-title: Extracting Structured Data with Iterable and Streaming in Python
-description: Learn to use Iterable and streaming for structured data extraction with Pydantic and OpenAI in Python.
+title: Streaming Lists with Instructor - Extract Multiple Objects
+description: Learn how to extract multiple structured objects from a single LLM call using streaming lists. Stream collections of Pydantic models as they're generated.
 ---
 
 # Multi-task and Streaming

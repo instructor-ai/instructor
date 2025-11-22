@@ -363,7 +363,7 @@ The model string must be in format `"provider/model-name"`:
 
 ## Related Documentation
 
-- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [Getting Started](../getting-started.md) - Quick start guide
 - [Patching](./patching.md) - How Instructor enhances clients
 - [Integrations](../integrations/index.md) - Provider-specific documentation
 - [Migration Guide](./migration.md) - Migrating from old patterns

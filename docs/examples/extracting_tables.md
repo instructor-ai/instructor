@@ -274,7 +274,7 @@ for table in tables:
 
 ??? Note "Expand to see the output"
 
-    ![Top 10 Grossing Apps in October 2023 for Ireland](https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png)
+    ![Top 10 Grossing Apps in October 2023 for Ireland - Table extraction example showing structured data from image](https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png)
 
     ### Top 10 Grossing Apps in October 2023 (Ireland) for Android Platforms
 

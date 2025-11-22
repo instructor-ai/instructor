@@ -6,7 +6,7 @@ description: Learn how to manage non-streaming requests in OpenAI, track token u
 ## See Also
 
 - [Getting Started](../getting-started.md) - Quick start guide
-- [Client Setup](../learning/getting_started/client_setup.md) - Detailed client configuration
+- [from_provider Guide](./from_provider.md) - Detailed client configuration
 - [Response Models](./models.md) - Working with Pydantic models
 - [Raw Response](./raw_response.md) - Access original LLM responses
 
