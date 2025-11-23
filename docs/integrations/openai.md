@@ -88,6 +88,46 @@ print(user)
 #> User(name='Jason', age=25)
 ```
 
+## Responses API Mode
+
+OpenAI now recommends the Responses API for new builds. Instructor exposes this API through two modes so you can keep the same interface while gaining better caching, stateful context, and optional built-in tools. Pass `mode=instructor.Mode.RESPONSES_TOOLS` when you want Instructor to call the Responses API instead of Chat Completions. Use `instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS` if you plan to use OpenAI-managed tools like web search or file search.
+
+```python
+import asyncio
+from pydantic import BaseModel
+import instructor
+
+
+class SupportTicket(BaseModel):
+    issue: str
+    priority: str
+
+
+client = instructor.from_provider(
+    "openai/gpt-4.1-mini",
+    mode=instructor.Mode.RESPONSES_TOOLS,
+    async_client=True,
+)
+
+
+async def create_ticket() -> SupportTicket:
+    return await client.create(
+        messages=[
+            {
+                "role": "user",
+                "content": "Log a high priority bug about failed password resets.",
+            }
+        ],
+        response_model=SupportTicket,
+    )
+
+
+ticket = asyncio.run(create_ticket())
+print(ticket)
+```
+
+See the [OpenAI Responses API guide](./openai-responses.md) for a deeper walkthrough that includes built-in tool usage, streaming, and best practices.
+
 ## Nested Example
 
 ```python
@@ -381,15 +421,17 @@ for user in users:
 
 We provide several modes to make it easy to work with the different response models that OpenAI supports
 
-1. `instructor.Mode.TOOLS` : This uses the [tool calling API](https://platform.openai.com/docs/guides/function-calling) to return structured outputs to the client
-2. `instructor.Mode.JSON` : This forces the model to return JSON by using [OpenAI's JSON mode](https://platform.openai.com/docs/guides/structured-outputs#json-mode).
-3. `instructor.Mode.FUNCTIONS` : This uses OpenAI's function calling API to return structured outputs and will be deprecated in the future.
-4. `instructor.Mode.PARALLEL_TOOLS` : This uses the [parallel tool calling API](https://platform.openai.com/docs/guides/function-calling#configuring-parallel-function-calling) to return structured outputs to the client. This allows the model to generate multiple calls in a single response.
-5. `instructor.Mode.MD_JSON` : This makes a simple call to the OpenAI chat completion API and parses the raw response as JSON.
-6. `instructor.Mode.TOOLS_STRICT` : This uses the new Open AI structured outputs API to return structured outputs to the client using constrained grammar sampling. This restricts users to a subset of the JSON schema.
-7. `instructor.Mode.JSON_O1` : This is a mode for the `O1` model. We created a new mode because `O1` doesn't support any system messages, tool calling or streaming so you need to use this mode to use Instructor with `O1`.
+1. `instructor.Mode.RESPONSES_TOOLS` : Calls the OpenAI Responses API while keeping Instructor's familiar API. Best for new builds that want lower latency, better caching, and the new stateful context features.
+2. `instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS` : Same as above, but automatically enables OpenAI's built-in tools (web search, file search, etc.) inside the Responses API.
+3. `instructor.Mode.TOOLS` : This uses the [tool calling API](https://platform.openai.com/docs/guides/function-calling) to return structured outputs to the client.
+4. `instructor.Mode.JSON` : This forces the model to return JSON by using [OpenAI's JSON mode](https://platform.openai.com/docs/guides/structured-outputs#json-mode).
+5. `instructor.Mode.FUNCTIONS` : This uses OpenAI's function calling API to return structured outputs and will be deprecated in the future.
+6. `instructor.Mode.PARALLEL_TOOLS` : This uses the [parallel tool calling API](https://platform.openai.com/docs/guides/function-calling#configuring-parallel-function-calling) to return structured outputs to the client. This allows the model to generate multiple calls in a single response.
+7. `instructor.Mode.MD_JSON` : This makes a simple call to the OpenAI chat completion API and parses the raw response as JSON.
+8. `instructor.Mode.TOOLS_STRICT` : This uses the new Open AI structured outputs API to return structured outputs to the client using constrained grammar sampling. This restricts users to a subset of the JSON schema.
+9. `instructor.Mode.JSON_O1` : This is a mode for the `O1` model. We created a new mode because `O1` doesn't support any system messages, tool calling or streaming so you need to use this mode to use Instructor with `O1`.
 
-In general, we recommend using `Mode.Tools` because it's the most flexible and future-proof mode. It has the largest set of features that you can specify your schema in and makes things significantly easier to work with.
+In general, choose `Mode.RESPONSES_TOOLS` (or the built-in tools variant) when you're targeting the Responses API, and stick with `Mode.TOOLS` for classic Chat Completions integrations. Both modes keep schema handling identical, so switching between them is a single-line change.
 
 ## Batch API
 
@@ -417,6 +459,7 @@ Read more about how to use it [here](../examples/batch_job_oai.md)
 - [Instructor Core Concepts](../concepts/index.md)
 - [Type Validation Guide](../concepts/validation.md)
 - [Advanced Usage Examples](../examples/index.md)
+- [OpenAI Responses API Guide](./openai-responses.md)
 
 ## Updates and Compatibility
 
