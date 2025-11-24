@@ -4,7 +4,9 @@ This module provides integration with the Claude Agent SDK, enabling structured
 outputs using instructor's familiar interface with the Claude Agent SDK's
 agentic capabilities.
 
-Example:
+Supports both sync and async interfaces.
+
+Example (async - default):
     ```python
     from instructor import from_claude_agent_sdk
     from pydantic import BaseModel
@@ -15,7 +17,7 @@ Example:
         age: int
 
     async def main():
-        client = from_claude_agent_sdk()
+        client = from_claude_agent_sdk()  # async by default
 
         user = await client.create(
             response_model=User,
@@ -26,15 +28,42 @@ Example:
 
     anyio.run(main)
     ```
+
+Example (sync):
+    ```python
+    from instructor import from_claude_agent_sdk
+    from pydantic import BaseModel
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+    client = from_claude_agent_sdk(use_async=False)  # sync mode
+
+    user = client.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Extract: John is 25 years old"}]
+    )
+    print(user.name)  # John
+    print(user.age)   # 25
+    ```
 """
 
-from .client import from_claude_agent_sdk, ClaudeAgentSDKClient, claude_agent_sdk_create
+from .client import (
+    from_claude_agent_sdk,
+    ClaudeAgentSDKClient,
+    claude_agent_sdk_create,
+    claude_agent_sdk_create_async,
+    claude_agent_sdk_create_sync,
+)
 from .utils import handle_claude_agent_sdk, reask_claude_agent_sdk
 
 __all__ = [
     "from_claude_agent_sdk",
     "ClaudeAgentSDKClient",
     "claude_agent_sdk_create",
+    "claude_agent_sdk_create_async",
+    "claude_agent_sdk_create_sync",
     "handle_claude_agent_sdk",
     "reask_claude_agent_sdk",
 ]

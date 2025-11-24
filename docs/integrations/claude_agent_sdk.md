@@ -203,8 +203,55 @@ client = from_claude_agent_sdk(
 )
 ```
 
+## Sync vs Async
+
+By default, `from_claude_agent_sdk()` returns an async client. You can get a sync client by passing `use_async=False`:
+
+### Async (default)
+
+```python
+from instructor import from_claude_agent_sdk
+from pydantic import BaseModel
+import anyio
+
+class User(BaseModel):
+    name: str
+    age: int
+
+async def main():
+    client = from_claude_agent_sdk()  # async by default
+
+    user = await client.create(
+        response_model=User,
+        messages=[{"role": "user", "content": "Extract: John is 25 years old"}]
+    )
+    print(user.name, user.age)
+
+anyio.run(main)
+```
+
+### Sync
+
+```python
+from instructor import from_claude_agent_sdk
+from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    age: int
+
+client = from_claude_agent_sdk(use_async=False)  # sync mode
+
+user = client.create(
+    response_model=User,
+    messages=[{"role": "user", "content": "Extract: John is 25 years old"}]
+)
+print(user.name, user.age)
+```
+
+Note: The sync version uses `anyio.run()` internally to execute the async Claude Agent SDK.
+
 ## Limitations
 
-- Async-only (use `anyio.run()` or `asyncio.run()` to run async code)
 - Requires Claude Code CLI installation
 - Requires Claude Code Max subscription
