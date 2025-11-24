@@ -27,6 +27,7 @@ class Provider(Enum):
     BEDROCK = "bedrock"
     PERPLEXITY = "perplexity"
     OPENROUTER = "openrouter"
+    CLAUDE_AGENT_SDK = "claude_agent_sdk"
 
 
 def get_provider(base_url: str) -> Provider:

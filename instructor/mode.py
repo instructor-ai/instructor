@@ -71,6 +71,9 @@ class Mode(enum.Enum):
     PERPLEXITY_JSON = "perplexity_json"
     OPENROUTER_STRUCTURED_OUTPUTS = "openrouter_structured_outputs"
 
+    # Claude Agent SDK modes
+    CLAUDE_AGENT_SDK = "claude_agent_sdk"
+
     # Classification helpers
     @classmethod
     def tool_modes(cls) -> set["Mode"]:

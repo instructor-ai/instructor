@@ -161,6 +161,12 @@ from ..providers.xai.utils import (
     reask_xai_tools,
 )
 
+# Claude Agent SDK utils
+from ..providers.claude_agent_sdk.utils import (
+    handle_claude_agent_sdk,
+    reask_claude_agent_sdk,
+)
+
 logger = logging.getLogger("instructor")
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -464,6 +470,8 @@ def handle_response_model(
         Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: handle_responses_tools_with_inbuilt_tools,
         Mode.XAI_JSON: handle_xai_json,
         Mode.XAI_TOOLS: handle_xai_tools,
+        # Claude Agent SDK mode
+        Mode.CLAUDE_AGENT_SDK: handle_claude_agent_sdk,
     }
 
     if mode in mode_handlers:
@@ -662,6 +670,8 @@ def handle_reask_kwargs(
         # XAI modes
         Mode.XAI_JSON: reask_xai_json,
         Mode.XAI_TOOLS: reask_xai_tools,
+        # Claude Agent SDK modes
+        Mode.CLAUDE_AGENT_SDK: reask_claude_agent_sdk,
     }
 
     if mode in REASK_HANDLERS:

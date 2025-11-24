@@ -145,3 +145,8 @@ if (
     from .providers.genai.client import from_genai
 
     __all__ += ["from_genai"]
+
+if importlib.util.find_spec("claude_agent_sdk") is not None:
+    from .providers.claude_agent_sdk.client import from_claude_agent_sdk
+
+    __all__ += ["from_claude_agent_sdk"]
