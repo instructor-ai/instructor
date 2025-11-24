@@ -112,13 +112,17 @@ async def _execute_query_async(
     from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
     options = ClaudeAgentOptions(**option_kwargs)
+    structured_output = None
 
+    # Iterate through all messages to ensure proper cleanup
+    # The ResultMessage with structured_output comes at the end
     async for message in query(prompt=prompt, options=options):
         if isinstance(message, ResultMessage):
             if hasattr(message, 'structured_output') and message.structured_output:
-                return message.structured_output
+                structured_output = message.structured_output
+                # Don't break - let the generator complete naturally
 
-    return None
+    return structured_output
 
 
 def _execute_query_sync(
