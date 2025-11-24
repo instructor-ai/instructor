@@ -1,6 +1,6 @@
 ---
-title: Segmenting Search Queries with OpenAI and Pydantic
-description: Learn to segment search queries into actionable tasks using OpenAI Function Call and Pydantic for efficient execution.
+title: Search Query Segmentation with Instructor - Multi-Task Extraction
+description: Segment complex search queries into actionable tasks using Instructor. Break down user queries into parallel executable tasks with structured outputs.
 ---
 
 # Example: Segmenting Search Queries
@@ -35,7 +35,7 @@ class Search(BaseModel):
 
 
 def segment(data: str) -> Search:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         response_model=Iterable[Search],
         messages=[

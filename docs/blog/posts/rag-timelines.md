@@ -58,7 +58,7 @@ Using Instructor, we can prompt the LLM to generate a `SearchQuery` object based
 import instructor
 client = instructor.from_provider("openai/gpt-5-nano")
 
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-4o",
     response_model=SearchQuery,
     messages=[

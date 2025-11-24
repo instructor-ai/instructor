@@ -53,7 +53,7 @@ class UserDetail(pydantic.BaseModel):
         return f"Hello I'm {self.name} and I'm {self.age} years old"
 
 
-user: UserDetail = client.chat.completions.create(
+user: UserDetail = client.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[

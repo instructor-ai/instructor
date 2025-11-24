@@ -1,3 +1,8 @@
+---
+title: Streaming Basics with Instructor
+description: Learn how to use streaming to receive partial structured responses from LLMs as they are generated.
+---
+
 # Streaming Basics
 
 Streaming allows you to receive parts of a structured response as they're generated, rather than waiting for the complete response.
@@ -39,7 +44,7 @@ class UserProfile(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 
 # Enable streaming
-for partial in client.chat.completions.create(
+for partial in client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Generate a profile for Alex Chen"}
@@ -87,7 +92,7 @@ class Report(BaseModel):
 completed = set()
 total_fields = 3  # Number of fields in our model
 
-for partial in client.chat.completions.create(
+for partial in client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Generate a report on climate change"}

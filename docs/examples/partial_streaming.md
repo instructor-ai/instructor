@@ -1,6 +1,6 @@
 ---
-title: Streaming Partial Responses with Instructor
-description: Learn how to implement field-level streaming in Python using the Instructor library for dynamic UI rendering.
+title: Partial Response Streaming - Field-Level Updates
+description: Stream partial responses with Instructor for real-time UI updates. Get incremental snapshots of response models as fields are generated.
 ---
 
 # Streaming Partial Responses
@@ -43,7 +43,7 @@ class MeetingInfo(BaseModel):
 PartialMeetingInfo = instructor.Partial[MeetingInfo]
 
 
-extraction_stream = client.chat.completions.create(
+extraction_stream = client.create(
     model="gpt-4",
     response_model=PartialMeetingInfo,
     messages=[

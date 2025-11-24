@@ -62,7 +62,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate(data: str) -> Iterable[Ticket]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         response_model=Iterable[Ticket],
         messages=[
@@ -99,7 +99,7 @@ Alice: Sounds like a plan. Let's get these tasks modeled out and get started."""
 
 In order to quickly visualize the data we used code interpreter to create a graphviz export of the json version of the ActionItems array.
 
-![action items](../img/action_items.png)
+![Action items visualization showing extracted tasks with priorities and dependencies](../img/action_items.png)
 
 ```json
 [

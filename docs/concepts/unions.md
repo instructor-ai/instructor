@@ -48,7 +48,7 @@ Query = Union[UserQuery, SystemQuery]
 # Usage with Instructor
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-response = client.chat.completions.create(
+response = client.create(
     response_model=Query,
     messages=[{"role": "user", "content": "Parse: user lookup jsmith"}],
 )
@@ -159,7 +159,7 @@ from openai import OpenAI
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
 # Let the LLM decide what action to take
-result = client.chat.completions.create(
+result = client.create(
     response_model=Action,
     messages=[
         {
@@ -190,7 +190,7 @@ def validate_response(response: Response) -> bool:
     return True
 
 
-result = client.chat.completions.create(
+result = client.create(
     response_model=Response,
     validation_hook=validate_response,
     messages=[{"role": "user", "content": "Process this request"}],
@@ -200,7 +200,7 @@ result = client.chat.completions.create(
 ### Streaming with Unions
 ```python
 def stream_content():
-    response = client.chat.completions.create(
+    response = client.create(
         response_model=Message,
         stream=True,
         messages=[{"role": "user", "content": "Generate mixed content"}],
@@ -270,8 +270,8 @@ class MakePayment(BaseModel):
 Action = Union[SendMessage, MakePayment]
 
 # Usage with Instructor
-client = instructor.patch(OpenAI())
-response = client.chat.completions.create(
+client = instructor.from_provider("openai/gpt-4o")
+response = client.create(
     response_model=Action,
     messages=[{"role": "user", "content": "Send a payment of $50 to John."}],
 )
@@ -300,8 +300,8 @@ class EmailAction(BaseModel):
 Action = Union[SearchAction, EmailAction]
 
 # The model can choose which action to take
-client = instructor.patch(OpenAI())
-response = client.chat.completions.create(
+client = instructor.from_provider("openai/gpt-4o")
+response = client.create(
     response_model=Action,
     messages=[{"role": "user", "content": "Find me information about climate change."}],
 )
@@ -329,8 +329,17 @@ class ImageResponse(BaseModel):
 Response = Union[TextResponse, ImageResponse]
 
 # Patched client
-client = instructor.patch(OpenAI())
-response = client.chat.completions.create(
+```
+
+## See Also
+
+- [Types](./types.md) - Working with different data types in Instructor
+- [Enums](./enums.md) - Using enumerated types for structured choices
+- [Optional Fields](../learning/patterns/optional_fields.md) - Handling optional data
+- [Validation](./validation.md) - Validating union type responses
+- [Union Examples](../examples/index.md) - Practical union type examples
+client = instructor.from_provider("openai/gpt-4o")
+response = client.create(
     response_model=Response,
     messages=[{"role": "user", "content": "Tell me a joke about programming."}],
 )

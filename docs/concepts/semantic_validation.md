@@ -3,6 +3,14 @@ title: Semantic Validation with LLMs
 description: Using LLMs for complex validation that goes beyond rule-based approaches to evaluate content based on natural language criteria.
 ---
 
+## See Also
+
+- [Validation](./validation.md) - Core validation concepts and strategies
+- [Custom Validators](../learning/validation/custom_validators.md) - Build custom validation logic
+- [Field Validation](../learning/patterns/field_validation.md) - Field-level validation patterns
+- [Reask Validation](./reask_validation.md) - Automatic retry with validation feedback
+- [LLM Validator](./validation.md#semantic-validation) - Semantic validation examples
+
 # Semantic Validation with LLMs
 
 This guide covers semantic validation in Instructor - using LLMs themselves to validate content against complex, subjective, or contextual criteria that would be difficult to implement with traditional rule-based approaches.
@@ -121,7 +129,7 @@ class ProductDescription(BaseModel):
 
 # Example usage with Jinja templating
 try:
-    product = client.chat.completions.create(
+    product = client.create(
         response_model=ProductDescription,
         messages=[
             {
@@ -201,7 +209,7 @@ class ForumPost(BaseModel):
     # Using Jinja templating for validation against dynamic values
     @classmethod
     def validate_post(cls, topic_name: str, post_content: str) -> "ForumPost":
-        return client.chat.completions.create(
+        return client.create(
             response_model=cls,
             messages=[
                 {
@@ -252,7 +260,7 @@ class FactCheckedClaim(BaseModel):
 
     @classmethod
     def validate_claim(cls, text: str) -> "FactCheckedClaim":
-        return client.chat.completions.create(
+        return client.create(
             response_model=cls,
             messages=[
                 {
@@ -290,7 +298,7 @@ class Report(BaseModel):
     @model_validator(mode='after')
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
-        validation_result = client.chat.completions.create(
+        validation_result = client.create(
             response_model=Validator,
             messages=[
                 {

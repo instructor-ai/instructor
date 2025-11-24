@@ -1,3 +1,8 @@
+---
+title: Streaming Lists with Instructor
+description: Learn how to stream lists of structured objects from LLMs, processing collection items as they are generated for better responsiveness.
+---
+
 # Streaming Lists
 
 This guide explains how to stream lists of structured data with Instructor. Streaming lists allows you to process collection items as they're generated, improving responsiveness for larger outputs.
@@ -19,7 +24,7 @@ class Book(BaseModel):
     year: int = Field(..., description="Publication year")
 
 # Stream a list of books
-for book in client.chat.completions.create(
+for book in client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "List 5 classic science fiction books"}
@@ -57,7 +62,7 @@ print("Generating project tasks...")
 start_time = time.time()
 received_tasks = 0
 
-for task in client.chat.completions.create(
+for task in client.create(
     model="gpt-3.5-turbo",
     messages=[
         {

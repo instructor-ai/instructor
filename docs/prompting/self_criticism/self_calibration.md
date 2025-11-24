@@ -22,7 +22,7 @@ class SelfCalibration(BaseModel):
 
 
 def evaluate_model_output(original_prompt: str, model_response: str):
-    return client.chat.completions.create(
+    return client.create(
         messages=[
             {
                 "role": "user",

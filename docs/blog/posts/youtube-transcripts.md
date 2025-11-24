@@ -122,7 +122,7 @@ def get_youtube_transcript(video_id: str) -> str:
 
 
 def extract_chapters(transcript: str):
-    return client.chat.completions.create_iterable(
+    return client.create_iterable(
         model="gpt-4o",  # You can experiment with different models
         response_model=Chapter,
         messages=[

@@ -19,7 +19,7 @@ from pydantic import (
 )
 import pandas as pd
 import instructor
-import openai
+import instructor
 
 
 def md_to_df(data: Any) -> Any:
@@ -61,7 +61,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract_df(data: str) -> pd.DataFrame:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=MarkdownDataFrame,
         messages=[
@@ -83,7 +83,7 @@ class Table(BaseModel):
 
 
 def extract_table(data: str) -> Table:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=Table,
         messages=[

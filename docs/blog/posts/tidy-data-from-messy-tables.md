@@ -90,7 +90,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract_table(image_path: str) -> TidyTables:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {

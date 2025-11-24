@@ -40,7 +40,7 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 # Enable response_model and API Model Distillation
-client = instructor.patch(OpenAI())
+client = instructor.from_provider("openai/gpt-4o")
 
 
 class UserDetail(BaseModel):
@@ -52,7 +52,7 @@ class UserDetail(BaseModel):
 
 
 # Use the store parameter to enable API Model Distillation
-user: UserDetail = client.chat.completions.create(
+user: UserDetail = client.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[
@@ -71,7 +71,7 @@ One of the great advantages of using Instructor with API Model Distillation is t
 For example, you can add metadata to your API calls:
 
 ```python
-user: UserDetail = client.chat.completions.create(
+user: UserDetail = client.create(
     model="gpt-3.5-turbo",
     response_model=UserDetail,
     messages=[

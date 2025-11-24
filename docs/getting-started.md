@@ -69,7 +69,7 @@ class UserInfo(BaseModel):
 client = instructor.from_provider("openai/gpt-5-nano")
 
 # Extract structured data
-user_info = client.chat.completions.create(
+user_info = client.create(
     response_model=UserInfo,
     messages=[
         {"role": "user", "content": "John Doe is 30 years old."}
@@ -82,7 +82,7 @@ print(f"Name: {user_info.name}, Age: {user_info.age}")
 
 This example demonstrates the core workflow:
 1. Define a Pydantic model for your output structure
-2. Patch your LLM client with Instructor
+2. Create an Instructor client with `from_provider`
 3. Request structured output using the `response_model` parameter
 
 ## Validation and Error Handling
@@ -103,8 +103,7 @@ class User(BaseModel):
         return v
 
 # This will make the LLM retry if validation fails
-user = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+user = client.create(
     response_model=User,
     messages=[
         {"role": "user", "content": "Extract: Tom is 25 years old."}
@@ -131,8 +130,7 @@ class Person(BaseModel):
     age: int
     addresses: List[Address]
 
-person = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+person = client.create(
     response_model=Person,
     messages=[
         {"role": "user", "content": """
@@ -152,8 +150,7 @@ For larger responses or better user experience, use streaming:
 from instructor import Partial
 
 # Stream the response as it's being generated
-stream = client.chat.completions.create_partial(
-    model="gpt-3.5-turbo",
+stream = client.create_partial(
     response_model=Person,
     messages=[
         {"role": "user", "content": "Extract a detailed person profile for John Smith, 35, who lives in Chicago and Springfield."}
@@ -180,8 +177,7 @@ class UserInfo(BaseModel):
 # Create an instructor client with from_provider
 client = instructor.from_provider("anthropic/claude-3-opus-20240229")
 
-user_info = client.messages.create(
-    max_tokens=1024,
+user_info = client.create(
     response_model=UserInfo,
     messages=[
         {"role": "user", "content": "John Doe is 30 years old."}
@@ -191,14 +187,43 @@ user_info = client.messages.create(
 print(f"Name: {user_info.name}, Age: {user_info.age}")
 ```
 
+## Frequently Asked Questions
+
+### What's the difference between `start-here.md` and `getting-started.md`?
+
+- **[Start Here](./start-here.md)**: Explains what Instructor is and why you'd use it (conceptual overview)
+- **Getting Started**: This guide - shows you how to install and use Instructor (practical steps)
+
+### Which provider should I start with?
+
+OpenAI is the most popular choice for beginners due to reliability and wide support. Once comfortable, you can explore Anthropic Claude, Google Gemini, or open-source models.
+
+### Do I need to understand Pydantic?
+
+Basic knowledge helps, but you can start with simple models. Instructor works with any Pydantic BaseModel. Learn more advanced features as you need them.
+
+### Can I use Instructor with async code?
+
+Yes! Use `async_client=True` when creating your client: `client = instructor.from_provider("openai/gpt-4o", async_client=True)`, then use `await client.create()`.
+
+### What if validation fails?
+
+Instructor automatically retries with validation feedback. You can configure retry behavior with `max_retries` parameter. See [retry mechanisms](./learning/validation/retry_mechanisms.md) for details.
+
+[View all FAQs →](./faq.md)
+
 ## Next Steps
 
 Now that you've mastered the basics, here are some next steps:
 
-- Learn about [Mode settings](./concepts/patching.md) for different LLM providers
+- Learn about [client setup with from_provider](./concepts/from_provider.md) for different LLM providers
 - Explore [advanced validation](./concepts/reask_validation.md) to ensure data quality
 - Check out the [Cookbook examples](./examples/index.md) for real-world applications
 - See how to [use hooks](./concepts/hooks.md) for monitoring and debugging
+
+**Using older patterns?** If you're using `instructor.patch()` or provider-specific functions like `from_openai()`, check out the [Migration Guide](./concepts/migration.md) to modernize your code.
+
+**New to Instructor?** Start with [Start Here](./start-here.md) for a conceptual overview.
 
 For more detailed information on any topic, visit the [Concepts](./concepts/index.md) section.
 

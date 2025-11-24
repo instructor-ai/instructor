@@ -14,7 +14,6 @@ The `Table` class is essential for organizing the extracted data. It includes a 
 This requires additional dependencies `pip install pandas tabulate`.
 
 ```python
-from openai import OpenAI
 from io import StringIO
 from typing import Annotated, Any, List
 from pydantic import (
@@ -29,10 +28,7 @@ import pandas as pd
 from rich.console import Console
 
 console = Console()
-client = instructor.from_openai(
-    client=OpenAI(),
-    mode=instructor.Mode.TOOLS,
-)
+client = instructor.from_provider("openai/gpt-4o", mode=instructor.Mode.TOOLS)
 
 
 def md_to_df(data: Any) -> Any:
@@ -92,7 +88,7 @@ example = MultipleTables(
 
 
 def extract(url: str) -> MultipleTables:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4-turbo",
         max_tokens=4000,
         response_model=MultipleTables,

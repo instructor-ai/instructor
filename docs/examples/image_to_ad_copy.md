@@ -213,8 +213,7 @@ def read_images(image_urls: list[str]) -> IdentifiedProduct:
 
     logger.info(f"Identifying products in images... {len(image_urls)} images")
 
-    return client_image.chat.completions.create(
-        model="gpt-4o-mini",
+    return client_image.create(
         response_model=IdentifiedProduct,
         max_tokens=1024,  # can be changed
         temperature=0,
@@ -304,8 +303,7 @@ def generate_ad_copy(product: Product) -> AdCopy:
 
     logger.info(f"Generating ad copy for product: {product.name}")
 
-    return client_copy.chat.completions.create(
-        model="gpt-4o-mini",
+    return client_copy.create(
         response_model=AdCopy,
         temperature=0.3,
         messages=[
@@ -335,8 +333,8 @@ https://contents.mediadecathlon.com/p2047870/8712c55568dd9928c83b19c6a4067bf1618
 
 ??? Note "Expand to see the output"
 
-    ![](https://contents.mediadecathlon.com/p1279823/9a1c59ad97a4084a346c014740ae4d3ff860ea70b485ee65f34017ff5e9ae5f7/recreational-ice-skates-fit-50-black.jpg?format=auto)
-    ![](https://contents.mediadecathlon.com/p2329893/1ed75517602a5e00245b89ab6a1c6be6d8968a5a227c932b10599f857f3ed4cd/mens-hiking-leather-boots-sh-100-x-warm.jpg?format=auto)
+    ![Recreational ice skates product image for ad copy generation](https://contents.mediadecathlon.com/p1279823/9a1c59ad97a4084a346c014740ae4d3ff860ea70b485ee65f34017ff5e9ae5f7/recreational-ice-skates-fit-50-black.jpg?format=auto)
+    ![Men's hiking leather boots product image for ad copy generation](https://contents.mediadecathlon.com/p2329893/1ed75517602a5e00245b89ab6a1c6be6d8968a5a227c932b10599f857f3ed4cd/mens-hiking-leather-boots-sh-100-x-warm.jpg?format=auto)
 
     ```json
     {

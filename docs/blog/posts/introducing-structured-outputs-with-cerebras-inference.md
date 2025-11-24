@@ -74,7 +74,7 @@ class Person(BaseModel):
     age: int
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="llama3.1-70b",
     messages=[
         {
@@ -109,7 +109,7 @@ class Person(BaseModel):
     age: int
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="llama3.1-70b",
     messages=[
         {

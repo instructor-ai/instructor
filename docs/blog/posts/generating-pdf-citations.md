@@ -87,7 +87,7 @@ while file.state != File.State.ACTIVE:
     file = genai.get_file(file.name)
     print(f"File is still uploading, state: {file.state}")
 
-resp: Answer = client.chat.completions.create(
+resp: Answer = client.create(
     messages=[
         {
             "role": "system",

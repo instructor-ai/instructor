@@ -120,7 +120,7 @@ class UserDetail(BaseModel):
 
 
 def extract(data) -> UserDetail:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
@@ -153,7 +153,7 @@ import functools
 
 @functools.cache
 def extract(data):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
@@ -238,7 +238,7 @@ import functools
 
 @functools.lru_cache(maxsize=1000)  # Limit cache to 1000 entries
 def extract_with_limit(data: str, model: str = "gpt-3.5-turbo") -> UserDetail:
-    return client.chat.completions.create(
+    return client.create(
         model=model,
         response_model=UserDetail,
         messages=[
@@ -372,7 +372,7 @@ class UserDetail(BaseModel):
 
 @instructor_cache
 def extract(data) -> UserDetail:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
@@ -535,7 +535,7 @@ class UserDetail(BaseModel):
 @instructor_cache
 def extract(data) -> UserDetail:
     # Assuming client.chat.completions.create returns a UserDetail instance
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
@@ -638,7 +638,7 @@ def extract_l2(data: str) -> UserDetail:
 
 @redis_decorator  # L3
 def extract_l3(data: str) -> UserDetail:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[{"role": "user", "content": data}],
@@ -709,7 +709,7 @@ cache = AsyncInstructorCache()
 
 @cache.cache(ttl=3600)
 async def extract_async(data: str) -> UserDetail:
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[{"role": "user", "content": data}],
@@ -726,7 +726,7 @@ Combine caching with [streaming responses](../../concepts/partial.md) for optima
 @instructor_cache
 def extract_streamable(data: str) -> UserDetail:
     """Cache the final result while still allowing streaming for new requests."""
-    return client.chat.completions.create_partial(
+    return client.create_partial(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[{"role": "user", "content": data}],

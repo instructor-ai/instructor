@@ -119,7 +119,7 @@ system_prompt = """Analyze the given YouTube transcript and generate question-an
 to help study and understand the topic better. Please rate all questions from 1 to 5
 based on their difficulty."""
 
-response = instructor_client.chat.completions.create_iterable(
+response = instructor_client.create_iterable(
     model="gpt-4o-mini",
     response_model=QuestionAnswer,
     messages=[
@@ -218,7 +218,7 @@ def generate_question_and_answers(state: State) -> State:
         " to help study and understand the topic better. Please rate all questions from 1 to 5"
         " based on their difficulty."
     )
-    response = instructor_client.chat.completions.create_iterable(
+    response = instructor_client.create_iterable(
         model="gpt-4o-mini",
         response_model=QuestionAnswer,
         messages=[

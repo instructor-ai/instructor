@@ -50,7 +50,7 @@ class ReporterOutput(BaseModel):
 
 async def generate_propositions(premises: list[str], hypothesis: str) -> ProposerOutput:
     formatted_premises = "\n- ".join(premises)
-    return await client.chat.completions.create(
+    return await client.create(
         messages=[
             {
                 "role": "system",
@@ -99,7 +99,7 @@ async def verify_propositions(
     premise_evaluation: ProposerOutput,
 ) -> list[VerifiedProposition]:
     async def create_verification_task(proposition: Proposition) -> VerifiedProposition:
-        return await client.chat.completions.create(
+        return await client.create(
             messages=[
                 {
                     "role": "system",
@@ -142,7 +142,7 @@ async def final_evaluation(
 ) -> ReporterOutput:
     formatted_premises = "\n- ".join(premises)
     formatted_propositions = "\n- ".join(verification_result)
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         messages=[
             {

@@ -72,7 +72,9 @@ def test_mixed_exception_catching():
         raise ResponseParsingError("Parsing failed", mode="JSON")
 
     def raise_multimodal_error():
-        raise MultimodalError("File not found", content_type="image", file_path="/test.jpg")
+        raise MultimodalError(
+            "File not found", content_type="image", file_path="/test.jpg"
+        )
 
     # Catch as ValueError
     with pytest.raises(ValueError):
@@ -93,9 +95,7 @@ def test_exception_attributes_preserved():
     """Test that exception attributes are preserved when caught as ValueError."""
     try:
         raise ResponseParsingError(
-            "Parse failed",
-            mode="TOOLS",
-            raw_response={"test": "data"}
+            "Parse failed", mode="TOOLS", raw_response={"test": "data"}
         )
     except ValueError as e:
         # Should still be able to access ResponseParsingError attributes
@@ -104,11 +104,7 @@ def test_exception_attributes_preserved():
         assert e.raw_response == {"test": "data"}
 
     try:
-        raise MultimodalError(
-            "File error",
-            content_type="pdf",
-            file_path="/test.pdf"
-        )
+        raise MultimodalError("File error", content_type="pdf", file_path="/test.pdf")
     except ValueError as e:
         # Should still be able to access MultimodalError attributes
         assert isinstance(e, MultimodalError)

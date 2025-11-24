@@ -1,3 +1,15 @@
+---
+title: In-Memory Batch Processing for Serverless Applications
+description: Learn how to use Instructor's in-memory batch processing feature for serverless deployments without disk I/O.
+---
+
+## See Also
+
+- [Batch Processing](./batch_job_oai.md) - File-based batch processing
+- [Bulk Classification](./bulk_classification.md) - Process multiple classifications
+- [from_provider Guide](../concepts/from_provider.md#async-clients) - Async client setup
+- [Cost Optimization](./batch_job_oai.md) - Reduce API costs with batch processing
+
 # In-Memory Batch Processing for Serverless
 
 This guide demonstrates how to use Instructor's in-memory batch processing feature, which is perfect for serverless deployments and applications that need to avoid disk I/O.

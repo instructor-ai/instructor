@@ -1,3 +1,8 @@
+---
+title: Simple Object Extraction Pattern
+description: Learn the fundamental pattern of extracting simple objects from text using Instructor with type-safe validation.
+---
+
 # Simple Object Extraction: LLM Tutorial for Structured Data
 
 Learn how to extract structured objects from text using LLMs in this comprehensive tutorial. We'll cover the fundamental pattern of transforming unstructured text into validated Python objects using Instructor with GPT-4, Claude, and other language models.
@@ -15,7 +20,7 @@ class Person(BaseModel):
 
 # Extract structured data from LLM
 client = instructor.from_provider("openai/gpt-5-nano")
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-3.5-turbo",  # Works with GPT-4, Claude, Gemini
     messages=[
         {"role": "user", "content": "John Smith is a 35-year-old software engineer."}
@@ -106,7 +111,7 @@ class ContactInfo(BaseModel):
 
 # Extract structured data
 client = instructor.from_provider("openai/gpt-5-nano")
-contact = client.chat.completions.create(
+contact = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": """

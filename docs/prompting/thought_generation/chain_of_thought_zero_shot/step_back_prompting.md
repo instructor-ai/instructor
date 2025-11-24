@@ -45,7 +45,7 @@ class Response(BaseModel):
 
 
 def generate_stepback_question():
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Stepback,
         messages=[
@@ -79,7 +79,7 @@ def generate_stepback_question():
 
 
 def ask_stepback_question(stepback):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Iterable[Education],
         messages=[
@@ -89,7 +89,7 @@ def ask_stepback_question(stepback):
 
 
 def get_final_response(stepback, stepback_response):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Response,
         messages=[

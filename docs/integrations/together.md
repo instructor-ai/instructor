@@ -21,8 +21,7 @@ By the end of this blog post, you will learn how to effectively utilize instruct
 
 !!! note "Other Languages"
 
-    This blog post is written in Python, but the concepts are applicable to other languages as well, as we currently have support for [Javascript](
-        https://instructor-ai.github.io/instructor-js), [Elixir](https://hexdocs.pm/instructor/Instructor.html) and [PHP](https://github.com/cognesy/instructor-php/).
+    This blog post is written in Python, but the concepts are applicable to other languages as well, as we currently have support for [Javascript](https://instructor-ai.github.io/instructor-js), [Elixir](https://hexdocs.pm/instructor/Instructor.html) and [PHP](https://github.com/cognesy/instructor-php/).
 
 <!-- more -->
 
@@ -37,7 +36,14 @@ Instructor's patch enhances the openai api it with the following features:
 
     To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page.
 
-## Together AI
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+- [Open Source Models](../examples/open_source.md) - More open-source model examples
+
+# Together AI
 
 The good news is that Together employs the same OpenAI client, and its models support some of these output modes too!
 
@@ -66,7 +72,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user: UserExtract = client.chat.completions.create(
+user: UserExtract = client.create(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -110,7 +116,7 @@ class UserExtract(BaseModel):
     age: int
 
 async def extract_user():
-    return await async_client.chat.completions.create(
+    return await async_client.create(
         response_model=UserExtract,
         messages=[{"role": "user", "content": "Extract jason is 25 years old"}],
     )

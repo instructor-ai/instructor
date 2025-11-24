@@ -57,7 +57,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_feedback(response):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Feedback,
         messages=[
@@ -80,7 +80,7 @@ def generate_feedback(response):
 
 
 def refine(response, feedback):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Response,
         messages=[
@@ -109,7 +109,7 @@ def stop_condition(feedback, history):
 
 
 if __name__ == "__main__":
-    response = client.chat.completions.create(
+    response = client.create(
         model="gpt-4o",
         response_model=Response,
         messages=[

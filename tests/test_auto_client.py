@@ -359,9 +359,7 @@ def test_databricks_provider_async_client():
                 },
                 clear=True,
             ):
-                client = from_provider(
-                    "databricks/dbrx-instruct", async_client=True
-                )
+                client = from_provider("databricks/dbrx-instruct", async_client=True)
 
             mock_async_openai_class.assert_called_once()
             _, kwargs = mock_async_openai_class.call_args
@@ -414,6 +412,7 @@ def test_databricks_provider_requires_host():
             ):
                 with pytest.raises(ConfigurationError):
                     from_provider("databricks/dbrx-instruct")
+
 
 def test_genai_mode_parameter_passed_to_provider():
     """Test that mode parameter is correctly passed to provider functions."""

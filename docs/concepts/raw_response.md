@@ -21,7 +21,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user, completion = client.chat.completions.create_with_completion(
+user, completion = client.create_with_completion(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -76,6 +76,12 @@ ChatCompletion(
 """
 ```
 
+## See Also
+
+- [Hooks](./hooks.md) - Monitor LLM interactions without accessing raw responses
+- [Debugging](../debugging.md) - Debugging techniques for LLM outputs
+- [Response Models](./models.md) - Working with structured response models
+
 ## Anthropic Raw Response
 
 You can also access the raw response from Anthropic models. This is useful for debugging or when you need to access additional information from the response.
@@ -86,7 +92,7 @@ import instructor
 client = instructor.from_provider("anthropic/claude-3-5-sonnet-latest")
 
 
-user, completion = client.chat.completions.create_with_completion(
+user, completion = client.create_with_completion(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},

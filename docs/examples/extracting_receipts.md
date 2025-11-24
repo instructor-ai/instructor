@@ -1,6 +1,6 @@
 ---
-title: Extracting Receipt Data with GPT-4 and Python
-description: Learn how to use Python and GPT-4 to extract and validate receipt data from images for efficient expense tracking.
+title: Receipt Data Extraction with GPT-4 Vision - Expense Tracking
+description: Extract and validate receipt data from images using GPT-4 Vision and Instructor. Automate expense tracking with structured receipt parsing.
 ---
 
 # Extracting Receipt Data using GPT-4 and Python
@@ -84,7 +84,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract(url: str) -> Receipt:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         max_tokens=4000,
         response_model=Receipt,
@@ -141,7 +141,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract(url: str) -> Receipt:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         max_tokens=4000,
         response_model=Receipt,

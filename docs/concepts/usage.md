@@ -3,6 +3,13 @@ title: Handling Non-Streaming Requests in OpenAI with Usage Tracking
 description: Learn how to manage non-streaming requests in OpenAI, track token usage, and handle exceptions with Python.
 ---
 
+## See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [from_provider Guide](./from_provider.md) - Detailed client configuration
+- [Response Models](./models.md) - Working with Pydantic models
+- [Raw Response](./raw_response.md) - Access original LLM responses
+
 The easiest way to get usage for non streaming requests is to access the raw response.
 
 ```python
@@ -18,7 +25,7 @@ class UserExtract(BaseModel):
     age: int
 
 
-user, completion = client.chat.completions.create_with_completion(
+user, completion = client.create_with_completion(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -55,7 +62,7 @@ class UserExtract(BaseModel):
 
 
 try:
-    client.chat.completions.create_with_completion(
+    client.create_with_completion(
         response_model=UserExtract,
         messages=[
             {"role": "user", "content": "Extract jason is 25 years old"},

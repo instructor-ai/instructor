@@ -215,7 +215,7 @@ Once we've done this, we can then make an api call to get the description of the
 
 ```python
 for _ in range(2):
-    resp, completion = client.chat.completions.create_with_completion(  # (1)!
+    resp, completion = client.create_with_completion(  # (1)!
         model="claude-3-haiku-20240307",
         messages=[
             {
@@ -311,7 +311,7 @@ with open("./book.txt") as f:
     book = f.read()
 
 for _ in range(2):
-    resp, completion = client.chat.completions.create_with_completion(
+    resp, completion = client.create_with_completion(
         model="claude-3-haiku-20240307",
         messages=[
             {

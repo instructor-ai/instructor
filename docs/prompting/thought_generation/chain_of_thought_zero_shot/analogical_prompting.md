@@ -39,7 +39,7 @@ class Response(BaseModel):
 
 
 def analogical_prompting(query: str):
-    return client.chat.completions.create(
+    return client.create(
         messages=[
             {
                 "role": "user",

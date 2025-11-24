@@ -168,7 +168,7 @@ def prompt_template_2(question: str, options: list[str]):
 async def generate_response(
     question: str, options: list[str], prompt_template: Callable[[str, list[str]], str]
 ):
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-3.5-turbo",
         messages=[
             {

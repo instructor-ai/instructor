@@ -62,7 +62,7 @@ client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 @app.post("/user", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
-    user_detail = await client.chat.completions.create(
+    user_detail = await client.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
@@ -95,12 +95,12 @@ openai_client = AsyncOpenAI()  # (2)!
 logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
 logfire.instrument_openai(openai_client)
 logfire.instrument_fastapi(app)
-client = instructor.from_openai(openai_client)
+client = instructor.from_provider("openai/gpt-4o")
 
 
 @app.post("/user", response_model=UserDetail)
 async def endpoint_function(data: UserData) -> UserDetail:
-    user_detail = await client.chat.completions.create(
+    user_detail = await client.create(
         model="gpt-3.5-turbo",
         response_model=UserDetail,
         messages=[
@@ -155,7 +155,7 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     @app.post("/many-users", response_model=list[UserDetail])
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
-            user_detail = await client.chat.completions.create(
+            user_detail = await client.create(
                 model="gpt-3.5-turbo",
                 response_model=UserDetail,
                 messages=[
@@ -196,12 +196,12 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
     logfire.instrument_openai(openai_client)
     logfire.instrument_fastapi(app)
-    client = instructor.from_openai(openai_client)
+    client = instructor.from_provider("openai/gpt-4o")
 
 
     @app.post("/user", response_model=UserDetail)
     async def endpoint_function(data: UserData) -> UserDetail:
-        user_detail = await client.chat.completions.create(
+        user_detail = await client.create(
             model="gpt-3.5-turbo",
             response_model=UserDetail,
             messages=[
@@ -215,7 +215,7 @@ Sometimes, we might need to run multiple jobs in parallel. Let's see how we can 
     @app.post("/many-users", response_model=list[UserDetail])
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
-            user_detail = await client.chat.completions.create(
+            user_detail = await client.create(
                 model="gpt-3.5-turbo",
                 response_model=UserDetail,
                 messages=[
@@ -272,8 +272,8 @@ Let's add a new endpoint to our server to see how this might work
         logfire.instrument_openai(
             suppressed_client, suppress_other_instrumentation=False
         )  # (1)!
-        client = instructor.from_openai(suppressed_client)
-        users = await client.chat.completions.create(
+        client = instructor.from_provider("openai/gpt-4o")
+        users = await client.create(
             model="gpt-3.5-turbo",
             response_model=Iterable[UserDetail],
             stream=True,
@@ -324,12 +324,12 @@ Let's add a new endpoint to our server to see how this might work
     logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
     logfire.instrument_fastapi(app)
     logfire.instrument_openai(openai_client)
-    client = instructor.from_openai(openai_client)
+    client = instructor.from_provider("openai/gpt-4o")
 
 
     @app.post("/user", response_model=UserDetail)
     async def endpoint_function(data: UserData) -> UserDetail:
-        user_detail = await client.chat.completions.create(
+        user_detail = await client.create(
             model="gpt-3.5-turbo",
             response_model=UserDetail,
             messages=[
@@ -343,7 +343,7 @@ Let's add a new endpoint to our server to see how this might work
     @app.post("/many-users", response_model=list[UserDetail])
     async def extract_many_users(data: MultipleUserData):
         async def extract_user(query: str):
-            user_detail = await client.chat.completions.create(
+            user_detail = await client.create(
                 model="gpt-3.5-turbo",
                 response_model=UserDetail,
                 messages=[
@@ -361,8 +361,8 @@ Let's add a new endpoint to our server to see how this might work
     async def extract(data: UserData):
         suppressed_client = AsyncOpenAI()
         logfire.instrument_openai(suppressed_client, suppress_other_instrumentation=False)
-        client = instructor.from_openai(suppressed_client)
-        users = await client.chat.completions.create(
+        client = instructor.from_provider("openai/gpt-4o")
+        users = await client.create(
             model="gpt-3.5-turbo",
             response_model=Iterable[UserDetail],
             stream=True,

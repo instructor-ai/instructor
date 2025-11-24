@@ -1,6 +1,6 @@
 ---
-title: Effective Prompt Templating with Jinja and Pydantic
-description: Learn to dynamically create prompts using Jinja templating and validate them with Pydantic for enhanced flexibility and security.
+title: Prompt Templating with Jinja - Dynamic Prompt Generation
+description: Create dynamic prompts using Jinja templating with Instructor. Build reusable, versioned prompts with Pydantic validation and security.
 ---
 
 # Prompt Templating
@@ -36,7 +36,7 @@ class User(BaseModel):
     age: int
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",
@@ -149,7 +149,7 @@ class Response(BaseModel):
     answer: list[Citation]
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",
@@ -222,7 +222,7 @@ class Address(BaseModel):
 client = instructor.from_provider("openai/gpt-4.1-mini")
 context = UserContext(name="scolvin", address="secret address")
 
-address = client.chat.completions.create(
+address = client.create(
     messages=[
         {
             "role": "user",

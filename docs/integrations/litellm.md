@@ -30,7 +30,7 @@ class User(BaseModel):
     age: int
 
 # Create structured output
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -59,7 +59,7 @@ class User(BaseModel):
 
 
 async def extract_user():
-    user = await client.chat.completions.create(
+    user = await client.create(
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -92,7 +92,7 @@ class User(BaseModel):
 
 
 client = instructor.from_provider("litellm/gpt-3.5-turbo")
-instructor_resp, raw_completion = client.chat.completions.create_with_completion(
+instructor_resp, raw_completion = client.create_with_completion(
     max_tokens=1024,
     messages=[
         {

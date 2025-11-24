@@ -1,3 +1,8 @@
+---
+title: Batch Processing with Instructor - Cost Optimization Guide
+description: Process multiple LLM requests efficiently using batch processing for 50% cost savings. Learn file-based and in-memory batch processing with OpenAI, Anthropic, and Google.
+---
+
 # Batch Processing
 
 Batch processing allows you to send multiple requests in a single operation, which is more cost-effective and efficient for processing large datasets. Instructor supports batch processing across multiple providers with a unified interface.

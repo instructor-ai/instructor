@@ -144,7 +144,7 @@ class FactCheckedClaim(BaseModel):
 
     @classmethod
     def validate_claim(cls, text: str) -> "FactCheckedClaim":
-        return client.chat.completions.create(
+        return client.create(
             response_model=cls,
             messages=[
                 {
@@ -173,7 +173,7 @@ class Report(BaseModel):
     @model_validator(mode='after')
     def validate_consistency(self):
         # Semantic validation at the model level using Jinja templating
-        validation_result = client.chat.completions.create(
+        validation_result = client.create(
             response_model=Validator,
             messages=[
                 {
@@ -229,7 +229,7 @@ One of the most powerful features of Instructor's validation system is its abili
 
 ```python
 try:
-    product = client.chat.completions.create(
+    product = client.create(
         response_model=ProductDescription,
         messages=[
             {"role": "system", "content": "Generate a product description."},
@@ -320,7 +320,7 @@ class LegalCompliance(BaseModel):
     ]
 
 # Usage
-result = client.chat.completions.create(
+result = client.create(
     response_model=LegalCompliance,
     messages=[
         {"role": "user", "content": "Check this document: " + document_text}

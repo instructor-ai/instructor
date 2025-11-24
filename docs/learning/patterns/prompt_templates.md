@@ -1,3 +1,8 @@
+---
+title: Using Prompt Templates with Instructor
+description: Learn how to create reusable prompt templates for consistent structured output extraction across different use cases.
+---
+
 # Prompt Templates
 
 This guide covers how to use prompt templates with Instructor to create reusable, parameterized prompts for structured data extraction.
@@ -44,7 +49,7 @@ prompt = prompt_template.format(
 )
 
 # Extract structured data using the formatted prompt
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": prompt}
@@ -67,7 +72,7 @@ def extract_person(content, document_type="text"):
     Please provide their name, age, and occupation.
     """
 
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": prompt}
@@ -136,7 +141,7 @@ prompt = create_review_extraction_prompt(
     include_sentiment=True
 )
 
-review = client.chat.completions.create(
+review = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": prompt}

@@ -47,7 +47,7 @@ client = OpenAI(
 )
 
 # Patch the client with Instructor
-instructor_client = instructor.from_openai(client)
+instructor_client = instructor.from_provider("openai/gpt-4o")
 
 # Define your Pydantic model for structured output
 class User(BaseModel):
@@ -56,7 +56,7 @@ class User(BaseModel):
     email: str
 
 # Extract structured data
-user_info = instructor_client.chat.completions.create(
+user_info = instructor_client.create(
     model="openai-main/gpt-4o",  # Your TrueFoundry model ID
     response_model=User,
     messages=[
@@ -83,7 +83,7 @@ client = OpenAI(
     api_key="your-truefoundry-api-key",
     base_url="your-truefoundry-base-url",
 )
-instructor_client = instructor.from_openai(client)
+instructor_client = instructor.from_provider("openai/gpt-4o")
 
 # Define response structure
 class ProductInfo(BaseModel):
@@ -93,7 +93,7 @@ class ProductInfo(BaseModel):
     in_stock: bool
 
 # Extract product information
-product = instructor_client.chat.completions.create(
+product = instructor_client.create(
     model="openai-main/gpt-4o",
     response_model=ProductInfo,
     messages=[
@@ -120,7 +120,7 @@ client = OpenAI(
     api_key="your-truefoundry-api-key",
     base_url="your-truefoundry-base-url",
 )
-instructor_client = instructor.from_openai(client)
+instructor_client = instructor.from_provider("openai/gpt-4o")
 
 class Task(BaseModel):
     title: str
@@ -134,7 +134,7 @@ class ProjectPlan(BaseModel):
     tasks: List[Task]
 
 # Extract complex project structure
-project = instructor_client.chat.completions.create(
+project = instructor_client.create(
     model="openai-main/gpt-4o",
     response_model=ProjectPlan,
     messages=[

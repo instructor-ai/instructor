@@ -3,6 +3,14 @@ title: Error Handling in Instructor
 description: Learn how to effectively handle errors and exceptions when using Instructor for structured outputs.
 ---
 
+## See Also
+
+- [Validation](./validation.md) - Core validation concepts and error handling
+- [Retrying](./retrying.md) - Automatic retry mechanisms with Tenacity
+- [Reask Validation](./reask_validation.md) - Automatic retry with validation feedback
+- [Hooks](./hooks.md) - Monitor errors and retries with hooks
+- [Debugging](../debugging.md) - Practical debugging techniques
+
 # Error Handling
 
 Instructor provides a comprehensive exception hierarchy to help you handle errors gracefully and debug issues effectively. This guide covers the various exception types and best practices for error handling.
@@ -38,7 +46,7 @@ Raised when the LLM output is incomplete due to reaching the maximum token limit
 
 ```python
 try:
-    response = client.chat.completions.create(
+    response = client.create(
         response_model=DetailedReport,
         messages=[{"role": "user", "content": "Write a very long report..."}],
         max_tokens=50  # Very low limit
@@ -53,7 +61,7 @@ Raised when all retry attempts have been exhausted.
 
 ```python
 try:
-    response = client.chat.completions.create(
+    response = client.create(
         response_model=UserDetail,
         messages=[{"role": "user", "content": "Extract user info..."}],
         max_retries=3
@@ -70,7 +78,7 @@ Raised when response validation fails. This is different from Pydantic's Validat
 
 ```python
 try:
-    response = client.chat.completions.create(
+    response = client.create(
         response_model=StrictModel,
         messages=[{"role": "user", "content": "Extract data..."}]
     )
@@ -127,7 +135,7 @@ Raised when unable to parse the LLM response into the expected format. Inherits 
 
 ```python
 try:
-    response = client.chat.completions.create(
+    response = client.create(
         response_model=User,
         mode=instructor.Mode.JSON,
         ...
@@ -151,7 +159,7 @@ Raised when processing multimodal content (images, audio, PDFs) fails. Inherits 
 from instructor import Image
 
 try:
-    response = client.chat.completions.create(
+    response = client.create(
         response_model=Analysis,
         messages=[{
             "role": "user",
@@ -188,7 +196,7 @@ class Model(BaseModel):
         ...
 
 try:
-    response = await client.chat.completions.create(
+    response = await client.create(
         response_model=Model,
         ...
     )
@@ -208,11 +216,11 @@ from instructor.core.exceptions import (
 )
 
 try:
-    response = client.chat.completions.create(...)
+    response = client.create(...)
 except IncompleteOutputException as e:
     # Handle truncated output - maybe increase max_tokens
     logger.warning(f"Output truncated, retrying with more tokens")
-    response = client.chat.completions.create(..., max_tokens=2000)
+    response = client.create(..., max_tokens=2000)
 except InstructorRetryException as e:
     # Handle retry exhaustion - maybe fallback logic
     logger.error(f"Failed after {e.n_attempts} attempts")
@@ -229,7 +237,7 @@ except ValidationError as e:
 from instructor.core.exceptions import InstructorError
 
 try:
-    response = client.chat.completions.create(...)
+    response = client.create(...)
 except InstructorError as e:
     # Catches any Instructor-specific error
     logger.error(f"Instructor error: {type(e).__name__}: {e}")
@@ -266,7 +274,7 @@ logger = logging.getLogger(__name__)
 
 def extract_data(content: str):
     try:
-        return client.chat.completions.create(
+        return client.create(
             response_model=DataModel,
             messages=[{"role": "user", "content": content}]
         )
@@ -290,14 +298,14 @@ from instructor.core.exceptions import ValidationError, InstructorRetryException
 def extract_with_fallback(content: str):
     # Try with strict model first
     try:
-        return client.chat.completions.create(
+        return client.create(
             response_model=StrictDataModel,
             messages=[{"role": "user", "content": content}]
         )
     except ValidationError:
         # Fall back to less strict model
         logger.warning("Strict validation failed, trying relaxed model")
-        return client.chat.completions.create(
+        return client.create(
             response_model=RelaxedDataModel,
             messages=[{"role": "user", "content": content}]
         )
@@ -314,14 +322,14 @@ All new exception types maintain backwards compatibility by inheriting from both
 ```python
 # Old code still works - catching ValueError
 try:
-    response = client.chat.completions.create(...)
+    response = client.create(...)
 except ValueError as e:
     # Will catch ResponseParsingError and MultimodalError
     print(f"Error: {e}")
 
 # New code can be more specific
 try:
-    response = client.chat.completions.create(...)
+    response = client.create(...)
 except ResponseParsingError as e:
     # Access additional context
     print(f"Mode: {e.mode}")
@@ -339,7 +347,7 @@ New exceptions include rich diagnostic context for monitoring and debugging:
 
 ```python
 try:
-    response = client.chat.completions.create(
+    response = client.create(
         response_model=User,
         mode=instructor.Mode.JSON,
         ...
@@ -379,7 +387,7 @@ except MultimodalError as e:
 
 ```python
 try:
-    response = client.chat.completions.create(...)
+    response = client.create(...)
 except InstructorRetryException as e:
     # Access all failed attempts for analysis
     for attempt in e.failed_attempts:

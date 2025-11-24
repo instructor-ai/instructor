@@ -14,7 +14,14 @@ export GROQ_API_KEY=<your-api-key-here>
 pip install "instructor[groq]"
 ```
 
-## Groq AI
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Groq Examples](../examples/groq.md) - Practical Groq examples
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+
+# Groq AI
 
 Groq supports structured outputs with their new `llama-3-groq-70b-8192-tool-use-preview` model.
 
@@ -39,7 +46,7 @@ class User(BaseModel):
 
 
 # Create structured output
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -70,7 +77,7 @@ class User(BaseModel):
 
 
 async def extract_user():
-    user = await client.chat.completions.create(
+    user = await client.create(
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -114,7 +121,7 @@ class User(BaseModel):
 
 
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {
             "role": "user",

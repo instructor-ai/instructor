@@ -40,7 +40,7 @@ class UserExtract(BaseModel):
     age: int
 
 # Extract structured data
-user = client.chat.completions.create(
+user = client.create(
     response_model=UserExtract,
     messages=[
         {"role": "user", "content": "Extract jason is 25 years old"},
@@ -69,7 +69,7 @@ class UserExtract(BaseModel):
     age: int
 
 async def fetch_user():
-    return await async_client.chat.completions.create(
+    return await async_client.create(
         messages=[{"role": "user", "content": "Extract jason is 25 years old"}],
         response_model=UserExtract,
     )

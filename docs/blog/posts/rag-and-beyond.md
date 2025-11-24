@@ -103,7 +103,7 @@ import instructor
 # Enables response_model in the openai client
 client = instructor.from_provider("openai/gpt-5-nano")
 
-query = client.chat.completions.create(
+query = client.create(
     model="gpt-4",
     response_model=MetaphorQuery,
     messages=[
@@ -182,7 +182,7 @@ import instructor
 # Enables response_model in the openai client
 client = instructor.from_provider("openai/gpt-5-nano")
 
-retrieval = client.chat.completions.create(
+retrieval = client.create(
     model="gpt-4",
     response_model=Retrieval,
     messages=[

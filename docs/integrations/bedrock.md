@@ -15,7 +15,14 @@ You'll need to have an AWS account with access to Bedrock and the appropriate pe
 pip install "instructor[bedrock]"
 ```
 
-## AWS Bedrock
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+- [AWS Integration Guide](../examples/index.md#aws-integration) - More AWS examples
+
+# AWS Bedrock
 
 AWS Bedrock is a fully managed service that offers a choice of high-performing foundation models (FMs) from leading AI companies like AI21 Labs, Anthropic, Cohere, Meta, Stability AI, and Amazon through a single API.
 
@@ -65,13 +72,13 @@ import instructor
 from pydantic import BaseModel
 
 bedrock_client = boto3.client('bedrock-runtime')
-client = instructor.from_bedrock(bedrock_client)
+client = instructor.from_provider("bedrock/claude-3-5-sonnet-20241022")
 
 class User(BaseModel):
     name: str
     age: int
 
-user = client.chat.completions.create(
+user = client.create(
     modelId="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
@@ -100,7 +107,7 @@ class User(BaseModel):
     age: int
 
 def get_user():
-    return client.chat.completions.create(
+    return client.create(
         modelId="anthropic.claude-3-sonnet-20240229-v1:0",
         messages=[{"role": "user", "content": "Extract Jason is 25 years old"}],
         response_model=User,
@@ -126,8 +133,12 @@ import instructor
 from instructor import Mode
 from pydantic import BaseModel
 
-bedrock_client = boto3.client('bedrock-runtime')
-client = instructor.from_bedrock(bedrock_client, mode=Mode.BEDROCK_TOOLS)
+# Use from_provider for simplified setup
+client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", mode=Mode.BEDROCK_TOOLS)
+
+# Or if you need to use a custom boto3 client:
+# bedrock_client = boto3.client('bedrock-runtime')
+# client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", client=bedrock_client, mode=Mode.BEDROCK_TOOLS)
 
 class User(BaseModel):
     name: str
@@ -191,7 +202,7 @@ from pydantic import BaseModel
 bedrock_client = boto3.client('bedrock-runtime')
 
 # Enable instructor patches for Bedrock client
-client = instructor.from_bedrock(bedrock_client)
+client = instructor.from_provider("bedrock/claude-3-5-sonnet-20241022")
 
 
 class Address(BaseModel):
@@ -207,7 +218,7 @@ class User(BaseModel):
 
 
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     modelId="anthropic.claude-3-sonnet-20240229-v1:0",
     messages=[
         {
@@ -271,13 +282,15 @@ bedrock_client = boto3.client(
     aws_secret_access_key='your_secret'
 )
 
-client = instructor.from_bedrock(
-    bedrock_client,
+# Use from_provider with custom client
+client = instructor.from_provider(
+    "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
+    client=bedrock_client,
     mode=instructor.Mode.BEDROCK_TOOLS
 )
 
 # Advanced inference configuration
-user = client.chat.completions.create(
+user = client.create(
     modelId="anthropic.claude-3-5-sonnet-20241022-v2:0",
     messages=[{"role": "user", "content": "Extract user info"}],
     response_model=User,
