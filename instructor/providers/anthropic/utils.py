@@ -144,32 +144,43 @@ def reask_anthropic_tools(
 
     Kwargs modifications:
     - Adds: "messages" (tool result messages indicating validation errors)
+
+    Note: According to Anthropic's API, each tool_use block must have a
+    corresponding tool_result block immediately following. This function
+    ensures all tool_use blocks get proper tool_result responses.
     """
     kwargs = kwargs.copy()
+    # Deep copy messages list to avoid modifying the original
+    kwargs["messages"] = list(kwargs["messages"])
+
     from anthropic.types import Message
 
     assert isinstance(response, Message), "Response must be a Anthropic Message"
 
     assistant_content = []
-    tool_use_id = None
+    tool_use_ids = []
     for content in response.content:
         assistant_content.append(content.model_dump())  # type: ignore
         if content.type == "tool_use":
-            tool_use_id = content.id
+            tool_use_ids.append(content.id)
 
     reask_msgs = [{"role": "assistant", "content": assistant_content}]  # type: ignore
-    if tool_use_id is not None:
+    if tool_use_ids:
+        # Create a tool_result for each tool_use block
+        # Anthropic API requires each tool_use to have a corresponding tool_result
+        tool_results = [
+            {
+                "type": "tool_result",
+                "tool_use_id": tool_use_id,
+                "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
+                "is_error": True,
+            }
+            for tool_use_id in tool_use_ids
+        ]
         reask_msgs.append(  # type: ignore
             {
                 "role": "user",
-                "content": [
-                    {
-                        "type": "tool_result",
-                        "tool_use_id": tool_use_id,
-                        "content": f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors",
-                        "is_error": True,
-                    }
-                ],
+                "content": tool_results,
             }
         )
     else:
