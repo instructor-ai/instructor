@@ -24,7 +24,6 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 # 3. Extract structured data from LLM
 person = client.create(
-    model="gpt-3.5-turbo",  # Works with GPT-4, Claude, Gemini, etc.
     response_model=Person,   # Type-safe extraction
     messages=[
         {"role": "user", "content": "John Doe is 30 years old"}
