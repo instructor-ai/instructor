@@ -2,19 +2,19 @@
 #    uv pip compile pyproject.toml -o requirements.txt
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.13.1
+aiohttp==3.13.2
     # via instructor (pyproject.toml)
 aiosignal==1.4.0
     # via aiohttp
 annotated-types==0.7.0
     # via pydantic
-anyio==4.11.0
+anyio==4.12.0
     # via
     #   httpx
     #   openai
 attrs==25.4.0
     # via aiohttp
-certifi==2025.10.5
+certifi==2025.11.12
     # via
     #   httpcore
     #   httpx
@@ -55,7 +55,7 @@ idna==3.11
     #   yarl
 jinja2==3.1.6
     # via instructor (pyproject.toml)
-jiter==0.11.1
+jiter==0.12.0
     # via
     #   instructor (pyproject.toml)
     #   openai
@@ -71,7 +71,7 @@ multidict==6.7.0
     #   yarl
 nodeenv==1.9.1
     # via pre-commit
-openai==2.6.1
+openai==2.9.0
     # via instructor (pyproject.toml)
 platformdirs==4.4.0
     # via virtualenv
@@ -81,11 +81,11 @@ propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
-pydantic==2.12.3
+pydantic==2.12.5
     # via
     #   instructor (pyproject.toml)
     #   openai
-pydantic-core==2.41.4
+pydantic-core==2.41.5
     # via
     #   instructor (pyproject.toml)
     #   pydantic
@@ -109,7 +109,7 @@ tenacity==9.1.2
     # via instructor (pyproject.toml)
 tqdm==4.67.1
     # via openai
-ty==0.0.1a27
+ty==0.0.1a32
     # via instructor (pyproject.toml)
 typer==0.20.0
     # via instructor (pyproject.toml)
@@ -122,7 +122,7 @@ typing-extensions==4.15.0
     #   typing-inspection
 typing-inspection==0.4.2
     # via pydantic
-urllib3==2.5.0
+urllib3==2.6.0
     # via requests
 virtualenv==20.35.4
     # via pre-commit
