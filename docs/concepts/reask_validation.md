@@ -9,7 +9,7 @@ Instead of framing "self-critique" or "self-reflection" in AI as new concepts, w
 
 ## Pydantic
 
-Pydantic offers an customizable and expressive validation framework for Python. Instructor leverages Pydantic's validation framework to provide a uniform developer experience for both code-based and LLM-based validation, as well as a reasking mechanism for correcting LLM outputs based on validation errors. To learn more check out the [Pydantic docs](https://docs.pydantic.dev/latest/concepts/validators/) on validators.
+Pydantic offers a customizable and expressive validation framework for Python. Instructor leverages Pydantic's validation framework to provide a uniform developer experience for both code-based and LLM-based validation, as well as a reasking mechanism for correcting LLM outputs based on validation errors. To learn more check out the [Pydantic docs](https://docs.pydantic.dev/latest/concepts/validators/) on validators.
 
 !!! note "Good llm validation is just good validation"
 
