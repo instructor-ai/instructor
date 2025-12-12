@@ -188,10 +188,20 @@ def make_cache_key(
 logger = logging.getLogger("instructor.cache")
 
 
-def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseModel]):  # noqa: ANN201
-    """Return parsed model if *key* exists in *cache* else None."""
+def load_cached_response(
+    cache: BaseCache,
+    key: str,
+    response_model: type[BaseModel],
+    hooks: Any | None = None,
+):  # noqa: ANN201
+    """Return parsed model if *key* exists in *cache* else None.
+
+    If *hooks* is provided, emits CACHE_HIT or CACHE_MISS events.
+    """
     cached = cache.get(key)
     if cached is None:
+        if hooks is not None:
+            hooks.emit_cache_miss(key=key)
         return None
     import json
 
@@ -235,6 +245,8 @@ def load_cached_response(cache: BaseCache, key: str, response_model: type[BaseMo
                 "Restored raw response as string (original could not be fully serialized)"
             )
     logger.debug("cache hit: %s", key)
+    if hooks is not None:
+        hooks.emit_cache_hit(key=key, response=obj)
     return obj
 
 
