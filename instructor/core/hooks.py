@@ -15,6 +15,8 @@ class HookName(Enum):
     COMPLETION_ERROR = "completion:error"
     COMPLETION_LAST_ATTEMPT = "completion:last_attempt"
     PARSE_ERROR = "parse:error"
+    CACHE_HIT = "cache:hit"
+    CACHE_MISS = "cache:miss"
 
 
 # Handler protocol types for type safety
@@ -42,6 +44,12 @@ class ParseErrorHandler(Protocol):
     def __call__(self, error: Exception) -> None: ...
 
 
+class CacheHandler(Protocol):
+    """Protocol for cache hit/miss handlers."""
+
+    def __call__(self, key: str, response: Any | None = None) -> None: ...
+
+
 # Type alias for hook name parameter
 HookNameType = Union[
     HookName,
@@ -51,6 +59,8 @@ HookNameType = Union[
         "completion:error",
         "completion:last_attempt",
         "parse:error",
+        "cache:hit",
+        "cache:miss",
     ],
 ]
 
@@ -60,6 +70,7 @@ HandlerType = Union[
     CompletionResponseHandler,
     CompletionErrorHandler,
     ParseErrorHandler,
+    CacheHandler,
 ]
 
 
@@ -189,6 +200,25 @@ class Hooks:
             error: The exception to pass to handlers
         """
         self.emit(HookName.PARSE_ERROR, error)
+
+    def emit_cache_hit(self, key: str, response: Any) -> None:
+        """
+        Emit a cache hit event.
+
+        Args:
+            key: The cache key that was hit
+            response: The cached response that was retrieved
+        """
+        self.emit(HookName.CACHE_HIT, key=key, response=response)
+
+    def emit_cache_miss(self, key: str) -> None:
+        """
+        Emit a cache miss event.
+
+        Args:
+            key: The cache key that was not found
+        """
+        self.emit(HookName.CACHE_MISS, key=key)
 
     def off(
         self,
