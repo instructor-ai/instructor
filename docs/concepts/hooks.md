@@ -53,6 +53,22 @@ This hook is emitted when the last retry attempt is made.
 def handler(error) -> None: ...
 ```
 
+### `cache:hit`
+
+This hook is emitted when a cached response is found and returned. It receives the cache key and the cached response object.
+
+```python
+def handler(key: str, response) -> None: ...
+```
+
+### `cache:miss`
+
+This hook is emitted when a cache lookup fails (key not found). It receives the cache key that was not found.
+
+```python
+def handler(key: str) -> None: ...
+```
+
 ## Implementation Details
 
 The Hooks system is implemented in the `instructor/hooks.py` file. The `Hooks` class handles the registration and emission of hook events. You can refer to this file to see how hooks work under the hood.
@@ -88,6 +104,12 @@ class ParseErrorHandler(Protocol):
     """Protocol for parse error handlers."""
 
     def __call__(self, error: Exception) -> None: ...
+
+
+class CacheHandler(Protocol):
+    """Protocol for cache hit/miss handlers."""
+
+    def __call__(self, key: str, response: Any | None = None) -> None: ...
 ```
 
 These Protocol types help ensure that your handler functions have the correct signature for each type of hook.
@@ -716,6 +738,75 @@ class CustomHookName(Enum):
 
 # Initialize client with custom hooks
 client = instructor.from_provider("openai/gpt-4o")
+```
+
+## Example: Cache Monitoring
+
+Cache hooks allow you to monitor cache performance and track hit/miss ratios:
+
+```python
+import instructor
+from instructor.cache import AutoCache
+from instructor.core.hooks import HookName
+from pydantic import BaseModel
+
+
+class User(BaseModel):
+    name: str
+    age: int
+
+
+# Create a cache instance
+cache = AutoCache(maxsize=100)
+
+# Track cache statistics
+cache_stats = {"hits": 0, "misses": 0}
+
+
+def on_cache_hit(key: str, response) -> None:
+    cache_stats["hits"] += 1
+    print(f"Cache HIT: {key[:16]}...")
+
+
+def on_cache_miss(key: str) -> None:
+    cache_stats["misses"] += 1
+    print(f"Cache MISS: {key[:16]}...")
+
+
+# Create client and register hooks
+client = instructor.from_provider("openai/gpt-4.1-mini")
+client.on(HookName.CACHE_HIT, on_cache_hit)
+client.on(HookName.CACHE_MISS, on_cache_miss)
+
+# First call - cache miss
+user1 = client.create(
+    messages=[{"role": "user", "content": "Extract: Alice is 30"}],
+    response_model=User,
+    cache=cache,
+)
+print(f"Result: {user1}")
+
+# Second call with same input - cache hit
+user2 = client.create(
+    messages=[{"role": "user", "content": "Extract: Alice is 30"}],
+    response_model=User,
+    cache=cache,
+)
+print(f"Result: {user2}")
+
+# Calculate hit ratio
+total = cache_stats["hits"] + cache_stats["misses"]
+hit_ratio = cache_stats["hits"] / total if total > 0 else 0
+print(f"Cache hit ratio: {hit_ratio:.2%}")
+```
+
+Output:
+```
+Cache MISS: 7a3f9b2c1d4e5f6a...
+Result: name='Alice' age=30
+Cache HIT: 7a3f9b2c1d4e5f6a...
+Result: name='Alice' age=30
+Cache hit ratio: 50.00%
 ```
 
 ## See Also
