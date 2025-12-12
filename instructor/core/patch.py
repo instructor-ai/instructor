@@ -181,7 +181,7 @@ def patch(  # type: ignore
                 response_model=response_model,
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
-            obj = load_cached_response(cache, key, response_model)
+            obj = load_cached_response(cache, key, response_model, hooks=hooks)
             if obj is not None:
                 return obj  # type: ignore[return-value]
 
@@ -251,7 +251,7 @@ def patch(  # type: ignore
                 response_model=response_model,
                 mode=mode.value if hasattr(mode, "value") else str(mode),
             )
-            obj = load_cached_response(cache, key, response_model)
+            obj = load_cached_response(cache, key, response_model, hooks=hooks)
             if obj is not None:
                 return obj  # type: ignore[return-value]
 
