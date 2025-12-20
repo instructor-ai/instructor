@@ -46,3 +46,13 @@ __all__ = [
     "ResponseParsingError",
     "ValidationError",
 ]
+
+
+class HallucinationError(Exception):
+    """Raised when grounding verification detects hallucinated fields."""
+    
+    def __init__(self, flagged_fields: list, confidence: float, message: str = None):
+        self.flagged_fields = flagged_fields
+        self.confidence = confidence
+        self.message = message or f"Hallucination detected in fields: {flagged_fields}. Overall confidence: {confidence:.2f}"
+        super().__init__(self.message)

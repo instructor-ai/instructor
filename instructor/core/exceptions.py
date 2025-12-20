@@ -599,3 +599,48 @@ class MultimodalError(ValueError, InstructorError):
             context_parts.append(f"file: {file_path}")
         context = f" ({', '.join(context_parts)})" if context_parts else ""
         super().__init__(f"{message}{context}", *args, **kwargs)
+
+
+class HallucinationError(InstructorError):
+    """Exception raised when grounding verification detects hallucinated fields.
+    
+    This exception is raised by GroundCheck when extracted data contains
+    values that cannot be verified against the source text, indicating
+    potential LLM hallucinations.
+    
+    Attributes:
+        flagged_fields: List of field names that failed grounding verification
+        confidence: Overall confidence score of the extraction (0.0 to 1.0)
+    
+    Examples:
+```python
+        from instructor.groundcheck import verify_extraction
+        
+        try:
+            result = verify_extraction(
+                source_text="Invoice #12345 from Acme Corp",
+                extracted_data={"invoice": "12345", "currency": "USD"},
+                raise_on_hallucination=True
+            )
+        except HallucinationError as e:
+            print(f"Hallucinated fields: {e.flagged_fields}")
+            print(f"Confidence: {e.confidence}")
+```
+    
+    See Also:
+        - GroundCheck: Main class for grounding verification
+        - verify_extraction: Convenience function for verification
+    """
+    
+    def __init__(
+        self,
+        flagged_fields: list,
+        confidence: float,
+        message: str | None = None,
+        *args,
+        **kwargs
+    ):
+        self.flagged_fields = flagged_fields
+        self.confidence = confidence
+        self.message = message or f"Hallucination detected in fields: {flagged_fields}. Overall confidence: {confidence:.2f}"
+        super().__init__(self.message, *args, **kwargs)

@@ -11,6 +11,17 @@ from .dsl import (
 )
 
 from .validation import llm_validator, openai_moderation
+from .groundcheck import (
+    GroundCheck,
+    VerificationResult,
+    FieldResult,
+    VerificationMethod,
+    grounding_validator,
+    verify_extraction,
+    with_grounding,
+    GroundedExtractor,
+)
+from .core.exceptions import HallucinationError
 from .processing.function_calls import OpenAISchema, openai_schema
 from .processing.schema import (
     generate_openai_schema,
@@ -62,6 +73,15 @@ __all__ = [
     "BatchJob",
     "llm_validator",
     "openai_moderation",
+    "GroundCheck",
+    "VerificationResult",
+    "FieldResult",
+    "VerificationMethod",
+    "grounding_validator",
+    "verify_extraction",
+    "with_grounding",
+    "GroundedExtractor",
+    "HallucinationError",
     "hooks",
     "client",  # Backward compatibility
     # Backward compatibility exports
