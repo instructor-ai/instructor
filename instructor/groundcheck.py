@@ -32,6 +32,7 @@ class VerificationMethod(str, Enum):
     FUZZY_MATCH = "fuzzy_match"
     NUMERIC_MATCH = "numeric_match"
     SEMANTIC_MATCH = "semantic_match"
+    AGGREGATE = "aggregate"
     NOT_FOUND = "not_found"
 
 
@@ -46,10 +47,6 @@ class FieldResult:
     source_span: Optional[Tuple[int, int]] = None
     flagged: bool = False
     reason: Optional[str] = None
-    
-    def __post_init__(self):
-        if self.confidence < 0.5 and not self.flagged:
-            self.flagged = True
 
 
 @dataclass
@@ -136,23 +133,33 @@ class GroundCheck:
         str_value = str(value).strip()
         if not str_value:
             return FieldResult(field_name=field_name, value=value, confidence=0.0, method=VerificationMethod.NOT_FOUND, flagged=True, reason="Empty value")
+        
+        # Strategy 1: Exact match
         exact_result = self._exact_match(source_text, str_value)
         if exact_result[0] >= 0.95:
             return FieldResult(field_name=field_name, value=value, confidence=exact_result[0], method=VerificationMethod.EXACT_MATCH, evidence=exact_result[1], source_span=exact_result[2], flagged=exact_result[0] < threshold)
+        
+        # Strategy 2: Numeric match
         if isinstance(value, (int, float)) or self._looks_like_number(str_value):
             numeric_result = self._numeric_match(source_text, value)
             if numeric_result[0] >= 0.8:
                 return FieldResult(field_name=field_name, value=value, confidence=numeric_result[0], method=VerificationMethod.NUMERIC_MATCH, evidence=numeric_result[1], flagged=numeric_result[0] < threshold)
+        
+        # Strategy 3: Fuzzy match (store result to avoid duplicate calls)
+        fuzzy_result = (0.0, None)
         if RAPIDFUZZ_AVAILABLE:
             fuzzy_result = self._fuzzy_match(source_text, str_value)
             if fuzzy_result[0] >= self.fuzzy_threshold:
                 return FieldResult(field_name=field_name, value=value, confidence=fuzzy_result[0], method=VerificationMethod.FUZZY_MATCH, evidence=fuzzy_result[1], flagged=fuzzy_result[0] < threshold)
+        
+        # Strategy 4: Semantic match
         if self.enable_semantic and self._embedding_model is not None:
             semantic_result = self._semantic_match(source_text, str_value)
             if semantic_result[0] >= 0.7:
                 return FieldResult(field_name=field_name, value=value, confidence=semantic_result[0], method=VerificationMethod.SEMANTIC_MATCH, evidence=semantic_result[1], flagged=semantic_result[0] < threshold, reason="Semantic similarity match")
-        best_fuzzy = self._fuzzy_match(source_text, str_value) if RAPIDFUZZ_AVAILABLE else (0.0, None)
-        return FieldResult(field_name=field_name, value=value, confidence=best_fuzzy[0] if best_fuzzy[0] > 0.3 else 0.0, method=VerificationMethod.NOT_FOUND, evidence=best_fuzzy[1] if best_fuzzy[0] > 0.3 else None, flagged=True, reason=f"Value '{str_value}' not found in source text")
+        
+        # Not found - reuse fuzzy_result from above
+        return FieldResult(field_name=field_name, value=value, confidence=fuzzy_result[0] if fuzzy_result[0] > 0.3 else 0.0, method=VerificationMethod.NOT_FOUND, evidence=fuzzy_result[1] if fuzzy_result[0] > 0.3 else None, flagged=True, reason=f"Value '{str_value}' not found in source text")
     
     def _exact_match(self, source: str, value: str) -> Tuple[float, Optional[str], Optional[Tuple[int, int]]]:
         """Check for exact match (case-insensitive)."""
@@ -223,7 +230,10 @@ class GroundCheck:
         best_similarity = 0.0
         best_sentence = None
         for i, sent_emb in enumerate(sentence_embeddings):
-            similarity = np.dot(value_embedding, sent_emb) / (np.linalg.norm(value_embedding) * np.linalg.norm(sent_emb))
+            norm_product = np.linalg.norm(value_embedding) * np.linalg.norm(sent_emb)
+            if norm_product == 0:
+                continue
+            similarity = np.dot(value_embedding, sent_emb) / norm_product
             if similarity > best_similarity:
                 best_similarity = similarity
                 best_sentence = sentences[i]
@@ -242,14 +252,14 @@ class GroundCheck:
                     result = self._verify_field(source_text, f"{field_name}[{i}]", item, threshold)
                     confidences.append(result.confidence)
             avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
-            return FieldResult(field_name=field_name, value=value, confidence=avg_confidence, method=VerificationMethod.FUZZY_MATCH, flagged=avg_confidence < threshold, reason=f"List with {len(value)} items, avg confidence: {avg_confidence:.2f}")
+            return FieldResult(field_name=field_name, value=value, confidence=avg_confidence, method=VerificationMethod.AGGREGATE, flagged=avg_confidence < threshold, reason=f"List with {len(value)} items, avg confidence: {avg_confidence:.2f}")
         elif isinstance(value, dict):
             confidences = []
             for k, v in value.items():
                 result = self._verify_field(source_text, f"{field_name}.{k}", v, threshold)
                 confidences.append(result.confidence)
             avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
-            return FieldResult(field_name=field_name, value=value, confidence=avg_confidence, method=VerificationMethod.FUZZY_MATCH, flagged=avg_confidence < threshold, reason=f"Dict with {len(value)} keys, avg confidence: {avg_confidence:.2f}")
+            return FieldResult(field_name=field_name, value=value, confidence=avg_confidence, method=VerificationMethod.AGGREGATE, flagged=avg_confidence < threshold, reason=f"Dict with {len(value)} keys, avg confidence: {avg_confidence:.2f}")
         return FieldResult(field_name=field_name, value=value, confidence=0.0, method=VerificationMethod.NOT_FOUND, flagged=True, reason="Unknown complex type")
     
     @staticmethod
