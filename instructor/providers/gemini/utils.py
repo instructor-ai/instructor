@@ -834,6 +834,17 @@ def handle_genai_structured_outputs(
     if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
         response_model = Partial[response_model]
 
+    # Extract thinking_config from user-provided config object if present
+    # This fixes issue #1966 where thinking_config inside config was ignored
+    user_config = new_kwargs.get("config")
+    user_thinking_config = None
+    if user_config is not None and hasattr(user_config, "thinking_config"):
+        user_thinking_config = user_config.thinking_config
+
+    # Prioritize kwarg thinking_config over config.thinking_config
+    if "thinking_config" not in new_kwargs and user_thinking_config is not None:
+        new_kwargs["thinking_config"] = user_thinking_config
+
     if new_kwargs.get("system"):
         system_message = new_kwargs.pop("system")
     elif new_kwargs.get("messages"):
@@ -897,6 +908,17 @@ def handle_genai_tools(
     # Automatically wrap regular models with Partial when streaming is enabled
     if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
         response_model = Partial[response_model]
+
+    # Extract thinking_config from user-provided config object if present
+    # This fixes issue #1966 where thinking_config inside config was ignored
+    user_config = new_kwargs.get("config")
+    user_thinking_config = None
+    if user_config is not None and hasattr(user_config, "thinking_config"):
+        user_thinking_config = user_config.thinking_config
+
+    # Prioritize kwarg thinking_config over config.thinking_config
+    if "thinking_config" not in new_kwargs and user_thinking_config is not None:
+        new_kwargs["thinking_config"] = user_thinking_config
 
     schema = map_to_gemini_function_schema(_get_model_schema(response_model))
     function_definition = types.FunctionDeclaration(
