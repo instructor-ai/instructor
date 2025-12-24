@@ -128,40 +128,24 @@ def transform_to_gemini_prompt(
     return messages_gemini
 
 
-def verify_no_unions(obj: dict[str, Any]) -> bool:
+def verify_no_unions(obj: dict[str, Any]) -> bool:  # noqa: ARG001
     """
-    Verify that the object does not contain any Union types (except Optional and Decimal).
-    Optional[T] is allowed as it becomes Union[T, None].
-    Decimal types are allowed as Union[str, float] or Union[float, str].
+    Verify Union type compatibility for Google GenAI.
+
+    As of google-genai 1.5.0+, Union types (anyOf) are now supported.
+    See: https://github.com/googleapis/python-genai/issues/447
+
+    This function now allows all Union types to pass through, as the
+    GenAI SDK handles them correctly.
+
+    Args:
+        obj: The schema object (kept for backwards compatibility)
+
+    Returns:
+        True to indicate all schemas are valid.
     """
-    for prop_value in obj["properties"].values():
-        if "anyOf" in prop_value:
-            any_of_list = prop_value["anyOf"]
-            if not isinstance(any_of_list, list) or len(any_of_list) != 2:
-                return False
-
-            # Extract the types from the anyOf list
-            types_in_union = []
-            for item in any_of_list:
-                if isinstance(item, dict) and "type" in item:
-                    types_in_union.append(item["type"])
-
-            # Check if this is an Optional type (Union with None/null)
-            if "null" in types_in_union:
-                # This is Optional[T] - allow it
-                continue
-
-            # Check if this is a Decimal type (Union of string and number)
-            if set(types_in_union) == {"string", "number"}:
-                # This is a Decimal type (string | number) - allow it
-                continue
-
-            # This is some other Union type - reject it
-            return False
-
-        if "properties" in prop_value and not verify_no_unions(prop_value):
-            return False
-
+    # Union types are now supported by Google GenAI SDK
+    # See issue #1964 and https://github.com/googleapis/python-genai/issues/447
     return True
 
 
@@ -172,7 +156,7 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     Transforms a standard JSON schema to Gemini's expected format:
     - Adds 'format': 'enum' for enum fields
     - Converts Optional[T] (anyOf with null) to nullable fields
-    - Rejects true Union types (non-Optional anyOf)
+    - Preserves Union types (anyOf) as they are now supported by GenAI SDK
 
     Ref: https://ai.google.dev/api/python/google/generativeai/protos/Schema
     """
