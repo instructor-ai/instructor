@@ -269,6 +269,7 @@ nav:
     - Validation: 'concepts/validation.md'
     - Semantic Validation: 'concepts/semantic_validation.md'
     - GroundCheck (Hallucination Detection): 'concepts/groundcheck.md'
+    - Confidence Scoring: 'concepts/confidence.md'
     - Alias: 'concepts/alias.md'
     - Enums: 'concepts/enums.md'
     - Type Adapter: 'concepts/typeadapter.md'

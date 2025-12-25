@@ -22,6 +22,15 @@ from .groundcheck import (
     GroundedExtractor,
 )
 from .core.exceptions import HallucinationError
+from .confidence import (
+    ConfidenceScorer,
+    ConfidenceResult,
+    FieldConfidence,
+    ConfidenceLevel,
+    score_confidence,
+    enable_logprobs,
+    LowConfidenceError,
+)
 from .processing.function_calls import OpenAISchema, openai_schema
 from .processing.schema import (
     generate_openai_schema,
@@ -82,6 +91,13 @@ __all__ = [
     "with_grounding",
     "GroundedExtractor",
     "HallucinationError",
+    "ConfidenceScorer",
+    "ConfidenceResult",
+    "FieldConfidence",
+    "ConfidenceLevel",
+    "score_confidence",
+    "enable_logprobs",
+    "LowConfidenceError",
     "hooks",
     "client",  # Backward compatibility
     # Backward compatibility exports
