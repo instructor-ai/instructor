@@ -457,3 +457,130 @@ def test_genai_mode_defaults_when_not_provided():
             _, kwargs = mock_from_genai.call_args
             assert "mode" in kwargs
             assert kwargs["mode"] == instructor.Mode.GENAI_TOOLS
+
+
+def test_google_provider_runtime_import_error_propagates():
+    """Test that ImportError during client initialization is NOT masked.
+
+    This is a regression test for issue #1940 - when using SOCKS proxy without
+    socksio installed, httpx raises ImportError during genai.Client() initialization.
+    This error should propagate instead of being caught and converted to
+    ConfigurationError about missing google-genai package.
+    """
+    from unittest.mock import patch, MagicMock
+    import sys
+
+    # Create mock module for google.genai
+    mock_genai_module = MagicMock()
+
+    # Simulate socksio ImportError during Client() initialization
+    def client_init_raises(*_args, **_kwargs):
+        raise ImportError(
+            "Using SOCKS proxy, but the 'socksio' package is not installed. "
+            "Make sure to install httpx using `pip install httpx[socks]`."
+        )
+
+    mock_genai_module.Client = client_init_raises
+
+    # Create a mock google module
+    mock_google = MagicMock()
+    mock_google.genai = mock_genai_module
+
+    # Patch sys.modules to use our mock modules
+    with patch.dict(
+        sys.modules,
+        {"google": mock_google, "google.genai": mock_genai_module},
+    ):
+        mock_from_genai = MagicMock()
+        with patch.object(
+            __import__("instructor"), "from_genai", mock_from_genai, create=True
+        ):
+            with pytest.raises(ImportError) as excinfo:
+                from_provider("google/gemini-2.0-flash")
+
+            # Should be the socksio error, NOT a ConfigurationError about google-genai
+            assert "socksio" in str(excinfo.value)
+            assert "google-genai" not in str(excinfo.value)
+
+
+def test_vertexai_provider_runtime_import_error_propagates():
+    """Test that ImportError during vertexai client initialization is NOT masked.
+
+    Similar to test_google_provider_runtime_import_error_propagates but for
+    the deprecated vertexai provider.
+    """
+    from unittest.mock import patch, MagicMock
+    import warnings
+    import sys
+
+    # Create mock module for google.genai
+    mock_genai_module = MagicMock()
+
+    # Simulate socksio ImportError during Client() initialization
+    def client_init_raises(*_args, **_kwargs):
+        raise ImportError(
+            "Using SOCKS proxy, but the 'socksio' package is not installed."
+        )
+
+    mock_genai_module.Client = client_init_raises
+
+    # Create a mock google module
+    mock_google = MagicMock()
+    mock_google.genai = mock_genai_module
+
+    with patch.dict(
+        sys.modules,
+        {"google": mock_google, "google.genai": mock_genai_module},
+    ):
+        mock_from_genai = MagicMock()
+        with patch.object(
+            __import__("instructor"), "from_genai", mock_from_genai, create=True
+        ):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                with pytest.raises(ImportError) as excinfo:
+                    from_provider("vertexai/gemini-pro", project="test-project")
+
+            # Should be the socksio error, NOT a ConfigurationError
+            assert "socksio" in str(excinfo.value)
+
+
+def test_generative_ai_provider_runtime_import_error_propagates():
+    """Test that ImportError during generative-ai client initialization is NOT masked.
+
+    Similar to test_google_provider_runtime_import_error_propagates but for
+    the deprecated generative-ai provider.
+    """
+    from unittest.mock import patch, MagicMock
+    import warnings
+
+    # Create mock module for google.genai
+    mock_genai_module = MagicMock()
+
+    # Simulate socksio ImportError during Client() initialization
+    def client_init_raises(*_args, **_kwargs):
+        raise ImportError(
+            "Using SOCKS proxy, but the 'socksio' package is not installed."
+        )
+
+    mock_genai_module.Client = client_init_raises
+
+    # Create a mock google module with genai attribute
+    mock_google = MagicMock()
+    mock_google.genai = mock_genai_module
+
+    with patch.dict(
+        "sys.modules",
+        {"google": mock_google, "google.genai": mock_genai_module},
+    ):
+        mock_from_genai = MagicMock()
+        with patch.object(
+            __import__("instructor"), "from_genai", mock_from_genai, create=True
+        ):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                with pytest.raises(ImportError) as excinfo:
+                    from_provider("generative-ai/gemini-pro")
+
+            # Should be the socksio error, NOT a ConfigurationError
+            assert "socksio" in str(excinfo.value)
