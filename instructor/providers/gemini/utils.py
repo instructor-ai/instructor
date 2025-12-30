@@ -157,7 +157,7 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     Transforms a standard JSON schema to Gemini's expected format:
     - Adds 'format': 'enum' for enum fields
     - Converts Optional[T] (anyOf with null) to nullable fields
-    - Rejects true Union types (non-Optional anyOf)
+    - Preserves Union types (anyOf) as they are now supported by GenAI SDK
 
     Ref: https://ai.google.dev/api/python/google/generativeai/protos/Schema
     """
