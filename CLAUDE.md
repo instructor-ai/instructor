@@ -25,12 +25,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Code Style Guidelines
 - **Typing**: Use strict typing with annotations for all functions and variables
+  - **Modern Type Annotations**: Use built-in types (`list`, `dict`, `tuple`, `set`) instead of typing module (`List`, `Dict`, `Tuple`, `Set`) for Python 3.9+
+  - Example: Use `list[str]` not `List[str]`, `dict[str, int]` not `Dict[str, int]`
 - **Imports**: Standard lib → third-party → local imports
+  - Remove unused imports (F401 Ruff error)
 - **Formatting**: Follow Black's formatting conventions (enforced by Ruff)
 - **Models**: Define structured outputs as Pydantic BaseModel subclasses
 - **Naming**: snake_case for functions/variables, PascalCase for classes
 - **Error Handling**: Use custom exceptions from exceptions.py, validate with Pydantic
 - **Comments**: Docstrings for public functions, inline comments for complex logic
+
+## CI and Pre-commit Checks
+Before committing or pushing code, always run these checks locally:
+
+1. **Ruff Linting**: `uv run ruff check .`
+   - Fix all linting errors (unused imports, deprecated type annotations, etc.)
+   - Auto-fix available: `uv run ruff check . --fix`
+
+2. **Ruff Formatting**: `uv run ruff format .`
+   - Ensures consistent code formatting
+
+3. **Type Checking**: `uv run ty check`
+   - Aim for zero type errors
+   - If errors are unavoidable, document with `# type: ignore[error-code]` and explanation
+
+4. **Tests**: `uv run pytest tests/ -k "not llm and not openai"`
+   - Run relevant tests for your changes
+   - No mocking - tests should make real API calls where needed
+
+**CI Workflow**:
+- All PRs run Ruff, Type Check, and Core Tests
+- Fix CI failures before requesting review
+- Use `/gh-fix-ci` skill to diagnose and fix CI failures
 
 ## Conventional Commits
 - **Format**: `type(scope): description`

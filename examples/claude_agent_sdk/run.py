@@ -22,11 +22,10 @@ Key Benefits:
 """
 
 import anyio
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
 
 # Import instructor with Claude Agent SDK support
-import instructor
 from instructor.providers.claude_agent_sdk import from_claude_agent_sdk
 
 
@@ -34,36 +33,52 @@ from instructor.providers.claude_agent_sdk import from_claude_agent_sdk
 # PYDANTIC MODELS
 # =============================================================================
 
+
 class ContactInfo(BaseModel):
     """Contact information extracted from text."""
+
     name: str = Field(description="Full name of the person")
     email: str = Field(description="Email address")
     phone: Optional[str] = Field(default=None, description="Phone number if provided")
-    company: Optional[str] = Field(default=None, description="Company name if mentioned")
+    company: Optional[str] = Field(
+        default=None, description="Company name if mentioned"
+    )
 
 
 class SentimentAnalysis(BaseModel):
     """Sentiment analysis result."""
-    sentiment: str = Field(description="Overall sentiment: positive, negative, or neutral")
-    confidence: float = Field(description="Confidence score between 0 and 1", ge=0.0, le=1.0)
-    key_phrases: List[str] = Field(description="Key phrases that influenced the sentiment")
+
+    sentiment: str = Field(
+        description="Overall sentiment: positive, negative, or neutral"
+    )
+    confidence: float = Field(
+        description="Confidence score between 0 and 1", ge=0.0, le=1.0
+    )
+    key_phrases: list[str] = Field(
+        description="Key phrases that influenced the sentiment"
+    )
 
 
 class Entity(BaseModel):
     """A named entity extracted from text."""
+
     name: str = Field(description="The entity name")
-    type: str = Field(description="Entity type: person, organization, location, date, etc.")
+    type: str = Field(
+        description="Entity type: person, organization, location, date, etc."
+    )
 
 
 class EntityExtraction(BaseModel):
     """Named entities extracted from text."""
-    entities: List[Entity] = Field(description="List of extracted entities")
+
+    entities: list[Entity] = Field(description="List of extracted entities")
     summary: str = Field(description="Brief summary of the text content")
 
 
 # =============================================================================
 # EXAMPLE FUNCTIONS
 # =============================================================================
+
 
 async def example_contact_extraction():
     """Extract structured contact information from an email."""
@@ -96,9 +111,9 @@ async def example_contact_extraction():
         messages=[
             {
                 "role": "user",
-                "content": f"Extract the contact information from this email:\n\n{email_text}"
+                "content": f"Extract the contact information from this email:\n\n{email_text}",
             }
-        ]
+        ],
     )
 
     print("\nExtracted Contact Info:")
@@ -130,9 +145,9 @@ async def example_sentiment_analysis():
             messages=[
                 {
                     "role": "user",
-                    "content": f"Analyze the sentiment of this review:\n\n{review}"
+                    "content": f"Analyze the sentiment of this review:\n\n{review}",
                 }
-            ]
+            ],
         )
 
         print(f"  Sentiment: {sentiment.sentiment.upper()}")
@@ -163,9 +178,9 @@ async def example_entity_extraction():
         messages=[
             {
                 "role": "user",
-                "content": f"Extract all named entities from this text:\n\n{article_text}"
+                "content": f"Extract all named entities from this text:\n\n{article_text}",
             }
-        ]
+        ],
     )
 
     print("\nExtracted Entities:")
@@ -185,7 +200,12 @@ async def example_with_prompt():
     # You can also use a direct prompt instead of messages
     contact = await client.create(
         response_model=ContactInfo,
-        messages=[{"role": "user", "content": "Extract contact info: John Doe, john@example.com, works at Acme Corp"}]
+        messages=[
+            {
+                "role": "user",
+                "content": "Extract contact info: John Doe, john@example.com, works at Acme Corp",
+            }
+        ],
     )
 
     print("\nExtracted from direct prompt:")
@@ -197,6 +217,7 @@ async def example_with_prompt():
 # =============================================================================
 # MAIN
 # =============================================================================
+
 
 async def main():
     """Run all examples."""
