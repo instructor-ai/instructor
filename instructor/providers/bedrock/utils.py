@@ -224,9 +224,10 @@ def _to_bedrock_content_items(content: Any) -> list[dict[str, Any]]:
           Bedrock-native (passed through as-is):
             {"text":"..."}
             {"image":{"format":"jpeg|png|gif|webp","source":{"bytes": <raw bytes>}}}
+            {"document":{"format":"pdf|csv|doc|docx|xls|xlsx|html|txt|md","name":"...","source":{"bytes": <raw bytes>}}}
 
     Note:
-      - We do not validate or normalize Bedrock-native image blocks here.
+      - We do not validate or normalize Bedrock-native image/document blocks here.
         Caller is responsible for providing valid 'format' and raw 'bytes'.
     """
     # Plain string
@@ -261,6 +262,10 @@ def _to_bedrock_content_items(content: Any) -> list[dict[str, Any]]:
                     continue
                 # Pass-through Bedrock-native image as-is (assumes correct format and raw bytes)
                 if "image" in p and isinstance(p["image"], dict):
+                    items.append(p)
+                    continue
+                # Pass-through Bedrock-native document as-is (assumes correct format and raw bytes)
+                if "document" in p and isinstance(p["document"], dict):
                     items.append(p)
                     continue
 

@@ -301,21 +301,23 @@ print(resp)
 
 The `PDF` class represents a PDF file that can be loaded from a URL or file path.
 
-It provides methods to create `PDF` instances and is currently supported for OpenAI, Mistral, GenAI and Anthropic client integrations.
+It provides methods to create `PDF` instances and is currently supported for OpenAI, Mistral, GenAI, Anthropic, and Bedrock client integrations.
 
-| Method            | OpenAI | Anthropic | Google GenAI | Mistral |
-| ----------------- | ------ | --------- | ------------ | ------- |
-| `from_url()`      | ✅     | ✅        | ✅           | ✅      |
-| `from_gs_url()`   | ✅     | ✅        | ✅           | ✅      |
-| `from_path()`     | ✅     | ✅        | ✅           | ❎      |
-| `from_base64()`   | ✅     | ✅        | ✅           | ❎      |
-| `autodetect()`    | ✅     | ✅        | ✅           | ✅      |
+| Method            | OpenAI | Anthropic | Google GenAI | Mistral | Bedrock |
+| ----------------- | ------ | --------- | ------------ | ------- | ------- |
+| `from_url()`      | ✅     | ✅        | ✅           | ✅      | ✅      |
+| `from_gs_url()`   | ✅     | ✅        | ✅           | ✅      | ✅      |
+| `from_path()`     | ✅     | ✅        | ✅           | ❎      | ✅      |
+| `from_base64()`   | ✅     | ✅        | ✅           | ❎      | ✅      |
+| `autodetect()`    | ✅     | ✅        | ✅           | ✅      | ✅      |
 
 For Gemini, we also provide two additional methods that make working with the google-genai files package easy which you can access in the `PDFWithGenaiFile` object.
 
 For Anthropic, you can enable caching with the `PDFWithCacheControl` object. Note that this has caching configured by default for easy usage.
 
 We provide examples of how to use all three object classes below.
+
+For Bedrock, you can convert a `PDF` into the Bedrock-native document format with `PDF.to_bedrock()` and include the result in the message content list.
 
 ### Usage
 

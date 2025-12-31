@@ -527,3 +527,209 @@ def test_audio_from_base64():
     assert audio.source == uri
     assert audio.media_type == "audio/wav"
     assert audio.data == _b64.b64encode(raw).decode("utf-8")
+
+
+def test_pdf_to_bedrock_with_s3_uri():
+    """Test PDF.to_bedrock with S3 URI source."""
+    pdf = PDF(
+        source="s3://my-bucket/path/to/document.pdf",
+        media_type="application/pdf",
+        data=None,
+    )
+    bedrock_format = pdf.to_bedrock()
+
+    assert bedrock_format == {
+        "document": {
+            "format": "pdf",
+            "name": "document",
+            "source": {"s3Location": {"uri": "s3://my-bucket/path/to/document.pdf"}},
+        }
+    }
+
+
+def test_pdf_to_bedrock_with_s3_uri_custom_name():
+    """Test PDF.to_bedrock with S3 URI and custom name."""
+    pdf = PDF(
+        source="s3://my-bucket/path/to/document.pdf",
+        media_type="application/pdf",
+        data=None,
+    )
+    bedrock_format = pdf.to_bedrock(name="custom-name")
+
+    assert bedrock_format["document"]["name"] == "custom-name"
+    assert (
+        bedrock_format["document"]["source"]["s3Location"]["uri"]
+        == "s3://my-bucket/path/to/document.pdf"
+    )
+
+
+def test_pdf_to_bedrock_with_invalid_s3_uri():
+    """Test PDF.to_bedrock with invalid S3 URI format."""
+    pdf = PDF(
+        source="s3://invalid-uri-no-key",
+        media_type="application/pdf",
+        data=None,
+    )
+    with pytest.raises(ValueError, match="Invalid S3 URI format"):
+        pdf.to_bedrock()
+
+
+def test_pdf_to_bedrock_with_base64_data():
+    """Test PDF.to_bedrock with base64 encoded data."""
+    import base64
+
+    pdf_bytes = b"%PDF-1.4\nfake pdf content"
+    encoded_data = base64.b64encode(pdf_bytes).decode("utf-8")
+
+    pdf = PDF(
+        source="data:application/pdf;base64," + encoded_data,
+        media_type="application/pdf",
+        data=encoded_data,
+    )
+    bedrock_format = pdf.to_bedrock()
+
+    assert bedrock_format["document"]["format"] == "pdf"
+    assert bedrock_format["document"]["name"] == "document"
+    assert bedrock_format["document"]["source"]["bytes"] == pdf_bytes
+
+
+def test_pdf_to_bedrock_with_path_source(tmp_path):
+    """Test PDF.to_bedrock with local file path."""
+    pdf_file = tmp_path / "test_document.pdf"
+    pdf_content = b"%PDF-1.4\ntest content"
+    pdf_file.write_bytes(pdf_content)
+
+    pdf = PDF.from_path(pdf_file)
+    bedrock_format = pdf.to_bedrock()
+
+    assert bedrock_format["document"]["format"] == "pdf"
+    assert bedrock_format["document"]["name"] == "test_documentpdf"
+    assert bedrock_format["document"]["source"]["bytes"] == pdf_content
+
+
+def test_pdf_to_bedrock_with_url_source():
+    """Test PDF.to_bedrock with HTTP URL source."""
+    pdf_bytes = b"%PDF-1.4\nfetched content"
+
+    with patch("instructor.processing.multimodal.requests.get") as mock_get:
+        resp = MagicMock()
+        resp.content = pdf_bytes
+        resp.raise_for_status = MagicMock()
+        mock_get.return_value = resp
+
+        pdf = PDF(
+            source="https://example.com/doc.pdf",
+            media_type="application/pdf",
+            data=None,
+        )
+        bedrock_format = pdf.to_bedrock()
+
+    assert bedrock_format["document"]["format"] == "pdf"
+    assert bedrock_format["document"]["name"] == "docpdf"
+    assert bedrock_format["document"]["source"]["bytes"] == pdf_bytes
+
+
+def test_pdf_to_bedrock_name_sanitization():
+    """Test that PDF.to_bedrock sanitizes document names according to Bedrock requirements."""
+    import base64
+
+    pdf_bytes = b"%PDF-1.4\ntest"
+    encoded = base64.b64encode(pdf_bytes).decode("utf-8")
+
+    pdf = PDF(
+        source="test",
+        media_type="application/pdf",
+        data=encoded,
+    )
+
+    # Test with special characters that should be removed
+    bedrock_format = pdf.to_bedrock(name="my@doc#2024!.pdf")
+    # Special chars should be removed
+    assert bedrock_format["document"]["name"] == "mydoc2024pdf"
+
+    # Test with multiple spaces that should be consolidated
+    bedrock_format = pdf.to_bedrock(name="my   document    file.pdf")
+    assert bedrock_format["document"]["name"] == "my document filepdf"
+
+    # Test with allowed characters (alphanumeric, whitespace, hyphens, parentheses, brackets)
+    bedrock_format = pdf.to_bedrock(name="my-doc (2024) [final].pdf")
+    assert bedrock_format["document"]["name"] == "my-doc (2024) [final]pdf"
+
+
+def test_pdf_to_bedrock_name_from_path_source(tmp_path):
+    """Test that PDF.to_bedrock extracts name from Path source."""
+    pdf_file = tmp_path / "my-report.pdf"
+    pdf_file.write_bytes(b"%PDF-1.4\ntest")
+
+    pdf = PDF.from_path(pdf_file)
+    bedrock_format = pdf.to_bedrock()
+
+    assert bedrock_format["document"]["name"] == "my-reportpdf"
+
+
+def test_pdf_to_bedrock_name_from_url():
+    """Test that PDF.to_bedrock extracts name from URL."""
+    pdf_bytes = b"%PDF-1.4\ntest"
+
+    with patch("instructor.processing.multimodal.requests.get") as mock_get:
+        resp = MagicMock()
+        resp.content = pdf_bytes
+        resp.raise_for_status = MagicMock()
+        mock_get.return_value = resp
+
+        pdf = PDF(
+            source="https://example.com/reports/annual-report-2024.pdf",
+            media_type="application/pdf",
+            data=None,
+        )
+        bedrock_format = pdf.to_bedrock()
+
+    assert bedrock_format["document"]["name"] == "annual-report-2024pdf"
+
+
+def test_pdf_to_bedrock_name_from_gs_url():
+    """Test that PDF.to_bedrock extracts name from GCS URL."""
+    import base64
+
+    pdf_bytes = b"%PDF-1.4\ntest"
+    encoded = base64.b64encode(pdf_bytes).decode("utf-8")
+
+    pdf = PDF(
+        source="gs://my-bucket/docs/financial-report.pdf",
+        media_type="application/pdf",
+        data=encoded,
+    )
+    bedrock_format = pdf.to_bedrock()
+
+    assert bedrock_format["document"]["name"] == "financial-reportpdf"
+
+
+def test_pdf_to_bedrock_default_name():
+    """Test that PDF.to_bedrock uses default name when source doesn't provide one."""
+    import base64
+
+    pdf_bytes = b"%PDF-1.4\ntest"
+    encoded = base64.b64encode(pdf_bytes).decode("utf-8")
+
+    pdf = PDF(
+        source="https://example.com/",  # URL without filename
+        media_type="application/pdf",
+        data=encoded,
+    )
+    bedrock_format = pdf.to_bedrock()
+
+    assert bedrock_format["document"]["name"] == "document"
+
+
+def test_pdf_to_bedrock_missing_data_no_source():
+    """Test that PDF.to_bedrock raises error when data is missing and source can't be loaded."""
+    pdf = PDF(
+        source="nonexistent.pdf",
+        media_type="application/pdf",
+        data=None,
+    )
+
+    with pytest.raises(
+        ValueError, match="PDF data is missing and source cannot be loaded"
+    ):
+        pdf.to_bedrock()
