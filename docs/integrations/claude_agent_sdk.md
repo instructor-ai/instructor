@@ -8,10 +8,10 @@ This guide shows you how to use instructor with the Claude Agent SDK for structu
 pip install instructor claude-agent-sdk
 ```
 
-Make sure you have:
-- `ANTHROPIC_API_KEY` environment variable set
-- Claude Code CLI installed
-- Claude Code Max subscription with API access
+Set your API key:
+```bash
+export ANTHROPIC_API_KEY=your-api-key
+```
 
 ## Quick Start
 
@@ -255,6 +255,5 @@ Note: The sync version uses `anyio.run()` internally to execute the async Claude
 
 ## Limitations
 
-- Requires Claude Code CLI and Claude Code Max subscription
 - No streaming support (`stream=True`, `Partial[Model]`, or `Iterable[Model]`)
-- Use list fields in your model for multiple results instead of `Iterable[Model]`
+- Use list fields in your model for multiple results
