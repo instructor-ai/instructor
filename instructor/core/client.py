@@ -633,6 +633,7 @@ class AsyncInstructor(Instructor):
                 instructor.Mode.PARALLEL_TOOLS,
                 instructor.Mode.VERTEXAI_PARALLEL_TOOLS,
                 instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
+                instructor.Mode.CLAUDE_AGENT_SDK,
             }
         ):
             return self.create_iterable(

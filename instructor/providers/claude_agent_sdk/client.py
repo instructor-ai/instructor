@@ -13,7 +13,7 @@ Supports both sync and async interfaces.
 from __future__ import annotations
 
 import instructor
-from typing import Any, TypeVar, Type, overload
+from typing import Any, TypeVar, overload
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
@@ -36,6 +36,15 @@ class ClaudeAgentSDKClient:
             **kwargs: Default keyword arguments to pass to ClaudeAgentOptions
         """
         self.default_options = kwargs
+
+
+def _merge_default_options(
+    default_options: dict[str, Any],
+    kwargs: dict[str, Any],
+) -> dict[str, Any]:
+    if not default_options:
+        return kwargs
+    return {**default_options, **kwargs}
 
 
 def _convert_messages_to_prompt(messages: list[dict[str, Any]]) -> str:
@@ -61,9 +70,9 @@ def _convert_messages_to_prompt(messages: list[dict[str, Any]]) -> str:
 
 
 def _prepare_options(
-    response_model: Type[T] | None,
+    response_model: type[T] | None,
     kwargs: dict[str, Any],
-) -> tuple[Type[T] | None, dict[str, Any]]:
+) -> tuple[type[T] | None, dict[str, Any]]:
     """Prepare ClaudeAgentOptions kwargs.
 
     Args:
@@ -73,6 +82,10 @@ def _prepare_options(
     Returns:
         Tuple of (actual_model, option_kwargs)
     """
+    from typing import get_origin
+    from instructor.dsl.partial import PartialBase
+    import collections.abc
+
     option_kwargs = {}
 
     # Pass through supported options
@@ -83,15 +96,33 @@ def _prepare_options(
     # Get the actual response model class for schema generation
     actual_model = response_model
     if response_model is not None:
-        # Handle wrapped models (e.g., Partial[Model])
-        if hasattr(response_model, "__wrapped__"):
-            actual_model = response_model.__wrapped__
+        # Check for Partial models (which inherit from PartialBase)
+        if isinstance(response_model, type) and issubclass(response_model, PartialBase):
+            raise ValueError(
+                "Claude Agent SDK does not support Partial models. "
+                "Provide a regular BaseModel response_model and avoid create_partial."
+            )
+
+        # Check for Iterable models
+        if get_origin(response_model) is collections.abc.Iterable:
+            raise ValueError(
+                "Claude Agent SDK does not support Iterable models. "
+                "Provide a regular BaseModel response_model and avoid create_iterable."
+            )
+
+        # Validate that we have a proper BaseModel
+        if not hasattr(response_model, "model_json_schema"):
+            raise ValueError(
+                "Claude Agent SDK requires a Pydantic BaseModel as response_model."
+            )
 
         # Set up output_format for structured output
         option_kwargs["output_format"] = {
             "type": "json_schema",
-            "schema": actual_model.model_json_schema()
+            "schema": response_model.model_json_schema(),
         }
+
+        actual_model = response_model
 
     return actual_model, option_kwargs
 
@@ -118,7 +149,7 @@ async def _execute_query_async(
     # The ResultMessage with structured_output comes at the end
     async for message in query(prompt=prompt, options=options):
         if isinstance(message, ResultMessage):
-            if hasattr(message, 'structured_output') and message.structured_output:
+            if hasattr(message, "structured_output") and message.structured_output:
                 structured_output = message.structured_output
                 # Don't break - let the generator complete naturally
 
@@ -145,18 +176,22 @@ def _execute_query_sync(
     async def _run():
         return await _execute_query_async(prompt, option_kwargs)
 
-    return anyio.from_thread.run_sync(_run) if anyio.get_current_task() else anyio.run(_run)
+    return (
+        anyio.from_thread.run_sync(_run)  # type: ignore
+        if anyio.get_current_task()
+        else anyio.run(_run)
+    )
 
 
 async def claude_agent_sdk_create_async(
     messages: list[dict[str, Any]] | None = None,
-    response_model: Type[T] | None = None,
+    response_model: type[T] | None = None,
     prompt: str | None = None,
     max_retries: int = 1,
     validation_context: dict[str, Any] | None = None,
     context: dict[str, Any] | None = None,
-    strict: bool = True,
-    hooks: Any = None,
+    strict: bool = True,  # noqa: ARG001
+    hooks: Any = None,  # noqa: ARG001
     **kwargs: Any,
 ) -> T:
     """Execute a Claude Agent SDK query with structured output (async version).
@@ -180,36 +215,47 @@ async def claude_agent_sdk_create_async(
         ValidationError: If the response doesn't match the expected schema
     """
     # Convert messages to prompt if not provided directly
+    if kwargs.get("stream"):
+        raise ValueError(
+            "Claude Agent SDK does not support streaming/iterable responses. "
+            "Remove stream=True or avoid create_iterable/create_partial."
+        )
+
     if prompt is None and messages:
         prompt = _convert_messages_to_prompt(messages)
 
     if prompt is None:
         raise ValueError("Either 'prompt' or 'messages' must be provided")
 
+    if response_model is None:
+        raise ValueError("response_model is required for Claude Agent SDK")
+
     actual_model, option_kwargs = _prepare_options(response_model, kwargs)
+    assert (
+        actual_model is not None
+    )  # Should never be None if response_model is not None
 
     # Execute with retries
-    last_exception = None
+    last_exception: Exception | None = None
     current_prompt = prompt
 
     for attempt in range(max_retries):
         try:
-            structured_output = await _execute_query_async(current_prompt, option_kwargs)
+            structured_output = await _execute_query_async(
+                current_prompt, option_kwargs
+            )
 
             if structured_output is None:
                 raise ValueError("No structured output received from Claude Agent SDK")
 
             # Validate the response with Pydantic
-            if actual_model is not None:
-                validated = actual_model.model_validate(
-                    structured_output,
-                    context=context or validation_context,
-                )
-                # Attach raw response for compatibility
-                validated._raw_response = structured_output
-                return validated
-            else:
-                return structured_output
+            validated = actual_model.model_validate(
+                structured_output,
+                context=context or validation_context,
+            )
+            # Attach raw response for compatibility
+            validated._raw_response = structured_output  # type: ignore
+            return validated
 
         except Exception as e:
             last_exception = e
@@ -219,12 +265,15 @@ async def claude_agent_sdk_create_async(
             else:
                 raise
 
+    # This should never be reached due to raise in the except block,
+    # but we need it for type checking
+    assert last_exception is not None
     raise last_exception
 
 
 def claude_agent_sdk_create_sync(
     messages: list[dict[str, Any]] | None = None,
-    response_model: Type[T] | None = None,
+    response_model: type[T] | None = None,
     prompt: str | None = None,
     max_retries: int = 1,
     validation_context: dict[str, Any] | None = None,
@@ -257,6 +306,12 @@ def claude_agent_sdk_create_sync(
         ValidationError: If the response doesn't match the expected schema
     """
     import anyio
+
+    if kwargs.get("stream"):
+        raise ValueError(
+            "Claude Agent SDK does not support streaming/iterable responses. "
+            "Remove stream=True or avoid create_iterable/create_partial."
+        )
 
     return anyio.run(
         claude_agent_sdk_create_async,
@@ -371,17 +426,74 @@ def from_claude_agent_sdk(
     if client is None:
         client = ClaudeAgentSDKClient(**kwargs)
 
+    # Merge client default_options with any additional kwargs provided
+    merged_defaults = _merge_default_options(
+        client.default_options if client else {}, kwargs
+    )
+
     if use_async:
+
+        async def _create_async(
+            response_model: type[T] | None,
+            messages: list[dict[str, Any]] | None = None,
+            max_retries: int = 1,
+            validation_context: dict[str, Any] | None = None,
+            context: dict[str, Any] | None = None,
+            strict: bool = True,
+            hooks: Any = None,
+            **call_kwargs: Any,
+        ) -> T:
+            merged_kwargs = _merge_default_options(
+                merged_defaults,
+                call_kwargs,
+            )
+            return await claude_agent_sdk_create_async(
+                messages=messages,
+                response_model=response_model,
+                max_retries=max_retries,
+                validation_context=validation_context,
+                context=context,
+                strict=strict,
+                hooks=hooks,
+                **merged_kwargs,
+            )
+
         return instructor.AsyncInstructor(
             client=client,
-            create=claude_agent_sdk_create_async,
+            create=_create_async,
             provider=instructor.Provider.CLAUDE_AGENT_SDK,
             mode=mode,
         )
     else:
+
+        def _create_sync(
+            response_model: type[T] | None,
+            messages: list[dict[str, Any]] | None = None,
+            max_retries: int = 1,
+            validation_context: dict[str, Any] | None = None,
+            context: dict[str, Any] | None = None,
+            strict: bool = True,
+            hooks: Any = None,
+            **call_kwargs: Any,
+        ) -> T:
+            merged_kwargs = _merge_default_options(
+                merged_defaults,
+                call_kwargs,
+            )
+            return claude_agent_sdk_create_sync(
+                messages=messages,
+                response_model=response_model,
+                max_retries=max_retries,
+                validation_context=validation_context,
+                context=context,
+                strict=strict,
+                hooks=hooks,
+                **merged_kwargs,
+            )
+
         return instructor.Instructor(
             client=client,
-            create=claude_agent_sdk_create_sync,
+            create=_create_sync,
             provider=instructor.Provider.CLAUDE_AGENT_SDK,
             mode=mode,
         )
