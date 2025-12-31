@@ -185,11 +185,13 @@ anyio.run(main)
 
 ## Key Differences from Other Providers
 
-1. **Async Only**: The Claude Agent SDK integration is async-only since the underlying SDK uses async iterators.
+1. **Async and Sync Support**: The integration supports both async (default) and sync modes via `use_async=False`.
 
 2. **Agentic Capabilities**: The Claude Agent SDK can perform agentic tasks with tool use, making it suitable for complex multi-step workflows.
 
 3. **Built-in Schema Validation**: The SDK validates JSON output against the schema before returning, providing an extra layer of reliability.
+
+4. **No Streaming Support**: Unlike other providers, Claude Agent SDK does not support streaming responses, `Partial` models, or `Iterable` models.
 
 ## Configuration Options
 
@@ -253,5 +255,6 @@ Note: The sync version uses `anyio.run()` internally to execute the async Claude
 
 ## Limitations
 
-- Requires Claude Code CLI installation
-- Requires Claude Code Max subscription
+- Requires Claude Code CLI and Claude Code Max subscription
+- No streaming support (`stream=True`, `Partial[Model]`, or `Iterable[Model]`)
+- Use list fields in your model for multiple results instead of `Iterable[Model]`
