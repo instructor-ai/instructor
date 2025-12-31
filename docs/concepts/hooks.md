@@ -123,7 +123,7 @@ def log_completion_kwargs(*args, **kwargs):
 
 client.on("completion:kwargs", log_completion_kwargs)
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[{"role": "user", "content": "Hello, world!"}],
     response_model=str,
 )
@@ -174,7 +174,7 @@ def log_completion_kwargs(*args, **kwargs):
 client.on("completion:kwargs", log_completion_kwargs)
 
 # Make a request that triggers the hook
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[{"role": "user", "content": "Hello, world!"}],
     response_model=str,
 )
@@ -347,7 +347,7 @@ class User(pydantic.BaseModel):
 
 # Try extraction with a potentially problematic input
 try:
-    resp = client.chat.completions.create(
+    resp = client.create(
         messages=[
             {
                 "role": "user",
@@ -557,7 +557,7 @@ debug_hooks.on("completion:response", lambda resp: print("Debug hook: response")
 debug_hooks.on("parse:error", lambda err: print(f"Debug hook: error - {err}"))
 
 # Use per-call hooks - they combine with client hooks
-user = client.chat.completions.create(
+user = client.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Extract: Alice is 25"}],
     response_model=User,
@@ -598,14 +598,14 @@ debug_hooks = Hooks()
 debug_hooks.on("parse:error", lambda err: print(f"Detailed error: {err}"))
 
 # Regular call - only client hooks
-user1 = client.chat.completions.create(
+user1 = client.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Extract: Bob is 30"}],
     response_model=User
 )
 
 # Performance monitoring call - client + perf hooks
-user2 = client.chat.completions.create(
+user2 = client.create(
     model="gpt-3.5-turbo", 
     messages=[{"role": "user", "content": "Extract: Carol is 25"}],
     response_model=User,
@@ -613,7 +613,7 @@ user2 = client.chat.completions.create(
 )
 
 # Debug problematic call - client + debug hooks
-user3 = client.chat.completions.create(
+user3 = client.create(
     model="gpt-3.5-turbo",
     messages=[{"role": "user", "content": "Extract: Invalid data"}],
     response_model=User,
@@ -639,7 +639,7 @@ class TestMyApp(unittest.TestCase):
         client.on("completion:response", mock_handler)
 
         # Call your code that uses the client
-        result = client.chat.completions.create(
+        result = client.create(
             messages=[{"role": "user", "content": "Hello"}],
             response_model=str,
         )
@@ -665,7 +665,7 @@ class TestMyApp(unittest.TestCase):
         per_call_hooks.on("completion:response", per_call_mock)
 
         # Make a call with per-call hooks
-        result = client.chat.completions.create(
+        result = client.create(
             messages=[{"role": "user", "content": "Hello"}],
             response_model=str,
             hooks=per_call_hooks
@@ -681,15 +681,14 @@ This approach allows you to test your code without mocking the entire client.
 ### Using Hooks
 
 ```python
-from openai import OpenAI
 import instructor
 
 
 # Initialize client
-client = instructor.patch(OpenAI())
+client = instructor.from_provider("openai/gpt-4o")
 
 # Example with all hooks enabled (default)
-response = client.chat.completions.create(
+response = client.create(
     response_model=str,
     messages=[{"role": "user", "content": "Hello!"}],
 )
@@ -698,7 +697,6 @@ response = client.chat.completions.create(
 ```python
 from enum import Enum, auto
 import instructor
-from openai import OpenAI
 
 
 # Define standard hook names
@@ -717,5 +715,12 @@ class CustomHookName(Enum):
 
 
 # Initialize client with custom hooks
-client = instructor.patch(OpenAI())
+client = instructor.from_provider("openai/gpt-4o")
 ```
+
+## See Also
+
+- [Debugging](../debugging.md) - Practical debugging techniques using hooks
+- [Retrying](./retrying.md) - Monitor retry attempts with hooks
+- [Validation](./validation.md) - Use hooks for validation monitoring
+- [Getting Started](../getting-started.md) - Learn the basics

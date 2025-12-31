@@ -38,7 +38,7 @@ from pydantic import BaseModel
 
 
 client = instructor.from_provider("google/gemini-2.5-flash"),
-    mode=instructor.Mode.GEMINI_JSON,  # (1)!
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,  # (1)!
 )
 
 mp3_file = genai.upload_file("./sample.mp3")  # (2)!
@@ -68,7 +68,7 @@ description = 'The main speaker is President John F. Kennedy, giving his State o
 """
 ```
 
-1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
+1. Make sure to set the mode to `GENAI_STRUCTURED_OUTPUTS` (replaces deprecated `GEMINI_JSON`), this is important because Tool Calling doesn't work with multi-modal inputs.
 2. Use `genai.upload_file` to upload your file. If you've already uploaded the file, you can get it by using `genai.get_file`
 3. Pass in the file object as any normal user message
 
@@ -93,7 +93,7 @@ from pydantic import BaseModel
 from pydub import AudioSegment
 
 client = instructor.from_provider("google/gemini-2.5-flash"),
-    mode=instructor.Mode.GEMINI_JSON,  # (1)!
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,  # (1)!
 )
 
 
@@ -142,7 +142,7 @@ summary='President addresses the joint session of Congress,  reflecting on his f
 #> knowledge and inspiration from members of both"
 ```
 
-1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
+1. Make sure to set the mode to `GENAI_STRUCTURED_OUTPUTS` (replaces deprecated `GEMINI_JSON`), this is important because Tool Calling doesn't work with multi-modal inputs.
 2. Use `AudioSegment.from_mp3` to load your audio file.
 3. Pass in the audio data as bytes to the `data` field using the content as a dictionary with the right content `mime_type` and `data` as bytes
 
@@ -159,7 +159,7 @@ from pydantic import BaseModel
 
 
 client = instructor.from_provider("google/gemini-2.5-flash"),
-    mode=instructor.Mode.GEMINI_JSON,  # (1)!
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,  # (1)!
 )
 
 mp3_file = genai.upload_file("./sample.mp3")  # (2)!
@@ -190,6 +190,6 @@ description = 'President John F. Kennedy delivers his State of the Union address
 """
 ```
 
-1. Make sure to set the mode to `GEMINI_JSON`, this is important because Tool Calling doesn't work with multi-modal inputs.
+1. Make sure to set the mode to `GENAI_STRUCTURED_OUTPUTS` (replaces deprecated `GEMINI_JSON`), this is important because Tool Calling doesn't work with multi-modal inputs.
 2. Upload the file using `genai.upload_file` or get the file using `genai.get_file`
 3. Pass in the content as a list containing the normal user message and the file object.

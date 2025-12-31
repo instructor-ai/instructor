@@ -62,7 +62,7 @@ import logfire
 openai_client = OpenAI()
 logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))  # (1)!
 logfire.instrument_openai(openai_client)  # (2)!
-client = instructor.from_openai(openai_client)
+client = instructor.from_provider("openai/gpt-4o")
 ```
 
 1. We add Pydantic logging using `logfire`. Note that depending on your use-case, you can configure what you want to log with Pydantic
@@ -97,7 +97,7 @@ Logfire can help us to log this entire function, and what's happening inside it,
 @logfire.instrument("classification", extract_args=True)  # (1)!
 def classify(data: str) -> SinglePrediction:
     """Perform single-label classification on the input text."""
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         response_model=SinglePrediction,
         messages=[
@@ -148,7 +148,7 @@ from openai import OpenAI
 openai_client = OpenAI()
 logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
 logfire.instrument_openai(openai_client)
-client = instructor.from_openai(openai_client)
+client = instructor.from_provider("openai/gpt-4o")
 
 
 class Statement(BaseModel):
@@ -245,15 +245,14 @@ import instructor
 import logfire
 
 
-openai_client = OpenAI()
+client = instructor.from_provider("openai/gpt-4o", mode=instructor.Mode.MD_JSON)
 logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
-logfire.instrument_openai(openai_client)
-client = instructor.from_openai(openai_client, mode=instructor.Mode.MD_JSON)
+logfire.instrument_openai(client._client)
 
 
 @logfire.instrument("extract-table", extract_args=True)
 def extract_table_from_image(url: str) -> Iterable[Table]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4-vision-preview",
         response_model=Iterable[Table],
         max_tokens=1800,

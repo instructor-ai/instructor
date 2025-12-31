@@ -42,7 +42,7 @@ class Hero(SQLModel, instructor.OpenAISchema, table=True):
 
 # Generate AI-powered data
 def create_hero() -> Hero:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         response_model=Hero,
         messages=[
@@ -146,7 +146,7 @@ class Hero(SQLModel, instructor.OpenAISchema, table=True):
     team: Optional[Team] = Relationship(back_populates="heroes")
 
 def create_hero_for_team(team_name: str) -> Hero:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         response_model=Hero,
         messages=[
@@ -166,7 +166,7 @@ from sqlmodel import Session
 client = instructor.from_provider("openai/gpt-5-nano")
 
 def create_hero_team(team_size: int = 5) -> List[Hero]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4",
         response_model=List[Hero],
         messages=[
@@ -207,7 +207,7 @@ async def create_hero_endpoint(
     prompt: str,
     session: Session = Depends(get_session)
 ):
-    hero = await client.chat.completions.create(
+    hero = await client.create(
         model="gpt-4",
         response_model=Hero,
         messages=[
@@ -305,7 +305,7 @@ async def create_heroes_batch(prompts: List[str]) -> List[Hero]:
     """Generate multiple heroes concurrently"""
     tasks = []
     for prompt in prompts:
-        task = client.chat.completions.create(
+        task = client.create(
             model="gpt-4",
             response_model=Hero,
             messages=[{"role": "user", "content": prompt}],
@@ -426,7 +426,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 async def safe_create_hero(prompt: str) -> Hero:
     try:
-        hero = await client.chat.completions.create(
+        hero = await client.create(
             model="gpt-4",
             response_model=Hero,
             messages=[{"role": "user", "content": prompt}],
@@ -470,7 +470,7 @@ def seed_database():
     with Session(engine) as session:
         for hero_type in hero_types:
             for i in range(5):  # 5 heroes of each type
-                hero = client.chat.completions.create(
+                hero = client.create(
                     model="gpt-4",
                     response_model=Hero,
                     messages=[
@@ -504,7 +504,7 @@ async def stream_hero_creation(prompts: List[str]):
     async def generate_heroes():
         for prompt in prompts:
             try:
-                hero = await client.chat.completions.create(
+                hero = await client.create(
                     model="gpt-4",
                     response_model=Hero,
                     messages=[{"role": "user", "content": prompt}],
@@ -577,7 +577,7 @@ def monitor_ai_calls(func):
 
 @monitor_ai_calls
 async def create_hero(prompt: str) -> Hero:
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4",
         response_model=Hero,
         messages=[{"role": "user", "content": prompt}],
@@ -602,6 +602,6 @@ By following the patterns and best practices outlined in this guide, you can bui
 - Check out [validation techniques](../concepts/validation.md) for robust data handling
 - Learn about [streaming responses](partial_streaming.md) for real-time applications
 
-![Image of hero record in the database](db.png)
+![Database screenshot showing AI-generated hero records stored in SQLite database](db.png)
 
 *Example of AI-generated hero data stored in SQLite database*

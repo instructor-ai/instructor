@@ -3,6 +3,13 @@ title: Parallel Tools
 description: Learn about parallel tools in OpenAI, Google, and Anthropic.
 ---
 
+## See Also
+
+- [from_provider Guide](./from_provider.md#async-clients) - Async client setup
+- [Batch Processing](../examples/batch_job_oai.md) - Process multiple requests efficiently
+- [Iterable](./iterable.md) - Extract multiple objects
+- [Lists](./lists.md) - Working with collections
+
 # Parallel Tools
 
 Parallel Tool Calling is a feature that allows you to call multiple functions in a single request.
@@ -40,7 +47,7 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         mode=instructor.Mode.PARALLEL_TOOLS,
     )
 
-    function_calls = client.chat.completions.create(
+    function_calls = client.create(
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {
@@ -119,7 +126,7 @@ Parallel Function Calling helps you to significantly reduce the latency of your 
         mode=instructor.Mode.ANTHROPIC_PARALLEL_TOOLS,
     )
 
-    function_calls = client.chat.completions.create(
+    function_calls = client.create(
         messages=[
             {"role": "system", "content": "You must always use tools"},
             {

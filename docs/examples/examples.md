@@ -1,6 +1,6 @@
 ---
-title: Incorporating Examples in Pydantic Models
-description: Learn how to enhance Pydantic models with practical examples for clarity and usability in JSON schemas.
+title: Few-Shot Learning with Examples - Pydantic Models
+description: Enhance Pydantic models with practical examples for few-shot learning. Improve LLM understanding with example-driven JSON schemas.
 ---
 
 # How should I include examples?
@@ -8,7 +8,6 @@ description: Learn how to enhance Pydantic models with practical examples for cl
 To enhance the clarity and usability of your model and prompt, incorporating examples directly into the JSON schema extra of your Pydantic model is highly recommended. This approach not only streamlines the integration of practical examples but also ensures that they are easily accessible and understandable within the context of your model's schema.
 
 ```python
-import openai
 import instructor
 from typing import Iterable
 from pydantic import BaseModel, ConfigDict
@@ -42,7 +41,7 @@ class SyntheticQA(BaseModel):
 
 
 def get_synthetic_data() -> Iterable[SyntheticQA]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "Generate synthetic examples"},

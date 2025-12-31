@@ -32,7 +32,7 @@ class Response(BaseModel):
 
 
 def generate_structured_reasoning_response(query: str, context: str):
-    response = client.chat.completions.create(
+    response = client.create(
         model="gpt-4o",
         response_model=Response,
         messages=[

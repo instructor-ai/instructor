@@ -223,7 +223,7 @@ class ReasonedAnswer(BaseModel):
 
 client = instructor.from_provider("openai/gpt-5-nano")
 
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-4",
     response_model=ReasonedAnswer,
     messages=[

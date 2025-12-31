@@ -47,7 +47,7 @@ class Person(BaseModel):
     age: int
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="gpt-4o-audio-preview",
     response_model=Person,
     modalities=["text"],

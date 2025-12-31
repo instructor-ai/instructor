@@ -46,7 +46,7 @@ Instructor supports different modes for different providers:
 - `Mode.TOOLS` - Uses the OpenAI function calling API (recommended for OpenAI)
 - `Mode.JSON` - Instructs the model to return JSON directly
 - `Mode.ANTHROPIC_TOOLS` - Uses Anthropic's tool calling feature
-- `Mode.GEMINI_TOOLS` - Uses Gemini's function calling
+- `Mode.GENAI_TOOLS` - Uses Gemini's function calling (replaces deprecated GEMINI_TOOLS)
 
 The optimal mode depends on your provider and use case. See [Patching](./concepts/patching.md) for details.
 
@@ -95,7 +95,7 @@ Instructor automatically retries when validation fails. You can customize this b
 ```python
 from tenacity import stop_after_attempt
 
-result = client.chat.completions.create(
+result = client.create(
     response_model=MyModel,
     max_retries=stop_after_attempt(5),  # Retry up to 5 times
     messages=[...]
@@ -107,7 +107,7 @@ result = client.chat.completions.create(
 Yes, use `create_with_completion`:
 
 ```python
-result, completion = client.chat.completions.create_with_completion(
+result, completion = client.create_with_completion(
     response_model=MyModel,
     messages=[...]
 )
@@ -120,7 +120,7 @@ result, completion = client.chat.completions.create_with_completion(
 Use `create_partial` for partial updates as the response is generated:
 
 ```python
-stream = client.chat.completions.create_partial(
+stream = client.create_partial(
     response_model=MyModel,
     messages=[...]
 )
@@ -146,7 +146,7 @@ Instructor uses the `tenacity` library for retries, which you can configure:
 from tenacity import retry_if_exception_type, wait_exponential
 from openai.error import RateLimitError
 
-result = client.chat.completions.create(
+result = client.create(
     response_model=MyModel,
     max_retries=retry_if_exception_type(RateLimitError),
     messages=[...],
@@ -172,7 +172,7 @@ class UserInfo(BaseModel):
 
 @app.post("/extract")
 async def extract_user_info(text: str) -> UserInfo:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-3.5-turbo",
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
@@ -189,7 +189,7 @@ import asyncio
 client = instructor.from_provider("openai/gpt-5-nano", async_client=True)
 
 async def extract_data():
-    result = await client.chat.completions.create(
+    result = await client.create(
         response_model=MyModel,
         messages=[...]
     )

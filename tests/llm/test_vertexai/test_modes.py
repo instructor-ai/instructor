@@ -2,6 +2,7 @@
 
 Tests VertexAI's ability to handle mixed content with gm.Part objects.
 """
+
 from itertools import product
 from pydantic import BaseModel
 import vertexai.generative_models as gm  # type: ignore

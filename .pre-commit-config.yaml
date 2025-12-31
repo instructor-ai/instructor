@@ -26,3 +26,10 @@ repos:
         language: system
         files: ^(pyproject\.toml|uv\.lock)$
         pass_filenames: false
+
+      - id: uv-export-requirements
+        name: Export requirements.txt from pyproject.toml
+        entry: bash -c 'uv pip compile pyproject.toml -o requirements.txt && git add requirements.txt'
+        language: system
+        files: ^pyproject\.toml$
+        pass_filenames: false

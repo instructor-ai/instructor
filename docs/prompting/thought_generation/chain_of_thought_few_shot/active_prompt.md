@@ -45,7 +45,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def query_llm():
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Response,
         messages=[

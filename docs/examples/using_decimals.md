@@ -1,3 +1,15 @@
+---
+title: Working with Decimal Types in Instructor
+description: Learn how to use Python Decimal types for precise financial calculations and numeric data extraction with Instructor.
+---
+
+## See Also
+
+- [Types](../concepts/types.md) - Working with different data types
+- [Fields](../concepts/fields.md) - Customizing field validation
+- [Field Validation](../learning/patterns/field_validation.md) - Field-level validation patterns
+- [Validation](../concepts/validation.md) - Core validation concepts
+
 # Using Decimals
 
 Extract precise decimal values for financial calculations using Python's `Decimal` type.
@@ -20,7 +32,7 @@ class Receipt(BaseModel):
 
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
-receipt = client.chat.completions.create(
+receipt = client.create(
     messages=[{"role": "user", "content": "Coffee costs $4.99"}],
     response_model=Receipt,
 )

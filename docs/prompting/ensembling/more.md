@@ -42,7 +42,7 @@ class ModelScore(BaseModel):
 
 def query_factual_expert(query: str, evidence: list[str]):
     formatted_evidence = "\n-".join(evidence)
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=FactualExpert,
         messages=[
@@ -65,7 +65,7 @@ def query_factual_expert(query: str, evidence: list[str]):
 
 
 def query_multihop_expert(query: str):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=MultihopExpert,
         messages=[
@@ -84,7 +84,7 @@ def query_multihop_expert(query: str):
 
 
 def score_answer(query: str, answer: str):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=ModelScore,
         messages=[

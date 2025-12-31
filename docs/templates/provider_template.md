@@ -56,7 +56,7 @@ class UserExtract(BaseModel):
 
 # Extract structured data
 try:
-    user = client.chat.completions.create(
+    user = client.create(
         model="provider-model-name",  # Use latest stable model version
         response_model=UserExtract,
         messages=[
@@ -118,7 +118,7 @@ async def extract_data(text: str) -> UserExtract:
         A structured UserExtract object
     """
     try:
-        user = await client.chat.completions.create(
+        user = await client.create(
             model="provider-model-name",  # Use latest stable model version
             response_model=UserExtract,
             messages=[

@@ -1,3 +1,8 @@
+---
+title: Documentation Agent Guide
+description: Internal guide for maintaining and improving Instructor documentation
+---
+
 # AGENT.md - Documentation
 
 ## Commands

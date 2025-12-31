@@ -36,7 +36,7 @@ class FinalResponse(BaseModel):
 
 
 async def generate_initial_response(query: str):
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         response_model=QueryResponse,
         messages=[
@@ -50,7 +50,7 @@ async def generate_initial_response(query: str):
 
 
 async def generate_verification_questions(llm_response: str):
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         response_model=ValidationQuestions,
         messages=[
@@ -69,7 +69,7 @@ async def generate_verification_questions(llm_response: str):
 async def generate_verification_response(questions: list[str]):
     async def verify_question(question: str) -> tuple[ValidationAnswer, str]:
         return (
-            await client.chat.completions.create(
+            await client.create(
                 model="gpt-4o",
                 response_model=ValidationAnswer,
                 messages=[
@@ -96,7 +96,7 @@ async def generate_final_response(
     formatted_answers = "\n".join(
         [f"Q: {question}\nA: {answer.answer}" for answer, question in answers]
     )
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o",
         response_model=FinalResponse,
         messages=[

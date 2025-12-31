@@ -44,24 +44,23 @@ Instructor solves these problems by:
 Let's see Instructor in action with a basic example:
 
 ```python
-# Import the necessary libraries
 import instructor
 from pydantic import BaseModel
 
 # Define the structure you want
-class Person:
+class Person(BaseModel):
     name: str
     age: int
     city: str
 
 # Connect to the LLM with Instructor
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 # Extract structured data
-person = client.chat.completions.create(
+person = client.create(
     response_model=Person,
     messages=[
-        {"role": "user", "content": "Extract a person from: John is 30 years old and lives in New York."}
+        {"role": "user", "content": "Extract: John is 30 years old and lives in New York."}
     ]
 )
 
@@ -72,6 +71,8 @@ print(f"City: {person.city}")  # City: New York
 ```
 
 That's it! Instructor handled all the complexity of getting the LLM to format the data correctly.
+
+**Ready to get started?** [Follow our step-by-step guide →](./getting-started.md)
 
 ## Key Concepts
 
@@ -90,29 +91,26 @@ class User(BaseModel):
     # The descriptions help the LLM understand what to extract
 ```
 
-### 2. Patching
+### 2. Client Setup
 
-Patching connects Instructor to your LLM provider (like OpenAI or Anthropic).
+The `from_provider` function connects Instructor to your LLM provider. It automatically handles provider-specific configurations:
 
 ```python
 # For OpenAI
-client = instructor.from_provider("openai/gpt-5-nano")
+client = instructor.from_provider("openai/gpt-4o-mini")
 
 # For Anthropic
 client = instructor.from_provider("anthropic/claude-3-5-haiku-latest")
+
+# For Google Gemini
+client = instructor.from_provider("google/gemini-1.5-pro")
 ```
 
 ### 3. Modes
 
-Modes control how Instructor gets structured data from the LLM. Different providers support different modes.
+Modes control how Instructor gets structured data from the LLM. Different providers support different modes, and Instructor automatically selects the best one. You can also specify a mode manually if needed.
 
-```python
-# Using OpenAI's function calling
-client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS)
-
-# Using JSON output directly
-client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.JSON)
-```
+[Learn more about client setup →](./concepts/from_provider.md)
 
 ## Common Use Cases
 

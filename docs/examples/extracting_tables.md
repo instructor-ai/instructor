@@ -3,6 +3,13 @@ title: Extracting Tables from Images using GPT-Vision
 description: Learn how to use Python and GPT-Vision to extract and convert tables from images into markdown for data analysis.
 ---
 
+## See Also
+
+- [Vision Processing](./tables_from_vision.md) - More vision-based table extraction
+- [Multi-Modal Processing](./multi_modal_gemini.md) - Using Gemini for vision tasks
+- [Image Processing Examples](./index.md#vision-processing) - More vision examples
+- [Raw Response](../concepts/raw_response.md) - Access original LLM responses
+
 # Extracting Tables using GPT-Vision
 
 This post demonstrates how to use Python's type annotations and OpenAI's new vision model to extract tables from images and convert them into markdown format. This method is particularly useful for data analysis and automation tasks.
@@ -104,7 +111,6 @@ The `extract_table` function uses OpenAI's vision model to process an image URL 
 
 ```python
 import instructor
-from openai import OpenAI
 from typing import Iterable
 
 # <%hide%>
@@ -151,13 +157,12 @@ class Table(BaseModel):
 
 # <%hide%>
 
-# Apply the patch to the OpenAI client to support response_model
-# Also use MD_JSON mode since the vision model does not support any special structured output mode
-client = instructor.from_openai(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+# Use MD_JSON mode since the vision model does not support any special structured output mode
+client = instructor.from_provider("openai/gpt-4o-mini", mode=instructor.Mode.MD_JSON)
 
 
 def extract_table(url: str) -> Iterable[Table]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         response_model=Iterable[Table],
         max_tokens=1800,
@@ -226,7 +231,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def extract_table(url: str) -> Iterable[Table]:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o",
         response_model=Iterable[Table],
         max_tokens=1800,
@@ -269,7 +274,7 @@ for table in tables:
 
 ??? Note "Expand to see the output"
 
-    ![Top 10 Grossing Apps in October 2023 for Ireland](https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png)
+    ![Top 10 Grossing Apps in October 2023 for Ireland - Table extraction example showing structured data from image](https://a.storyblok.com/f/47007/2400x2000/bf383abc3c/231031_uk-ireland-in-three-charts_table_v01_b.png)
 
     ### Top 10 Grossing Apps in October 2023 (Ireland) for Android Platforms
 

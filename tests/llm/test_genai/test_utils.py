@@ -201,3 +201,97 @@ def test_update_genai_kwargs_no_thinking_config():
     assert result["temperature"] == 0.7
     # Check that thinking_config is not included when not provided
     assert "thinking_config" not in result
+
+
+def test_handle_genai_structured_outputs_thinking_config_in_config():
+    """Test that thinking_config inside config parameter is extracted (issue #1966)."""
+    from google.genai import types
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+
+    class SimpleModel(BaseModel):
+        text: str
+
+    # Create a mock ThinkingConfig-like object
+    thinking_config = types.ThinkingConfig(thinking_budget=1024)
+
+    # User passes thinking_config inside config parameter
+    user_config = types.GenerateContentConfig(
+        temperature=0.7,
+        max_output_tokens=1000,
+        thinking_config=thinking_config,
+    )
+
+    kwargs = {
+        "messages": [{"role": "user", "content": "Hello"}],
+        "config": user_config,
+    }
+
+    _, result_kwargs = handle_genai_structured_outputs(SimpleModel, kwargs)
+
+    # The resulting config should include thinking_config
+    assert "config" in result_kwargs
+    assert result_kwargs["config"].thinking_config is not None
+    assert result_kwargs["config"].thinking_config.thinking_budget == 1024
+
+
+def test_handle_genai_structured_outputs_thinking_config_kwarg_priority():
+    """Test that thinking_config as separate kwarg takes priority over config.thinking_config."""
+    from google.genai import types
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+
+    class SimpleModel(BaseModel):
+        text: str
+
+    # User passes thinking_config both ways - kwarg should take priority
+    config_thinking = types.ThinkingConfig(thinking_budget=500)
+    kwarg_thinking = types.ThinkingConfig(thinking_budget=2000)
+
+    user_config = types.GenerateContentConfig(
+        temperature=0.7,
+        thinking_config=config_thinking,
+    )
+
+    kwargs = {
+        "messages": [{"role": "user", "content": "Hello"}],
+        "config": user_config,
+        "thinking_config": kwarg_thinking,
+    }
+
+    _, result_kwargs = handle_genai_structured_outputs(SimpleModel, kwargs)
+
+    # The kwarg thinking_config should take priority
+    assert result_kwargs["config"].thinking_config.thinking_budget == 2000
+
+
+def test_handle_genai_tools_thinking_config_in_config():
+    """Test that thinking_config inside config parameter is extracted for tools mode (issue #1966)."""
+    from google.genai import types
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_tools
+
+    class SimpleModel(BaseModel):
+        text: str
+
+    thinking_config = types.ThinkingConfig(thinking_budget=1024)
+
+    user_config = types.GenerateContentConfig(
+        temperature=0.7,
+        thinking_config=thinking_config,
+    )
+
+    kwargs = {
+        "messages": [{"role": "user", "content": "Hello"}],
+        "config": user_config,
+    }
+
+    _, result_kwargs = handle_genai_tools(SimpleModel, kwargs)
+
+    # The resulting config should include thinking_config
+    assert "config" in result_kwargs
+    assert result_kwargs["config"].thinking_config is not None
+    assert result_kwargs["config"].thinking_config.thinking_budget == 1024

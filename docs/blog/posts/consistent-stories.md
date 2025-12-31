@@ -74,7 +74,7 @@ async def generate_story(
     client: instructor.AsyncInstructor,
     story_input: RestateStoryInput
 ):
-    resp = await client.chat.completions.create(
+    resp = await client.create(
         messages=[{
             "role": "user",
             "content": """
@@ -170,7 +170,7 @@ async def rewrite_choice(
 ) -> FinalStoryChoice:
     # Each choice knows its entire path history
     async with sem:
-        rewritten_choice = await client.chat.completions.create(
+        rewritten_choice = await client.create(
             model="gpt-4o",
             response_model=RewrittenChoice,
             messages=[{

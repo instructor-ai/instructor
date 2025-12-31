@@ -31,7 +31,14 @@ Instructor's patch enhances an create call it with the following features:
 
     To learn more, please refer to the [docs](../index.md). To understand the benefits of using Pydantic with Instructor, visit the tips and tricks section of the [why use Pydantic](../why.md) page. If you want to check out examples of using Pydantic with Instructor, visit the [examples](../examples/index.md) page.
 
-## llama-cpp-python
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Ollama Integration](./ollama.md) - Alternative local model setup
+- [Local Classification](../examples/local_classification.md) - Classification with local models
+- [Open Source Models](../examples/open_source.md) - More open-source model examples
+
+# llama-cpp-python
 
 Recently llama-cpp-python added support for structured outputs via JSON schema mode. This is a time-saving alternative to extensive prompt engineering and can be used to obtain structured outputs.
 

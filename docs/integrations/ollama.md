@@ -50,7 +50,7 @@ client = instructor.from_provider(
     mode=instructor.Mode.JSON,
 )
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",
@@ -73,7 +73,14 @@ The timeout parameter ensures that:
 
     When using Ollama, especially with larger models, set appropriate timeout values based on your model's response time. The timeout applies to the total retry duration, making response times more predictable.
 
-## Ollama
+### See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [Ollama Examples](../examples/ollama.md) - Practical Ollama examples
+- [Open Source Models](../examples/open_source.md) - More open-source model examples
+- [Local Deployment](../examples/index.md#local-deployment) - Local model deployment guide
+
+# Ollama
 
 Start by downloading [Ollama](https://ollama.ai/download), and then pull a model such as Llama 2 or Mistral.
 
@@ -98,7 +105,7 @@ class Character(BaseModel):
 # Simple setup - automatically configured for Ollama
 client = instructor.from_provider("ollama/llama2")
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[{"role": "user", "content": "Tell me about Harry Potter"}],
     response_model=Character,
 )
@@ -121,7 +128,7 @@ class Character(BaseModel):
     age: int
 
 async def get_character():
-    return await async_client.chat.completions.create(
+    return await async_client.create(
         messages=[{"role": "user", "content": "Tell me about Harry Potter"}],
         response_model=Character,
     )
@@ -179,7 +186,7 @@ client = instructor.from_provider(
     mode=instructor.Mode.JSON,
 )
 
-resp = client.chat.completions.create(
+resp = client.create(
     messages=[
         {
             "role": "user",

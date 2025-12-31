@@ -44,7 +44,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 def generate_responses(prompt: str, n: int = 3) -> List[Response]:
     responses = []
     for _ in range(n):
-        response = client.chat.completions.create(
+        response = client.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
             response_model=Response
@@ -96,12 +96,12 @@ class Example(BaseModel):
 
 class COSPSelector:
     def __init__(self, client: OpenAI, n_samples: int = 3):
-        self.client = instructor.from_openai(client)
+        self.client = instructor.from_provider("openai/gpt-4o")
         self.n_samples = n_samples
 
     def generate_responses(self, prompt: str) -> List[Response]:
         return [
-            self.client.chat.completions.create(
+            self.client.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": prompt}],
                 response_model=Response

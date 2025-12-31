@@ -79,7 +79,7 @@ Next, we'll create a function that uses our LLM to rerank a list of text chunks 
 
 ```python
 def rerank_results(query: str, chunks: list[dict]) -> RerankedResults:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         response_model=RerankedResults,
         messages=[

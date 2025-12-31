@@ -1,10 +1,15 @@
+---
+title: Observability & Tracing with Langfuse
+description: Learn how to trace and monitor Instructor API calls using Langfuse for comprehensive observability in your LLM applications.
+---
+
 # Observability & Tracing with Langfuse
 
 **What is Langfuse?**
 
 > **What is Langfuse?** [Langfuse](https://langfuse.com) ([GitHub](https://github.com/langfuse/langfuse)) is an open source LLM engineering platform that helps teams trace API calls, monitor performance, and debug issues in their AI applications.
 
-![Instructor Trace in Langfuse](https://langfuse.com/images/docs/instructor-trace.png)
+![Instructor Trace in Langfuse showing structured output monitoring and observability](https://langfuse.com/images/docs/instructor-trace.png)
 
 This cookbook shows how to use Langfuse to trace and monitor model calls made with the Instructor library.
 
@@ -44,7 +49,7 @@ class WeatherDetail(BaseModel):
 
 
 # Run synchronous OpenAI client
-weather_info = client.chat.completions.create(
+weather_info = client.create(
     model="gpt-4o",
     response_model=WeatherDetail,
     messages=[
@@ -90,7 +95,7 @@ class WeatherDetail(BaseModel):
 
 async def main():
     # Run synchronous OpenAI client
-    weather_info = await client.chat.completions.create(
+    weather_info = await client.create(
         model="gpt-4o",
         response_model=WeatherDetail,
         messages=[
@@ -180,7 +185,7 @@ async def classify_feedback(feedback: str):
     Classify customer feedback into categories and evaluate relevance.
     """
     async with sem:  # simple rate limiting
-        response = await client.chat.completions.create(
+        response = await client.create(
             model="gpt-4o",
             response_model=FeedbackClassification,
             max_retries=2,

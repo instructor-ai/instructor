@@ -66,7 +66,7 @@ class ActionPlan(BaseModel):
 
 
 def derive_action_plan(task_description: str) -> ActionPlan:
-    return client.chat.completions.create(
+    return client.create(
         messages=[
             {
                 "role": "system",

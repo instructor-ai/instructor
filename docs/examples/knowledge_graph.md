@@ -75,7 +75,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_graph(input) -> KnowledgeGraph:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {
@@ -121,7 +121,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def generate_graph(input) -> KnowledgeGraph:
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         messages=[
             {
@@ -155,7 +155,7 @@ graph = generate_graph("Teach me about quantum mechanics")
 visualize_knowledge_graph(graph)
 ```
 
-![Knowledge Graph](knowledge_graph.png)
+![Knowledge Graph visualization showing interconnected concepts and relationships](knowledge_graph.png)
 
 This will produce a visual representation of the knowledge graph, stored as "knowledge_graph.gv". You can open this file to explore the key concepts and their relationships in quantum mechanics.
 
@@ -279,7 +279,7 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
     cur_state = KnowledgeGraph()  # (1)!
     num_iterations = len(input)
     for i, inp in enumerate(input):
-        new_updates = client.chat.completions.create(
+        new_updates = client.create(
             model="gpt-3.5-turbo-16k",
             messages=[
                 {
@@ -369,7 +369,7 @@ def generate_graph(input: List[str]) -> KnowledgeGraph:
     cur_state = KnowledgeGraph()  # (1)!
     num_iterations = len(input)
     for i, inp in enumerate(input):
-        new_updates = client.chat.completions.create(
+        new_updates = client.create(
             model="gpt-4o-mini",
             messages=[
                 {

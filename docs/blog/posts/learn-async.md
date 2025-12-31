@@ -59,7 +59,7 @@ class Person(BaseModel):
 
 async def extract_person(text: str) -> Person:
     """Extract person information from text using LLM."""
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4o-mini",
         response_model=Person,
         messages=[{"role": "user", "content": f"Extract person info: {text}"}]

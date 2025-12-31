@@ -3,6 +3,13 @@ title: "Google Gemini Tutorial: Structured Outputs with Instructor"
 description: "Learn how to use Google's Gemini models (Pro, Flash, Ultra) with Instructor for structured data extraction. Complete tutorial with examples for multimodal AI and type-safe outputs."
 ---
 
+## See Also
+
+- [Getting Started](../getting-started.md) - Quick start guide
+- [from_provider Guide](../concepts/from_provider.md) - Detailed client configuration
+- [Multi-Modal Examples](../examples/multi_modal_gemini.md) - Vision and multi-modal processing
+- [Provider Examples](../index.md#provider-examples) - Quick examples for all providers
+
 # Google Gemini Tutorial: Structured Outputs with Instructor
 
 Master structured data extraction using Google's Gemini models with Instructor. This comprehensive tutorial covers Gemini Pro, Flash, and Ultra models, including multimodal capabilities for processing text, images, and more.
@@ -32,15 +39,14 @@ client = instructor.from_provider(
     "google/gemini-1.5-flash-latest",
 )
 
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
+resp = client.create(
+    response_model=User,
     messages=[
         {
             "role": "user",
             "content": "Extract Jason is 25 years old.",
         }
     ],
-    response_model=User,
 )
 
 print(resp)  # User(name='Jason', age=25)
@@ -69,7 +75,7 @@ async def extract_user():
         async_client=True,
     )
 
-    user = await client.chat.completions.create(
+    user = await client.create(
         messages=[
             {
                 "role": "user",
@@ -101,7 +107,6 @@ For more details on configuration options, see [Google's documentation on Gemini
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 
@@ -112,18 +117,17 @@ class User(BaseModel):
 
 client = instructor.from_provider(
     "google/gemini-1.5-flash-latest",
-    mode=instructor.Mode.GEMINI_JSON,
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
 )
 
-# note that client.chat.completions.create will also work
-resp = client.messages.create(
+resp = client.create(
+    response_model=User,
     messages=[
         {
             "role": "user",
             "content": "Extract Jason is 25 years old.",
         },
     ],
-    response_model=User,
     generation_config={
         "temperature": 0.5,
         "max_tokens": 1000,
@@ -139,7 +143,6 @@ print(resp)
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 
@@ -159,7 +162,7 @@ client = instructor.from_provider(
     "google/gemini-1.5-flash-latest",
 )
 
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {
             "role": "user",
@@ -203,7 +206,6 @@ Instructor has two main ways that you can use to stream responses out
 
 ```python
 import instructor
-import google.generativeai as genai
 from pydantic import BaseModel
 
 
@@ -218,7 +220,7 @@ class User(BaseModel):
     bio: str
 
 
-user = client.chat.completions.create_partial(
+user = client.create_partial(
     messages=[
         {
             "role": "user",
@@ -253,7 +255,7 @@ class User(BaseModel):
 
 
 # Extract multiple users from text
-users = client.chat.completions.create_iterable(
+users = client.create_iterable(
     messages=[
         {
             "role": "user",
@@ -329,8 +331,9 @@ If you're currently using the legacy `google-generativeai` package with Instruct
 import instructor
 import google.generativeai as genai
 
-client = instructor.from_provider("google/gemini-2.5-flash"),
-    mode=instructor.Mode.GEMINI_JSON,
+client = instructor.from_provider(
+    "google/gemini-2.5-flash",
+    mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
 )
 ```
 

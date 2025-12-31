@@ -3,6 +3,11 @@ title: Using TypedDicts with OpenAI API
 description: Learn how to utilize TypedDicts in Python with the OpenAI API for structured data responses.
 ---
 
+---
+title: TypedDict Support in Instructor - Dictionary Validation
+description: Use Python TypedDict for type-safe dictionary structures with Instructor. Validate dictionary schemas without Pydantic models for lightweight structured outputs.
+---
+
 # TypedDicts
 
 We also support typed dicts.
@@ -20,7 +25,7 @@ class User(TypedDict):
 client = instructor.from_provider("openai/gpt-4.1-mini")
 
 
-response = client.chat.completions.create(
+response = client.create(
     response_model=User,
     messages=[
         {

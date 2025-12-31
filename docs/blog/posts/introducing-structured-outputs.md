@@ -183,7 +183,7 @@ class User(BaseModel):
 
 client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
 
-resp = client.chat.completions.create(
+resp = client.create(
     response_model=User,
     messages=[
         {
@@ -213,7 +213,7 @@ class User(BaseModel):
     age: int
 
 
-users = client.chat.completions.create_iterable(
+users = client.create_iterable(
     model="gpt-4o-mini",
     response_model=User,
     messages=[
@@ -271,7 +271,7 @@ class MeetingInfo(BaseModel):
     deadline: str
 
 
-extraction_stream = client.chat.completions.create_partial(
+extraction_stream = client.create_partial(
     model="gpt-4o-mini",
     response_model=MeetingInfo,
     messages=[
@@ -320,7 +320,7 @@ class User(BaseModel):
     age: int
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="gpt-4o-mini",
     response_model=User,
     messages=[
@@ -349,7 +349,7 @@ class User(BaseModel):
     age: int
 
 
-resp = client.chat.completions.create(
+resp = client.create(
     model="claude-3-5-sonnet-20240620",  # (3)!
     response_model=User,
     messages=[

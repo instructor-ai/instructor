@@ -19,12 +19,11 @@ Here's a simple example showing retries in action:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field, field_validator
 
 # Initialize the client with max_retries
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4o",
     max_retries=2  # Will try up to 3 times (initial + 2 retries)
 )
 
@@ -40,7 +39,7 @@ class Product(BaseModel):
         return v
 
 # This will automatically retry if validation fails
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Product: Pen, Price: -5"}
@@ -61,11 +60,10 @@ You can customize retry behavior when initializing the Instructor client:
 
 ```python
 import instructor
-from openai import OpenAI
 
 # Customize retry behavior
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4o",
     max_retries=3,                   # Maximum number of retries
     retry_if_parsing_fails=True,     # Retry on JSON parsing failures
     throw_error=True                 # Throw an error if all retries fail
@@ -88,7 +86,7 @@ When all retries fail, Instructor raises an `InstructorRetryException` that cont
 from instructor.core.exceptions import InstructorRetryException
 
 try:
-    response = client.chat.completions.create(
+    response = client.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": "Product: Invalid data"}],
         response_model=Product,
@@ -151,12 +149,11 @@ For complex schemas, you can implement a progressive validation pattern:
 
 ```python
 import instructor
-from openai import OpenAI
 from pydantic import BaseModel, Field
 
 # Initialize with moderate retries
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4o",
     max_retries=2
 )
 
@@ -174,7 +171,7 @@ class DetailedProduct(BasicProduct):
 # Two-step extraction with validation
 try:
     # First get basic fields
-    basic = client.chat.completions.create(
+    basic = client.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": "Product: Mini Pen, Price: $2.50"}
@@ -183,7 +180,7 @@ try:
     )
 
     # Then get full details with context from the first step
-    detailed = client.chat.completions.create(
+    detailed = client.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", "content": f"Provide more details about {basic.name} which costs ${basic.price}"}

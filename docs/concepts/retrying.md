@@ -73,7 +73,7 @@ test_texts = [
 )
 def extract_user_info(text: str) -> UserInfo:
     """Extract user information with basic retry logic."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": f"Extract user info: {text}"}]
     )
@@ -96,7 +96,7 @@ except Exception as e:
 )
 def robust_extraction(text: str) -> UserInfo:
     """Retry only on specific API errors."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -121,7 +121,7 @@ from pydantic import ValidationError
 )
 def extract_with_validation(text: str) -> UserInfo:
     """Retry when Pydantic validation fails."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -150,7 +150,7 @@ def should_retry(result: UserInfo) -> bool:
 )
 def extract_valid_user(text: str) -> UserInfo:
     """Retry based on result validation."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -176,7 +176,7 @@ except Exception as e:
 )
 def rate_limit_safe_extraction(text: str) -> UserInfo:
     """Handle rate limits with longer delays."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -195,7 +195,7 @@ from tenacity import retry, retry_if_exception_type, wait_random_exponential
 )
 def network_resilient_extraction(text: str) -> UserInfo:
     """Handle network issues with random exponential backoff."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -239,7 +239,7 @@ class Citation(BaseModel):
 )
 def extract_citation_with_context(claim: str, source_text: str) -> Citation:
     """Extract a citation and verify it exists in the source text."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=Citation,
         messages=[
             {
@@ -303,7 +303,7 @@ def extract_review_with_validation(
     allowed_products: List[str]
 ) -> ProductReview:
     """Extract a review ensuring the product is valid."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=ProductReview,
         messages=[
             {
@@ -357,7 +357,7 @@ logging.basicConfig(level=logging.INFO)
 )
 def logged_extraction(text: str) -> UserInfo:
     """Extract with comprehensive logging."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -388,7 +388,7 @@ def get_client():
 def circuit_breaker_extraction(text: str) -> UserInfo:
     """Extract with circuit breaker pattern."""
     client = get_client()
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -408,7 +408,7 @@ async def process_batch(texts: list[str]) -> list[UserInfo]:
 
     for text in texts:
         try:
-            result = await client.chat.completions.create(
+            result = await client.create(
                 response_model=UserInfo,
                 messages=[{"role": "user", "content": text}]
             )
@@ -447,7 +447,7 @@ client = instructor.from_provider(
 @retry(stop=stop_after_attempt(2))
 def double_retry_extraction(text: str) -> UserInfo:
     """Combine Instructor and Tenacity retries."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -480,7 +480,7 @@ class UserInfo(BaseModel):
         return v
 
 try:
-    result = client.chat.completions.create(
+    result = client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": "Extract: John is -5 years old"}],
         max_retries=3
@@ -543,7 +543,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
     wait=wait_exponential(multiplier=2, min=1, max=120)
 )
 def handle_rate_limits(text: str) -> UserInfo:
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -554,7 +554,7 @@ def handle_rate_limits(text: str) -> UserInfo:
     wait=wait_exponential(multiplier=1, min=1, max=10)
 )
 def handle_validation_errors(text: str) -> UserInfo:
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -572,7 +572,7 @@ def monitored_extraction(text: str) -> UserInfo:
     start_time = time.time()
 
     try:
-        result = client.chat.completions.create(
+        result = client.create(
             response_model=UserInfo,
             messages=[{"role": "user", "content": text}]
         )
@@ -599,7 +599,7 @@ def monitored_extraction(text: str) -> UserInfo:
 )
 def api_friendly_extraction(text: str) -> UserInfo:
     """Respect API rate limits with exponential backoff."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -615,7 +615,7 @@ def api_friendly_extraction(text: str) -> UserInfo:
 )
 def validation_resilient_extraction(text: str) -> UserInfo:
     """Recover from validation errors with retries."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -631,7 +631,7 @@ def validation_resilient_extraction(text: str) -> UserInfo:
 )
 def network_resilient_extraction(text: str) -> UserInfo:
     """Handle network issues gracefully."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -685,7 +685,7 @@ def network_resilient_extraction(text: str) -> UserInfo:
     stop=stop_after_attempt(5)
 )
 def rate_limit_respectful_extraction(text: str) -> UserInfo:
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )
@@ -707,7 +707,7 @@ logging.basicConfig(level=logging.INFO)
 )
 def debug_extraction(text: str) -> UserInfo:
     """Extract with detailed retry logging."""
-    return client.chat.completions.create(
+    return client.create(
         response_model=UserInfo,
         messages=[{"role": "user", "content": text}]
     )

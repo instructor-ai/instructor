@@ -5,7 +5,7 @@ description: Explore the comprehensive API reference with details on instructors
 
 # API Reference
 
-::: instructor.from_openai
+::: instructor.from_provider
 
 ::: instructor.dsl.validators
 

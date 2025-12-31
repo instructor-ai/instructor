@@ -1,6 +1,6 @@
 ---
-title: Implementing the Maybe Pattern for Error Handling in Functional Programming
-description: Learn how to use the Maybe pattern with Pydantic in Python for robust error handling when extracting user details.
+title: Maybe Types and Optional Handling in Instructor
+description: Handle optional and nullable data with Maybe types in Instructor. Learn to work with potentially missing fields and optional responses from LLMs.
 ---
 
 # Handling Missing Data
@@ -64,7 +64,7 @@ class MaybeUser(BaseModel):
 
 
 def extract(content: str) -> MaybeUser:
-    return client.chat.completions.create(
+    return client.create(
         response_model=MaybeUser,
         messages=[
             {"role": "user", "content": f"Extract `{content}`"},

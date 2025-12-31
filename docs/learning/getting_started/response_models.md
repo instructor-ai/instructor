@@ -1,3 +1,8 @@
+---
+title: Understanding Response Models in Instructor
+description: Learn how to create response models with Pydantic to define structure, validation rules, and extract complex data from LLMs.
+---
+
 # Understanding Response Models
 
 Response models are at the core of Instructor's functionality. They define the structure of the data you want to extract and provide validation rules. This guide explains how to create different types of response models for various use cases.
@@ -141,7 +146,7 @@ Once you've defined your model, you can use it for extraction:
 import instructor
 client = instructor.from_provider("openai/gpt-5-nano")
 
-forecast = client.chat.completions.create(
+forecast = client.create(
     model="gpt-3.5-turbo",
     response_model=WeatherForecast,
     messages=[
@@ -194,4 +199,4 @@ For more advanced validation techniques, check out the [Custom Validators](../va
 
 ## Next Steps
 
-In the next section, learn about [Client Setup](client_setup.md) to configure different LLM providers and understand the various modes of operation.
+In the next section, learn about [from_provider](../../concepts/from_provider.md) to configure different LLM providers and understand the various modes of operation.

@@ -1,6 +1,6 @@
 ---
-title: Effective Prompt Engineering with Pydantic and Instructor
-description: Discover best practices for prompt engineering using Pydantic and Instructor to enhance modularity, flexibility, and data integrity.
+title: Prompt Engineering Best Practices - Instructor Guide
+description: Master prompt engineering with Pydantic and Instructor. Learn best practices for modularity, flexibility, and data integrity in structured outputs.
 ---
 
 # General Tips for Prompt Engineering

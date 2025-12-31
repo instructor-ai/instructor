@@ -1,3 +1,8 @@
+---
+title: Getting Started with Structured LLM Outputs
+description: Learn the basics of extracting structured data from language models using Instructor. Understand the difference between unstructured and structured outputs.
+---
+
 # Getting Started with Structured Outputs
 
 Large language models (LLMs) are powerful tools for generating text, but extracting structured data from their outputs can be challenging. Structured outputs solve this problem by having LLMs return data in consistent, machine-readable formats.
@@ -10,7 +15,7 @@ Let's look at what happens when we ask an LLM to extract information without any
 from openai import OpenAI
 
 client = OpenAI()
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {
@@ -53,7 +58,7 @@ class Customer(BaseModel):
     email: EmailStr = Field(description="Customer's email address")
 
 client = instructor.from_provider("openai/gpt-5-nano")
-customer = client.chat.completions.create(
+customer = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {
@@ -103,7 +108,7 @@ class Person(BaseModel):
     contact: Contact
     skills: List[str] = Field(description="List of professional skills")
 
-person = client.chat.completions.create(
+person = client.create(
     model="gpt-4",
     messages=[
         {
@@ -140,4 +145,4 @@ In the next sections, you'll learn how to:
 
 1. Create your [first extraction](first_extraction.md)
 2. Understand the different [response models](response_models.md) you can create
-3. Set up [clients for various LLM providers](client_setup.md)
+3. Set up [clients for various LLM providers](../../concepts/from_provider.md)

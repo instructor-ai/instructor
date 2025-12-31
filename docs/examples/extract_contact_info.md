@@ -1,6 +1,6 @@
 ---
-title: Automate Customer Lead Information Extraction with OpenAI and Pydantic
-description: Learn to extract customer lead details using OpenAI's API and Pydantic for efficient data automation and validation.
+title: Contact Information Extraction - Lead Generation Automation
+description: Automate customer lead extraction from text using Instructor. Extract names, phone numbers, and contact details with automatic validation.
 ---
 
 # Customer Information Extraction
@@ -42,7 +42,7 @@ client = instructor.from_provider("openai/gpt-5-nano")
 
 
 def parse_lead_from_message(user_message: str):
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4-turbo-preview",
         response_model=Iterable[Lead],
         messages=[

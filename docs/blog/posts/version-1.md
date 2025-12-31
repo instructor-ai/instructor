@@ -78,7 +78,7 @@ client = instructor.from_litellm(litellm.completion)
 # all of these will route to the same underlying create function
 # allow you to add instructor to try it out, while easily removing it
 client.create(model="gpt-4", response_model=type[T]) -> T
-client.chat.completions.create(model="gpt-4", response_model=type[T]) -> T
+client.create(model="gpt-4", response_model=type[T]) -> T
 client.messages.create(model="gpt-4", response_model=type[T]) -> T
 ```
 
@@ -101,7 +101,7 @@ class User(BaseModel):
 
 client = instructor.from_provider("openai/gpt-5-nano")
 
-user = client.chat.completions.create(
+user = client.create(
     model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create a user"},
@@ -133,7 +133,7 @@ class User(BaseModel):
 
 
 async def extract():
-    return await client.chat.completions.create(
+    return await client.create(
         model="gpt-4-turbo-preview",
         messages=[
             {"role": "user", "content": "Create a user"},
@@ -164,7 +164,7 @@ class User(BaseModel):
     age: int
 
 
-user, completion = client.chat.completions.create_with_completion(
+user, completion = client.create_with_completion(
     model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create a user"},
@@ -194,7 +194,7 @@ class User(BaseModel):
     age: int
 
 
-user_stream = client.chat.completions.create_partial(
+user_stream = client.create_partial(
     model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create a user"},
@@ -243,7 +243,7 @@ class User(BaseModel):
     age: int
 
 
-users = client.chat.completions.create_iterable(
+users = client.create_iterable(
     model="gpt-4-turbo-preview",
     messages=[
         {"role": "user", "content": "Create 2 users"},

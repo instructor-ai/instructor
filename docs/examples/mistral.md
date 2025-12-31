@@ -4,9 +4,9 @@ description: Learn how to use MistralAI models for inference, including setup, A
 ---
 
 # Structured Outputs using Mistral
-You can now also use mistralai models for inference by using from_mistral.
+You can use MistralAI models for inference with Instructor using `from_provider`.
 
-The examples are using mistral-large-latest.
+The examples use `mistral-large-latest`.
 
 ## MistralAI API
 To use mistral you need to obtain a mistral API key.
@@ -25,10 +25,8 @@ export MISTRAL_API_KEY=<your-api-key>
 
 An example:
 ```python
-import os
+import instructor
 from pydantic import BaseModel
-from mistralai import Mistral
-from instructor import from_mistral, Mode
 
 
 class UserDetails(BaseModel):
@@ -36,17 +34,10 @@ class UserDetails(BaseModel):
     age: int
 
 
-# enables `response_model` in chat call
-client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
+# Using from_provider (recommended)
+client = instructor.from_provider("mistral/mistral-large-latest")
 
-instructor_client = from_mistral(
-    client=client,
-    model="mistral-large-latest",
-    mode=Mode.MISTRAL_TOOLS,
-    max_tokens=1000,
-)
-
-resp = instructor_client.messages.create(
+resp = client.create(
     response_model=UserDetails,
     messages=[{"role": "user", "content": "Jason is 10"}],
     temperature=0,

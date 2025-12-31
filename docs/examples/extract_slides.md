@@ -100,7 +100,7 @@ def read_images(image_urls: List[str]) -> Competition:
     """
     Given a list of image URLs, identify the competitors in the images.
     """
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         response_model=Competition,
         max_tokens=2048,
@@ -172,7 +172,7 @@ def read_images(image_urls: List[str]) -> Competition:
     """
     Given a list of image URLs, identify the competitors in the images.
     """
-    return client.chat.completions.create(
+    return client.create(
         model="gpt-4o-mini",
         response_model=Competition,
         max_tokens=2048,

@@ -30,7 +30,7 @@ class User(BaseModel):
     email: str = Field(..., pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
 # Extract with validation
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "I'm John Smith, 35 years old, with email john@example.com"}
@@ -96,7 +96,7 @@ class Product(BaseModel):
         return v
 
 # Extract validated data
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Product: Wireless Headphones, SKU: ABC-1234, Price: $79.99"}
@@ -240,7 +240,7 @@ class Task(BaseModel):
     priority: Priority  # Must be one of the enum values
 
 # Extract with enum validation
-response = client.chat.completions.create(
+response = client.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "user", "content": "Task: Update website, Description: Refresh content on homepage, Status: pending, Priority: high"}
@@ -298,8 +298,8 @@ When validation fails, Instructor will:
 To control retry behavior:
 
 ```python
-client = instructor.from_openai(
-    OpenAI(),
+client = instructor.from_provider(
+    "openai/gpt-4o",
     max_retries=2,  # Number of retries after the initial attempt
     throw_error=True  # Whether to raise an exception on validation failure
 )

@@ -1,3 +1,8 @@
+---
+title: Working with Optional Fields in Instructor
+description: Learn how to use optional fields in Pydantic models to handle missing or uncertain information from LLM outputs.
+---
+
 # Optional Fields
 
 This guide explains how to work with optional fields in your data models. Optional fields allow the model to skip fields when information is unavailable or uncertain.

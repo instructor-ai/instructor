@@ -54,7 +54,7 @@ class User(BaseModel):
 
 
 # Create structured output
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],
@@ -86,7 +86,7 @@ class User(BaseModel):
 
 
 async def extract_user():
-    user = await client.chat.completions.create(
+    user = await client.create(
         messages=[
             {"role": "user", "content": "Extract: Jason is 25 years old"},
         ],
@@ -132,7 +132,7 @@ client = instructor.from_provider(
 
 
 # Create structured output with nested objects
-user = client.chat.completions.create(
+user = client.create(
     messages=[
         {
             "role": "user",
@@ -196,7 +196,7 @@ class User(BaseModel):
     bio: str
 
 
-user = client.chat.completions.create_partial(
+user = client.create_partial(
     messages=[
         {
             "role": "user",
@@ -241,7 +241,7 @@ class User(BaseModel):
 
 
 # Extract multiple users from text
-users = client.chat.completions.create_iterable(
+users = client.create_iterable(
     messages=[
         {
             "role": "user",
@@ -288,7 +288,7 @@ class User(BaseModel):
 
 
 # Create structured output
-completion, raw_completion = client.chat.completions.create_with_completion(
+completion, raw_completion = client.create_with_completion(
     messages=[
         {"role": "user", "content": "Extract: Jason is 25 years old"},
     ],

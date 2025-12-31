@@ -38,7 +38,7 @@ class Response(BaseModel):
 
 
 def generate_reasoning(query: str):
-    return client.chat.completions.create(
+    return client.create(
         messages=[
             {
                 "role": "user",
@@ -65,7 +65,7 @@ def generate_reasoning(query: str):
 
 
 def extract_answer(query: str, reasoning: Reasoning):
-    return client.chat.completions.create(
+    return client.create(
         messages=[
             {
                 "role": "user",
