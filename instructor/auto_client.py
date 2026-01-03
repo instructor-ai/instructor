@@ -158,32 +158,69 @@ def from_provider(
     if provider == "openai":
         try:
             import openai
+            import httpx
             from instructor import from_openai  # type: ignore[attr-defined]
+            from openai import DEFAULT_MAX_RETRIES, NotGiven, Timeout, not_given
+            from collections.abc import Mapping
+            from typing import cast
 
             # Extract base_url and other OpenAI client parameters from kwargs
             base_url = kwargs.pop("base_url", None)
-            openai_client_kwargs = {}
-            for key in (
-                "organization",
-                "timeout",
-                "max_retries",
-                "default_headers",
-                "http_client",
-                "app_info",
-            ):
-                if key in kwargs:
-                    openai_client_kwargs[key] = kwargs.pop(key)
+            organization = cast(str | None, kwargs.pop("organization", None))
 
-            # Build client kwargs, including base_url if provided
-            client_kwargs = {"api_key": api_key, **openai_client_kwargs}
-            if base_url is not None:
-                client_kwargs["base_url"] = base_url
-
-            client = (
-                openai.AsyncOpenAI(**client_kwargs)
-                if async_client
-                else openai.OpenAI(**client_kwargs)
+            timeout_raw = kwargs.pop("timeout", not_given)
+            timeout: float | Timeout | None | NotGiven
+            timeout = (
+                not_given
+                if timeout_raw is not_given
+                else cast(float | Timeout | None, timeout_raw)
             )
+
+            max_retries_raw = kwargs.pop("max_retries", None)
+            max_retries = (
+                DEFAULT_MAX_RETRIES
+                if max_retries_raw is None
+                else int(cast(int, max_retries_raw))
+            )
+
+            default_headers = cast(
+                Mapping[str, str] | None, kwargs.pop("default_headers", None)
+            )
+            default_query = cast(
+                Mapping[str, object] | None, kwargs.pop("default_query", None)
+            )
+            http_client_raw = kwargs.pop("http_client", None)
+            strict_response_validation = bool(
+                kwargs.pop("_strict_response_validation", False)
+            )
+
+            if async_client:
+                http_client = cast(httpx.AsyncClient | None, http_client_raw)
+                client = openai.AsyncOpenAI(
+                    api_key=api_key,
+                    base_url=base_url,
+                    organization=organization,
+                    timeout=timeout,
+                    max_retries=max_retries,
+                    default_headers=default_headers,
+                    default_query=default_query,
+                    http_client=http_client,
+                    _strict_response_validation=strict_response_validation,
+                )
+            else:
+                http_client = cast(httpx.Client | None, http_client_raw)
+                client = openai.OpenAI(
+                    api_key=api_key,
+                    base_url=base_url,
+                    organization=organization,
+                    timeout=timeout,
+                    max_retries=max_retries,
+                    default_headers=default_headers,
+                    default_query=default_query,
+                    http_client=http_client,
+                    _strict_response_validation=strict_response_validation,
+                )
+
             result = from_openai(
                 client,
                 model=model_name,

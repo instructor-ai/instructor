@@ -236,6 +236,42 @@ def map_to_gemini_function_schema(obj: dict[str, Any]) -> dict[str, Any]:
     return FunctionSchema(**schema).model_dump(exclude_none=True, exclude_unset=True)
 
 
+if TYPE_CHECKING:
+    from google.genai import types as genai_types
+
+
+def map_to_genai_schema(obj: dict[str, Any]) -> genai_types.Schema:
+    from google.genai import types
+
+    schema = map_to_gemini_function_schema(obj)
+
+    def normalize(node: Any) -> Any:
+        if isinstance(node, list):
+            return [normalize(item) for item in node]
+
+        if not isinstance(node, dict):
+            return node
+
+        key_map = {
+            "anyOf": "any_of",
+            "$ref": "ref",
+            "$defs": "defs",
+            "maxItems": "max_items",
+            "minItems": "min_items",
+            "maxLength": "max_length",
+            "minLength": "min_length",
+            "maxProperties": "max_properties",
+            "minProperties": "min_properties",
+        }
+
+        normalized: dict[str, Any] = {}
+        for key, value in node.items():
+            normalized[key_map.get(key, key)] = normalize(value)
+        return normalized
+
+    return types.Schema.model_validate(normalize(schema))
+
+
 def update_genai_kwargs(
     kwargs: dict[str, Any], base_config: dict[str, Any]
 ) -> dict[str, Any]:
@@ -583,7 +619,7 @@ def reask_vertexai_tools(
     Kwargs modifications:
     - Adds: "contents" (tool response messages indicating validation errors)
     """
-    from instructor.client_vertexai import vertexai_function_response_parser
+    from ..vertexai.client import vertexai_function_response_parser
 
     kwargs = kwargs.copy()
     reask_msgs = [
@@ -605,7 +641,7 @@ def reask_vertexai_json(
     Kwargs modifications:
     - Adds: "contents" (user message requesting JSON correction)
     """
-    from instructor.client_vertexai import vertexai_message_parser
+    from ..vertexai.client import vertexai_message_parser
 
     kwargs = kwargs.copy()
 
@@ -931,7 +967,7 @@ def handle_genai_tools(
     if "thinking_config" not in new_kwargs and user_thinking_config is not None:
         new_kwargs["thinking_config"] = user_thinking_config
 
-    schema = map_to_gemini_function_schema(_get_model_schema(response_model))
+    schema = map_to_genai_schema(_get_model_schema(response_model))
     function_definition = types.FunctionDeclaration(
         name=_get_model_name(response_model),
         description=getattr(response_model, "__doc__", None),
@@ -951,7 +987,8 @@ def handle_genai_tools(
         "tools": [types.Tool(function_declarations=[function_definition])],
         "tool_config": types.ToolConfig(
             function_calling_config=types.FunctionCallingConfig(
-                mode="ANY", allowed_function_names=[_get_model_name(response_model)]
+                mode=types.FunctionCallingConfigMode.ANY,
+                allowed_function_names=[_get_model_name(response_model)],
             ),
         ),
     }
@@ -989,7 +1026,7 @@ def handle_vertexai_parallel_tools(
     """
     from typing import get_args
 
-    from instructor.client_vertexai import vertexai_process_response
+    from ..vertexai.client import vertexai_process_response
     from instructor.dsl.parallel import VertexAIParallelModel
 
     if new_kwargs.get("stream", False):
@@ -1010,7 +1047,7 @@ def handle_vertexai_parallel_tools(
 def handle_vertexai_tools(
     response_model: type[Any] | None, new_kwargs: dict[str, Any]
 ) -> tuple[type[Any] | None, dict[str, Any]]:
-    from instructor.client_vertexai import vertexai_process_response
+    from ..vertexai.client import vertexai_process_response
 
     """
     Handle Vertex AI tools mode.
