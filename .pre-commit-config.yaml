@@ -33,3 +33,11 @@ repos:
         language: system
         files: ^pyproject\.toml$
         pass_filenames: false
+
+      - id: ty-check
+        name: Run Type Check (ty)
+        entry: uv
+        args: [run, ty, check]
+        language: system
+        files: ^instructor/
+        pass_filenames: false
