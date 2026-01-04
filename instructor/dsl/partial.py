@@ -285,12 +285,26 @@ class PartialBase(Generic[T_Model]):
 
         Each provider has a different structure for streaming responses that needs
         specific handling to extract the relevant JSON data."""
+        json_started = False
         for chunk in completion:
             try:
                 if mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
                     event_type = getattr(chunk, "event_type", None)
                     if event_type == "text-generation":
                         if text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
                             yield text
                     elif event_type == "tool-calls-chunk":
                         delta = getattr(chunk, "tool_call_delta", None)
@@ -298,14 +312,67 @@ class PartialBase(Generic[T_Model]):
                             delta, "text", None
                         )
                         if args:
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (args.find("{"), args.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                args = args[json_start:]
                             yield args
                         elif text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
                             yield text
                     elif event_type == "tool-calls-generation":
                         tool_calls = getattr(chunk, "tool_calls", None)
                         if tool_calls:
-                            yield json.dumps(tool_calls[0].parameters)
+                            args = json.dumps(tool_calls[0].parameters)
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (args.find("{"), args.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                args = args[json_start:]
+                            yield args
                         elif text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
                             yield text
                     else:
                         chunk_type = getattr(chunk, "type", None)
@@ -314,6 +381,22 @@ class PartialBase(Generic[T_Model]):
                             message = getattr(delta, "message", None)
                             content = getattr(message, "content", None)
                             if text := getattr(content, "text", None):
+                                if not json_started:
+                                    json_start = min(
+                                        (
+                                            pos
+                                            for pos in (
+                                                text.find("{"),
+                                                text.find("["),
+                                            )
+                                            if pos != -1
+                                        ),
+                                        default=-1,
+                                    )
+                                    if json_start == -1:
+                                        continue
+                                    json_started = True
+                                    text = text[json_start:]
                                 yield text
                         elif chunk_type == "tool-call-delta":
                             delta = getattr(chunk, "delta", None)
@@ -321,6 +404,22 @@ class PartialBase(Generic[T_Model]):
                             tool_calls = getattr(message, "tool_calls", None)
                             function = getattr(tool_calls, "function", None)
                             if args := getattr(function, "arguments", None):
+                                if not json_started:
+                                    json_start = min(
+                                        (
+                                            pos
+                                            for pos in (
+                                                args.find("{"),
+                                                args.find("["),
+                                            )
+                                            if pos != -1
+                                        ),
+                                        default=-1,
+                                    )
+                                    if json_start == -1:
+                                        continue
+                                    json_started = True
+                                    args = args[json_start:]
                                 yield args
                 if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
                     yield chunk.data.choices[0].delta.content
@@ -411,12 +510,26 @@ class PartialBase(Generic[T_Model]):
     async def extract_json_async(
         completion: AsyncGenerator[Any, None], mode: Mode
     ) -> AsyncGenerator[str, None]:
+        json_started = False
         async for chunk in completion:
             try:
                 if mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
                     event_type = getattr(chunk, "event_type", None)
                     if event_type == "text-generation":
                         if text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
                             yield text
                     elif event_type == "tool-calls-chunk":
                         delta = getattr(chunk, "tool_call_delta", None)
@@ -424,14 +537,67 @@ class PartialBase(Generic[T_Model]):
                             delta, "text", None
                         )
                         if args:
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (args.find("{"), args.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                args = args[json_start:]
                             yield args
                         elif text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
                             yield text
                     elif event_type == "tool-calls-generation":
                         tool_calls = getattr(chunk, "tool_calls", None)
                         if tool_calls:
-                            yield json.dumps(tool_calls[0].parameters)
+                            args = json.dumps(tool_calls[0].parameters)
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (args.find("{"), args.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                args = args[json_start:]
+                            yield args
                         elif text := getattr(chunk, "text", None):
+                            if not json_started:
+                                json_start = min(
+                                    (
+                                        pos
+                                        for pos in (text.find("{"), text.find("["))
+                                        if pos != -1
+                                    ),
+                                    default=-1,
+                                )
+                                if json_start == -1:
+                                    continue
+                                json_started = True
+                                text = text[json_start:]
                             yield text
                     else:
                         chunk_type = getattr(chunk, "type", None)
@@ -440,6 +606,22 @@ class PartialBase(Generic[T_Model]):
                             message = getattr(delta, "message", None)
                             content = getattr(message, "content", None)
                             if text := getattr(content, "text", None):
+                                if not json_started:
+                                    json_start = min(
+                                        (
+                                            pos
+                                            for pos in (
+                                                text.find("{"),
+                                                text.find("["),
+                                            )
+                                            if pos != -1
+                                        ),
+                                        default=-1,
+                                    )
+                                    if json_start == -1:
+                                        continue
+                                    json_started = True
+                                    text = text[json_start:]
                                 yield text
                         elif chunk_type == "tool-call-delta":
                             delta = getattr(chunk, "delta", None)
@@ -447,6 +629,22 @@ class PartialBase(Generic[T_Model]):
                             tool_calls = getattr(message, "tool_calls", None)
                             function = getattr(tool_calls, "function", None)
                             if args := getattr(function, "arguments", None):
+                                if not json_started:
+                                    json_start = min(
+                                        (
+                                            pos
+                                            for pos in (
+                                                args.find("{"),
+                                                args.find("["),
+                                            )
+                                            if pos != -1
+                                        ),
+                                        default=-1,
+                                    )
+                                    if json_start == -1:
+                                        continue
+                                    json_started = True
+                                    args = args[json_start:]
                                 yield args
                 if mode == Mode.ANTHROPIC_JSON:
                     if json_chunk := chunk.delta.text:
