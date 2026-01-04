@@ -189,17 +189,13 @@ def test_verify_no_unions_always_returns_true():
 
     # Test with Optional type (Union with null)
     optional_schema = {
-        "properties": {
-            "maybe_name": {"anyOf": [{"type": "string"}, {"type": "null"}]}
-        }
+        "properties": {"maybe_name": {"anyOf": [{"type": "string"}, {"type": "null"}]}}
     }
     assert verify_no_unions(optional_schema) is True
 
     # Test with Union type (int | str) - this used to fail, now should pass
     union_schema = {
-        "properties": {
-            "value": {"anyOf": [{"type": "integer"}, {"type": "string"}]}
-        }
+        "properties": {"value": {"anyOf": [{"type": "integer"}, {"type": "string"}]}}
     }
     assert verify_no_unions(union_schema) is True
 
