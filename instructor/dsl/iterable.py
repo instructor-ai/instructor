@@ -150,6 +150,41 @@ class IterableBase:
     ) -> Generator[str, None, None]:
         for chunk in completion:
             try:
+                if mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
+                    event_type = getattr(chunk, "event_type", None)
+                    if event_type == "text-generation":
+                        if text := getattr(chunk, "text", None):
+                            yield text
+                    elif event_type == "tool-calls-chunk":
+                        delta = getattr(chunk, "tool_call_delta", None)
+                        args = getattr(delta, "parameters", None) or getattr(
+                            delta, "text", None
+                        )
+                        if args:
+                            yield args
+                        elif text := getattr(chunk, "text", None):
+                            yield text
+                    elif event_type == "tool-calls-generation":
+                        tool_calls = getattr(chunk, "tool_calls", None)
+                        if tool_calls:
+                            yield json.dumps(tool_calls[0].parameters)
+                        elif text := getattr(chunk, "text", None):
+                            yield text
+                    else:
+                        chunk_type = getattr(chunk, "type", None)
+                        if chunk_type == "content-delta":
+                            delta = getattr(chunk, "delta", None)
+                            message = getattr(delta, "message", None)
+                            content = getattr(message, "content", None)
+                            if text := getattr(content, "text", None):
+                                yield text
+                        elif chunk_type == "tool-call-delta":
+                            delta = getattr(chunk, "delta", None)
+                            message = getattr(delta, "message", None)
+                            tool_calls = getattr(message, "tool_calls", None)
+                            function = getattr(tool_calls, "function", None)
+                            if args := getattr(function, "arguments", None):
+                                yield args
                 if mode == Mode.ANTHROPIC_JSON:
                     if json_chunk := chunk.delta.text:
                         yield json_chunk
@@ -232,6 +267,41 @@ class IterableBase:
     ) -> AsyncGenerator[str, None]:
         async for chunk in completion:
             try:
+                if mode in {Mode.COHERE_TOOLS, Mode.COHERE_JSON_SCHEMA}:
+                    event_type = getattr(chunk, "event_type", None)
+                    if event_type == "text-generation":
+                        if text := getattr(chunk, "text", None):
+                            yield text
+                    elif event_type == "tool-calls-chunk":
+                        delta = getattr(chunk, "tool_call_delta", None)
+                        args = getattr(delta, "parameters", None) or getattr(
+                            delta, "text", None
+                        )
+                        if args:
+                            yield args
+                        elif text := getattr(chunk, "text", None):
+                            yield text
+                    elif event_type == "tool-calls-generation":
+                        tool_calls = getattr(chunk, "tool_calls", None)
+                        if tool_calls:
+                            yield json.dumps(tool_calls[0].parameters)
+                        elif text := getattr(chunk, "text", None):
+                            yield text
+                    else:
+                        chunk_type = getattr(chunk, "type", None)
+                        if chunk_type == "content-delta":
+                            delta = getattr(chunk, "delta", None)
+                            message = getattr(delta, "message", None)
+                            content = getattr(message, "content", None)
+                            if text := getattr(content, "text", None):
+                                yield text
+                        elif chunk_type == "tool-call-delta":
+                            delta = getattr(chunk, "delta", None)
+                            message = getattr(delta, "message", None)
+                            tool_calls = getattr(message, "tool_calls", None)
+                            function = getattr(tool_calls, "function", None)
+                            if args := getattr(function, "arguments", None):
+                                yield args
                 if mode == Mode.ANTHROPIC_JSON:
                     if json_chunk := chunk.delta.text:
                         yield json_chunk

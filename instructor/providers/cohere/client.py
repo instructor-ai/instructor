@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+import inspect
+from collections.abc import Awaitable
+from typing import Any, TypeVar, cast, overload
+
 import cohere
 import instructor
-from typing import (
-    TypeVar,
-    overload,
-)
-from typing import Any
-from typing_extensions import ParamSpec
 from pydantic import BaseModel
+from typing_extensions import ParamSpec
 
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
@@ -81,17 +80,32 @@ def from_cohere(
     kwargs["_cohere_client_version"] = client_version
 
     if is_async:
+
+        async def async_wrapper(*args: Any, **call_kwargs: Any):
+            if call_kwargs.pop("stream", False):
+                return client.chat_stream(*args, **call_kwargs)
+            result = client.chat(*args, **call_kwargs)
+            if inspect.isawaitable(result):
+                return await cast(Awaitable[Any], result)
+            return result
+
         return instructor.AsyncInstructor(
             client=client,
-            create=instructor.patch(create=client.chat, mode=mode),
+            create=instructor.patch(create=async_wrapper, mode=mode),
             provider=instructor.Provider.COHERE,
             mode=mode,
             **kwargs,
         )
     else:
+
+        def sync_wrapper(*args: Any, **call_kwargs: Any):
+            if call_kwargs.pop("stream", False):
+                return client.chat_stream(*args, **call_kwargs)
+            return client.chat(*args, **call_kwargs)
+
         return instructor.Instructor(
             client=client,
-            create=instructor.patch(create=client.chat, mode=mode),
+            create=instructor.patch(create=sync_wrapper, mode=mode),
             provider=instructor.Provider.COHERE,
             mode=mode,
             **kwargs,

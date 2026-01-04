@@ -79,21 +79,29 @@ def _extract_text_content(completion: Any) -> str:
 
 
 def _validate_model_from_json(
-    cls: type[Model],
+    cls: type[Any],
     json_str: str,
     validation_context: Optional[dict[str, Any]] = None,
     strict: Optional[bool] = None,
-) -> Model:
+) -> Any:
     """Validate model from JSON string with appropriate error handling."""
     try:
-        if strict:
-            return cls.model_validate_json(
-                json_str, context=validation_context, strict=True
-            )
-        else:
+        if hasattr(cls, "model_validate_json"):
+            if strict:
+                return cls.model_validate_json(
+                    json_str, context=validation_context, strict=True
+                )
             # Allow control characters
             parsed = json.loads(json_str, strict=False)
             return cls.model_validate(parsed, context=validation_context, strict=False)
+
+        adapter = TypeAdapter(cls)
+        if strict:
+            return adapter.validate_json(
+                json_str, context=validation_context, strict=True
+            )
+        parsed = json.loads(json_str, strict=False)
+        return adapter.validate_python(parsed, context=validation_context, strict=False)
     except json.JSONDecodeError as e:
         logger.debug(f"JSON decode error: {e}")
         raise
