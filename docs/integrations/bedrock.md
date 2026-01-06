@@ -191,6 +191,34 @@ user = client.create(
 
 All of the above will work seamlessly with Instructor’s Bedrock integration.
 
+## Multimodal: Images and Documents
+
+Instructor will convert OpenAI-style image parts into Bedrock image blocks automatically. For documents (PDFs), Bedrock expects a native `document` block, so you should either pass a Bedrock-native document dict directly or build one with the `PDF` helper.
+
+```python
+import instructor
+from instructor.processing.multimodal import PDF
+
+client = instructor.from_provider("bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0")
+
+pdf = PDF.from_url("https://raw.githubusercontent.com/instructor-ai/instructor/main/tests/assets/invoice.pdf")
+
+response = client.create(
+    modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Analyze this document",
+                pdf.to_bedrock(),
+            ],
+        }
+    ],
+)
+```
+
+Bedrock document blocks also support S3 URIs (for example, `s3://bucket/key.pdf`) and local files; `PDF.to_bedrock()` will load the bytes and sanitize the document name for you.
+
 ## Nested Objects
 
 ```python

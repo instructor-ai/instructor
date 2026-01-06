@@ -38,22 +38,24 @@ def test_nested(mode, model):
 
 @pytest.mark.parametrize("mode,model", product(modes, models))
 def test_union(mode, model):
-    """Test that union types raise appropriate error with Gemini."""
+    """Test that union types are now supported with Gemini (issue #1964)."""
     client = instructor.from_provider(f"google/{model}", mode=mode)
 
     class UserData(BaseModel):
         name: str
         id_value: Union[str, int]
 
-    with pytest.raises(
-        ValueError,
-        match=r"Gemini does not support Union types \(except Optional\)\. Please change your function schema",
-    ):
-        client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": "User name is Alice with ID 12345"}],
-            response_model=UserData,
-        )  # type: ignore
+    # Union types are now supported by Google GenAI SDK
+    # See: https://github.com/googleapis/python-genai/issues/447
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": "User name is Alice with ID 12345"}],
+        response_model=UserData,
+    )
+
+    assert response.name == "Alice"
+    # The ID could be returned as either str or int
+    assert response.id_value in ["12345", 12345]
 
 
 def test_optional_types_allowed():
@@ -73,17 +75,22 @@ def test_optional_types_allowed():
     assert result["required"] == ["name"]
 
 
-def test_union_types_rejected_schema():
-    """Test that Union types (not Optional) throw an error in schema mapping."""
+def test_union_types_allowed_schema():
+    """Test that Union types are now allowed in schema mapping (issue #1964)."""
 
     class UserWithUnion(BaseModel):
         name: str
-        value: Union[int, str]  # Should be rejected
+        value: Union[int, str]
 
     schema = UserWithUnion.model_json_schema()
 
-    with pytest.raises(ValueError, match="Union types"):
-        map_to_gemini_function_schema(schema)
+    # Union types are now supported - should not raise
+    result = map_to_gemini_function_schema(schema)
+
+    # The anyOf structure should be preserved
+    assert "properties" in result
+    assert "value" in result["properties"]
+    assert "anyOf" in result["properties"]["value"]
 
 
 @pytest.mark.parametrize(

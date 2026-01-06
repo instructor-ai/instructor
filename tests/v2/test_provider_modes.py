@@ -13,7 +13,14 @@ from pydantic import BaseModel
 
 import instructor
 from instructor import Mode
-from instructor.v2 import Provider, mode_registry
+
+try:
+    from instructor.v2 import Provider, mode_registry
+except (ImportError, ModuleNotFoundError):  # pragma: no cover
+    pytest.skip(
+        "instructor.v2 is not available in this distribution",
+        allow_module_level=True,
+    )
 
 
 class Answer(BaseModel):

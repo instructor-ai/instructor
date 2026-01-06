@@ -1,4 +1,4 @@
-name: Type Check
+name: ty
 
 on:
   pull_request:

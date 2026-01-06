@@ -10,7 +10,7 @@ from ...dsl.parallel import get_types_array
 import jsonref
 
 
-def _create_gemini_json_schema(model: BaseModel):
+def _create_gemini_json_schema(model: type[BaseModel]) -> dict[str, Any]:
     # Add type check to ensure we have a concrete model class
     if get_origin(model) is not None:
         raise TypeError(f"Expected concrete model class, got type hint {model}")
@@ -28,27 +28,27 @@ def _create_gemini_json_schema(model: BaseModel):
 
 
 def _create_vertexai_tool(
-    models: BaseModel | list[BaseModel] | type,
+    models: type[BaseModel] | list[type[BaseModel]] | Any,
 ) -> gm.Tool:  # noqa: UP007
     """Creates a tool with function declarations for single model or list of models"""
     # Handle Iterable case first
     if get_origin(models) is not None:
-        model_list = list(get_types_array(models))  # type: ignore
+        model_list = list(get_types_array(models))
     else:
         # Handle both single model and list of models
         model_list = models if isinstance(models, list) else [models]
 
     declarations = []
-    for model in model_list:  # type: ignore
-        parameters = _create_gemini_json_schema(model)  # type: ignore
+    for model in model_list:
+        parameters = _create_gemini_json_schema(model)
         declaration = gm.FunctionDeclaration(
-            name=model.__name__,  # type: ignore
-            description=model.__doc__,  # type: ignore
+            name=model.__name__,
+            description=model.__doc__,
             parameters=parameters,
         )
-        declarations.append(declaration)  # type: ignore
+        declarations.append(declaration)
 
-    return gm.Tool(function_declarations=declarations)  # type: ignore
+    return gm.Tool(function_declarations=declarations)
 
 
 def vertexai_message_parser(
@@ -103,7 +103,7 @@ def vertexai_function_response_parser(
 
 def vertexai_process_response(
     _kwargs: dict[str, Any],
-    model: Union[BaseModel, list[BaseModel], type],  # noqa: UP007
+    model: Union[type[BaseModel], list[type[BaseModel]], Any],  # noqa: UP007
 ):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
@@ -118,7 +118,7 @@ def vertexai_process_response(
     return contents, [tool], tool_config
 
 
-def vertexai_process_json_response(_kwargs: dict[str, Any], model: BaseModel):
+def vertexai_process_json_response(_kwargs: dict[str, Any], model: type[BaseModel]):
     messages: list[dict[str, str]] = _kwargs.pop("messages")
     contents = _vertexai_message_list_parser(messages)  # type: ignore
 
