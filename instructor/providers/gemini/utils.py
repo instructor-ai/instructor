@@ -351,6 +351,7 @@ def update_genai_kwargs(
         config_fields_to_merge = [
             "automatic_function_calling",
             "labels",
+            "cached_content",
         ]
         for field in config_fields_to_merge:
             if hasattr(user_config, field):
@@ -885,8 +886,12 @@ def handle_genai_structured_outputs(
     # This fixes issue #1966 where thinking_config inside config was ignored
     user_config = new_kwargs.get("config")
     user_thinking_config = None
-    if user_config is not None and hasattr(user_config, "thinking_config"):
-        user_thinking_config = user_config.thinking_config
+    user_cached_content = None
+    if user_config is not None:
+        if hasattr(user_config, "thinking_config"):
+            user_thinking_config = user_config.thinking_config
+        if hasattr(user_config, "cached_content"):
+            user_cached_content = user_config.cached_content
 
     # Prioritize kwarg thinking_config over config.thinking_config
     if "thinking_config" not in new_kwargs and user_thinking_config is not None:
@@ -912,10 +917,14 @@ def handle_genai_structured_outputs(
     map_to_gemini_function_schema(_get_model_schema(response_model))
 
     base_config = {
-        "system_instruction": system_message,
         "response_mime_type": "application/json",
         "response_schema": response_model,
     }
+
+    # Only set system_instruction if NOT using cached_content
+    # When cached_content is used, the system instruction is already part of the cache
+    if user_cached_content is None:
+        base_config["system_instruction"] = system_message
 
     generation_config = update_genai_kwargs(new_kwargs, base_config)
 
@@ -956,12 +965,16 @@ def handle_genai_tools(
     if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
         response_model = Partial[response_model]
 
-    # Extract thinking_config from user-provided config object if present
+    # Extract thinking_config and cached_content from user-provided config object if present
     # This fixes issue #1966 where thinking_config inside config was ignored
     user_config = new_kwargs.get("config")
     user_thinking_config = None
-    if user_config is not None and hasattr(user_config, "thinking_config"):
-        user_thinking_config = user_config.thinking_config
+    user_cached_content = None
+    if user_config is not None:
+        if hasattr(user_config, "thinking_config"):
+            user_thinking_config = user_config.thinking_config
+        if hasattr(user_config, "cached_content"):
+            user_cached_content = user_config.cached_content
 
     # Prioritize kwarg thinking_config over config.thinking_config
     if "thinking_config" not in new_kwargs and user_thinking_config is not None:
@@ -982,16 +995,20 @@ def handle_genai_tools(
     else:
         system_message = None
 
-    base_config = {
-        "system_instruction": system_message,
-        "tools": [types.Tool(function_declarations=[function_definition])],
-        "tool_config": types.ToolConfig(
+    base_config: dict[str, Any] = {}
+
+    # When cached_content is used, do NOT add tools, tool_config, or system_instruction
+    # These should already be part of the cache. Adding them causes 400 INVALID_ARGUMENT.
+    # See: https://ai.google.dev/gemini-api/docs/caching
+    if user_cached_content is None:
+        base_config["system_instruction"] = system_message
+        base_config["tools"] = [types.Tool(function_declarations=[function_definition])]
+        base_config["tool_config"] = types.ToolConfig(
             function_calling_config=types.FunctionCallingConfig(
                 mode=types.FunctionCallingConfigMode.ANY,
                 allowed_function_names=[_get_model_name(response_model)],
             ),
-        ),
-    }
+        )
 
     generation_config = update_genai_kwargs(new_kwargs, base_config)
 

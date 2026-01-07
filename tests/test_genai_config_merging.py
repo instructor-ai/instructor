@@ -235,3 +235,165 @@ def test_map_to_gemini_function_schema_accepts_union_types():
     assert result is not None
     assert "properties" in result
     assert "maybe_int" in result["properties"]
+
+
+def test_update_genai_kwargs_config_object_cached_content():
+    """Test that cached_content is extracted from config object.
+
+    This tests the fix for cached_content config not being passed through
+    to enable Google's context caching feature.
+    See: https://ai.google.dev/gemini-api/docs/caching
+    """
+
+    class MockConfig:
+        def __init__(self):
+            self.thinking_config = None
+            self.automatic_function_calling = None
+            self.labels = None
+            self.cached_content = "caches/abc123"
+
+    mock_config = MockConfig()
+    kwargs = {"config": mock_config}
+    base_config = {}
+
+    result = update_genai_kwargs(kwargs, base_config)
+
+    assert "cached_content" in result
+    assert result["cached_content"] == "caches/abc123"
+
+
+def test_update_genai_kwargs_cached_content_does_not_override_base():
+    """Test that cached_content from config doesn't override existing base_config values."""
+
+    class MockConfig:
+        def __init__(self):
+            self.thinking_config = None
+            self.automatic_function_calling = None
+            self.labels = None
+            self.cached_content = "caches/from_config"
+
+    mock_config = MockConfig()
+    kwargs = {"config": mock_config}
+    base_config = {"cached_content": "caches/from_base"}
+
+    result = update_genai_kwargs(kwargs, base_config)
+
+    # Check that base_config cached_content is preserved (not overridden)
+    assert result["cached_content"] == "caches/from_base"
+
+
+def test_handle_genai_structured_outputs_skips_system_instruction_with_cached_content():
+    """Test that system_instruction is NOT set when cached_content is provided.
+
+    When using Google's context caching, the system instruction is part of the
+    cached content, so we should not set it separately.
+    """
+    from google.genai import types
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+
+    class TestModel(BaseModel):
+        name: str
+
+    # Create a config with cached_content
+    config = types.GenerateContentConfig(cached_content="caches/test123")
+
+    new_kwargs = {
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello"},
+        ],
+        "config": config,
+    }
+
+    _, result_kwargs = handle_genai_structured_outputs(TestModel, new_kwargs)
+
+    # Check that the resulting config does NOT have system_instruction
+    result_config = result_kwargs["config"]
+    assert result_config.cached_content == "caches/test123"
+    assert result_config.system_instruction is None
+
+
+def test_handle_genai_structured_outputs_sets_system_instruction_without_cached_content():
+    """Test that system_instruction IS set when cached_content is NOT provided."""
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+
+    class TestModel(BaseModel):
+        name: str
+
+    new_kwargs = {
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello"},
+        ],
+    }
+
+    _, result_kwargs = handle_genai_structured_outputs(TestModel, new_kwargs)
+
+    # Check that the resulting config HAS system_instruction
+    result_config = result_kwargs["config"]
+    assert result_config.system_instruction is not None
+
+
+def test_handle_genai_tools_skips_tools_and_system_instruction_with_cached_content():
+    """Test that tools, tool_config, and system_instruction are NOT set when cached_content is provided.
+
+    When using Google's explicit context caching, tools/tool_config/system_instruction
+    should already be part of the cache. Adding them to the request causes 400 INVALID_ARGUMENT.
+    See: https://ai.google.dev/gemini-api/docs/caching
+    """
+    from google.genai import types
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_tools
+
+    class TestModel(BaseModel):
+        name: str
+
+    # Create a config with cached_content
+    config = types.GenerateContentConfig(cached_content="caches/test456")
+
+    new_kwargs = {
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello"},
+        ],
+        "config": config,
+    }
+
+    _, result_kwargs = handle_genai_tools(TestModel, new_kwargs)
+
+    # Check that the resulting config does NOT have system_instruction, tools, or tool_config
+    result_config = result_kwargs["config"]
+    assert result_config.cached_content == "caches/test456"
+    assert result_config.system_instruction is None
+    assert result_config.tools is None
+    assert result_config.tool_config is None
+
+
+def test_handle_genai_tools_sets_tools_without_cached_content():
+    """Test that tools and tool_config ARE set when cached_content is NOT provided."""
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_tools
+
+    class TestModel(BaseModel):
+        name: str
+
+    new_kwargs = {
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello"},
+        ],
+    }
+
+    _, result_kwargs = handle_genai_tools(TestModel, new_kwargs)
+
+    # Check that the resulting config HAS tools and tool_config
+    result_config = result_kwargs["config"]
+    assert result_config.tools is not None
+    assert result_config.tool_config is not None
+    assert result_config.system_instruction is not None
