@@ -19,7 +19,7 @@ dependencies = [
     "ty>=0.0.1a23",
 ]
 name = "instructor"
-version = "1.13.0"
+version = "1.14.0"
 description = "structured outputs for llm"
 readme = "README.md"
 
