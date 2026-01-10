@@ -59,8 +59,10 @@ jobs:
       - name: Run core provider tests (OpenAI)
         if: ${{ env.OPENAI_API_KEY != '' }}
         run: |
+          set +e
           uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "openai"
           status=$?
+          set -e
           if [ $status -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
@@ -94,8 +96,10 @@ jobs:
       - name: Run core provider tests (Anthropic)
         if: ${{ env.ANTHROPIC_API_KEY != '' }}
         run: |
+          set +e
           uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "anthropic"
           status=$?
+          set -e
           if [ $status -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
@@ -129,8 +133,10 @@ jobs:
       - name: Run core provider tests (Google)
         if: ${{ env.GOOGLE_API_KEY != '' }}
         run: |
+          set +e
           uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "google"
           status=$?
+          set -e
           if [ $status -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
@@ -178,8 +184,10 @@ jobs:
           || env.FIREWORKS_API_KEY != '' || env.WRITER_API_KEY != ''
           || env.PERPLEXITY_API_KEY != '' }}
         run: |
+          set +e
           uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "cohere or xai or mistral or cerebras or fireworks or writer or perplexity"
           status=$?
+          set -e
           if [ $status -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
@@ -241,8 +249,10 @@ jobs:
       - name: Run ${{ matrix.provider.name }} tests
         if: ${{ env.PROVIDER_API_KEY != '' }}
         run: |
+          set +e
           uv run pytest ${{ matrix.provider.test_path }} --asyncio-mode=auto -n auto
           status=$?
+          set -e
           if [ $status -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
@@ -286,8 +296,10 @@ jobs:
           && env.COHERE_API_KEY != '' && env.ANTHROPIC_API_KEY != ''
           && env.XAI_API_KEY != '' }}
         run: |
+          set +e
           uv run pytest tests/test_auto_client.py --asyncio-mode=auto -n auto
           status=$?
+          set -e
           if [ $status -eq 5 ]; then
             echo "No tests collected; treating as success."
             exit 0
