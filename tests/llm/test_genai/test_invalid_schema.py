@@ -177,9 +177,7 @@ async def test_genai_api_call_with_different_types_async(mode):
         is_premium: bool
         score: float
 
-    client = instructor.from_provider(
-        MODEL, mode=mode, async_client=True
-    )
+    client = instructor.from_provider(MODEL, mode=mode, async_client=True)
 
     response = await client.chat.completions.create(
         messages=[
@@ -211,9 +209,7 @@ async def test_genai_api_call_with_nested_models_async(mode):
     class UserList(BaseModel):
         users: list[User]
 
-    client = instructor.from_provider(
-        MODEL, mode=mode, async_client=True
-    )
+    client = instructor.from_provider(MODEL, mode=mode, async_client=True)
 
     response = await client.chat.completions.create(
         messages=[

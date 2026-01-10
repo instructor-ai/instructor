@@ -12,7 +12,9 @@ class User(BaseModel):
 class UserList(BaseModel):
     items: list[User]
 
+
 MODEL = os.getenv("GOOGLE_GENAI_MODEL", "google/gemini-pro")
+
 
 @pytest.mark.asyncio
 async def test_list_of_strings():
