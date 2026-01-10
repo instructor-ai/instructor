@@ -1,3 +1,4 @@
+import os
 import instructor
 from pydantic import BaseModel
 import pytest
@@ -11,11 +12,12 @@ class User(BaseModel):
 class UserList(BaseModel):
     items: list[User]
 
+MODEL = os.getenv("GOOGLE_GENAI_MODEL", "google/gemini-pro")
 
 @pytest.mark.asyncio
 async def test_list_of_strings():
     client = instructor.from_provider(
-        "google/gemini-pro",
+        MODEL,
         mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
         async_client=True,
     )

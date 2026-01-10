@@ -12,6 +12,8 @@ import instructor
 import pytest
 
 
+GOOGLE_GENAI_MODEL = os.getenv("GOOGLE_GENAI_MODEL", "")
+
 # Provider configurations: (model_string, mode, required_env_var, required_package)
 PROVIDER_CONFIGS = [
     (
@@ -27,7 +29,7 @@ PROVIDER_CONFIGS = [
         "anthropic",
     ),
     (
-        "google/gemini-pro",
+        GOOGLE_GENAI_MODEL,
         instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
         "GOOGLE_API_KEY",
         "google.genai",
@@ -87,6 +89,8 @@ def get_available_providers() -> list[tuple[str, instructor.Mode]]:
     available = []
 
     for model, mode, env_var, package in PROVIDER_CONFIGS:
+        if not model:
+            continue
         # Check if API key is set
         if not os.getenv(env_var):
             continue
