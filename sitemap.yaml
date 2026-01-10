@@ -132,7 +132,7 @@ blog/posts/announcing-gemini-tool-calling-support.md:
     \ and VertexAI (`instructor[vertexai]`), emphasizing Gemini\u2019s advantages\
     \ such as a higher free token quota and simpler setup with just a Google API key.\
     \ The guide provides step-by-step examples of using instructor with Gemini and\
-    \ VertexAI models (`gemini-1.5-flash-latest`, `gemini-1.5-pro-latest`) for chat\
+    \ VertexAI models (`gemini-3-flash`, `gemini-1.5-pro-latest`) for chat\
     \ completions and structured output extraction, focusing on AI SDKs, tool calling,\
     \ structured outputs, and generative models for AI developers."
 blog/posts/announcing-instructor-responses-support.md:

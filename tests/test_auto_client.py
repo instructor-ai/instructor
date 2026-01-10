@@ -30,7 +30,7 @@ PROVIDERS = [
     "cerebras/llama-4-scout-17b-16e-instruct",
     "deepseek/deepseek-chat",
     "fireworks/accounts/fireworks/models/llama4-maverick-instruct-basic",
-    "vertexai/gemini-1.5-flash",
+    "vertexai/gemini-3-flash",
 ]
 
 

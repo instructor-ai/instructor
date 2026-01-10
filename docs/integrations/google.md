@@ -36,7 +36,7 @@ class User(BaseModel):
 
 # Using from_provider (recommended)
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
 )
 
 resp = client.create(
@@ -71,7 +71,7 @@ class User(BaseModel):
 
 async def extract_user():
     client = instructor.from_provider(
-        "google/gemini-1.5-flash-latest",
+        "google/gemini-3-flash",
         async_client=True,
     )
 
@@ -116,7 +116,7 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
     mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
 )
 
@@ -159,7 +159,7 @@ class User(BaseModel):
 
 
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
 )
 
 user = client.create(
@@ -210,7 +210,7 @@ from pydantic import BaseModel
 
 
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
 )
 
 
@@ -245,7 +245,7 @@ from pydantic import BaseModel
 
 
 client = instructor.from_provider(
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-3-flash",
 )
 
 
@@ -373,7 +373,7 @@ import instructor
 
 # Option 1: Using from_provider
 client = instructor.from_provider(
-    "vertexai/gemini-1.5-flash",
+    "vertexai/gemini-3-flash",
     project="your-project",
     location="us-central1"
 )
