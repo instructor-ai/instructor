@@ -15,7 +15,7 @@ import pytest
 # Provider configurations: (model_string, mode, required_env_var, required_package)
 PROVIDER_CONFIGS = [
     (
-        "openai/gpt-5-nano",
+        "openai/gpt-4o-mini",
         instructor.Mode.TOOLS,
         "OPENAI_API_KEY",
         "openai",
@@ -27,7 +27,7 @@ PROVIDER_CONFIGS = [
         "anthropic",
     ),
     (
-        "google/gemini-2.5-flash",
+        "google/gemini-1.5-flash",
         instructor.Mode.GENAI_TOOLS,
         "GOOGLE_API_KEY",
         "google.genai",

@@ -19,8 +19,8 @@ try:
     from typing import Any, cast
 
     v2 = cast(Any, importlib.import_module("instructor.v2"))
-    Provider = cast(Any, v2.Provider)
-    mode_registry = cast(Any, v2.mode_registry)
+    Provider = v2.Provider
+    mode_registry = v2.mode_registry
 except (ImportError, ModuleNotFoundError):  # pragma: no cover
     pytest.skip(
         "instructor.v2 is not available in this distribution",
@@ -66,7 +66,7 @@ PROVIDER_CONFIGS = {
         "async_modes": [Mode.TOOLS, Mode.JSON_SCHEMA],
     },
     Provider.GENAI: {
-        "provider_string": "google/gemini-2.0-flash",
+        "provider_string": "google/gemini-1.5-flash",
         "modes": [Mode.TOOLS, Mode.JSON],
         "basic_modes": [Mode.TOOLS, Mode.JSON],
         "async_modes": [Mode.TOOLS, Mode.JSON],

@@ -15,7 +15,7 @@ class UserList(BaseModel):
 @pytest.mark.asyncio
 async def test_list_of_strings():
     client = instructor.from_provider(
-        "google/gemini-2.5-flash",
+        "google/gemini-1.5-flash",
         mode=instructor.Mode.GENAI_TOOLS,
         async_client=True,
     )
