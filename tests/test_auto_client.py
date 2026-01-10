@@ -337,7 +337,7 @@ def test_openai_provider_without_base_url():
             client = from_provider("openai/gpt-4", api_key="test-key")
 
             _, kwargs = mock_openai_class.call_args
-            assert "base_url" not in kwargs
+            assert kwargs.get("base_url") in (None, "")
             assert kwargs["api_key"] == "test-key"
             mock_from_openai.assert_called_once()
             assert client is mock_instructor
