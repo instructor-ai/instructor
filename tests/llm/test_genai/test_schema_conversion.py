@@ -2,8 +2,6 @@
 
 from enum import Enum
 from typing import Optional
-
-import pytest
 from pydantic import BaseModel
 
 from instructor.providers.gemini.utils import (
