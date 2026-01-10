@@ -100,6 +100,7 @@ Required API keys (set only what you have):
 - `OPENAI_API_KEY` - for OpenAI
 - `ANTHROPIC_API_KEY` - for Anthropic
 - `GOOGLE_API_KEY` - for Google (Gemini)
+- `GOOGLE_GENAI_MODEL` - model string for Google GenAI tests (e.g., `google/gemini-1.5-flash-latest`)
 - `COHERE_API_KEY` - for Cohere
 - `XAI_API_KEY` - for xAI (Grok)
 - `MISTRAL_API_KEY` - for Mistral
