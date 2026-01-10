@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, overload
 
-import google.generativeai as genai
+import google.generativeai as genai  # type: ignore[import-not-found]
 
 import instructor
 
