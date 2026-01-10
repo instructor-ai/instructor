@@ -9,6 +9,7 @@
 - Lint: `uv run ruff check instructor examples tests`
 - Format: `uv run ruff format instructor examples tests`
 - Build docs: `uv run mkdocs serve` (local) or `./build_mkdocs.sh` (production)
+- Waiting: use `sleep <seconds>` for explicit pauses (e.g., CI waits) or to let external processes finish
 
 ## Architecture
 - **Core**: `instructor/` - Pydantic-based structured outputs for LLMs
