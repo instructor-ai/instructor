@@ -116,6 +116,7 @@ jobs:
     needs: core-tests
     env:
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      GOOGLE_GENAI_MODEL: ${{ secrets.GOOGLE_GENAI_MODEL }}
 
     steps:
       - uses: actions/checkout@v2
@@ -128,10 +129,10 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Skip core provider tests (Google)
-        if: ${{ env.GOOGLE_API_KEY == '' }}
-        run: echo "Skipping Google core provider tests (missing GOOGLE_API_KEY)."
+        if: ${{ env.GOOGLE_API_KEY == '' || env.GOOGLE_GENAI_MODEL == '' }}
+        run: echo "Skipping Google core provider tests (missing GOOGLE_API_KEY or GOOGLE_GENAI_MODEL)."
       - name: Run core provider tests (Google)
-        if: ${{ env.GOOGLE_API_KEY != '' }}
+        if: ${{ env.GOOGLE_API_KEY != '' && env.GOOGLE_GENAI_MODEL != '' }}
         run: |
           set +e
           uv run pytest tests/llm/test_core_providers -v --asyncio-mode=auto -n auto -k "google"
@@ -210,6 +211,7 @@ jobs:
     needs: [core-openai, core-anthropic, core-google, core-other]
     env:
       PROVIDER_API_KEY: ${{ secrets[matrix.provider.env_key] }}
+      GOOGLE_GENAI_MODEL: ${{ secrets.GOOGLE_GENAI_MODEL }}
     strategy:
       fail-fast: false
       matrix:
@@ -244,10 +246,18 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Skip ${{ matrix.provider.name }} tests
-        if: ${{ env.PROVIDER_API_KEY == '' }}
-        run: echo "Skipping ${{ matrix.provider.name }} tests (missing ${{ matrix.provider.env_key }})."
+        if: >-
+          ${{ env.PROVIDER_API_KEY == '' ||
+          ((matrix.provider.name == 'Gemini' || matrix.provider.name == 'Google GenAI'
+          || matrix.provider.name == 'Vertex AI') && env.GOOGLE_GENAI_MODEL == '') }}
+        run: >-
+          echo "Skipping ${{ matrix.provider.name }} tests
+          (missing ${{ matrix.provider.env_key }} or GOOGLE_GENAI_MODEL)."
       - name: Run ${{ matrix.provider.name }} tests
-        if: ${{ env.PROVIDER_API_KEY != '' }}
+        if: >-
+          ${{ env.PROVIDER_API_KEY != '' &&
+          ((matrix.provider.name != 'Gemini' && matrix.provider.name != 'Google GenAI'
+          && matrix.provider.name != 'Vertex AI') || env.GOOGLE_GENAI_MODEL != '') }}
         run: |
           set +e
           uv run pytest ${{ matrix.provider.test_path }} --asyncio-mode=auto -n auto
