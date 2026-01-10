@@ -106,7 +106,7 @@ def test_genai_api_call_with_different_types(mode):
         is_premium: bool
         score: float
 
-    client = instructor.from_provider("google/gemini-1.5-flash", mode=mode)
+    client = instructor.from_provider("google/gemini-1.5-flash-latest", mode=mode)
 
     response = client.chat.completions.create(
         messages=[
@@ -137,7 +137,7 @@ def test_genai_api_call_with_nested_models(mode):
     class UserList(BaseModel):
         users: list[User]
 
-    client = instructor.from_provider("google/gemini-1.5-flash", mode=mode)
+    client = instructor.from_provider("google/gemini-1.5-flash-latest", mode=mode)
 
     response = client.chat.completions.create(
         messages=[
@@ -175,7 +175,7 @@ async def test_genai_api_call_with_different_types_async(mode):
         score: float
 
     client = instructor.from_provider(
-        "google/gemini-1.5-flash", mode=mode, async_client=True
+        "google/gemini-1.5-flash-latest", mode=mode, async_client=True
     )
 
     response = await client.chat.completions.create(
@@ -209,7 +209,7 @@ async def test_genai_api_call_with_nested_models_async(mode):
         users: list[User]
 
     client = instructor.from_provider(
-        "google/gemini-1.5-flash", mode=mode, async_client=True
+        "google/gemini-1.5-flash-latest", mode=mode, async_client=True
     )
 
     response = await client.chat.completions.create(

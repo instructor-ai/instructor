@@ -27,7 +27,7 @@ PROVIDER_CONFIGS = [
         "anthropic",
     ),
     (
-        "google/gemini-1.5-flash",
+        "google/gemini-1.5-flash-latest",
         instructor.Mode.GENAI_TOOLS,
         "GOOGLE_API_KEY",
         "google.genai",

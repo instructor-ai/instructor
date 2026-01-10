@@ -66,7 +66,7 @@ PROVIDER_CONFIGS = {
         "async_modes": [Mode.TOOLS, Mode.JSON_SCHEMA],
     },
     Provider.GENAI: {
-        "provider_string": "google/gemini-1.5-flash",
+        "provider_string": "google/gemini-1.5-flash-latest",
         "modes": [Mode.TOOLS, Mode.JSON],
         "basic_modes": [Mode.TOOLS, Mode.JSON],
         "async_modes": [Mode.TOOLS, Mode.JSON],
