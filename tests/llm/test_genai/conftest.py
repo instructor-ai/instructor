@@ -30,5 +30,5 @@ def aclient():
 def genai_client():
     # Use the recommended model for sync client, let the test set the mode
     return instructor.from_provider(
-        "google/gemini-1.5-flash-latest",
+        "google/gemini-pro",
     )

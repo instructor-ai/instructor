@@ -14,7 +14,7 @@ file_path = os.path.join(curr_file, "./test_files/sample.mp3")
 
 def test_audio_compatability_list():
     client = instructor.from_provider(
-        model="google/gemini-1.5-flash-latest", mode=instructor.Mode.GENAI_TOOLS
+        model="google/gemini-pro", mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
     )
 
     # For now, we'll skip file operations since the new API might handle them differently
@@ -35,7 +35,7 @@ def test_audio_compatability_list():
 
 def test_audio_compatability_multiple_messages():
     client = instructor.from_provider(
-        model="google/gemini-1.5-flash-latest", mode=instructor.Mode.GENAI_TOOLS
+        model="google/gemini-pro", mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
     )
 
     # For now, we'll skip file operations since the new API might handle them differently

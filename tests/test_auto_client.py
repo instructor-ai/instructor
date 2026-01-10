@@ -19,7 +19,7 @@ USER_EXTRACTION_PROMPT = {
 # --- Providers to test (from main.py) ---
 PROVIDERS = [
     "anthropic/claude-3-5-haiku-latest",
-    "google/gemini-1.5-flash-latest",
+    "google/gemini-pro",
     "openai/gpt-4o-mini",
     "azure_openai/gpt-4o-mini",
     "mistral/ministral-8b-latest",
@@ -40,7 +40,7 @@ def should_skip_provider(provider_string: str) -> bool:
     if os.getenv("INSTRUCTOR_ENV") == "CI":
         return provider_string not in [
             "cohere/command-a-03-2025",
-            "google/gemini-1.5-flash-latest",
+            "google/gemini-pro",
             "openai/gpt-4o-mini",
         ]
     return False
@@ -501,7 +501,7 @@ def test_genai_mode_parameter_passed_to_provider():
             mock_from_genai.return_value = mock_instructor
 
             from_provider(
-                "google/gemini-1.5-flash-latest",
+                "google/gemini-pro",
                 mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
             )
 
@@ -524,7 +524,7 @@ def test_genai_mode_defaults_when_not_provided():
             mock_instructor = MagicMock()
             mock_from_genai.return_value = mock_instructor
 
-            from_provider("google/gemini-1.5-flash-latest")
+            from_provider("google/gemini-pro")
 
             mock_from_genai.assert_called_once()
             _, kwargs = mock_from_genai.call_args
@@ -569,7 +569,7 @@ def test_google_provider_runtime_import_error_propagates():
             __import__("instructor"), "from_genai", mock_from_genai, create=True
         ):
             with pytest.raises(ImportError) as excinfo:
-                from_provider("google/gemini-1.5-flash-latest")
+                from_provider("google/gemini-pro")
 
             # Should be the socksio error, NOT a ConfigurationError about google-genai
             assert "socksio" in str(excinfo.value)
