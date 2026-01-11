@@ -439,6 +439,81 @@ def handle_anthropic_parallel_tools(
     return AnthropicParallelModel(typehint=response_model), new_kwargs
 
 
+def handle_anthropic_toon(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle TOON (Token-Oriented Object Notation) mode for Anthropic.
+
+    TOON is a compact format that achieves 30-60% token reduction compared to JSON.
+    This mode instructs Claude to return TOON-formatted responses in a code block.
+
+    Kwargs modifications:
+    - Modifies: "messages" (removes system messages)
+    - Adds/Modifies: "system" (adds TOON structure template)
+
+    Raises:
+        ImportError: If toon-format package is not installed
+    """
+    system_messages = extract_system_messages(new_kwargs.get("messages", []))
+
+    if system_messages:
+        new_kwargs["system"] = combine_system_messages(
+            new_kwargs.get("system"), system_messages
+        )
+
+    new_kwargs["messages"] = [
+        m for m in new_kwargs.get("messages", []) if m["role"] != "system"
+    ]
+
+    if response_model is None:
+        return None, new_kwargs
+
+    from ...processing.toon import check_toon_import, get_toon_system_prompt
+
+    check_toon_import()
+    toon_message = get_toon_system_prompt(response_model)
+
+    new_kwargs["system"] = combine_system_messages(
+        new_kwargs.get("system"),
+        [{"type": "text", "text": toon_message}],
+    )
+
+    return response_model, new_kwargs
+
+
+def reask_anthropic_toon(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """
+    Handle reask for Anthropic TOON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting TOON correction)
+    """
+    from anthropic.types import Message
+    from ...processing.toon import get_toon_reask_message
+
+    kwargs = kwargs.copy()
+
+    assert isinstance(response, Message), "Response must be a Anthropic Message"
+
+    text_blocks = [c for c in response.content if c.type == "text"]
+    if not text_blocks:
+        text_content = "No text content found in response"
+    else:
+        text_content = text_blocks[-1].text
+
+    reask_msg = {
+        "role": "user",
+        "content": get_toon_reask_message(exception, text_content),
+    }
+    kwargs["messages"].append(reask_msg)
+    return kwargs
+
+
 # Handler registry for Anthropic
 ANTHROPIC_HANDLERS = {
     Mode.ANTHROPIC_TOOLS: {
@@ -456,5 +531,9 @@ ANTHROPIC_HANDLERS = {
     Mode.ANTHROPIC_PARALLEL_TOOLS: {
         "reask": reask_anthropic_tools,
         "response": handle_anthropic_parallel_tools,
+    },
+    Mode.ANTHROPIC_TOON: {
+        "reask": reask_anthropic_toon,
+        "response": handle_anthropic_toon,
     },
 }

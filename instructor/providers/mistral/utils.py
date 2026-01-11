@@ -109,6 +109,69 @@ def handle_mistral_structured_outputs(
     return response_model, new_kwargs
 
 
+def reask_mistral_toon(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """
+    Handle reask for Mistral TOON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting TOON correction)
+    """
+    from ...processing.toon import get_toon_reask_message
+
+    kwargs = kwargs.copy()
+    reask_msgs = [
+        {
+            "role": "assistant",
+            "content": response.choices[0].message.content,
+        }
+    ]
+    reask_msgs.append({"role": "user", "content": get_toon_reask_message(exception)})
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def handle_mistral_toon(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Mistral TOON mode.
+
+    Kwargs modifications:
+    - When response_model is None: No modifications
+    - When response_model is provided:
+      - Modifies: "messages" (adds TOON structure template to system message)
+
+    Raises:
+        ImportError: If toon-format package is not installed
+    """
+    if response_model is None:
+        return None, new_kwargs
+
+    from ...processing.toon import check_toon_import, get_toon_system_prompt
+
+    check_toon_import()
+    message = get_toon_system_prompt(response_model)
+
+    messages = new_kwargs.get("messages", [])
+    if not messages:
+        messages = [{"role": "system", "content": message}]
+    elif messages[0]["role"] != "system":
+        messages.insert(0, {"role": "system", "content": message})
+    elif isinstance(messages[0]["content"], str):
+        messages[0]["content"] += f"\n\n{message}"
+    else:
+        raise ValueError(
+            "Invalid message format, must be a string or a list of messages"
+        )
+
+    new_kwargs["messages"] = messages
+    return response_model, new_kwargs
+
+
 # Handler registry for Mistral
 MISTRAL_HANDLERS = {
     Mode.MISTRAL_TOOLS: {
@@ -118,5 +181,9 @@ MISTRAL_HANDLERS = {
     Mode.MISTRAL_STRUCTURED_OUTPUTS: {
         "reask": reask_mistral_structured_outputs,
         "response": handle_mistral_structured_outputs,
+    },
+    Mode.MISTRAL_TOON: {
+        "reask": reask_mistral_toon,
+        "response": handle_mistral_toon,
     },
 }

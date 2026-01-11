@@ -94,7 +94,11 @@ def from_xai(
     mode: instructor.Mode = instructor.Mode.XAI_JSON,
     **kwargs: Any,
 ) -> instructor.Instructor | instructor.AsyncInstructor:
-    valid_modes = {instructor.Mode.XAI_JSON, instructor.Mode.XAI_TOOLS}
+    valid_modes = {
+        instructor.Mode.XAI_JSON,
+        instructor.Mode.XAI_TOOLS,
+        instructor.Mode.XAI_TOON,
+    }
 
     if mode not in valid_modes:
         from ...core.exceptions import ModeError

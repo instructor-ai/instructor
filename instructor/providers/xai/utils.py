@@ -166,6 +166,83 @@ def handle_xai_tools(
     return response_model, new_kwargs
 
 
+def reask_xai_toon(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """
+    Handle reask for xAI TOON mode when validation fails.
+
+    Kwargs modifications:
+    - Modifies: "messages" (appends assistant and user messages for TOON correction)
+    """
+    from ...processing.toon import get_toon_reask_message
+
+    kwargs = kwargs.copy()
+
+    assistant_msg = {
+        "role": "assistant",
+        "content": str(response),
+    }
+    kwargs["messages"].append(assistant_msg)
+
+    reask_msg = {
+        "role": "user",
+        "content": get_toon_reask_message(exception),
+    }
+    kwargs["messages"].append(reask_msg)
+    return kwargs
+
+
+def handle_xai_toon(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle xAI TOON mode.
+
+    Kwargs modifications:
+    - When response_model is None: Converts messages from OpenAI to xAI format
+    - When response_model is provided:
+      - Converts messages from OpenAI format to xAI format
+      - Adds TOON structure template to system message
+
+    Raises:
+        ImportError: If toon-format package is not installed
+    """
+    messages = new_kwargs.get("messages", [])
+    new_kwargs["x_messages"] = _convert_messages(messages)
+
+    new_kwargs.pop("max_retries", None)
+    new_kwargs.pop("validation_context", None)
+    new_kwargs.pop("context", None)
+    new_kwargs.pop("hooks", None)
+
+    if response_model is None:
+        return None, new_kwargs
+
+    from ...processing.toon import check_toon_import, get_toon_system_prompt
+
+    check_toon_import()
+    toon_message = get_toon_system_prompt(response_model)
+
+    if not messages:
+        messages = [{"role": "system", "content": toon_message}]
+    elif messages[0]["role"] != "system":
+        messages.insert(0, {"role": "system", "content": toon_message})
+    elif isinstance(messages[0]["content"], str):
+        messages[0]["content"] += f"\n\n{toon_message}"
+    else:
+        raise ValueError(
+            "Invalid message format, must be a string or a list of messages"
+        )
+
+    new_kwargs["messages"] = messages
+    new_kwargs["x_messages"] = _convert_messages(messages)
+
+    return response_model, new_kwargs
+
+
 # Handler registry for xAI
 XAI_HANDLERS = {
     Mode.XAI_JSON: {
@@ -175,5 +252,9 @@ XAI_HANDLERS = {
     Mode.XAI_TOOLS: {
         "reask": reask_xai_tools,
         "response": handle_xai_tools,
+    },
+    Mode.XAI_TOON: {
+        "reask": reask_xai_toon,
+        "response": handle_xai_toon,
     },
 }

@@ -63,16 +63,20 @@ from ..providers.anthropic.utils import (
     handle_anthropic_parallel_tools,
     handle_anthropic_reasoning_tools,
     handle_anthropic_tools,
+    handle_anthropic_toon,
     reask_anthropic_json,
     reask_anthropic_tools,
+    reask_anthropic_toon,
 )
 
 # Bedrock utils
 from ..providers.bedrock.utils import (
     handle_bedrock_json,
     handle_bedrock_tools,
+    handle_bedrock_toon,
     reask_bedrock_json,
     reask_bedrock_tools,
+    reask_bedrock_toon,
 )
 
 # Cerebras utils
@@ -86,7 +90,9 @@ from ..providers.cerebras.utils import (
 from ..providers.cohere.utils import (
     handle_cohere_json_schema,
     handle_cohere_tools,
+    handle_cohere_toon,
     reask_cohere_tools,
+    reask_cohere_toon,
 )
 
 # Fireworks utils
@@ -103,6 +109,7 @@ from ..providers.gemini.utils import (
     handle_gemini_tools,
     handle_genai_structured_outputs,
     handle_genai_tools,
+    handle_genai_toon,
     handle_vertexai_json,
     handle_vertexai_parallel_tools,
     handle_vertexai_tools,
@@ -110,6 +117,7 @@ from ..providers.gemini.utils import (
     reask_gemini_tools,
     reask_genai_structured_outputs,
     reask_genai_tools,
+    reask_genai_toon,
     reask_vertexai_json,
     reask_vertexai_tools,
 )
@@ -118,8 +126,10 @@ from ..providers.gemini.utils import (
 from ..providers.mistral.utils import (
     handle_mistral_structured_outputs,
     handle_mistral_tools,
+    handle_mistral_toon,
     reask_mistral_structured_outputs,
     reask_mistral_tools,
+    reask_mistral_toon,
 )
 
 # OpenAI utils
@@ -133,10 +143,12 @@ from ..providers.openai.utils import (
     handle_responses_tools_with_inbuilt_tools,
     handle_tools,
     handle_tools_strict,
+    handle_toon,
     reask_default,
     reask_md_json,
     reask_responses_tools,
     reask_tools,
+    reask_toon,
 )
 
 # Perplexity utils
@@ -157,8 +169,10 @@ from ..providers.writer.utils import (
 from ..providers.xai.utils import (
     handle_xai_json,
     handle_xai_tools,
+    handle_xai_toon,
     reask_xai_json,
     reask_xai_tools,
+    reask_xai_toon,
 )
 
 logger = logging.getLogger("instructor")
@@ -433,6 +447,7 @@ def handle_response_model(
         Mode.TOOLS: handle_tools,
         Mode.MISTRAL_TOOLS: handle_mistral_tools,
         Mode.MISTRAL_STRUCTURED_OUTPUTS: handle_mistral_structured_outputs,
+        Mode.MISTRAL_TOON: handle_mistral_toon,
         Mode.JSON_O1: handle_json_o1,
         Mode.JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.JSON),  # type: ignore
         Mode.MD_JSON: lambda rm, nk: handle_json_modes(rm, nk, Mode.MD_JSON),  # type: ignore
@@ -440,14 +455,17 @@ def handle_response_model(
         Mode.ANTHROPIC_TOOLS: handle_anthropic_tools,
         Mode.ANTHROPIC_REASONING_TOOLS: handle_anthropic_reasoning_tools,
         Mode.ANTHROPIC_JSON: handle_anthropic_json,
+        Mode.ANTHROPIC_TOON: handle_anthropic_toon,
         Mode.COHERE_JSON_SCHEMA: handle_cohere_json_schema,
         Mode.COHERE_TOOLS: handle_cohere_tools,
+        Mode.COHERE_TOON: handle_cohere_toon,
         Mode.GEMINI_JSON: handle_gemini_json,
         Mode.GEMINI_TOOLS: handle_gemini_tools,
         Mode.GENAI_TOOLS: lambda rm, nk: handle_genai_tools(rm, nk, autodetect_images),
         Mode.GENAI_STRUCTURED_OUTPUTS: lambda rm, nk: handle_genai_structured_outputs(
             rm, nk, autodetect_images
         ),
+        Mode.GENAI_TOON: lambda rm, nk: handle_genai_toon(rm, nk, autodetect_images),
         Mode.VERTEXAI_TOOLS: handle_vertexai_tools,
         Mode.VERTEXAI_JSON: handle_vertexai_json,
         Mode.CEREBRAS_JSON: handle_cerebras_json,
@@ -458,12 +476,15 @@ def handle_response_model(
         Mode.WRITER_JSON: handle_writer_json,
         Mode.BEDROCK_JSON: handle_bedrock_json,
         Mode.BEDROCK_TOOLS: handle_bedrock_tools,
+        Mode.BEDROCK_TOON: handle_bedrock_toon,
         Mode.PERPLEXITY_JSON: handle_perplexity_json,
         Mode.OPENROUTER_STRUCTURED_OUTPUTS: handle_openrouter_structured_outputs,
         Mode.RESPONSES_TOOLS: handle_responses_tools,
         Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: handle_responses_tools_with_inbuilt_tools,
         Mode.XAI_JSON: handle_xai_json,
         Mode.XAI_TOOLS: handle_xai_tools,
+        Mode.XAI_TOON: handle_xai_toon,
+        Mode.TOON: handle_toon,
     }
 
     if mode in mode_handlers:
@@ -623,22 +644,27 @@ def handle_reask_kwargs(
         Mode.PARALLEL_TOOLS: reask_tools,
         Mode.RESPONSES_TOOLS: reask_responses_tools,
         Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS: reask_responses_tools,
+        Mode.TOON: reask_toon,
         # Mistral modes
         Mode.MISTRAL_TOOLS: reask_mistral_tools,
         Mode.MISTRAL_STRUCTURED_OUTPUTS: reask_mistral_structured_outputs,
+        Mode.MISTRAL_TOON: reask_mistral_toon,
         # Anthropic modes
         Mode.ANTHROPIC_TOOLS: reask_anthropic_tools,
         Mode.ANTHROPIC_REASONING_TOOLS: reask_anthropic_tools,
         Mode.ANTHROPIC_JSON: reask_anthropic_json,
         Mode.ANTHROPIC_PARALLEL_TOOLS: reask_anthropic_tools,
+        Mode.ANTHROPIC_TOON: reask_anthropic_toon,
         # Cohere modes
         Mode.COHERE_TOOLS: reask_cohere_tools,
         Mode.COHERE_JSON_SCHEMA: reask_cohere_tools,
+        Mode.COHERE_TOON: reask_cohere_toon,
         # Gemini/Google modes
         Mode.GEMINI_TOOLS: reask_gemini_tools,
         Mode.GEMINI_JSON: reask_gemini_json,
         Mode.GENAI_TOOLS: reask_genai_tools,
         Mode.GENAI_STRUCTURED_OUTPUTS: reask_genai_structured_outputs,
+        Mode.GENAI_TOON: reask_genai_toon,
         # VertexAI modes
         Mode.VERTEXAI_TOOLS: reask_vertexai_tools,
         Mode.VERTEXAI_JSON: reask_vertexai_json,
@@ -655,6 +681,7 @@ def handle_reask_kwargs(
         # Bedrock modes
         Mode.BEDROCK_TOOLS: reask_bedrock_tools,
         Mode.BEDROCK_JSON: reask_bedrock_json,
+        Mode.BEDROCK_TOON: reask_bedrock_toon,
         # Perplexity modes
         Mode.PERPLEXITY_JSON: reask_perplexity_json,
         # OpenRouter modes
@@ -662,6 +689,7 @@ def handle_reask_kwargs(
         # XAI modes
         Mode.XAI_JSON: reask_xai_json,
         Mode.XAI_TOOLS: reask_xai_tools,
+        Mode.XAI_TOON: reask_xai_toon,
     }
 
     if mode in REASK_HANDLERS:

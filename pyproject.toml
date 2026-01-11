@@ -93,6 +93,7 @@ sqlmodel = ["sqlmodel<1.0.0,>=0.0.22"]
 trafilatura = ["trafilatura<3.0.0,>=1.12.2"]
 pydub = ["pydub<1.0.0,>=0.25.1"]
 datasets = ["datasets>=3.0.1,<5.0.0"]
+toon = ["toon-format>=0.9.0b1",]
 
 [project.scripts]
 instructor = "instructor.cli.cli:app"

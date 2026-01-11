@@ -229,6 +229,105 @@ Respond with JSON only. Do not include code fences, markdown, or extra text.
     return response_model, new_kwargs
 
 
+def reask_cohere_toon(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """
+    Handle reask for Cohere TOON mode when validation fails.
+
+    Kwargs modifications:
+    - V1: Modifies "message" and "chat_history"
+    - V2: Modifies "messages"
+    """
+    from ...processing.toon import get_toon_reask_message
+
+    client_version = kwargs.get("_cohere_client_version")
+
+    if hasattr(response, "text"):
+        client_version = "v1"
+        response_text = response.text
+    elif hasattr(response, "message") and hasattr(response.message, "content"):
+        client_version = "v2"
+        content_items = response.message.content
+        response_text = ""
+        if content_items:
+            for item in content_items:
+                if (
+                    hasattr(item, "type")
+                    and item.type == "text"
+                    and hasattr(item, "text")
+                ):
+                    response_text = item.text
+                    break
+        if not response_text:
+            response_text = str(response)
+    else:
+        response_text = str(response)
+        if client_version is None:
+            if "messages" in kwargs:
+                client_version = "v2"
+            elif "chat_history" in kwargs or "message" in kwargs:
+                client_version = "v1"
+
+    correction_msg = get_toon_reask_message(exception, response_text)
+
+    if client_version == "v2":
+        kwargs["messages"].append({"role": "user", "content": correction_msg})
+    elif client_version == "v1":
+        message = kwargs.get("message", "")
+
+        if "chat_history" in kwargs:
+            kwargs["chat_history"].append({"role": "user", "message": message})
+        else:
+            kwargs["chat_history"] = [{"role": "user", "message": message}]
+
+        kwargs["message"] = correction_msg
+    else:
+        raise ValueError(
+            f"Unsupported Cohere client version: {client_version}. "
+            f"Expected 'v1' or 'v2'."
+        )
+
+    return kwargs
+
+
+def handle_cohere_toon(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Cohere TOON mode.
+
+    Kwargs modifications:
+    - When response_model is None: Applies handle_cohere_modes
+    - When response_model is provided:
+      - Applies handle_cohere_modes transformations
+      - Prepends TOON structure template to messages/chat_history
+
+    Raises:
+        ImportError: If toon-format package is not installed
+    """
+    if response_model is None:
+        return handle_cohere_modes(new_kwargs)
+
+    from ...processing.toon import check_toon_import, get_toon_system_prompt
+
+    check_toon_import()
+    toon_message = get_toon_system_prompt(response_model)
+
+    _, new_kwargs = handle_cohere_modes(new_kwargs)
+
+    if "messages" in new_kwargs:
+        new_kwargs["messages"].insert(0, {"role": "user", "content": toon_message})
+    else:
+        new_kwargs["chat_history"] = [
+            {"role": "user", "message": toon_message}
+        ] + new_kwargs.get("chat_history", [])
+
+    return response_model, new_kwargs
+
+
 # Handler registry for Cohere
 COHERE_HANDLERS = {
     Mode.COHERE_TOOLS: {
@@ -238,5 +337,9 @@ COHERE_HANDLERS = {
     Mode.COHERE_JSON_SCHEMA: {
         "reask": reask_cohere_tools,
         "response": handle_cohere_json_schema,
+    },
+    Mode.COHERE_TOON: {
+        "reask": reask_cohere_toon,
+        "response": handle_cohere_toon,
     },
 }

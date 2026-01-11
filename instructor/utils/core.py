@@ -322,6 +322,100 @@ async def extract_json_from_stream_async(
             yield c
 
 
+def extract_code_block_from_stream(
+    chunks: Iterable[str],
+) -> Generator[str, None, None]:
+    """
+    Extract content from the first code block in a stream of chunks.
+
+    Extracts content from ```lang ... ``` or generic ``` ... ``` blocks.
+    Yields characters inside the code block as they arrive.
+    Only extracts from the first code block; ignores any subsequent blocks.
+    """
+    in_codeblock = False
+    backtick_count = 0
+    skip_lang_tag = False
+    done = False
+
+    for chunk in chunks:
+        if done:
+            break
+        for char in chunk:
+            if not in_codeblock:
+                if char == "`":
+                    backtick_count += 1
+                    if backtick_count == 3:
+                        in_codeblock = True
+                        backtick_count = 0
+                        skip_lang_tag = True
+                else:
+                    backtick_count = 0
+            else:
+                if skip_lang_tag:
+                    if char == "\n":
+                        skip_lang_tag = False
+                    continue
+
+                if char == "`":
+                    backtick_count += 1
+                    if backtick_count == 3:
+                        done = True
+                        break
+                else:
+                    if backtick_count > 0:
+                        for _ in range(backtick_count):
+                            yield "`"
+                        backtick_count = 0
+                    yield char
+
+
+async def extract_code_block_from_stream_async(
+    chunks: AsyncGenerator[str, None],
+) -> AsyncGenerator[str, None]:
+    """
+    Extract content from the first code block in an async stream of chunks.
+
+    Extracts content from ```lang ... ``` or generic ``` ... ``` blocks.
+    Yields characters inside the code block as they arrive.
+    Only extracts from the first code block; ignores any subsequent blocks.
+    """
+    in_codeblock = False
+    backtick_count = 0
+    skip_lang_tag = False
+    done = False
+
+    async for chunk in chunks:
+        if done:
+            break
+        for char in chunk:
+            if not in_codeblock:
+                if char == "`":
+                    backtick_count += 1
+                    if backtick_count == 3:
+                        in_codeblock = True
+                        backtick_count = 0
+                        skip_lang_tag = True
+                else:
+                    backtick_count = 0
+            else:
+                if skip_lang_tag:
+                    if char == "\n":
+                        skip_lang_tag = False
+                    continue
+
+                if char == "`":
+                    backtick_count += 1
+                    if backtick_count == 3:
+                        done = True
+                        break
+                else:
+                    if backtick_count > 0:
+                        for _ in range(backtick_count):
+                            yield "`"
+                        backtick_count = 0
+                    yield char
+
+
 def update_total_usage(
     response: T_Model | None,
     total_usage: OpenAIUsage | AnthropicUsage,

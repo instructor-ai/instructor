@@ -51,6 +51,7 @@ def from_bedrock(
     valid_modes = {
         instructor.Mode.BEDROCK_TOOLS,
         instructor.Mode.BEDROCK_JSON,
+        instructor.Mode.BEDROCK_TOON,
     }
 
     if mode not in valid_modes:

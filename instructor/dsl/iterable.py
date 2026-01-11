@@ -284,7 +284,7 @@ class IterableBase:
                                     json_started = True
                                     args = args[json_start:]
                                 yield args
-                if mode == Mode.ANTHROPIC_JSON:
+                if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOON}:
                     if json_chunk := chunk.delta.text:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
@@ -297,7 +297,7 @@ class IterableBase:
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
-                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                if mode in {Mode.MISTRAL_STRUCTURED_OUTPUTS, Mode.MISTRAL_TOON}:
                     yield chunk.data.choices[0].delta.content
                 if mode == Mode.MISTRAL_TOOLS:
                     if not chunk.data.choices[0].delta.tool_calls:
@@ -308,7 +308,7 @@ class IterableBase:
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
-                if mode in {Mode.GENAI_STRUCTURED_OUTPUTS}:
+                if mode in {Mode.GENAI_STRUCTURED_OUTPUTS, Mode.GENAI_TOON}:
                     yield chunk.candidates[0].content.parts[0].text
 
                 if mode in {Mode.GEMINI_TOOLS}:
@@ -341,6 +341,8 @@ class IterableBase:
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
                         Mode.WRITER_JSON,
+                        Mode.TOON,
+                        Mode.XAI_TOON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk
@@ -500,7 +502,7 @@ class IterableBase:
                                     json_started = True
                                     args = args[json_start:]
                                 yield args
-                if mode == Mode.ANTHROPIC_JSON:
+                if mode in {Mode.ANTHROPIC_JSON, Mode.ANTHROPIC_TOON}:
                     if json_chunk := chunk.delta.text:
                         yield json_chunk
                 if mode == Mode.ANTHROPIC_TOOLS:
@@ -511,13 +513,13 @@ class IterableBase:
                     yield json.dumps(
                         chunk.candidates[0].content.parts[0].function_call.args
                     )
-                if mode == Mode.MISTRAL_STRUCTURED_OUTPUTS:
+                if mode in {Mode.MISTRAL_STRUCTURED_OUTPUTS, Mode.MISTRAL_TOON}:
                     yield chunk.data.choices[0].delta.content
                 if mode == Mode.MISTRAL_TOOLS:
                     if not chunk.data.choices[0].delta.tool_calls:
                         continue
                     yield chunk.data.choices[0].delta.tool_calls[0].function.arguments
-                if mode == Mode.GENAI_STRUCTURED_OUTPUTS:
+                if mode in {Mode.GENAI_STRUCTURED_OUTPUTS, Mode.GENAI_TOON}:
                     yield chunk.text
                 if mode in {Mode.GENAI_TOOLS}:
                     yield json.dumps(
@@ -546,6 +548,8 @@ class IterableBase:
                         Mode.FIREWORKS_JSON,
                         Mode.PERPLEXITY_JSON,
                         Mode.WRITER_JSON,
+                        Mode.TOON,
+                        Mode.XAI_TOON,
                     }:
                         if json_chunk := chunk.choices[0].delta.content:
                             yield json_chunk

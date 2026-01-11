@@ -54,6 +54,7 @@ def from_cohere(
     valid_modes = {
         instructor.Mode.COHERE_TOOLS,
         instructor.Mode.COHERE_JSON_SCHEMA,
+        instructor.Mode.COHERE_TOON,
     }
 
     if mode not in valid_modes:

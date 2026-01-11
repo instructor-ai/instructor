@@ -35,6 +35,7 @@ def from_genai(
     valid_modes = {
         instructor.Mode.GENAI_TOOLS,
         instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+        instructor.Mode.GENAI_TOON,
     }
 
     if mode not in valid_modes:

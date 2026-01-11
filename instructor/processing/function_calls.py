@@ -110,6 +110,86 @@ def _validate_model_from_json(
         raise
 
 
+def _coerce_enums_for_model(
+    model: type[BaseModel], data: dict[str, Any]
+) -> dict[str, Any]:
+    """Coerce string values to enum instances for fields that expect enums."""
+    from enum import Enum
+    import typing
+
+    if not isinstance(data, dict):
+        return data
+
+    result = data.copy()
+
+    for field_name, field_info in model.model_fields.items():
+        if field_name not in result:
+            continue
+
+        annotation = field_info.annotation
+        origin = getattr(annotation, "__origin__", None)
+
+        if origin is typing.Union or str(origin) == "typing.Union":
+            args = getattr(annotation, "__args__", ())
+            for arg in args:
+                if (
+                    arg is not type(None)
+                    and isinstance(arg, type)
+                    and issubclass(arg, Enum)
+                ):
+                    annotation = arg
+                    break
+
+        if isinstance(annotation, type) and issubclass(annotation, Enum):
+            value = result[field_name]
+            if isinstance(value, str):
+                for member in annotation:
+                    if member.value == value or member.name == value:
+                        result[field_name] = member
+                        break
+
+        elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
+            if isinstance(result[field_name], dict):
+                result[field_name] = _coerce_enums_for_model(
+                    annotation, result[field_name]
+                )
+
+        elif origin is list:
+            args = getattr(annotation, "__args__", ())
+            if args and isinstance(args[0], type) and issubclass(args[0], BaseModel):
+                item_model = args[0]
+                if isinstance(result[field_name], list):
+                    result[field_name] = [
+                        _coerce_enums_for_model(item_model, item)
+                        if isinstance(item, dict)
+                        else item
+                        for item in result[field_name]
+                    ]
+
+    return result
+
+
+def _extract_toon_from_response(text: str) -> str:
+    """Extract TOON content from an LLM response.
+
+    Handles ```toon code blocks, generic code blocks, and raw TOON content.
+    """
+    if not text:
+        return ""
+
+    text = text.strip()
+
+    toon_match = re.search(r"```toon\s*(.*?)\s*```", text, re.DOTALL | re.IGNORECASE)
+    if toon_match:
+        return toon_match.group(1).strip()
+
+    generic_match = re.search(r"```\s*(.*?)\s*```", text, re.DOTALL)
+    if generic_match:
+        return generic_match.group(1).strip()
+
+    return text
+
+
 class OpenAISchema(BaseModel):
     # Ignore classproperty, since Pydantic doesn't understand it like it would a normal property.
     model_config = ConfigDict(ignored_types=(classproperty,))
@@ -165,6 +245,9 @@ class OpenAISchema(BaseModel):
         if mode == Mode.ANTHROPIC_JSON:
             return cls.parse_anthropic_json(completion, validation_context, strict)
 
+        if mode == Mode.ANTHROPIC_TOON:
+            return cls.parse_anthropic_toon(completion, validation_context, strict)
+
         if mode == Mode.BEDROCK_JSON:
             return cls.parse_bedrock_json(completion, validation_context, strict)
 
@@ -202,6 +285,9 @@ class OpenAISchema(BaseModel):
 
         if mode == Mode.WRITER_JSON:
             return cls.parse_writer_json(completion, validation_context, strict)
+
+        if mode in Mode.toon_modes():
+            return cls.parse_toon(completion, validation_context, strict)
 
         if mode in {Mode.RESPONSES_TOOLS, Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS}:
             return cls.parse_responses_tools(
@@ -422,6 +508,44 @@ class OpenAISchema(BaseModel):
             model = cls.model_validate(parsed, context=validation_context, strict=False)
 
         return model
+
+    @classmethod
+    def parse_anthropic_toon(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        from anthropic.types import Message
+
+        if hasattr(completion, "choices"):
+            completion = completion.choices[0]
+            if completion.finish_reason == "length":
+                raise IncompleteOutputException(last_completion=completion)
+            text = completion.message.content
+        else:
+            assert isinstance(completion, Message)
+            if completion.stop_reason == "max_tokens":
+                raise IncompleteOutputException(last_completion=completion)
+            text_blocks = [c for c in completion.content if c.type == "text"]
+            text = text_blocks[-1].text
+
+        toon_content = _extract_toon_from_response(text)
+        try:
+            from toon_format import decode
+
+            data = decode(toon_content)
+            data = _coerce_enums_for_model(cls, data)
+            return cls.model_validate(
+                data,
+                context=validation_context,
+                strict=strict if strict is not None else False,
+            )
+        except ImportError as e:
+            raise ImportError(
+                "The 'toon-format' package is required for TOON mode. "
+                "Install it with: pip install 'instructor[toon]' or pip install toon-format"
+            ) from e
 
     @classmethod
     def parse_bedrock_json(
@@ -788,6 +912,66 @@ class OpenAISchema(BaseModel):
 
         # Validate the model from the JSON
         return _validate_model_from_json(cls, json_content, validation_context, strict)
+
+    @classmethod
+    def parse_toon(
+        cls: type[BaseModel],
+        completion: ChatCompletion,
+        validation_context: Optional[dict[str, Any]] = None,
+        strict: Optional[bool] = None,
+    ) -> BaseModel:
+        """Parse TOON mode responses.
+
+        TOON (Token-Oriented Object Notation) is a compact format that achieves
+        ~60% token reduction compared to JSON. This method extracts TOON content
+        from the response and decodes it to a Pydantic model.
+        """
+        _handle_incomplete_output(completion)
+
+        message = _extract_text_content(completion)
+        if not message:
+            if hasattr(completion, "choices") and completion.choices:
+                message = completion.choices[0].message.content or ""
+
+        if not message:
+            raise ResponseParsingError(
+                "No text content found in TOON response",
+                mode="TOON",
+                raw_response=completion,
+            )
+
+        toon_content = _extract_toon_from_response(message)
+
+        if not toon_content:
+            raise ResponseParsingError(
+                "Could not extract TOON content from response",
+                mode="TOON",
+                raw_response=completion,
+            )
+
+        try:
+            from toon_format import decode
+
+            try:
+                data = decode(toon_content)
+                data = _coerce_enums_for_model(cls, data)
+                return cls.model_validate(
+                    data,
+                    context=validation_context,
+                    strict=strict if strict is not None else False,
+                )
+            except Exception as e:
+                raise ResponseParsingError(
+                    f"Failed to parse TOON content: {e}",
+                    mode="TOON",
+                    raw_response=completion,
+                ) from e
+
+        except ImportError as e:
+            raise ImportError(
+                "The 'toon-format' package is required for TOON mode. "
+                "Install it with: pip install 'instructor[toon]' or pip install toon-format"
+            ) from e
 
 
 def openai_schema(cls: type[BaseModel]) -> OpenAISchema:

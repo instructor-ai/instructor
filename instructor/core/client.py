@@ -809,6 +809,7 @@ def from_openai(
             instructor.Mode.TOOLS,
             instructor.Mode.OPENROUTER_STRUCTURED_OUTPUTS,
             instructor.Mode.JSON,
+            instructor.Mode.TOON,
         }
 
     if provider in {Provider.ANYSCALE, Provider.TOGETHER}:
@@ -817,6 +818,7 @@ def from_openai(
             instructor.Mode.JSON,
             instructor.Mode.JSON_SCHEMA,
             instructor.Mode.MD_JSON,
+            instructor.Mode.TOON,
         }
 
     if provider in {Provider.OPENAI, Provider.DATABRICKS}:
@@ -830,6 +832,7 @@ def from_openai(
             instructor.Mode.JSON_O1,
             instructor.Mode.RESPONSES_TOOLS,
             instructor.Mode.RESPONSES_TOOLS_WITH_INBUILT_TOOLS,
+            instructor.Mode.TOON,
         }
 
     if isinstance(client, openai.OpenAI):

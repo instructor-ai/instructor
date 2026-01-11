@@ -23,6 +23,7 @@ class Mode(enum.Enum):
     JSON_O1 = "json_o1"
     MD_JSON = "markdown_json_mode"
     JSON_SCHEMA = "json_schema_mode"
+    TOON = "toon"
 
     # Add new modes to support responses api
     RESPONSES_TOOLS = "responses_tools"
@@ -31,16 +32,19 @@ class Mode(enum.Enum):
     # XAI modes
     XAI_JSON = "xai_json"
     XAI_TOOLS = "xai_tools"
+    XAI_TOON = "xai_toon"
 
     # Anthropic modes
     ANTHROPIC_TOOLS = "anthropic_tools"
     ANTHROPIC_REASONING_TOOLS = "anthropic_reasoning_tools"
     ANTHROPIC_JSON = "anthropic_json"
     ANTHROPIC_PARALLEL_TOOLS = "anthropic_parallel_tools"
+    ANTHROPIC_TOON = "anthropic_toon"
 
     # Mistral modes
     MISTRAL_TOOLS = "mistral_tools"
     MISTRAL_STRUCTURED_OUTPUTS = "mistral_structured_outputs"
+    MISTRAL_TOON = "mistral_toon"
 
     # Vertex AI & Google modes
     VERTEXAI_TOOLS = "vertexai_tools"
@@ -50,10 +54,12 @@ class Mode(enum.Enum):
     GEMINI_TOOLS = "gemini_tools"
     GENAI_TOOLS = "genai_tools"
     GENAI_STRUCTURED_OUTPUTS = "genai_structured_outputs"
+    GENAI_TOON = "genai_toon"
 
     # Cohere modes
     COHERE_TOOLS = "cohere_tools"
     COHERE_JSON_SCHEMA = "json_object"
+    COHERE_TOON = "cohere_toon"
 
     # Cerebras modes
     CEREBRAS_TOOLS = "cerebras_tools"
@@ -68,6 +74,7 @@ class Mode(enum.Enum):
     WRITER_JSON = "writer_json"
     BEDROCK_TOOLS = "bedrock_tools"
     BEDROCK_JSON = "bedrock_json"
+    BEDROCK_TOON = "bedrock_toon"
     PERPLEXITY_JSON = "perplexity_json"
     OPENROUTER_STRUCTURED_OUTPUTS = "openrouter_structured_outputs"
 
@@ -117,6 +124,19 @@ class Mode(enum.Enum):
             cls.OPENROUTER_STRUCTURED_OUTPUTS,
             cls.MISTRAL_STRUCTURED_OUTPUTS,
             cls.XAI_JSON,
+        }
+
+    @classmethod
+    def toon_modes(cls) -> set["Mode"]:
+        """Returns a set of all TOON-based modes."""
+        return {
+            cls.TOON,
+            cls.ANTHROPIC_TOON,
+            cls.MISTRAL_TOON,
+            cls.GENAI_TOON,
+            cls.COHERE_TOON,
+            cls.BEDROCK_TOON,
+            cls.XAI_TOON,
         }
 
     @classmethod

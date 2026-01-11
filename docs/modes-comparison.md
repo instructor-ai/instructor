@@ -22,8 +22,15 @@ Here's a quick comparison:
 | `MD_JSON` | JSON in Markdown code blocks | Cleaner prompts | Most providers |
 | `TOOLS_STRICT` | Stricter version of TOOLS | Production systems | OpenAI, Azure |
 | `JSON_O1` | One-shot completion with JSON | Simple extractions | OpenAI, Azure |
+| `TOON` | Token-Oriented Object Notation | Shortest outputs | OpenAI, Azure, LiteLLM, etc. |
 | `ANTHROPIC_TOOLS` | Anthropic's tool calling | Claude models | Anthropic |
 | `ANTHROPIC_JSON` | Direct JSON with Claude | Claude models | Anthropic |
+| `ANTHROPIC_TOON` | TOON format with Claude | Token efficiency | Anthropic |
+| `MISTRAL_TOON` | TOON format with Mistral | Token efficiency | Mistral |
+| `GENAI_TOON` | TOON format with Gemini | Token efficiency | Google |
+| `COHERE_TOON` | TOON format with Command | Token efficiency | Cohere |
+| `BEDROCK_TOON` | TOON format with Bedrock | Token efficiency | AWS Bedrock |
+| `XAI_TOON` | TOON format with Grok | Token efficiency | xAI |
 | `GENAI_TOOLS` | Google's function calling (new) | Gemini models | Google |
 | `GENAI_STRUCTURED_OUTPUTS` | Direct JSON with Gemini (new) | Gemini models | Google |
 | `GEMINI_TOOLS` | **Deprecated** - Use GENAI_TOOLS | Gemini models | Google |
@@ -85,6 +92,42 @@ This mode instructs the model to output JSON inside a Markdown code block. It:
 - May lead to cleaner outputs
 
 **Best for**: Simple structures when you want cleaner outputs.
+
+#### `TOON` Mode
+
+```python
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOON)
+```
+
+This mode instructs the model to output [TOON](https://github.com/toon-format/toon) (Token-Oriented Object Notation) format. It is a compact format that achieves:
+
+- ~17% output token reduction compared to Mode.JSON
+- ~20% output token reduction compared to Mode.MD_JSON
+- ~28% output token reduction compared to Mode.TOOLS
+
+**Best for**: Models that don't support tool calling/simple extractions, or in cases where you want the shortest possible output.
+
+**Advantages**: More efficient as schema complexity increases, along with high model compatibility.
+
+!!! note
+
+    TOON mode requires the `toon-format` package to be installed. Install it with:
+
+    ```bash
+    pip install instructor[toon]
+    ```
+
+TOON is available for most providers with provider-specific modes:
+
+| Provider | TOON Mode |
+|----------|-----------|
+| OpenAI | `Mode.TOON` |
+| Anthropic | `Mode.ANTHROPIC_TOON` |
+| Mistral | `Mode.MISTRAL_TOON` |
+| Google GenAI | `Mode.GENAI_TOON` |
+| Cohere | `Mode.COHERE_TOON` |
+| AWS Bedrock | `Mode.BEDROCK_TOON` |
+| xAI | `Mode.XAI_TOON` |
 
 ### Anthropic Modes
 
@@ -209,23 +252,24 @@ client = instructor.from_provider(
 
 ## Mode Compatibility Table
 
-| Provider   | Tool-based Modes | JSON-based Modes |
-|------------|------------------|------------------|
-| OpenAI     | TOOLS, TOOLS_STRICT, PARALLEL_TOOLS, FUNCTIONS | JSON, MD_JSON, JSON_O1 |
-| Anthropic  | ANTHROPIC_TOOLS, ANTHROPIC_PARALLEL_TOOLS | ANTHROPIC_JSON |
-| Gemini     | GENAI_TOOLS | GENAI_STRUCTURED_OUTPUTS |
-| Vertex AI  | VERTEXAI_TOOLS | VERTEXAI_JSON |
-| Cohere     | COHERE_TOOLS | JSON, MD_JSON |
-| Mistral    | MISTRAL_TOOLS | MISTRAL_STRUCTURED_OUTPUTS |
-| Anyscale   | - | JSON, MD_JSON, JSON_SCHEMA |
-| Databricks | TOOLS | JSON, MD_JSON |
-| Together   | - | JSON, MD_JSON |
-| Fireworks  | FIREWORKS_TOOLS | FIREWORKS_JSON |
-| Cerebras   | - | CEREBRAS_JSON |
-| Writer     | WRITER_TOOLS | JSON |
-| Perplexity | - | PERPLEXITY_JSON |
-| GenAI      | GENAI_TOOLS | GENAI_STRUCTURED_OUTPUTS |
-| LiteLLM    | (depends on provider) | (depends on provider) |
+| Provider   | Tool-based Modes | JSON-based Modes | TOON Mode |
+|------------|------------------|------------------|-----------|
+| OpenAI     | TOOLS, TOOLS_STRICT, PARALLEL_TOOLS, FUNCTIONS | JSON, MD_JSON, JSON_O1 | TOON |
+| Anthropic  | ANTHROPIC_TOOLS, ANTHROPIC_PARALLEL_TOOLS | ANTHROPIC_JSON | ANTHROPIC_TOON |
+| Gemini     | GENAI_TOOLS | GENAI_STRUCTURED_OUTPUTS | GENAI_TOON |
+| Vertex AI  | VERTEXAI_TOOLS | VERTEXAI_JSON | - |
+| Cohere     | COHERE_TOOLS | JSON, MD_JSON | COHERE_TOON |
+| Mistral    | MISTRAL_TOOLS | MISTRAL_STRUCTURED_OUTPUTS | MISTRAL_TOON |
+| Anyscale   | - | JSON, MD_JSON, JSON_SCHEMA | TOON |
+| Databricks | TOOLS | JSON, MD_JSON | TOON |
+| Together   | - | JSON, MD_JSON | TOON |
+| Fireworks  | FIREWORKS_TOOLS | FIREWORKS_JSON | - |
+| Cerebras   | - | CEREBRAS_JSON | - |
+| Writer     | WRITER_TOOLS | JSON | - |
+| Perplexity | - | PERPLEXITY_JSON | - |
+| Bedrock    | BEDROCK_TOOLS | BEDROCK_JSON | BEDROCK_TOON |
+| xAI        | XAI_TOOLS | XAI_JSON | XAI_TOON |
+| LiteLLM    | (depends on provider) | (depends on provider) | TOON |
 
 ## Best Practices
 

@@ -482,6 +482,82 @@ def handle_bedrock_tools(
     return response_model, new_kwargs
 
 
+def reask_bedrock_toon(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """
+    Handle reask for Bedrock TOON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "messages" (user message requesting TOON correction)
+    """
+    from ...processing.toon import get_toon_reask_message
+
+    kwargs = kwargs.copy()
+
+    response_text = ""
+    if "output" in response and "message" in response["output"]:
+        msg = response["output"]["message"]
+        if "content" in msg:
+            for block in msg["content"]:
+                if "text" in block:
+                    response_text = block["text"]
+                    break
+
+    reask_msgs = [response["output"]["message"]]
+    reask_msgs.append(
+        {
+            "role": "user",
+            "content": [{"text": get_toon_reask_message(exception, response_text)}],
+        }
+    )
+    kwargs["messages"].extend(reask_msgs)
+    return kwargs
+
+
+def handle_bedrock_toon(
+    response_model: type[Any] | None, new_kwargs: dict[str, Any]
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle Bedrock TOON mode.
+
+    Kwargs modifications:
+    - When response_model is None: Only applies _prepare_bedrock_converse_kwargs_internal transformations
+    - When response_model is provided:
+      - Adds/Modifies: "system" (prepends TOON structure template)
+      - Applies: _prepare_bedrock_converse_kwargs_internal transformations
+
+    Raises:
+        ImportError: If toon-format package is not installed
+    """
+    new_kwargs = _prepare_bedrock_converse_kwargs_internal(new_kwargs)
+
+    if response_model is None:
+        return None, new_kwargs
+
+    from ...processing.toon import check_toon_import, get_toon_system_prompt
+
+    check_toon_import()
+    toon_message = get_toon_system_prompt(response_model)
+
+    system_message = new_kwargs.pop("system", None)
+    if not system_message:
+        new_kwargs["system"] = [{"text": toon_message}]
+    else:
+        if not isinstance(system_message, list):
+            raise ValueError(
+                """system must be a list of SystemMessage, refer to:
+                https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse.html
+                """
+            )
+        system_message.append({"text": toon_message})
+        new_kwargs["system"] = system_message
+
+    return response_model, new_kwargs
+
+
 # Handler registry for Bedrock
 BEDROCK_HANDLERS = {
     Mode.BEDROCK_JSON: {
@@ -491,5 +567,9 @@ BEDROCK_HANDLERS = {
     Mode.BEDROCK_TOOLS: {
         "reask": reask_bedrock_tools,
         "response": handle_bedrock_tools,
+    },
+    Mode.BEDROCK_TOON: {
+        "reask": reask_bedrock_toon,
+        "response": handle_bedrock_toon,
     },
 }

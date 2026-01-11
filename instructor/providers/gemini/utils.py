@@ -1114,6 +1114,103 @@ def handle_vertexai_json(
     return response_model, new_kwargs
 
 
+def reask_genai_toon(
+    kwargs: dict[str, Any],
+    response: Any,
+    exception: Exception,
+):
+    """
+    Handle reask for GenAI TOON mode when validation fails.
+
+    Kwargs modifications:
+    - Adds: "contents" (user message requesting TOON correction)
+    """
+    from google.genai import types
+    from ...processing.toon import get_toon_reask_message
+
+    kwargs = kwargs.copy()
+
+    genai_response = (
+        response.text
+        if response and hasattr(response, "text")
+        else "No text content found in response"
+    )
+
+    kwargs["contents"].append(
+        types.ModelContent(
+            parts=[
+                types.Part.from_text(
+                    text=get_toon_reask_message(exception, genai_response)
+                ),
+            ]
+        ),
+    )
+    return kwargs
+
+
+def handle_genai_toon(
+    response_model: type[Any] | None,
+    new_kwargs: dict[str, Any],
+    autodetect_images: bool = False,
+) -> tuple[type[Any] | None, dict[str, Any]]:
+    """
+    Handle GenAI TOON mode.
+
+    Kwargs modifications:
+    - When response_model is None: Applies handle_genai_message_conversion
+    - When response_model is provided:
+      - Removes: "messages", "response_model", "generation_config", "safety_settings"
+      - Adds: "contents" (GenAI-style messages)
+      - Adds: "config" (GenerateContentConfig with system_instruction containing TOON template)
+
+    Raises:
+        ImportError: If toon-format package is not installed
+    """
+    from google.genai import types
+
+    if response_model is None:
+        new_kwargs = handle_genai_message_conversion(new_kwargs, autodetect_images)
+        return None, new_kwargs
+
+    from ...processing.toon import check_toon_import, get_toon_system_prompt
+
+    check_toon_import()
+    toon_message = get_toon_system_prompt(response_model)
+
+    if new_kwargs.get("system"):
+        system_message = new_kwargs.pop("system") + "\n\n" + toon_message
+    elif new_kwargs.get("messages"):
+        base_system = extract_genai_system_message(new_kwargs["messages"])
+        system_message = (
+            base_system + "\n\n" + toon_message if base_system else toon_message
+        )
+    else:
+        system_message = toon_message
+
+    new_kwargs["contents"] = convert_to_genai_messages(new_kwargs.get("messages", []))
+
+    from ...processing.multimodal import extract_genai_multimodal_content
+
+    new_kwargs["contents"] = extract_genai_multimodal_content(
+        new_kwargs["contents"], autodetect_images
+    )
+
+    base_config: dict[str, Any] = {
+        "system_instruction": system_message,
+    }
+
+    generation_config = update_genai_kwargs(new_kwargs, base_config)
+
+    new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
+    new_kwargs.pop("response_model", None)
+    new_kwargs.pop("messages", None)
+    new_kwargs.pop("generation_config", None)
+    new_kwargs.pop("safety_settings", None)
+    new_kwargs.pop("thinking_config", None)
+
+    return response_model, new_kwargs
+
+
 # Handler registry for Google providers
 GOOGLE_HANDLERS = {
     Mode.GEMINI_TOOLS: {
@@ -1131,6 +1228,10 @@ GOOGLE_HANDLERS = {
     Mode.GENAI_STRUCTURED_OUTPUTS: {
         "reask": reask_genai_structured_outputs,
         "response": handle_genai_structured_outputs,
+    },
+    Mode.GENAI_TOON: {
+        "reask": reask_genai_toon,
+        "response": handle_genai_toon,
     },
     Mode.VERTEXAI_TOOLS: {
         "reask": reask_vertexai_tools,
