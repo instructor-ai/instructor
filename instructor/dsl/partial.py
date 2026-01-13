@@ -12,6 +12,7 @@ import json
 import re
 import sys
 import types
+import warnings
 from collections.abc import AsyncGenerator, Generator, Iterable
 from copy import deepcopy
 from functools import cache
@@ -27,11 +28,12 @@ from typing import (
 )
 
 from jiter import from_json
-from pydantic import BaseModel, create_model, model_validator
+from pydantic import BaseModel, create_model
 from pydantic.fields import FieldInfo
 
 from instructor.mode import Mode
 from instructor.utils import extract_json_from_stream, extract_json_from_stream_async
+from instructor.dsl.json_tracker import JsonCompleteness, is_json_complete
 
 T_Model = TypeVar("T_Model", bound=BaseModel)
 
@@ -51,21 +53,25 @@ class MakeFieldsOptional:
 
 
 class PartialLiteralMixin:
-    """Mixin to handle Literal and Enum types during streaming.
+    """DEPRECATED: This mixin is no longer necessary.
 
-    When using partial streaming with models that contain Literal or Enum fields,
-    incomplete strings like "act" (for "active") can cause validation errors.
+    With completeness-based validation, Literal and Enum types are handled
+    automatically during streaming:
+    - Incomplete JSON: no validation runs, partial values are stored as-is
+    - Complete JSON: full validation against original model
 
-    Adding this mixin to your model switches from partial_mode='trailing-strings'
-    to partial_mode='on', which drops incomplete strings entirely instead of
-    keeping them as partial values.
-
-    Example:
-        class MyModel(BaseModel, PartialLiteralMixin):
-            status: Literal["active", "inactive"]
+    You can safely remove this mixin from your models.
     """
 
-    pass
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        warnings.warn(
+            "PartialLiteralMixin is deprecated and no longer necessary. "
+            "Completeness-based validation now handles Literal and Enum types "
+            "automatically during streaming. You can safely remove this mixin.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
 
 def remove_control_chars(s):
@@ -73,14 +79,144 @@ def remove_control_chars(s):
 
 
 def process_potential_object(potential_object, partial_mode, partial_model, **kwargs):
-    obj = from_json(
-        (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
-    )
-    # Pass context to skip model validators during streaming
-    obj = partial_model.model_validate(
-        obj, strict=None, context={"partial_streaming": True}, **kwargs
-    )
-    return obj
+    """Process a potential JSON object using completeness-based validation.
+
+    - If JSON is complete (closed braces/brackets): validate against original model
+    - If JSON is incomplete: build partial object using model_construct (no validation)
+
+    Note: Pydantic v2.10+ has `experimental_allow_partial` but it doesn't support
+    BaseModel constraints during partial validation (only TypedDict). If Pydantic
+    adds BaseModel support in the future, this could potentially be simplified.
+    See: https://docs.pydantic.dev/latest/concepts/partial_validation/
+    """
+    json_str = potential_object.strip() or "{}"
+    parsed = from_json(json_str.encode(), partial_mode=partial_mode)
+
+    tracker = JsonCompleteness()
+    tracker.analyze(json_str)
+
+    # Get original model for validation
+    original_model = getattr(partial_model, "_original_model", None)
+
+    # Check if root is complete AND has actual data (not just empty {})
+    root_complete = tracker.is_root_complete()
+    has_data = bool(parsed) if isinstance(parsed, dict) else True
+
+    if root_complete and has_data and original_model is not None:
+        # Root object is complete with data - validate against original model
+        return original_model.model_validate(parsed, **kwargs)
+    else:
+        # Object is incomplete or empty - build instance using model_construct (no validation)
+        model_for_construct = (
+            original_model if original_model is not None else partial_model
+        )
+        return _build_partial_object(parsed, model_for_construct, tracker, "", **kwargs)
+
+
+def _build_partial_object(
+    data: Any,
+    model: type[BaseModel],
+    tracker: JsonCompleteness,
+    path: str,
+    **kwargs: Any,
+) -> Any:
+    """Build a partial object using model_construct() to skip validation.
+
+    For each field:
+    - If the field's JSON is complete AND it's a nested BaseModel: validate it
+    - Otherwise: store without validation
+    """
+    if data is None:
+        return None
+
+    if not isinstance(data, dict):
+        return data
+
+    result = {}
+
+    for field_name in data:
+        field_value = data[field_name]
+        field_path = f"{path}.{field_name}" if path else field_name
+
+        if field_value is None:
+            result[field_name] = None
+            continue
+
+        field_complete = tracker.is_path_complete(field_path)
+        field_info = model.model_fields.get(field_name)
+        field_type = field_info.annotation if field_info else None
+
+        if field_complete and field_type is not None:
+            if isinstance(field_type, type) and issubclass(field_type, BaseModel):
+                result[field_name] = field_type.model_validate(field_value, **kwargs)
+                continue
+
+        if isinstance(field_value, dict):
+            nested_model = None
+            if field_type is not None and isinstance(field_type, type):
+                if issubclass(field_type, BaseModel):
+                    nested_model = field_type
+
+            if nested_model:
+                result[field_name] = _build_partial_object(
+                    field_value, nested_model, tracker, field_path, **kwargs
+                )
+            else:
+                result[field_name] = field_value
+        elif isinstance(field_value, list):
+            result[field_name] = _build_partial_list(
+                field_value, model, field_name, tracker, field_path, **kwargs
+            )
+        else:
+            result[field_name] = field_value
+
+    # Set missing fields to None or empty nested models
+    for field_name, field_info in model.model_fields.items():
+        if field_name not in result:
+            field_type = field_info.annotation
+            if isinstance(field_type, type) and issubclass(field_type, BaseModel):
+                result[field_name] = _build_partial_object(
+                    {}, field_type, tracker, "", **kwargs
+                )
+            else:
+                result[field_name] = None
+
+    return model.model_construct(**result)
+
+
+def _build_partial_list(
+    items: list,
+    original_model: type[BaseModel] | None,
+    field_name: str,
+    tracker: JsonCompleteness,
+    path: str,
+    **kwargs: Any,
+) -> list:
+    """Build a partial list, validating complete items."""
+    result = []
+
+    item_type = None
+    if original_model:
+        field_info = original_model.model_fields.get(field_name)
+        if field_info:
+            field_type = field_info.annotation
+            if get_origin(field_type) in (list, List):
+                args = get_args(field_type)
+                if args:
+                    item_type = args[0]
+
+    for i, item in enumerate(items):
+        item_path = f"{path}[{i}]"
+        item_complete = tracker.is_path_complete(item_path)
+
+        if item_complete and item_type and isinstance(item_type, type):
+            if issubclass(item_type, BaseModel) and isinstance(item, dict):
+                result.append(item_type.model_validate(item, **kwargs))
+                continue
+
+        result.append(item)
+
+    return result
 
 
 def _process_generic_arg(
@@ -163,11 +299,12 @@ class PartialBase(Generic[T_Model]):
     @classmethod
     @cache
     def get_partial_model(cls) -> type[T_Model]:
-        """Return a partial model we can use to validate partial results.
+        """Return a partial model for holding incomplete streaming data.
 
-        This method creates a model with all fields optional and wraps any
-        model validators to skip validation when fields are incomplete
-        (None during streaming).
+        With completeness-based validation, we use model_construct() to build
+        partial objects without validation. This method creates a model with
+        all fields optional and stores a reference to the original model
+        for validation when JSON is complete.
         """
         assert issubclass(cls, BaseModel), (
             f"{cls.__name__} must be a subclass of BaseModel"
@@ -179,7 +316,7 @@ class PartialBase(Generic[T_Model]):
             else f"Partial{cls.__name__}"
         )
 
-        # Create the base partial model with optional fields
+        # Create partial model with optional fields
         partial_model = create_model(
             model_name,
             __base__=cls,
@@ -190,74 +327,11 @@ class PartialBase(Generic[T_Model]):
             },  # type: ignore[all]
         )
 
-        # Check if there are any model validators to wrap
-        model_validators = cls.__pydantic_decorators__.model_validators
-        if not model_validators:
-            return partial_model
+        # Store reference to original model for validation of complete objects
+        original = getattr(cls, "_original_model", cls)
+        partial_model._original_model = original  # type: ignore[attr-defined]
 
-        # Collect original validator functions
-        original_validators = {
-            name: decorator
-            for name, decorator in model_validators.items()
-            if decorator.info.mode == "after"
-        }
-
-        if not original_validators:
-            return partial_model
-
-        # Create a subclass that overrides model validators to skip during streaming
-        def create_streaming_safe_validator(orig_validators):
-            from pydantic import ValidationInfo
-
-            @model_validator(mode="wrap")
-            @classmethod
-            def streaming_safe_validator(_cls, values, handler, info: ValidationInfo):
-                # First, run the default Pydantic validation (field validation, etc.)
-                model = handler(values)
-
-                # Check if we're in partial streaming mode via context
-                context = info.context or {}
-                if context.get("partial_streaming"):
-                    # Skip model validators during streaming
-                    return model
-
-                # Not streaming - run original validators
-                for _, decorator in orig_validators.items():
-                    result = decorator.func(model)
-                    if result is not None:
-                        model = result
-
-                return model
-
-            return streaming_safe_validator
-
-        def create_noop_validator():
-            @model_validator(mode="wrap")
-            @classmethod
-            def noop_validator(_cls, values, handler, _info):
-                return handler(values)
-
-            return noop_validator
-
-        # Create the wrapper validator that runs all original validators
-        wrapper_validator = create_streaming_safe_validator(original_validators)
-
-        # Create validators dict: first validator is the wrapper, rest are no-ops
-        # This ensures all parent validators are overridden
-        validators_dict = {}
-        validator_names = list(original_validators.keys())
-        validators_dict[validator_names[0]] = wrapper_validator
-        for name in validator_names[1:]:
-            validators_dict[name] = create_noop_validator()
-
-        wrapped_model = create_model(
-            model_name,
-            __base__=partial_model,
-            __module__=cls.__module__,
-            __validators__=validators_dict,
-        )
-
-        return wrapped_model
+        return partial_model
 
     @classmethod
     def from_streaming_response(
@@ -295,11 +369,12 @@ class PartialBase(Generic[T_Model]):
     ) -> Generator[T_Model, None, None]:
         potential_object = ""
         partial_model = cls.get_partial_model()
-        partial_mode = (
-            "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
-        )
+        # Always use trailing-strings mode to preserve incomplete data during streaming
+        # PartialLiteralMixin is deprecated - completeness-based validation handles Literals
+        partial_mode = "trailing-strings"
         final_obj = None
         for chunk in json_chunks:
+            # Writer mode special handling: chunk might be complete JSON replacing accumulated
             if (
                 len(chunk) > len(potential_object)
                 and chunk.startswith("{")
@@ -308,25 +383,21 @@ class PartialBase(Generic[T_Model]):
                 potential_object = chunk
             else:
                 potential_object += chunk
-            obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
-            )
-            obj = partial_model.model_validate(
-                obj, strict=None, context={"partial_streaming": True}, **kwargs
+            obj = process_potential_object(
+                potential_object, partial_mode, partial_model, **kwargs
             )
             final_obj = obj
             yield obj
 
-        # Final validation: validate against original model with required fields
+        # Final validation: only validate if the JSON is structurally complete
+        # If JSON is incomplete (stream ended mid-object), skip validation
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                # Validate the final data against the original model
-                # This enforces required fields and runs validators without streaming context
-                # Use exclude_none=True so fields with None use original model's defaults
-                original_model.model_validate(
-                    final_obj.model_dump(exclude_none=True), **kwargs
-                )
+                if is_json_complete(potential_object.strip() or "{}"):
+                    original_model.model_validate(
+                        final_obj.model_dump(exclude_none=True), **kwargs
+                    )
 
     @classmethod
     async def writer_model_from_chunks_async(
@@ -334,11 +405,12 @@ class PartialBase(Generic[T_Model]):
     ) -> AsyncGenerator[T_Model, None]:
         potential_object = ""
         partial_model = cls.get_partial_model()
-        partial_mode = (
-            "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
-        )
+        # Always use trailing-strings mode to preserve incomplete data during streaming
+        # PartialLiteralMixin is deprecated - completeness-based validation handles Literals
+        partial_mode = "trailing-strings"
         final_obj = None
         async for chunk in json_chunks:
+            # Writer mode special handling: chunk might be complete JSON replacing accumulated
             if (
                 len(chunk) > len(potential_object)
                 and chunk.startswith("{")
@@ -347,22 +419,21 @@ class PartialBase(Generic[T_Model]):
                 potential_object = chunk
             else:
                 potential_object += chunk
-            obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
-            )
-            obj = partial_model.model_validate(
-                obj, strict=None, context={"partial_streaming": True}, **kwargs
+            obj = process_potential_object(
+                potential_object, partial_mode, partial_model, **kwargs
             )
             final_obj = obj
             yield obj
 
-        # Final validation: validate against original model with required fields
+        # Final validation: only validate if the JSON is structurally complete
+        # If JSON is incomplete (stream ended mid-object), skip validation
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                original_model.model_validate(
-                    final_obj.model_dump(exclude_none=True), **kwargs
-                )
+                if is_json_complete(potential_object.strip() or "{}"):
+                    original_model.model_validate(
+                        final_obj.model_dump(exclude_none=True), **kwargs
+                    )
 
     @classmethod
     def model_from_chunks(
@@ -370,9 +441,9 @@ class PartialBase(Generic[T_Model]):
     ) -> Generator[T_Model, None, None]:
         potential_object = ""
         partial_model = cls.get_partial_model()
-        partial_mode = (
-            "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
-        )
+        # Always use trailing-strings mode to preserve incomplete data during streaming
+        # PartialLiteralMixin is deprecated - completeness-based validation handles Literals
+        partial_mode = "trailing-strings"
         chunk_buffer = []
         final_obj = None
         for chunk in json_chunks:
@@ -394,13 +465,15 @@ class PartialBase(Generic[T_Model]):
             final_obj = obj
             yield obj
 
-        # Final validation: validate against original model with required fields
+        # Final validation: only validate if the JSON is structurally complete
+        # If JSON is incomplete (stream ended mid-object), skip validation
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                original_model.model_validate(
-                    final_obj.model_dump(exclude_none=True), **kwargs
-                )
+                if is_json_complete(potential_object.strip() or "{}"):
+                    original_model.model_validate(
+                        final_obj.model_dump(exclude_none=True), **kwargs
+                    )
 
     @classmethod
     async def model_from_chunks_async(
@@ -408,28 +481,27 @@ class PartialBase(Generic[T_Model]):
     ) -> AsyncGenerator[T_Model, None]:
         potential_object = ""
         partial_model = cls.get_partial_model()
-        partial_mode = (
-            "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
-        )
+        # Always use trailing-strings mode to preserve incomplete data during streaming
+        # PartialLiteralMixin is deprecated - completeness-based validation handles Literals
+        partial_mode = "trailing-strings"
         final_obj = None
         async for chunk in json_chunks:
             potential_object += chunk
-            obj = from_json(
-                (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
-            )
-            obj = partial_model.model_validate(
-                obj, strict=None, context={"partial_streaming": True}, **kwargs
+            obj = process_potential_object(
+                potential_object, partial_mode, partial_model, **kwargs
             )
             final_obj = obj
             yield obj
 
-        # Final validation: validate against original model with required fields
+        # Final validation: only validate if the JSON is structurally complete
+        # If JSON is incomplete (stream ended mid-object), skip validation
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                original_model.model_validate(
-                    final_obj.model_dump(exclude_none=True), **kwargs
-                )
+                if is_json_complete(potential_object.strip() or "{}"):
+                    original_model.model_validate(
+                        final_obj.model_dump(exclude_none=True), **kwargs
+                    )
 
     @staticmethod
     def extract_json(
