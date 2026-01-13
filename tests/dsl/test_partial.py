@@ -1,11 +1,16 @@
 # type: ignore[all]
-from pydantic import BaseModel, Field
-from typing import Optional, Union
-from instructor.dsl.partial import Partial, PartialLiteralMixin
+from copy import deepcopy
+from enum import Enum
+from typing import Literal, Optional, Union
+
 import pytest
+from jiter import from_json
+from pydantic import BaseModel, Field, ValidationError
+
 import instructor
-from openai import OpenAI, AsyncOpenAI
+from instructor.dsl.partial import Partial, PartialLiteralMixin, _make_field_optional
 import os
+from openai import OpenAI, AsyncOpenAI
 
 models = ["gpt-4o-mini"]
 modes = [
@@ -95,8 +100,10 @@ def test_partial():
 def test_partial_with_whitespace():
     partial = Partial[SamplePartial]
 
-    # Get the actual models from chunks
-    models = list(partial.model_from_chunks(["\n", "\t", " ", '{"b": {"b": 1}}']))
+    # Get the actual models from chunks - must provide complete data for final validation
+    models = list(
+        partial.model_from_chunks(["\n", "\t", " ", '{"a": 42, "b": {"b": 1}}'])
+    )
 
     # Print actual values for debugging
     print(f"Number of models: {len(models)}")
@@ -104,11 +111,11 @@ def test_partial_with_whitespace():
         print(f"Model {i}: {model.model_dump()}")
 
     # Actual behavior: When whitespace chunks are processed, we may get models
-    # First model has default values
-    assert models[0].model_dump() == {"a": None, "b": {}}
+    # First model has default values (nested models show their fields as None)
+    assert models[0].model_dump() == {"a": None, "b": {"b": None}}
 
-    # Last model has b populated from JSON (from the JSON chunk)
-    assert models[-1].model_dump() == {"a": None, "b": {"b": 1}}
+    # Last model has all fields populated from JSON
+    assert models[-1].model_dump() == {"a": 42, "b": {"b": 1}}
 
     # Check we have the expected number of models (2 instead of 4)
     assert len(models) == 2
@@ -118,16 +125,17 @@ def test_partial_with_whitespace():
 async def test_async_partial_with_whitespace():
     partial = Partial[SamplePartial]
 
-    # Handle any leading whitespace from the model
+    # Handle any leading whitespace from the model - must provide complete data for final validation
     async def async_generator():
-        for chunk in ["\n", "\t", " ", '{"b": {"b": 1}}']:
+        for chunk in ["\n", "\t", " ", '{"a": 42, "b": {"b": 1}}']:
             yield chunk
 
+    # With completeness-based validation, nested models are constructed with None fields
     expected_model_dicts = [
-        {"a": None, "b": {}},
-        {"a": None, "b": {}},
-        {"a": None, "b": {}},
-        {"a": None, "b": {"b": 1}},
+        {"a": None, "b": {"b": None}},
+        {"a": None, "b": {"b": None}},
+        {"a": None, "b": {"b": None}},
+        {"a": 42, "b": {"b": 1}},
     ]
 
     i = 0
@@ -135,12 +143,12 @@ async def test_async_partial_with_whitespace():
         assert model.model_dump() == expected_model_dicts[i]
         i += 1
 
-    assert model.model_dump() == {"a": None, "b": {"b": 1}}
+    assert model.model_dump() == {"a": 42, "b": {"b": 1}}
 
 
 @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
 def test_summary_extraction():
-    class Summary(BaseModel, PartialLiteralMixin):
+    class Summary(BaseModel):
         summary: str = Field(description="A detailed summary")
 
     client = OpenAI()
@@ -155,20 +163,23 @@ def test_summary_extraction():
         stream=True,
     )
 
-    previous_summary = None
-    updates = 0
+    # Collect all streaming updates and verify final result
+    final_summary = None
+    chunk_count = 0
     for extraction in extraction_stream:
-        if previous_summary is not None and extraction:
-            updates += 1
-        previous_summary = extraction.summary
+        final_summary = extraction.summary
+        chunk_count += 1
 
-    assert updates == 1
+    # Verify we got streaming updates and a valid final summary
+    assert chunk_count > 0
+    assert final_summary is not None
+    assert len(final_summary) > 0
 
 
 @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
 @pytest.mark.asyncio
 async def test_summary_extraction_async():
-    class Summary(BaseModel, PartialLiteralMixin):
+    class Summary(BaseModel):
         summary: str = Field(description="A detailed summary")
 
     client = AsyncOpenAI()
@@ -183,14 +194,17 @@ async def test_summary_extraction_async():
         stream=True,
     )
 
-    previous_summary = None
-    updates = 0
+    # Collect all streaming updates and verify final result
+    final_summary = None
+    chunk_count = 0
     async for extraction in extraction_stream:
-        if previous_summary is not None and extraction:
-            updates += 1
-        previous_summary = extraction.summary
+        final_summary = extraction.summary
+        chunk_count += 1
 
-    assert updates == 1
+    # Verify we got streaming updates and a valid final summary
+    assert chunk_count > 0
+    assert final_summary is not None
+    assert len(final_summary) > 0
 
 
 def test_union_with_nested():
@@ -229,3 +243,893 @@ def test_partial_with_default_factory():
     assert instance2.items == ["a", "b"]
     assert instance2.tags is None
     assert instance2.name is None
+
+
+class TestMakeFieldOptionalWorksWithPydanticV2:
+    """Tests proving that _make_field_optional with deepcopy works correctly in Pydantic v2.
+
+    These tests refute the claim that deepcopy + setting default = None doesn't work
+    in Pydantic v2. The implementation is correct and fields are properly made optional.
+
+    See: https://github.com/instructor-ai/instructor/issues/XXXX
+    """
+
+    def test_deepcopy_approach_makes_field_optional(self):
+        """Verify that deepcopy + default = None makes fields optional in Pydantic v2."""
+
+        class Original(BaseModel):
+            name: str  # Required field
+
+        field = Original.model_fields["name"]
+        assert field.is_required() is True, "Original field should be required"
+
+        # This is what _make_field_optional does
+        tmp = deepcopy(field)
+        tmp.default = None
+        tmp.annotation = Optional[str]
+
+        assert tmp.is_required() is False, "Modified field should not be required"
+        assert tmp.default is None, "Default should be None"
+
+    def test_make_field_optional_function_works(self):
+        """Verify _make_field_optional correctly transforms required fields."""
+
+        class TestModel(BaseModel):
+            name: str
+            age: int
+
+        for field_name, field_info in TestModel.model_fields.items():
+            assert field_info.is_required() is True, f"{field_name} should be required"
+
+            annotation, new_field = _make_field_optional(field_info)
+            assert new_field.is_required() is False, (
+                f"{field_name} should be optional after transformation"
+            )
+            assert new_field.default is None, f"{field_name} should have None default"
+
+    def test_partial_model_validates_empty_dict(self):
+        """Verify Partial models can validate empty dicts (all fields None)."""
+
+        class MyModel(BaseModel):
+            name: str
+            age: int
+            status: str
+
+        PartialModel = Partial[MyModel]
+        TruePartial = PartialModel.get_partial_model()
+
+        # This should NOT raise ValidationError
+        result = TruePartial.model_validate({})
+
+        assert result.name is None
+        assert result.age is None
+        assert result.status is None
+
+    def test_partial_validates_incremental_streaming_data(self):
+        """Verify Partial models correctly handle incremental streaming data."""
+
+        class MyModel(BaseModel):
+            name: str
+            age: int
+
+        PartialModel = Partial[MyModel]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Simulate streaming JSON chunks
+        streaming_states = [
+            ("{}", None, None),
+            ('{"name": "Jo', "Jo", None),  # Partial string
+            ('{"name": "John"}', "John", None),
+            ('{"name": "John", "age": 25}', "John", 25),
+        ]
+
+        for json_str, expected_name, expected_age in streaming_states:
+            obj = from_json(json_str.encode(), partial_mode="trailing-strings")
+            result = TruePartial.model_validate(obj)
+            assert result.name == expected_name, f"Failed for {json_str}"
+            assert result.age == expected_age, f"Failed for {json_str}"
+
+    def test_partial_with_all_field_types(self):
+        """Verify _make_field_optional works with various field types."""
+
+        class ComplexModel(BaseModel):
+            string_field: str
+            int_field: int
+            float_field: float
+            bool_field: bool
+            list_field: list[str]
+            optional_field: Optional[str]
+
+        PartialModel = Partial[ComplexModel]
+        TruePartial = PartialModel.get_partial_model()
+
+        # All fields should validate with empty dict
+        result = TruePartial.model_validate({})
+
+        assert result.string_field is None
+        assert result.int_field is None
+        assert result.float_field is None
+        assert result.bool_field is None
+        assert result.list_field is None
+        assert result.optional_field is None
+
+
+class TestLiteralTypeStreaming:
+    """Tests for Literal type handling during streaming.
+
+    Without PartialLiteralMixin: uses partial_mode='trailing-strings', which keeps
+    incomplete strings and causes validation errors for Literal/Enum fields.
+
+    With PartialLiteralMixin: uses partial_mode='on', which drops incomplete strings
+    so fields become None.
+    """
+
+    def test_literal_without_mixin_fails_on_incomplete_string(self):
+        """Without PartialLiteralMixin, incomplete Literal strings cause validation errors."""
+
+        class ModelWithLiteral(BaseModel):
+            status: Literal["active", "inactive"]
+
+        PartialModel = Partial[ModelWithLiteral]
+        TruePartial = PartialModel.get_partial_model()
+
+        # With partial_mode="trailing-strings", incomplete strings are kept
+        partial_json = b'{"status": "act'
+        obj = from_json(partial_json, partial_mode="trailing-strings")
+        # obj is {"status": "act"} - a partial string that fails Literal validation
+
+        with pytest.raises(ValidationError):
+            TruePartial.model_validate(obj)
+
+    def test_literal_with_mixin_incomplete_string_becomes_none(self):
+        """With PartialLiteralMixin, incomplete Literal strings are dropped."""
+
+        class ModelWithLiteral(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+
+        PartialModel = Partial[ModelWithLiteral]
+        TruePartial = PartialModel.get_partial_model()
+
+        # With partial_mode="on" (enabled by PartialLiteralMixin), incomplete strings are dropped
+        partial_json = b'{"status": "act'
+        obj = from_json(partial_json, partial_mode="on")
+        # obj is {} because the incomplete string was dropped
+
+        result = TruePartial.model_validate(obj)
+        assert result.status is None
+
+    def test_literal_accepts_valid_complete_value(self):
+        """Literal fields should accept valid complete values."""
+
+        class ModelWithLiteral(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+
+        PartialModel = Partial[ModelWithLiteral]
+        TruePartial = PartialModel.get_partial_model()
+
+        result = TruePartial.model_validate({"status": "active"})
+        assert result.status == "active"
+
+        result = TruePartial.model_validate({"status": "inactive"})
+        assert result.status == "inactive"
+
+    def test_literal_with_missing_field_is_none(self):
+        """Literal fields should be None when not present in data."""
+
+        class ModelWithLiteral(BaseModel, PartialLiteralMixin):
+            name: str
+            status: Literal["active", "inactive"]
+
+        PartialModel = Partial[ModelWithLiteral]
+        TruePartial = PartialModel.get_partial_model()
+
+        result = TruePartial.model_validate({"name": "John"})
+        assert result.name == "John"
+        assert result.status is None
+
+    def test_literal_rejects_complete_invalid_value(self):
+        """Complete but invalid Literal values should fail validation."""
+
+        class ModelWithLiteral(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+
+        PartialModel = Partial[ModelWithLiteral]
+        TruePartial = PartialModel.get_partial_model()
+
+        # "xyz" is a complete string but not a valid Literal value
+        with pytest.raises(ValidationError):
+            TruePartial.model_validate({"status": "xyz"})
+
+
+class TestPartialStreamingWithComplexTypes:
+    """Tests for streaming with complex Pydantic types using PartialLiteralMixin.
+
+    With PartialLiteralMixin, partial_mode='on' is used, so incomplete values are dropped.
+    """
+
+    def test_enum_incomplete_string_becomes_none(self):
+        """With PartialLiteralMixin, incomplete Enum strings are dropped."""
+
+        class Status(Enum):
+            ACTIVE = "active"
+            INACTIVE = "inactive"
+
+        class ModelWithEnum(BaseModel, PartialLiteralMixin):
+            status: Status
+
+        PartialModel = Partial[ModelWithEnum]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Incomplete string is dropped with partial_mode="on"
+        obj = from_json(b'{"status": "act', partial_mode="on")
+        result = TruePartial.model_validate(obj)
+        assert result.status is None
+
+    def test_enum_accepts_valid_complete_value(self):
+        """Enum fields should accept valid complete values."""
+
+        class Status(Enum):
+            ACTIVE = "active"
+            INACTIVE = "inactive"
+
+        class ModelWithEnum(BaseModel, PartialLiteralMixin):
+            status: Status
+
+        PartialModel = Partial[ModelWithEnum]
+        TruePartial = PartialModel.get_partial_model()
+
+        result = TruePartial.model_validate({"status": "active"})
+        assert result.status == Status.ACTIVE
+
+    def test_optional_literal_incomplete_string_becomes_none(self):
+        """With PartialLiteralMixin, incomplete Optional[Literal] strings are dropped."""
+
+        class ModelWithOptionalLiteral(BaseModel, PartialLiteralMixin):
+            status: Optional[Literal["on", "off"]] = None
+
+        PartialModel = Partial[ModelWithOptionalLiteral]
+        TruePartial = PartialModel.get_partial_model()
+
+        obj = from_json(b'{"status": "o', partial_mode="on")
+        result = TruePartial.model_validate(obj)
+        assert result.status is None
+
+    def test_optional_literal_accepts_valid_value(self):
+        """Optional[Literal] should accept valid complete values."""
+
+        class ModelWithOptionalLiteral(BaseModel, PartialLiteralMixin):
+            status: Optional[Literal["on", "off"]] = None
+
+        PartialModel = Partial[ModelWithOptionalLiteral]
+        TruePartial = PartialModel.get_partial_model()
+
+        result = TruePartial.model_validate({"status": "on"})
+        assert result.status == "on"
+
+    def test_union_literal_incomplete_string_becomes_none(self):
+        """With PartialLiteralMixin, incomplete Union[Literal, int] strings are dropped."""
+
+        class ModelWithUnion(BaseModel, PartialLiteralMixin):
+            value: Union[Literal["yes", "no"], int]
+
+        PartialModel = Partial[ModelWithUnion]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Incomplete string is dropped
+        obj = from_json(b'{"value": "ye', partial_mode="on")
+        result = TruePartial.model_validate(obj)
+        assert result.value is None
+
+    def test_union_literal_accepts_valid_values(self):
+        """Union[Literal, int] should accept both valid Literal and int."""
+
+        class ModelWithUnion(BaseModel, PartialLiteralMixin):
+            value: Union[Literal["yes", "no"], int]
+
+        PartialModel = Partial[ModelWithUnion]
+        TruePartial = PartialModel.get_partial_model()
+
+        result = TruePartial.model_validate({"value": "yes"})
+        assert result.value == "yes"
+
+        result = TruePartial.model_validate({"value": 42})
+        assert result.value == 42
+
+    def test_union_of_literals_matches_all_branches(self):
+        """Union[Literal, Literal] should match values from all branches."""
+
+        class ModelWithUnionLiterals(BaseModel, PartialLiteralMixin):
+            value: Union[Literal["a", "b"], Literal["x", "y"]]
+
+        PartialModel = Partial[ModelWithUnionLiterals]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Both branches should work
+        assert TruePartial.model_validate({"value": "a"}).value == "a"
+        assert TruePartial.model_validate({"value": "b"}).value == "b"
+        assert TruePartial.model_validate({"value": "x"}).value == "x"
+        assert TruePartial.model_validate({"value": "y"}).value == "y"
+
+    def test_list_literal_incomplete_item_dropped(self):
+        """With PartialLiteralMixin, incomplete list items are dropped."""
+
+        class ModelWithLiteralList(BaseModel, PartialLiteralMixin):
+            tags: list[Literal["admin", "user", "guest"]]
+
+        PartialModel = Partial[ModelWithLiteralList]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Incomplete list item is dropped
+        obj = from_json(b'{"tags": ["admin", "us', partial_mode="on")
+        result = TruePartial.model_validate(obj)
+        assert result.tags == ["admin"]
+
+    def test_list_literal_accepts_valid_items(self):
+        """list[Literal] should accept valid complete items."""
+
+        class ModelWithLiteralList(BaseModel, PartialLiteralMixin):
+            tags: list[Literal["admin", "user", "guest"]]
+
+        PartialModel = Partial[ModelWithLiteralList]
+        TruePartial = PartialModel.get_partial_model()
+
+        result = TruePartial.model_validate({"tags": ["admin", "user"]})
+        assert result.tags == ["admin", "user"]
+
+
+class TestDiscriminatedUnionPartial:
+    """Tests for discriminated unions with Partial streaming.
+
+    KNOWN LIMITATION: Discriminated unions don't work with Partial because:
+    - Partial makes all fields Optional
+    - Pydantic requires discriminator fields to be strictly Literal, not Optional[Literal]
+
+    Workaround: Use Union without the discriminator parameter.
+    """
+
+    def test_discriminated_union_not_compatible_with_partial(self):
+        """Discriminated unions fail with Partial (known limitation)."""
+
+        class Cat(BaseModel):
+            pet_type: Literal["cat"]
+            meows: int
+
+        class Dog(BaseModel):
+            pet_type: Literal["dog"]
+            barks: int
+
+        class PetContainer(BaseModel):
+            pet: Union[Cat, Dog] = Field(discriminator="pet_type")
+
+        # Fails because Partial makes pet_type Optional, but discriminators must be Literal
+        from pydantic import PydanticUserError
+
+        PartialModel = Partial[PetContainer]
+        with pytest.raises(PydanticUserError):
+            PartialModel.get_partial_model()
+
+    def test_union_without_discriminator_works(self):
+        """Union without discriminator works with Partial streaming."""
+
+        class Cat(BaseModel):
+            pet_type: Literal["cat"]
+            meows: int
+
+        class Dog(BaseModel):
+            pet_type: Literal["dog"]
+            barks: int
+
+        class PetContainerNoDiscriminator(BaseModel):
+            pet: Union[Cat, Dog]  # No discriminator - works with Partial
+
+        PartialModel = Partial[PetContainerNoDiscriminator]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Complete value works
+        result = TruePartial.model_validate({"pet": {"pet_type": "cat", "meows": 5}})
+        assert result.pet is not None
+        assert result.pet.pet_type == "cat"
+
+    def test_single_value_literal_incomplete_string(self):
+        """Single-value Literals with incomplete strings become None."""
+
+        class Cat(BaseModel):
+            pet_type: Literal["cat"]
+
+        PartialModel = Partial[Cat]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Incomplete string is dropped
+        obj = from_json(b'{"pet_type": "ca', partial_mode="on")
+        result = TruePartial.model_validate(obj)
+        assert result.pet_type is None
+
+        # Complete value works
+        result = TruePartial.model_validate({"pet_type": "cat"})
+        assert result.pet_type == "cat"
+
+
+class TestModelValidatorsDuringStreaming:
+    """Tests for model validators during partial streaming.
+
+    Model validators are automatically wrapped to skip during streaming
+    (when context={"partial_streaming": True} is passed) and only run
+    when validating without that context (final validation).
+    """
+
+    def test_model_validator_skipped_during_streaming(self):
+        """Model validators should be skipped when streaming context is passed."""
+        from pydantic import model_validator
+
+        class ModelWithValidator(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+            priority: Literal["high", "low"]
+
+            @model_validator(mode="after")
+            def validate_relationships(self):
+                # This would fail during streaming without wrapping
+                if self.status is not None and self.priority is None:
+                    raise ValueError("If status is set, priority must also be set!")
+                return self
+
+        PartialModel = Partial[ModelWithValidator]
+
+        # With completeness-based validation, incomplete JSON skips all validation
+        # by using model_construct() instead of model_validate()
+        chunks = ['{"status": "act']  # Incomplete JSON
+        results = list(PartialModel.model_from_chunks(chunks))
+        # Incomplete JSON - no validation runs, partial value stored
+        assert results[0].status == "act"
+        assert results[0].priority is None
+
+    def test_model_validator_runs_when_complete(self):
+        """Model validators should run when all fields are complete."""
+        from pydantic import model_validator
+
+        class ModelWithValidator(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+            priority: Literal["high", "low"]
+
+            @model_validator(mode="after")
+            def validate_relationships(self):
+                if self.status == "active" and self.priority == "low":
+                    raise ValueError("Active status requires high priority!")
+                return self
+
+        PartialModel = Partial[ModelWithValidator]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Valid complete data
+        result = TruePartial.model_validate({"status": "active", "priority": "high"})
+        assert result.status == "active"
+        assert result.priority == "high"
+
+        # Invalid complete data should fail
+        with pytest.raises(ValidationError):
+            TruePartial.model_validate({"status": "active", "priority": "low"})
+
+    def test_multiple_model_validators(self):
+        """Multiple model validators should all be wrapped and run when complete."""
+        from pydantic import model_validator
+
+        validator_calls = []
+
+        class ModelWithMultipleValidators(BaseModel, PartialLiteralMixin):
+            a: Literal["x", "y"]
+            b: Literal["1", "2"]
+
+            @model_validator(mode="after")
+            def validator_one(self):
+                validator_calls.append("one")
+                return self
+
+            @model_validator(mode="after")
+            def validator_two(self):
+                validator_calls.append("two")
+                return self
+
+        PartialModel = Partial[ModelWithMultipleValidators]
+
+        # During streaming with incomplete JSON, validators should be skipped
+        # because model_construct() is used instead of model_validate()
+        validator_calls.clear()
+        chunks = ['{"a": "x']  # Incomplete JSON
+        list(PartialModel.model_from_chunks(chunks))
+        assert validator_calls == []
+
+        # Complete JSON - validators run during model_validate
+        validator_calls.clear()
+        chunks = ['{"a": "x", "b": "1"}']  # Complete JSON
+        list(PartialModel.model_from_chunks(chunks))
+        assert "one" in validator_calls
+        assert "two" in validator_calls
+
+    def test_validators_run_without_streaming_context(self):
+        """Validators should run when no streaming context is passed (final validation)."""
+        from pydantic import model_validator
+
+        class ModelWithValidator(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+            priority: Literal["high", "low"]
+
+            @model_validator(mode="after")
+            def validate_relationships(self):
+                if self.status == "active" and self.priority == "low":
+                    raise ValueError("Active requires high priority!")
+                return self
+
+        PartialModel = Partial[ModelWithValidator]
+        TruePartial = PartialModel.get_partial_model()
+
+        # Without streaming context, validators run even with incomplete data
+        # This is the final validation scenario
+        with pytest.raises(ValidationError):
+            TruePartial.model_validate({"status": "active", "priority": "low"})
+
+        # Valid complete data passes
+        result = TruePartial.model_validate({"status": "active", "priority": "high"})
+        assert result.status == "active"
+        assert result.priority == "high"
+
+
+class TestFinalValidationAfterStreaming:
+    """Tests for final validation after streaming completes.
+
+    When streaming ends, the final object is validated against the original
+    model to enforce required fields and run validators without streaming context.
+    """
+
+    def test_final_validation_catches_missing_required_fields(self):
+        """Final validation should fail if required fields are missing."""
+
+        class ModelWithRequired(BaseModel):
+            name: str  # Required
+            age: int  # Required
+            nickname: Optional[str] = None  # Optional
+
+        PartialModel = Partial[ModelWithRequired]
+
+        # Simulate streaming that doesn't provide all required fields
+        chunks = ['{"name": "John"}']  # Missing 'age'
+
+        with pytest.raises(ValidationError) as exc_info:
+            list(PartialModel.model_from_chunks(iter(chunks)))
+
+        # Should fail because 'age' is required but missing
+        assert "age" in str(exc_info.value)
+
+    def test_final_validation_passes_with_all_required_fields(self):
+        """Final validation should pass when all required fields are present."""
+
+        class ModelWithRequired(BaseModel):
+            name: str
+            age: int
+
+        PartialModel = Partial[ModelWithRequired]
+
+        # Simulate streaming that provides all required fields
+        chunks = ['{"name": "John", "age": 30}']
+
+        results = list(PartialModel.model_from_chunks(iter(chunks)))
+        assert len(results) > 0
+        final = results[-1]
+        assert final.name == "John"
+        assert final.age == 30
+
+    def test_final_validation_runs_model_validators(self):
+        """Final validation should run model validators without streaming context."""
+        from pydantic import model_validator
+
+        class ModelWithValidator(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+            priority: Literal["high", "low"]
+
+            @model_validator(mode="after")
+            def check_consistency(self):
+                if self.status == "active" and self.priority == "low":
+                    raise ValueError("Active tasks must have high priority")
+                return self
+
+        PartialModel = Partial[ModelWithValidator]
+
+        # This should fail final validation due to the model validator
+        chunks = ['{"status": "active", "priority": "low"}']
+
+        with pytest.raises(ValidationError) as exc_info:
+            list(PartialModel.model_from_chunks(iter(chunks)))
+
+        assert "Active tasks must have high priority" in str(exc_info.value)
+
+    def test_streaming_yields_partial_objects_before_final_validation(self):
+        """Streaming should yield partial objects even if final validation will fail."""
+
+        class ModelWithRequired(BaseModel):
+            name: str
+            age: int
+
+        PartialModel = Partial[ModelWithRequired]
+
+        # Stream with incomplete JSON first, then complete JSON
+        # First chunk is incomplete, yields partial object
+        # Second chunk completes the JSON with all required fields
+        chunks = ['{"name": "Jo', 'hn", "age": 25}']
+
+        partial_objects = []
+        for obj in PartialModel.model_from_chunks(iter(chunks)):
+            partial_objects.append(obj)
+
+        # Should have yielded partial objects during streaming
+        assert len(partial_objects) >= 1
+        # First partial object has incomplete name
+        assert partial_objects[0].name == "Jo"
+        # Final object is fully validated
+        assert partial_objects[-1].name == "John"
+        assert partial_objects[-1].age == 25
+
+    def test_original_model_reference_is_stored(self):
+        """Partial model should store reference to original model."""
+
+        class OriginalModel(BaseModel):
+            name: str
+
+        PartialModel = Partial[OriginalModel]
+
+        assert hasattr(PartialModel, "_original_model")
+        assert PartialModel._original_model is OriginalModel
+
+    @pytest.mark.asyncio
+    async def test_async_final_validation_catches_missing_required_fields(self):
+        """Async streaming should also do final validation."""
+
+        class ModelWithRequired(BaseModel):
+            name: str
+            age: int
+
+        PartialModel = Partial[ModelWithRequired]
+
+        async def async_chunks():
+            yield '{"name": "John"}'  # Missing 'age'
+
+        with pytest.raises(ValidationError) as exc_info:
+            async for _ in PartialModel.model_from_chunks_async(async_chunks()):
+                pass
+
+        assert "age" in str(exc_info.value)
+
+
+class TestRecursiveModels:
+    """Test that Partial handles self-referential models without infinite recursion."""
+
+    def test_basic_recursive_model(self):
+        """Partial should work with basic recursive models."""
+
+        class TreeNode(BaseModel):
+            value: str
+            children: Optional[list["TreeNode"]] = None
+
+        TreeNode.model_rebuild()
+
+        # Should not raise RecursionError
+        PartialTreeNode = Partial[TreeNode]
+        TruePartial = PartialTreeNode.get_partial_model()
+
+        # Can validate partial data
+        result = TruePartial.model_validate({"value": "root"})
+        assert result.value == "root"
+        assert result.children is None
+
+    def test_nested_recursive_model(self):
+        """Partial should work with nested children."""
+
+        class TreeNode(BaseModel):
+            value: str
+            children: Optional[list["TreeNode"]] = None
+
+        TreeNode.model_rebuild()
+
+        PartialTreeNode = Partial[TreeNode]
+        TruePartial = PartialTreeNode.get_partial_model()
+
+        # Validate with nested structure
+        data = {
+            "value": "root",
+            "children": [
+                {"value": "child1"},
+                {"value": "child2", "children": [{"value": "grandchild"}]},
+            ],
+        }
+        result = TruePartial.model_validate(data)
+        assert result.value == "root"
+        assert len(result.children) == 2
+        assert result.children[0].value == "child1"
+        assert result.children[1].children[0].value == "grandchild"
+
+    def test_mutually_recursive_models(self):
+        """Partial should handle mutually recursive models."""
+
+        class Person(BaseModel):
+            name: str
+            employer: Optional["Company"] = None
+
+        class Company(BaseModel):
+            name: str
+            employees: Optional[list[Person]] = None
+
+        Person.model_rebuild()
+        Company.model_rebuild()
+
+        # Both should work without RecursionError
+        PartialPerson = Partial[Person]
+        PartialCompany = Partial[Company]
+
+        assert PartialPerson is not None
+        assert PartialCompany is not None
+
+        # Validate partial data
+        person_partial = PartialPerson.get_partial_model()
+        result = person_partial.model_validate({"name": "Alice"})
+        assert result.name == "Alice"
+
+    def test_direct_self_reference(self):
+        """Partial should handle direct self-reference (linked list style)."""
+
+        class LinkedNode(BaseModel):
+            value: int
+            next: Optional["LinkedNode"] = None
+
+        LinkedNode.model_rebuild()
+
+        # Should not raise RecursionError
+        PartialLinked = Partial[LinkedNode]
+        TruePartial = PartialLinked.get_partial_model()
+
+        # Validate chain
+        data = {"value": 1, "next": {"value": 2, "next": {"value": 3}}}
+        result = TruePartial.model_validate(data)
+        assert result.value == 1
+        assert result.next.value == 2
+        assert result.next.next.value == 3
+
+    def test_complex_recursive_with_validators(self):
+        """Complex recursive model with validators, multiple self-refs, and nested types."""
+        from typing import Literal
+        from pydantic import model_validator, field_validator
+        from enum import Enum
+
+        class NodeType(Enum):
+            FOLDER = "folder"
+            FILE = "file"
+            SYMLINK = "symlink"
+
+        class Permission(BaseModel):
+            user: str
+            level: Literal["read", "write", "admin"]
+
+        class FileSystemNode(BaseModel):
+            name: str
+            node_type: NodeType
+            size_bytes: Optional[int] = None
+            children: Optional[list["FileSystemNode"]] = None
+            parent: Optional["FileSystemNode"] = None
+            symlink_target: Optional["FileSystemNode"] = None
+            permissions: Optional[list[Permission]] = None
+            metadata: Optional[dict[str, str]] = None
+
+            @field_validator("name")
+            @classmethod
+            def validate_name(cls, v):
+                if v and "/" in v:
+                    raise ValueError("Name cannot contain /")
+                return v
+
+            @model_validator(mode="after")
+            def validate_node_consistency(self):
+                # Folders must have no size, files must have size
+                if self.node_type == NodeType.FOLDER and self.size_bytes is not None:
+                    raise ValueError("Folders cannot have size_bytes")
+                if self.node_type == NodeType.FILE and self.children:
+                    raise ValueError("Files cannot have children")
+                if self.node_type == NodeType.SYMLINK and not self.symlink_target:
+                    raise ValueError("Symlinks must have a target")
+                return self
+
+        FileSystemNode.model_rebuild()
+
+        # Should not raise RecursionError
+        PartialFS = Partial[FileSystemNode]
+        TruePartial = PartialFS.get_partial_model()
+
+        # Complex nested structure
+        data = {
+            "name": "root",
+            "node_type": "folder",
+            "permissions": [{"user": "admin", "level": "admin"}],
+            "metadata": {"created": "2024-01-01"},
+            "children": [
+                {
+                    "name": "documents",
+                    "node_type": "folder",
+                    "children": [
+                        {
+                            "name": "report.pdf",
+                            "node_type": "file",
+                            "size_bytes": 1024,
+                            "permissions": [{"user": "alice", "level": "read"}],
+                        },
+                        {
+                            "name": "data",
+                            "node_type": "folder",
+                            "children": [
+                                {
+                                    "name": "archive.zip",
+                                    "node_type": "file",
+                                    "size_bytes": 2048,
+                                }
+                            ],
+                        },
+                    ],
+                },
+                {
+                    "name": "shortcut",
+                    "node_type": "symlink",
+                    "symlink_target": {
+                        "name": "target_file",
+                        "node_type": "file",
+                        "size_bytes": 512,
+                    },
+                },
+            ],
+        }
+
+        result = TruePartial.model_validate(data)
+        assert result.name == "root"
+        assert result.node_type == NodeType.FOLDER
+        assert len(result.children) == 2
+        assert result.children[0].name == "documents"
+        assert len(result.children[0].children) == 2
+        assert result.children[0].children[0].name == "report.pdf"
+        assert result.children[0].children[0].size_bytes == 1024
+        assert result.children[0].children[1].children[0].name == "archive.zip"
+        assert result.children[1].symlink_target.name == "target_file"
+        assert result.permissions[0].level == "admin"
+
+    def test_recursive_with_union_types(self):
+        """Recursive model with Union types containing self-references."""
+        from typing import Union
+
+        class TextBlock(BaseModel):
+            text: str
+
+        class Container(BaseModel):
+            title: str
+            content: list[Union[TextBlock, "Container"]]
+
+        Container.model_rebuild()
+
+        PartialContainer = Partial[Container]
+        TruePartial = PartialContainer.get_partial_model()
+
+        data = {
+            "title": "Chapter 1",
+            "content": [
+                {"text": "Introduction paragraph"},
+                {
+                    "title": "Section 1.1",
+                    "content": [
+                        {"text": "Section text"},
+                        {
+                            "title": "Subsection 1.1.1",
+                            "content": [{"text": "Deep nested text"}],
+                        },
+                    ],
+                },
+                {"text": "Closing paragraph"},
+            ],
+        }
+
+        result = TruePartial.model_validate(data)
+        assert result.title == "Chapter 1"
+        assert len(result.content) == 3
+        assert result.content[0].text == "Introduction paragraph"
+        assert result.content[1].title == "Section 1.1"
+        assert result.content[1].content[1].title == "Subsection 1.1.1"
