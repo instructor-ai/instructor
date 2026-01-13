@@ -41,6 +41,10 @@ if sys.version_info >= (3, 10):
 else:
     UNION_ORIGINS = (Union,)
 
+# Track models currently being processed to prevent infinite recursion
+# with self-referential models (e.g., TreeNode with children: List["TreeNode"])
+_processing_models: set[type] = set()
+
 
 class MakeFieldsOptional:
     pass
@@ -84,11 +88,18 @@ def _process_generic_arg(
         return arg_origin[modified_nested_args]
     else:
         if isinstance(arg, type) and issubclass(arg, BaseModel):
-            return (
-                Partial[arg, MakeFieldsOptional]  # type: ignore[valid-type]
-                if make_fields_optional
-                else Partial[arg]
-            )
+            # Prevent infinite recursion for self-referential models
+            if arg in _processing_models:
+                return arg  # Already processing this model, return unwrapped
+            _processing_models.add(arg)
+            try:
+                return (
+                    Partial[arg, MakeFieldsOptional]  # type: ignore[valid-type]
+                    if make_fields_optional
+                    else Partial[arg]
+                )
+            finally:
+                _processing_models.discard(arg)
         else:
             return arg
 
@@ -803,7 +814,17 @@ class Partial(Generic[T_Model]):
             # If the field is a BaseModel, then recursively convert it's
             # attributes to optionals.
             elif isinstance(annotation, type) and issubclass(annotation, BaseModel):
-                tmp_field.annotation = Partial[annotation]
+                # Prevent infinite recursion for self-referential models
+                if annotation in _processing_models:
+                    tmp_field.annotation = (
+                        annotation  # Already processing, keep unwrapped
+                    )
+                else:
+                    _processing_models.add(annotation)
+                    try:
+                        tmp_field.annotation = Partial[annotation]
+                    finally:
+                        _processing_models.discard(annotation)
             return tmp_field.annotation, tmp_field
 
         model_name = (
