@@ -312,7 +312,10 @@ class PartialBase(Generic[T_Model]):
             if original_model is not None:
                 # Validate the final data against the original model
                 # This enforces required fields and runs validators without streaming context
-                original_model.model_validate(final_obj.model_dump(), **kwargs)
+                # Use exclude_none=True so fields with None use original model's defaults
+                original_model.model_validate(
+                    final_obj.model_dump(exclude_none=True), **kwargs
+                )
 
     @classmethod
     async def writer_model_from_chunks_async(
@@ -346,7 +349,9 @@ class PartialBase(Generic[T_Model]):
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                original_model.model_validate(final_obj.model_dump(), **kwargs)
+                original_model.model_validate(
+                    final_obj.model_dump(exclude_none=True), **kwargs
+                )
 
     @classmethod
     def model_from_chunks(
@@ -382,7 +387,9 @@ class PartialBase(Generic[T_Model]):
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                original_model.model_validate(final_obj.model_dump(), **kwargs)
+                original_model.model_validate(
+                    final_obj.model_dump(exclude_none=True), **kwargs
+                )
 
     @classmethod
     async def model_from_chunks_async(
@@ -409,7 +416,9 @@ class PartialBase(Generic[T_Model]):
         if final_obj is not None:
             original_model = getattr(cls, "_original_model", None)
             if original_model is not None:
-                original_model.model_validate(final_obj.model_dump(), **kwargs)
+                original_model.model_validate(
+                    final_obj.model_dump(exclude_none=True), **kwargs
+                )
 
     @staticmethod
     def extract_json(
