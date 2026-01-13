@@ -24,7 +24,7 @@ def is_json_complete(json_str: str) -> bool:
     try:
         from_json(json_str.encode())  # No partial_mode = strict parsing
         return True
-    except Exception:
+    except ValueError:
         return False
 
 
@@ -66,14 +66,14 @@ class JsonCompleteness:
             try:
                 parsed = from_json(json_str.encode())
                 self._mark_all(parsed, "")
-            except Exception:
+            except ValueError:
                 pass
             return
 
         # Root incomplete - use sibling heuristic
         try:
             parsed = from_json(json_str.encode(), partial_mode="trailing-strings")
-        except Exception:
+        except ValueError:
             return
 
         self._check_siblings(parsed, "")
