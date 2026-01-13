@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file. The format 
 
 <!-- Add upcoming changes here -->
 
+## [1.14.2] - 2026-01-13
+
+### Fixed
+- Prevented infinite recursion when creating Partial models for recursive Pydantic models (#1997)
+
+### Added
+- Added coverage for recursive Partial models (#1997)
+
 ## [1.14.1] - 2026-01-08
 
 ### Fixed
