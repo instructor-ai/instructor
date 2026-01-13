@@ -287,6 +287,7 @@ class PartialBase(Generic[T_Model]):
         partial_mode = (
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
+        final_obj = None
         for chunk in json_chunks:
             if (
                 len(chunk) > len(potential_object)
@@ -302,7 +303,16 @@ class PartialBase(Generic[T_Model]):
             obj = partial_model.model_validate(
                 obj, strict=None, context={"partial_streaming": True}, **kwargs
             )
+            final_obj = obj
             yield obj
+
+        # Final validation: validate against original model with required fields
+        if final_obj is not None:
+            original_model = getattr(cls, "_original_model", None)
+            if original_model is not None:
+                # Validate the final data against the original model
+                # This enforces required fields and runs validators without streaming context
+                original_model.model_validate(final_obj.model_dump(), **kwargs)
 
     @classmethod
     async def writer_model_from_chunks_async(
@@ -313,6 +323,7 @@ class PartialBase(Generic[T_Model]):
         partial_mode = (
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
+        final_obj = None
         async for chunk in json_chunks:
             if (
                 len(chunk) > len(potential_object)
@@ -328,7 +339,14 @@ class PartialBase(Generic[T_Model]):
             obj = partial_model.model_validate(
                 obj, strict=None, context={"partial_streaming": True}, **kwargs
             )
+            final_obj = obj
             yield obj
+
+        # Final validation: validate against original model with required fields
+        if final_obj is not None:
+            original_model = getattr(cls, "_original_model", None)
+            if original_model is not None:
+                original_model.model_validate(final_obj.model_dump(), **kwargs)
 
     @classmethod
     def model_from_chunks(
@@ -340,6 +358,7 @@ class PartialBase(Generic[T_Model]):
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
         chunk_buffer = []
+        final_obj = None
         for chunk in json_chunks:
             chunk_buffer += chunk
             if len(chunk_buffer) < 2:
@@ -349,13 +368,21 @@ class PartialBase(Generic[T_Model]):
             obj = process_potential_object(
                 potential_object, partial_mode, partial_model, **kwargs
             )
+            final_obj = obj
             yield obj
         if chunk_buffer:
             potential_object += remove_control_chars(chunk_buffer[0])
             obj = process_potential_object(
                 potential_object, partial_mode, partial_model, **kwargs
             )
+            final_obj = obj
             yield obj
+
+        # Final validation: validate against original model with required fields
+        if final_obj is not None:
+            original_model = getattr(cls, "_original_model", None)
+            if original_model is not None:
+                original_model.model_validate(final_obj.model_dump(), **kwargs)
 
     @classmethod
     async def model_from_chunks_async(
@@ -366,6 +393,7 @@ class PartialBase(Generic[T_Model]):
         partial_mode = (
             "on" if issubclass(cls, PartialLiteralMixin) else "trailing-strings"
         )
+        final_obj = None
         async for chunk in json_chunks:
             potential_object += chunk
             obj = from_json(
@@ -374,7 +402,14 @@ class PartialBase(Generic[T_Model]):
             obj = partial_model.model_validate(
                 obj, strict=None, context={"partial_streaming": True}, **kwargs
             )
+            final_obj = obj
             yield obj
+
+        # Final validation: validate against original model with required fields
+        if final_obj is not None:
+            original_model = getattr(cls, "_original_model", None)
+            if original_model is not None:
+                original_model.model_validate(final_obj.model_dump(), **kwargs)
 
     @staticmethod
     def extract_json(
@@ -911,7 +946,7 @@ class Partial(Generic[T_Model]):
             else f"Partial{wrapped_class.__name__}"
         )
 
-        return create_model(
+        partial_model = create_model(
             model_name,
             __base__=(wrapped_class, PartialBase),  # type: ignore
             __module__=wrapped_class.__module__,
@@ -924,3 +959,8 @@ class Partial(Generic[T_Model]):
                 for field_name, field_info in wrapped_class.model_fields.items()
             },  # type: ignore
         )
+
+        # Store reference to original model for final validation
+        partial_model._original_model = wrapped_class  # type: ignore[attr-defined]
+
+        return partial_model

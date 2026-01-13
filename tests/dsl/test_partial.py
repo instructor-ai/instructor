@@ -100,8 +100,8 @@ def test_partial():
 def test_partial_with_whitespace():
     partial = Partial[SamplePartial]
 
-    # Get the actual models from chunks
-    models = list(partial.model_from_chunks(["\n", "\t", " ", '{"b": {"b": 1}}']))
+    # Get the actual models from chunks - must provide complete data for final validation
+    models = list(partial.model_from_chunks(["\n", "\t", " ", '{"a": 42, "b": {"b": 1}}']))
 
     # Print actual values for debugging
     print(f"Number of models: {len(models)}")
@@ -112,8 +112,8 @@ def test_partial_with_whitespace():
     # First model has default values
     assert models[0].model_dump() == {"a": None, "b": {}}
 
-    # Last model has b populated from JSON (from the JSON chunk)
-    assert models[-1].model_dump() == {"a": None, "b": {"b": 1}}
+    # Last model has all fields populated from JSON
+    assert models[-1].model_dump() == {"a": 42, "b": {"b": 1}}
 
     # Check we have the expected number of models (2 instead of 4)
     assert len(models) == 2
@@ -123,16 +123,16 @@ def test_partial_with_whitespace():
 async def test_async_partial_with_whitespace():
     partial = Partial[SamplePartial]
 
-    # Handle any leading whitespace from the model
+    # Handle any leading whitespace from the model - must provide complete data for final validation
     async def async_generator():
-        for chunk in ["\n", "\t", " ", '{"b": {"b": 1}}']:
+        for chunk in ["\n", "\t", " ", '{"a": 42, "b": {"b": 1}}']:
             yield chunk
 
     expected_model_dicts = [
         {"a": None, "b": {}},
         {"a": None, "b": {}},
         {"a": None, "b": {}},
-        {"a": None, "b": {"b": 1}},
+        {"a": 42, "b": {"b": 1}},
     ]
 
     i = 0
@@ -140,7 +140,7 @@ async def test_async_partial_with_whitespace():
         assert model.model_dump() == expected_model_dicts[i]
         i += 1
 
-    assert model.model_dump() == {"a": None, "b": {"b": 1}}
+    assert model.model_dump() == {"a": 42, "b": {"b": 1}}
 
 
 @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
@@ -760,3 +760,125 @@ class TestModelValidatorsDuringStreaming:
         result = TruePartial.model_validate({"status": "active", "priority": "high"})
         assert result.status == "active"
         assert result.priority == "high"
+
+
+class TestFinalValidationAfterStreaming:
+    """Tests for final validation after streaming completes.
+
+    When streaming ends, the final object is validated against the original
+    model to enforce required fields and run validators without streaming context.
+    """
+
+    def test_final_validation_catches_missing_required_fields(self):
+        """Final validation should fail if required fields are missing."""
+
+        class ModelWithRequired(BaseModel):
+            name: str  # Required
+            age: int  # Required
+            nickname: Optional[str] = None  # Optional
+
+        PartialModel = Partial[ModelWithRequired]
+
+        # Simulate streaming that doesn't provide all required fields
+        chunks = ['{"name": "John"}']  # Missing 'age'
+
+        with pytest.raises(ValidationError) as exc_info:
+            list(PartialModel.model_from_chunks(iter(chunks)))
+
+        # Should fail because 'age' is required but missing
+        assert "age" in str(exc_info.value)
+
+    def test_final_validation_passes_with_all_required_fields(self):
+        """Final validation should pass when all required fields are present."""
+
+        class ModelWithRequired(BaseModel):
+            name: str
+            age: int
+
+        PartialModel = Partial[ModelWithRequired]
+
+        # Simulate streaming that provides all required fields
+        chunks = ['{"name": "John", "age": 30}']
+
+        results = list(PartialModel.model_from_chunks(iter(chunks)))
+        assert len(results) > 0
+        final = results[-1]
+        assert final.name == "John"
+        assert final.age == 30
+
+    def test_final_validation_runs_model_validators(self):
+        """Final validation should run model validators without streaming context."""
+        from pydantic import model_validator
+
+        class ModelWithValidator(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+            priority: Literal["high", "low"]
+
+            @model_validator(mode="after")
+            def check_consistency(self):
+                if self.status == "active" and self.priority == "low":
+                    raise ValueError("Active tasks must have high priority")
+                return self
+
+        PartialModel = Partial[ModelWithValidator]
+
+        # This should fail final validation due to the model validator
+        chunks = ['{"status": "active", "priority": "low"}']
+
+        with pytest.raises(ValidationError) as exc_info:
+            list(PartialModel.model_from_chunks(iter(chunks)))
+
+        assert "Active tasks must have high priority" in str(exc_info.value)
+
+    def test_streaming_yields_partial_objects_before_final_validation(self):
+        """Streaming should yield partial objects even if final validation will fail."""
+
+        class ModelWithRequired(BaseModel):
+            name: str
+            age: int
+
+        PartialModel = Partial[ModelWithRequired]
+
+        # Stream that will fail final validation (missing 'age')
+        chunks = ['{"na', 'me": "John"}']
+
+        partial_objects = []
+        try:
+            for obj in PartialModel.model_from_chunks(iter(chunks)):
+                partial_objects.append(obj)
+        except ValidationError:
+            pass  # Expected
+
+        # Should have yielded at least one partial object before failing
+        assert len(partial_objects) >= 1
+        assert partial_objects[-1].name == "John"
+
+    def test_original_model_reference_is_stored(self):
+        """Partial model should store reference to original model."""
+
+        class OriginalModel(BaseModel):
+            name: str
+
+        PartialModel = Partial[OriginalModel]
+
+        assert hasattr(PartialModel, "_original_model")
+        assert PartialModel._original_model is OriginalModel
+
+    @pytest.mark.asyncio
+    async def test_async_final_validation_catches_missing_required_fields(self):
+        """Async streaming should also do final validation."""
+
+        class ModelWithRequired(BaseModel):
+            name: str
+            age: int
+
+        PartialModel = Partial[ModelWithRequired]
+
+        async def async_chunks():
+            yield '{"name": "John"}'  # Missing 'age'
+
+        with pytest.raises(ValidationError) as exc_info:
+            async for _ in PartialModel.model_from_chunks_async(async_chunks()):
+                pass
+
+        assert "age" in str(exc_info.value)
