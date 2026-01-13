@@ -27,7 +27,7 @@ from typing import (
 )
 
 from jiter import from_json
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, create_model, model_validator
 from pydantic.fields import FieldInfo
 
 from instructor.mode import Mode
@@ -47,6 +47,20 @@ class MakeFieldsOptional:
 
 
 class PartialLiteralMixin:
+    """Mixin to handle Literal and Enum types during streaming.
+
+    When using partial streaming with models that contain Literal or Enum fields,
+    incomplete strings like "act" (for "active") can cause validation errors.
+
+    Adding this mixin to your model switches from partial_mode='trailing-strings'
+    to partial_mode='on', which drops incomplete strings entirely instead of
+    keeping them as partial values.
+
+    Example:
+        class MyModel(BaseModel, PartialLiteralMixin):
+            status: Literal["active", "inactive"]
+    """
+
     pass
 
 
@@ -58,7 +72,10 @@ def process_potential_object(potential_object, partial_mode, partial_model, **kw
     obj = from_json(
         (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
     )
-    obj = partial_model.model_validate(obj, strict=None, **kwargs)
+    # Pass context to skip model validators during streaming
+    obj = partial_model.model_validate(
+        obj, strict=None, context={"partial_streaming": True}, **kwargs
+    )
     return obj
 
 
@@ -67,6 +84,7 @@ def _process_generic_arg(
     make_fields_optional: bool = False,
 ) -> Any:
     arg_origin = get_origin(arg)
+
     if arg_origin is not None:
         # Handle any nested generic type (Union, List, Dict, etc.)
         nested_args = get_args(arg)
@@ -100,7 +118,7 @@ def _make_field_optional(
 
     annotation = field.annotation
 
-    # Handle generics (like List, Dict, etc.)
+    # Handle generics (like List, Dict, Union, Literal, etc.)
     if get_origin(annotation) is not None:
         # Get the generic base (like List, Dict) and its arguments (like User in List[User])
         generic_base = get_origin(annotation)
@@ -134,7 +152,12 @@ class PartialBase(Generic[T_Model]):
     @classmethod
     @cache
     def get_partial_model(cls) -> type[T_Model]:
-        """Return a partial model we can use to validate partial results."""
+        """Return a partial model we can use to validate partial results.
+
+        This method creates a model with all fields optional and wraps any
+        model validators to skip validation when fields are incomplete
+        (None during streaming).
+        """
         assert issubclass(cls, BaseModel), (
             f"{cls.__name__} must be a subclass of BaseModel"
         )
@@ -145,7 +168,8 @@ class PartialBase(Generic[T_Model]):
             else f"Partial{cls.__name__}"
         )
 
-        return create_model(
+        # Create the base partial model with optional fields
+        partial_model = create_model(
             model_name,
             __base__=cls,
             __module__=cls.__module__,
@@ -154,6 +178,75 @@ class PartialBase(Generic[T_Model]):
                 for field_name, field_info in cls.model_fields.items()
             },  # type: ignore[all]
         )
+
+        # Check if there are any model validators to wrap
+        model_validators = cls.__pydantic_decorators__.model_validators
+        if not model_validators:
+            return partial_model
+
+        # Collect original validator functions
+        original_validators = {
+            name: decorator
+            for name, decorator in model_validators.items()
+            if decorator.info.mode == "after"
+        }
+
+        if not original_validators:
+            return partial_model
+
+        # Create a subclass that overrides model validators to skip during streaming
+        def create_streaming_safe_validator(orig_validators):
+            from pydantic import ValidationInfo
+
+            @model_validator(mode="wrap")
+            @classmethod
+            def streaming_safe_validator(_cls, values, handler, info: ValidationInfo):
+                # First, run the default Pydantic validation (field validation, etc.)
+                model = handler(values)
+
+                # Check if we're in partial streaming mode via context
+                context = info.context or {}
+                if context.get("partial_streaming"):
+                    # Skip model validators during streaming
+                    return model
+
+                # Not streaming - run original validators
+                for _, decorator in orig_validators.items():
+                    result = decorator.func(model)
+                    if result is not None:
+                        model = result
+
+                return model
+
+            return streaming_safe_validator
+
+        def create_noop_validator():
+            @model_validator(mode="wrap")
+            @classmethod
+            def noop_validator(_cls, values, handler, _info):
+                return handler(values)
+
+            return noop_validator
+
+        # Create the wrapper validator that runs all original validators
+        wrapper_validator = create_streaming_safe_validator(original_validators)
+
+        # Create validators dict: first validator is the wrapper, rest are no-ops
+        # This ensures all parent validators are overridden
+        validators_dict = {}
+        validator_names = list(original_validators.keys())
+        validators_dict[validator_names[0]] = wrapper_validator
+        for name in validator_names[1:]:
+            validators_dict[name] = create_noop_validator()
+
+        wrapped_model = create_model(
+            model_name,
+            __base__=partial_model,
+            __module__=cls.__module__,
+            __validators__=validators_dict,
+        )
+
+        return wrapped_model
 
     @classmethod
     def from_streaming_response(
@@ -206,7 +299,9 @@ class PartialBase(Generic[T_Model]):
             obj = from_json(
                 (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            obj = partial_model.model_validate(
+                obj, strict=None, context={"partial_streaming": True}, **kwargs
+            )
             yield obj
 
     @classmethod
@@ -230,7 +325,9 @@ class PartialBase(Generic[T_Model]):
             obj = from_json(
                 (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            obj = partial_model.model_validate(
+                obj, strict=None, context={"partial_streaming": True}, **kwargs
+            )
             yield obj
 
     @classmethod
@@ -274,7 +371,9 @@ class PartialBase(Generic[T_Model]):
             obj = from_json(
                 (potential_object.strip() or "{}").encode(), partial_mode=partial_mode
             )
-            obj = partial_model.model_validate(obj, strict=None, **kwargs)
+            obj = partial_model.model_validate(
+                obj, strict=None, context={"partial_streaming": True}, **kwargs
+            )
             yield obj
 
     @staticmethod
