@@ -61,14 +61,13 @@ class JsonCompleteness:
         if not json_str or not json_str.strip():
             return
 
-        # If root is complete, everything is complete
-        if is_json_complete(json_str):
-            try:
-                parsed = from_json(json_str.encode())
-                self._mark_all(parsed, "")
-            except ValueError:
-                pass
+        # Try strict parsing first - if it succeeds, JSON is complete
+        try:
+            parsed = from_json(json_str.encode())
+            self._mark_all(parsed, "")
             return
+        except ValueError:
+            pass  # JSON is incomplete, continue with partial parsing
 
         # Root incomplete - use sibling heuristic
         try:
