@@ -671,25 +671,30 @@ def reask_genai_tools(
     Handle reask for Google GenAI tools mode when validation fails.
 
     Kwargs modifications:
-    - Adds: "contents" (tool response messages indicating validation errors)
+    - Adds: "contents" (model response preserved for thought_signature,
+                        tool response with validation errors)
     """
     from google.genai import types
 
     kwargs = kwargs.copy()
-    function_call = response.candidates[0].content.parts[0].function_call
-    kwargs["contents"].append(
-        types.ModelContent(
-            parts=[
-                types.Part.from_function_call(
-                    name=function_call.name,
-                    args=function_call.args,
-                ),
-                types.Part.from_text(
-                    text=f"Validation Error found:\n{exception}\nRecall the function correctly, fix the errors"
-                ),
-            ]
-        ),
+
+    function_call_content = response.candidates[0].content
+    function_call = function_call_content.parts[0].function_call
+
+    error_msg = (
+        f"Validation Error found:\n{exception}\n"
+        "Recall the function correctly, fix the errors"
     )
+    function_response_part = types.Part.from_function_response(
+        name=function_call.name,
+        response={"error": error_msg},
+    )
+    function_response_content = types.Content(
+        role="tool", parts=[function_response_part]
+    )
+
+    kwargs["contents"].append(function_call_content)
+    kwargs["contents"].append(function_response_content)
     return kwargs
 
 
