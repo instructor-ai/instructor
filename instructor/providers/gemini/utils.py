@@ -678,23 +678,64 @@ def reask_genai_tools(
 
     kwargs = kwargs.copy()
 
-    function_call_content = response.candidates[0].content
-    function_call = function_call_content.parts[0].function_call
+    existing_contents = kwargs.get("contents")
+    if isinstance(existing_contents, list):
+        kwargs["contents"] = existing_contents.copy()
+    elif existing_contents is None:
+        kwargs["contents"] = []
+    else:
+        kwargs["contents"] = list(existing_contents)
+
+    model_content = None
+    function_call_content = None
+    function_call = None
+
+    candidates = getattr(response, "candidates", None) if response is not None else None
+    if isinstance(candidates, list):
+        for candidate in candidates:
+            content = getattr(candidate, "content", None)
+            if content is None:
+                continue
+
+            if model_content is None:
+                model_content = content
+
+            parts = getattr(content, "parts", None) or []
+            for part in parts:
+                function_call = getattr(part, "function_call", None)
+                if function_call is not None:
+                    function_call_content = content
+                    break
+
+            if function_call is not None:
+                break
 
     error_msg = (
         f"Validation Error found:\n{exception}\n"
         "Recall the function correctly, fix the errors"
     )
+
+    if function_call is None:
+        if model_content is not None:
+            kwargs["contents"].append(model_content)
+
+        kwargs["contents"].append(
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=error_msg)],
+            )
+        )
+        return kwargs
+
     function_response_part = types.Part.from_function_response(
         name=function_call.name,
         response={"error": error_msg},
     )
-    function_response_content = types.Content(
-        role="tool", parts=[function_response_part]
-    )
 
     kwargs["contents"].append(function_call_content)
-    kwargs["contents"].append(function_response_content)
+    kwargs["contents"].append(
+        types.Content(role="tool", parts=[function_response_part])
+    )
     return kwargs
 
 
