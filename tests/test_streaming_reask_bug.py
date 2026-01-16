@@ -7,6 +7,8 @@ because they expect a ChatCompletion but receive a Stream object.
 GitHub Issue: https://github.com/jxnl/instructor/issues/1991
 """
 
+from typing import Any, Optional
+
 import pytest
 from pydantic import ValidationError, BaseModel, field_validator
 
@@ -22,6 +24,35 @@ class MockStream:
 
     def __next__(self):
         raise StopIteration
+
+
+class MockResponsesToolCall:
+    """Mock tool call item in a responses output list."""
+
+    def __init__(
+        self,
+        arguments: str,
+        name: Optional[str] = None,
+        call_id: Optional[str] = None,
+        item_type: str = "function_call",
+    ) -> None:
+        self.arguments = arguments
+        self.name = name
+        self.call_id = call_id
+        self.type = item_type
+
+
+class MockResponsesReasoningItem:
+    """Mock reasoning item in a responses output list."""
+
+    type = "reasoning"
+
+
+class MockResponsesResponse:
+    """Mock Responses API response with output items."""
+
+    def __init__(self, output: list[Any]) -> None:
+        self.output = output
 
 
 def create_mock_validation_error():
@@ -103,6 +134,36 @@ class TestStreamingReaskBug:
         )
 
         assert "messages" in result
+
+    def test_reask_responses_tools_skips_reasoning_items_and_includes_details(self):
+        """Test responses reask ignores reasoning items and adds tool details."""
+        mock_response = MockResponsesResponse(
+            output=[
+                MockResponsesReasoningItem(),
+                MockResponsesToolCall(
+                    arguments='{"name": "Jane"}',
+                    name="extract_person",
+                    call_id="call_123",
+                ),
+            ]
+        )
+        kwargs = {
+            "messages": [{"role": "user", "content": "test"}],
+        }
+        exception = create_mock_validation_error()
+
+        result = handle_reask_kwargs(
+            kwargs=kwargs,
+            mode=Mode.RESPONSES_TOOLS,
+            response=mock_response,
+            exception=exception,
+        )
+
+        assert "messages" in result
+        assert len(result["messages"]) == 2
+        reask_content = result["messages"][-1]["content"]
+        assert "tool call name=extract_person, id=call_123" in reask_content
+        assert '{"name": "Jane"}' in reask_content
 
     def test_reask_md_json_with_stream_object(self):
         """Test that MD_JSON reask handler handles Stream objects."""
