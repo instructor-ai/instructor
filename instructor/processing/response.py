@@ -177,7 +177,7 @@ async def process_response_async(
     validation_context: dict[str, Any] | None = None,
     strict: bool | None = None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model | ChatCompletion:
+) -> Any:
     """Asynchronously process and transform LLM responses into structured models.
 
     This function is the async entry point for converting raw LLM responses into validated
@@ -292,7 +292,7 @@ def process_response(
     validation_context: dict[str, Any] | None = None,
     strict=None,
     mode: Mode = Mode.TOOLS,
-) -> T_Model | list[T_Model] | None:
+) -> Any:
     """Process and transform LLM responses into structured models (synchronous).
 
     This is the main entry point for converting raw LLM responses into validated Pydantic

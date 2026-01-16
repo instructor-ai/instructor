@@ -609,9 +609,13 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
         response_model = ModelAdapter[response_model]
 
     if is_typed_dict(response_model):
-        response_model: BaseModel = create_model(
-            response_model.__name__,
-            **{k: (v, ...) for k, v in response_model.__annotations__.items()},
+        # `TypedDict` subclasses always have `__name__` at runtime, but keep this
+        # defensive to satisfy type checkers.
+        model_name = getattr(response_model, "__name__", "TypedDictModel")
+        annotations = getattr(response_model, "__annotations__", {})
+        response_model = create_model(
+            model_name,
+            **{k: (v, ...) for k, v in annotations.items()},
         )
 
     # Import here to avoid circular dependency

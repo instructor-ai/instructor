@@ -40,8 +40,12 @@ class DummyIterableModel(BaseModel, IterableBase):
         return gen()
 
 
+class DummyCompletion(BaseModel):
+    """Minimal stand-in for a provider completion object."""
+
+
 def test_process_response_returns_list_response_for_iterable_model():
-    raw = {"fake": "response"}
+    raw = DummyCompletion()
 
     result = process_response(
         raw,
@@ -56,7 +60,7 @@ def test_process_response_returns_list_response_for_iterable_model():
 
 
 def test_process_response_streaming_returns_list_response_for_iterable_model():
-    raw = object()
+    raw = DummyCompletion()
 
     result = process_response(
         raw,
