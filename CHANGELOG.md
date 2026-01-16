@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fixed Google GenAI `safety_settings` causing `400 INVALID_ARGUMENT` when requests include image content by using image-specific harm categories when needed (#1773)
+- Fixed `create_with_completion()` crashing when using `list[T]` response models by preserving `_raw_response` on list outputs (#1303)
 
 ## [1.14.3] - 2026-01-13
 

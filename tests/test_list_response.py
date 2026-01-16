@@ -39,7 +39,9 @@ def test_process_response_wraps_iterablebase_tasks_with_raw_response() -> None:
         ) -> FakeIterableResponse:
             return cls(tasks=[User(name="x"), User(name="y")])
 
-    raw_response: Any = {"id": "raw"}
+    # `process_response()` is typed with a BaseModel-bounded type variable for `response`,
+    # so use a BaseModel instance here to keep `ty` happy.
+    raw_response: Any = User(name="raw")
     out = process_response(
         raw_response,
         response_model=FakeIterableResponse,

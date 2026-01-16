@@ -14,6 +14,7 @@ from typing import (
     Any,
     Callable,
     Generic,
+    Union,
     TypeVar,
     cast,
     get_args,
@@ -595,6 +596,29 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     if response_model is None:
         return None
 
+    # `list[int | str]` and similar scalar lists are treated as simple types and should
+    # be adapted, not converted into an IterableModel.
+    origin = get_origin(response_model)
+    if origin is list and is_simple_type(response_model):
+        args = get_args(response_model)
+
+        def _is_model_type(t: Any) -> bool:
+            if inspect.isclass(t) and issubclass(t, BaseModel):
+                return True
+            return get_origin(t) is Union and all(
+                inspect.isclass(m) and issubclass(m, BaseModel) for m in get_args(t)
+            )
+
+        # If the list element is a Pydantic model (or union of models), this is a
+        # structured "iterable extraction" response model, not a simple scalar list.
+        if args and _is_model_type(args[0]):
+            origin = None
+        else:
+            from instructor.dsl.simple_type import ModelAdapter
+
+            response_model = ModelAdapter[response_model]  # type: ignore[invalid-type-form]
+            origin = get_origin(response_model)
+
     if is_typed_dict(response_model):
         response_model = cast(
             type[BaseModel],
@@ -604,6 +628,7 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
             ),
         )
 
+    # Recompute after potential wrapping/conversion above.
     origin = get_origin(response_model)
     if origin in {Iterable, list}:
         from instructor.dsl.iterable import IterableModel
