@@ -400,6 +400,33 @@ def update_genai_kwargs(
             image_categories if (has_image and image_categories) else text_categories
         )
 
+        def _map_text_to_image_category_name(image_category_name: str) -> str | None:
+            suffix = image_category_name.removeprefix("HARM_CATEGORY_IMAGE_")
+            # google-genai uses IMAGE_HATE while text uses HATE_SPEECH
+            if suffix == "HATE":
+                return "HARM_CATEGORY_HATE_SPEECH"
+            return f"HARM_CATEGORY_{suffix}"
+
+        for category in supported_categories:
+            threshold = HarmBlockThreshold.OFF
+            if isinstance(safety_settings, dict):
+                if category in safety_settings:
+                    threshold = safety_settings[category]
+                # If we are using image categories, try to honor thresholds passed via text categories.
+                elif has_image and category.name.startswith("HARM_CATEGORY_IMAGE_"):
+                    mapped_name = _map_text_to_image_category_name(category.name)
+                    if mapped_name is not None and hasattr(HarmCategory, mapped_name):
+                        mapped_category = getattr(HarmCategory, mapped_name)
+                        if mapped_category in safety_settings:
+                            threshold = safety_settings[mapped_category]
+
+            base_config["safety_settings"].append(
+                {
+                    "category": category,
+                    "threshold": threshold,
+                }
+            )
+
     # Extract thinking_config from user's config if provided (dict or object)
     # This ensures thinking_config inside config parameter is not ignored.
     user_config = new_kwargs.get("config")
