@@ -101,6 +101,8 @@ def reask_responses_tools(
 
     reask_messages = []
     for tool_call in response.output:
+        if not hasattr(tool_call, "arguments"):
+            continue
         reask_messages.append(
             {
                 "role": "user",  # type: ignore
