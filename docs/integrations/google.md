@@ -139,6 +139,50 @@ resp = client.create(
 print(resp)
 ```
 
+## Safety settings with images
+
+Google GenAI uses a different set of harm categories for image inputs (for example, `HARM_CATEGORY_IMAGE_HATE`).
+
+When your request includes image content, Instructor will:
+
+- Use the image-specific categories in the request config
+- Map thresholds you pass for text categories (like `HARM_CATEGORY_HATE_SPEECH`) to the matching image category (like `HARM_CATEGORY_IMAGE_HATE`)
+
+This avoids `400 INVALID_ARGUMENT` errors when you combine `safety_settings` with images.
+
+```python
+import instructor
+from google.genai.types import HarmBlockThreshold, HarmCategory
+from instructor.processing.multimodal import Image
+from pydantic import BaseModel
+
+
+class Result(BaseModel):
+    summary: str
+
+
+client = instructor.from_provider("google/gemini-3-flash")
+
+result = client.create(
+    response_model=Result,
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                "Describe the image in one sentence.",
+                Image.autodetect("path/to/image.png"),
+            ],
+        }
+    ],
+    # You can still pass text categories. Instructor will map them for image inputs.
+    safety_settings={
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    },
+)
+
+print(result)
+```
+
 ## Nested Example
 
 ```python
