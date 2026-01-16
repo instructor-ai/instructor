@@ -6,9 +6,16 @@ All notable changes to this project will be documented in this file. The format 
 
 <!-- Add upcoming changes here -->
 
+## [1.14.4] - 2026-01-16
+
+### Changed
+- Simplified `JsonCompleteness` by using `jiter` parsing and a sibling-based completeness heuristic (#2000)
+
 ### Fixed
-- Fixed Google GenAI `safety_settings` causing `400 INVALID_ARGUMENT` when requests include image content by using image-specific harm categories when needed (#1773)
-- Fixed `create_with_completion()` crashing when using `list[T]` response models by preserving `_raw_response` on list outputs (#1303)
+- Fixed Responses API retries crashing on reasoning items by skipping non-tool-call items in `reask_responses_tools` (#2002)
+- Fixed Google GenAI dict-style `config` handling to preserve `labels` and other settings like `cached_content` and `thinking_config` (#2005)
+- Fixed Google GenAI `safety_settings` causing `400 INVALID_ARGUMENT` when requests include image content by using image-specific harm categories when needed (#2007, #1773)
+- Fixed `create_with_completion()` crashing when using `list[T]` response models by preserving `_raw_response` on list outputs, and hardened optional `vertexai` imports (#2011, #1303)
 
 ## [1.14.3] - 2026-01-13
 
