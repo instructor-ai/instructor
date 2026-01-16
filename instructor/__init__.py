@@ -114,9 +114,14 @@ if importlib.util.find_spec("cohere") is not None:
     __all__ += ["from_cohere"]
 
 if all(importlib.util.find_spec(pkg) for pkg in ("vertexai", "jsonref")):
-    from .providers.vertexai.client import from_vertexai
-
-    __all__ += ["from_vertexai"]
+    try:
+        from .providers.vertexai.client import from_vertexai
+    except Exception:
+        # Optional dependency may be present but broken/misconfigured at import time.
+        # Avoid failing `import instructor` in that case.
+        pass
+    else:
+        __all__ += ["from_vertexai"]
 
 if importlib.util.find_spec("boto3") is not None:
     from .providers.bedrock.client import from_bedrock
