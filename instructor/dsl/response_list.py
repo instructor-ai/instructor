@@ -20,7 +20,7 @@ class ListResponse(list[T], Generic[T]):
         self._raw_response = _raw_response
 
     @classmethod
-    def from_list(cls, items: list[T], *, raw_response: Any | None) -> "ListResponse[T]":
+    def from_list(cls, items: list[T], *, raw_response: Any | None) -> ListResponse[T]:
         return cls(items, _raw_response=raw_response)
 
     def get_raw_response(self) -> Any | None:
@@ -31,4 +31,3 @@ class ListResponse(list[T], Generic[T]):
         if isinstance(key, slice):
             return type(self)(value, _raw_response=self._raw_response)
         return value
-

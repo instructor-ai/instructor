@@ -595,15 +595,13 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     if response_model is None:
         return None
 
-    if is_simple_type(response_model):
-        from instructor.dsl.simple_type import ModelAdapter
-
-        response_model = ModelAdapter[response_model]
-
     if is_typed_dict(response_model):
-        response_model: BaseModel = create_model(
-            response_model.__name__,
-            **{k: (v, ...) for k, v in response_model.__annotations__.items()},
+        response_model = cast(
+            type[BaseModel],
+            create_model(
+                response_model.__name__,
+                **{k: (v, ...) for k, v in response_model.__annotations__.items()},
+            ),
         )
 
     origin = get_origin(response_model)
@@ -616,7 +614,23 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
                 "response_model must be parameterized, e.g. list[User] or Iterable[User]"
             )
         iterable_element_class = args[0]
-        response_model = cast(BaseModel, IterableModel(iterable_element_class))  # type: ignore
+        if is_typed_dict(iterable_element_class):
+            iterable_element_class = cast(
+                type[BaseModel],
+                create_model(
+                    iterable_element_class.__name__,
+                    **{
+                        k: (v, ...)
+                        for k, v in iterable_element_class.__annotations__.items()
+                    },
+                ),
+            )
+        response_model = IterableModel(cast(type[BaseModel], iterable_element_class))
+
+    if is_simple_type(response_model):
+        from instructor.dsl.simple_type import ModelAdapter
+
+        response_model = ModelAdapter[response_model]  # type: ignore[invalid-type-form]
 
     # Import here to avoid circular dependency
     from ..processing.function_calls import OpenAISchema, openai_schema

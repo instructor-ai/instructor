@@ -36,7 +36,7 @@ def test_process_response_wraps_iterablebase_tasks_with_raw_response() -> None:
         @classmethod
         def from_response(  # type: ignore[override]
             cls, _response: Any, **_kwargs: Any
-        ) -> "FakeIterableResponse":
+        ) -> FakeIterableResponse:
             return cls(tasks=[User(name="x"), User(name="y")])
 
     raw_response: Any = {"id": "raw"}
@@ -60,4 +60,3 @@ def test_prepare_response_model_supports_list_and_iterable() -> None:
     prepared_iterable = prepare_response_model(ABCIterable[User])  # type: ignore[index]
     assert prepared_iterable is not None
     assert issubclass(prepared_iterable, IterableBase)
-
