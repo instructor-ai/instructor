@@ -41,7 +41,7 @@ def test_update_genai_kwargs_safety_settings_with_image_content_uses_image_categ
 def test_update_genai_kwargs_maps_text_thresholds_to_image_categories():
     """Text thresholds should carry over to equivalent IMAGE_* categories."""
     from google.genai import types
-    from google.genai.types import HarmCategory, HarmBlockThreshold
+    from google.genai.types import HarmBlockThreshold, HarmCategory
 
     excluded_categories = {HarmCategory.HARM_CATEGORY_UNSPECIFIED}
     if hasattr(HarmCategory, "HARM_CATEGORY_JAILBREAK"):
