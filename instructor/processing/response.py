@@ -229,17 +229,11 @@ async def process_response_async(
         and issubclass(response_model, IterableBase)
         and stream
     ):
-        # Collect streamed values into a list-like response that can carry `_raw_response`.
-        from ..dsl.response_list import ListResponse
-
-        tasks: list[Any] = []
-        async_generator = response_model.from_streaming_response_async(  # type: ignore[arg-type]
+        # Preserve streaming behavior for `create_iterable()` (async for).
+        return response_model.from_streaming_response_async(  # type: ignore[return-value,arg-type]
             cast(AsyncGenerator[Any, None], response),
             mode=mode,
         )
-        async for task in async_generator:
-            tasks.append(task)
-        return ListResponse.from_list(tasks, raw_response=response)  # type: ignore[return-value]
 
     if (
         inspect.isclass(response_model)
@@ -354,27 +348,23 @@ def process_response(
         and issubclass(response_model, IterableBase)
         and stream
     ):
-        # from_streaming_response returns a Generator
-        # Collect all yielded values into a list
-        from ..dsl.response_list import ListResponse
-
-        tasks = list(
-            response_model.from_streaming_response(  # type: ignore
-                response,
-                mode=mode,
-            )
+        # Preserve streaming behavior for `create_iterable()` (for/async for).
+        return response_model.from_streaming_response(  # type: ignore[return-value]
+            response,
+            mode=mode,
         )
-        return ListResponse.from_list(tasks, raw_response=response)
 
     if (
         inspect.isclass(response_model)
         and issubclass(response_model, PartialBase)
         and stream
     ):
-        # Return the Generator directly for streaming Partial responses.
-        return response_model.from_streaming_response(  # type: ignore
-            response,
-            mode=mode,
+        # Collect partial stream to surface validation errors inside retry logic.
+        return list(
+            response_model.from_streaming_response(  # type: ignore
+                response,
+                mode=mode,
+            )
         )
 
     model = response_model.from_response(  # type: ignore

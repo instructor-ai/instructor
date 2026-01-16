@@ -69,9 +69,8 @@ def test_process_response_streaming_returns_list_response_for_iterable_model():
         mode=Mode.TOOLS,
     )
 
-    assert isinstance(result, ListResponse)
+    # Streaming IterableBase should preserve generator behavior (used by create_iterable()).
     assert list(result) == [1, 2]
-    assert result._raw_response is raw
 
 
 @pytest.mark.asyncio
@@ -88,9 +87,11 @@ async def test_process_response_async_streaming_returns_list_response_for_iterab
         mode=Mode.TOOLS,
     )
 
-    assert isinstance(result, ListResponse)
-    assert list(result) == [1, 2]
-    assert result._raw_response is raw
+    # Streaming IterableBase should preserve async generator behavior (used by create_iterable()).
+    collected: list[int] = []
+    async for item in result:
+        collected.append(item)
+    assert collected == [1, 2]
 
 
 def test_prepare_response_model_treats_list_as_iterable_model():
