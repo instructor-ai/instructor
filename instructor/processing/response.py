@@ -226,14 +226,29 @@ async def process_response_async(
 
     if (
         inspect.isclass(response_model)
-        and issubclass(response_model, (IterableBase, PartialBase))
+        and issubclass(response_model, IterableBase)
         and stream
     ):
-        # from_streaming_response_async returns an AsyncGenerator
-        # Yield each item as it comes in
-        # Note: response type varies by mode (ChatCompletion, AsyncGenerator, etc.)
-        return response_model.from_streaming_response_async(  # type: ignore[return-value]
-            cast(AsyncGenerator[Any, None], response),  # type: ignore[arg-type]
+        # Collect streamed values into a list-like response that can carry `_raw_response`.
+        from ..dsl.response_list import ListResponse
+
+        tasks: list[Any] = []
+        async_generator = response_model.from_streaming_response_async(  # type: ignore[arg-type]
+            cast(AsyncGenerator[Any, None], response),
+            mode=mode,
+        )
+        async for task in async_generator:
+            tasks.append(task)
+        return ListResponse.from_list(tasks, raw_response=response)  # type: ignore[return-value]
+
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, PartialBase)
+        and stream
+    ):
+        # Return the AsyncGenerator directly for streaming Partial responses.
+        return response_model.from_streaming_response_async(  # type: ignore[return-value,arg-type]
+            cast(AsyncGenerator[Any, None], response),
             mode=mode,
         )
 
@@ -248,10 +263,17 @@ async def process_response_async(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]  # type: ignore
+        from ..dsl.response_list import ListResponse
+
+        tasks = ListResponse.from_list(
+            [task for task in model.tasks],  # type: ignore
+            raw_response=response,
+        )
+        return tasks
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
+        model._raw_response = response
         return model
 
     if isinstance(model, AdapterBase):
@@ -329,18 +351,31 @@ def process_response(
 
     if (
         inspect.isclass(response_model)
-        and issubclass(response_model, (IterableBase, PartialBase))
+        and issubclass(response_model, IterableBase)
         and stream
     ):
         # from_streaming_response returns a Generator
         # Collect all yielded values into a list
+        from ..dsl.response_list import ListResponse
+
         tasks = list(
             response_model.from_streaming_response(  # type: ignore
                 response,
                 mode=mode,
             )
         )
-        return tasks
+        return ListResponse.from_list(tasks, raw_response=response)
+
+    if (
+        inspect.isclass(response_model)
+        and issubclass(response_model, PartialBase)
+        and stream
+    ):
+        # Return the Generator directly for streaming Partial responses.
+        return response_model.from_streaming_response(  # type: ignore
+            response,
+            mode=mode,
+        )
 
     model = response_model.from_response(  # type: ignore
         response,
@@ -353,10 +388,17 @@ def process_response(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        return [task for task in model.tasks]  # type: ignore
+        from ..dsl.response_list import ListResponse
+
+        tasks = ListResponse.from_list(
+            [task for task in model.tasks],  # type: ignore
+            raw_response=response,
+        )
+        return tasks
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
+        model._raw_response = response
         return model
 
     if isinstance(model, AdapterBase):
