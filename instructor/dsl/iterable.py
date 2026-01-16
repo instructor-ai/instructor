@@ -636,7 +636,17 @@ def IterableModel(
     Returns:
         schema (OpenAISchema): A new class that can be used to segment multiple tasks
     """
-    task_name = subtask_class.__name__ if name is None else name
+    if name is not None:
+        task_name = name
+    else:
+        # Handle `Union[A, B]` / `A | B` task types.
+        # `types.UnionType` does not have `__name__`, so fall back to a stable name.
+        task_name = getattr(subtask_class, "__name__", None)
+        if task_name is None and get_origin(subtask_class) is Union:
+            members = get_args(subtask_class)
+            task_name = "Or".join(getattr(m, "__name__", str(m)) for m in members)
+        if task_name is None:
+            task_name = str(subtask_class)
 
     name = f"Iterable{task_name}"
 

@@ -14,6 +14,7 @@ from typing import (
     Any,
     Callable,
     Generic,
+    Union,
     TypeVar,
     cast,
     get_args,
@@ -595,57 +596,74 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
     if response_model is None:
         return None
 
-    # Check for Iterable[T] and list[T] BEFORE simple type checks.
-    # `is_simple_type()` can misclassify these in some Python versions.
     origin = get_origin(response_model)
-    if origin is Iterable:
-        from instructor.dsl.iterable import IterableModel
 
-        iterable_element_class = get_args(response_model)[0]
-        response_model = cast(type[BaseModel], IterableModel(iterable_element_class))  # type: ignore
-    elif origin is list:
-        # Only treat `list[T]` as an IterableModel when `T` is (or contains) BaseModel(s).
-        # For lists of primitives (e.g. `list[int | str]`) we keep the "simple type" path.
+    # For `list[int | str]` and other scalar lists, keep the simple-type adapter path.
+    # However, for `list[User]` (or `list[Union[User, Other]]`) we want IterableModel.
+    if origin is list and is_simple_type(response_model):
         args = get_args(response_model)
         inner = args[0] if args else None
 
-        is_base_model_inner = False
-        if inner is not None:
-            try:
-                from typing import Union
+        def _is_model_type(t: Any) -> bool:
+            if inspect.isclass(t) and issubclass(t, BaseModel):
+                return True
+            return get_origin(t) is Union and all(
+                inspect.isclass(m) and issubclass(m, BaseModel) for m in get_args(t)
+            )
 
-                inner_origin = get_origin(inner)
-                if inner_origin is Union:
-                    is_base_model_inner = all(
-                        isinstance(t, type) and issubclass(t, BaseModel)
-                        for t in get_args(inner)
-                    )
-                elif isinstance(inner, type) and issubclass(inner, BaseModel):
-                    is_base_model_inner = True
-            except TypeError:
-                is_base_model_inner = False
+        if inner is not None and _is_model_type(inner):
+            # Treat as structured iterable extraction.
+            origin = list
+        else:
+            from instructor.dsl.simple_type import ModelAdapter
 
-        if is_base_model_inner:
-            from instructor.dsl.iterable import IterableModel
+            # Avoid `ModelAdapter[response_model]` so type checkers don't treat this
+            # as a type expression. This is a runtime wrapper.
+            response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
+            origin = get_origin(response_model)
 
-            response_model = cast(type[BaseModel], IterableModel(inner))  # type: ignore[arg-type]
+    # Convert TypedDict -> BaseModel
+    if is_typed_dict(response_model):
+        model_name = getattr(response_model, "__name__", "TypedDictModel")
+        annotations = getattr(response_model, "__annotations__", {})
+        response_model = cast(
+            type[BaseModel],
+            create_model(
+                model_name,
+                **{k: (v, ...) for k, v in annotations.items()},
+            ),
+        )
+
+    # Convert Iterable[T] or list[T] (where T is a model) -> IterableModel(T)
+    origin = get_origin(response_model)
+    if origin in {Iterable, list}:
+        from instructor.dsl.iterable import IterableModel
+
+        args = get_args(response_model)
+        if not args or args[0] is None:
+            raise ValueError(
+                "response_model must be parameterized, e.g. list[User] or Iterable[User]"
+            )
+        iterable_element_class = args[0]
+        if is_typed_dict(iterable_element_class):
+            iterable_element_class = cast(
+                type[BaseModel],
+                create_model(
+                    getattr(iterable_element_class, "__name__", "TypedDictModel"),
+                    **{
+                        k: (v, ...)
+                        for k, v in getattr(iterable_element_class, "__annotations__", {}).items()
+                    },
+                ),
+            )
+        response_model = IterableModel(cast(type[BaseModel], iterable_element_class))
 
     if is_simple_type(response_model):
         from instructor.dsl.simple_type import ModelAdapter
 
         # Avoid `ModelAdapter[response_model]` so type checkers don't treat this as
-        # a type expression. We want a runtime wrapper here.
+        # a type expression. This is a runtime wrapper.
         response_model = ModelAdapter.__class_getitem__(response_model)  # type: ignore[arg-type]
-
-    if is_typed_dict(response_model):
-        # `TypedDict` subclasses always have `__name__` at runtime, but keep this
-        # defensive to satisfy type checkers.
-        model_name = getattr(response_model, "__name__", "TypedDictModel")
-        annotations = getattr(response_model, "__annotations__", {})
-        response_model = create_model(
-            model_name,
-            **{k: (v, ...) for k, v in annotations.items()},
-        )
 
     # Import here to avoid circular dependency
     from ..processing.function_calls import OpenAISchema, openai_schema

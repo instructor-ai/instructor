@@ -49,6 +49,7 @@ from instructor.core.exceptions import InstructorError, ConfigurationError
 from ..dsl.iterable import IterableBase
 from ..dsl.parallel import ParallelBase
 from ..dsl.partial import PartialBase
+from ..dsl.response_list import ListResponse
 from ..dsl.simple_type import AdapterBase
 
 if TYPE_CHECKING:
@@ -257,13 +258,10 @@ async def process_response_async(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        from ..dsl.response_list import ListResponse
-
-        tasks = ListResponse.from_list(
-            [task for task in model.tasks],  # type: ignore
+        return ListResponse.from_list(  # type: ignore[return-value]
+            [task for task in model.tasks],
             raw_response=response,
         )
-        return tasks
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
@@ -378,13 +376,10 @@ def process_response(
     # ? attaching usage data and the raw response to the model we return.
     if isinstance(model, IterableBase):
         logger.debug(f"Returning takes from IterableBase")
-        from ..dsl.response_list import ListResponse
-
-        tasks = ListResponse.from_list(
-            [task for task in model.tasks],  # type: ignore
+        return ListResponse.from_list(  # type: ignore[return-value]
+            [task for task in model.tasks],
             raw_response=response,
         )
-        return tasks
 
     if isinstance(response_model, ParallelBase):
         logger.debug(f"Returning model from ParallelBase")
