@@ -76,3 +76,36 @@ def test_update_genai_kwargs_maps_text_thresholds_to_image_categories():
     for setting in result["safety_settings"]:
         if setting["category"] == HarmCategory.HARM_CATEGORY_IMAGE_HATE:
             assert setting["threshold"] == HarmBlockThreshold.BLOCK_LOW_AND_ABOVE
+
+
+def test_handle_genai_tools_autodetect_images_uses_image_categories():
+    """Autodetected image content should switch safety_settings to IMAGE_* categories."""
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_tools
+
+    class SimpleModel(BaseModel):
+        text: str
+
+    data_uri = (
+        "data:image/png;base64,"
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO6q0S8AAAAASUVORK5CYII="
+    )
+
+    kwargs = {
+        "messages": [
+            {
+                "role": "user",
+                "content": ["What is in this image?", data_uri],
+            }
+        ]
+    }
+
+    _, out = handle_genai_tools(SimpleModel, kwargs, autodetect_images=True)
+
+    assert "config" in out
+    assert out["config"].safety_settings is not None
+    assert any(
+        s.category.name.startswith("HARM_CATEGORY_IMAGE_")
+        for s in out["config"].safety_settings
+    )
