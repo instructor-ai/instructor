@@ -606,10 +606,16 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
             **{k: (v, ...) for k, v in response_model.__annotations__.items()},
         )
 
-    if get_origin(response_model) is Iterable:
+    origin = get_origin(response_model)
+    if origin in {Iterable, list}:
         from instructor.dsl.iterable import IterableModel
 
-        iterable_element_class = get_args(response_model)[0]
+        args = get_args(response_model)
+        if not args or args[0] is None:
+            raise ValueError(
+                "response_model must be parameterized, e.g. list[User] or Iterable[User]"
+            )
+        iterable_element_class = args[0]
         response_model = cast(BaseModel, IterableModel(iterable_element_class))  # type: ignore
 
     # Import here to avoid circular dependency
