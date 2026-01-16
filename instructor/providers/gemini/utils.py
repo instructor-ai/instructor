@@ -304,8 +304,74 @@ def update_genai_kwargs(
             if val is not None:  # Only set if value is not None
                 base_config[gemini_key] = val
 
+    def _genai_kwargs_has_image_content(genai_kwargs: dict[str, Any]) -> bool:
+        """
+        Best-effort check for image content in a GenAI request.
+
+        We use this to decide whether to send text vs image harm categories in
+        `safety_settings`. The google-genai SDK has separate image categories
+        (e.g., `HARM_CATEGORY_IMAGE_HATE`) which are required for image content.
+        """
+        # Prefer typed GenAI contents if present (works with autodetect_images)
+        contents = genai_kwargs.get("contents")
+        if isinstance(contents, list):
+            for content in contents:
+                parts = getattr(content, "parts", None)
+                if not parts:
+                    continue
+                for part in parts:
+                    inline_data = getattr(part, "inline_data", None)
+                    if inline_data is not None:
+                        mime_type = getattr(inline_data, "mime_type", None)
+                        if isinstance(mime_type, str) and mime_type.startswith(
+                            "image/"
+                        ):
+                            return True
+
+                    file_data = getattr(part, "file_data", None)
+                    if file_data is not None:
+                        mime_type = getattr(file_data, "mime_type", None)
+                        if isinstance(mime_type, str) and mime_type.startswith(
+                            "image/"
+                        ):
+                            return True
+
+        # Fall back to OpenAI-style messages if present
+        messages = genai_kwargs.get("messages")
+        if isinstance(messages, list):
+            for message in messages:
+                if not isinstance(message, dict):
+                    continue
+                content = message.get("content")
+                if isinstance(content, Image):
+                    return True
+                if isinstance(content, list):
+                    for item in content:
+                        if isinstance(item, Image):
+                            return True
+                        if isinstance(item, dict) and item.get("type") in {
+                            "image",
+                            "image_url",
+                            "input_image",
+                        }:
+                            return True
+                if isinstance(content, dict) and content.get("type") in {
+                    "image",
+                    "image_url",
+                    "input_image",
+                }:
+                    return True
+
+        return False
+
     safety_settings = new_kwargs.pop("safety_settings", {})
     base_config["safety_settings"] = []
+
+    # If users pass a list of settings, assume it's already in SDK format.
+    # This preserves compatibility with advanced usage.
+    if isinstance(safety_settings, list):
+        base_config["safety_settings"] = safety_settings
+        safety_settings = None
 
     # Filter out image related harm categories which are not
     # supported for text based models
@@ -314,21 +380,52 @@ def update_genai_kwargs(
     if hasattr(HarmCategory, "HARM_CATEGORY_JAILBREAK"):
         excluded_categories.add(HarmCategory.HARM_CATEGORY_JAILBREAK)
 
-    supported_categories = [
-        c
-        for c in HarmCategory
-        if c not in excluded_categories
-        and not c.name.startswith("HARM_CATEGORY_IMAGE_")
-    ]
+    if safety_settings is not None:
+        # google-genai has separate categories for image content.
+        has_image = _genai_kwargs_has_image_content(new_kwargs)
+        image_categories = [
+            c
+            for c in HarmCategory
+            if c not in excluded_categories
+            and c.name.startswith("HARM_CATEGORY_IMAGE_")
+        ]
+        text_categories = [
+            c
+            for c in HarmCategory
+            if c not in excluded_categories
+            and not c.name.startswith("HARM_CATEGORY_IMAGE_")
+        ]
 
-    for category in supported_categories:
-        threshold = safety_settings.get(category, HarmBlockThreshold.OFF)
-        base_config["safety_settings"].append(
-            {
-                "category": category,
-                "threshold": threshold,
-            }
+        supported_categories = (
+            image_categories if (has_image and image_categories) else text_categories
         )
+
+        def _map_text_to_image_category_name(image_category_name: str) -> str | None:
+            suffix = image_category_name.removeprefix("HARM_CATEGORY_IMAGE_")
+            # google-genai uses IMAGE_HATE while text uses HATE_SPEECH
+            if suffix == "HATE":
+                return "HARM_CATEGORY_HATE_SPEECH"
+            return f"HARM_CATEGORY_{suffix}"
+
+        for category in supported_categories:
+            threshold = HarmBlockThreshold.OFF
+            if isinstance(safety_settings, dict):
+                if category in safety_settings:
+                    threshold = safety_settings[category]
+                # If we are using image categories, try to honor thresholds passed via text categories.
+                elif has_image and category.name.startswith("HARM_CATEGORY_IMAGE_"):
+                    mapped_name = _map_text_to_image_category_name(category.name)
+                    if mapped_name is not None and hasattr(HarmCategory, mapped_name):
+                        mapped_category = getattr(HarmCategory, mapped_name)
+                        if mapped_category in safety_settings:
+                            threshold = safety_settings[mapped_category]
+
+            base_config["safety_settings"].append(
+                {
+                    "category": category,
+                    "threshold": threshold,
+                }
+            )
 
     # Extract thinking_config from user's config if provided (dict or object)
     # This ensures thinking_config inside config parameter is not ignored.
@@ -1026,17 +1123,20 @@ def handle_genai_tools(
             ),
         )
 
-    generation_config = update_genai_kwargs(new_kwargs, base_config)
-
-    new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
+    # Convert messages before building config so we can correctly infer whether
+    # this request includes image content (which affects safety_settings).
     new_kwargs["contents"] = convert_to_genai_messages(new_kwargs["messages"])
 
-    # Extract multimodal content for GenAI
+    # Extract multimodal content for GenAI (autodetect_images may turn URLs into images)
     from ...processing.multimodal import extract_genai_multimodal_content
 
     new_kwargs["contents"] = extract_genai_multimodal_content(
         new_kwargs["contents"], autodetect_images
     )
+
+    generation_config = update_genai_kwargs(new_kwargs, base_config)
+
+    new_kwargs["config"] = types.GenerateContentConfig(**generation_config)
 
     new_kwargs.pop("response_model", None)
     new_kwargs.pop("messages", None)
