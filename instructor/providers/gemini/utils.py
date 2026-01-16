@@ -400,37 +400,13 @@ def update_genai_kwargs(
             image_categories if (has_image and image_categories) else text_categories
         )
 
-        def _map_text_to_image_category_name(image_category_name: str) -> str | None:
-            suffix = image_category_name.removeprefix("HARM_CATEGORY_IMAGE_")
-            # google-genai uses IMAGE_HATE while text uses HATE_SPEECH
-            if suffix == "HATE":
-                return "HARM_CATEGORY_HATE_SPEECH"
-            return f"HARM_CATEGORY_{suffix}"
-
-        for category in supported_categories:
-            threshold = HarmBlockThreshold.OFF
-            if isinstance(safety_settings, dict):
-                if category in safety_settings:
-                    threshold = safety_settings[category]
-                # If we are using image categories, try to honor thresholds passed via text categories.
-                elif has_image and category.name.startswith("HARM_CATEGORY_IMAGE_"):
-                    mapped_name = _map_text_to_image_category_name(category.name)
-                    if mapped_name is not None and hasattr(HarmCategory, mapped_name):
-                        mapped_category = getattr(HarmCategory, mapped_name)
-                        if mapped_category in safety_settings:
-                            threshold = safety_settings[mapped_category]
-            base_config["safety_settings"].append(
-                {
-                    "category": category,
-                    "threshold": threshold,
-                }
-            )
-
-    # Extract thinking_config from user's config object if provided
-    # This ensures thinking_config inside config parameter is not ignored
+    # Extract thinking_config from user's config if provided (dict or object)
+    # This ensures thinking_config inside config parameter is not ignored.
     user_config = new_kwargs.get("config")
     user_thinking_config = None
-    if user_config is not None and hasattr(user_config, "thinking_config"):
+    if isinstance(user_config, dict):
+        user_thinking_config = user_config.get("thinking_config")
+    elif user_config is not None and hasattr(user_config, "thinking_config"):
         user_thinking_config = user_config.thinking_config
 
     # Handle thinking_config parameter - prioritize kwarg over config.thinking_config
@@ -441,8 +417,9 @@ def update_genai_kwargs(
     if thinking_config is not None:
         base_config["thinking_config"] = thinking_config
 
-    # Extract other relevant fields from user's config object
-    # This ensures fields like automatic_function_calling are not ignored
+    # Extract other relevant fields from user's config (dict or object).
+    # This ensures fields like automatic_function_calling / labels / cached_content
+    # are not ignored when config is passed as a dict.
     if user_config is not None:
         config_fields_to_merge = [
             "automatic_function_calling",
@@ -450,10 +427,15 @@ def update_genai_kwargs(
             "cached_content",
         ]
         for field in config_fields_to_merge:
-            if hasattr(user_config, field):
+            if isinstance(user_config, dict):
+                field_value = user_config.get(field)
+            elif hasattr(user_config, field):
                 field_value = getattr(user_config, field)
-                if field_value is not None and field not in base_config:
-                    base_config[field] = field_value
+            else:
+                field_value = None
+
+            if field_value is not None and field not in base_config:
+                base_config[field] = field_value
 
     return base_config
 
@@ -978,12 +960,16 @@ def handle_genai_structured_outputs(
     if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
         response_model = Partial[response_model]
 
-    # Extract thinking_config from user-provided config object if present
-    # This fixes issue #1966 where thinking_config inside config was ignored
+    # Extract thinking_config and cached_content from user-provided config (dict or object).
+    # This fixes issue #1966 (thinking_config ignored) and ensures cached_content
+    # is detected even when config is provided as a dict.
     user_config = new_kwargs.get("config")
     user_thinking_config = None
     user_cached_content = None
-    if user_config is not None:
+    if isinstance(user_config, dict):
+        user_thinking_config = user_config.get("thinking_config")
+        user_cached_content = user_config.get("cached_content")
+    elif user_config is not None:
         if hasattr(user_config, "thinking_config"):
             user_thinking_config = user_config.thinking_config
         if hasattr(user_config, "cached_content"):
@@ -1061,12 +1047,16 @@ def handle_genai_tools(
     if new_kwargs.get("stream", False) and not issubclass(response_model, PartialBase):
         response_model = Partial[response_model]
 
-    # Extract thinking_config and cached_content from user-provided config object if present
-    # This fixes issue #1966 where thinking_config inside config was ignored
+    # Extract thinking_config and cached_content from user-provided config (dict or object).
+    # This fixes issue #1966 (thinking_config ignored) and ensures cached_content
+    # is detected even when config is provided as a dict.
     user_config = new_kwargs.get("config")
     user_thinking_config = None
     user_cached_content = None
-    if user_config is not None:
+    if isinstance(user_config, dict):
+        user_thinking_config = user_config.get("thinking_config")
+        user_cached_content = user_config.get("cached_content")
+    elif user_config is not None:
         if hasattr(user_config, "thinking_config"):
             user_thinking_config = user_config.thinking_config
         if hasattr(user_config, "cached_content"):

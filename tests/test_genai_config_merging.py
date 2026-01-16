@@ -397,3 +397,124 @@ def test_handle_genai_tools_sets_tools_without_cached_content():
     assert result_config.tools is not None
     assert result_config.tool_config is not None
     assert result_config.system_instruction is not None
+
+
+def test_update_genai_kwargs_config_dict_labels():
+    """Test that labels is merged when config is provided as a dict (issue #1759)."""
+    kwargs = {"config": {"labels": {"env": "prod", "team": "ml"}}}
+    base_config: dict[str, object] = {}
+
+    result = update_genai_kwargs(kwargs, base_config)
+
+    assert result["labels"] == {"env": "prod", "team": "ml"}
+
+
+def test_update_genai_kwargs_config_dict_cached_content():
+    """Test that cached_content is merged when config is provided as a dict."""
+    kwargs = {"config": {"cached_content": "caches/dict123"}}
+    base_config: dict[str, object] = {}
+
+    result = update_genai_kwargs(kwargs, base_config)
+
+    assert result["cached_content"] == "caches/dict123"
+
+
+def test_update_genai_kwargs_config_dict_thinking_config():
+    """Test that thinking_config is merged when config is provided as a dict."""
+    thinking_config = {"thinking_budget": 1234}
+    kwargs = {"config": {"thinking_config": thinking_config}}
+    base_config: dict[str, object] = {}
+
+    result = update_genai_kwargs(kwargs, base_config)
+
+    assert result["thinking_config"] == thinking_config
+
+
+def test_handle_genai_structured_outputs_preserves_labels_from_config_dict():
+    """Test that labels are preserved when config is provided as a dict (issue #1759)."""
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+
+    class TestModel(BaseModel):
+        name: str
+
+    new_kwargs = {
+        "messages": [{"role": "user", "content": "Hello"}],
+        "config": {"labels": {"tenant": "acme", "cost-center": "123"}},
+    }
+
+    _, result_kwargs = handle_genai_structured_outputs(TestModel, new_kwargs)
+
+    result_config = result_kwargs["config"]
+    assert result_config.labels == {"tenant": "acme", "cost-center": "123"}
+
+
+def test_handle_genai_tools_preserves_labels_from_config_dict():
+    """Test that labels are preserved in tools mode when config is a dict (issue #1759)."""
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_tools
+
+    class TestModel(BaseModel):
+        name: str
+
+    new_kwargs = {
+        "messages": [{"role": "user", "content": "Hello"}],
+        "config": {"labels": {"tenant": "acme", "cost-center": "123"}},
+    }
+
+    _, result_kwargs = handle_genai_tools(TestModel, new_kwargs)
+
+    result_config = result_kwargs["config"]
+    assert result_config.labels == {"tenant": "acme", "cost-center": "123"}
+
+
+def test_handle_genai_structured_outputs_skips_system_instruction_with_cached_content_dict():
+    """Test cached_content dict config disables system_instruction in structured outputs."""
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_structured_outputs
+
+    class TestModel(BaseModel):
+        name: str
+
+    new_kwargs = {
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello"},
+        ],
+        "config": {"cached_content": "caches/dict-cache-1"},
+    }
+
+    _, result_kwargs = handle_genai_structured_outputs(TestModel, new_kwargs)
+
+    result_config = result_kwargs["config"]
+    assert result_config.cached_content == "caches/dict-cache-1"
+    assert result_config.system_instruction is None
+
+
+def test_handle_genai_tools_skips_tools_and_system_instruction_with_cached_content_dict():
+    """Test cached_content dict config disables tools/tool_config/system_instruction in tools mode."""
+    from pydantic import BaseModel
+
+    from instructor.providers.gemini.utils import handle_genai_tools
+
+    class TestModel(BaseModel):
+        name: str
+
+    new_kwargs = {
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello"},
+        ],
+        "config": {"cached_content": "caches/dict-cache-2"},
+    }
+
+    _, result_kwargs = handle_genai_tools(TestModel, new_kwargs)
+
+    result_config = result_kwargs["config"]
+    assert result_config.cached_content == "caches/dict-cache-2"
+    assert result_config.system_instruction is None
+    assert result_config.tools is None
+    assert result_config.tool_config is None
