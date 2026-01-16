@@ -323,13 +323,17 @@ def update_genai_kwargs(
                     inline_data = getattr(part, "inline_data", None)
                     if inline_data is not None:
                         mime_type = getattr(inline_data, "mime_type", None)
-                        if isinstance(mime_type, str) and mime_type.startswith("image/"):
+                        if isinstance(mime_type, str) and mime_type.startswith(
+                            "image/"
+                        ):
                             return True
 
                     file_data = getattr(part, "file_data", None)
                     if file_data is not None:
                         mime_type = getattr(file_data, "mime_type", None)
-                        if isinstance(mime_type, str) and mime_type.startswith("image/"):
+                        if isinstance(mime_type, str) and mime_type.startswith(
+                            "image/"
+                        ):
                             return True
 
         # Fall back to OpenAI-style messages if present
@@ -382,7 +386,8 @@ def update_genai_kwargs(
         image_categories = [
             c
             for c in HarmCategory
-            if c not in excluded_categories and c.name.startswith("HARM_CATEGORY_IMAGE_")
+            if c not in excluded_categories
+            and c.name.startswith("HARM_CATEGORY_IMAGE_")
         ]
         text_categories = [
             c
