@@ -27,3 +27,53 @@
 - **Naming**: `snake_case` functions/variables, `PascalCase` classes
 - **No mocking**: Tests use real API calls
 - **Client creation**: Always use `instructor.from_provider("provider_name/model_name")` instead of provider-specific methods like `from_openai()`, `from_anthropic()`, etc.
+
+## Pull Request (PR) Formatting
+
+Use **Conventional Commits** formatting for PR titles. Treat the PR title as the message we would use for a squash merge commit.
+
+### PR Title Format
+
+Use:
+
+`<type>(<scope>): <short summary>`
+
+Rules:
+- Keep it under ~70 characters when you can.
+- Use the imperative mood (for example, “add”, “fix”, “update”).
+- Do not end with a period.
+- If it includes a breaking change, add `!` after the type or scope (for example, `feat(api)!:`).
+
+Good examples:
+- `fix(openai): handle empty tool_calls in streaming`
+- `feat(retry): add backoff for JSON parse failures`
+- `docs(agents): add conventional commit PR title guidelines`
+- `test(schema): cover nested union edge cases`
+- `ci(ruff): enforce formatting in pre-commit`
+
+Common types:
+- `feat`: new feature
+- `fix`: bug fix
+- `docs`: documentation-only changes
+- `refactor`: code change that is not a fix or feature
+- `perf`: performance improvement
+- `test`: add or update tests
+- `build`: build system or dependency changes
+- `ci`: CI pipeline changes
+- `chore`: maintenance work
+
+Suggested scopes (pick the closest match):
+- Providers: `openai`, `anthropic`, `gemini`, `vertexai`, `bedrock`, `mistral`, `groq`, `writer`
+- Core: `core`, `patch`, `process_response`, `function_calls`, `retry`, `dsl`
+- Repo: `docs`, `examples`, `tests`, `ci`, `build`
+
+### PR Description Guidelines
+
+Keep PR descriptions short and easy to review:
+- **What**: What changed, in 1–3 sentences.
+- **Why**: Why this change is needed (link issues when possible).
+- **Changes**: 3–7 bullet points with the main edits.
+- **Testing**: What you ran (or why you did not run anything).
+
+If the PR was authored by Cursor, include:
+- `This PR was written by [Cursor](https://cursor.com)`
