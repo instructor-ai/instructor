@@ -62,9 +62,14 @@ if importlib.util.find_spec("openai") is not None:
     __all__.append("from_perplexity")
 
 if all(importlib.util.find_spec(pkg) for pkg in ("vertexai", "jsonref")):
-    from .vertexai.client import from_vertexai  # noqa: F401
-
-    __all__.append("from_vertexai")
+    try:
+        from .vertexai.client import from_vertexai  # noqa: F401
+    except Exception:
+        # Optional dependency may be present but broken/misconfigured at import time.
+        # Avoid failing `import instructor` in that case.
+        pass
+    else:
+        __all__.append("from_vertexai")
 
 if importlib.util.find_spec("writerai") is not None:
     from .writer.client import from_writer  # noqa: F401
