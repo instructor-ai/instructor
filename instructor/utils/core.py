@@ -652,7 +652,9 @@ def prepare_response_model(response_model: type[T] | None) -> type[T] | None:
                     getattr(iterable_element_class, "__name__", "TypedDictModel"),
                     **{
                         k: (v, ...)
-                        for k, v in getattr(iterable_element_class, "__annotations__", {}).items()
+                        for k, v in getattr(
+                            iterable_element_class, "__annotations__", {}
+                        ).items()
                     },
                 ),
             )
