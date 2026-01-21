@@ -428,7 +428,7 @@ We provide several modes to make it easy to work with the different response mod
 5. `instructor.Mode.FUNCTIONS` : This uses OpenAI's function calling API to return structured outputs and will be deprecated in the future.
 6. `instructor.Mode.PARALLEL_TOOLS` : This uses the [parallel tool calling API](https://platform.openai.com/docs/guides/function-calling#configuring-parallel-function-calling) to return structured outputs to the client. This allows the model to generate multiple calls in a single response.
 7. `instructor.Mode.MD_JSON` : This makes a simple call to the OpenAI chat completion API and parses the raw response as JSON.
-8. `instructor.Mode.TOOLS_STRICT` : This uses the new Open AI structured outputs API to return structured outputs to the client using constrained grammar sampling. This restricts users to a subset of the JSON schema.
+8. `instructor.Mode.TOOLS_STRICT` : This uses OpenAI's [Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs) feature with `strict: true` enabled. This enforces exact schema adherence through constrained grammar sampling, guaranteeing valid outputs that match your Pydantic model. Use this mode when you need strict schema compliance in production systems.
 9. `instructor.Mode.JSON_O1` : This is a mode for the `O1` model. We created a new mode because `O1` doesn't support any system messages, tool calling or streaming so you need to use this mode to use Instructor with `O1`.
 
 In general, choose `Mode.RESPONSES_TOOLS` (or the built-in tools variant) when you're targeting the Responses API, and stick with `Mode.TOOLS` for classic Chat Completions integrations. Both modes keep schema handling identical, so switching between them is a single-line change.
