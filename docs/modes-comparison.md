@@ -20,7 +20,7 @@ Here's a quick comparison:
 | `FUNCTIONS` (Legacy) | Legacy OpenAI function calling | Backward compatibility | OpenAI, Azure |
 | `PARALLEL_TOOLS` | Runs multiple tools in parallel | Complex, multi-step tasks | OpenAI, Anthropic, Vertex AI |
 | `MD_JSON` | JSON in Markdown code blocks | Cleaner prompts | Most providers |
-| `TOOLS_STRICT` | Stricter version of TOOLS | Production systems | OpenAI, Azure |
+| `TOOLS_STRICT` | TOOLS with `strict: true` for guaranteed schema compliance | Production systems requiring exact schema adherence | OpenAI, Azure |
 | `JSON_O1` | One-shot completion with JSON | Simple extractions | OpenAI, Azure |
 | `ANTHROPIC_TOOLS` | Anthropic's tool calling | Claude models | Anthropic |
 | `ANTHROPIC_JSON` | Direct JSON with Claude | Claude models | Anthropic |
@@ -54,6 +54,31 @@ This is the **recommended mode** for OpenAI models. It uses OpenAI's tool callin
 - Most reliable
 - Best for complex structures
 - Works with all current OpenAI models
+
+#### `TOOLS_STRICT` Mode
+
+```python
+client = instructor.from_provider("openai/gpt-5-nano", mode=instructor.Mode.TOOLS_STRICT)
+```
+
+This mode uses OpenAI's [Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs) feature with `strict: true` enabled. It:
+
+- Sets `strict: true` in the tool definition to enforce exact schema adherence
+- Adds `additionalProperties: false` to prevent extra fields
+- Uses constrained grammar sampling for guaranteed valid outputs
+- Ensures the model output exactly matches your Pydantic schema
+
+**Best for**: Production systems where schema compliance is critical.
+
+**Advantages**:
+- Guarantees valid JSON matching your schema
+- No need for retries due to schema violations
+- More predictable outputs
+
+**Requirements**:
+- Your schema must be compatible with OpenAI's strict mode requirements
+- Avoid `dict` fields with dynamic keys (use typed dictionaries instead)
+- All fields should have explicit types
 
 #### `JSON` Mode
 
