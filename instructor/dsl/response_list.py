@@ -1,3 +1,9 @@
+"""List-like response wrapper.
+
+When a response model returns a list (for example `list[User]`), we still want to
+attach the provider's raw response so `create_with_completion()` can return it.
+"""
+
 from __future__ import annotations
 
 from typing import Any, Generic, TypeVar
@@ -31,3 +37,7 @@ class ListResponse(list[T], Generic[T]):
         if isinstance(key, slice):
             return type(self)(value, _raw_response=self._raw_response)
         return value
+
+
+# Backwards-friendly alias
+ResponseList = ListResponse
